@@ -1,0 +1,70 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>b3db16ee-a821-4474-a188-e64926529bbd</SharedGUID>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)\Animatable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\AnimatableVector3.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\AnimatableXYZ.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Asset.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\AssetCollection.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\BezierSegment.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\BlendMode.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Char.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Color.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\CubicBezierEasing.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Easing.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Ellipse.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Font.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\GradientStop.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\HoldEasing.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\IAnimatableValue.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\IAnimatableVector3.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\ImageAsset.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\ImageLayer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\KeyFrame.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Layer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\LayerCollection.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\LayerCollectionAsset.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\LinearEasing.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\LinearGradientFill.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\LinearGradientStroke.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\LottieComposition.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\LottieCompositionValidator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\LottieObject.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\LottieObjectType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Marker.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Mask.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\MergePaths.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\NullLayer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Optimization\Optimizer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Polystar.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\PreCompLayer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\RadialGradientFill.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\RadialGradientStroke.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Rectangle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Repeater.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\RepeaterTransform.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\RoundedCorner.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Sequence.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Serialization\LottieCompositionXmlSerializer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Shape.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\ShapeContentType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\ShapeGroup.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\ShapeLayer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\ShapeLayerContent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\SolidColorFill.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\SolidColorStroke.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\SolidLayer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\TextLayer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Tools\Stats.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Transform.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\TrimPath.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\ValidationIssues.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Vector2.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Vector3.cs" />
+  </ItemGroup>
+</Project>

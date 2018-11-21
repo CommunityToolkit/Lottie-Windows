@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Configurations>Debug</Configurations>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  <Import Project="..\..\source\LottieToWinComp\LottieToWinComp.projitems" Label="Shared" />
+
+  <ItemGroup>
+    <ProjectReference Include="..\LottieData\LottieData.dll.csproj" />
+    <ProjectReference Include="..\WinCompData\WinCompData.dll.csproj" />
+  </ItemGroup>
+
+</Project>

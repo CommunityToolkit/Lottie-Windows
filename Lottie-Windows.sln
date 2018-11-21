@@ -1,0 +1,217 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27004.2002
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Lottie", "source\Lottie\Lottie.shproj", "{8EF7BD77-28E9-4998-8DBB-8036F988FE65}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "LottieData", "source\LottieData\LottieData.shproj", "{B3DB16EE-A821-4474-A188-E64926529BBD}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "LottieReader", "source\LottieReader\LottieReader.shproj", "{4E7D8957-3F5F-46E1-99A8-2012B806C9B0}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "LottieToWinComp", "source\LottieToWinComp\LottieToWinComp.shproj", "{0340244A-683C-405E-838B-F93872779532}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "WinCompData", "source\WinCompData\WinCompData.shproj", "{D02870DE-7DED-4916-85D4-3175CEEDEF74}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LottieGen", "LottieGen\LottieGen.csproj", "{CB12D5BA-A6FE-41E2-B555-83C903CCE92A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "source", "source", "{AB232F35-AAF7-4AE2-B1D2-45DD9BC2F7D7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LottieViewer", "LottieViewer\LottieViewer.csproj", "{5120EFD7-A556-46BF-8D56-F65F1EF9A305}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lottie-Windows", "Lottie-Windows\Lottie-Windows.csproj", "{E392BAD0-F936-4B64-A445-552597795CC7}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dlls", "dlls", "{C75BD686-21A6-4EB3-8D4B-D5A01C019C52}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WinCompData.dll", "dlls\WinCompData\WinCompData.dll.csproj", "{68317393-F5A5-4B2C-918A-688DB2C10F54}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LottieData.dll", "dlls\LottieData\LottieData.dll.csproj", "{6221591A-E8F4-4A5E-8F0C-2651C24AD495}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LottieReader.dll", "dlls\LottieReader\LottieReader.dll.csproj", "{BB081E5A-CF3C-490F-8F8E-450A79F6CA33}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LottieToWinComp.dll", "dlls\LottieToWinComp\LottieToWinComp.dll.csproj", "{BCEDF904-F986-42EC-A22D-E0662777B7F9}"
+EndProject
+Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		source\LottieToWinComp\LottieToWinComp.projitems*{0340244a-683c-405e-838b-f93872779532}*SharedItemsImports = 13
+		source\LottieReader\LottieReader.projitems*{4e7d8957-3f5f-46e1-99a8-2012b806c9b0}*SharedItemsImports = 13
+		source\LottieData\LottieData.projitems*{5120efd7-a556-46bf-8d56-f65f1ef9a305}*SharedItemsImports = 4
+		source\LottieReader\LottieReader.projitems*{5120efd7-a556-46bf-8d56-f65f1ef9a305}*SharedItemsImports = 4
+		source\LottieToWinComp\LottieToWinComp.projitems*{5120efd7-a556-46bf-8d56-f65f1ef9a305}*SharedItemsImports = 4
+		source\Lottie\Lottie.projitems*{5120efd7-a556-46bf-8d56-f65f1ef9a305}*SharedItemsImports = 4
+		source\WinCompData\WinCompData.projitems*{5120efd7-a556-46bf-8d56-f65f1ef9a305}*SharedItemsImports = 4
+		source\Lottie\Lottie.projitems*{8ef7bd77-28e9-4998-8dbb-8036f988fe65}*SharedItemsImports = 13
+		source\LottieData\LottieData.projitems*{b3db16ee-a821-4474-a188-e64926529bbd}*SharedItemsImports = 13
+		source\WinCompData\WinCompData.projitems*{d02870de-7ded-4916-85d4-3175ceedef74}*SharedItemsImports = 13
+		source\LottieData\LottieData.projitems*{e392bad0-f936-4b64-a445-552597795cc7}*SharedItemsImports = 4
+		source\LottieReader\LottieReader.projitems*{e392bad0-f936-4b64-a445-552597795cc7}*SharedItemsImports = 4
+		source\LottieToWinComp\LottieToWinComp.projitems*{e392bad0-f936-4b64-a445-552597795cc7}*SharedItemsImports = 4
+		source\Lottie\Lottie.projitems*{e392bad0-f936-4b64-a445-552597795cc7}*SharedItemsImports = 4
+		source\WinCompData\WinCompData.projitems*{e392bad0-f936-4b64-a445-552597795cc7}*SharedItemsImports = 4
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		dlls|Any CPU = dlls|Any CPU
+		dlls|ARM = dlls|ARM
+		dlls|x64 = dlls|x64
+		dlls|x86 = dlls|x86
+		LottieGen|Any CPU = LottieGen|Any CPU
+		LottieGen|ARM = LottieGen|ARM
+		LottieGen|x64 = LottieGen|x64
+		LottieGen|x86 = LottieGen|x86
+		LottieViewer|Any CPU = LottieViewer|Any CPU
+		LottieViewer|ARM = LottieViewer|ARM
+		LottieViewer|x64 = LottieViewer|x64
+		LottieViewer|x86 = LottieViewer|x86
+		Lottie-Windows|Any CPU = Lottie-Windows|Any CPU
+		Lottie-Windows|ARM = Lottie-Windows|ARM
+		Lottie-Windows|x64 = Lottie-Windows|x64
+		Lottie-Windows|x86 = Lottie-Windows|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CB12D5BA-A6FE-41E2-B555-83C903CCE92A}.dlls|Any CPU.ActiveCfg = Debug|Any CPU
+		{CB12D5BA-A6FE-41E2-B555-83C903CCE92A}.dlls|ARM.ActiveCfg = Debug|Any CPU
+		{CB12D5BA-A6FE-41E2-B555-83C903CCE92A}.dlls|x64.ActiveCfg = Debug|Any CPU
+		{CB12D5BA-A6FE-41E2-B555-83C903CCE92A}.dlls|x86.ActiveCfg = Debug|Any CPU
+		{CB12D5BA-A6FE-41E2-B555-83C903CCE92A}.LottieGen|Any CPU.ActiveCfg = Release|Any CPU
+		{CB12D5BA-A6FE-41E2-B555-83C903CCE92A}.LottieGen|Any CPU.Build.0 = Release|Any CPU
+		{CB12D5BA-A6FE-41E2-B555-83C903CCE92A}.LottieGen|ARM.ActiveCfg = Release|Any CPU
+		{CB12D5BA-A6FE-41E2-B555-83C903CCE92A}.LottieGen|x64.ActiveCfg = Release|Any CPU
+		{CB12D5BA-A6FE-41E2-B555-83C903CCE92A}.LottieGen|x86.ActiveCfg = Release|Any CPU
+		{CB12D5BA-A6FE-41E2-B555-83C903CCE92A}.LottieViewer|Any CPU.ActiveCfg = Release|Any CPU
+		{CB12D5BA-A6FE-41E2-B555-83C903CCE92A}.LottieViewer|ARM.ActiveCfg = Release|Any CPU
+		{CB12D5BA-A6FE-41E2-B555-83C903CCE92A}.LottieViewer|x64.ActiveCfg = Release|Any CPU
+		{CB12D5BA-A6FE-41E2-B555-83C903CCE92A}.LottieViewer|x86.ActiveCfg = Release|Any CPU
+		{CB12D5BA-A6FE-41E2-B555-83C903CCE92A}.Lottie-Windows|Any CPU.ActiveCfg = Release|Any CPU
+		{CB12D5BA-A6FE-41E2-B555-83C903CCE92A}.Lottie-Windows|ARM.ActiveCfg = Release|Any CPU
+		{CB12D5BA-A6FE-41E2-B555-83C903CCE92A}.Lottie-Windows|x64.ActiveCfg = Release|Any CPU
+		{CB12D5BA-A6FE-41E2-B555-83C903CCE92A}.Lottie-Windows|x86.ActiveCfg = Release|Any CPU
+		{5120EFD7-A556-46BF-8D56-F65F1EF9A305}.dlls|Any CPU.ActiveCfg = Release|ARM
+		{5120EFD7-A556-46BF-8D56-F65F1EF9A305}.dlls|ARM.ActiveCfg = Debug|ARM
+		{5120EFD7-A556-46BF-8D56-F65F1EF9A305}.dlls|x64.ActiveCfg = Debug|x64
+		{5120EFD7-A556-46BF-8D56-F65F1EF9A305}.dlls|x86.ActiveCfg = Debug|x86
+		{5120EFD7-A556-46BF-8D56-F65F1EF9A305}.LottieGen|Any CPU.ActiveCfg = Release|ARM
+		{5120EFD7-A556-46BF-8D56-F65F1EF9A305}.LottieGen|ARM.ActiveCfg = Release|ARM
+		{5120EFD7-A556-46BF-8D56-F65F1EF9A305}.LottieGen|x64.ActiveCfg = Release|x64
+		{5120EFD7-A556-46BF-8D56-F65F1EF9A305}.LottieGen|x86.ActiveCfg = Release|x86
+		{5120EFD7-A556-46BF-8D56-F65F1EF9A305}.LottieViewer|Any CPU.ActiveCfg = Release|x86
+		{5120EFD7-A556-46BF-8D56-F65F1EF9A305}.LottieViewer|ARM.ActiveCfg = Release|ARM
+		{5120EFD7-A556-46BF-8D56-F65F1EF9A305}.LottieViewer|ARM.Build.0 = Release|ARM
+		{5120EFD7-A556-46BF-8D56-F65F1EF9A305}.LottieViewer|ARM.Deploy.0 = Release|ARM
+		{5120EFD7-A556-46BF-8D56-F65F1EF9A305}.LottieViewer|x64.ActiveCfg = Release|x64
+		{5120EFD7-A556-46BF-8D56-F65F1EF9A305}.LottieViewer|x64.Build.0 = Release|x64
+		{5120EFD7-A556-46BF-8D56-F65F1EF9A305}.LottieViewer|x64.Deploy.0 = Release|x64
+		{5120EFD7-A556-46BF-8D56-F65F1EF9A305}.LottieViewer|x86.ActiveCfg = Release|x86
+		{5120EFD7-A556-46BF-8D56-F65F1EF9A305}.LottieViewer|x86.Build.0 = Release|x86
+		{5120EFD7-A556-46BF-8D56-F65F1EF9A305}.LottieViewer|x86.Deploy.0 = Release|x86
+		{5120EFD7-A556-46BF-8D56-F65F1EF9A305}.Lottie-Windows|Any CPU.ActiveCfg = Release|ARM
+		{5120EFD7-A556-46BF-8D56-F65F1EF9A305}.Lottie-Windows|ARM.ActiveCfg = Release|ARM
+		{5120EFD7-A556-46BF-8D56-F65F1EF9A305}.Lottie-Windows|x64.ActiveCfg = Release|x64
+		{5120EFD7-A556-46BF-8D56-F65F1EF9A305}.Lottie-Windows|x86.ActiveCfg = Release|x86
+		{E392BAD0-F936-4B64-A445-552597795CC7}.dlls|Any CPU.ActiveCfg = Debug|Any CPU
+		{E392BAD0-F936-4B64-A445-552597795CC7}.dlls|ARM.ActiveCfg = Debug|Any CPU
+		{E392BAD0-F936-4B64-A445-552597795CC7}.dlls|ARM.Build.0 = Debug|Any CPU
+		{E392BAD0-F936-4B64-A445-552597795CC7}.dlls|x64.ActiveCfg = Debug|Any CPU
+		{E392BAD0-F936-4B64-A445-552597795CC7}.dlls|x64.Build.0 = Debug|Any CPU
+		{E392BAD0-F936-4B64-A445-552597795CC7}.dlls|x86.ActiveCfg = Debug|Any CPU
+		{E392BAD0-F936-4B64-A445-552597795CC7}.dlls|x86.Build.0 = Debug|Any CPU
+		{E392BAD0-F936-4B64-A445-552597795CC7}.LottieGen|Any CPU.ActiveCfg = Release|Any CPU
+		{E392BAD0-F936-4B64-A445-552597795CC7}.LottieGen|ARM.ActiveCfg = Release|Any CPU
+		{E392BAD0-F936-4B64-A445-552597795CC7}.LottieGen|x64.ActiveCfg = Release|Any CPU
+		{E392BAD0-F936-4B64-A445-552597795CC7}.LottieGen|x64.Build.0 = Release|Any CPU
+		{E392BAD0-F936-4B64-A445-552597795CC7}.LottieGen|x86.ActiveCfg = Release|Any CPU
+		{E392BAD0-F936-4B64-A445-552597795CC7}.LottieViewer|Any CPU.ActiveCfg = Release|Any CPU
+		{E392BAD0-F936-4B64-A445-552597795CC7}.LottieViewer|ARM.ActiveCfg = Release|Any CPU
+		{E392BAD0-F936-4B64-A445-552597795CC7}.LottieViewer|x64.ActiveCfg = Release|Any CPU
+		{E392BAD0-F936-4B64-A445-552597795CC7}.LottieViewer|x86.ActiveCfg = Release|Any CPU
+		{E392BAD0-F936-4B64-A445-552597795CC7}.Lottie-Windows|Any CPU.ActiveCfg = Release|Any CPU
+		{E392BAD0-F936-4B64-A445-552597795CC7}.Lottie-Windows|Any CPU.Build.0 = Release|Any CPU
+		{E392BAD0-F936-4B64-A445-552597795CC7}.Lottie-Windows|ARM.ActiveCfg = Release|Any CPU
+		{E392BAD0-F936-4B64-A445-552597795CC7}.Lottie-Windows|x64.ActiveCfg = Release|Any CPU
+		{E392BAD0-F936-4B64-A445-552597795CC7}.Lottie-Windows|x86.ActiveCfg = Release|Any CPU
+		{68317393-F5A5-4B2C-918A-688DB2C10F54}.dlls|Any CPU.ActiveCfg = Debug|Any CPU
+		{68317393-F5A5-4B2C-918A-688DB2C10F54}.dlls|Any CPU.Build.0 = Debug|Any CPU
+		{68317393-F5A5-4B2C-918A-688DB2C10F54}.dlls|ARM.ActiveCfg = Debug|Any CPU
+		{68317393-F5A5-4B2C-918A-688DB2C10F54}.dlls|x64.ActiveCfg = Debug|Any CPU
+		{68317393-F5A5-4B2C-918A-688DB2C10F54}.dlls|x86.ActiveCfg = Debug|Any CPU
+		{68317393-F5A5-4B2C-918A-688DB2C10F54}.LottieGen|Any CPU.ActiveCfg = Debug|Any CPU
+		{68317393-F5A5-4B2C-918A-688DB2C10F54}.LottieGen|ARM.ActiveCfg = Debug|Any CPU
+		{68317393-F5A5-4B2C-918A-688DB2C10F54}.LottieGen|x64.ActiveCfg = Debug|Any CPU
+		{68317393-F5A5-4B2C-918A-688DB2C10F54}.LottieGen|x86.ActiveCfg = Debug|Any CPU
+		{68317393-F5A5-4B2C-918A-688DB2C10F54}.LottieViewer|Any CPU.ActiveCfg = Debug|Any CPU
+		{68317393-F5A5-4B2C-918A-688DB2C10F54}.LottieViewer|ARM.ActiveCfg = Debug|Any CPU
+		{68317393-F5A5-4B2C-918A-688DB2C10F54}.LottieViewer|x64.ActiveCfg = Debug|Any CPU
+		{68317393-F5A5-4B2C-918A-688DB2C10F54}.LottieViewer|x86.ActiveCfg = Debug|Any CPU
+		{68317393-F5A5-4B2C-918A-688DB2C10F54}.Lottie-Windows|Any CPU.ActiveCfg = Debug|Any CPU
+		{68317393-F5A5-4B2C-918A-688DB2C10F54}.Lottie-Windows|ARM.ActiveCfg = Debug|Any CPU
+		{68317393-F5A5-4B2C-918A-688DB2C10F54}.Lottie-Windows|x64.ActiveCfg = Debug|Any CPU
+		{68317393-F5A5-4B2C-918A-688DB2C10F54}.Lottie-Windows|x86.ActiveCfg = Debug|Any CPU
+		{6221591A-E8F4-4A5E-8F0C-2651C24AD495}.dlls|Any CPU.ActiveCfg = Debug|Any CPU
+		{6221591A-E8F4-4A5E-8F0C-2651C24AD495}.dlls|Any CPU.Build.0 = Debug|Any CPU
+		{6221591A-E8F4-4A5E-8F0C-2651C24AD495}.dlls|ARM.ActiveCfg = Debug|Any CPU
+		{6221591A-E8F4-4A5E-8F0C-2651C24AD495}.dlls|x64.ActiveCfg = Debug|Any CPU
+		{6221591A-E8F4-4A5E-8F0C-2651C24AD495}.dlls|x86.ActiveCfg = Debug|Any CPU
+		{6221591A-E8F4-4A5E-8F0C-2651C24AD495}.LottieGen|Any CPU.ActiveCfg = Debug|Any CPU
+		{6221591A-E8F4-4A5E-8F0C-2651C24AD495}.LottieGen|ARM.ActiveCfg = Debug|Any CPU
+		{6221591A-E8F4-4A5E-8F0C-2651C24AD495}.LottieGen|x64.ActiveCfg = Debug|Any CPU
+		{6221591A-E8F4-4A5E-8F0C-2651C24AD495}.LottieGen|x86.ActiveCfg = Debug|Any CPU
+		{6221591A-E8F4-4A5E-8F0C-2651C24AD495}.LottieViewer|Any CPU.ActiveCfg = Debug|Any CPU
+		{6221591A-E8F4-4A5E-8F0C-2651C24AD495}.LottieViewer|ARM.ActiveCfg = Debug|Any CPU
+		{6221591A-E8F4-4A5E-8F0C-2651C24AD495}.LottieViewer|x64.ActiveCfg = Debug|Any CPU
+		{6221591A-E8F4-4A5E-8F0C-2651C24AD495}.LottieViewer|x86.ActiveCfg = Debug|Any CPU
+		{6221591A-E8F4-4A5E-8F0C-2651C24AD495}.Lottie-Windows|Any CPU.ActiveCfg = Debug|Any CPU
+		{6221591A-E8F4-4A5E-8F0C-2651C24AD495}.Lottie-Windows|ARM.ActiveCfg = Debug|Any CPU
+		{6221591A-E8F4-4A5E-8F0C-2651C24AD495}.Lottie-Windows|x64.ActiveCfg = Debug|Any CPU
+		{6221591A-E8F4-4A5E-8F0C-2651C24AD495}.Lottie-Windows|x86.ActiveCfg = Debug|Any CPU
+		{BB081E5A-CF3C-490F-8F8E-450A79F6CA33}.dlls|Any CPU.ActiveCfg = Debug|Any CPU
+		{BB081E5A-CF3C-490F-8F8E-450A79F6CA33}.dlls|Any CPU.Build.0 = Debug|Any CPU
+		{BB081E5A-CF3C-490F-8F8E-450A79F6CA33}.dlls|ARM.ActiveCfg = Debug|Any CPU
+		{BB081E5A-CF3C-490F-8F8E-450A79F6CA33}.dlls|x64.ActiveCfg = Debug|Any CPU
+		{BB081E5A-CF3C-490F-8F8E-450A79F6CA33}.dlls|x86.ActiveCfg = Debug|Any CPU
+		{BB081E5A-CF3C-490F-8F8E-450A79F6CA33}.LottieGen|Any CPU.ActiveCfg = Debug|Any CPU
+		{BB081E5A-CF3C-490F-8F8E-450A79F6CA33}.LottieGen|ARM.ActiveCfg = Debug|Any CPU
+		{BB081E5A-CF3C-490F-8F8E-450A79F6CA33}.LottieGen|x64.ActiveCfg = Debug|Any CPU
+		{BB081E5A-CF3C-490F-8F8E-450A79F6CA33}.LottieGen|x86.ActiveCfg = Debug|Any CPU
+		{BB081E5A-CF3C-490F-8F8E-450A79F6CA33}.LottieViewer|Any CPU.ActiveCfg = Debug|Any CPU
+		{BB081E5A-CF3C-490F-8F8E-450A79F6CA33}.LottieViewer|ARM.ActiveCfg = Debug|Any CPU
+		{BB081E5A-CF3C-490F-8F8E-450A79F6CA33}.LottieViewer|x64.ActiveCfg = Debug|Any CPU
+		{BB081E5A-CF3C-490F-8F8E-450A79F6CA33}.LottieViewer|x86.ActiveCfg = Debug|Any CPU
+		{BB081E5A-CF3C-490F-8F8E-450A79F6CA33}.Lottie-Windows|Any CPU.ActiveCfg = Debug|Any CPU
+		{BB081E5A-CF3C-490F-8F8E-450A79F6CA33}.Lottie-Windows|ARM.ActiveCfg = Debug|Any CPU
+		{BB081E5A-CF3C-490F-8F8E-450A79F6CA33}.Lottie-Windows|x64.ActiveCfg = Debug|Any CPU
+		{BB081E5A-CF3C-490F-8F8E-450A79F6CA33}.Lottie-Windows|x86.ActiveCfg = Debug|Any CPU
+		{BCEDF904-F986-42EC-A22D-E0662777B7F9}.dlls|Any CPU.ActiveCfg = Debug|Any CPU
+		{BCEDF904-F986-42EC-A22D-E0662777B7F9}.dlls|Any CPU.Build.0 = Debug|Any CPU
+		{BCEDF904-F986-42EC-A22D-E0662777B7F9}.dlls|ARM.ActiveCfg = Debug|Any CPU
+		{BCEDF904-F986-42EC-A22D-E0662777B7F9}.dlls|x64.ActiveCfg = Debug|Any CPU
+		{BCEDF904-F986-42EC-A22D-E0662777B7F9}.dlls|x86.ActiveCfg = Debug|Any CPU
+		{BCEDF904-F986-42EC-A22D-E0662777B7F9}.LottieGen|Any CPU.ActiveCfg = Debug|Any CPU
+		{BCEDF904-F986-42EC-A22D-E0662777B7F9}.LottieGen|ARM.ActiveCfg = Debug|Any CPU
+		{BCEDF904-F986-42EC-A22D-E0662777B7F9}.LottieGen|x64.ActiveCfg = Debug|Any CPU
+		{BCEDF904-F986-42EC-A22D-E0662777B7F9}.LottieGen|x86.ActiveCfg = Debug|Any CPU
+		{BCEDF904-F986-42EC-A22D-E0662777B7F9}.LottieViewer|Any CPU.ActiveCfg = Debug|Any CPU
+		{BCEDF904-F986-42EC-A22D-E0662777B7F9}.LottieViewer|ARM.ActiveCfg = Debug|Any CPU
+		{BCEDF904-F986-42EC-A22D-E0662777B7F9}.LottieViewer|x64.ActiveCfg = Debug|Any CPU
+		{BCEDF904-F986-42EC-A22D-E0662777B7F9}.LottieViewer|x86.ActiveCfg = Debug|Any CPU
+		{BCEDF904-F986-42EC-A22D-E0662777B7F9}.Lottie-Windows|Any CPU.ActiveCfg = Debug|Any CPU
+		{BCEDF904-F986-42EC-A22D-E0662777B7F9}.Lottie-Windows|ARM.ActiveCfg = Debug|Any CPU
+		{BCEDF904-F986-42EC-A22D-E0662777B7F9}.Lottie-Windows|x64.ActiveCfg = Debug|Any CPU
+		{BCEDF904-F986-42EC-A22D-E0662777B7F9}.Lottie-Windows|x86.ActiveCfg = Debug|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{8EF7BD77-28E9-4998-8DBB-8036F988FE65} = {AB232F35-AAF7-4AE2-B1D2-45DD9BC2F7D7}
+		{B3DB16EE-A821-4474-A188-E64926529BBD} = {AB232F35-AAF7-4AE2-B1D2-45DD9BC2F7D7}
+		{4E7D8957-3F5F-46E1-99A8-2012B806C9B0} = {AB232F35-AAF7-4AE2-B1D2-45DD9BC2F7D7}
+		{0340244A-683C-405E-838B-F93872779532} = {AB232F35-AAF7-4AE2-B1D2-45DD9BC2F7D7}
+		{D02870DE-7DED-4916-85D4-3175CEEDEF74} = {AB232F35-AAF7-4AE2-B1D2-45DD9BC2F7D7}
+		{68317393-F5A5-4B2C-918A-688DB2C10F54} = {C75BD686-21A6-4EB3-8D4B-D5A01C019C52}
+		{6221591A-E8F4-4A5E-8F0C-2651C24AD495} = {C75BD686-21A6-4EB3-8D4B-D5A01C019C52}
+		{BB081E5A-CF3C-490F-8F8E-450A79F6CA33} = {C75BD686-21A6-4EB3-8D4B-D5A01C019C52}
+		{BCEDF904-F986-42EC-A22D-E0662777B7F9} = {C75BD686-21A6-4EB3-8D4B-D5A01C019C52}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {51B9BB4C-5196-41CF-950C-12B04AD8A61C}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,228 @@
+﻿<Page x:Class="LottieViewer.MainPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:local="using:LottieViewer"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      RequestedTheme="Default"
+      Visibility="Visible"
+      mc:Ignorable="d">
+    <Page.Resources>
+        <local:VisiblityConverter x:Key="VisibilityConverter" />
+        <local:LottieVisualDiagnosticsFormatter x:Key="formatter" />
+        <local:FloatFormatter x:Key="floatFormatter" />
+        <SolidColorBrush x:Key="ArtboardBrush"
+                         Color="White" />
+    </Page.Resources>
+
+    <RelativePanel AllowDrop="True"
+                   Background="{StaticResource StageBackgroundBrush}"
+                   DragEnter="LottieDragEnterHandler"
+                   DragLeave="LottieDragLeaveHandler"
+                   Drop="LottieDropHandler">
+        <Grid x:Name="TopControls"
+              Height="60"
+              Background="{StaticResource BackgroundBrush}"
+              RelativePanel.AlignLeftWithPanel="True"
+              RelativePanel.AlignRightWithPanel="True"
+              RelativePanel.AlignTopWithPanel="True">
+            <StackPanel HorizontalAlignment="Left"
+                        Orientation="Horizontal">
+                <!--  Open file (alternative: 0xe8e5)  -->
+                <Button Click="PickFile_Click"
+                        Style="{StaticResource ControlsButtonStyle}"
+                        ToolTipService.ToolTip="Pick a Lottie file">
+                    &#xf12b;
+                </Button>
+            </StackPanel>
+
+            <StackPanel HorizontalAlignment="Right"
+                        Orientation="Horizontal">
+                <!--  Paint palette  -->
+                <Button IsEnabled="{x:Bind _stage.Player.IsAnimatedVisualLoaded, Mode=OneWay}"
+                        Style="{StaticResource ControlsButtonStyle}"
+                        ToolTipService.ToolTip="Background color">
+                    <Button.Flyout>
+                        <Flyout FlyoutPresenterStyle="{StaticResource AcrylicFlyoutPresenter}">
+                            <ColorPicker Background="Transparent"
+                                         ColorSpectrumComponents="HueSaturation"
+                                         ColorSpectrumShape="Ring"
+                                         IsColorChannelTextInputVisible="False"
+                                         IsColorPreviewVisible="True"
+                                         IsColorSliderVisible="True"
+                                         IsColorSpectrumVisible="True"
+                                         IsHexInputVisible="True"
+                                         Color="{Binding Source={StaticResource ArtboardBrush}, Path=Color, Mode=TwoWay}" />
+                        </Flyout>
+                    </Button.Flyout>
+                    &#xe790;
+                </Button>
+                <!--  Play speed  -->
+                <Button IsEnabled="{x:Bind _stage.Player.IsAnimatedVisualLoaded, Mode=OneWay}"
+                        Style="{StaticResource ControlsButtonStyle}"
+                        ToolTipService.ToolTip="Play speed">
+                    <Button.Flyout>
+                        <Flyout FlyoutPresenterStyle="{StaticResource AcrylicFlyoutPresenter}">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock>Play speed =</TextBlock>
+                                    <TextBlock Text="{x:Bind _stage.Player.PlaybackRate, Mode=OneWay, Converter={StaticResource floatFormatter}}" />
+                                </StackPanel>
+                                <Slider Width="300"
+                                        HorizontalAlignment="Stretch"
+                                        LargeChange="1"
+                                        Maximum="2.5"
+                                        Minimum="-2.5"
+                                        SmallChange="0.1"
+                                        StepFrequency="0.1"
+                                        TickFrequency="0.5"
+                                        TickPlacement="BottomRight"
+                                        Value="{x:Bind _stage.Player.PlaybackRate, Mode=TwoWay}" />
+                            </StackPanel>
+                        </Flyout>
+                    </Button.Flyout>
+                    &#xEC4a;
+                </Button>
+                <!--  Issues  -->
+                <Button Foreground="Orange"
+                        IsEnabled="{x:Bind _stage.PlayerHasIssues, Mode=OneWay}"
+                        Style="{StaticResource ControlsButtonStyle}"
+                        ToolTipService.ToolTip="View issues">
+                    <Button.Flyout>
+                        <Flyout>
+                            <StackPanel>
+                                <TextBlock HorizontalAlignment="Center"
+                                           FontWeight="Bold">
+                                    This Lottie has some issues ...
+                                </TextBlock>
+                                <ItemsControl Margin="12"
+                                              ItemsSource="{x:Bind _stage.PlayerIssues, Mode=OneWay}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock MinWidth="60">
+                                                    <Hyperlink NavigateUri="{Binding Path=Url}"><Run FontWeight="Bold"
+                                                             Text="{Binding Path=Code}" /></Hyperlink>
+                                                </TextBlock>
+                                                <TextBlock Text="{Binding Path=Description}" />
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <Button HorizontalAlignment="Center"
+                                        Click="CopyIssuesToClipboard">
+                                    Copy to clipboard
+                                </Button>
+                            </StackPanel>
+                        </Flyout>
+                    </Button.Flyout>
+                    &#xE7BA;
+                </Button>
+                <!--  Save as: e792. Save: e74e  -->
+                <Button Click="SaveFile_Click"
+                        IsEnabled="{x:Bind _stage.Player.IsAnimatedVisualLoaded, Mode=OneWay}"
+                        Style="{StaticResource ControlsButtonStyle}"
+                        ToolTipService.ToolTip="Save Lottie as code">
+                    &#xe74e;
+                </Button>
+
+            </StackPanel>
+
+        </Grid>
+        <!--  The stage. This is where the Lotties are displayed.  -->
+        <Border Background="{StaticResource StageBackgroundBrush}"
+                RelativePanel.Above="Controls"
+                RelativePanel.AlignRightWithPanel="True"
+                RelativePanel.Below="TopControls"
+                RelativePanel.RightOf="PlayerControls">
+
+            <local:Stage x:Name="_stage"
+                         ArtboardColor="{Binding Source={StaticResource ArtboardBrush}, Path=Color}" />
+        </Border>
+
+        <StackPanel x:Name="PlayerControls"
+                    Width="340"
+                    Padding="5"
+                    VerticalAlignment="Bottom"
+                    Background="{StaticResource ToolsBackgroundBrush}"
+                    RelativePanel.Above="Controls"
+                    RelativePanel.AlignLeftWithPanel="True"
+                    RelativePanel.AlignTopWithPanel="True"
+                    Visibility="Collapsed">
+            <StackPanel.Resources>
+                <Style TargetType="Button">
+                    <Setter Property="HorizontalAlignment" Value="Stretch" />
+                    <Setter Property="BorderBrush" Value="Black" />
+                    <Setter Property="Background" Value="LightGray" />
+                </Style>
+                <Style TargetType="ToggleSwitch">
+                    <Setter Property="HorizontalAlignment" Value="Stretch" />
+                    <Setter Property="BorderBrush" Value="Black" />
+                    <Setter Property="Background" Value="LightGray" />
+                </Style>
+                <Style TargetType="ToggleButton">
+                    <Setter Property="HorizontalAlignment" Value="Stretch" />
+                    <Setter Property="BorderBrush" Value="Black" />
+                    <Setter Property="Background" Value="LightGray" />
+                </Style>
+                <Style TargetType="Slider">
+                    <Setter Property="HorizontalAlignment" Value="Stretch" />
+                    <Setter Property="BorderBrush" Value="Black" />
+                    <Setter Property="Background" Value="LightGray" />
+                </Style>
+            </StackPanel.Resources>
+
+        </StackPanel>
+
+
+        <!--  Controls at the bottom of the window  -->
+        <Grid x:Name="Controls"
+              Height="64"
+              Background="{Binding Source={StaticResource BackgroundBrush}}"
+              RelativePanel.AlignBottomWithPanel="True"
+              RelativePanel.AlignLeftWithPanel="True"
+              RelativePanel.AlignRightWithPanel="True">
+            <Grid.ColumnDefinitions>
+                <!--  Buttons for opening a file, selecting background .  -->
+                <ColumnDefinition Width="1*" />
+                <ColumnDefinition Width="3*"
+                                  MinWidth="200" />
+                <ColumnDefinition Width="1*" />
+            </Grid.ColumnDefinitions>
+
+            <RelativePanel Grid.Column="1">
+
+                <!--  Play/stop button  -->
+                <ToggleButton x:Name="_playStopButton"
+                              VerticalAlignment="Center"
+                              Checked="_playControl_Toggled"
+                              IsEnabled="{x:Bind _stage.Player.IsAnimatedVisualLoaded, Mode=OneWay}"
+                              RelativePanel.AlignBottomWithPanel="True"
+                              RelativePanel.AlignLeftWithPanel="True"
+                              RelativePanel.AlignTopWithPanel="True"
+                              Style="{StaticResource ControlsToggleButtonStyle}"
+                              ToolTipService.ToolTip="Play/Stop"
+                              Unchecked="_playControl_Toggled">
+                    <Grid>
+                        <!--  Play  -->
+                        <TextBlock Visibility="{x:Bind _playStopButton.IsChecked, Converter={StaticResource VisibilityConverter}, ConverterParameter=not, Mode=OneWay}">&#xedb5;</TextBlock>
+                        <!--  Stop  -->
+                        <TextBlock Visibility="{x:Bind _playStopButton.IsChecked, Converter={StaticResource VisibilityConverter}, Mode=OneWay}">&#xe71a;</TextBlock>
+                    </Grid>
+                </ToggleButton>
+
+                <!--  Scrubber  -->
+                <!--  IsEnabled="{x:Bind _playStopButton.IsChecked, Mode=OneWay}"  -->
+                <local:Scrubber x:Name="_scrubber"
+                                Margin="0,5,0,0"
+                                VerticalAlignment="Center"
+                                IsEnabled="{x:Bind _stage.Player.IsAnimatedVisualLoaded, Mode=OneWay}"
+                                RelativePanel.AlignBottomWithPanel="True"
+                                RelativePanel.AlignRightWithPanel="True"
+                                RelativePanel.AlignTopWithPanel="True"
+                                RelativePanel.RightOf="_playStopButton"
+                                ValueChanged="ProgressSliderChanged" />
+            </RelativePanel>
+        </Grid>
+    </RelativePanel>
+</Page>

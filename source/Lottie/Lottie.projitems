@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>8ef7bd77-28e9-4998-8dbb-8036f988fe65</SharedGUID>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Instantiator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LottieVisualDiagnostics.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LottieVisualOptions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LottieVisualSource.cs" />
+  </ItemGroup>
+</Project>
