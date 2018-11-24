@@ -222,4 +222,9 @@ AppPackages
 project.lock.json
 msbuild.binlog
 *.project.lock.json
-/build/tools
+
+# Cake build directories
+/build/tools/
+
+# Lottie project internal development directories
+/internal/
