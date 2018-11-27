@@ -80,7 +80,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
         /// <summary>
         /// Gets the animators that are bound to this object.
         /// </summary>
-        public IEnumerable<Animator> Animators => _animators;
+        public IReadOnlyList<Animator> Animators => _animators;
 
         public AnimationController TryGetAnimationController(string target) =>
             _animators.Where(a => a.AnimatedProperty == target).Single().Controller;

@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 {
@@ -11,6 +13,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 #endif
     sealed class SolidColorStroke : ShapeLayerContent
     {
+        readonly double[] _dashPattern;
+
         public SolidColorStroke(
             string name,
             string matchName,
@@ -25,7 +29,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             : base(name, matchName)
         {
             DashOffset = dashOffset;
-            DashPattern = dashPattern;
+            _dashPattern = dashPattern.ToArray();
             Color = color;
             OpacityPercent = opacityPercent;
             Thickness = thickness;
@@ -40,7 +44,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
         public Animatable<double> Thickness { get; }
 
-        public IEnumerable<double> DashPattern { get; }
+        public ReadOnlySpan<double> DashPattern => _dashPattern;
 
         public Animatable<double> DashOffset { get; }
 

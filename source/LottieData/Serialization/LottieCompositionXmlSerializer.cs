@@ -215,9 +215,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Tools
             yield return FromTransform(layer.Transform);
             if (layer.Masks != null)
             {
-                foreach (var mask in layer.Masks)
+                for (var i = 0; i < layer.Masks.Length; i++)
                 {
-                    yield return FromMask(mask);
+                    yield return FromMask(layer.Masks[i]);
                 }
             }
         }
@@ -296,9 +296,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Tools
                     yield return item;
                 }
 
-                foreach (var shapeContent in layer.Contents)
+                for (var i = 0; i < layer.Contents.Length; i++)
                 {
-                    yield return FromShapeLayerContent(shapeContent);
+                    yield return FromShapeLayerContent(layer.Contents[i]);
                 }
             }
         }
@@ -379,9 +379,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Tools
                     yield return item;
                 }
 
-                foreach (var item in content.Items)
+                for (var i = 0; i < content.Items.Length; i++)
                 {
-                    yield return FromShapeLayerContent(item);
+                    yield return FromShapeLayerContent(content.Items[i]);
                 }
             }
         }
@@ -515,7 +515,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Tools
             }
             else
             {
-                var keyframesString = string.Join(", ", animatable.KeyFrames.Select(kf => $"{FromKeyFrame(kf)}"));
+                var keyframesString = string.Join(", ", animatable.KeyFrames.SelectToArray(kf => $"{FromKeyFrame(kf)}"));
 
                 return new XElement(name, keyframesString);
             }

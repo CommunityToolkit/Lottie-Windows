@@ -105,7 +105,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Tools
                     }
                 }
 
-                _maskCount += layer.Masks.Count();
+                _maskCount += layer.Masks.Length;
             }
         }
 

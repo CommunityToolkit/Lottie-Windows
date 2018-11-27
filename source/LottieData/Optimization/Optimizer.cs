@@ -41,7 +41,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
 
             // If the geometries have different numbers of segments they can't be animated. However
             // in one specific case we can fix that.
-            var geometries = value.KeyFrames.Select(kf => kf.Value.Items.ToArray()).ToArray();
+            var geometries = value.KeyFrames.SelectToArray(kf => kf.Value.Items.ToArray());
             var distinctSegmentCounts = geometries.Select(g => g.Length).Distinct().Count();
 
             if (distinctSegmentCounts != 2)
@@ -106,13 +106,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
             }
 
             // Create a new Animatable<PathGeometry> which has only one segment in each keyframe.
-            var hacked = optimized.KeyFrames.Select(pg => HackPathGeometry(pg));
+            var hacked = optimized.KeyFrames.SelectToArray(pg => HackPathGeometry(pg));
             return new Animatable<Sequence<BezierSegment>>(hacked.First().Value, hacked, optimized.PropertyIndex);
         }
 
         static KeyFrame<Sequence<BezierSegment>> HackPathGeometry(KeyFrame<Sequence<BezierSegment>> value)
         {
-            return new KeyFrame<Sequence<BezierSegment>>(value.Frame, new Sequence<BezierSegment>(new[] { value.Value.Items.First() }), Vector3.Zero, Vector3.Zero, value.Easing);
+            return new KeyFrame<Sequence<BezierSegment>>(value.Frame, new Sequence<BezierSegment>(new[] { value.Value.Items[0] }), Vector3.Zero, Vector3.Zero, value.Easing);
         }
 
         // True iff b is between and c.
@@ -154,8 +154,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                 }
                 else
                 {
-                    var keyFrames = OptimizeKeyFrames(value.InitialValue, value.KeyFrames).ToArray();
-                    if (comparer.Equals(keyFrames, value.KeyFrames))
+                    var keyFrames = OptimizeKeyFrames(value.InitialValue, value.KeyFrames.ToArray()).ToArray();
+                    if (comparer.Equals(keyFrames, value.KeyFrames.ToArray()))
                     {
                         // Optimization didn't achieve anything.
                         result = value;
@@ -379,7 +379,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                     return false;
                 }
 
-                return x.InitialValue.Equals(y.InitialValue) && Equals(x.KeyFrames, y.KeyFrames);
+                return x.InitialValue.Equals(y.InitialValue) && x.KeyFrames.SequenceEqual(y.KeyFrames);
             }
 
             public int GetHashCode(KeyFrame<T> obj) => obj.GetHashCode();

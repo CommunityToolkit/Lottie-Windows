@@ -819,7 +819,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             }
 
             var propertySet = obj.Properties;
-            if (propertySet.PropertyNames.Any())
+            if (!propertySet.IsEmpty)
             {
                 builder.WriteLine($"{Var} propertySet = {localName}{Deref}Properties;");
                 foreach (var prop in propertySet.ScalarProperties)
@@ -1194,7 +1194,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
         {
             var createCallText = $"_c{Deref}CreateColorBrush({Color(obj.Color)})";
 
-            if (obj.Animators.Any())
+            if (obj.Animators.Count > 0)
             {
                 WriteObjectFactoryStart(builder, node);
                 WriteCreateAssignment(builder, node, createCallText);

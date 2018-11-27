@@ -29,12 +29,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// <summary>
         /// Gets the items in the sequence.
         /// </summary>
-        public IEnumerable<T> Items => _items;
+        public ReadOnlySpan<T> Items => _items;
 
         /// <inheritdoc/>
         public bool Equals(Sequence<T> other) =>
             other != null &&
-            Enumerable.SequenceEqual(_items, other.Items);
+            Enumerable.SequenceEqual(_items, other._items);
 
         /// <inheritdoc/>
         public override bool Equals(object obj)
@@ -62,6 +62,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         }
 
         /// <inheritdoc/>
-        public override string ToString() => $"{ItemTypeName}s: {string.Join(", ", Items)}";
+        public override string ToString() => $"{ItemTypeName}s: {string.Join(", ", _items)}";
     }
 }

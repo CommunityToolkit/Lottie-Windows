@@ -95,8 +95,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
                     from item in items
                     let obj = item.Object
                     where (_ignoreCommentProperties || obj.Comment == null)
-                       && !obj.Properties.PropertyNames.Any()
-                       && !obj.Animators.Any()
+                       && obj.Properties.IsEmpty
+                       && obj.Animators.Count == 0
                     select (item.Node, obj);
             }
 
@@ -259,7 +259,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
                     from item in nodes
                     let obj = item.Object
                     where (_ignoreCommentProperties || obj.Comment == null)
-                       && !obj.Properties.PropertyNames.Any()
+                       && obj.Properties.IsEmpty
                     select (item.Node, obj);
 
                 var grouping =

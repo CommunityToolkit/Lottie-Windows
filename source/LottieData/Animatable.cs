@@ -53,7 +53,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// <summary>
         /// Gets the keyframes that describe how the value should be animated.
         /// </summary>
-        public IEnumerable<KeyFrame<T>> KeyFrames => _keyFrames;
+        public ReadOnlySpan<KeyFrame<T>> KeyFrames => _keyFrames;
 
         /// <summary>
         /// Gets the property index used for expressions.
@@ -77,7 +77,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// <inheritdoc/>
         public override string ToString() =>
             IsAnimated
-                ? string.Join(" -> ", KeyFrames.Select(kf => kf.Value.ToString()))
+                ? string.Join(" -> ", _keyFrames.Select(kf => kf.Value.ToString()))
                 : InitialValue.ToString();
     }
 }
