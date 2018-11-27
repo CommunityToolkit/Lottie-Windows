@@ -57,13 +57,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             None = 0,
 
             /// <summary>
-            /// Do not ignore the alpha channel when reading color values.
+            /// Do not ignore the alpha channel when reading color values from arrays.
             /// </summary>
             /// <description>
             /// Lottie files produced by BodyMovin include an alpha channel value that
             /// is ignored by renderers. By default the <see cref="LottieCompositionReader" />
             /// will set the alpha channel to 1.0. By enabling this option the alpha channel
-            /// will be set to whatever is in the Lottie file.
+            /// will be set to whatever is in the Lottie file. This option does not apply to
+            /// color values read from hex strings.
             /// </description>
             DoNotIgnoreAlpha = 1,
 
@@ -629,7 +630,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     {
                         var solidWidth = ReadInt(obj, "sw").Value;
                         var solidHeight = ReadInt(obj, "sh").Value;
-                        var solidColor = GetSolidColorFromString(obj.GetNamedString("sc"));
+                        var solidColor = ReadColorFromString(obj.GetNamedString("sc"));
                         AssertAllFieldsRead(obj);
                         return new SolidLayer(
                             name,
@@ -851,7 +852,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             }
         }
 
-        static Color GetSolidColorFromString(string hex)
+        static Color ReadColorFromString(string hex)
         {
             var index = 1; // Skip '#'
 
@@ -868,7 +869,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             var g = Convert.ToByte(hex.Substring(index, 2), 16);
             index += 2;
             var b = Convert.ToByte(hex.Substring(index, 2), 16);
-            return Color.FromArgb(a / 255.0, r / 255.0, g / 255.0, b / 255.0);
+
+            return Color.FromArgb(
+                a / 255.0,
+                r / 255.0,
+                g / 255.0,
+                b / 255.0);
         }
 
         ShapeLayerContent ReadShapeContent(JObject obj)
