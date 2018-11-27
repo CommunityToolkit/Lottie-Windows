@@ -262,7 +262,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             if (layer.Masks != null &&
                 layer.Masks.Any())
             {
-                Mask mask = layer.Masks.First();
+                var mask = layer.Masks[0];
 
                 if (mask.Inverted)
                 {
@@ -282,7 +282,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
                 // Translation currently does not support having multiple paths for masks.
                 // If possible users should combine masks when exporting to json.
-                if (layer.Masks.Skip(1).Any())
+                if (layer.Masks.Length > 1)
                 {
                     _unsupported.MultipleShapeMasks();
                 }
@@ -292,7 +292,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     mask.Opacity.InitialValue == 100 &&
                     !mask.Opacity.IsAnimated &&
                     mask.Mode == Mask.MaskMode.Additive &&
-                    layer.Masks.Count() == 1)
+                    layer.Masks.Length == 1)
                 {
                     var geometry = mask.Points;
 
@@ -847,7 +847,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         var bScale = b.InitialValue;
                         return new Animatable<double>(
                             initialValue: a.InitialValue * bScale,
-                            keyFrames: a.KeyFrames.Select(kf => new KeyFrame<double>(
+                            keyFrames: a.KeyFrames.SelectToArray(kf => new KeyFrame<double>(
                                 kf.Frame,
                                 kf.Value * (bScale / 100),
                                 kf.SpatialControlPoint1,
@@ -1050,7 +1050,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         CompositionShape TranslateShapeLayerContents(
             TranslationContext context,
             ShapeContentContext shapeContext,
-            IEnumerable<ShapeLayerContent> contents)
+            ReadOnlySpan<ShapeLayerContent> contents)
         {
             // The Contents of a ShapeLayer is a list of instructions for a stack machine.
 
@@ -1066,7 +1066,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var result = container;
 
             // If the contents contains a repeater, generate repeated contents
-            if (contents.Where(slc => slc.ContentType == ShapeContentType.Repeater).Any())
+            if (contents.Any(slc => slc.ContentType == ShapeContentType.Repeater))
             {
                 // The contents contains a repeater. Treat it as if there are n sets of items (where n
                 // equals the Count of the repeater). In each set, replace the repeater with
@@ -1105,7 +1105,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         // by n transforms.
                         // TODO - currently ignoring the StartOpacityPercent and EndOpacityPercent - should generate a new transform
                         //        that interpolates that.
-                        var generatedItems = itemsBeforeRepeater.Concat(Enumerable.Repeat(repeater.Transform, i + 1)).Concat(itemsAfterRepeater);
+                        var generatedItems = itemsBeforeRepeater.Concat(Enumerable.Repeat(repeater.Transform, i + 1)).Concat(itemsAfterRepeater).ToArray();
 
                         // Recurse to translate the synthesized items.
                         container.Shapes.Add(TranslateShapeLayerContents(context, shapeContext, generatedItems));
@@ -1115,7 +1115,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 }
             }
 
-            var stack = new Stack<ShapeLayerContent>(contents);
+            var stack = new Stack<ShapeLayerContent>(contents.ToArray());
 
             while (true)
             {
@@ -1315,7 +1315,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         {
                             // Convert all the shapes in the group to a list of geometries
                             var group = (ShapeGroup)shapeContent;
-                            var groupedGeometries = CreateCanvasGeometries(context.Clone(), new Stack<ShapeLayerContent>(group.Items), pathFillType).ToArray();
+                            var groupedGeometries = CreateCanvasGeometries(context.Clone(), new Stack<ShapeLayerContent>(group.Items.ToArray()), pathFillType).ToArray();
                             foreach (var geometry in groupedGeometries)
                             {
                                 yield return geometry;
@@ -1369,7 +1369,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             Sn.Matrix3x2 transformMatrix,
             bool optimizeLines)
         {
-            var beziers = figure.Items.ToArray();
+            var beziers = figure.Items;
             using (var builder = new CanvasPathBuilder(null))
             {
                 if (beziers.Length == 0)
@@ -2551,7 +2551,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             compositionAnimation.Duration = _lc.Duration;
 
             // Get only the key frames that exist from at or just before the animation starts, and end at or just after the animation ends.
-            var trimmedKeyFrames = Optimizer.GetOptimized(Optimizer.GetTrimmed(value.KeyFrames, context.StartTime, context.EndTime)).ToArray();
+            var trimmedKeyFrames = Optimizer.GetOptimized(Optimizer.GetTrimmed(value.KeyFrames.ToArray(), context.StartTime, context.EndTime)).ToArray();
 
             if (trimmedKeyFrames.Length == 0)
             {
@@ -2890,7 +2890,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     // Multiply the color animation by the single opacity value.
                     return new Animatable<Color>(
                         initialValue: MultiplyColorByOpacityPercent(color.InitialValue, opacityPercent.InitialValue),
-                        keyFrames: color.KeyFrames.Select(kf =>
+                        keyFrames: color.KeyFrames.SelectToArray(kf =>
                             new KeyFrame<Color>(
                                 kf.Frame,
                                 MultiplyColorByOpacityPercent(kf.Value, opacityPercent.InitialValue),
@@ -2926,7 +2926,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 // Multiply the single color value by the opacity animation.
                 return new Animatable<Color>(
                     initialValue: MultiplyColorByOpacityPercent(color, opacityPercent.InitialValue),
-                    keyFrames: opacityPercent.KeyFrames.Select(kf =>
+                    keyFrames: opacityPercent.KeyFrames.SelectToArray(kf =>
                         new KeyFrame<Color>(
                             kf.Frame,
                             MultiplyColorByOpacityPercent(color, kf.Value),

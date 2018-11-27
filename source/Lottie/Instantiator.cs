@@ -773,13 +773,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             if (obj.Shapes.Count == 1)
             {
                 var child = obj.Shapes[0];
-                if (!obj.Animators.Any())
+                if (obj.Animators.Count == 0)
                 {
                     // The container has no animations. It can be replaced with its child as
                     // long as the child doesn't animate any of the non-default properties and
                     // the container isn't referenced by an animation.
                 }
-                else if (!child.Animators.Any() && child.Type == Wd.CompositionObjectType.CompositionContainerShape)
+                else if (child.Animators.Count == 0 && child.Type == Wd.CompositionObjectType.CompositionContainerShape)
                 {
                     // The child has no animations. It can be replaced with its parent as long
                     // as the parent doesn't animate any of the child's non-default properties

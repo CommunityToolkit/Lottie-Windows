@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -34,7 +33,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 
         internal IEnumerable<string> PropertyNames => _scalarProperties.Keys.Concat(_vector2Properties.Keys);
 
-        internal bool IsEmpty => !PropertyNames.Any();
+        internal bool IsEmpty => _scalarProperties.Count + _vector2Properties.Count == 0;
 
         /// <inheritdoc/>
         public override CompositionObjectType Type => CompositionObjectType.CompositionPropertySet;

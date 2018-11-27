@@ -89,7 +89,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
                 obj.RotationAngleInDegrees.HasValue && obj.RotationAngleInDegrees.Value != 0 &&
                 obj.RotationAxis.HasValue && obj.RotationAxis != Vector3.UnitZ;
 
-            if (!obj.Animators.Any() && !hasNonStandardRotation)
+            if (obj.Animators.Count == 0 && !hasNonStandardRotation)
             {
                 // Get the values of the properties, and the defaults for properties that are not set.
                 var centerPoint = obj.CenterPoint ?? Vector3.Zero;
@@ -136,7 +136,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             // Convert the properties to a transform matrix. This can reduce the
             // number of calls needed to initialize the object, and makes finding
             // and removing redundant containers easier.
-            if (!obj.Animators.Any())
+            if (obj.Animators.Count == 0)
             {
                 // Get the values for the properties, and the defaults for the properties that are not set.
                 var centerPoint = obj.CenterPoint ?? Vector2.Zero;
@@ -211,8 +211,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             var elidableContainers = containerShapes.Where(n =>
             {
                 var container = (CompositionContainerShape)n.Object;
-                if (container.Properties.PropertyNames.Any() ||
-                    container.Animators.Any() ||
+                if (!container.Properties.IsEmpty ||
+                    container.Animators.Count > 0 ||
                     container.CenterPoint != null ||
                     container.Offset != null ||
                     container.RotationAngleInDegrees != null ||
@@ -223,8 +223,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
                 foreach (var child in container.Shapes)
                 {
-                    if (child.Properties.PropertyNames.Any() ||
-                        child.Animators.Any() ||
+                    if (!child.Properties.IsEmpty ||
+                        child.Animators.Count > 0 ||
                         child.CenterPoint != null ||
                         child.Offset != null ||
                         child.RotationAngleInDegrees != null ||
@@ -264,8 +264,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
                     container.RotationAngleInDegrees != null ||
                     container.Scale != null ||
                     container.TransformMatrix != null ||
-                    container.Animators.Any() ||
-                    container.Properties.PropertyNames.Any())
+                    container.Animators.Count > 0 ||
+                    !container.Properties.IsEmpty)
                 {
                     return false;
                 }
@@ -336,8 +336,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
                     container.Scale == null &&
                     container.Size == null &&
                     container.TransformMatrix == null &&
-                    !container.Animators.Any() &&
-                    !container.Properties.PropertyNames.Any();
+                    container.Animators.Count == 0 &&
+                    container.Properties.IsEmpty;
             }).ToArray();
 
             // Pull the children of the container into the parent of the container. Remove the unnecessary containers.

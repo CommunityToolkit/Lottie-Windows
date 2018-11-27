@@ -150,7 +150,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
                     // Color brushes that are not animated get names describing their color.
                     // Optimization ensures there will only be one brush for any one non-animated color.
                     var brush = (CompositionColorBrush)obj;
-                    if (brush.Animators.Any())
+                    if (brush.Animators.Count > 0)
                     {
                         // Brush is animated. Give it a name based on the colors in the animation.
                         var colorAnimation = (ColorKeyFrameAnimation)brush.Animators.Where(a => a.Animation is ColorKeyFrameAnimation).First().Animation;

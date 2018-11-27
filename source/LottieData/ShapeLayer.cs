@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -12,7 +13,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 #endif
     sealed class ShapeLayer : Layer
     {
-        readonly IEnumerable<ShapeLayerContent> _shapes;
+        readonly ShapeLayerContent[] _shapes;
 
         public ShapeLayer(
             string name,
@@ -44,10 +45,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
              autoOrient,
              masks)
         {
-            _shapes = shapes;
+            _shapes = shapes.ToArray();
         }
 
-        public IEnumerable<ShapeLayerContent> Contents => _shapes.AsEnumerable();
+        public ReadOnlySpan<ShapeLayerContent> Contents => _shapes;
 
         /// <inheritdoc/>
         public override LayerType Type => LayerType.Shape;

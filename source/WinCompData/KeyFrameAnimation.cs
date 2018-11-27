@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 {
@@ -13,7 +12,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 #endif
     abstract class KeyFrameAnimation<T> : KeyFrameAnimation_
     {
-        readonly Dictionary<float, KeyFrame> _keyFrames = new Dictionary<float, KeyFrame>();
+        readonly SortedList<float, KeyFrame> _keyFrames = new SortedList<float, KeyFrame>();
 
         protected private KeyFrameAnimation(KeyFrameAnimation<T> other)
             : base(other)
@@ -44,7 +43,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
             _keyFrames.Add(progress, new ValueKeyFrame { Progress = progress, Value = value, Easing = easing });
         }
 
-        public IEnumerable<KeyFrame> KeyFrames => _keyFrames.Values.OrderBy(kf => kf.Progress);
+        public IEnumerable<KeyFrame> KeyFrames => _keyFrames.Values;
 
         /// <inheritdoc/>
         public override int KeyFrameCount => _keyFrames.Count;

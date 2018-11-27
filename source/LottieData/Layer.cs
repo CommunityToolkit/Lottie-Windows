@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -19,7 +20,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 #endif
     abstract class Layer : LottieObject
     {
-        static Mask[] _emptyMasks = new Mask[0];
+        static readonly Mask[] _emptyMasks = new Mask[0];
         readonly Mask[] _masks;
 
         protected private Layer(
@@ -96,7 +97,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// <summary>
         /// Gets the list of masks appplied to the layer.
         /// </summary>
-        public IEnumerable<Mask> Masks => _masks == null ? _emptyMasks : _masks;
+        public ReadOnlySpan<Mask> Masks => _masks;
 
         public enum LayerType
         {
