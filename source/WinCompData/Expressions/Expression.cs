@@ -6,7 +6,7 @@ using Sn = System.Numerics;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
 {
-#if PUBLIC_WinCompData
+#if !WINDOWS_UWP
     public
 #endif
     abstract class Expression

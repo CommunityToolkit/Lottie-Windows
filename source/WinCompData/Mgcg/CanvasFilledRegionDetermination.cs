@@ -4,7 +4,7 @@
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg
 {
-#if PUBLIC_WinCompData
+#if !WINDOWS_UWP
     public
 #endif
     enum CanvasFilledRegionDetermination

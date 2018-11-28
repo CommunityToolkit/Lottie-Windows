@@ -7,7 +7,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
     /// <summary>
     /// A literal boolean, i.e. "true" or "false".
     /// </summary>
-#if PUBLIC_WinCompData
+#if !WINDOWS_UWP
     public
 #endif
     sealed class Boolean : Expression

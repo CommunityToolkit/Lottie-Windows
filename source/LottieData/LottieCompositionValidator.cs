@@ -11,7 +11,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
     /// <summary>
     /// Validates a <see cref="LottieComposition"/> against various rules.
     /// </summary>
-#if PUBLIC_LottieData
+#if !WINDOWS_UWP
     public
 #endif
     sealed class LottieCompositionValidator

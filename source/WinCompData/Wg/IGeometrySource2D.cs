@@ -4,7 +4,7 @@
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wg
 {
-#if PUBLIC_WinCompData
+#if !WINDOWS_UWP
     public
 #endif
     interface IGeometrySource2D

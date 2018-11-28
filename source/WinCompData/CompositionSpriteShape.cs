@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 {
-#if PUBLIC_WinCompData
+#if !WINDOWS_UWP
     public
 #endif
     sealed class CompositionSpriteShape : CompositionShape

@@ -7,7 +7,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
     /// <summary>
     /// A name in an <see cref="Expression"/>.
     /// </summary>
-#if PUBLIC_WinCompData
+#if !WINDOWS_UWP
     public
 #endif
     sealed class Name : Expression

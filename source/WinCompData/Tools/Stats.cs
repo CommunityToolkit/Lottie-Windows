@@ -11,7 +11,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
     /// Calculates stats for a WinCompData tree. Used to report the size of data
     /// and the effectiveness of optimization.
     /// </summary>
-#if PUBLIC_WinCompData
+#if !WINDOWS_UWP
     public
 #endif
     sealed class Stats

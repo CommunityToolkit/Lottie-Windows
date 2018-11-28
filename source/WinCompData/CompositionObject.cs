@@ -9,7 +9,7 @@ using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 {
-#if PUBLIC_WinCompData
+#if !WINDOWS_UWP
     public
 #endif
     abstract class CompositionObject : IDisposable, IDescribable

@@ -10,7 +10,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
     /// <summary>
     /// A cubic bezier function with type Vector2.
     /// </summary>
-#if PUBLIC_WinCompData
+#if !WINDOWS_UWP
     public
 #endif
     sealed class CubicBezierFunction2 : Expression

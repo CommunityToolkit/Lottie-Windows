@@ -7,7 +7,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
     /// <summary>
     /// Mask class representing the Lottie mask properties.
     /// </summary>
-#if PUBLIC_LottieData
+#if !WINDOWS_UWP
     public
 #endif
     sealed class Mask

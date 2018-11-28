@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 {
-#if PUBLIC_WinCompData
+#if !WINDOWS_UWP
     public
 #endif
     enum CompositionStrokeLineJoin

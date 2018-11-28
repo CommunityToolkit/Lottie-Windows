@@ -6,7 +6,7 @@ using System;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 {
-#if PUBLIC_LottieData
+#if !WINDOWS_UWP
     public
 #endif
     sealed class LinearEasing : Easing, IEquatable<LinearEasing>

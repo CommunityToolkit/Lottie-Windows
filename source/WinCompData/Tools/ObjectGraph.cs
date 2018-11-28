@@ -13,7 +13,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
     /// The graph of creatable objects reachable from a <see cref="CompositionObject"/>.
     /// </summary>
     /// <typeparam name="T">The type of the data associated with each node.</typeparam>
-#if PUBLIC_WinCompData
+#if !WINDOWS_UWP
     public
 #endif
     sealed class ObjectGraph<T> : Graph

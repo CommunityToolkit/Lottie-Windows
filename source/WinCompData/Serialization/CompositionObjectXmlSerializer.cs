@@ -16,7 +16,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
     /// </summary>
     /// <remarks>The format is only designed for human consumption, and should
     /// not be relied upon for deserialization.</remarks>
-#if PUBLIC_WinCompData
+#if !WINDOWS_UWP
     public
 #endif
     sealed class CompositionObjectXmlSerializer

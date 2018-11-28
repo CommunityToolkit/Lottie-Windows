@@ -12,7 +12,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
     /// Creates and caches optimized versions of Lottie data. The optimized data is functionally
     /// equivalent to unoptimized data, but may be represented more efficiently.
     /// </summary>
-#if PUBLIC_LottieData
+#if !WINDOWS_UWP
     public
 #endif
     sealed class Optimizer

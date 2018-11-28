@@ -16,7 +16,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
     /// Transforms a WinCompData tree to an equivalent tree, optimizing the tree
     /// where possible.
     /// </summary>
-#if PUBLIC_WinCompData
+#if !WINDOWS_UWP
     public
 #endif
     sealed class Optimizer

@@ -13,7 +13,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
     /// A value that may be animated.
     /// </summary>
     /// <typeparam name="T">The type of the value.</typeparam>
-#if PUBLIC_LottieData
+#if !WINDOWS_UWP
     public
 #endif
     class Animatable<T> : IAnimatableValue<T>
