@@ -7,7 +7,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
     /// <summary>
     /// Types of <see cref="ShapeLayerContent"/> objects.
     /// </summary>
-#if PUBLIC_LottieData
+#if !WINDOWS_UWP
     public
 #endif
     enum ShapeContentType

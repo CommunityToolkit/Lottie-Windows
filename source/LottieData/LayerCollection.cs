@@ -10,7 +10,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
     /// <summary>
     /// A collection of <see cref="Layer"/>s in drawing order.
     /// </summary>
-#if PUBLIC_LottieData
+#if !WINDOWS_UWP
     public
 #endif
     sealed class LayerCollection

@@ -7,7 +7,7 @@ using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 {
-#if PUBLIC_WinCompData
+#if !WINDOWS_UWP
     public
 #endif
     sealed class CxInstantiatorGenerator : InstantiatorGeneratorBase

@@ -10,7 +10,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
     /// Extension methods for <see cref="ReadOnlySpan{T}"/> to make it easier to treat them
     /// like IEnumerables.
     /// </summary>
-#if PUBLIC_LottieData
+#if !WINDOWS_UWP
     public
 #endif
     static class ExtensionMethods

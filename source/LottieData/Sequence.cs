@@ -12,7 +12,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
     /// A sequence of items.
     /// </summary>
     /// <typeparam name="T">The type of each item in the sequence.</typeparam>
-#if PUBLIC_LottieData
+#if !WINDOWS_UWP
     public
 #endif
     sealed class Sequence<T> : IEquatable<Sequence<T>>

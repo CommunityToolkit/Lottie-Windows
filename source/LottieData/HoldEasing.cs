@@ -10,7 +10,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
     /// An easing that holds the current value until the key frame time, then
     /// jumps to the key frame value.
     /// </summary>
-#if PUBLIC_LottieData
+#if !WINDOWS_UWP
     public
 #endif
     sealed class HoldEasing : Easing, IEquatable<HoldEasing>

@@ -15,7 +15,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
     /// Each <see cref="Layer"/>, apart from the root <see cref="PreCompLayer"/> belongs to a <see cref="PreCompLayer"/> and has
     /// an index that determines its rendering order, and is also used to identify it as the owner of a set of transforms that
     /// can be inherited by other <see cref="Layer"/>s.</remarks>
-#if PUBLIC_LottieData
+#if !WINDOWS_UWP
     public
 #endif
     abstract class Layer : LottieObject
