@@ -8,9 +8,6 @@ using System.Collections.Generic;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
 {
-#if PUBLIC_WinCompData
-    public
-#endif
     sealed class ListOfNeverNull<T> : IList<T>, IReadOnlyList<T>
     {
         readonly List<T> _wrapped = new List<T>();
@@ -40,14 +37,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
         public void Add(T item)
         {
             _wrapped.Add(AssertNotNull(item));
-        }
-
-        public void AddRange(IEnumerable<T> items)
-        {
-            foreach (var item in items)
-            {
-                Add(item);
-            }
         }
 
         /// <inheritdoc/>

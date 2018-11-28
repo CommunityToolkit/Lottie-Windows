@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Generic;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
@@ -13,10 +14,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
     {
         internal ContainerVisual()
         {
-            Children = new ListOfNeverNull<Visual>();
         }
 
-        public ListOfNeverNull<Visual> Children { get; }
+        public IList<Visual> Children { get; } = new ListOfNeverNull<Visual>();
 
         /// <inheritdoc/>
         public override CompositionObjectType Type => CompositionObjectType.ContainerVisual;

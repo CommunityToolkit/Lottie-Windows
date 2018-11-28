@@ -28,7 +28,8 @@ var baseDir = MakeAbsolute(Directory("../")).ToString();
 var buildDir = $"{baseDir}/build";
 var toolsDir = $"{buildDir}/tools";
 
-var defaultConfigurations = new[] {"Lottie-Windows", "LottieGen"};
+var allConfigurations = new[] {"Lottie-Windows", "LottieGen", "dlls"};
+var configurationsProducingNugets = new[] {"Lottie-Windows", "LottieGen"};
 
 var binDir = $"{baseDir}/bin";
 var nupkgDir =$"{binDir}/nupkg";
@@ -165,7 +166,7 @@ Task("Clean")
     }
 
     // Run the clean target on the solution.
-    MSBuildSolution("Clean", defaultConfigurations);
+    MSBuildSolution("Clean", allConfigurations);
 });
 
 Task("Verify")
@@ -208,12 +209,12 @@ Task("Build")
     Information("\r\nBuilding Solution");
 
     // Restore NuGet packages.
-    MSBuildSolution("Restore", defaultConfigurations);
+    MSBuildSolution("Restore", allConfigurations);
     
     EnsureDirectoryExists(nupkgDir);
 
-    // Build once with normal dependency ordering
-    MSBuildSolution("Build", defaultConfigurations, ("GenerateLibraryLayout", "true"));
+    // Build.
+    MSBuildSolution("Build", allConfigurations, ("GenerateLibraryLayout", "true"));
 });
 
 Task("InheritDoc")
@@ -251,7 +252,7 @@ Task("Package")
     .Does(() =>
 {
     // Invoke the pack target to generate the code to be packed.
-    MSBuildSolution("Pack", defaultConfigurations, ("GenerateLibraryLayout", "true"), ("PackageOutputPath", nupkgDir));
+    MSBuildSolution("Pack", configurationsProducingNugets, ("GenerateLibraryLayout", "true"), ("PackageOutputPath", nupkgDir));
     
     foreach (var nuspec in GetFiles("./*.nuspec"))
     {

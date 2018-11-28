@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Generic;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
@@ -13,11 +14,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
     {
         internal ShapeVisual()
         {
-            Shapes = new ListOfNeverNull<CompositionShape>();
         }
 
         /// <inheritdoc/>
-        public ListOfNeverNull<CompositionShape> Shapes { get; }
+        public IList<CompositionShape> Shapes { get; } = new ListOfNeverNull<CompositionShape>();
 
         public CompositionViewBox ViewBox { get; set; }
 

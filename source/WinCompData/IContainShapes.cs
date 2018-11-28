@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools;
+using System.Collections.Generic;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 {
@@ -14,6 +14,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
         /// <summary>
         /// The <see cref="CompositionShape"/>s that are contained by this object.
         /// </summary>
-        ListOfNeverNull<CompositionShape> Shapes { get; }
+        IList<CompositionShape> Shapes { get; }
     }
 }
