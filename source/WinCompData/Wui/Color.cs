@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui
 {
-#if !WINDOWS_UWP
+#if PUBLIC_WinCompData
     public
 #endif
     readonly struct Color : IEquatable<Color>

@@ -9,7 +9,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
     /// <summary>
     /// Analyzes a tree to determine the features of the runtime required to instantiate it.
     /// </summary>
-#if !WINDOWS_UWP
+#if PUBLIC_WinCompData
     public
 #endif
     sealed class ApiCompatibility

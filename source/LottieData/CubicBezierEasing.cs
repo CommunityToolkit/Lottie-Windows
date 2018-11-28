@@ -6,7 +6,7 @@ using System;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 {
-#if !WINDOWS_UWP
+#if PUBLIC_LottieData
     public
 #endif
     sealed class CubicBezierEasing : Easing, IEquatable<CubicBezierEasing>

@@ -4,7 +4,7 @@
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 {
-#if !WINDOWS_UWP
+#if PUBLIC_LottieData
     public
 #endif
     interface IAnimatableVector3 : IAnimatableValue<Vector3>
@@ -12,7 +12,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         AnimatableVector3Type Type { get; }
     }
 
-#if !WINDOWS_UWP
+#if PUBLIC_LottieData
     public
 #endif
     enum AnimatableVector3Type

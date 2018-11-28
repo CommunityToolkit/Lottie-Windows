@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
 {
-#if !WINDOWS_UWP
+#if PUBLIC_WinCompData
     public
 #endif
     sealed class ListOfNeverNull<T> : IList<T>, IReadOnlyList<T>

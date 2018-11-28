@@ -10,7 +10,7 @@ using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wg;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg
 {
-#if !WINDOWS_UWP
+#if PUBLIC_WinCompData
     public
 #endif
     abstract class CanvasGeometry : IGeometrySource2D, IDescribable

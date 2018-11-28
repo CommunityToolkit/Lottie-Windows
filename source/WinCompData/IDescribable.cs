@@ -8,7 +8,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
     /// Interface implemented by objects to expose a description in plain language.
     /// The descriptions are typically used by comments in generated code.
     /// </summary>
-#if !WINDOWS_UWP
+#if PUBLIC_WinCompData
     public
 #endif
     interface IDescribable

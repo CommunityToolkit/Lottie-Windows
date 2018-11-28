@@ -7,7 +7,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
     /// <summary>
     /// A reference to an image.
     /// </summary>
-#if !WINDOWS_UWP
+#if PUBLIC_LottieData
     public
 #endif
     sealed class ImageAsset : Asset

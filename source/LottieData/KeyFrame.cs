@@ -11,7 +11,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
     /// interpolate from the previous value.
     /// </summary>
     /// <typeparam name="T">The type of the key frame's value.</typeparam>
-#if !WINDOWS_UWP
+#if PUBLIC_LottieData
     public
 #endif
     sealed class KeyFrame<T> : IEquatable<KeyFrame<T>>

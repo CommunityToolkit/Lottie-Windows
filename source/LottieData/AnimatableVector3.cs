@@ -10,7 +10,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
     /// <summary>
     /// An animatable Vector3 value expressed as a single animatable Vector3 value.
     /// </summary>
-#if !WINDOWS_UWP
+#if PUBLIC_LottieData
     public
 #endif
     sealed class AnimatableVector3 : Animatable<Vector3>, IAnimatableVector3

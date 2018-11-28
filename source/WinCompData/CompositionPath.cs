@@ -7,7 +7,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
     /// <summary>
     /// Data representation of Windows.UI.Composition.CompositionPath.
     /// </summary>
-#if !WINDOWS_UWP
+#if PUBLIC_WinCompData
     public
 #endif
     sealed class CompositionPath : IDescribable

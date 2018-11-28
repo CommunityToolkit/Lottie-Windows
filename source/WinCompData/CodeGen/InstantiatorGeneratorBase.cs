@@ -13,7 +13,7 @@ using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 {
-#if !WINDOWS_UWP
+#if PUBLIC_WinCompData
     public
 #endif
     abstract class InstantiatorGeneratorBase
