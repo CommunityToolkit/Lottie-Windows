@@ -207,7 +207,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             // Shape roots to a list of Visual roots by wrapping the Shape trees in ShapeVisuals.
             var translatedAsVisuals = VisualsAndShapesToVisuals(context, translatedLayers.Select(a => a.translatedLayer));
 
-            container.Children.AddRange(translatedAsVisuals);
+            var containerChildren = container.Children;
+            foreach (var translatedVisual in translatedAsVisuals)
+            {
+                containerChildren.Add(translatedVisual);
+            }
         }
 
         // Takes a list of Visuals and Shapes and returns a list of Visuals.
