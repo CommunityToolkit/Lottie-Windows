@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 {
-#if !WINDOWS_UWP
+#if PUBLIC_LottieData
     public
 #endif
     sealed class SolidLayer : Layer

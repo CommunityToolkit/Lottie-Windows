@@ -9,7 +9,7 @@ using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
 {
-#if !WINDOWS_UWP
+#if PUBLIC_WinCompData
     public
 #endif
     abstract class Graph
