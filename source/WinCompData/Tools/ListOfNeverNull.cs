@@ -8,6 +8,9 @@ using System.Collections.Generic;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
 {
+#if !WINDOWS_UWP
+    public
+#endif
     sealed class ListOfNeverNull<T> : IList<T>, IReadOnlyList<T>
     {
         readonly List<T> _wrapped = new List<T>();

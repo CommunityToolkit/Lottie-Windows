@@ -11,6 +11,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 #endif
     interface IContainShapes
     {
+        /// <summary>
+        /// The <see cref="CompositionShape"/>s that are contained by this object.
+        /// </summary>
         ListOfNeverNull<CompositionShape> Shapes { get; }
     }
 }
