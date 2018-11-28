@@ -6,7 +6,7 @@ using System;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
 {
-#if !WINDOWS_UWP
+#if PUBLIC_WinCompData
     public
 #endif
     sealed class Min : BinaryExpression

@@ -6,7 +6,7 @@ using static Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.SolidColorStroke;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 {
-#if !WINDOWS_UWP
+#if PUBLIC_LottieData
     public
 #endif
     sealed class RadialGradientStroke : ShapeLayerContent

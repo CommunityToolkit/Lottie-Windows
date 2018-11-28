@@ -10,7 +10,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Tools
     /// <summary>
     /// Calculates stats for a <see cref="LottieComposition"/>.
     /// </summary>
-#if !WINDOWS_UWP
+#if PUBLIC_LottieData
     public
 #endif
     sealed class Stats

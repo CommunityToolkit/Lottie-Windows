@@ -4,6 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <Configurations>Debug</Configurations>
     <LangVersion>latest</LangVersion>
+    <DefineConstants>PUBLIC_LottieReader</DefineConstants>
   </PropertyGroup>
 
   <Import Project="..\..\source\LottieReader\LottieReader.projitems" Label="Shared" />

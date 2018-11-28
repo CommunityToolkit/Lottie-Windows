@@ -10,7 +10,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
     /// Types to which an expression or variable is constrained.
     /// </summary>
     [Flags]
-#if !WINDOWS_UWP
+#if PUBLIC_WinCompData
     public
 #endif
     enum TypeConstraint

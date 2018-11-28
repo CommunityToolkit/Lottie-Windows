@@ -4,6 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <Configurations>Debug</Configurations>
     <LangVersion>latest</LangVersion>
+    <DefineConstants>PUBLIC_LottieToWinComp</DefineConstants>
   </PropertyGroup>
 
   <Import Project="..\..\source\LottieToWinComp\LottieToWinComp.projitems" Label="Shared" />

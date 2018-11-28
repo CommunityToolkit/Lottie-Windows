@@ -9,7 +9,7 @@ using System.Xml.Linq;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Tools
 {
-#if !WINDOWS_UWP
+#if PUBLIC_LottieData
     public
 #endif
     sealed class LottieCompositionXmlSerializer
