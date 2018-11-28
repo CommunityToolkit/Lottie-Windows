@@ -4,7 +4,7 @@
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
 {
-#if !WINDOWS_UWP
+#if PUBLIC_WinCompData
     public
 #endif
     abstract class BinaryExpression : Expression

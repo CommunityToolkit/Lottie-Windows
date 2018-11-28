@@ -4,7 +4,7 @@
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 {
-#if !WINDOWS_UWP
+#if PUBLIC_WinCompData
     public
 #endif
     sealed class CompositionPathGeometry : CompositionGeometry

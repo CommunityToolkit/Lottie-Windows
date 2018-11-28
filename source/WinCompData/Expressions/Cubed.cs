@@ -7,7 +7,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
     /// <summary>
     /// Raises a value to the power of 3.
     /// </summary>
-#if !WINDOWS_UWP
+#if PUBLIC_WinCompData
     public
 #endif
     sealed class Cubed : Expression

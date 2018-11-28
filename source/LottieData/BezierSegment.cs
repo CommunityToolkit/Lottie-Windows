@@ -10,7 +10,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
     /// <summary>
     /// A segment defined as a cubic bezier curve from <see cref="ControlPoint0"/> to <see cref="ControlPoint3"/>.
     /// </summary>
-#if !WINDOWS_UWP
+#if PUBLIC_LottieData
     public
 #endif
     sealed class BezierSegment : IEquatable<BezierSegment>

@@ -6,7 +6,7 @@ using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 {
-#if !WINDOWS_UWP
+#if PUBLIC_WinCompData
     public
 #endif
     interface IContainShapes

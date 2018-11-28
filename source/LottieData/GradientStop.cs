@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 {
-#if !WINDOWS_UWP
+#if PUBLIC_LottieData
     public
 #endif
     readonly struct GradientStop
