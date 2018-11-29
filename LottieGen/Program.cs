@@ -548,11 +548,11 @@ sealed class Program
         // Create the error table.
         sb.Clear();
         sb.AppendLine("Key,ErrorCode,Description");
-        foreach ((var Code, var Description) in issues)
+        foreach ((var code, var description) in issues)
         {
             sb.Append($"\"{key}\"");
-            AppendColumnValue(Code);
-            AppendColumnValue(Description);
+            AppendColumnValue(code);
+            AppendColumnValue(description);
             sb.AppendLine();
         }
 

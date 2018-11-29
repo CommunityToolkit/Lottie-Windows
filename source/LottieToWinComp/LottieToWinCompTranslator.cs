@@ -2143,20 +2143,51 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         void TranslateAndApplyAnchorAndPositionToContainerVisual(TranslationContext context, IAnimatableVector3 anchor, IAnimatableVector3 position, ContainerVisual container)
         {
-            var initialAnchor = Vector2(anchor.InitialValue);
-            var initialPosition = Vector2(position.InitialValue);
+            ReadOnlySpan<KeyFrame<double>> anchorXKeyFrames = null;
+            ReadOnlySpan<KeyFrame<double>> anchorYKeyFrames = null;
+            ReadOnlySpan<KeyFrame<Vector3>> anchor3KeyFrames = null;
 
-            var positionIsAnimated = position.IsAnimated;
+            var xyzAnchor = anchor as AnimatableXYZ;
+            if (xyzAnchor != null)
+            {
+                anchorXKeyFrames = context.TrimKeyFrames(xyzAnchor.X);
+                anchorYKeyFrames = context.TrimKeyFrames(xyzAnchor.Y);
+            }
+            else
+            {
+                anchor3KeyFrames = context.TrimKeyFrames((AnimatableVector3)anchor);
+            }
+
+            ReadOnlySpan<KeyFrame<double>> positionXKeyFrames = null;
+            ReadOnlySpan<KeyFrame<double>> positionYKeyFrames = null;
+            ReadOnlySpan<KeyFrame<Vector3>> position3KeyFrames = null;
+
+            var xyzPosition = position as AnimatableXYZ;
+            if (xyzPosition != null)
+            {
+                positionXKeyFrames = context.TrimKeyFrames(xyzPosition.X);
+                positionYKeyFrames = context.TrimKeyFrames(xyzPosition.Y);
+            }
+            else
+            {
+                position3KeyFrames = context.TrimKeyFrames((AnimatableVector3)position);
+            }
+
+            var anchorIsAnimated = xyzAnchor != null ? anchorXKeyFrames.Length > 0 || anchorYKeyFrames.Length > 0 : anchor3KeyFrames.Length > 0;
+            var positionIsAnimated = xyzPosition != null ? positionXKeyFrames.Length > 0 || positionYKeyFrames.Length > 0 : position3KeyFrames.Length > 0;
+
+            var initialAnchor = xyzAnchor != null ? Vector2(anchorXKeyFrames[0].Value, anchorYKeyFrames[0].Value) : Vector2(anchor3KeyFrames[0].Value);
+            var initialPosition = xyzPosition != null ? Vector2(positionXKeyFrames[0].Value, positionYKeyFrames[0].Value) : Vector2(position3KeyFrames[0].Value);
 
             // The Lottie Anchor is the centerpoint of the object and is used for rotation and scaling.
-            if (anchor.IsAnimated)
+            if (anchorIsAnimated)
             {
                 container.Properties.InsertVector2("Anchor", initialAnchor);
                 var centerPointExpression = CreateExpressionAnimation(MyAnchor3);
                 centerPointExpression.SetReferenceParameter("my", container);
                 StartExpressionAnimation(container, nameof(container.CenterPoint), centerPointExpression);
 
-                if (anchor is AnimatableXYZ xyzAnchor)
+                if (xyzAnchor != null)
                 {
                     ApplyScalarKeyFrameAnimation(context, xyzAnchor.X, container, targetPropertyName: "Anchor.X");
                     ApplyScalarKeyFrameAnimation(context, xyzAnchor.Y, container, targetPropertyName: "Anchor.Y");
@@ -2173,12 +2204,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             // If the position or anchor are animated, the offset needs to be calculated via an expression.
             ExpressionAnimation offsetExpression = null;
-            if (position.IsAnimated && anchor.IsAnimated)
+            if (positionIsAnimated && anchorIsAnimated)
             {
                 // Both position and anchor are animated.
                 offsetExpression = CreateExpressionAnimation(PositionMinusAnchor3);
             }
-            else if (position.IsAnimated)
+            else if (positionIsAnimated)
             {
                 // Only position is animated.
                 if (initialAnchor == Sn.Vector2.Zero)
@@ -2187,7 +2218,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     // We don't need to animate a Position property - we can animate Offset directly.
                     positionIsAnimated = false;
 
-                    if (position is AnimatableXYZ xyzPosition)
+                    if (xyzPosition != null)
                     {
                         ApplyScalarKeyFrameAnimation(context, xyzPosition.X, container, targetPropertyName: "Offset.X");
                         ApplyScalarKeyFrameAnimation(context, xyzPosition.Y, container, targetPropertyName: "Offset.Y");
@@ -2210,7 +2241,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                                             Expr.Subtract(Expr.Scalar("my.Position.Y"), Expr.Scalar(initialAnchor.Y))));
                 }
             }
-            else if (anchor.IsAnimated)
+            else if (anchorIsAnimated)
             {
                 // Only anchor is animated.
                 offsetExpression = CreateExpressionAnimation(Expr.Vector3(
@@ -2228,7 +2259,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             {
                 container.Properties.InsertVector2("Position", initialPosition);
 
-                if (position is AnimatableXYZ xyzPosition)
+                if (xyzPosition != null)
                 {
                     ApplyScalarKeyFrameAnimation(context, xyzPosition.X, container, targetPropertyName: "Position.X");
                     ApplyScalarKeyFrameAnimation(context, xyzPosition.Y, container, targetPropertyName: "Position.Y");
@@ -2248,20 +2279,51 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         void TranslateAndApplyAnchorAndPositionToContainerShape(TranslationContext context, IAnimatableVector3 anchor, IAnimatableVector3 position, CompositionContainerShape container)
         {
-            var initialAnchor = Vector2(anchor.InitialValue);
-            var initialPosition = Vector2(position.InitialValue);
+            ReadOnlySpan<KeyFrame<double>> anchorXKeyFrames = null;
+            ReadOnlySpan<KeyFrame<double>> anchorYKeyFrames = null;
+            ReadOnlySpan<KeyFrame<Vector3>> anchor3KeyFrames = null;
 
-            var positionIsAnimated = position.IsAnimated;
+            var xyzAnchor = anchor as AnimatableXYZ;
+            if (xyzAnchor != null)
+            {
+                anchorXKeyFrames = context.TrimKeyFrames(xyzAnchor.X);
+                anchorYKeyFrames = context.TrimKeyFrames(xyzAnchor.Y);
+            }
+            else
+            {
+                anchor3KeyFrames = context.TrimKeyFrames((AnimatableVector3)anchor);
+            }
+
+            ReadOnlySpan<KeyFrame<double>> positionXKeyFrames = null;
+            ReadOnlySpan<KeyFrame<double>> positionYKeyFrames = null;
+            ReadOnlySpan<KeyFrame<Vector3>> position3KeyFrames = null;
+
+            var xyzPosition = position as AnimatableXYZ;
+            if (xyzPosition != null)
+            {
+                positionXKeyFrames = context.TrimKeyFrames(xyzPosition.X);
+                positionYKeyFrames = context.TrimKeyFrames(xyzPosition.Y);
+            }
+            else
+            {
+                position3KeyFrames = context.TrimKeyFrames((AnimatableVector3)position);
+            }
+
+            var anchorIsAnimated = xyzAnchor != null ? anchorXKeyFrames.Length > 0 || anchorYKeyFrames.Length > 0 : anchor3KeyFrames.Length > 0;
+            var positionIsAnimated = xyzPosition != null ? positionXKeyFrames.Length > 0 || positionYKeyFrames.Length > 0 : position3KeyFrames.Length > 0;
+
+            var initialAnchor = xyzAnchor != null ? Vector2(anchorXKeyFrames[0].Value, anchorYKeyFrames[0].Value) : Vector2(anchor3KeyFrames[0].Value);
+            var initialPosition = xyzPosition != null ? Vector2(positionXKeyFrames[0].Value, positionYKeyFrames[0].Value) : Vector2(position3KeyFrames[0].Value);
 
             // The Lottie Anchor is the centerpoint of the object and is used for rotation and scaling.
-            if (anchor.IsAnimated)
+            if (anchorIsAnimated)
             {
                 container.Properties.InsertVector2("Anchor", initialAnchor);
                 var centerPointExpression = CreateExpressionAnimation(MyAnchor2);
                 centerPointExpression.SetReferenceParameter("my", container);
                 StartExpressionAnimation(container, nameof(container.CenterPoint), centerPointExpression);
 
-                if (anchor is AnimatableXYZ xyzAnchor)
+                if (xyzAnchor != null)
                 {
                     ApplyScalarKeyFrameAnimation(context, xyzAnchor.X, container, "Anchor.X");
                     ApplyScalarKeyFrameAnimation(context, xyzAnchor.Y, container, "Anchor.Y");
@@ -2278,12 +2340,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             // If the position or anchor are animated, the offset needs to be calculated via an expression.
             ExpressionAnimation offsetExpression = null;
-            if (position.IsAnimated && anchor.IsAnimated)
+            if (positionIsAnimated && anchorIsAnimated)
             {
                 // Position and Anchor are both animated.
                 offsetExpression = CreateExpressionAnimation(PositionMinusAnchor2);
             }
-            else if (position.IsAnimated)
+            else if (positionIsAnimated)
             {
                 // Only position is animated.
                 if (initialAnchor == Sn.Vector2.Zero)
@@ -2292,7 +2354,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     // We don't need to animate a Position property - we can animate Offset directly.
                     positionIsAnimated = false;
 
-                    if (position is AnimatableXYZ xyzPosition)
+                    if (xyzPosition != null)
                     {
                         ApplyScalarKeyFrameAnimation(context, xyzPosition.X, container, targetPropertyName: "Offset.X");
                         ApplyScalarKeyFrameAnimation(context, xyzPosition.Y, container, targetPropertyName: "Offset.Y");
@@ -2307,7 +2369,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     offsetExpression = CreateExpressionAnimation(Expr.Subtract(MyPosition2, Expr.Vector2(initialAnchor)));
                 }
             }
-            else if (anchor.IsAnimated)
+            else if (anchorIsAnimated)
             {
                 // Only Anchor is animated.
                 offsetExpression = CreateExpressionAnimation(Expr.Subtract(Expr.Vector2(initialPosition), MyAnchor2));
@@ -2322,7 +2384,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             if (positionIsAnimated)
             {
                 container.Properties.InsertVector2("Position", initialPosition);
-                if (position is AnimatableXYZ xyzPosition)
+                if (xyzPosition != null)
                 {
                     ApplyScalarKeyFrameAnimation(context, xyzPosition.X, container, targetPropertyName: "Position.X");
                     ApplyScalarKeyFrameAnimation(context, xyzPosition.Y, container, targetPropertyName: "Position.Y");
@@ -2375,7 +2437,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             controller.StartAnimation("Progress", bindingAnimation);
         }
 
-        void ApplyScalarKeyFrameAnimation(
+        (bool, double) ApplyScalarKeyFrameAnimation(
             TranslationContext context,
             Animatable<double> value,
             CompositionObject targetObject,
@@ -2384,7 +2446,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             string shortDescription = null)
             => ApplyScaledScalarKeyFrameAnimation(context, value, 1, targetObject, targetPropertyName, longDescription, shortDescription);
 
-        void ApplyScaledScalarKeyFrameAnimation(
+        (bool, double) ApplyScaledScalarKeyFrameAnimation(
             TranslationContext context,
             Animatable<double> value,
             double scale,
@@ -2396,7 +2458,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             value = _lottieDataOptimizer.GetOptimized(value);
             if (value.IsAnimated)
             {
-                GenericCreateCompositionKeyFrameAnimation(
+                return GenericCreateCompositionKeyFrameAnimation(
                     context,
                     value,
                     CreateScalarKeyFrameAnimation,
@@ -2407,9 +2469,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     longDescription,
                     shortDescription);
             }
+            else
+            {
+                return (false, value.InitialValue);
+            }
         }
 
-        void ApplyColorKeyFrameAnimation(
+        (bool, Color) ApplyColorKeyFrameAnimation(
             TranslationContext context,
             Animatable<LottieData.Color> value,
             CompositionObject targetObject,
@@ -2420,7 +2486,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             value = _lottieDataOptimizer.GetOptimized(value);
             if (value.IsAnimated)
             {
-                GenericCreateCompositionKeyFrameAnimation(
+                return GenericCreateCompositionKeyFrameAnimation(
                     context,
                     value,
                     CreateColorKeyFrameAnimation,
@@ -2431,9 +2497,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     longDescription,
                     shortDescription);
             }
+            else
+            {
+                return (false, value.InitialValue);
+            }
         }
 
-        void ApplyPathKeyFrameAnimation(
+        (bool, Sequence<BezierSegment>) ApplyPathKeyFrameAnimation(
             TranslationContext context,
             Animatable<Sequence<BezierSegment>> value,
             SolidColorFill.PathFillType fillType,
@@ -2445,7 +2515,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             value = _lottieDataOptimizer.GetOptimized(value);
             if (value.IsAnimated)
             {
-                GenericCreateCompositionKeyFrameAnimation(
+                return GenericCreateCompositionKeyFrameAnimation(
                     context,
                     value,
                     CreatePathKeyFrameAnimation,
@@ -2465,9 +2535,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     longDescription,
                     shortDescription);
             }
+            else
+            {
+                return (false, value.InitialValue);
+            }
         }
 
-        void ApplyVector2KeyFrameAnimation(
+        (bool, Vector3) ApplyVector2KeyFrameAnimation(
             TranslationContext context,
             AnimatableVector3 value,
             CompositionObject targetObject,
@@ -2476,7 +2550,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             string shortDescription = null)
             => ApplyScaledVector2KeyFrameAnimation(context, value, 1, targetObject, targetPropertyName, longDescription, shortDescription);
 
-        void ApplyScaledVector2KeyFrameAnimation(
+        (bool, Vector3) ApplyScaledVector2KeyFrameAnimation(
             TranslationContext context,
             AnimatableVector3 value,
             double scale,
@@ -2487,7 +2561,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         {
             if (value.IsAnimated)
             {
-                GenericCreateCompositionKeyFrameAnimation(
+                return GenericCreateCompositionKeyFrameAnimation(
                     context,
                     value,
                     CreateVector2KeyFrameAnimation,
@@ -2498,18 +2572,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     longDescription,
                     shortDescription);
             }
+            else
+            {
+                return (false, value.InitialValue);
+            }
         }
 
-        void ApplyVector3KeyFrameAnimation(
-            TranslationContext context,
-            AnimatableVector3 value,
-            CompositionObject targetObject,
-            string targetPropertyName,
-            string longDescription = null,
-            string shortDescription = null)
-            => ApplyScaledVector3KeyFrameAnimation(context, value, 1, targetObject, targetPropertyName, longDescription, shortDescription);
-
-        void ApplyScaledVector3KeyFrameAnimation(
+        (bool, Vector3) ApplyScaledVector3KeyFrameAnimation(
             TranslationContext context,
             AnimatableVector3 value,
             double scale,
@@ -2520,7 +2589,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         {
             if (value.IsAnimated)
             {
-                GenericCreateCompositionKeyFrameAnimation(
+                return GenericCreateCompositionKeyFrameAnimation(
                     context,
                     value,
                     CreateVector3KeyFrameAnimation,
@@ -2531,9 +2600,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     longDescription,
                     shortDescription);
             }
+            else
+            {
+                return (false, value.InitialValue);
+            }
         }
 
-        void GenericCreateCompositionKeyFrameAnimation<TCA, T>(
+        (bool, T) GenericCreateCompositionKeyFrameAnimation<TCA, T>(
             TranslationContext context,
             Animatable<T> value,
             Func<TCA> compositionAnimationFactory,
@@ -2554,23 +2627,21 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             compositionAnimation.Duration = _lc.Duration;
 
-            // Get only the key frames that exist from at or just before the animation starts, and end at or just after the animation ends.
-            var trimmedKeyFrames = Optimizer.GetOptimized(Optimizer.GetTrimmed(value.KeyFrames.ToArray(), context.StartTime, context.EndTime)).ToArray();
+            // Get only the key frames that affect the range [context.StartTime, context.EndTime].
+            var kfs = Optimizer.TrimKeyFrames(value, context.StartTime, context.EndTime);
 
-            if (trimmedKeyFrames.Length == 0)
-            {
-                // TODO - handle this earlier.
-                return;
-            }
-            else if (trimmedKeyFrames.Length == 1)
-            {
-                // If only 1 keyframe is returned, it should always be the first keyframe.
-                // TODO - this fires some times, which means that the non-animated value being used is not correct.
-                //Debug.Assert(trimmedKeyFrames[0].Value.Equals(value.InitialValue));
+            Debug.Assert(kfs.Length > 0, "PostCondition of TrimKeyFrames");
 
-                // TODO - handle this earlier
-                return;
+            if (kfs.Length == 1)
+            {
+                // There is no animation in the range [context.StartTime, context.EndTime].
+                // Return the value that the animatable holds during that range.
+                return (true, kfs[0].Value);
             }
+
+            // TODO - GetOptimized should return ReadOnlySpan. In the meantime, don't do this optimization.
+            //var trimmedKeyFrames = Optimizer.GetOptimized(kfs.ToArray()).ToArray();
+            var trimmedKeyFrames = kfs;
 
             var firstKeyFrame = trimmedKeyFrames[0];
             var lastKeyFrame = trimmedKeyFrames[trimmedKeyFrames.Length - 1];
@@ -2753,6 +2824,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 _rootVisual.Properties.InsertScalar(progressMappingProperty, 0);
                 StartKeyframeAnimation(_rootVisual, progressMappingProperty, progressMappingAnimation, scale, offset);
             }
+
+            return (false, default(T));
         }
 
         float GetInPointProgress(TranslationContext context, Layer layer)
@@ -3302,6 +3375,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 ContainingContext = context;
                 Layers = layers;
                 DurationInFrames = context.DurationInFrames;
+            }
+
+            // Returns only the key frames that are visible between StartTime and EndTime.
+            internal ReadOnlySpan<KeyFrame<T>> TrimKeyFrames<T>(Animatable<T> animatable)
+                where T : IEquatable<T>
+            {
+                if (animatable.IsAnimated)
+                {
+                    return Optimizer.TrimKeyFrames(animatable, StartTime, EndTime);
+                }
+                else
+                {
+                    return new KeyFrame<T>[] { new KeyFrame<T>(0, animatable.InitialValue, default(Vector3), default(Vector3), HoldEasing.Instance) };
+                }
             }
         }
 
