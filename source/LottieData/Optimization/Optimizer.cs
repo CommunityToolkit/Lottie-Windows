@@ -289,43 +289,51 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
         }
 
         /// <summary>
-        /// Returns at most 1 key frame with progress less than or equal <paramref name="startFrame"/>, and
-        /// at most 1 key frame with progress greater than or equal <paramref name="endFrame"/>.
+        /// Returns only the key frames that are visible between <paramref name="startTime"/>
+        /// and <paramref name="endTime"/>, with other key frames removed.
         /// </summary>
-        /// <typeparam name="T">The type of the key frame's value.</typeparam>
-        public static IEnumerable<KeyFrame<T>> GetTrimmed<T>(
-            IEnumerable<KeyFrame<T>> keyFrames,
-            double startFrame,
-            double endFrame)
+        /// <typeparam name="T">The type of key frame.</typeparam>
+        /// <param name="animatable">An <see cref="Animatable{T}"/>.</param>
+        /// <param name="startTime">The frame time at which rendering starts.</param>
+        /// <param name="endTime">The frame time at which rendering ends.</param>
+        /// <returns>The key frames that are visible for rendering between <paramref name="startTime"/>
+        /// and <paramref name="endTime"/>, with other key frames removed.
+        /// </returns>
+        public static ReadOnlySpan<KeyFrame<T>> TrimKeyFrames<T>(Animatable<T> animatable, double startTime, double endTime)
             where T : IEquatable<T>
         {
-            KeyFrame<T> firstCandidate = null;
-            foreach (var keyFrame in keyFrames)
+            if (!animatable.IsAnimated)
             {
-                if (keyFrame.Frame < startFrame)
-                {
-                    // Save the latest keyFrame that is before the startFrame.
-                    firstCandidate = keyFrame;
-                }
-                else
-                {
-                    // We are past the startFrame. Return keyFrames.
-                    if (firstCandidate != null)
-                    {
-                        // Return the latest keyFrame before this one.
-                        yield return firstCandidate;
-                        firstCandidate = null;
-                    }
-
-                    // We are after start. Keep returning keyFrames until we get past endFrame.
-                    yield return keyFrame;
-                    if (keyFrame.Frame >= endFrame)
-                    {
-                        // No more keyFrames should be returned because we are past the endFrame.
-                        break;
-                    }
-                }
+                return default(ReadOnlySpan<KeyFrame<T>>);
             }
+
+            var keyFrames = animatable.KeyFrames;
+
+            // Find the key frame preceding the first frame > startTime.
+            var inFrame = 0;
+            for (var i = inFrame; i < keyFrames.Length; i++)
+            {
+                if (keyFrames[i].Frame > startTime)
+                {
+                    break;
+                }
+
+                inFrame = i;
+            }
+
+            // Find the key frame following the last frame < endTime.
+            var outFrame = keyFrames.Length - 1;
+            for (var i = outFrame; i >= 0; i--)
+            {
+                if (keyFrames[i].Frame < endTime)
+                {
+                    break;
+                }
+
+                outFrame = i;
+            }
+
+            return keyFrames.Slice(inFrame, 1 + outFrame - inFrame);
         }
 
         sealed class AnimatableComparer<T>
