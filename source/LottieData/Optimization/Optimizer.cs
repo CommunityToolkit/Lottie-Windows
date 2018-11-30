@@ -2,8 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+// Uncomment these for debugging
+//#define DisableKeyFrameTrimming
+//#define DisableKeyFrameOptimization
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
@@ -31,13 +35,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
             _animatablePathGeometriesCache = new Dictionary<Animatable<Sequence<BezierSegment>>, Animatable<Sequence<BezierSegment>>>(PathGeometryComparer);
         }
 
-        public Animatable<Color> GetOptimized(Animatable<Color> value) => GetOptimized(value, ColorComparer, _animatableColorsCache);
+        public Animatable<Color> GetOptimized(Animatable<Color> value) => GetOptimized(value, _animatableColorsCache);
 
-        public Animatable<double> GetOptimized(Animatable<double> value) => GetOptimized(value, FloatComparer, _animatableFloatsCache);
+        public Animatable<double> GetOptimized(Animatable<double> value) => GetOptimized(value, _animatableFloatsCache);
 
         public Animatable<Sequence<BezierSegment>> GetOptimized(Animatable<Sequence<BezierSegment>> value)
         {
-            var optimized = GetOptimized(value, PathGeometryComparer, _animatablePathGeometriesCache);
+            var optimized = GetOptimized(value, _animatablePathGeometriesCache);
 
             // If the geometries have different numbers of segments they can't be animated. However
             // in one specific case we can fix that.
@@ -106,8 +110,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
             }
 
             // Create a new Animatable<PathGeometry> which has only one segment in each keyframe.
-            var hacked = optimized.KeyFrames.SelectToArray(pg => HackPathGeometry(pg));
-            return new Animatable<Sequence<BezierSegment>>(hacked.First().Value, hacked, optimized.PropertyIndex);
+            var hacked = optimized.KeyFrames.SelectToSpan(pg => HackPathGeometry(pg));
+            return new Animatable<Sequence<BezierSegment>>(hacked[0].Value, hacked, optimized.PropertyIndex);
         }
 
         static KeyFrame<Sequence<BezierSegment>> HackPathGeometry(KeyFrame<Sequence<BezierSegment>> value)
@@ -141,7 +145,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
             return true;
         }
 
-        static Animatable<T> GetOptimized<T>(Animatable<T> value, AnimatableComparer<T> comparer, Dictionary<Animatable<T>, Animatable<T>> cache)
+        static Animatable<T> GetOptimized<T>(Animatable<T> value, Dictionary<Animatable<T>, Animatable<T>> cache)
             where T : IEquatable<T>
         {
             if (!cache.TryGetValue(value, out Animatable<T> result))
@@ -154,8 +158,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                 }
                 else
                 {
-                    var keyFrames = OptimizeKeyFrames(value.InitialValue, value.KeyFrames.ToArray()).ToArray();
-                    if (comparer.Equals(keyFrames, value.KeyFrames.ToArray()))
+                    var keyFrames = RemoveRedundantKeyFrames(value.KeyFrames);
+
+                    if (keyFrames.Length == value.KeyFrames.Length)
                     {
                         // Optimization didn't achieve anything.
                         result = value;
@@ -173,102 +178,130 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
             return result;
         }
 
-        // Returns a list of KeyFrames with any redundant frames removed.
-        static IEnumerable<KeyFrame<T>> OptimizeKeyFrames<T>(T initialValue, IEnumerable<KeyFrame<T>> keyFrames)
+        /// <summary>
+        /// Returns an equivalent list of <see cref="KeyFrame{T}"/>s but with any redundant
+        /// <see cref="KeyFrame{T}"/>s removed.
+        /// </summary>
+        /// <typeparam name="T">The type of the <see cref="KeyFrame{T}"/>.</typeparam>
+        /// <param name="keyFrames">The <see cref="KeyFrame{T}"/>s to filter.</param>
+        /// <returns>An equivalent list of <see cref="KeyFrame{T}"/>s but with any redundant
+        /// <see cref="KeyFrame{T}"/>s removed.
+        /// </returns>
+        public static ReadOnlySpan<KeyFrame<T>> RemoveRedundantKeyFrames<T>(in ReadOnlySpan<KeyFrame<T>> keyFrames)
             where T : IEquatable<T>
         {
-            T previousValue = initialValue;
-            KeyFrame<T> currentKeyFrame = keyFrames.First();
-            bool atLeastOneWasOutput = false;
-            foreach (var nextKeyFrame in keyFrames.Skip(1))
+#if DisableKeyFrameOptimization
+            return keyFrames;
+#else
+            if (keyFrames.Length <= 1)
             {
-                if (!currentKeyFrame.Value.Equals(previousValue))
+                // None of the key frames is redundant.
+                return keyFrames;
+            }
+
+            KeyFrame<T>[] optimizedFrames = null;
+            var optimizedCount = 0;
+
+            // There's at least 2 key frames.
+            var keyFrame0 = keyFrames[0];
+
+            for (var i = 1; i < keyFrames.Length; i++)
+            {
+                var keyFrame1 = keyFrames[i];
+                var redundantCount = 0;
+
+                // Is there at least one more key frame to look at?
+                if (i < keyFrames.Length - 1)
                 {
-                    // The KeyFrame changes the value, so it must be output.
-                    yield return currentKeyFrame;
-                    atLeastOneWasOutput = true;
-                }
-                else if (!currentKeyFrame.Value.Equals(nextKeyFrame.Value))
-                {
-                    // The current frame has the same value as previous, but it starts a ramp to
-                    // the next value, so it must be output.
-                    // Seeing as the value isn't changing, the easing doesn't matter. Linear is the
-                    // simplest so always use Linear when the value isn't changing.
-                    if (currentKeyFrame.Easing.Type != Easing.EasingType.Linear)
+                    // Do the first 2 key frames have the same value?
+                    if (keyFrame0.Value.Equals(keyFrame1.Value))
                     {
-                        currentKeyFrame = new KeyFrame<T>(
-                            currentKeyFrame.Frame,
-                            currentKeyFrame.Value,
-                            currentKeyFrame.SpatialControlPoint1,
-                            currentKeyFrame.SpatialControlPoint2,
-                            LinearEasing.Instance);
+                        // First 2 key frames have the same value. If the next has the same
+                        // value then the one in between is redundant.
+                        while (true)
+                        {
+                            var keyFrame2 = keyFrames[i + 1];
+
+                            if (!keyFrame0.Value.Equals(keyFrame2.Value))
+                            {
+                                break;
+                            }
+
+                            // keyFrame1 is redundant. Count it and skip it.
+                            redundantCount++;
+                            keyFrame1 = keyFrame2;
+
+                            i++;
+                            if (i == keyFrames.Length - 1)
+                            {
+                                // No more to look at.
+                                break;
+                            }
+                        }
+
+                        // No more redundant key frames.
+                        if (redundantCount > 0)
+                        {
+                            if (optimizedFrames == null)
+                            {
+                                // Lazily Create an array to hold the new set of key frames.
+                                optimizedFrames = new KeyFrame<T>[keyFrames.Length - redundantCount];
+
+                                // Fill the destination with the key frames so far.
+                                for (optimizedCount = 0; optimizedCount < i - redundantCount; optimizedCount++)
+                                {
+                                    optimizedFrames[optimizedCount] = keyFrames[optimizedCount];
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (optimizedFrames != null)
+                {
+                    if (redundantCount > 0)
+                    {
+                        Debug.Assert(keyFrame1.Value.Equals(keyFrame0.Value), "Invariant");
+
+                        // keyFrame1 has the same value as keyFrame0, so there's no need for
+                        // anything more complicated than a Hold easing.
+                        keyFrame1 = GetKeyFrameWithHoldEasing(keyFrame1);
                     }
 
-                    yield return currentKeyFrame;
-                    atLeastOneWasOutput = true;
+                    optimizedFrames[optimizedCount] = keyFrame1;
+                    optimizedCount++;
                 }
 
-                previousValue = currentKeyFrame.Value;
-                currentKeyFrame = nextKeyFrame;
+                keyFrame0 = keyFrame1;
             }
 
-            // Final frame. Only necessary if at least one keyframe was output and current KeyFrame changes the value.
-            if (atLeastOneWasOutput && !currentKeyFrame.Value.Equals(previousValue))
+            // All triples of frames have been checked for redundancy.
+            if (optimizedFrames == null)
             {
-                // The final frame is necessary
-                yield return currentKeyFrame;
-            }
-        }
-
-        /// <summary>
-        /// Removes redundant keyFrames.
-        /// </summary>
-        /// <typeparam name="T">The type of the key frame's value.</typeparam>
-        public static IEnumerable<KeyFrame<T>> GetOptimized<T>(
-            IEnumerable<KeyFrame<T>> keyFrames)
-            where T : IEquatable<T>
-        {
-            // Holds onto a keyFrame until it is determined that it is
-            // different from the next keyFrame. If it's not different
-            // then it can be discarded.
-            KeyFrame<T> previous = null;
-            bool previousWasOutputAlready = false;
-            foreach (var keyFrame in keyFrames)
-            {
-                if (previous != null && keyFrame.Value.Equals(previous.Value) &&
-                    keyFrame.SpatialControlPoint1.Equals(previous.SpatialControlPoint1) &&
-                    keyFrame.SpatialControlPoint2.Equals(previous.SpatialControlPoint2))
+                // No redundant key frames found yet.
+                // If the final 2 key frames have the same value, the final key frame is redundant.
+                if (keyFrames[keyFrames.Length - 1].Value.Equals(keyFrames[keyFrames.Length - 2].Value))
                 {
-                    // Don't output keyFrame yet - it is the same as the previous keyFrame
-                    // and is only needed if the next keyFrame is different or there
-                    // are no more keyFrames.
-                    // Note that this latest keyFrame hasn't been output.
-                    previousWasOutputAlready = false;
+                    return keyFrames.Slice(0, keyFrames.Length - 1);
                 }
                 else
                 {
-                    // It's a new value, so output the previous value if it hasn't been output,
-                    // and the new value.
-                    if (previous != null && !previousWasOutputAlready)
-                    {
-                        // Convert the easing to be Hold because seeing as we know
-                        // the value isn't changing from the value before it.
-                        yield return GetKeyFrameWithHoldEasing(previous);
-                    }
-
-                    // Output the new value.
-                    yield return keyFrame;
-                    previousWasOutputAlready = true;
+                    return keyFrames;
+                }
+            }
+            else
+            {
+                // Some redundant key frames found.
+                // If the final 2 key frames have the same value, the final key frame is redundant.
+                if (optimizedFrames[optimizedCount - 1].Value.Equals(optimizedFrames[optimizedCount - 2].Value))
+                {
+                    optimizedCount--;
                 }
 
-                previous = keyFrame;
+                var result = new ReadOnlySpan<KeyFrame<T>>(optimizedFrames, 0, optimizedCount);
+                return result;
             }
-
-            if (previous != null && !previousWasOutputAlready)
-            {
-                // Output the final value.
-                yield return previous;
-            }
+#endif // DisableKeyFrameOptimization
         }
 
         /// <summary>
@@ -302,6 +335,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
         public static ReadOnlySpan<KeyFrame<T>> TrimKeyFrames<T>(Animatable<T> animatable, double startTime, double endTime)
             where T : IEquatable<T>
         {
+#if DisableKeyFrameTrimming
+            return animatale.KeyFrames;
+#else
             if (!animatable.IsAnimated)
             {
                 return default(ReadOnlySpan<KeyFrame<T>>);
@@ -334,6 +370,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
             }
 
             return keyFrames.Slice(inFrame, 1 + outFrame - inFrame);
+#endif // DisableKeyFrameTrimming
         }
 
         sealed class AnimatableComparer<T>

@@ -515,7 +515,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Tools
             }
             else
             {
-                var keyframesString = string.Join(", ", animatable.KeyFrames.SelectToArray(kf => $"{FromKeyFrame(kf)}"));
+                var keyframesString = string.Join(", ", animatable.KeyFrames.SelectToSpan(kf => $"{FromKeyFrame(kf)}").ToArray());
 
                 return new XElement(name, keyframesString);
             }

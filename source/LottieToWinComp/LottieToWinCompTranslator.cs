@@ -851,7 +851,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         var bScale = b.InitialValue;
                         return new Animatable<double>(
                             initialValue: a.InitialValue * bScale,
-                            keyFrames: a.KeyFrames.SelectToArray(kf => new KeyFrame<double>(
+                            keyFrames: a.KeyFrames.SelectToSpan(kf => new KeyFrame<double>(
                                 kf.Frame,
                                 kf.Value * (bScale / 100),
                                 kf.SpatialControlPoint1,
@@ -1054,7 +1054,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         CompositionShape TranslateShapeLayerContents(
             TranslationContext context,
             ShapeContentContext shapeContext,
-            ReadOnlySpan<ShapeLayerContent> contents)
+            in ReadOnlySpan<ShapeLayerContent> contents)
         {
             // The Contents of a ShapeLayer is a list of instructions for a stack machine.
 
@@ -2628,20 +2628,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             compositionAnimation.Duration = _lc.Duration;
 
             // Get only the key frames that affect the range [context.StartTime, context.EndTime].
-            var kfs = Optimizer.TrimKeyFrames(value, context.StartTime, context.EndTime);
+            var trimmedKeyFrames = Optimizer.TrimKeyFrames(value, context.StartTime, context.EndTime);
 
-            Debug.Assert(kfs.Length > 0, "PostCondition of TrimKeyFrames");
+            Debug.Assert(trimmedKeyFrames.Length > 0, "PostCondition of TrimKeyFrames");
 
-            if (kfs.Length == 1)
+            if (trimmedKeyFrames.Length == 1)
             {
                 // There is no animation in the range [context.StartTime, context.EndTime].
                 // Return the value that the animatable holds during that range.
-                return (true, kfs[0].Value);
+                return (true, trimmedKeyFrames[0].Value);
             }
 
-            // TODO - GetOptimized should return ReadOnlySpan. In the meantime, don't do this optimization.
-            //var trimmedKeyFrames = Optimizer.GetOptimized(kfs.ToArray()).ToArray();
-            var trimmedKeyFrames = kfs;
+            // Remove any redundant key frames.
+            trimmedKeyFrames = Optimizer.RemoveRedundantKeyFrames(trimmedKeyFrames);
 
             var firstKeyFrame = trimmedKeyFrames[0];
             var lastKeyFrame = trimmedKeyFrames[trimmedKeyFrames.Length - 1];
@@ -2967,7 +2966,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     // Multiply the color animation by the single opacity value.
                     return new Animatable<Color>(
                         initialValue: MultiplyColorByOpacityPercent(color.InitialValue, opacityPercent.InitialValue),
-                        keyFrames: color.KeyFrames.SelectToArray(kf =>
+                        keyFrames: color.KeyFrames.SelectToSpan(kf =>
                             new KeyFrame<Color>(
                                 kf.Frame,
                                 MultiplyColorByOpacityPercent(kf.Value, opacityPercent.InitialValue),
@@ -3003,7 +3002,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 // Multiply the single color value by the opacity animation.
                 return new Animatable<Color>(
                     initialValue: MultiplyColorByOpacityPercent(color, opacityPercent.InitialValue),
-                    keyFrames: opacityPercent.KeyFrames.SelectToArray(kf =>
+                    keyFrames: opacityPercent.KeyFrames.SelectToSpan(kf =>
                         new KeyFrame<Color>(
                             kf.Frame,
                             MultiplyColorByOpacityPercent(color, kf.Value),

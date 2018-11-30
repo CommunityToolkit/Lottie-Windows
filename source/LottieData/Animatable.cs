@@ -42,7 +42,21 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             PropertyIndex = propertyIndex;
 
             Debug.Assert(initialValue != null, "Precondition");
-            Debug.Assert(keyFrames.All(kf => kf != null), "Precondition");
+            Debug.Assert(_keyFrames.All(kf => kf != null), "Precondition");
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Animatable{T}"/> class with
+        /// the given key frames.
+        /// </summary>
+        public Animatable(T initialValue, in ReadOnlySpan<KeyFrame<T>> keyFrames, int? propertyIndex)
+        {
+            _keyFrames = keyFrames.ToArray();
+            InitialValue = initialValue;
+            PropertyIndex = propertyIndex;
+
+            Debug.Assert(initialValue != null, "Precondition");
+            Debug.Assert(_keyFrames.All(kf => kf != null), "Precondition");
         }
 
         /// <summary>
