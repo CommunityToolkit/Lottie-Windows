@@ -36,6 +36,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         static readonly AnimatableVector2Parser s_animatableVector2Parser = new AnimatableVector2Parser();
         static readonly AnimatableVector3Parser s_animatableVector3Parser = new AnimatableVector3Parser();
         static readonly AnimatableGeometryParser s_animatableGeometryParser = new AnimatableGeometryParser();
+        static readonly Animatable<double> s_animatable_0 = new Animatable<double>(0, null);
         static readonly JsonLoadSettings s_jsonLoadSettings = new JsonLoadSettings
         {
             // Ignore commands and line info. Not needed and makes the parser a bit faster.
@@ -976,7 +977,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             return new SolidColorStroke(
                 name.Name,
                 name.MatchName,
-                offset ?? new Animatable<double>(0, null),
+                offset ?? s_animatable_0,
                 dashPattern,
                 color,
                 opacityPercent,
@@ -1527,7 +1528,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 var y = ReadAnimatableFloat(obj.GetNamedObject("y"));
                 AssertAllFieldsRead(obj);
 
-                return new AnimatableXYZ(x, y, new Animatable<double>(0, propertyIndex));
+                return new AnimatableXYZ(x, y, s_animatable_0);
             }
         }
 
