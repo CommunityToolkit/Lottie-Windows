@@ -44,6 +44,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             return result;
         }
 
+        public static ReadOnlySpan<TResult> SelectToSpan<TSource, TResult>(this ReadOnlySpan<TSource> source, Func<TSource, TResult> selector)
+        {
+            var result = new TResult[source.Length];
+            for (var i = 0; i < source.Length; i++)
+            {
+                result[i] = selector(source[i]);
+            }
+
+            return new ReadOnlySpan<TResult>(result);
+        }
+
         public static double Max<TSource>(this ReadOnlySpan<TSource> source, Func<TSource, double> selector)
         {
             var result = double.NegativeInfinity;
