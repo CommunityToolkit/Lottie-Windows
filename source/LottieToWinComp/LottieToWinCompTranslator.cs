@@ -830,13 +830,32 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
                 if (!a.IsAnimated && !b.IsAnimated)
                 {
+                    // Neither is animated. Just use the initial values.
                     return new Animatable<double>(a.InitialValue * (b.InitialValue / 100.0), null);
                 }
 
                 if (a.IsAnimated && b.IsAnimated)
                 {
-                    _owner._unsupported.AnimationMultiplication();
-                    return a;
+                    // Both are animated.
+                    if (a.KeyFrames[0].Frame >= b.KeyFrames[b.KeyFrames.Length - 1].Frame ||
+                        b.KeyFrames[0].Frame >= a.KeyFrames[a.KeyFrames.Length - 1].Frame)
+                    {
+                        // The animations are non-overlapping.
+                        if (a.KeyFrames[0].Frame >= b.KeyFrames[b.KeyFrames.Length - 1].Frame)
+                        {
+                            return ComposeNonOverlappingAnimatedPercents(b, a);
+                        }
+                        else
+                        {
+                            return ComposeNonOverlappingAnimatedPercents(a, b);
+                        }
+                    }
+                    else
+                    {
+                        // The animations overlap. We currently don't support this case.
+                        _owner._unsupported.AnimationMultiplication();
+                        return a;
+                    }
                 }
 
                 // Only one is animated.
@@ -851,12 +870,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         var bScale = b.InitialValue;
                         return new Animatable<double>(
                             initialValue: a.InitialValue * bScale,
-                            keyFrames: a.KeyFrames.SelectToSpan(kf => new KeyFrame<double>(
-                                kf.Frame,
-                                kf.Value * (bScale / 100),
-                                kf.SpatialControlPoint1,
-                                kf.SpatialControlPoint2,
-                                kf.Easing)),
+                            keyFrames: a.KeyFrames.SelectToSpan(kf => ScaleKeyFrame(kf, bScale / 100)),
                             propertyIndex: null);
                     }
                 }
@@ -864,6 +878,46 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 {
                     return ComposeOpacityPercents(b, a);
                 }
+            }
+
+            // Composes 2 animated percent values where the frames in first come before second.
+            Animatable<double> ComposeNonOverlappingAnimatedPercents(Animatable<double> first, Animatable<double> second)
+            {
+                Debug.Assert(first.IsAnimated, "Precondition");
+                Debug.Assert(second.IsAnimated, "Precondition");
+                Debug.Assert(first.KeyFrames[first.KeyFrames.Length - 1].Frame <= second.KeyFrames[0].Frame, "Precondition");
+
+                var resultFrames = new KeyFrame<double>[first.KeyFrames.Length + second.KeyFrames.Length];
+                var resultCount = 0;
+                var secondInitialScale = second.InitialValue / 100;
+                var firstFinalScale = first.KeyFrames[first.KeyFrames.Length - 1].Value / 100;
+
+                foreach (var kf in first.KeyFrames)
+                {
+                    resultFrames[resultCount] = ScaleKeyFrame(kf, secondInitialScale);
+                    resultCount++;
+                }
+
+                foreach (var kf in second.KeyFrames)
+                {
+                    resultFrames[resultCount] = ScaleKeyFrame(kf, firstFinalScale);
+                    resultCount++;
+                }
+
+                return new Animatable<double>(
+                    first.InitialValue,
+                    new ReadOnlySpan<KeyFrame<double>>(resultFrames, 0, resultCount),
+                    null);
+            }
+
+            KeyFrame<double> ScaleKeyFrame(KeyFrame<double> keyFrame, double scale)
+            {
+                return new KeyFrame<double>(
+                                keyFrame.Frame,
+                                keyFrame.Value * scale,
+                                keyFrame.SpatialControlPoint1,
+                                keyFrame.SpatialControlPoint2,
+                                keyFrame.Easing);
             }
 
             SolidColorFill ComposeSolidColorFill(SolidColorFill a, SolidColorFill b)
@@ -1929,7 +1983,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             // A ShapeStroke is represented as a CompositionColorBrush and Stroke properties on the relevant SpriteShape.
 
             // Map ShapeStroke's color to SpriteShape.StrokeBrush
-            sprite.StrokeBrush = CreateAnimatedColorBrush(context, MultiplyAnimatableColorByAnimatableOpacityPercent(shapeStroke.Color, shapeStroke.OpacityPercent), opacityPercent);
+            sprite.StrokeBrush = CreateAnimatedColorBrush(
+                context,
+                MultiplyAnimatableColorByAnimatableOpacityPercent(
+                    context.TrimAnimatable(shapeStroke.Color),
+                    context.TrimAnimatable(shapeStroke.OpacityPercent)),
+                context.TrimAnimatable(opacityPercent));
 
             // Map ShapeStroke's width to SpriteShape.StrokeThickness
             sprite.StrokeThickness = (float)shapeStroke.Thickness.InitialValue;
@@ -1964,7 +2023,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
 
             // A ShapeFill is represented as a CompositionColorBrush.
-            return CreateAnimatedColorBrush(context, MultiplyAnimatableColorByAnimatableOpacityPercent(shapeFill.Color, shapeFill.OpacityPercent), opacityPercent);
+            return CreateAnimatedColorBrush(
+                context,
+                MultiplyAnimatableColorByAnimatableOpacityPercent(
+                    context.TrimAnimatable(shapeFill.Color),
+                    context.TrimAnimatable(shapeFill.OpacityPercent)),
+                context.TrimAnimatable(opacityPercent));
         }
 
         ShapeOrVisual? TranslateSolidLayer(TranslationContext context, SolidLayer layer)
@@ -3387,6 +3451,27 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 else
                 {
                     return new KeyFrame<T>[] { new KeyFrame<T>(0, animatable.InitialValue, default(Vector3), default(Vector3), HoldEasing.Instance) };
+                }
+            }
+
+            internal Animatable<T> TrimAnimatable<T>(Animatable<T> animatable)
+                where T : IEquatable<T>
+            {
+                if (animatable.IsAnimated)
+                {
+                    var trimmedKeyFrames = Optimizer.TrimKeyFrames(animatable, StartTime, EndTime);
+                    if (trimmedKeyFrames.Length > 1)
+                    {
+                        return new Animatable<T>(trimmedKeyFrames[0].Value, trimmedKeyFrames, animatable.PropertyIndex);
+                    }
+                    else
+                    {
+                        return new Animatable<T>(trimmedKeyFrames[0].Value, animatable.PropertyIndex);
+                    }
+                }
+                else
+                {
+                    return animatable;
                 }
             }
         }
