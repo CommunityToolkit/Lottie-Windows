@@ -1,5 +1,5 @@
 ﻿# Lottie Viewer
-The Lottie Viewer project generates a simple UWP Windows Store app that renders and displays Lottie .json files. The tool is intended to help designers see how Lottie compositions look when rendered using Lottie-Windows.
+The Lottie Viewer project generates a simple Store app that renders and displays Lottie .json files. The tool is intended to help designers validate the appearance of Lottie compositions rendered using Lottie-Windows.
 
 ## Usage
 Drag a Lottie file onto the Lottie Viewer window to see it rendered. If the orange warning icon lights up, click on it to see any issues that Lottie-Windows encountered.
