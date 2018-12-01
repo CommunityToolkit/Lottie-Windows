@@ -16,8 +16,4 @@
   <ItemGroup>
     <ProjectReference Include="..\LottieData\LottieData.dll.csproj" />
   </ItemGroup>
-
-  <Target Name="Pack">
-    <!-- Empty target to prevent this project from generating a NuGet package -->
-  </Target>
 </Project>

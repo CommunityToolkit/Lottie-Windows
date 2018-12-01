@@ -31,4 +31,5 @@ Local builds can be installed from your bin\nupkg directory:
 
 # Help
 All of the help for LottieGen is built into the tool.
+
     LottieGen -Help
