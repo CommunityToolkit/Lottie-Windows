@@ -1,27 +1,27 @@
 # Lottie-Windows/dlls directory
 
 This directory contains projects that build DLL versions of the Lottie-Windows code. These exist in order to
-have the compiler and build system enforce modularity, and the DLLs are never expected to be consumed by
-any product (although you could consume them if you really wanted to).
+have the compiler and build system enforce modularity, and the DLLs are not consumed by any other project.
 
-## Modules
-Conceptually, there are 4 *modules* in Lottie-Windows:
-* LottieData
-* LottieReader
-* LottieToWinComp
-* WinCompData
+The reason they exist is for code quality rather than packaging.
 
-These modules exist to help abstract the design, and dependencies between each module must always
-form a DAG (Directed Acyclic Graph).
+## Modular design
+Conceptually, there are 5 *modules* in Lottie-Windows:
 
-When we build our binaries (Lottie-Windows nupkg, LottieGen command line tool, and the Lottie Viewer app) 
-we include the source code from each module using shared projects, rather than consuming the modules' DLLs.
-While we *could* have LottieGen and Lottie Viewer consume the Lottie-Windows nuget, that would require 
-an extra unnecessary step, and in the case of LottieGen it would require an extra binary to be copied with
-the tool.
 
-Modularity is enforced by building the code as a set of dlls. This makes the compiler and build system
-enforce modularity boundaries. If the DAG is broken, the build will break.
+| Module          | Purpose          | Depends-on  |
+| ----------      |:------------------| -----:|
+| Lottie          | .json file to AnimatedVisual translator | LottieData, LottieReader, LottieToWinComp, WinCompData |
+| LottieData      | data model for Lottie compositions |   - |
+| LottieReader    | .json files to LottieComposition object | LottieData |
+| LottieToWinComp | LottieComposition to WinCompData Visual tree translator |   LottieData, WinCompData |
+| WinCompData     | data model for Windows.UI.Composition  |    - |
 
-### Bottom line: 
-Shared projects is how we do static libs in C#, and .NET assemblies is how we enforce modularity.
+The modules help abstract the design, and dependencies between modules always form a DAG (Directed Acyclic Graph). 
+The DAG is enforced by building each module as an assembly (DLL) so that *if the DAG is broken `the build of the DLLs will break`.*
+
+But we don't actually use the DLLs in any of the other projects; instead, we mush all of the source code together using shared projects. This saves the extra step of building the Lottie-Windows nuget project before any other projects, and it means there are fewer binaries to be packaged up and copied around.
+
+### Summary
+* Shared projects give us the equivalent of C++ static libs.
+* The dlls directory enforces modularity.

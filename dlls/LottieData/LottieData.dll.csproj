@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Configurations>Debug</Configurations>
+    <Configurations>Debug;Release</Configurations>
     <LangVersion>latest</LangVersion>
     <DefineConstants>PUBLIC_LottieData</DefineConstants>
   </PropertyGroup>
@@ -14,4 +14,7 @@
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.5.2" />
   </ItemGroup>
 
+  <Target Name="Pack">
+    <!-- Empty target to prevent this project from generating a NuGet package -->
+  </Target>
 </Project>
