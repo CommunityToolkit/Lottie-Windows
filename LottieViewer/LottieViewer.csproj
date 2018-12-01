@@ -131,6 +131,7 @@
       <SubType>Designer</SubType>
     </AppxManifest>
     <None Include="LottieViewer_TemporaryKey.pfx" />
+    <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Assets\BadgeLogo.scale-100.png" />
