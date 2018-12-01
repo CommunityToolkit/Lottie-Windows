@@ -3,8 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Collections.Generic;//unused imports
+using System.Text;//unused imports
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgc
 {
@@ -15,6 +15,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgc
     {
         public static CanvasDevice GetSharedDevice() => new CanvasDevice();
 
+        // why empty dispose ?
+        // if there is a reason behind that it should be commented, maybe not to break changes!!
         /// <inheritdoc/>
         public void Dispose()
         {

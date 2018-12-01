@@ -14,6 +14,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
     {
         // The name used to bind to the property set that contains the Progress property.
         const string RootName = "_";
+        //Start with upper case
         static readonly Expression s_myTStart = Scalar("my.TStart");
         static readonly Expression s_myTEnd = Scalar("my.TEnd");
 

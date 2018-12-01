@@ -32,6 +32,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 #endif
     sealed class LottieCompositionReader
     {
+        // all static fields here should start with capital letter
         static readonly AnimatableFloatParser s_animatableFloatParser = new AnimatableFloatParser();
         static readonly AnimatableVector2Parser s_animatableVector2Parser = new AnimatableVector2Parser();
         static readonly AnimatableVector3Parser s_animatableVector3Parser = new AnimatableVector3Parser();

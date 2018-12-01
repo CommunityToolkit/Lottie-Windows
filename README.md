@@ -19,6 +19,7 @@ Please use [GitHub Issues](https://github.com/windows-toolkit/Lottie-Windows/iss
 
 ## Principles
 
+"Contribution should link to the toolkit contribution guide"
 This project has adopted the code of conduct defined by the [Contributor Covenant](http://contributor-covenant.org/)
 to clarify expected behavior in our community.
 For more information see the [.NET Foundation Code of Conduct](http://dotnetfoundation.org/code-of-conduct).

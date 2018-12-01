@@ -6,7 +6,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Linq;//unused reference
 using System.Numerics;
 using Microsoft.Graphics.Canvas.Geometry;
 using Wc = Windows.UI.Composition;
@@ -18,6 +18,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
     /// Creates instances of a <see cref="Windows.UI.Composition.Visual"/> tree from a description
     /// of the tree.
     /// </summary>
+    /// Missing modifier private
     sealed class Instantiator
     {
         readonly Wc.Compositor _c;

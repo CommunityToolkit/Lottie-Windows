@@ -32,6 +32,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
             // RS4 (geometries are flaky in RS4, and CompositionGeometryClip is new in RS5).
             requiresCompositionGeometricClip = true;
 
+            // just a question why not just passing true ?
             return new ApiCompatibility(requiresCompositionGeometricClip: requiresCompositionGeometricClip);
         }
 

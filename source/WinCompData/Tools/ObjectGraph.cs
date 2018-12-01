@@ -178,6 +178,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
             }
         }
 
+        // if this is always true why not void ?
         bool Reference(T from, CompositionPath obj)
         {
             if (_compositionPathReferences.TryGetValue(obj, out var node))
@@ -197,6 +198,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
             return true;
         }
 
+        // if this is always true why not void ?
         bool Reference(T from, CanvasGeometry obj)
         {
             if (_canvasGeometryReferences.TryGetValue(obj, out var node))
@@ -229,12 +231,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
             }
         }
 
+        // if this is always true why not void ?
         bool VisitAnimationController(AnimationController obj, T node)
         {
             VisitCompositionObject(obj, node);
             return true;
         }
 
+        // if this is always true why not void ?
         bool VisitCanvasGeometry(CanvasGeometry obj, T node)
         {
             return true;
@@ -313,6 +317,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
             return VisitCompositionClip(obj, node);
         }
 
+        // if this is always true why not void ?
         bool VisitCompositionGeometricClip(CompositionGeometricClip obj, T node)
         {
             VisitCompositionClip(obj, node);
@@ -335,6 +340,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
             return VisitCompositionEasingFunction(obj, node);
         }
 
+        // if this is always true why not void ?
         bool VisitPathKeyFrameAnimation(PathKeyFrameAnimation obj, T node)
         {
             VisitKeyFrameAnimation(obj, node);
@@ -378,6 +384,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
             return VisitCompositionObject(obj, node);
         }
 
+        // if this is always true why not void ?
         bool VisitCompositionSpriteShape(CompositionSpriteShape obj, T node)
         {
             VisitCompositionShape(obj, node);
@@ -424,6 +431,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
             return VisitCompositionBrush(obj, node);
         }
 
+        // if this is always true why not void ?
         bool VisitCompositionContainerShape(CompositionContainerShape obj, T node)
         {
             VisitCompositionShape(obj, node);

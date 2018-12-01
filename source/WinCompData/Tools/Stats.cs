@@ -159,6 +159,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
 
         public int PathGeometryCount => _pathGeometryCount;
 
+        //PropertySetPropertyCount not PropertySetProperyCount
         public int PropertySetProperyCount => _propertySetPropertyCount;
 
         public int PropertySetCount => _propertySetCount;

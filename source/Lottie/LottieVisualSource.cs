@@ -56,9 +56,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             RegisterDP<Uri>(nameof(UriSource), null,
             (owner, oldValue, newValue) => owner.HandleUriSourcePropertyChanged(oldValue, newValue));
 
+        // RegisterDp
         static DependencyProperty RegisterDP<T>(string propertyName, T defaultValue) =>
             DependencyProperty.Register(propertyName, typeof(T), typeof(LottieVisualSource), new PropertyMetadata(defaultValue));
 
+        // RegisterDp
         static DependencyProperty RegisterDP<T>(string propertyName, T defaultValue, Action<LottieVisualSource, T, T> callback) =>
             DependencyProperty.Register(propertyName, typeof(T), typeof(LottieVisualSource),
                 new PropertyMetadata(defaultValue, (d, e) => callback((LottieVisualSource)d, (T)e.OldValue, (T)e.NewValue)));

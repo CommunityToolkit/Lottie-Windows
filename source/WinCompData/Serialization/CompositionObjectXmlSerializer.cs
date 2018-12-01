@@ -183,6 +183,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
 
         XElement FromCompositionPropertySet(CompositionPropertySet obj)
         {
+            // typo in property :)
             return new XElement("CompositionProperytSet", GetContents());
             IEnumerable<XObject> GetContents()
             {
@@ -589,6 +590,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
         {
             if (obj is Mgcg.CanvasGeometry)
             {
+                // is there is a reason for having an unused canvasGeometry varaible ?
                 var canvasGeometry = (Mgcg.CanvasGeometry)obj;
                 return new XElement("CanvasGeometry");
             }
@@ -722,6 +724,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
                 if (initialValue.HasValue)
                 {
                     yield return FromScalar(name, initialValue.Value);
+                    // yield break will never executed, should be removed.
                     yield break;
                 }
             }
@@ -757,6 +760,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
                 if (initialValue.HasValue)
                 {
                     yield return FromVector3(name, initialValue.Value);
+                    // yield break will never executed, should be removed.
                     yield break;
                 }
             }
