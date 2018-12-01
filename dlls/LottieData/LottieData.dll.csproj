@@ -13,8 +13,4 @@
     <PackageReference Include="System.Memory" Version="4.5.1" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.5.2" />
   </ItemGroup>
-
-  <Target Name="Pack">
-    <!-- Empty target to prevent this project from generating a NuGet package -->
-  </Target>
 </Project>

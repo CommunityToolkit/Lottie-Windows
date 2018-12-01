@@ -12,6 +12,7 @@ using System.Text.RegularExpressions;
 //////////////////////////////////////////////////////////////////////
 
 var target = Argument("target", "Default");
+var configuration = Argument("configuration", "Release");
 
 //////////////////////////////////////////////////////////////////////
 // VERSIONS
@@ -66,9 +67,17 @@ void MSBuildSolution(
         return settings;
     }
 
-    var msBuildSettings = SetProperties(SettingsWithTarget().SetConfiguration("Release"));
+    var msBuildSettings = SetProperties(SettingsWithTarget().SetConfiguration(configuration));
 
-    MSBuild($"{baseDir}/Lottie-Windows.sln", msBuildSettings);
+    foreach (var platformTarget in new [] 
+    { 
+        PlatformTarget.x86, 
+        PlatformTarget.MSIL,
+    })
+    {
+        msBuildSettings.PlatformTarget = platformTarget;
+        MSBuild($"{baseDir}/Lottie-Windows.sln", msBuildSettings);
+    }
 }
 
 // Returns true if the given file has a name that indicates it is

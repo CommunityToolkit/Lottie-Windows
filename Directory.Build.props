@@ -25,6 +25,9 @@
     <PackageOutputPath>$(MSBuildThisFileDirectory)bin\nupkg</PackageOutputPath>
     <OutputPath>bin\$(Platform)\$(Configuration)</OutputPath>
 
+    <!-- Default to not creating a NuPkg. Set this to True in projects that should generate a NuPkg -->
+    <IsPackable>False</IsPackable>
+
     <!-- TODO - temporarily turn off warnings as errors while we get the build working on GitHub -->
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
 
