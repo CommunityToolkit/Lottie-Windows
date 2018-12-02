@@ -131,6 +131,7 @@
       <SubType>Designer</SubType>
     </AppxManifest>
     <None Include="LottieViewer_TemporaryKey.pfx" />
+    <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Assets\BadgeLogo.scale-100.png" />
@@ -219,6 +220,11 @@
   <Import Project="..\source\LottieData\LottieData.projitems" Label="Shared" />
   <Import Project="..\source\LottieToWinComp\LottieToWinComp.projitems" Label="Shared" />
   <Import Project="..\source\WinCompData\WinCompData.projitems" Label="Shared" />
+
+  <Target Name="Pack">
+    <!-- Dummy target to mute warnings about attempts to create a NuPkg -->
+  </Target>
+  
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>

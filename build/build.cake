@@ -12,6 +12,7 @@ using System.Text.RegularExpressions;
 //////////////////////////////////////////////////////////////////////
 
 var target = Argument("target", "Default");
+var configuration = Argument("configuration", "Release");
 
 //////////////////////////////////////////////////////////////////////
 // VERSIONS
@@ -27,9 +28,6 @@ var inheritDocVersion = "1.1.1.1";
 var baseDir = MakeAbsolute(Directory("../")).ToString();
 var buildDir = $"{baseDir}/build";
 var toolsDir = $"{buildDir}/tools";
-
-var allConfigurations = new[] {"Lottie-Windows", "LottieGen", "dlls"};
-var configurationsProducingNugets = new[] {"Lottie-Windows", "LottieGen"};
 
 var binDir = $"{baseDir}/bin";
 var nupkgDir =$"{binDir}/nupkg";
@@ -49,11 +47,9 @@ var verifyHeadersExclude = "internal/**";
 // METHODS
 //////////////////////////////////////////////////////////////////////
 
-// Builds the solution with the given target, once for each
-// configuration, setting the given build properties.
+// Builds the solution with the given target setting the given build properties.
 void MSBuildSolution(
     string target,
-    string[] configurations,
     params (string Name, string Value)[] properties)
 {
     MSBuildSettings SettingsWithTarget() => 
@@ -71,9 +67,15 @@ void MSBuildSolution(
         return settings;
     }
 
-    foreach (var configuration in configurations)
+    var msBuildSettings = SetProperties(SettingsWithTarget().SetConfiguration(configuration));
+
+    foreach (var platformTarget in new [] 
+    { 
+        PlatformTarget.x86, 
+        PlatformTarget.MSIL,
+    })
     {
-        var msBuildSettings = SetProperties(SettingsWithTarget().SetConfiguration(configuration));
+        msBuildSettings.PlatformTarget = platformTarget;
         MSBuild($"{baseDir}/Lottie-Windows.sln", msBuildSettings);
     }
 }
@@ -166,7 +168,7 @@ Task("Clean")
     }
 
     // Run the clean target on the solution.
-    MSBuildSolution("Clean", allConfigurations);
+    MSBuildSolution("Clean");
 });
 
 Task("Verify")
@@ -209,12 +211,12 @@ Task("Build")
     Information("\r\nBuilding Solution");
 
     // Restore NuGet packages.
-    MSBuildSolution("Restore", allConfigurations);
+    MSBuildSolution("Restore");
     
     EnsureDirectoryExists(nupkgDir);
 
     // Build.
-    MSBuildSolution("Build", allConfigurations, ("GenerateLibraryLayout", "true"));
+    MSBuildSolution("Build", ("GenerateLibraryLayout", "true"));
 });
 
 Task("InheritDoc")
@@ -252,7 +254,7 @@ Task("Package")
     .Does(() =>
 {
     // Invoke the pack target to generate the code to be packed.
-    MSBuildSolution("Pack", configurationsProducingNugets, ("GenerateLibraryLayout", "true"), ("PackageOutputPath", nupkgDir));
+    MSBuildSolution("Pack", ("GenerateLibraryLayout", "true"), ("PackageOutputPath", nupkgDir));
     
     foreach (var nuspec in GetFiles("./*.nuspec"))
     {

@@ -19,6 +19,7 @@
     <!-- Disable warnings about XML comments temporarily until all the comments have been authored. -->
     <NoWarn>1572;1573;1574;1591</NoWarn>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <IsPackable>True</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
