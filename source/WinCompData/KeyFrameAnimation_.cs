@@ -17,7 +17,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 
         public abstract int KeyFrameCount { get; }
 
-        protected private KeyFrameAnimation_(KeyFrameAnimation_ other)
+        private protected KeyFrameAnimation_(KeyFrameAnimation_ other)
             : base(other)
         {
         }

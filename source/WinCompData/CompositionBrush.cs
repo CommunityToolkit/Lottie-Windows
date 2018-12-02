@@ -9,7 +9,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 #endif
     abstract class CompositionBrush : CompositionObject
     {
-        protected private CompositionBrush()
+        private protected CompositionBrush()
         {
         }
     }

@@ -9,7 +9,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 #endif
     abstract class LottieObject
     {
-        protected private LottieObject(string name)
+        private protected LottieObject(string name)
         {
             Name = name;
         }

@@ -183,7 +183,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
 
         XElement FromCompositionPropertySet(CompositionPropertySet obj)
         {
-            return new XElement("CompositionProperytSet", GetContents());
+            return new XElement("CompositionPropertySet", GetContents());
             IEnumerable<XObject> GetContents()
             {
                 foreach (var item in GetCompositionObjectContents(obj))
@@ -589,7 +589,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
         {
             if (obj is Mgcg.CanvasGeometry)
             {
-                var canvasGeometry = (Mgcg.CanvasGeometry)obj;
                 return new XElement("CanvasGeometry");
             }
             else
@@ -722,7 +721,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
                 if (initialValue.HasValue)
                 {
                     yield return FromScalar(name, initialValue.Value);
-                    yield break;
                 }
             }
         }
@@ -757,7 +755,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
                 if (initialValue.HasValue)
                 {
                     yield return FromVector3(name, initialValue.Value);
-                    yield break;
                 }
             }
         }

@@ -47,19 +47,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         /// Gets the options for the <see cref="LottieVisualSource"/>.
         /// </summary>
         public static DependencyProperty OptionsProperty { get; } =
-            RegisterDP(nameof(Options), LottieVisualOptions.Optimize);
+            RegisterDp(nameof(Options), LottieVisualOptions.Optimize);
 
         /// <summary>
         /// Gets the URI from which to load a JSON Lottie file.
         /// </summary>
         public static DependencyProperty UriSourceProperty { get; } =
-            RegisterDP<Uri>(nameof(UriSource), null,
+            RegisterDp<Uri>(nameof(UriSource), null,
             (owner, oldValue, newValue) => owner.HandleUriSourcePropertyChanged(oldValue, newValue));
 
-        static DependencyProperty RegisterDP<T>(string propertyName, T defaultValue) =>
+        static DependencyProperty RegisterDp<T>(string propertyName, T defaultValue) =>
             DependencyProperty.Register(propertyName, typeof(T), typeof(LottieVisualSource), new PropertyMetadata(defaultValue));
 
-        static DependencyProperty RegisterDP<T>(string propertyName, T defaultValue, Action<LottieVisualSource, T, T> callback) =>
+        static DependencyProperty RegisterDp<T>(string propertyName, T defaultValue, Action<LottieVisualSource, T, T> callback) =>
             DependencyProperty.Register(propertyName, typeof(T), typeof(LottieVisualSource),
                 new PropertyMetadata(defaultValue, (d, e) => callback((LottieVisualSource)d, (T)e.OldValue, (T)e.NewValue)));
 
@@ -559,7 +559,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 {
                     if (_diagnostics != null)
                     {
-                        _diagnostics.IsCompatibleWithCurrentOS = true;
+                        _diagnostics.IsCompatibleWithCurrentOs = true;
                     }
 
                     _wincompDataRootVisual = rootVisual;

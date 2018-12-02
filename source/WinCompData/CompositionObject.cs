@@ -17,7 +17,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
         readonly ListOfNeverNull<Animator> _animators = new ListOfNeverNull<Animator>();
         CompositionPropertySet _propertySet;
 
-        protected private CompositionObject()
+        private protected CompositionObject()
         {
             if (Type == CompositionObjectType.CompositionPropertySet)
             {

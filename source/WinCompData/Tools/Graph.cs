@@ -2,10 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
 {
@@ -16,7 +13,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
     {
         int _vertexCounter;
 
-        protected private Graph()
+        private protected Graph()
         {
         }
 
