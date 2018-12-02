@@ -23,7 +23,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
         readonly Dictionary<Wg.IGeometrySource2D, T> _canvasGeometryReferences = new Dictionary<Wg.IGeometrySource2D, T>();
         readonly Dictionary<CompositionObject, T> _compositionObjectReferences = new Dictionary<CompositionObject, T>();
         readonly Dictionary<CompositionPath, T> _compositionPathReferences = new Dictionary<CompositionPath, T>();
-        readonly Dictionary<CompositionObjectType, int> _compositionObjectCounter = new Dictionary<CompositionObjectType, int>();
+
         int _positionCounter;
 
         ObjectGraph(bool includeVertices)
@@ -34,7 +34,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
         /// <summary>
         /// Returns the graph of nodes reachable from the given <see cref="CompositionObject"/> root.
         /// </summary>
-        public static new ObjectGraph<T> FromCompositionObject(CompositionObject root, bool includeVertices)
+        public new static ObjectGraph<T> FromCompositionObject(CompositionObject root, bool includeVertices)
         {
             var result = new ObjectGraph<T>(includeVertices);
             result.Reference(null, root);
