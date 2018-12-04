@@ -19,7 +19,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
     class Animatable<T> : IAnimatableValue<T>
         where T : IEquatable<T>
     {
-        internal static readonly IEnumerable<KeyFrame<T>> EmptyKeyFrames = new KeyFrame<T>[0];
+        internal static readonly KeyFrame<T>[] EmptyKeyFrames = new KeyFrame<T>[0];
         readonly KeyFrame<T>[] _keyFrames;
 
         /// <summary>
@@ -27,21 +27,33 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// a non-animated value.
         /// </summary>
         public Animatable(T value, int? propertyIndex)
-            : this(value, EmptyKeyFrames, propertyIndex)
         {
+            Debug.Assert(value != null, "Precondition");
+            _keyFrames = EmptyKeyFrames;
+            InitialValue = value;
+            PropertyIndex = propertyIndex;
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Animatable{T}"/> class with
         /// the given key frames.
         /// </summary>
-        public Animatable(T initialValue, IEnumerable<KeyFrame<T>> keyFrames, int? propertyIndex)
+        public Animatable(IEnumerable<KeyFrame<T>> keyFrames, int? propertyIndex)
         {
             _keyFrames = keyFrames.ToArray();
-            InitialValue = initialValue;
+
+            // There must be a least one key frame otherwise this constructor should not have been called.
+            InitialValue = _keyFrames[0].Value;
+
+            if (_keyFrames.Length == 1)
+            {
+                // There's only one key frame so the value never changes. We have
+                // saved the value in InitialValue. Might as well ditch the key frames.
+                _keyFrames = EmptyKeyFrames;
+            }
+
             PropertyIndex = propertyIndex;
 
-            Debug.Assert(initialValue != null, "Precondition");
             Debug.Assert(_keyFrames.All(kf => kf != null), "Precondition");
         }
 
@@ -51,7 +63,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// </summary>
         public Animatable(T initialValue, in ReadOnlySpan<KeyFrame<T>> keyFrames, int? propertyIndex)
         {
-            _keyFrames = keyFrames.ToArray();
+            _keyFrames = keyFrames.Length > 1 ? keyFrames.ToArray() : EmptyKeyFrames;
             InitialValue = initialValue;
             PropertyIndex = propertyIndex;
 
@@ -77,7 +89,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// <summary>
         /// Gets a value indicating whether the <see cref="Animatable{T}"/> has any key frames.
         /// </summary>
-        public bool IsAnimated => _keyFrames.Length > 0;
+        public bool IsAnimated => _keyFrames.Length > 1;
 
         /// <summary>
         /// Returns true if this value is always equal to the given value.

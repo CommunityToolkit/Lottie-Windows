@@ -24,20 +24,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
         static readonly AnimatableComparer<Color> ColorComparer = new AnimatableComparer<Color>();
         static readonly AnimatableComparer<double> FloatComparer = new AnimatableComparer<double>();
         static readonly AnimatableComparer<Sequence<BezierSegment>> PathGeometryComparer = new AnimatableComparer<Sequence<BezierSegment>>();
-        readonly Dictionary<Animatable<Color>, Animatable<Color>> _animatableColorsCache;
-        readonly Dictionary<Animatable<double>, Animatable<double>> _animatableFloatsCache;
         readonly Dictionary<Animatable<Sequence<BezierSegment>>, Animatable<Sequence<BezierSegment>>> _animatablePathGeometriesCache;
 
         public Optimizer()
         {
-            _animatableColorsCache = new Dictionary<Animatable<Color>, Animatable<Color>>(ColorComparer);
-            _animatableFloatsCache = new Dictionary<Animatable<double>, Animatable<double>>(FloatComparer);
             _animatablePathGeometriesCache = new Dictionary<Animatable<Sequence<BezierSegment>>, Animatable<Sequence<BezierSegment>>>(PathGeometryComparer);
         }
-
-        public Animatable<Color> GetOptimized(Animatable<Color> value) => GetOptimized(value, _animatableColorsCache);
-
-        public Animatable<double> GetOptimized(Animatable<double> value) => GetOptimized(value, _animatableFloatsCache);
 
         public Animatable<Sequence<BezierSegment>> GetOptimized(Animatable<Sequence<BezierSegment>> value)
         {
@@ -329,7 +321,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
         /// <param name="animatable">An <see cref="Animatable{T}"/>.</param>
         /// <param name="startTime">The frame time at which rendering starts.</param>
         /// <param name="endTime">The frame time at which rendering ends.</param>
-        /// <returns>The key frames that are visible for rendering between <paramref name="startTime"/>
+        /// <returns>
+        /// The key frames that are visible for rendering between <paramref name="startTime"/>
         /// and <paramref name="endTime"/>, with other key frames removed.
         /// </returns>
         public static ReadOnlySpan<KeyFrame<T>> TrimKeyFrames<T>(Animatable<T> animatable, double startTime, double endTime)
