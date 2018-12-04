@@ -1002,7 +1002,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
                 return result;
             }
 
-            result = CacheAndInitializeCompositionGeometry(obj, _c.CreatePathGeometry(GetCompositionPath(obj.Path)));
+            result = CacheAndInitializeCompositionGeometry(obj, _c.CreatePathGeometry(obj.Path == null ? null : GetCompositionPath(obj.Path)));
             StartAnimationsAndFreeze(obj, result);
             return result;
         }

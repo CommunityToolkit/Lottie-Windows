@@ -169,6 +169,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return true;
         }
 
+        internal Optimizer Optimizer => _lottieDataOptimizer;
+
         void Translate()
         {
             var context = new TranslationContext(_lc);
@@ -298,7 +300,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     mask.Mode == Mask.MaskMode.Additive &&
                     layer.Masks.Length == 1)
                 {
-                    var geometry = mask.Points;
+                    var geometry = context.TrimAnimatable(_lottieDataOptimizer.GetOptimized(mask.Points));
 
                     var compositionPathGeometry = CreatePathGeometry();
                     compositionPathGeometry.Path = CompositionPathFromPathGeometry(
@@ -315,7 +317,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         Describe(compositionPathGeometry, $"{mask.Name}.PathGeometry");
                     }
 
-                    ApplyPathKeyFrameAnimation(context, geometry, SolidColorFill.PathFillType.EvenOdd, compositionPathGeometry, "Path", "Path", null);
+                    if (geometry.IsAnimated)
+                    {
+                        ApplyPathKeyFrameAnimation(context, geometry, SolidColorFill.PathFillType.EvenOdd, compositionPathGeometry, "Path", "Path", null);
+                    }
 
                     visualForMask.Clip = compositionGeometricClip;
                 }
@@ -1144,8 +1149,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 // Get the repeater.
                 var repeater = (Repeater)contentsItems[repeaterIndex];
 
+                var repeaterCount = context.TrimAnimatable(repeater.Count);
+                var repeaterOffset = context.TrimAnimatable(repeater.Offset);
+
                 // Make sure we can handle it.
-                if (repeater.Count.IsAnimated || repeater.Offset.IsAnimated || repeater.Offset.InitialValue != 0)
+                if (repeaterCount.IsAnimated || repeaterOffset.IsAnimated || repeaterOffset.InitialValue != 0)
                 {
                     // TODO - handle all cases.
                     _unsupported.Repeater();
@@ -1156,8 +1164,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     var itemsBeforeRepeater = contentsItems.Take(repeaterIndex).ToArray();
                     var itemsAfterRepeater = contentsItems.Skip(repeaterIndex + 1).ToArray();
 
-                    var repeaterCount = (int)Math.Round(repeater.Count.InitialValue);
-                    for (var i = 0; i < repeaterCount; i++)
+                    var nonAnimatedRepeaterCount = (int)Math.Round(repeaterCount.InitialValue);
+                    for (var i = 0; i < nonAnimatedRepeaterCount; i++)
                     {
                         // Treat each repeated value as a list of items where the repeater is replaced
                         // by n transforms.
@@ -1222,7 +1230,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                             result = newContainer;
 
                             // Apply the transform to the new container at the top.
-                            TranslateAndApplyTransformToContainerShape(context, transform, result);
+                            TranslateAndApplyTransform(context, transform, result);
                         }
 
                         break;
@@ -1250,7 +1258,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         // stack is merged with the merge of the remainder of the stack.
         CompositionShape TranslateMergePathsContent(TranslationContext context, ShapeContentContext shapeContext, Stack<ShapeLayerContent> stack, MergePaths.MergeMode mergeMode)
         {
-            var mergedGeometry = MergeShapeLayerContent(shapeContext, stack, mergeMode);
+            var mergedGeometry = MergeShapeLayerContent(context, shapeContext, stack, mergeMode);
             if (mergedGeometry != null)
             {
                 var result = CreateSpriteShape();
@@ -1264,10 +1272,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
         }
 
-        CanvasGeometry MergeShapeLayerContent(ShapeContentContext context, Stack<ShapeLayerContent> stack, MergePaths.MergeMode mergeMode)
+        CanvasGeometry MergeShapeLayerContent(TranslationContext context, ShapeContentContext shapeContext, Stack<ShapeLayerContent> stack, MergePaths.MergeMode mergeMode)
         {
-            var pathFillType = context.Fill == null ? SolidColorFill.PathFillType.EvenOdd : context.Fill.FillType;
-            var geometries = CreateCanvasGeometries(context, stack, pathFillType).ToArray();
+            var pathFillType = shapeContext.Fill == null ? SolidColorFill.PathFillType.EvenOdd : shapeContext.Fill.FillType;
+            var geometries = CreateCanvasGeometries(context, shapeContext, stack, pathFillType).ToArray();
 
             switch (geometries.Length)
             {
@@ -1361,7 +1369,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
         }
 
-        IEnumerable<CanvasGeometry> CreateCanvasGeometries(ShapeContentContext context, Stack<ShapeLayerContent> stack, SolidColorFill.PathFillType pathFillType)
+        IEnumerable<CanvasGeometry> CreateCanvasGeometries(
+            TranslationContext context,
+            ShapeContentContext shapeContext,
+            Stack<ShapeLayerContent> stack,
+            SolidColorFill.PathFillType pathFillType)
         {
             while (stack.Count > 0)
             {
@@ -1373,7 +1385,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         {
                             // Convert all the shapes in the group to a list of geometries
                             var group = (ShapeGroup)shapeContent;
-                            var groupedGeometries = CreateCanvasGeometries(context.Clone(), new Stack<ShapeLayerContent>(group.Items.ToArray()), pathFillType).ToArray();
+                            var groupedGeometries = CreateCanvasGeometries(context, shapeContext.Clone(), new Stack<ShapeLayerContent>(group.Items.ToArray()), pathFillType).ToArray();
                             foreach (var geometry in groupedGeometries)
                             {
                                 yield return geometry;
@@ -1382,14 +1394,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
                         break;
                     case ShapeContentType.MergePaths:
-                        yield return MergeShapeLayerContent(context, stack, ((MergePaths)shapeContent).Mode);
+                        yield return MergeShapeLayerContent(context, shapeContext, stack, ((MergePaths)shapeContent).Mode);
                         break;
                     case ShapeContentType.Repeater:
                         _unsupported.Repeater();
                         break;
                     case ShapeContentType.Transform:
                         // TODO - do we need to clear out the transform when we've finished with this call to CreateCanvasGeometries?? Maybe the caller should clone the context.
-                        context.SetTransform((Transform)shapeContent);
+                        shapeContext.SetTransform((Transform)shapeContent);
                         break;
 
                     case ShapeContentType.SolidColorStroke:
@@ -1404,13 +1416,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         break;
 
                     case ShapeContentType.Path:
-                        yield return CreateWin2dPathGeometryFromShape(context, (Shape)shapeContent, pathFillType, optimizeLines: true);
+                        yield return CreateWin2dPathGeometryFromShape(context, shapeContext, (Shape)shapeContent, pathFillType, optimizeLines: true);
                         break;
                     case ShapeContentType.Ellipse:
-                        yield return CreateWin2dEllipseGeometry(context, (Ellipse)shapeContent);
+                        yield return CreateWin2dEllipseGeometry(context, shapeContext, (Ellipse)shapeContent);
                         break;
                     case ShapeContentType.Rectangle:
-                        yield return CreateWin2dRectangleGeometry(context, (Rectangle)shapeContent);
+                        yield return CreateWin2dRectangleGeometry(context, shapeContext, (Rectangle)shapeContent);
                         break;
                     case ShapeContentType.Polystar:
                         _unsupported.Polystar();
@@ -1472,7 +1484,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             } // end using
         }
 
-        static Sn.Matrix3x2 CreateMatrixFromTransform(Transform transform)
+        static Sn.Matrix3x2 CreateMatrixFromTransform(TranslationContext context, Transform transform)
         {
             if (transform == null)
             {
@@ -1501,17 +1513,24 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         static double DegreesToRadians(double angle) => Math.PI * angle / 180.0;
 
-        CanvasGeometry CreateWin2dPathGeometryFromShape(ShapeContentContext context, Shape path, SolidColorFill.PathFillType fillType, bool optimizeLines)
+        CanvasGeometry CreateWin2dPathGeometryFromShape(
+            TranslationContext context,
+            ShapeContentContext shapeContext,
+            Shape path,
+            SolidColorFill.PathFillType fillType,
+            bool optimizeLines)
         {
-            if (path.PathData.IsAnimated)
+            var pathData = context.TrimAnimatable(path.PathData);
+
+            if (pathData.IsAnimated)
             {
                 _unsupported.CombiningAnimatedShapes();
             }
 
-            var transform = CreateMatrixFromTransform(context.Transform);
+            var transform = CreateMatrixFromTransform(context, shapeContext.Transform);
 
             var result = CreateWin2dPathGeometry(
-                path.PathData.InitialValue,
+                pathData.InitialValue,
                 fillType,
                 transform,
                 optimizeLines: optimizeLines);
@@ -1524,10 +1543,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return result;
         }
 
-        CanvasGeometry CreateWin2dEllipseGeometry(ShapeContentContext context, Ellipse ellipse)
+        CanvasGeometry CreateWin2dEllipseGeometry(TranslationContext context, ShapeContentContext shapeContext, Ellipse ellipse)
         {
-            var ellipsePosition = ellipse.Position;
-            var ellipseDiameter = ellipse.Diameter;
+            var ellipsePosition = context.TrimAnimatable(ellipse.Position);
+            var ellipseDiameter = context.TrimAnimatable(ellipse.Diameter);
 
             if (ellipsePosition.IsAnimated || ellipseDiameter.IsAnimated)
             {
@@ -1544,7 +1563,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 (float)xRadius,
                 (float)yRadius);
 
-            var transformMatrix = CreateMatrixFromTransform(context.Transform);
+            var transformMatrix = CreateMatrixFromTransform(context, shapeContext.Transform);
             if (!transformMatrix.IsIdentity)
             {
                 result = result.Transform(transformMatrix);
@@ -1558,13 +1577,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return result;
         }
 
-        CanvasGeometry CreateWin2dRectangleGeometry(ShapeContentContext context, Rectangle rectangle)
+        CanvasGeometry CreateWin2dRectangleGeometry(TranslationContext context, ShapeContentContext shapeContext, Rectangle rectangle)
         {
-            var position = rectangle.Position;
-            var size = rectangle.Size;
+            var position = context.TrimAnimatable(rectangle.Position);
+            var size = context.TrimAnimatable(rectangle.Size);
 
             // If a Rectangle is in the context, use it to override the corner radius.
-            var cornerRadius = context.RoundedCorner != null ? context.RoundedCorner.Radius : rectangle.CornerRadius;
+            var cornerRadius = context.TrimAnimatable(shapeContext.RoundedCorner != null ? shapeContext.RoundedCorner.Radius : rectangle.CornerRadius);
 
             if (position.IsAnimated || size.IsAnimated || cornerRadius.IsAnimated)
             {
@@ -1584,7 +1603,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 (float)radius,
                 (float)radius);
 
-            var transformMatrix = CreateMatrixFromTransform(context.Transform);
+            var transformMatrix = CreateMatrixFromTransform(context, shapeContext.Transform);
             if (!transformMatrix.IsIdentity)
             {
                 result = result.Transform(transformMatrix);
@@ -1611,11 +1630,25 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 Describe(compositionEllipseGeometry, $"{shapeContent.Name}.EllipseGeometry");
             }
 
-            compositionEllipseGeometry.Center = Vector2(shapeContent.Position.InitialValue);
-            ApplyVector2KeyFrameAnimation(context, (AnimatableVector3)shapeContent.Position, compositionEllipseGeometry, "Center");
+            var position = context.TrimAnimatable(shapeContent.Position);
+            if (position.IsAnimated)
+            {
+                ApplyVector2KeyFrameAnimation(context, position, compositionEllipseGeometry, "Center");
+            }
+            else
+            {
+                compositionEllipseGeometry.Center = Vector2(position.InitialValue);
+            }
 
-            compositionEllipseGeometry.Radius = Vector2(shapeContent.Diameter.InitialValue) * 0.5F;
-            ApplyScaledVector2KeyFrameAnimation(context, (AnimatableVector3)shapeContent.Diameter, 0.5, compositionEllipseGeometry, "Radius");
+            var diameter = context.TrimAnimatable(shapeContent.Diameter);
+            if (diameter.IsAnimated)
+            {
+                ApplyScaledVector2KeyFrameAnimation(context, diameter, 0.5, compositionEllipseGeometry, "Radius");
+            }
+            else
+            {
+                compositionEllipseGeometry.Radius = Vector2(diameter.InitialValue) * 0.5F;
+            }
 
             TranslateAndApplyShapeContentContext(context, shapeContext, compositionSpriteShape);
 
@@ -1625,6 +1658,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         CompositionShape TranslateRectangleContent(TranslationContext context, ShapeContentContext shapeContext, Rectangle shapeContent)
         {
             var compositionRectangle = CreateSpriteShape();
+            var position = context.TrimAnimatable(shapeContent.Position);
+            var size = context.TrimAnimatable(shapeContent.Size);
 
             if (shapeContent.CornerRadius.AlwaysEquals(0) && shapeContext.RoundedCorner == null)
             {
@@ -1641,18 +1676,23 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
                 // Convert size and position into offset. This is necessary because a geometry's offset is for
                 // its top left corner, wherease a Lottie position is for its centerpoint.
-                geometry.Offset = Vector2(shapeContent.Position.InitialValue - (shapeContent.Size.InitialValue / 2));
+                geometry.Offset = Vector2(position.InitialValue - (size.InitialValue / 2));
 
-                if (shapeContent.Position.IsAnimated || shapeContent.Size.IsAnimated)
+                if (!size.IsAnimated)
                 {
-                    ApplyVector2KeyFrameAnimation(context, (AnimatableVector3)shapeContent.Position, geometry, nameof(Rectangle.Position));
-                    ApplyVector2KeyFrameAnimation(context, (AnimatableVector3)shapeContent.Size, geometry, nameof(Rectangle.Size));
+                    geometry.Size = Vector2(size.InitialValue);
+                }
+
+                if (position.IsAnimated || size.IsAnimated)
+                {
+                    ApplyVector2KeyFrameAnimation(context, position, geometry, nameof(Rectangle.Position));
+                    ApplyVector2KeyFrameAnimation(context, size, geometry, nameof(Rectangle.Size));
 
                     Expr offsetExpression;
-                    if (shapeContent.Position.IsAnimated)
+                    if (position.IsAnimated)
                     {
-                        geometry.Properties.InsertVector2(nameof(Rectangle.Position), Vector2(shapeContent.Position.InitialValue));
-                        if (shapeContent.Size.IsAnimated)
+                        geometry.Properties.InsertVector2(nameof(Rectangle.Position), Vector2(position.InitialValue));
+                        if (size.IsAnimated)
                         {
                             // Size AND position are animated.
                             offsetExpression = ExpressionFactory.PositionAndSizeToOffsetExpression;
@@ -1660,21 +1700,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         else
                         {
                             // Only Position is animated
-                            offsetExpression = ExpressionFactory.HalfSizeToOffsetExpression(Vector2(shapeContent.Size.InitialValue / 2));
+                            offsetExpression = ExpressionFactory.HalfSizeToOffsetExpression(Vector2(size.InitialValue / 2));
                         }
                     }
                     else
                     {
                         // Only Size is animated.
-                        offsetExpression = ExpressionFactory.PositionToOffsetExpression(Vector2(shapeContent.Position.InitialValue));
+                        offsetExpression = ExpressionFactory.PositionToOffsetExpression(Vector2(position.InitialValue));
                     }
 
                     var offsetExpressionAnimation = CreateExpressionAnimation(offsetExpression);
                     offsetExpressionAnimation.SetReferenceParameter("my", geometry);
                     StartExpressionAnimation(geometry, nameof(geometry.Offset), offsetExpressionAnimation);
                 }
-
-                geometry.Size = Vector2(shapeContent.Size.InitialValue);
             }
             else
             {
@@ -1683,28 +1721,36 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 compositionRectangle.Geometry = geometry;
 
                 // If a RoundedRectangle is in the context, use it to override the corner radius.
-                var cornerRadius = shapeContext.RoundedCorner != null ? shapeContext.RoundedCorner.Radius : shapeContent.CornerRadius;
-                if (cornerRadius.IsAnimated || cornerRadius.InitialValue != 0)
+                var cornerRadius = context.TrimAnimatable(shapeContext.RoundedCorner != null ? shapeContext.RoundedCorner.Radius : shapeContent.CornerRadius);
+                if (cornerRadius.IsAnimated)
                 {
-                    geometry.CornerRadius = Vector2((float)cornerRadius.InitialValue);
                     ApplyScalarKeyFrameAnimation(context, cornerRadius, geometry, "CornerRadius.X");
                     ApplyScalarKeyFrameAnimation(context, cornerRadius, geometry, "CornerRadius.Y");
+                }
+                else
+                {
+                    geometry.CornerRadius = Vector2((float)cornerRadius.InitialValue);
                 }
 
                 // Convert size and position into offset. This is necessary because a geometry's offset is for
                 // its top left corner, wherease a Lottie position is for its centerpoint.
-                geometry.Offset = Vector2(shapeContent.Position.InitialValue - (shapeContent.Size.InitialValue / 2));
+                geometry.Offset = Vector2(position.InitialValue - (size.InitialValue / 2));
 
-                if (shapeContent.Position.IsAnimated || shapeContent.Size.IsAnimated)
+                if (!size.IsAnimated)
                 {
-                    ApplyVector2KeyFrameAnimation(context, (AnimatableVector3)shapeContent.Position, geometry, nameof(Rectangle.Position));
-                    ApplyVector2KeyFrameAnimation(context, (AnimatableVector3)shapeContent.Size, geometry, nameof(Rectangle.Size));
+                    geometry.Size = Vector2(size.InitialValue);
+                }
+
+                if (position.IsAnimated || size.IsAnimated)
+                {
+                    ApplyVector2KeyFrameAnimation(context, position, geometry, nameof(Rectangle.Position));
+                    ApplyVector2KeyFrameAnimation(context, size, geometry, nameof(Rectangle.Size));
 
                     Expr offsetExpression;
-                    if (shapeContent.Position.IsAnimated)
+                    if (position.IsAnimated)
                     {
-                        geometry.Properties.InsertVector2(nameof(Rectangle.Position), Vector2(shapeContent.Position.InitialValue));
-                        if (shapeContent.Size.IsAnimated)
+                        geometry.Properties.InsertVector2(nameof(Rectangle.Position), Vector2(position.InitialValue));
+                        if (size.IsAnimated)
                         {
                             // Size AND position are animated.
                             offsetExpression = ExpressionFactory.PositionAndSizeToOffsetExpression;
@@ -1712,21 +1758,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         else
                         {
                             // Only Position is animated
-                            offsetExpression = ExpressionFactory.HalfSizeToOffsetExpression(Vector2(shapeContent.Size.InitialValue / 2));
+                            offsetExpression = ExpressionFactory.HalfSizeToOffsetExpression(Vector2(size.InitialValue / 2));
                         }
                     }
                     else
                     {
                         // Only Size is animated.
-                        offsetExpression = ExpressionFactory.PositionToOffsetExpression(Vector2(shapeContent.Position.InitialValue));
+                        offsetExpression = ExpressionFactory.PositionToOffsetExpression(Vector2(position.InitialValue));
                     }
 
                     var offsetExpressionAnimation = CreateExpressionAnimation(offsetExpression);
                     offsetExpressionAnimation.SetReferenceParameter("my", geometry);
                     StartExpressionAnimation(geometry, nameof(geometry.Offset), offsetExpressionAnimation);
                 }
-
-                geometry.Size = Vector2(shapeContent.Size.InitialValue);
             }
 
             // Lottie rectangles have 0,0 at top right. That causes problems for TrimPath which expects 0,0 to be top left.
@@ -1738,14 +1782,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 (shapeContext.TrimPath.StartPercent.IsAnimated || shapeContext.TrimPath.EndPercent.IsAnimated || shapeContext.TrimPath.OffsetDegrees.IsAnimated ||
                 shapeContext.TrimPath.StartPercent.InitialValue != 0 || shapeContext.TrimPath.EndPercent.InitialValue != 100);
 
-            if (shapeContent.Size.IsAnimated && isPartialTrimPath)
+            if (size.IsAnimated && isPartialTrimPath)
             {
                 // Warn that we might be getting things wrong
                 _unsupported.AnimatedRectangleWithTrimPath();
             }
 
-            var width = shapeContent.Size.InitialValue.X;
-            var height = shapeContent.Size.InitialValue.Y;
+            var width = size.InitialValue.X;
+            var height = size.InitialValue.Y;
             var trimOffsetDegrees = (width / (2 * (width + height))) * 360;
             TranslateAndApplyShapeContentContext(context, shapeContext, compositionRectangle, trimOffsetDegrees: trimOffsetDegrees);
 
@@ -1760,33 +1804,42 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         CompositionShape TranslatePathContent(TranslationContext context, ShapeContentContext shapeContext, Shape shapeContent)
         {
-            if (shapeContext.RoundedCorner != null &&
-                (shapeContext.RoundedCorner.Radius.IsAnimated || shapeContext.RoundedCorner.Radius.InitialValue != 0))
+            if (shapeContext.RoundedCorner != null)
             {
-                // TODO - can rounded corners be implemented by composing cubic beziers?
-                _unsupported.PathWithRoundedCorners();
+                var trimmedRadius = context.TrimAnimatable(shapeContext.RoundedCorner.Radius);
+                if (trimmedRadius.IsAnimated || trimmedRadius.InitialValue != 0)
+                {
+                    // TODO - can rounded corners be implemented by composing cubic beziers?
+                    _unsupported.PathWithRoundedCorners();
+                }
             }
 
             // Map Path's Geometry data to PathGeometry.Path
-            var pathGeometry = shapeContent.PathData;
+            var pathGeometry = context.TrimAnimatable(_lottieDataOptimizer.GetOptimized(shapeContent.PathData));
 
             // A path is represented as a SpriteShape with a CompositionPathGeometry.
-            var compositionSpriteShape = CreateSpriteShape();
-
             var compositionPathGeometry = CreatePathGeometry();
+
+            var compositionSpriteShape = CreateSpriteShape();
             compositionSpriteShape.Geometry = compositionPathGeometry;
-            compositionPathGeometry.Path = CompositionPathFromPathGeometry(
-                pathGeometry.InitialValue,
-                GetPathFillType(shapeContext.Fill),
-                optimizeLines: true);
+
+            if (pathGeometry.IsAnimated)
+            {
+                ApplyPathKeyFrameAnimation(context, pathGeometry, GetPathFillType(shapeContext.Fill), compositionPathGeometry, nameof(compositionPathGeometry.Path), "Path");
+            }
+            else
+            {
+                compositionPathGeometry.Path = CompositionPathFromPathGeometry(
+                    pathGeometry.InitialValue,
+                    GetPathFillType(shapeContext.Fill),
+                    optimizeLines: true);
+            }
 
             if (_addDescriptions)
             {
                 Describe(compositionSpriteShape, shapeContent.Name);
                 Describe(compositionPathGeometry, $"{shapeContent.Name}.PathGeometry");
             }
-
-            ApplyPathKeyFrameAnimation(context, pathGeometry, GetPathFillType(shapeContext.Fill), compositionPathGeometry, "Path", "Path", null);
 
             TranslateAndApplyShapeContentContext(context, shapeContext, compositionSpriteShape, 0);
 
@@ -1795,8 +1848,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         void TranslateAndApplyShapeContentContext(TranslationContext context, ShapeContentContext shapeContext, CompositionSpriteShape shape, double trimOffsetDegrees = 0)
         {
-            shape.FillBrush = TranslateShapeFill(context, shapeContext.Fill, shapeContext.OpacityPercent);
-            TranslateAndApplyStroke(context, shapeContext.Stroke, shape, shapeContext.OpacityPercent);
+            shape.FillBrush = TranslateShapeFill(context, shapeContext.Fill, context.TrimAnimatable(shapeContext.OpacityPercent));
+            TranslateAndApplyStroke(context, shapeContext.Stroke, shape, context.TrimAnimatable(shapeContext.OpacityPercent));
             TranslateAndApplyTrimPath(context, shapeContext.TrimPath, shape.Geometry, trimOffsetDegrees);
         }
 
@@ -1824,7 +1877,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
         }
 
-        static AnimatableOrder GetAnimatableOrder(Animatable<double> a, Animatable<double> b)
+        static AnimatableOrder GetAnimatableOrder(in TrimmedAnimatable<double> a, in TrimmedAnimatable<double> b)
         {
             var initialA = a.InitialValue;
             var initialB = b.InitialValue;
@@ -1889,8 +1942,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 return;
             }
 
-            var startPercent = _lottieDataOptimizer.GetOptimized(trimPath.StartPercent);
-            var endPercent = _lottieDataOptimizer.GetOptimized(trimPath.EndPercent);
+            var startPercent = context.TrimAnimatable(trimPath.StartPercent);
+            var endPercent = context.TrimAnimatable(trimPath.EndPercent);
+            var trimPathOffsetDegrees = context.TrimAnimatable(trimPath.OffsetDegrees);
 
             if (!startPercent.IsAnimated && !endPercent.IsAnimated)
             {
@@ -1946,19 +2000,32 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
             else
             {
-                geometry.TrimStart = Float(startPercent.InitialValue / 100);
-                ApplyScaledScalarKeyFrameAnimation(context, startPercent, 1 / 100.0, geometry, nameof(geometry.TrimStart), "TrimStart", null);
+                // Directly animate the TrimStart and TrimEnd properties.
+                if (startPercent.IsAnimated)
+                {
+                    ApplyScaledScalarKeyFrameAnimation(context, startPercent, 1 / 100.0, geometry, nameof(geometry.TrimStart), "TrimStart", null);
+                }
+                else
+                {
+                    geometry.TrimStart = Float(startPercent.InitialValue / 100);
+                }
 
-                geometry.TrimEnd = Float(endPercent.InitialValue / 100);
-                ApplyScaledScalarKeyFrameAnimation(context, endPercent, 1 / 100.0, geometry, nameof(geometry.TrimEnd), "TrimEnd", null);
+                if (endPercent.IsAnimated)
+                {
+                    ApplyScaledScalarKeyFrameAnimation(context, endPercent, 1 / 100.0, geometry, nameof(geometry.TrimEnd), "TrimEnd", null);
+                }
+                else
+                {
+                    geometry.TrimEnd = Float(endPercent.InitialValue / 100);
+                }
             }
 
-            if (trimOffsetDegrees != 0 && !trimPath.OffsetDegrees.IsAnimated)
+            if (trimOffsetDegrees != 0 && !trimPathOffsetDegrees.IsAnimated)
             {
                 // Rectangle shapes are treated specially here to account for Lottie rectangle 0,0 being
                 // top right and WinComp rectangle 0,0 being top left. As long as the TrimOffset isn't
                 // being animated we can simply add an offset to the trim path.
-                geometry.TrimOffset = (float)((trimPath.OffsetDegrees.InitialValue + trimOffsetDegrees) / 360);
+                geometry.TrimOffset = (float)((trimPathOffsetDegrees.InitialValue + trimOffsetDegrees) / 360);
             }
             else
             {
@@ -1968,12 +2035,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     _unsupported.AnimatedTrimOffsetWithStaticTrimOffset();
                 }
 
-                geometry.TrimOffset = Float(trimPath.OffsetDegrees.InitialValue / 360);
-                ApplyScaledScalarKeyFrameAnimation(context, trimPath.OffsetDegrees, 1 / 360.0, geometry, nameof(geometry.TrimOffset), "TrimOffset", null);
+                if (trimPathOffsetDegrees.IsAnimated)
+                {
+                    ApplyScaledScalarKeyFrameAnimation(context, trimPathOffsetDegrees, 1 / 360.0, geometry, nameof(geometry.TrimOffset), "TrimOffset", null);
+                }
+                else
+                {
+                    geometry.TrimOffset = Float(trimPathOffsetDegrees.InitialValue / 360);
+                }
             }
         }
 
-        void TranslateAndApplyStroke(TranslationContext context, SolidColorStroke shapeStroke, CompositionSpriteShape sprite, Animatable<double> opacityPercent)
+        void TranslateAndApplyStroke(
+            TranslationContext context,
+            SolidColorStroke shapeStroke,
+            CompositionSpriteShape sprite,
+            TrimmedAnimatable<double> contextOpacityPercent)
         {
             if (shapeStroke == null || shapeStroke.Thickness.AlwaysEquals(0))
             {
@@ -1981,29 +2058,30 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
 
             // A ShapeStroke is represented as a CompositionColorBrush and Stroke properties on the relevant SpriteShape.
-
             // Map ShapeStroke's color to SpriteShape.StrokeBrush
             sprite.StrokeBrush = CreateAnimatedColorBrush(
                 context,
                 MultiplyAnimatableColorByAnimatableOpacityPercent(
                     context.TrimAnimatable(shapeStroke.Color),
                     context.TrimAnimatable(shapeStroke.OpacityPercent)),
-                context.TrimAnimatable(opacityPercent));
+                contextOpacityPercent);
 
-            // Map ShapeStroke's width to SpriteShape.StrokeThickness
-            sprite.StrokeThickness = (float)shapeStroke.Thickness.InitialValue;
-            ApplyScalarKeyFrameAnimation(context, shapeStroke.Thickness, sprite, nameof(sprite.StrokeThickness));
+            var strokeThickness = context.TrimAnimatable(shapeStroke.Thickness);
+            if (strokeThickness.IsAnimated)
+            {
+                ApplyScalarKeyFrameAnimation(context, strokeThickness, sprite, nameof(sprite.StrokeThickness));
+            }
+            else
+            {
+                sprite.StrokeThickness = (float)strokeThickness.InitialValue;
+            }
 
-            // Map ShapeStroke's linecap to SpriteShape.StrokeStart/End/DashCap
             sprite.StrokeStartCap = sprite.StrokeEndCap = sprite.StrokeDashCap = StrokeCap(shapeStroke.CapType);
 
-            // Map ShapeStroke's linejoin to SpriteShape.StrokeLineJoin
             sprite.StrokeLineJoin = StrokeLineJoin(shapeStroke.JoinType);
 
-            // Set MiterLimit
             sprite.StrokeMiterLimit = (float)shapeStroke.MiterLimit;
 
-            // Map ShapeStroke's dash pattern to SpriteShape.StrokeDashArray
             // NOTE: DashPattern animation (animating dash sizes) are not supported on CompositionSpriteShape.
             foreach (var dash in shapeStroke.DashPattern)
             {
@@ -2011,11 +2089,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
 
             // Set DashOffset
-            sprite.StrokeDashOffset = (float)shapeStroke.DashOffset.InitialValue;
-            ApplyScalarKeyFrameAnimation(context, shapeStroke.DashOffset, sprite, nameof(sprite.StrokeDashOffset));
+            var strokeDashOffset = context.TrimAnimatable(shapeStroke.DashOffset);
+            if (strokeDashOffset.IsAnimated)
+            {
+                ApplyScalarKeyFrameAnimation(context, strokeDashOffset, sprite, nameof(sprite.StrokeDashOffset));
+            }
+            else
+            {
+                sprite.StrokeDashOffset = (float)strokeDashOffset.InitialValue;
+            }
         }
 
-        CompositionColorBrush TranslateShapeFill(TranslationContext context, SolidColorFill shapeFill, Animatable<double> opacityPercent)
+        CompositionColorBrush TranslateShapeFill(TranslationContext context, SolidColorFill shapeFill, TrimmedAnimatable<double> opacityPercent)
         {
             if (shapeFill == null)
             {
@@ -2028,7 +2113,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 MultiplyAnimatableColorByAnimatableOpacityPercent(
                     context.TrimAnimatable(shapeFill.Color),
                     context.TrimAnimatable(shapeFill.OpacityPercent)),
-                context.TrimAnimatable(opacityPercent));
+                opacityPercent);
         }
 
         ShapeOrVisual? TranslateSolidLayer(TranslationContext context, SolidLayer layer)
@@ -2075,7 +2160,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             containerShapeContentNode.Shapes.Add(rectangle);
 
-            rectangle.FillBrush = CreateAnimatedColorBrush(context, layer.Color, layer.Transform.OpacityPercent);
+            rectangle.FillBrush = CreateAnimatedColorBrush(context, layer.Color, context.TrimAnimatable(layer.Transform.OpacityPercent));
 
             if (_addDescriptions)
             {
@@ -2109,7 +2194,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             leafTransformNode = CreateContainerVisual();
 
             // Apply the transform.
-            TranslateAndApplyTransformToContainerVisual(context, layer.Transform, leafTransformNode);
+            TranslateAndApplyTransform(context, layer.Transform, leafTransformNode);
             if (_addDescriptions)
             {
                 Describe(leafTransformNode, $"Transforms for {layer.Name}");
@@ -2144,7 +2229,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             leafTransformNode = CreateContainerShape();
 
             // Apply the transform from the layer.
-            TranslateAndApplyTransformToContainerShape(context, layer.Transform, leafTransformNode);
+            TranslateAndApplyTransform(context, layer.Transform, leafTransformNode);
 
 #if NoTransformInheritance
             rootTransformNode = leafTransformNode;
@@ -2168,233 +2253,129 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 #endif
         }
 
-        void TranslateAndApplyTransformToContainerVisual(TranslationContext context, Transform transform, ContainerVisual container)
+        void TranslateAndApplyTransform(
+            TranslationContext context,
+            Transform transform,
+            ContainerShapeOrVisual container)
         {
-            TranslateAndApplyAnchorAndPositionToContainerVisual(context, transform.Anchor, transform.Position, container);
+            TranslateAndApplyAnchorPositionRotationAndScale(
+                context,
+                transform.Anchor,
+                transform.Position,
+                context.TrimAnimatable(transform.RotationDegrees),
+                context.TrimAnimatable(transform.ScalePercent),
+                container);
 
-#if !NoScaling
-            container.Scale = Vector3DefaultIsOne(transform.ScalePercent.InitialValue * (1 / 100.0));
-            ApplyScaledVector3KeyFrameAnimation(context, (AnimatableVector3)transform.ScalePercent, 1 / 100.0, container, nameof(container.Scale), "Scale", null);
-#endif
+            // set Skew and Skew Axis
+            // TODO: TransformMatrix --> for a Layer, does this clash with Visibility? Should I add an extra Container?
+        }
 
-            container.RotationAngleInDegrees = FloatDefaultIsZero(transform.RotationDegrees.InitialValue);
-            ApplyScalarKeyFrameAnimation(context, transform.RotationDegrees, container, nameof(container.RotationAngleInDegrees));
-
-            if (transform.OpacityPercent.IsAnimated || transform.OpacityPercent.InitialValue != 100)
+        void TranslateAndApplyAnchorPositionRotationAndScale(
+            TranslationContext context,
+            IAnimatableVector3 anchor,
+            IAnimatableVector3 position,
+            in TrimmedAnimatable<double> rotationDegrees,
+            in TrimmedAnimatable<Vector3> scalePercent,
+            ContainerShapeOrVisual container)
+        {
+            // There are many different cases to consider in order to do this optimally:
+            // * Is the container a CompositionContainerShape (Vector2 properties)
+            //    or a ContainerVisual (Vector3 properties)
+            // * Is the anchor animated?
+            // * Is the anchor expressed as a Vector2 or as X and Y values?
+            // * Is the position animated?
+            // * Is the position expressed as a Vector2 or as X and Y values?
+            // * Is rotation or scale specified? (If they're not and
+            //    the anchor is static then the anchor can be expressed
+            //    as just an offset)
+            //
+            // The current implementation doesn't take all cases into consideration yet.
+            if (rotationDegrees.IsAnimated)
             {
-                // TODO - apply opacity to the visual, and ensure it doesn't get pushed to brushes
+                ApplyScalarKeyFrameAnimation(context, rotationDegrees, container, nameof(container.RotationAngleInDegrees), "Rotation");
+            }
+            else
+            {
+                container.RotationAngleInDegrees = FloatDefaultIsZero(rotationDegrees.InitialValue);
             }
 
-            // set Skew and Skew Axis
-            // TODO: TransformMatrix --> for a Layer, does this clash with Visibility? Should I add an extra ContainerShape?
-        }
-
-        void TranslateAndApplyTransformToContainerShape(TranslationContext context, Transform transform, CompositionContainerShape container)
-        {
-            TranslateAndApplyAnchorAndPositionToContainerShape(context, transform.Anchor, transform.Position, container);
-
 #if !NoScaling
-            container.Scale = Vector2DefaultIsOne(transform.ScalePercent.InitialValue * (1 / 100.0));
-            ApplyScaledVector2KeyFrameAnimation(context, (AnimatableVector3)transform.ScalePercent, 1 / 100.0, container, nameof(container.Scale), "Scale", null);
+            if (scalePercent.IsAnimated)
+            {
+                if (container.IsShape)
+                {
+                    ApplyScaledVector2KeyFrameAnimation(context, scalePercent, 1 / 100.0, container, nameof(container.Scale), "Scale");
+                }
+                else
+                {
+                    ApplyScaledVector3KeyFrameAnimation(context, scalePercent, 1 / 100.0, container, nameof(container.Scale), "Scale");
+                }
+            }
+            else
+            {
+                container.Scale = Vector2DefaultIsOne(scalePercent.InitialValue * (1 / 100.0));
+            }
 #endif
 
-            container.RotationAngleInDegrees = FloatDefaultIsZero(transform.RotationDegrees.InitialValue);
-            ApplyScalarKeyFrameAnimation(context, transform.RotationDegrees, container, nameof(container.RotationAngleInDegrees));
-
-            // set Skew and Skew Axis
-            // TODO: TransformMatrix --> for a Layer, does this clash with Visibility? Should I add an extra ContainerShape?
-        }
-
-        void TranslateAndApplyAnchorAndPositionToContainerVisual(TranslationContext context, IAnimatableVector3 anchor, IAnimatableVector3 position, ContainerVisual container)
-        {
-            ReadOnlySpan<KeyFrame<double>> anchorXKeyFrames = null;
-            ReadOnlySpan<KeyFrame<double>> anchorYKeyFrames = null;
-            ReadOnlySpan<KeyFrame<Vector3>> anchor3KeyFrames = null;
+            var anchorX = default(TrimmedAnimatable<double>);
+            var anchorY = default(TrimmedAnimatable<double>);
+            var anchor3 = default(TrimmedAnimatable<Vector3>);
 
             var xyzAnchor = anchor as AnimatableXYZ;
             if (xyzAnchor != null)
             {
-                anchorXKeyFrames = context.TrimKeyFrames(xyzAnchor.X);
-                anchorYKeyFrames = context.TrimKeyFrames(xyzAnchor.Y);
+                anchorX = context.TrimAnimatable(xyzAnchor.X);
+                anchorY = context.TrimAnimatable(xyzAnchor.Y);
             }
             else
             {
-                anchor3KeyFrames = context.TrimKeyFrames((AnimatableVector3)anchor);
+                anchor3 = context.TrimAnimatable(anchor);
             }
 
-            ReadOnlySpan<KeyFrame<double>> positionXKeyFrames = null;
-            ReadOnlySpan<KeyFrame<double>> positionYKeyFrames = null;
-            ReadOnlySpan<KeyFrame<Vector3>> position3KeyFrames = null;
+            var positionX = default(TrimmedAnimatable<double>);
+            var positionY = default(TrimmedAnimatable<double>);
+            var position3 = default(TrimmedAnimatable<Vector3>);
 
             var xyzPosition = position as AnimatableXYZ;
             if (xyzPosition != null)
             {
-                positionXKeyFrames = context.TrimKeyFrames(xyzPosition.X);
-                positionYKeyFrames = context.TrimKeyFrames(xyzPosition.Y);
+                positionX = context.TrimAnimatable(xyzPosition.X);
+                positionY = context.TrimAnimatable(xyzPosition.Y);
             }
             else
             {
-                position3KeyFrames = context.TrimKeyFrames((AnimatableVector3)position);
+                position3 = context.TrimAnimatable(position);
             }
 
-            var anchorIsAnimated = xyzAnchor != null ? anchorXKeyFrames.Length > 0 || anchorYKeyFrames.Length > 0 : anchor3KeyFrames.Length > 0;
-            var positionIsAnimated = xyzPosition != null ? positionXKeyFrames.Length > 0 || positionYKeyFrames.Length > 0 : position3KeyFrames.Length > 0;
+            var anchorIsAnimated = anchorX.IsAnimated || anchorY.IsAnimated || anchor3.IsAnimated;
+            var positionIsAnimated = positionX.IsAnimated || positionY.IsAnimated || position3.IsAnimated;
 
-            var initialAnchor = xyzAnchor != null ? Vector2(anchorXKeyFrames[0].Value, anchorYKeyFrames[0].Value) : Vector2(anchor3KeyFrames[0].Value);
-            var initialPosition = xyzPosition != null ? Vector2(positionXKeyFrames[0].Value, positionYKeyFrames[0].Value) : Vector2(position3KeyFrames[0].Value);
+            var initialAnchor = xyzAnchor != null ? Vector2(anchorX.InitialValue, anchorY.InitialValue) : Vector2(anchor3.InitialValue);
+            var initialPosition = xyzPosition != null ? Vector2(positionX.InitialValue, positionY.InitialValue) : Vector2(position3.InitialValue);
 
             // The Lottie Anchor is the centerpoint of the object and is used for rotation and scaling.
             if (anchorIsAnimated)
             {
                 container.Properties.InsertVector2("Anchor", initialAnchor);
-                var centerPointExpression = CreateExpressionAnimation(MyAnchor3);
+                var centerPointExpression = CreateExpressionAnimation(container.IsShape ? MyAnchor2 : MyAnchor3);
                 centerPointExpression.SetReferenceParameter("my", container);
                 StartExpressionAnimation(container, nameof(container.CenterPoint), centerPointExpression);
 
                 if (xyzAnchor != null)
                 {
-                    ApplyScalarKeyFrameAnimation(context, xyzAnchor.X, container, targetPropertyName: "Anchor.X");
-                    ApplyScalarKeyFrameAnimation(context, xyzAnchor.Y, container, targetPropertyName: "Anchor.Y");
-                }
-                else
-                {
-                    ApplyVector2KeyFrameAnimation(context, (AnimatableVector3)anchor, container, "Anchor");
-                }
-            }
-            else
-            {
-                container.CenterPoint = Vector3DefaultIsZero(initialAnchor);
-            }
-
-            // If the position or anchor are animated, the offset needs to be calculated via an expression.
-            ExpressionAnimation offsetExpression = null;
-            if (positionIsAnimated && anchorIsAnimated)
-            {
-                // Both position and anchor are animated.
-                offsetExpression = CreateExpressionAnimation(PositionMinusAnchor3);
-            }
-            else if (positionIsAnimated)
-            {
-                // Only position is animated.
-                if (initialAnchor == Sn.Vector2.Zero)
-                {
-                    // Position and Offset are equivalent because the Anchor is not animated and is 0.
-                    // We don't need to animate a Position property - we can animate Offset directly.
-                    positionIsAnimated = false;
-
-                    if (xyzPosition != null)
+                    if (anchorX.IsAnimated)
                     {
-                        ApplyScalarKeyFrameAnimation(context, xyzPosition.X, container, targetPropertyName: "Offset.X");
-                        ApplyScalarKeyFrameAnimation(context, xyzPosition.Y, container, targetPropertyName: "Offset.Y");
+                        ApplyScalarKeyFrameAnimation(context, anchorX, container.Properties, targetPropertyName: "Anchor.X");
                     }
-                    else
+
+                    if (anchorY.IsAnimated)
                     {
-                        // TODO - when we support spatial bezier CubicBezierFunction3, we can enable this. For now this
-                        //        may result in a CubicBezierFunction2 being applied to the Vector3 Offset property.
-                        //ApplyVector3KeyFrameAnimation(context, (AnimatableVector3)position, container, "Offset");
-                        offsetExpression = CreateExpressionAnimation(Expr.Vector3(
-                                                Expr.Subtract(Expr.Scalar("my.Position.X"), Expr.Scalar(initialAnchor.X)),
-                                                Expr.Subtract(Expr.Scalar("my.Position.Y"), Expr.Scalar(initialAnchor.Y))));
-                        positionIsAnimated = true;
+                        ApplyScalarKeyFrameAnimation(context, anchorY, container.Properties, targetPropertyName: "Anchor.Y");
                     }
                 }
                 else
                 {
-                    offsetExpression = CreateExpressionAnimation(Expr.Vector3(
-                                            Expr.Subtract(Expr.Scalar("my.Position.X"), Expr.Scalar(initialAnchor.X)),
-                                            Expr.Subtract(Expr.Scalar("my.Position.Y"), Expr.Scalar(initialAnchor.Y))));
-                }
-            }
-            else if (anchorIsAnimated)
-            {
-                // Only anchor is animated.
-                offsetExpression = CreateExpressionAnimation(Expr.Vector3(
-                                        Expr.Subtract(Expr.Scalar(initialPosition.X), Expr.Scalar("my.Anchor.X")),
-                                        Expr.Subtract(Expr.Scalar(initialPosition.Y), Expr.Scalar("myAnchor.Y"))));
-            }
-            else
-            {
-                // Position and Anchor are static. No expression needed.
-                container.Offset = Vector3DefaultIsZero(initialPosition - initialAnchor);
-            }
-
-            // Position is a Lottie-only concept. It offsets the object relative to the Anchor.
-            if (positionIsAnimated)
-            {
-                container.Properties.InsertVector2("Position", initialPosition);
-
-                if (xyzPosition != null)
-                {
-                    ApplyScalarKeyFrameAnimation(context, xyzPosition.X, container, targetPropertyName: "Position.X");
-                    ApplyScalarKeyFrameAnimation(context, xyzPosition.Y, container, targetPropertyName: "Position.Y");
-                }
-                else
-                {
-                    ApplyVector2KeyFrameAnimation(context, (AnimatableVector3)position, container, "Position");
-                }
-            }
-
-            if (offsetExpression != null)
-            {
-                offsetExpression.SetReferenceParameter("my", container);
-                StartExpressionAnimation(container, nameof(container.Offset), offsetExpression);
-            }
-        }
-
-        void TranslateAndApplyAnchorAndPositionToContainerShape(TranslationContext context, IAnimatableVector3 anchor, IAnimatableVector3 position, CompositionContainerShape container)
-        {
-            ReadOnlySpan<KeyFrame<double>> anchorXKeyFrames = null;
-            ReadOnlySpan<KeyFrame<double>> anchorYKeyFrames = null;
-            ReadOnlySpan<KeyFrame<Vector3>> anchor3KeyFrames = null;
-
-            var xyzAnchor = anchor as AnimatableXYZ;
-            if (xyzAnchor != null)
-            {
-                anchorXKeyFrames = context.TrimKeyFrames(xyzAnchor.X);
-                anchorYKeyFrames = context.TrimKeyFrames(xyzAnchor.Y);
-            }
-            else
-            {
-                anchor3KeyFrames = context.TrimKeyFrames((AnimatableVector3)anchor);
-            }
-
-            ReadOnlySpan<KeyFrame<double>> positionXKeyFrames = null;
-            ReadOnlySpan<KeyFrame<double>> positionYKeyFrames = null;
-            ReadOnlySpan<KeyFrame<Vector3>> position3KeyFrames = null;
-
-            var xyzPosition = position as AnimatableXYZ;
-            if (xyzPosition != null)
-            {
-                positionXKeyFrames = context.TrimKeyFrames(xyzPosition.X);
-                positionYKeyFrames = context.TrimKeyFrames(xyzPosition.Y);
-            }
-            else
-            {
-                position3KeyFrames = context.TrimKeyFrames((AnimatableVector3)position);
-            }
-
-            var anchorIsAnimated = xyzAnchor != null ? anchorXKeyFrames.Length > 0 || anchorYKeyFrames.Length > 0 : anchor3KeyFrames.Length > 0;
-            var positionIsAnimated = xyzPosition != null ? positionXKeyFrames.Length > 0 || positionYKeyFrames.Length > 0 : position3KeyFrames.Length > 0;
-
-            var initialAnchor = xyzAnchor != null ? Vector2(anchorXKeyFrames[0].Value, anchorYKeyFrames[0].Value) : Vector2(anchor3KeyFrames[0].Value);
-            var initialPosition = xyzPosition != null ? Vector2(positionXKeyFrames[0].Value, positionYKeyFrames[0].Value) : Vector2(position3KeyFrames[0].Value);
-
-            // The Lottie Anchor is the centerpoint of the object and is used for rotation and scaling.
-            if (anchorIsAnimated)
-            {
-                container.Properties.InsertVector2("Anchor", initialAnchor);
-                var centerPointExpression = CreateExpressionAnimation(MyAnchor2);
-                centerPointExpression.SetReferenceParameter("my", container);
-                StartExpressionAnimation(container, nameof(container.CenterPoint), centerPointExpression);
-
-                if (xyzAnchor != null)
-                {
-                    ApplyScalarKeyFrameAnimation(context, xyzAnchor.X, container, "Anchor.X");
-                    ApplyScalarKeyFrameAnimation(context, xyzAnchor.Y, container, "Anchor.Y");
-                }
-                else
-                {
-                    ApplyVector2KeyFrameAnimation(context, (AnimatableVector3)anchor, container, "Anchor");
+                    ApplyVector2KeyFrameAnimation(context, anchor3, container.Properties, "Anchor");
                 }
             }
             else
@@ -2406,8 +2387,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             ExpressionAnimation offsetExpression = null;
             if (positionIsAnimated && anchorIsAnimated)
             {
-                // Position and Anchor are both animated.
-                offsetExpression = CreateExpressionAnimation(PositionMinusAnchor2);
+                // Both position and anchor are animated.
+                offsetExpression = CreateExpressionAnimation(container.IsShape ? PositionMinusAnchor2 : PositionMinusAnchor3);
             }
             else if (positionIsAnimated)
             {
@@ -2420,25 +2401,61 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
                     if (xyzPosition != null)
                     {
-                        ApplyScalarKeyFrameAnimation(context, xyzPosition.X, container, targetPropertyName: "Offset.X");
-                        ApplyScalarKeyFrameAnimation(context, xyzPosition.Y, container, targetPropertyName: "Offset.Y");
+                        if (!positionX.IsAnimated || !positionY.IsAnimated)
+                        {
+                            container.Offset = Vector2DefaultIsZero(initialPosition - initialAnchor);
+                        }
+
+                        if (positionX.IsAnimated)
+                        {
+                            ApplyScalarKeyFrameAnimation(context, positionX, container, targetPropertyName: "Offset.X");
+                        }
+
+                        if (positionY.IsAnimated)
+                        {
+                            ApplyScalarKeyFrameAnimation(context, positionY, container, targetPropertyName: "Offset.Y");
+                        }
                     }
                     else
                     {
-                        ApplyVector2KeyFrameAnimation(context, (AnimatableVector3)position, container, "Offset");
+                        // TODO - when we support spatial bezier CubicBezierFunction3, we can enable this. For now this
+                        //        may result in a CubicBezierFunction2 being applied to the Vector3 Offset property.
+                        //ApplyVector3KeyFrameAnimation(context, (AnimatableVector3)position, container, "Offset");
+                        offsetExpression = CreateExpressionAnimation(container.IsShape
+                            ? (Expr)Expr.Vector2(
+                                Expr.Subtract(Expr.Scalar("my.Position.X"), Expr.Scalar(initialAnchor.X)),
+                                Expr.Subtract(Expr.Scalar("my.Position.Y"), Expr.Scalar(initialAnchor.Y)))
+                            : (Expr)Expr.Vector3(
+                                Expr.Subtract(Expr.Scalar("my.Position.X"), Expr.Scalar(initialAnchor.X)),
+                                Expr.Subtract(Expr.Scalar("my.Position.Y"), Expr.Scalar(initialAnchor.Y))));
+
+                        positionIsAnimated = true;
                     }
                 }
                 else
                 {
-                    offsetExpression = CreateExpressionAnimation(Expr.Subtract(MyPosition2, Expr.Vector2(initialAnchor)));
+                    offsetExpression = CreateExpressionAnimation(container.IsShape
+                        ? (Expr)Expr.Vector2(
+                            Expr.Subtract(Expr.Scalar("my.Position.X"), Expr.Scalar(initialAnchor.X)),
+                            Expr.Subtract(Expr.Scalar("my.Position.Y"), Expr.Scalar(initialAnchor.Y)))
+                        : (Expr)Expr.Vector3(
+                            Expr.Subtract(Expr.Scalar("my.Position.X"), Expr.Scalar(initialAnchor.X)),
+                            Expr.Subtract(Expr.Scalar("my.Position.Y"), Expr.Scalar(initialAnchor.Y))));
                 }
             }
             else if (anchorIsAnimated)
             {
-                // Only Anchor is animated.
-                offsetExpression = CreateExpressionAnimation(Expr.Subtract(Expr.Vector2(initialPosition), MyAnchor2));
+                // Only anchor is animated.
+                offsetExpression = CreateExpressionAnimation(container.IsShape
+                    ? (Expr)Expr.Vector2(
+                        Expr.Subtract(Expr.Scalar(initialPosition.X), Expr.Scalar("my.Anchor.X")),
+                        Expr.Subtract(Expr.Scalar(initialPosition.Y), Expr.Scalar("myAnchor.Y")))
+                    : (Expr)Expr.Vector3(
+                        Expr.Subtract(Expr.Scalar(initialPosition.X), Expr.Scalar("my.Anchor.X")),
+                        Expr.Subtract(Expr.Scalar(initialPosition.Y), Expr.Scalar("myAnchor.Y"))));
             }
-            else
+
+            if (!positionIsAnimated && !anchorIsAnimated)
             {
                 // Position and Anchor are static. No expression needed.
                 container.Offset = Vector2DefaultIsZero(initialPosition - initialAnchor);
@@ -2448,20 +2465,27 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             if (positionIsAnimated)
             {
                 container.Properties.InsertVector2("Position", initialPosition);
+
                 if (xyzPosition != null)
                 {
-                    ApplyScalarKeyFrameAnimation(context, xyzPosition.X, container, targetPropertyName: "Position.X");
-                    ApplyScalarKeyFrameAnimation(context, xyzPosition.Y, container, targetPropertyName: "Position.Y");
+                    if (positionX.IsAnimated)
+                    {
+                        ApplyScalarKeyFrameAnimation(context, positionX, container.Properties, targetPropertyName: "Position.X");
+                    }
+
+                    if (positionY.IsAnimated)
+                    {
+                        ApplyScalarKeyFrameAnimation(context, positionY, container.Properties, targetPropertyName: "Position.Y");
+                    }
                 }
                 else
                 {
-                    ApplyVector2KeyFrameAnimation(context, (AnimatableVector3)position, container, "Position");
+                    ApplyVector2KeyFrameAnimation(context, position3, container.Properties, "Position");
                 }
             }
 
             if (offsetExpression != null)
             {
-                // Start an expression animation that relates Offset to Position and Anchor.
                 offsetExpression.SetReferenceParameter("my", container);
                 StartExpressionAnimation(container, nameof(container.Offset), offsetExpression);
             }
@@ -2501,178 +2525,146 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             controller.StartAnimation("Progress", bindingAnimation);
         }
 
-        (bool, double) ApplyScalarKeyFrameAnimation(
+        void ApplyScalarKeyFrameAnimation(
             TranslationContext context,
-            Animatable<double> value,
+            in TrimmedAnimatable<double> value,
             CompositionObject targetObject,
             string targetPropertyName,
             string longDescription = null,
             string shortDescription = null)
             => ApplyScaledScalarKeyFrameAnimation(context, value, 1, targetObject, targetPropertyName, longDescription, shortDescription);
 
-        (bool, double) ApplyScaledScalarKeyFrameAnimation(
+        void ApplyScaledScalarKeyFrameAnimation(
             TranslationContext context,
-            Animatable<double> value,
+            in TrimmedAnimatable<double> value,
             double scale,
             CompositionObject targetObject,
             string targetPropertyName,
             string longDescription,
             string shortDescription)
         {
-            value = _lottieDataOptimizer.GetOptimized(value);
-            if (value.IsAnimated)
-            {
-                return GenericCreateCompositionKeyFrameAnimation(
-                    context,
-                    value,
-                    CreateScalarKeyFrameAnimation,
-                    (ca, progress, val, easing) => ca.InsertKeyFrame(progress, (float)(val * scale), easing),
-                    null,
-                    targetObject,
-                    targetPropertyName,
-                    longDescription,
-                    shortDescription);
-            }
-            else
-            {
-                return (false, value.InitialValue);
-            }
+            Debug.Assert(value.IsAnimated, "Precondition");
+            GenericCreateCompositionKeyFrameAnimation(
+                context,
+                value,
+                CreateScalarKeyFrameAnimation,
+                (ca, progress, val, easing) => ca.InsertKeyFrame(progress, (float)(val * scale), easing),
+                null,
+                targetObject,
+                targetPropertyName,
+                longDescription,
+                shortDescription);
         }
 
-        (bool, Color) ApplyColorKeyFrameAnimation(
+        void ApplyColorKeyFrameAnimation(
             TranslationContext context,
-            Animatable<LottieData.Color> value,
+            in TrimmedAnimatable<LottieData.Color> value,
             CompositionObject targetObject,
             string targetPropertyName,
             string longDescription = null,
             string shortDescription = null)
         {
-            value = _lottieDataOptimizer.GetOptimized(value);
-            if (value.IsAnimated)
-            {
-                return GenericCreateCompositionKeyFrameAnimation(
-                    context,
-                    value,
-                    CreateColorKeyFrameAnimation,
-                    (ca, progress, val, easing) => ca.InsertKeyFrame(progress, Color(val), easing),
-                    null,
-                    targetObject,
-                    targetPropertyName,
-                    longDescription,
-                    shortDescription);
-            }
-            else
-            {
-                return (false, value.InitialValue);
-            }
+            Debug.Assert(value.IsAnimated, "Precondition");
+            GenericCreateCompositionKeyFrameAnimation(
+                context,
+                value,
+                CreateColorKeyFrameAnimation,
+                (ca, progress, val, easing) => ca.InsertKeyFrame(progress, Color(val), easing),
+                null,
+                targetObject,
+                targetPropertyName,
+                longDescription,
+                shortDescription);
         }
 
-        (bool, Sequence<BezierSegment>) ApplyPathKeyFrameAnimation(
+        void ApplyPathKeyFrameAnimation(
             TranslationContext context,
-            Animatable<Sequence<BezierSegment>> value,
+            in TrimmedAnimatable<Sequence<BezierSegment>> value,
             SolidColorFill.PathFillType fillType,
             CompositionObject targetObject,
             string targetPropertyName,
             string longDescription = null,
             string shortDescription = null)
         {
-            value = _lottieDataOptimizer.GetOptimized(value);
-            if (value.IsAnimated)
-            {
-                return GenericCreateCompositionKeyFrameAnimation(
-                    context,
-                    value,
-                    CreatePathKeyFrameAnimation,
-                    (ca, progress, val, easing) => ca.InsertKeyFrame(
-                        progress,
-                        CompositionPathFromPathGeometry(
-                            val,
-                            fillType,
-                            // Turn off the optimization that replaces cubic beziers with
-                            // segments because it may result in different numbers of
-                            // control points in each path in the keyframes.
-                            optimizeLines: false),
-                        easing),
-                    null,
-                    targetObject,
-                    targetPropertyName,
-                    longDescription,
-                    shortDescription);
-            }
-            else
-            {
-                return (false, value.InitialValue);
-            }
+            Debug.Assert(value.IsAnimated, "Precondition");
+            GenericCreateCompositionKeyFrameAnimation(
+                context,
+                value,
+                CreatePathKeyFrameAnimation,
+                (ca, progress, val, easing) => ca.InsertKeyFrame(
+                    progress,
+                    CompositionPathFromPathGeometry(
+                        val,
+                        fillType,
+
+                        // Turn off the optimization that replaces cubic beziers with
+                        // segments because it may result in different numbers of
+                        // control points in each path in the keyframes.
+                        optimizeLines: false),
+                    easing),
+                null,
+                targetObject,
+                targetPropertyName,
+                longDescription,
+                shortDescription);
         }
 
-        (bool, Vector3) ApplyVector2KeyFrameAnimation(
+        void ApplyVector2KeyFrameAnimation(
             TranslationContext context,
-            AnimatableVector3 value,
+            in TrimmedAnimatable<Vector3> value,
             CompositionObject targetObject,
             string targetPropertyName,
             string longDescription = null,
             string shortDescription = null)
             => ApplyScaledVector2KeyFrameAnimation(context, value, 1, targetObject, targetPropertyName, longDescription, shortDescription);
 
-        (bool, Vector3) ApplyScaledVector2KeyFrameAnimation(
+        void ApplyScaledVector2KeyFrameAnimation(
             TranslationContext context,
-            AnimatableVector3 value,
+            in TrimmedAnimatable<Vector3> value,
             double scale,
             CompositionObject targetObject,
             string targetPropertyName,
             string longDescription = null,
             string shortDescription = null)
         {
-            if (value.IsAnimated)
-            {
-                return GenericCreateCompositionKeyFrameAnimation(
-                    context,
-                    value,
-                    CreateVector2KeyFrameAnimation,
-                    (ca, progress, val, easing) => ca.InsertKeyFrame(progress, Vector2(val * scale), easing),
-                    (ca, progress, expr, easing) => ca.InsertExpressionKeyFrame(progress, scale != 1 ? Scale(expr, scale) : expr.ToString(), easing),
-                    targetObject,
-                    targetPropertyName,
-                    longDescription,
-                    shortDescription);
-            }
-            else
-            {
-                return (false, value.InitialValue);
-            }
+            Debug.Assert(value.IsAnimated, "Precondition");
+            GenericCreateCompositionKeyFrameAnimation(
+                context,
+                value,
+                CreateVector2KeyFrameAnimation,
+                (ca, progress, val, easing) => ca.InsertKeyFrame(progress, Vector2(val * scale), easing),
+                (ca, progress, expr, easing) => ca.InsertExpressionKeyFrame(progress, scale != 1 ? Scale(expr, scale) : expr.ToString(), easing),
+                targetObject,
+                targetPropertyName,
+                longDescription,
+                shortDescription);
         }
 
-        (bool, Vector3) ApplyScaledVector3KeyFrameAnimation(
+        void ApplyScaledVector3KeyFrameAnimation(
             TranslationContext context,
-            AnimatableVector3 value,
+            in TrimmedAnimatable<Vector3> value,
             double scale,
             CompositionObject targetObject,
             string targetPropertyName,
             string longDescription = null,
             string shortDescription = null)
         {
-            if (value.IsAnimated)
-            {
-                return GenericCreateCompositionKeyFrameAnimation(
-                    context,
-                    value,
-                    CreateVector3KeyFrameAnimation,
-                    (ca, progress, val, easing) => ca.InsertKeyFrame(progress, Vector3(val) * (float)scale, easing),
-                    (ca, progress, expr, easing) => ca.InsertExpressionKeyFrame(progress, scale != 1 ? Scale(expr, scale).ToString() : expr.ToString(), easing),
-                    targetObject,
-                    targetPropertyName,
-                    longDescription,
-                    shortDescription);
-            }
-            else
-            {
-                return (false, value.InitialValue);
-            }
+            Debug.Assert(value.IsAnimated, "Precondition");
+            GenericCreateCompositionKeyFrameAnimation(
+                context,
+                value,
+                CreateVector3KeyFrameAnimation,
+                (ca, progress, val, easing) => ca.InsertKeyFrame(progress, Vector3(val) * (float)scale, easing),
+                (ca, progress, expr, easing) => ca.InsertExpressionKeyFrame(progress, scale != 1 ? Scale(expr, scale).ToString() : expr.ToString(), easing),
+                targetObject,
+                targetPropertyName,
+                longDescription,
+                shortDescription);
         }
 
-        (bool, T) GenericCreateCompositionKeyFrameAnimation<TCA, T>(
+        void GenericCreateCompositionKeyFrameAnimation<TCA, T>(
             TranslationContext context,
-            Animatable<T> value,
+            in TrimmedAnimatable<T> value,
             Func<TCA> compositionAnimationFactory,
             Action<TCA, float, T, CompositionEasingFunction> insertKeyFrame,
             Action<TCA, float, Expr, CompositionEasingFunction> insertExpressionKeyFrame,
@@ -2683,7 +2675,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 where TCA : KeyFrameAnimation_
                 where T : IEquatable<T>
         {
+            Debug.Assert(value.IsAnimated, "Precondition");
+
             var compositionAnimation = compositionAnimationFactory();
+
             if (_addDescriptions)
             {
                 Describe(compositionAnimation, longDescription ?? targetPropertyName, shortDescription ?? targetPropertyName);
@@ -2691,20 +2686,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             compositionAnimation.Duration = _lc.Duration;
 
-            // Get only the key frames that affect the range [context.StartTime, context.EndTime].
-            var trimmedKeyFrames = Optimizer.TrimKeyFrames(value, context.StartTime, context.EndTime);
-
-            Debug.Assert(trimmedKeyFrames.Length > 0, "PostCondition of TrimKeyFrames");
-
-            if (trimmedKeyFrames.Length == 1)
-            {
-                // There is no animation in the range [context.StartTime, context.EndTime].
-                // Return the value that the animatable holds during that range.
-                return (true, trimmedKeyFrames[0].Value);
-            }
-
-            // Remove any redundant key frames.
-            trimmedKeyFrames = Optimizer.RemoveRedundantKeyFrames(trimmedKeyFrames);
+            var trimmedKeyFrames = value.KeyFrames;
 
             var firstKeyFrame = trimmedKeyFrames[0];
             var lastKeyFrame = trimmedKeyFrames[trimmedKeyFrames.Length - 1];
@@ -2714,13 +2696,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             if (firstKeyFrame.Frame > context.StartTime)
             {
-                // TODO - we should just set an initial value rather than adding a keyframe, but
-                //        at this point we don't have the ability to set a value (no access to
-                //        the property). Could return a nullable with the initial value, except
-                //        that not every T is a struct.
-
                 // The first key frame is after the start of the animation. Create an extra keyframe at 0 to
                 // set and hold an initial value until the first specified keyframe.
+                // Note that we could set an initial value for the property instead of using a key frame,
+                // but seeing as we're creating key frames anyway, it will be fewer operations to
+                // just use a first key frame and not set an initial value
                 insertKeyFrame(compositionAnimation, 0 /* progress */, firstKeyFrame.Value, CreateStepThenHoldEasingFunction() /*easing*/);
 
                 animationStartTime = context.StartTime;
@@ -2887,8 +2867,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 _rootVisual.Properties.InsertScalar(progressMappingProperty, 0);
                 StartKeyframeAnimation(_rootVisual, progressMappingProperty, progressMappingAnimation, scale, offset);
             }
-
-            return (false, default(T));
         }
 
         float GetInPointProgress(TranslationContext context, Layer layer)
@@ -3005,18 +2983,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return result;
         }
 
-        Animatable<Color> MultiplyAnimatableColorByAnimatableOpacityPercent(
-            Animatable<Color> color,
-            Animatable<double> opacityPercent)
+        TrimmedAnimatable<Color> MultiplyAnimatableColorByAnimatableOpacityPercent(
+            in TrimmedAnimatable<Color> color,
+            in TrimmedAnimatable<double> opacityPercent)
         {
-            color = _lottieDataOptimizer.GetOptimized(color);
-            opacityPercent = _lottieDataOptimizer.GetOptimized(opacityPercent);
-
-            if (opacityPercent == null)
-            {
-                return color;
-            }
-
             if (color.IsAnimated)
             {
                 if (opacityPercent.IsAnimated)
@@ -3028,16 +2998,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 else
                 {
                     // Multiply the color animation by the single opacity value.
-                    return new Animatable<Color>(
+                    var opacityPercentInitialValue = opacityPercent.InitialValue;
+                    return new TrimmedAnimatable<Color>(
+                        color.Context,
                         initialValue: MultiplyColorByOpacityPercent(color.InitialValue, opacityPercent.InitialValue),
                         keyFrames: color.KeyFrames.SelectToSpan(kf =>
                             new KeyFrame<Color>(
                                 kf.Frame,
-                                MultiplyColorByOpacityPercent(kf.Value, opacityPercent.InitialValue),
+                                MultiplyColorByOpacityPercent(kf.Value, opacityPercentInitialValue),
                                 kf.SpatialControlPoint1,
                                 kf.SpatialControlPoint2,
-                                kf.Easing)),
-                        propertyIndex: null);
+                                kf.Easing)));
                 }
             }
             else if (opacityPercent.IsAnimated)
@@ -3049,22 +3020,23 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             {
                 // Multiply color by opacity
                 var nonAnimatedMultipliedColor = MultiplyColorByOpacityPercent(color.InitialValue, opacityPercent.InitialValue);
-                return new Animatable<Color>(nonAnimatedMultipliedColor, null);
+                return new TrimmedAnimatable<Color>(color.Context, nonAnimatedMultipliedColor);
             }
         }
 
-        Animatable<Color> MultiplyColorByAnimatableOpacityPercent(
+        TrimmedAnimatable<Color> MultiplyColorByAnimatableOpacityPercent(
             Color color,
-            Animatable<double> opacityPercent)
+            in TrimmedAnimatable<double> opacityPercent)
         {
             if (!opacityPercent.IsAnimated)
             {
-                return new Animatable<Color>(MultiplyColorByOpacityPercent(color, opacityPercent.InitialValue), null);
+                return new TrimmedAnimatable<Color>(opacityPercent.Context, MultiplyColorByOpacityPercent(color, opacityPercent.InitialValue));
             }
             else
             {
                 // Multiply the single color value by the opacity animation.
-                return new Animatable<Color>(
+                return new TrimmedAnimatable<Color>(
+                    opacityPercent.Context,
                     initialValue: MultiplyColorByOpacityPercent(color, opacityPercent.InitialValue),
                     keyFrames: opacityPercent.KeyFrames.SelectToSpan(kf =>
                         new KeyFrame<Color>(
@@ -3072,8 +3044,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                             MultiplyColorByOpacityPercent(color, kf.Value),
                             kf.SpatialControlPoint1,
                             kf.SpatialControlPoint2,
-                            kf.Easing)),
-                    propertyIndex: null);
+                            kf.Easing)));
             }
         }
 
@@ -3081,24 +3052,31 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             => opacityPercent == 100 ? color
             : LottieData.Color.FromArgb(color.A * opacityPercent / 100, color.R, color.G, color.B);
 
-        CompositionColorBrush CreateAnimatedColorBrush(TranslationContext context, Color color, Animatable<double> opacityPercent)
+        CompositionColorBrush CreateAnimatedColorBrush(TranslationContext context, Color color, in TrimmedAnimatable<double> opacityPercent)
         {
             var multipliedColor = MultiplyColorByAnimatableOpacityPercent(color, opacityPercent);
             return CreateAnimatedColorBrush(context, multipliedColor);
         }
 
-        CompositionColorBrush CreateAnimatedColorBrush(TranslationContext context, Animatable<Color> color, Animatable<double> opacityPercent)
+        CompositionColorBrush CreateAnimatedColorBrush(TranslationContext context, in TrimmedAnimatable<Color> color, in TrimmedAnimatable<double> opacityPercent)
         {
             var multipliedColor = MultiplyAnimatableColorByAnimatableOpacityPercent(color, opacityPercent);
             return CreateAnimatedColorBrush(context, multipliedColor);
         }
 
-        CompositionColorBrush CreateAnimatedColorBrush(TranslationContext context, Animatable<Color> color)
+        CompositionColorBrush CreateAnimatedColorBrush(TranslationContext context, in TrimmedAnimatable<Color> color)
         {
             if (color.IsAnimated)
             {
                 var result = CreateColorBrush(color.InitialValue);
-                ApplyColorKeyFrameAnimation(context, color, result, nameof(result.Color), "Color", null);
+
+                ApplyColorKeyFrameAnimation(
+                    context,
+                    color,
+                    result,
+                    nameof(result.Color),
+                    "Color",
+                    null);
                 return result;
             }
             else
@@ -3109,6 +3087,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         CompositionColorBrush CreateNonAnimatedColorBrush(Color color)
         {
+            if (color.A == 0)
+            {
+                // Transparent brushes that are never animated are all equivalent.
+                color = LottieData.Color.TransparentBlack;
+            }
+
             if (!_nonAnimatedColorBrushes.TryGetValue(color, out var result))
             {
                 result = CreateColorBrush(color);
@@ -3118,7 +3102,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return result;
         }
 
-        public void Dispose()
+        // Implements IDisposable.Dispose(). Currently not needed but will be required
+        // if this class needs to hold onto any IDisposable objects.
+        void IDisposable.Dispose()
         {
         }
 
@@ -3390,90 +3376,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         {
             Debug.Assert(min <= max, "Precondition");
             return Math.Min(Math.Max(min, value), max);
-        }
-
-        // The context in which to translate a composition.
-        // This is used to ensure that layers in a PreComp are translated in the context
-        // of the PreComp.
-        sealed class TranslationContext
-        {
-            Layer Layer { get; }
-
-            internal TranslationContext ContainingContext { get; }
-
-            // A set of layers that can be referenced by id.
-            internal LayerCollection Layers { get; }
-
-            internal double Width { get; }
-
-            internal double Height { get; }
-
-            // The start time of the current layer, in composition time.
-            internal double StartTime { get; }
-
-            internal double EndTime => StartTime + DurationInFrames;
-
-            internal double DurationInFrames { get; }
-
-            // Constructs the root context.
-            internal TranslationContext(LottieComposition lottieComposition)
-            {
-                Layers = lottieComposition.Layers;
-                StartTime = lottieComposition.InPoint;
-                DurationInFrames = lottieComposition.OutPoint - lottieComposition.InPoint;
-                Width = lottieComposition.Width;
-                Height = lottieComposition.Height;
-            }
-
-            // Constructs a context for the given layer.
-            internal TranslationContext(TranslationContext context, PreCompLayer layer, LayerCollection layers)
-            {
-                Layer = layer;
-
-                // Precomps define a new temporal and spatial space.
-                Width = layer.Width;
-                Height = layer.Height;
-                StartTime = context.StartTime - layer.StartTime;
-
-                ContainingContext = context;
-                Layers = layers;
-                DurationInFrames = context.DurationInFrames;
-            }
-
-            // Returns only the key frames that are visible between StartTime and EndTime.
-            internal ReadOnlySpan<KeyFrame<T>> TrimKeyFrames<T>(Animatable<T> animatable)
-                where T : IEquatable<T>
-            {
-                if (animatable.IsAnimated)
-                {
-                    return Optimizer.TrimKeyFrames(animatable, StartTime, EndTime);
-                }
-                else
-                {
-                    return new KeyFrame<T>[] { new KeyFrame<T>(0, animatable.InitialValue, default(Vector3), default(Vector3), HoldEasing.Instance) };
-                }
-            }
-
-            internal Animatable<T> TrimAnimatable<T>(Animatable<T> animatable)
-                where T : IEquatable<T>
-            {
-                if (animatable.IsAnimated)
-                {
-                    var trimmedKeyFrames = Optimizer.TrimKeyFrames(animatable, StartTime, EndTime);
-                    if (trimmedKeyFrames.Length > 1)
-                    {
-                        return new Animatable<T>(trimmedKeyFrames[0].Value, trimmedKeyFrames, animatable.PropertyIndex);
-                    }
-                    else
-                    {
-                        return new Animatable<T>(trimmedKeyFrames[0].Value, animatable.PropertyIndex);
-                    }
-                }
-                else
-                {
-                    return animatable;
-                }
-            }
         }
 
         // A pair of doubles used as a key in a dictionary.

@@ -26,6 +26,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
         public static Color Black { get; } = new Color(1, 0, 0, 0);
 
+        public static Color TransparentBlack { get; } = new Color(0, 0, 0, 0);
+
         public double A { get; }
 
         public double R { get; }

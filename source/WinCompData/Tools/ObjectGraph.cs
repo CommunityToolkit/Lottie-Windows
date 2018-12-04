@@ -405,7 +405,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
         bool VisitCompositionPathGeometry(CompositionPathGeometry obj, T node)
         {
             VisitCompositionGeometry(obj, node);
-            Reference(node, obj.Path);
+            if (obj.Path != null)
+            {
+                Reference(node, obj.Path);
+            }
+
             return true;
         }
 
