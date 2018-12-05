@@ -1911,8 +1911,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 var merged =
                     from stop in gradientStops
                     group stop by stop.Offset into grouped
+
                     // Order by offset.
                     orderby grouped.Key
+
                     // Note that if there are multiple color stops with the same offset or
                     // multiple opacity stops with the same offset, one will be chosen at
                     // random.

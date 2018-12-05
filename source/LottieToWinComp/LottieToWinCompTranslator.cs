@@ -2588,6 +2588,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         CompositionPathFromPathGeometry(
                             val,
                             fillType,
+
                             // Turn off the optimization that replaces cubic beziers with
                             // segments because it may result in different numbers of
                             // control points in each path in the keyframes.
