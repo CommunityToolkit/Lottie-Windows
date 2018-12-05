@@ -7,8 +7,11 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)CanvasGeometryCombiner.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ContainerShapeOrVisual.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ExpressionFactory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LottieToWinCompTranslator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TranslationContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TranslationIssues.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TrimmedAnimatable.cs" />
   </ItemGroup>
 </Project>

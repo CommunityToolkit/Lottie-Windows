@@ -1180,8 +1180,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
         bool GenerateCompositionPathGeometryFactory(CodeBuilder builder, CompositionPathGeometry obj, ObjectData node)
         {
             WriteObjectFactoryStart(builder, node);
-            var path = _objectGraph[obj.Path];
-            WriteCreateAssignment(builder, node, $"_c{Deref}CreatePathGeometry({CallFactoryFromFor(node, path)})");
+            if (obj.Path == null)
+            {
+                WriteCreateAssignment(builder, node, $"_c{Deref}CreatePathGeometry()");
+            }
+            else
+            {
+                var path = _objectGraph[obj.Path];
+                WriteCreateAssignment(builder, node, $"_c{Deref}CreatePathGeometry({CallFactoryFromFor(node, path)})");
+            }
+
             InitializeCompositionGeometry(builder, obj, node);
             StartAnimations(builder, obj, node);
             WriteObjectFactoryEnd(builder);
