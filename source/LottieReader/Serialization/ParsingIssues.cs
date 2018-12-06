@@ -49,7 +49,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         }
 
         /*
-        // LP0010: Masks has been removed. We now support masks.
+        LP0010: Masks has been removed. We now support masks.
         */
 
         internal void TimeRemappingOfPreComps()

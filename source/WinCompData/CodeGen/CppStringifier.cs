@@ -84,8 +84,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
         public override string ReferenceTypeName(string value) =>
             value == "CanvasGeometry"
-                // C++ uses a typdef for CanvasGeometry that is ComPtr<GeoSource>, thus no hat pointer
-                ? "CanvasGeometry"
+                ? "CanvasGeometry" // CanvasGeometry is a typedef for ComPtr<GeoSource>, thus no hat pointer.
                 : $"{value}^";
 
         public override string TimeSpan(TimeSpan value) => TimeSpan(Int64(value.Ticks));
