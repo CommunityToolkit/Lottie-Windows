@@ -170,9 +170,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
         static float DegreesToRadians(float angle) => (float)(Math.PI * angle / 180.0);
 
-        static void IsBrushTransparent(CompositionBrush brush)
+        static bool IsBrushTransparent(CompositionBrush brush)
         {
-            return brush == null || (!brush.Animators.Any() && (brush  s CompositionColorBrush)?.Color.A == 0);
+            return brush == null || (!brush.Animators.Any() && (brush as CompositionColorBrush)?.Color.A == 0);
         }
 
         static void RemoveTransparentShapes(ObjectGraph<Node> graph)
