@@ -24,6 +24,7 @@ sealed class Program
     readonly TextWriter _infoStream;
     readonly TextWriter _errorStream;
     readonly Profiler _profiler;
+    bool _reportedErrors;
 
     enum RunResult
     {
@@ -171,7 +172,6 @@ sealed class Program
                         lottieJsonFilePath: inputFile,
                         outputFolder: outputFolder,
                         codeGenClassName: _options.ClassName,
-                        strictTranslation: _options.StrictMode,
                         lottieStats: out lottieStats,
                         beforeOptimizationStats: out beforeOptimizationStats,
                         afterOptimizationStats: out afterOptimizationStats)
@@ -205,6 +205,12 @@ sealed class Program
             {
                 result = codeGenResult;
             }
+        }
+
+        // Any error that was reported is treated as a failure.
+        if (_reportedErrors)
+        {
+            result = RunResult.Failure;
         }
 
         return result;
@@ -320,7 +326,6 @@ sealed class Program
         string lottieJsonFilePath,
         string outputFolder,
         string codeGenClassName,
-        bool strictTranslation,
         out Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Tools.Stats lottieStats,
         out Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools.Stats beforeOptimizationStats,
         out Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools.Stats afterOptimizationStats)
@@ -369,8 +374,8 @@ sealed class Program
 
         var translateSucceeded = LottieToWinCompTranslator.TryTranslateLottieComposition(
                     lottieComposition,
-                    strictTranslation, // strictTranslation
-                    true, // TODO - make this configurable?  !excludeCodegenDescriptions, // add descriptions for codegen commments
+                    strictTranslation: false,
+                    addCodegenDescriptions: true,
                     out var winCompDataRootVisual,
                     out var translationIssues);
 
@@ -394,8 +399,7 @@ sealed class Program
         string className =
             InstantiatorGeneratorBase.TrySynthesizeClassName(codeGenClassName) ??
             InstantiatorGeneratorBase.TrySynthesizeClassName(Path.GetFileNameWithoutExtension(lottieJsonFilePath)) ??
-            // If all else fails, just call it Lottie.
-            InstantiatorGeneratorBase.TrySynthesizeClassName("Lottie");
+            InstantiatorGeneratorBase.TrySynthesizeClassName("Lottie");  // If all else fails, just call it Lottie.
 
         // Optimize the code unless told not to.
         Visual optimizedWincompDataRootVisual = winCompDataRootVisual;
@@ -750,9 +754,32 @@ sealed class Program
 
     // Outputs an error or warning message describing the error with the file path, error code, and description.
     // The format is designed to be suitable for parsing by VS.
-    static string IssueToString(string originatingFile, (string Code, string Description) issue)
+    string IssueToString(string originatingFile, (string Code, string Description) issue)
     {
-        return $"{originatingFile}: error {issue.Code}: {issue.Description}";
+        if (_options.StrictMode)
+        {
+            _reportedErrors = true;
+            return ErrorToString(originatingFile, issue);
+        }
+        else
+        {
+            return WarningToString(originatingFile, issue);
+        }
+    }
+
+    // Outputs an error message describing the error with the file path, error code, and description.
+    // The format is designed to be suitable for parsing by VS.
+    static string ErrorToString(string originatingFile, (string Code, string Description) issue)
+        => ErrorOrWarningToString(originatingFile, issue, "error");
+
+    // Outputs a warning message describing a warning with the file path, error code, and description.
+    // The format is designed to be suitable for parsing by VS.
+    static string WarningToString(string originatingFile, (string Code, string Description) issue)
+        => ErrorOrWarningToString(originatingFile, issue, "warning");
+
+    static string ErrorOrWarningToString(string originatingFile, (string Code, string Description) issue, string errorOrWarning)
+    {
+        return $"{originatingFile}: {errorOrWarning} {issue.Code}: {issue.Description}";
     }
 
     static void ShowHelp(TextWriter writer)
