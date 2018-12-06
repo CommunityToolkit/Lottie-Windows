@@ -42,6 +42,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
                 }
             }
 
+            RemoveTransparentShapes(graph);
             RemoveEmptyContainers(graph);
             SimplifyProperties(graph);
             CoalesceContainerShapes(graph);
@@ -168,6 +169,26 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
         }
 
         static float DegreesToRadians(float angle) => (float)(Math.PI * angle / 180.0);
+
+        static void IsBrushTransparent(CompositionBrush brush)
+        {
+            return brush == null || (!brush.Animators.Any() && (brush  s CompositionColorBrush)?.Color.A == 0);
+        }
+
+        static void RemoveTransparentShapes(ObjectGraph<Node> graph)
+        {
+            var transparentShapes =
+                (from pair in graph.CompositionObjectNodes
+                 where pair.Object.Type == CompositionObjectType.CompositionSpriteShape
+                 let shape = (CompositionSpriteShape)pair.Object
+                 where IsBrushTransparent(shape.FillBrush) && IsBrushTransparent(shape.StrokeBrush)
+                 select (Shape: shape, Parent: (IContainShapes)pair.Node.Parent)).ToArray();
+
+            foreach (var pair in transparentShapes)
+            {
+                pair.Parent.Shapes.Remove(pair.Shape);
+            }
+        }
 
         // Removes any CompositionContainerShapes that have no children.
         static void RemoveEmptyContainers(ObjectGraph<Node> graph)
