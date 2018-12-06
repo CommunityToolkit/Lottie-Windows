@@ -59,13 +59,21 @@ sealed class Program
 
     static IEnumerable<string> ExpandWildcards(string path)
     {
-        var directoryPath = Path.GetDirectoryName(path);
+        // Separate the path root (e.g. "C:" or "C:\" or "") from the rest of
+        // the path so that GetDirectoryName returns just the directory. If we
+        // don't do that, C:foobar will return C: as the directory path.
+        var pathRoot = Path.GetPathRoot(path);
+        var pathWithoutRoot = path.Substring(pathRoot.Length);
+
+        var directoryPath = Path.GetDirectoryName(pathWithoutRoot);
         if (string.IsNullOrWhiteSpace(directoryPath))
         {
             directoryPath = ".";
         }
 
-        return Directory.EnumerateFiles(directoryPath, Path.GetFileName(path));
+        var searchPattern = Path.GetFileName(path);
+
+        return Directory.EnumerateFiles(pathRoot + directoryPath, searchPattern);
     }
 
     // Helper for writing info lines to the info stream.
