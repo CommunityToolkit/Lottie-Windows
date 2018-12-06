@@ -35,7 +35,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
                 switch (node.Type)
                 {
                     case Graph.NodeType.CompositionObject:
-                        baseName = DescribeCompositionObject((CompositionObject)node.Object);
+                        baseName = DescribeCompositionObject(node, (CompositionObject)node.Object);
                         break;
                     case Graph.NodeType.CompositionPath:
                         baseName = "CompositionPath";
@@ -116,7 +116,25 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
                 : null;
         }
 
-        static string DescribeCompositionObject(CompositionObject obj)
+        static string TryGetAnimatedPropertyName(TNode node)
+        {
+            // Find the property name that references this animation.
+            var animators =
+                (from inref in node.InReferences
+                 let referrer = (CompositionObject)inref.Node.Object
+                 from animator in referrer.Animators
+                 where animator.Animation == node.Object
+                 select animator.AnimatedProperty).Distinct().ToArray();
+
+            return animators.Length == 1 ? animators[0] : null;
+        }
+
+        static string SanitizePropertyName(string propertyName)
+        {
+            return propertyName == null ? null : propertyName.Replace(".", string.Empty);
+        }
+
+        static string DescribeCompositionObject(TNode node, CompositionObject obj)
         {
             string result = null;
             switch (obj.Type)
@@ -134,7 +152,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
                     break;
                 case CompositionObjectType.ScalarKeyFrameAnimation:
                     {
-                        result = "ScalarAnimation";
+                        var animatedPropertyName = SanitizePropertyName(TryGetAnimatedPropertyName(node));
+                        result = $"{animatedPropertyName}ScalarAnimation";
                         var description = DescribeAnimationRange((ScalarKeyFrameAnimation)obj);
                         if (description != null)
                         {
@@ -144,7 +163,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
                     break;
                 case CompositionObjectType.Vector2KeyFrameAnimation:
-                    result = "Vector2Animation";
+                    {
+                        var animatedPropertyName = SanitizePropertyName(TryGetAnimatedPropertyName(node));
+                        result = $"{animatedPropertyName}Vector2Animation";
+                    }
+
                     break;
                 case CompositionObjectType.CompositionColorBrush:
                     // Color brushes that are not animated get names describing their color.
