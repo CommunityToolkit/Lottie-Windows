@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Configurations>Debug</Configurations>
+    <Configurations>Debug;Release</Configurations>
     <LangVersion>latest</LangVersion>
     <DefineConstants>PUBLIC_LottieReader</DefineConstants>
   </PropertyGroup>
@@ -16,5 +16,4 @@
   <ItemGroup>
     <ProjectReference Include="..\LottieData\LottieData.dll.csproj" />
   </ItemGroup>
-
 </Project>

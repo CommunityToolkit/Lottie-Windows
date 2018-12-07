@@ -15,12 +15,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
     sealed class AnimatableVector3 : Animatable<Vector3>, IAnimatableVector3
     {
         public AnimatableVector3(Vector3 initialValue, int? propertyIndex)
-            : this(initialValue, EmptyKeyFrames, propertyIndex)
+            : base(initialValue, propertyIndex)
         {
         }
 
-        public AnimatableVector3(Vector3 initialValue, IEnumerable<KeyFrame<Vector3>> keyframes, int? propertyIndex)
-            : base(initialValue, keyframes, propertyIndex)
+        public AnimatableVector3(IEnumerable<KeyFrame<Vector3>> keyFrames, int? propertyIndex)
+            : base(keyFrames, propertyIndex)
         {
         }
 

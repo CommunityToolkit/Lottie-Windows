@@ -2,10 +2,9 @@
 
   <PropertyGroup>
     <TargetFramework>uap10.0.17763</TargetFramework>
-
-    <!-- <ProjectGuid>{E392BAD0-F936-4B64-A445-552597795CC7}</ProjectGuid> -->
     <OutputType>winmdobj</OutputType>
-
+    <IsPackable>True</IsPackable>
+    
     <!-- <AppDesignerFolder>Properties</AppDesignerFolder> -->
     <RootNamespace>Microsoft.Toolkit.Uwp.UI.Lottie</RootNamespace>
     <AssemblyName>Microsoft.Toolkit.Uwp.UI.Lottie</AssemblyName>

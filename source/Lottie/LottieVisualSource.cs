@@ -173,11 +173,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         {
             if (_contentFactory == null)
             {
+                // No content has been loaded yet.
+                // Return an IAnimatedVisual that produces nothing.
                 diagnostics = null;
                 return new Comp();
             }
             else
             {
+                // Some content was loaded. Ask the contentFactory to produce an
+                // IAnimatedVisual. If it returns null, the player will treat it
+                // as an error.
                 return _contentFactory.TryCreateAnimatedVisual(compositor, out diagnostics);
             }
         }
@@ -202,28 +207,23 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             }
 
             _uriSource = newValue;
-            StartLoading();
-        }
 
-#pragma warning disable VSTHRD100 // Avoid "async void" method. Not valid here because we handle all async exceptions.
+            var ignoredTask = StartLoadingAndIgnoreErrorsAsync();
 
-        // Starts a LoadAsync and returns immediately. Ignores any errors from
-        // the LoadAsync.
-        async void StartLoading()
-        {
-#pragma warning restore VSTHRD100
-            try
+            async Task StartLoadingAndIgnoreErrorsAsync()
             {
-                await LoadAsync(new Loader(this, UriSource));
-            }
-            catch
-            {
-                // Ignore errors. The load will simply never complete.
+                try
+                {
+                    await LoadAsync(new Loader(this, UriSource));
+                }
+                catch
+                {
+                    // Swallow any errors - nobody is listening.
+                }
             }
         }
 
-        // Starts loading. Completes the returned task when the load completes or is replaced by another
-        // load.
+        // Starts loading. Completes the returned task when the load completes or is replaced by another load.
         async Task LoadAsync(Loader loader)
         {
             var loadVersion = ++_loadVersion;
@@ -241,10 +241,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
 
             if (loader == null)
             {
+                // No loader means clear out what you previously loaded.
                 return;
             }
 
-            var contentFactory = await loader.LoadAsync(Options);
+            ContentFactory contentFactory = null;
+            try
+            {
+                contentFactory = await loader.LoadAsync(Options);
+            }
+            catch
+            {
+                // Set the content factory to one that will return a null IAnimatedVisual to
+                // indicate that something went wrong. If the load succeeds this will get overwritten.
+                contentFactory = ContentFactory.FailedContent;
+            }
+
             if (loadVersion != _loadVersion)
             {
                 // Another load request came in before this one completed.
@@ -266,7 +278,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             if (!contentFactory.CanInstantiate)
             {
                 // The load did not produce any content. Throw an exception so the caller knows.
-                throw new ArgumentException("Failed to load composition.");
+                throw new ArgumentException("Failed to load animated visual.");
             }
         }
 
@@ -532,6 +544,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         // translation of a composition and some metadata.
         sealed class ContentFactory : IAnimatedVisualSource
         {
+            internal static readonly ContentFactory FailedContent = new ContentFactory(null);
             readonly LottieVisualDiagnostics _diagnostics;
             WinCompData.Visual _wincompDataRootVisual;
             double _width;

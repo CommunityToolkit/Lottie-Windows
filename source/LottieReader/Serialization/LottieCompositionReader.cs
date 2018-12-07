@@ -1370,7 +1370,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
             var propertyIndex = ReadInt(obj, "ix");
 
-            return new Animatable<Color>(initialValue, keyFrames, propertyIndex);
+            return keyFrames.Any()
+                ? new Animatable<Color>(keyFrames, propertyIndex)
+                : new Animatable<Color>(initialValue, propertyIndex);
         }
 
         // Reads the transform for a repeater. Repeater transforms are the same as regular transforms
@@ -1501,7 +1503,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             {
                 s_animatableVector2Parser.ParseJson(this, obj, out IEnumerable<KeyFrame<Vector2>> keyFrames, out Vector2 initialValue);
                 AssertAllFieldsRead(obj);
-                return new Animatable<Vector2>(initialValue, keyFrames, propertyIndex);
+
+                return keyFrames.Any()
+                    ? new Animatable<Vector2>(keyFrames, propertyIndex)
+                    : new Animatable<Vector2>(initialValue, propertyIndex);
             }
 
             throw new LottieCompositionReaderException("Animatable Vector2 could not be read.");
@@ -1519,7 +1524,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             {
                 s_animatableVector3Parser.ParseJson(this, obj, out IEnumerable<KeyFrame<Vector3>> keyFrames, out Vector3 initialValue);
                 AssertAllFieldsRead(obj);
-                return new AnimatableVector3(initialValue, keyFrames, propertyIndex);
+
+                return keyFrames.Any()
+                    ? new AnimatableVector3(keyFrames, propertyIndex)
+                    : new AnimatableVector3(initialValue, propertyIndex);
             }
             else
             {
@@ -1536,7 +1544,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         {
             s_animatableGeometryParser.ParseJson(this, obj, out IEnumerable<KeyFrame<PathGeometry>> keyFrames, out PathGeometry initialValue);
             var propertyIndex = ReadInt(obj, "ix");
-            return new Animatable<PathGeometry>(initialValue, keyFrames, propertyIndex);
+
+            return keyFrames.Any()
+                ? new Animatable<PathGeometry>(keyFrames, propertyIndex)
+                : new Animatable<PathGeometry>(initialValue, propertyIndex);
         }
 
         Animatable<Sequence<GradientStop>> ReadAnimatableGradientStops(JObject obj)
@@ -1550,14 +1561,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 out Sequence<GradientStop> initialValue);
 
             var propertyIndex = ReadInt(obj, "ix");
-            return new Animatable<Sequence<GradientStop>>(initialValue, keyFrames, propertyIndex);
+            return keyFrames.Any()
+                ? new Animatable<Sequence<GradientStop>>(keyFrames, propertyIndex)
+                : new Animatable<Sequence<GradientStop>>(initialValue, propertyIndex);
         }
 
         Animatable<double> ReadAnimatableFloat(JObject obj)
         {
             s_animatableFloatParser.ParseJson(this, obj, out IEnumerable<KeyFrame<double>> keyFrames, out double initialValue);
             var propertyIndex = ReadInt(obj, "ix");
-            return new Animatable<double>(initialValue, keyFrames, propertyIndex);
+
+            return keyFrames.Any()
+                ? new Animatable<double>(keyFrames, propertyIndex)
+                : new Animatable<double>(initialValue, propertyIndex);
         }
 
         static Vector3 ReadVector3FromJsonArray(JArray array)
@@ -1911,8 +1927,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 var merged =
                     from stop in gradientStops
                     group stop by stop.Offset into grouped
+
                     // Order by offset.
                     orderby grouped.Key
+
                     // Note that if there are multiple color stops with the same offset or
                     // multiple opacity stops with the same offset, one will be chosen at
                     // random.

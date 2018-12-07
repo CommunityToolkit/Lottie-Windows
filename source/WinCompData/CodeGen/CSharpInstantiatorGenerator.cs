@@ -42,7 +42,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             float width,
             float height,
             TimeSpan duration,
-            // Rarely set options used mostly for testing.
             bool disableFieldOptimization = false)
         {
             var generator = new CSharpInstantiatorGenerator(

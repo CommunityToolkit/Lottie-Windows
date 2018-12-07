@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Configurations>Debug</Configurations>
+    <Configurations>Debug;Release</Configurations>
     <LangVersion>latest</LangVersion>
     <DefineConstants>PUBLIC_LottieToWinComp</DefineConstants>
   </PropertyGroup>
@@ -13,5 +13,4 @@
     <ProjectReference Include="..\LottieData\LottieData.dll.csproj" />
     <ProjectReference Include="..\WinCompData\WinCompData.dll.csproj" />
   </ItemGroup>
-
 </Project>

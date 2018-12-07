@@ -15,14 +15,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
     abstract class CompositionObject : IDisposable, IDescribable
     {
         readonly ListOfNeverNull<Animator> _animators = new ListOfNeverNull<Animator>();
-        CompositionPropertySet _propertySet;
 
         private protected CompositionObject()
         {
             if (Type == CompositionObjectType.CompositionPropertySet)
             {
                 // The property set on a property set is itself.
-                _propertySet = (CompositionPropertySet)this;
+                Properties = (CompositionPropertySet)this;
+            }
+            else
+            {
+                Properties = new CompositionPropertySet(this);
             }
         }
 
@@ -42,14 +45,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
         /// </summary>
         public string ShortDescription { get; set; }
 
-        public CompositionPropertySet Properties
-        {
-            get
-            {
-                if (_propertySet == null) { _propertySet = new CompositionPropertySet(this); }
-                return _propertySet;
-            }
-        }
+        public CompositionPropertySet Properties { get; }
 
         /// <summary>
         /// Binds an animation to a property.
