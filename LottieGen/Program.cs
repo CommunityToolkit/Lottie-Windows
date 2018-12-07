@@ -301,7 +301,7 @@ sealed class Program
         WriteStatsLine("LinearEasingFunction", beforeOptimization.LinearEasingFunctionCount, afterOptimization.LinearEasingFunctionCount);
         WriteStatsLine("PathGeometry", beforeOptimization.PathGeometryCount, afterOptimization.PathGeometryCount);
         WriteStatsLine("PathKeyFrameAnimation", beforeOptimization.PathKeyFrameAnimationCount, afterOptimization.PathKeyFrameAnimationCount);
-        WriteStatsLine("Property value", beforeOptimization.PropertySetProperyCount, afterOptimization.PropertySetProperyCount);
+        WriteStatsLine("Property value", beforeOptimization.PropertySetPropertyCount, afterOptimization.PropertySetPropertyCount);
         WriteStatsLine("PropertySet", beforeOptimization.PropertySetCount, afterOptimization.PropertySetCount);
         WriteStatsLine("RectangleGeometry", beforeOptimization.RectangleGeometryCount, afterOptimization.RectangleGeometryCount);
         WriteStatsLine("RoundedRectangleGeometry", beforeOptimization.RoundedRectangleGeometryCount, afterOptimization.RoundedRectangleGeometryCount);
@@ -551,7 +551,7 @@ sealed class Program
         AppendColumnValue(translationStats.ContainerShapeCount);
         AppendColumnValue(translationStats.ContainerVisualCount);
         AppendColumnValue(translationStats.ExpressionAnimationCount);
-        AppendColumnValue(translationStats.PropertySetProperyCount);
+        AppendColumnValue(translationStats.PropertySetPropertyCount);
         AppendColumnValue(translationStats.SpriteShapeCount);
         sb.AppendLine();
 

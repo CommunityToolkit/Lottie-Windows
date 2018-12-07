@@ -11,7 +11,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 #endif
     abstract class Easing : IEquatable<Easing>
     {
-        protected private Easing()
+        private protected Easing()
         {
         }
 

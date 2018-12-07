@@ -23,7 +23,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
         readonly Dictionary<Wg.IGeometrySource2D, T> _canvasGeometryReferences = new Dictionary<Wg.IGeometrySource2D, T>();
         readonly Dictionary<CompositionObject, T> _compositionObjectReferences = new Dictionary<CompositionObject, T>();
         readonly Dictionary<CompositionPath, T> _compositionPathReferences = new Dictionary<CompositionPath, T>();
-        readonly Dictionary<CompositionObjectType, int> _compositionObjectCounter = new Dictionary<CompositionObjectType, int>();
+
         int _positionCounter;
 
         ObjectGraph(bool includeVertices)

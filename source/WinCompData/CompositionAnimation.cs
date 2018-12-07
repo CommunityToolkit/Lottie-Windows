@@ -14,7 +14,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
     {
         readonly Dictionary<string, CompositionObject> _referencedParameters = new Dictionary<string, CompositionObject>();
 
-        protected private CompositionAnimation(CompositionAnimation other)
+        private protected CompositionAnimation(CompositionAnimation other)
         {
             if (other != null)
             {

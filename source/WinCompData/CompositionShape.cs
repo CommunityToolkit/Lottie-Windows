@@ -12,7 +12,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 #endif
     abstract class CompositionShape : CompositionObject
     {
-        protected private CompositionShape()
+        private protected CompositionShape()
         {
         }
 

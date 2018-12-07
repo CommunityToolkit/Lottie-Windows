@@ -13,7 +13,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
 
         public Expression Right { get; }
 
-        protected private BinaryExpression(Expression left, Expression right)
+        private protected BinaryExpression(Expression left, Expression right)
         {
             Left = left;
             Right = right;

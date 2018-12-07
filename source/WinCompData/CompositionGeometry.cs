@@ -9,7 +9,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 #endif
     abstract class CompositionGeometry : CompositionObject
     {
-        protected private CompositionGeometry()
+        private protected CompositionGeometry()
         {
         }
 

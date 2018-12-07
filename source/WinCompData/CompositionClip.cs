@@ -11,7 +11,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 #endif
     abstract class CompositionClip : CompositionObject
     {
-        protected private CompositionClip()
+        private protected CompositionClip()
         {
         }
 

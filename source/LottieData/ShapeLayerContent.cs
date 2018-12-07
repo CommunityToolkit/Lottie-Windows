@@ -9,7 +9,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 #endif
     abstract class ShapeLayerContent : LottieObject
     {
-        protected private ShapeLayerContent(string name, string matchName)
+        private protected ShapeLayerContent(string name, string matchName)
             : base(name)
         {
             MatchName = matchName;

@@ -11,7 +11,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 #endif
     abstract class CompositionEasingFunction : CompositionObject
     {
-        protected private CompositionEasingFunction()
+        private protected CompositionEasingFunction()
         {
         }
     }
