@@ -44,7 +44,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         /// <summary>
         /// Gets a value indicating whether the Lottie is compatible with the current operating system.
         /// </summary>
-        public bool IsCompatibleWithCurrentOs { get; internal set; }
+        public bool IsCompatibleWithCurrentOS { get; internal set; }
 
         public TimeSpan Duration => LottieComposition?.Duration ?? TimeSpan.Zero;
 

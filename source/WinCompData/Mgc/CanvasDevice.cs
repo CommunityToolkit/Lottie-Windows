@@ -9,8 +9,5 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgc
 #endif
     sealed class CanvasDevice
     {
-        private CanvasDevice()
-        {
-        }
     }
 }

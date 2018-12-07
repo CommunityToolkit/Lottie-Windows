@@ -24,6 +24,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
         /// </summary>
         public static ApiCompatibility Analyze(CompositionObject graphRoot)
         {
+            // Require CompostionGeometryClip anyway - this ensures that we are never compatible with
+            // RS4 (geometries are flaky in RS4, and CompositionGeometryClip is new in RS5).
             return new ApiCompatibility(requiresCompositionGeometricClip: true);
         }
 

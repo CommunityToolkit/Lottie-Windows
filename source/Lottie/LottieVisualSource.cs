@@ -559,7 +559,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 {
                     if (_diagnostics != null)
                     {
-                        _diagnostics.IsCompatibleWithCurrentOs = true;
+                        _diagnostics.IsCompatibleWithCurrentOS = true;
                     }
 
                     _wincompDataRootVisual = rootVisual;
