@@ -192,16 +192,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
             }
             else
             {
+                // Reference the animations for the object's properties
                 foreach (var animator in obj.Animators)
                 {
                     Reference(node, animator.Animation);
                     Reference(node, animator.Controller);
                 }
 
-                foreach (var animator in obj.Properties.Animators)
+                var propertySet = obj.Properties;
+                var propertySetNode = this[propertySet];
+                foreach (var animator in propertySet.Animators)
                 {
-                    Reference(node, animator.Animation);
-                    Reference(node, animator.Controller);
+                    Reference(propertySetNode, animator.Animation);
+                    Reference(propertySetNode, animator.Controller);
                 }
             }
         }
