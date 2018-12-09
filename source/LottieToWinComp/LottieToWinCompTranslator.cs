@@ -1685,17 +1685,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
                 if (position.IsAnimated || size.IsAnimated)
                 {
-                    ApplyVector2KeyFrameAnimation(context, position, geometry, nameof(Rectangle.Position));
-                    ApplyVector2KeyFrameAnimation(context, size, geometry, nameof(Rectangle.Size));
-
                     Expr offsetExpression;
                     if (position.IsAnimated)
                     {
+                        ApplyVector2KeyFrameAnimation(context, position, geometry, nameof(Rectangle.Position));
                         geometry.Properties.InsertVector2(nameof(Rectangle.Position), Vector2(position.InitialValue));
                         if (size.IsAnimated)
                         {
                             // Size AND position are animated.
                             offsetExpression = ExpressionFactory.PositionAndSizeToOffsetExpression;
+                            ApplyVector2KeyFrameAnimation(context, size, geometry, nameof(Rectangle.Size));
                         }
                         else
                         {
@@ -1707,6 +1706,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     {
                         // Only Size is animated.
                         offsetExpression = ExpressionFactory.PositionToOffsetExpression(Vector2(position.InitialValue));
+                        ApplyVector2KeyFrameAnimation(context, size, geometry, nameof(Rectangle.Size));
                     }
 
                     var offsetExpressionAnimation = CreateExpressionAnimation(offsetExpression);
@@ -1743,17 +1743,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
                 if (position.IsAnimated || size.IsAnimated)
                 {
-                    ApplyVector2KeyFrameAnimation(context, position, geometry, nameof(Rectangle.Position));
-                    ApplyVector2KeyFrameAnimation(context, size, geometry, nameof(Rectangle.Size));
-
                     Expr offsetExpression;
                     if (position.IsAnimated)
                     {
+                        ApplyVector2KeyFrameAnimation(context, position, geometry, nameof(Rectangle.Position));
+
                         geometry.Properties.InsertVector2(nameof(Rectangle.Position), Vector2(position.InitialValue));
                         if (size.IsAnimated)
                         {
                             // Size AND position are animated.
                             offsetExpression = ExpressionFactory.PositionAndSizeToOffsetExpression;
+                            ApplyVector2KeyFrameAnimation(context, size, geometry, nameof(Rectangle.Size));
                         }
                         else
                         {
@@ -1765,6 +1765,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     {
                         // Only Size is animated.
                         offsetExpression = ExpressionFactory.PositionToOffsetExpression(Vector2(position.InitialValue));
+                        ApplyVector2KeyFrameAnimation(context, size, geometry, nameof(Rectangle.Size));
                     }
 
                     var offsetExpressionAnimation = CreateExpressionAnimation(offsetExpression);
@@ -1986,14 +1987,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             {
                 // Add properties that will be animated. The TrimStart and TrimEnd properties
                 // will be set by these values through an expression.
-                geometry.Properties.InsertScalar("TStart", (float)(startPercent.InitialValue / 100));
-                ApplyScaledScalarKeyFrameAnimation(context, startPercent, 1 / 100.0, geometry.Properties, "TStart", "TStart", null);
+                geometry.Properties.InsertScalar("TStart", PercentF(startPercent.InitialValue));
+                if (startPercent.IsAnimated)
+                {
+                    ApplyPercentKeyFrameAnimation(context, startPercent, geometry.Properties, "TStart", "TStart", null);
+                }
+
                 var trimStartExpression = CreateExpressionAnimation(ExpressionFactory.MinTStartTEnd);
                 trimStartExpression.SetReferenceParameter("my", geometry);
                 StartExpressionAnimation(geometry, nameof(geometry.TrimStart), trimStartExpression);
 
-                geometry.Properties.InsertScalar("TEnd", (float)(endPercent.InitialValue / 100));
-                ApplyScaledScalarKeyFrameAnimation(context, endPercent, 1 / 100.0, geometry.Properties, "TEnd", "TEnd", null);
+                geometry.Properties.InsertScalar("TEnd", PercentF(endPercent.InitialValue));
+                if (endPercent.IsAnimated)
+                {
+                    ApplyPercentKeyFrameAnimation(context, endPercent, geometry.Properties, "TEnd", "TEnd", null);
+                }
+
                 var trimEndExpression = CreateExpressionAnimation(ExpressionFactory.MaxTStartTEnd);
                 trimEndExpression.SetReferenceParameter("my", geometry);
                 StartExpressionAnimation(geometry, nameof(geometry.TrimEnd), trimEndExpression);
@@ -2003,20 +2012,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 // Directly animate the TrimStart and TrimEnd properties.
                 if (startPercent.IsAnimated)
                 {
-                    ApplyScaledScalarKeyFrameAnimation(context, startPercent, 1 / 100.0, geometry, nameof(geometry.TrimStart), "TrimStart", null);
+                    ApplyPercentKeyFrameAnimation(context, startPercent, geometry, nameof(geometry.TrimStart), "TrimStart", null);
                 }
                 else
                 {
-                    geometry.TrimStart = Float(startPercent.InitialValue / 100);
+                    geometry.TrimStart = PercentF(startPercent.InitialValue);
                 }
 
                 if (endPercent.IsAnimated)
                 {
-                    ApplyScaledScalarKeyFrameAnimation(context, endPercent, 1 / 100.0, geometry, nameof(geometry.TrimEnd), "TrimEnd", null);
+                    ApplyPercentKeyFrameAnimation(context, endPercent, geometry, nameof(geometry.TrimEnd), "TrimEnd", null);
                 }
                 else
                 {
-                    geometry.TrimEnd = Float(endPercent.InitialValue / 100);
+                    geometry.TrimEnd = PercentF(endPercent.InitialValue);
                 }
             }
 
@@ -2533,6 +2542,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             string longDescription = null,
             string shortDescription = null)
             => ApplyScaledScalarKeyFrameAnimation(context, value, 1, targetObject, targetPropertyName, longDescription, shortDescription);
+
+        void ApplyPercentKeyFrameAnimation(
+            TranslationContext context,
+            in TrimmedAnimatable<double> value,
+            CompositionObject targetObject,
+            string targetPropertyName,
+            string longDescription = null,
+            string shortDescription = null)
+            => ApplyScaledScalarKeyFrameAnimation(context, value, 0.01, targetObject, targetPropertyName, longDescription, shortDescription);
 
         void ApplyScaledScalarKeyFrameAnimation(
             TranslationContext context,
@@ -3336,6 +3354,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         static float? FloatDefaultIsZero(double value) => value == 0 ? null : (float?)value;
 
         static float? FloatDefaultIsOne(double value) => value == 1 ? null : (float?)value;
+
+        static float PercentF(double value) => (float)value / 100F;
 
         static Sn.Vector2 Vector2(LottieData.Vector3 vector3) => Vector2(vector3.X, vector3.Y);
 

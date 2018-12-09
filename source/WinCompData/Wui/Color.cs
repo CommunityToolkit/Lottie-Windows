@@ -269,7 +269,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui
         static string ToHex(byte value) => value.ToString("X2");
 
         // The named UWP colors. Ordered by distance from previous colors.
-        internal static (string Name, Color Color)[] Colors = new[]
+        internal static readonly (string Name, Color Color)[] Colors = new[]
         {
             (Name: "Black", Color: new Color(a:255, r:0, g:0, b:0)),
             (Name: "Blue", Color: new Color(a:255, r:0, g:0, b:255)),
