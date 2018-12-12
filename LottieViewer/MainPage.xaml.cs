@@ -55,7 +55,8 @@ namespace LottieViewer
 
             // Dropdown of file types the user can save the file as
             filePicker.FileTypeChoices.Add("C#", new[] { ".cs" });
-            filePicker.FileTypeChoices.Add("C++ CX", new[] { ".cpp" });
+            //filePicker.FileTypeChoices.Add("C++ CX", new[] { ".cpp" });
+            filePicker.FileTypeChoices.Add("C++/WinRT", new[] { ".cpp" });
             filePicker.FileTypeChoices.Add("Lottie XML", new[] { ".xml" });
 
             // Note that the extension needs to be unique if we're going to
@@ -86,8 +87,11 @@ namespace LottieViewer
                 case ".cs":
                     await FileIO.WriteTextAsync(pickedFile, diagnostics.GenerateCSharpCode());
                     break;
+                //case ".cpp":
+                //    await GenerateCxCodeAsync(diagnostics, suggestedClassName, pickedFile);
+                //    break;
                 case ".cpp":
-                    await GenerateCxCodeAsync(diagnostics, suggestedClassName, pickedFile);
+                    await GenerateCppWinrtCodeAsync(diagnostics, suggestedClassName, pickedFile);
                     break;
                 case ".xml":
                     await FileIO.WriteTextAsync(pickedFile, diagnostics.GenerateLottieXml());
@@ -128,6 +132,72 @@ namespace LottieViewer
 
             // Generate the .cpp and the .h text.
             diagnostics.GenerateCxCode(hFile.Name, out var cppText, out var hText);
+
+            // Write the .cpp file.
+            await FileIO.WriteTextAsync(cppFile, cppText);
+
+            // Write the .h file if the user specified one.
+            if (hFile != null)
+            {
+                await FileIO.WriteTextAsync(hFile, hText);
+            }
+
+            // Write the ICompositionSource.h file if the user specified it.
+            if (iCompositionSourceHeader != null)
+            {
+                await FileIO.WriteLinesAsync(iCompositionSourceHeader, new[]
+                {
+                    "#pragma once",
+                    "namespace Compositions",
+                    "{",
+                    "    public interface class ICompositionSource",
+                    "    {",
+                    "        virtual bool TryCreateAnimatedVisual(",
+                    "        Windows::UI::Composition::Compositor^ compositor,",
+                    "        Windows::UI::Composition::Visual^* rootVisual,",
+                    "        Windows::Foundation::Numerics::float2* size,",
+                    "        Windows::Foundation::TimeSpan* duration,",
+                    "        Platform::Object^* diagnostics);",
+                    "    };",
+                    "}",
+                    string.Empty,
+                });
+            }
+        }
+
+        async Task GenerateCppWinrtCodeAsync(LottieVisualDiagnostics diagnostics, string suggestedClassName, IStorageFile cppFile)
+        {
+            // Ask the user to pick a name for the .h file.
+            var filePicker = new FileSavePicker
+            {
+                SuggestedStartLocation = PickerLocationId.DocumentsLibrary,
+                SuggestedFileName = suggestedClassName,
+            };
+
+            // Dropdown of file types the user can save the file as
+            filePicker.FileTypeChoices.Add("C++ C++/WinRT header", new[] { ".h" });
+
+            var hFile = await filePicker.PickSaveFileAsync();
+
+            if (hFile == null)
+            {
+                // No header file chosen - give up.
+                return;
+            }
+
+            // Ask the user to pick a name for the ICompositionSource.h file.
+            var iCompositionSourceFilePicker = new FileSavePicker
+            {
+                SuggestedStartLocation = PickerLocationId.DocumentsLibrary,
+                SuggestedFileName = "ICompositionSource.h",
+            };
+
+            // Dropdown of file types the user can save the file as
+            iCompositionSourceFilePicker.FileTypeChoices.Add("ICompositionSource header", new[] { ".h" });
+            var iCompositionSourceHeader = await iCompositionSourceFilePicker.PickSaveFileAsync();
+
+            // Generate the .cpp and the .h text.
+            diagnostics.GenerateCppWinRTCode(hFile.Name, out var cppText, out var hText);
 
             // Write the .cpp file.
             await FileIO.WriteTextAsync(cppFile, cppText);

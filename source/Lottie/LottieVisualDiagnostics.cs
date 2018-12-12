@@ -123,6 +123,26 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 out hText);
         }
 
+        public void GenerateCppWinRTCode(string headerFileName, out string cppText, out string hText)
+        {
+            if (LottieComposition == null)
+            {
+                cppText = null;
+                hText = null;
+                return;
+            }
+
+            CppWinrtInstantiatorGenerator.CreateFactoryCode(
+                SuggestedClassName,
+                RootVisual,
+                (float)LottieComposition.Width,
+                (float)LottieComposition.Height,
+                LottieComposition.Duration,
+                headerFileName,
+                out cppText,
+                out hText);
+        }
+
         public KeyValuePair<string, double>[] Markers { get; internal set; } = EmptyMarkersArray;
 
         // Holds the parsed LottieComposition. Only used if one of the codegen or XML options was selected.

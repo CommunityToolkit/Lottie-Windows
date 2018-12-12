@@ -10,6 +10,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\CodeBuilder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\CppStringifier.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\CSharpInstantiatorGenerator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\CppWinrtInstantiatorGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\CxInstantiatorGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\InstantiatorGeneratorBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\NodeNamer.cs" />
