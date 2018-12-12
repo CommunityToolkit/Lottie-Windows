@@ -46,6 +46,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             string headerFileName,
             out string cppText,
             out string hText,
+
             // Rarely set options used mostly for testing.
             bool disableFieldOptimization = false)
         {
