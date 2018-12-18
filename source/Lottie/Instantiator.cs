@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using Microsoft.Graphics.Canvas.Geometry;
 using Wc = Windows.UI.Composition;
@@ -992,6 +993,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                         ellipse.Y,
                         ellipse.RadiusX,
                         ellipse.RadiusY);
+                case Wd.Mgcg.CanvasGeometry.GeometryType.Group:
+                    var group = (Wd.Mgcg.CanvasGeometry.Group)canvasGeometry;
+                    return CanvasGeometry.CreateGroup(
+                        null,
+                        group.Geometries.Select(g => GetCanvasGeometry(g)).ToArray(),
+                        FilledRegionDetermination(group.FilledRegionDetermination));
                 case Wd.Mgcg.CanvasGeometry.GeometryType.Path:
                     using (var builder = new CanvasPathBuilder(null))
                     {
