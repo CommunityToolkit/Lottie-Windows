@@ -1032,10 +1032,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
                 case CanvasGeometry.GeometryType.Combination:
                     {
                         var combination = (CanvasGeometry.Combination)canvasGeometry;
-                        result = CacheCanvasGeometry((CanvasGeometry)obj, GetCanvasGeometry(combination.A).CombineWith(
+                        result = GetCanvasGeometry(combination.A).CombineWith(
                             GetCanvasGeometry(combination.B),
                             combination.Matrix,
-                            combination.CombineMode));
+                            combination.CombineMode);
                         break;
                     }
 
@@ -1048,6 +1048,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
                         ellipse.RadiusX,
                         ellipse.RadiusY);
                     break;
+
+                case CanvasGeometry.GeometryType.Group:
+                    var group = (CanvasGeometry.Group)canvasGeometry;
+                    var geometries = group.Geometries.Select(g => GetCanvasGeometry(g)).ToArray();
+                    result = CanvasGeometry.CreateGroup(null, geometries, group.FilledRegionDetermination);
+                    break;
+
                 case CanvasGeometry.GeometryType.Path:
                     using (var builder = new CanvasPathBuilder(null))
                     {
@@ -1080,7 +1087,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
                             }
                         }
 
-                        result = CacheCanvasGeometry((CanvasGeometry)obj, CanvasGeometry.CreatePath(builder));
+                        result = CanvasGeometry.CreatePath(builder);
                     }
 
                     break;
@@ -1104,6 +1111,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             }
 
             InitializeIDescribable(canvasGeometry, result);
+            CacheCanvasGeometry(canvasGeometry, result);
+
             return result;
         }
 

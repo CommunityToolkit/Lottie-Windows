@@ -9,5 +9,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgc
 #endif
     sealed class CanvasDevice
     {
+        // The CanvasDevice type only exists to match the signature
+        // for CanvasGeometry. It is never instantiated.
+        CanvasDevice()
+        {
+        }
     }
 }

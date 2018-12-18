@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "LottieGen": {
+      "commandName": "Project",
+      "commandLineArgs": "-i d:\\test\\icon_Animation_03_SnapAssist.json -l cs"
+    }
+  }
+}

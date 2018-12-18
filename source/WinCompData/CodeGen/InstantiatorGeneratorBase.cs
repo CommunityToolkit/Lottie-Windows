@@ -225,6 +225,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             string fieldName);
 
         /// <summary>
+        /// Writes CanvasGeometery.Ellipse factory code.
+        /// </summary>
+        /// <param name="builder">A <see cref="CodeBuilder"/> used to create the code.</param>
+        /// <param name="obj">Describes the object that should be instantiated by the factory code.</param>
+        /// <param name="typeName">The type of the result.</param>
+        /// <param name="fieldName">If not null, the name of the field in which the result is stored.</param>
+        protected abstract void WriteCanvasGeometryGroupFactory(
+            CodeBuilder builder,
+            CanvasGeometry.Group obj,
+            string typeName,
+            string fieldName);
+
+        /// <summary>
         /// Writes CanvasGeometery.Path factory code.
         /// </summary>
         /// <param name="builder">A <see cref="CodeBuilder"/> used to create the code.</param>
@@ -528,22 +541,28 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
         bool GenerateCanvasGeometryFactory(CodeBuilder builder, CanvasGeometry obj, ObjectData node)
         {
             WriteObjectFactoryStart(builder, node);
+            var typeName = _stringifier.ReferenceTypeName(node.TypeName);
+            var fieldName = node.FieldName;
+
             switch (obj.Type)
             {
                 case CanvasGeometry.GeometryType.Combination:
-                    WriteCanvasGeometryCombinationFactory(builder, (CanvasGeometry.Combination)obj, _stringifier.ReferenceTypeName(node.TypeName), node.FieldName);
+                    WriteCanvasGeometryCombinationFactory(builder, (CanvasGeometry.Combination)obj, typeName, fieldName);
                     break;
                 case CanvasGeometry.GeometryType.Ellipse:
-                    WriteCanvasGeometryEllipseFactory(builder, (CanvasGeometry.Ellipse)obj, _stringifier.ReferenceTypeName(node.TypeName), node.FieldName);
+                    WriteCanvasGeometryEllipseFactory(builder, (CanvasGeometry.Ellipse)obj, typeName, fieldName);
+                    break;
+                case CanvasGeometry.GeometryType.Group:
+                    WriteCanvasGeometryGroupFactory(builder, (CanvasGeometry.Group)obj, typeName, fieldName);
                     break;
                 case CanvasGeometry.GeometryType.Path:
-                    WriteCanvasGeometryPathFactory(builder, (CanvasGeometry.Path)obj, _stringifier.ReferenceTypeName(node.TypeName), node.FieldName);
+                    WriteCanvasGeometryPathFactory(builder, (CanvasGeometry.Path)obj, typeName, fieldName);
                     break;
                 case CanvasGeometry.GeometryType.RoundedRectangle:
-                    WriteCanvasGeometryRoundedRectangleFactory(builder, (CanvasGeometry.RoundedRectangle)obj, _stringifier.ReferenceTypeName(node.TypeName), node.FieldName);
+                    WriteCanvasGeometryRoundedRectangleFactory(builder, (CanvasGeometry.RoundedRectangle)obj, typeName, fieldName);
                     break;
                 case CanvasGeometry.GeometryType.TransformedGeometry:
-                    WriteCanvasGeometryTransformedGeometryFactory(builder, (CanvasGeometry.TransformedGeometry)obj, _stringifier.ReferenceTypeName(node.TypeName), node.FieldName);
+                    WriteCanvasGeometryTransformedGeometryFactory(builder, (CanvasGeometry.TransformedGeometry)obj, typeName, fieldName);
                     break;
                 default:
                     throw new InvalidOperationException();

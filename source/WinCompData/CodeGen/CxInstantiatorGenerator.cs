@@ -271,6 +271,30 @@ public:
         }
 
         /// <inheritdoc/>
+        protected override void WriteCanvasGeometryGroupFactory(CodeBuilder builder, CanvasGeometry.Group obj, string typeName, string fieldName)
+        {
+            builder.WriteLine($"auto geometries = ComPtr<ID2D1Geometry>[{obj.Geometries.Length}];");
+            builder.OpenScope();
+            for (var i = 0; i < obj.Geometries.Length; i++)
+            {
+                var geometry = obj.Geometries[i];
+                builder.WriteLine($"{CallFactoryFor(geometry)}->GetGeometry(&geometries[{i}]);");
+            }
+
+            builder.CloseScope();
+            builder.WriteLine($"{typeName} result;");
+            builder.WriteLine("ComPtr<ID2D1GeometryGroup> group;");
+            builder.WriteLine("FFHR(_d2dFactory->CreateGeometryGroup(");
+            builder.Indent();
+            builder.WriteLine($"{FilledRegionDetermination(obj.FilledRegionDetermination)},");
+            builder.WriteLine("&geometries,");
+            builder.WriteLine($"{obj.Geometries.Length},");
+            builder.WriteLine("&group));");
+            builder.UnIndent();
+            builder.WriteLine($"result = {FieldAssignment(fieldName)}new GeoSource(group.Get());");
+        }
+
+        /// <inheritdoc/>
         protected override void WriteCanvasGeometryPathFactory(CodeBuilder builder, CanvasGeometry.Path obj, string typeName, string fieldName)
         {
             builder.WriteLine($"{typeName} result;");
