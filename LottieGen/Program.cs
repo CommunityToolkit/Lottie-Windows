@@ -57,25 +57,6 @@ sealed class Program
         }
     }
 
-    static IEnumerable<string> ExpandWildcards(string path)
-    {
-        // Separate the path root (e.g. "C:" or "C:\" or "") from the rest of
-        // the path so that GetDirectoryName returns just the directory. If we
-        // don't do that, C:foobar will return C: as the directory path.
-        var pathRoot = Path.GetPathRoot(path);
-        var pathWithoutRoot = path.Substring(pathRoot.Length);
-
-        var directoryPath = Path.GetDirectoryName(pathWithoutRoot);
-        if (string.IsNullOrWhiteSpace(directoryPath))
-        {
-            directoryPath = ".";
-        }
-
-        var searchPattern = Path.GetFileName(path);
-
-        return Directory.EnumerateFiles(pathRoot + directoryPath, searchPattern);
-    }
-
     // Helper for writing info lines to the info stream.
     void WriteInfo(string infoMessage)
     {
@@ -153,7 +134,7 @@ sealed class Program
         }
 
         // Check that at least one file matches InputFile.
-        var matchingInputFiles = ExpandWildcards(_options.InputFile).ToArray();
+        var matchingInputFiles = Glob.EnumerateFiles(_options.InputFile).ToArray();
         if (matchingInputFiles.Length == 0)
         {
             WriteError($"File not found: {_options.InputFile}");
@@ -167,7 +148,7 @@ sealed class Program
         // Assume success.
         var result = RunResult.Success;
 
-        foreach (var file in matchingInputFiles)
+        foreach (var (file, relativePath) in matchingInputFiles)
         {
             // Get the input file as an absolute path.
             var inputFile = MakeAbsolutePath(file);
@@ -176,9 +157,13 @@ sealed class Program
             Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools.Stats beforeOptimizationStats;
             Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools.Stats afterOptimizationStats;
 
+            // If wildcards were used, use the output folder that is relative to the
+            // non-wildcarded part of the path.
+            var folder = Path.Combine(outputFolder, relativePath);
+
             var codeGenResult = TryGenerateCode(
                         lottieJsonFilePath: inputFile,
-                        outputFolder: outputFolder,
+                        outputFolder: folder,
                         codeGenClassName: _options.ClassName,
                         lottieStats: out lottieStats,
                         beforeOptimizationStats: out beforeOptimizationStats,
