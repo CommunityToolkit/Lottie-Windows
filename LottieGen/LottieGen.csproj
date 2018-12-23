@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>Net461</TargetFramework>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>LottieGen</ToolCommandName>
@@ -20,6 +19,7 @@
     <NoWarn>1572;1573;1574;1591</NoWarn>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <IsPackable>True</IsPackable>
+    <StartupObject>Program</StartupObject>
   </PropertyGroup>
 
   <ItemGroup>
