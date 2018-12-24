@@ -36,7 +36,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         {
             var result = new YamlMap
             {
-                { "Name", obj.Name }
+                { "Name", obj.Name },
             };
             return result;
         }

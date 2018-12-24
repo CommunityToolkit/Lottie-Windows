@@ -30,7 +30,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             {
                 escapedValue = "''";
             }
-            else if (value.StartsWith(' ') || value.EndsWith(' ') || value.StartsWith('#'))
+            else if (value.StartsWith(" ") || value.EndsWith(" ") || value.StartsWith("#"))
             {
                 escapedValue = $"'{value}'";
             }
