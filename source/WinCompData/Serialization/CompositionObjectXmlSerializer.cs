@@ -212,7 +212,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
                     yield return item;
                 }
 
-                yield return FromCompositionPath(obj.Path);
+                if (obj.Path != null)
+                {
+                    yield return FromCompositionPath(obj.Path);
+                }
             }
         }
 
