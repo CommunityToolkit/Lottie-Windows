@@ -6,6 +6,13 @@
     <SharedGUID>b3db16ee-a821-4474-a188-e64926529bbd</SharedGUID>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\LottieCompositionYamlSerializer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\YamlMap.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\YamlObject.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\YamlObjectKind.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\YamlScalar.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\YamlSequence.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\YamlWriter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Animatable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ExtensionMethods.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\AnimatableVector3.cs" />

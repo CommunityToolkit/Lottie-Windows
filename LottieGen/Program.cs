@@ -114,12 +114,18 @@ sealed class Program
 #if DO_NOT_PROCESS_IN_PARALLEL
         foreach (var (file, relativePath) in matchingInputFiles)
         {
-            succeeded &= LottieFileProcessor.ProcessFile(_options, _reporter, file, Path.Combine(outputFolder, relativePath));
+            if (!LottieFileProcessor.ProcessFile(_options, _reporter, file, Path.Combine(outputFolder, relativePath)))
+            {
+                succeeded = false;
+            }
         }
 #else
         Parallel.ForEach(matchingInputFiles, (inputFile) =>
         {
-            succeeded &= LottieFileProcessor.ProcessFile(_options, _reporter, inputFile.path, Path.Combine(outputFolder, inputFile.relativePath));
+            if (!LottieFileProcessor.ProcessFile(_options, _reporter, inputFile.path, Path.Combine(outputFolder, inputFile.relativePath)))
+            {
+                succeeded = false;
+            }
         });
 #endif
         return succeeded ? RunResult.Success : RunResult.Failure;
@@ -149,7 +155,7 @@ Usage: {0} -InputFile LOTTIEFILE -Language LANG [Other options]
 OVERVIEW:
        Generates source code from Lottie files for playing in the AnimatedVisualPlayer. 
        LOTTIEFILE is a Lottie .json file. LOTTIEFILE may contain wildcards.
-       LANG is one of cs, cppcx, winrtcpp, wincompxml, lottiexml, dgml, or stats.
+       LANG is one of cs, cppcx, winrtcpp, wincompxml, lottiexml, lottieyaml, dgml, or stats.
        -Language LANG may be specified multiple times.
 
        [Other options]
