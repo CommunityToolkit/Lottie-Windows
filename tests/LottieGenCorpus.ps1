@@ -81,7 +81,7 @@ $errorLog = "$outputPath\Errors_and_Warnings.log"
 $lottieGenExitCode = 99
 $lottieGenTime = Measure-Command {
     &dotnet $lottieGenDll -i "$CorpusDirectory\**json" -o $outputPath -l cs -l cppcx -l lottiexml -l wincompxml -l dgml -l stats |
-        select-string '( warning )|( error )' | Sort-Object > $errorLog
+        select-string '\:( warning )|( error ) L' | Sort-Object > $errorLog
     $lottieGenExitCode = $LASTEXITCODE
 }
 

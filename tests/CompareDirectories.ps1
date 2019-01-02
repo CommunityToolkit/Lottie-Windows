@@ -42,8 +42,17 @@ function IndexDirectoryTree
     $directoryPrefixLength = $dir.FullName.Length + 1
 
     $result = @{}
-    foreach($item in Get-ChildItem -r $dir)
+    $children = Get-ChildItem -r $dir
+
+    $itemCount = 0
+    foreach($item in $children)
     {
+        if ($itemCount++ % 2000)
+        {
+            $percentComplete = 100 * $itemCount / $children.Count
+            Write-Progress -Activity "Examining files in $dir" -PercentComplete $percentComplete -Status "$itemCount / $($children.Count)"
+        }
+
         $relativePath = $item.FullName.Substring($directoryPrefixLength)
         $hash = Get-FileHash $item.FullName
         if ($hash)
@@ -52,6 +61,7 @@ function IndexDirectoryTree
         }
     }
 
+    Write-Progress -Activity "Examining files in $dir" -Completed
     $result
 }
 
@@ -76,7 +86,11 @@ foreach($item in $dir1Contents.GetEnumerator() | sort-object 'Key')
     }
     elseif ($item.Value -ne $dir2Contents[$key])
     {
-        write-host -ForegroundColor DarkYellow "Different: $key"    
+        write-host -NoNewLine -ForegroundColor DarkYellow 'Different: '
+        write-host -NoNewLine -ForegroundColor $dir1Color (Join-Path $Directory1 $key)
+        write-host -NoNewLine ' '
+        write-host -ForegroundColor $dir2Color (Join-Path $Directory2 $key)
+
         $hasErrors = $true
     }
 }
