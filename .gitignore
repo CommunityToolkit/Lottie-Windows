@@ -231,3 +231,6 @@ msbuild.binlog
 
 # Output from running LottieGen over a corpus for testing
 LottieGenOutput-*/
+
+# Visual Studio debugging configuration file.
+launchSettings.json
