@@ -163,7 +163,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             builder.WriteLine($"var result = {FieldAssignment(fieldName)}CanvasGeometry.CreateGroup(");
             builder.Indent();
             builder.WriteLine($"null,");
-            builder.WriteLine($"new CanvasGeometry[]{{{string.Join(",", obj.Geometries.Select(g => CallFactoryFor(g)) ) }}},");
+            builder.WriteLine($"new CanvasGeometry[] {{ {string.Join(",", obj.Geometries.Select(g => CallFactoryFor(g)) ) } }},");
             builder.WriteLine($"{_stringifier.FilledRegionDetermination(obj.FilledRegionDetermination)});");
             builder.UnIndent();
         }

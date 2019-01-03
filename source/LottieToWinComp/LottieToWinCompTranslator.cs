@@ -1209,7 +1209,37 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
                         break;
                     case ShapeContentType.Path:
-                        container.Shapes.Add(TranslatePathContent(context, shapeContext, (Shape)shapeContent));
+                        {
+                            var path = (Shape)shapeContent;
+                            List<Shape> paths = null;
+
+                            if (!path.PathData.IsAnimated)
+                            {
+                                while (stack.TryPeek(out var item) && item.ContentType == ShapeContentType.Path && !((Shape)item).PathData.IsAnimated)
+                                {
+                                    if (paths == null)
+                                    {
+                                        paths = new List<Shape>();
+                                        paths.Add(path);
+                                    }
+
+                                    paths.Add((Shape)stack.Pop());
+                                }
+                            }
+
+                            if (paths != null)
+                            {
+                                // There are multiple paths that are all non-animated. Group them.
+                                // Note that we should be grouping paths and other shapes even if they're animated
+                                // but we currently only support paths, and only if they're non-animated.
+                                container.Shapes.Add(TranslatePathGroupContent(context, shapeContext, paths));
+                            }
+                            else
+                            {
+                                container.Shapes.Add(TranslatePathContent(context, shapeContext, path));
+                            }
+                        }
+
                         break;
                     case ShapeContentType.Polystar:
                         _unsupported.Polystar();
@@ -1803,7 +1833,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return compositionRectangle;
         }
 
-        CompositionShape TranslatePathContent(TranslationContext context, ShapeContentContext shapeContext, Shape shapeContent)
+        void CheckForRoundedCornersOnPath(TranslationContext context, ShapeContentContext shapeContext)
         {
             if (shapeContext.RoundedCorner != null)
             {
@@ -1814,6 +1844,46 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     _unsupported.PathWithRoundedCorners();
                 }
             }
+        }
+
+        // Groups multiple Shapes into a D2D geometry group.
+        CompositionShape TranslatePathGroupContent(TranslationContext context, ShapeContentContext shapeContext, IEnumerable<Shape> shapeContents)
+        {
+            Debug.Assert(shapeContents.All(sh => !sh.PathData.IsAnimated), "Precondition");
+
+            CheckForRoundedCornersOnPath(context, shapeContext);
+
+            var fillType = GetPathFillType(shapeContext.Fill);
+
+            // A path is represented as a SpriteShape with a CompositionPathGeometry.
+            var compositionPathGeometry = CreatePathGeometry();
+
+            var compositionPath = new CompositionPath(
+                CanvasGeometry.CreateGroup(
+                    null,
+                    shapeContents.Select(sh => CreateWin2dPathGeometry(sh.PathData.InitialValue, fillType, Sn.Matrix3x2.Identity, optimizeLines: true)).ToArray(),
+                    FilledRegionDetermination(fillType)));
+
+            compositionPathGeometry.Path = compositionPath;
+
+            var compositionSpriteShape = CreateSpriteShape();
+            compositionSpriteShape.Geometry = compositionPathGeometry;
+
+            if (_addDescriptions)
+            {
+                var shapeContentName = string.Join("+", shapeContents.Select(sh => sh.Name).Where(a => a != null));
+                Describe(compositionSpriteShape, shapeContentName);
+                Describe(compositionPathGeometry, $"{shapeContentName}.PathGeometry");
+            }
+
+            TranslateAndApplyShapeContentContext(context, shapeContext, compositionSpriteShape, 0);
+
+            return compositionSpriteShape;
+        }
+
+        CompositionShape TranslatePathContent(TranslationContext context, ShapeContentContext shapeContext, Shape shapeContent)
+        {
+            CheckForRoundedCornersOnPath(context, shapeContext);
 
             // Map Path's Geometry data to PathGeometry.Path
             var pathGeometry = context.TrimAnimatable(_lottieDataOptimizer.GetOptimized(shapeContent.PathData));
