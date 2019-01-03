@@ -105,16 +105,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
                     // Node is referenced more than once, so it requires storage.
                     node.RequiresStorage = true;
                 }
-                else
-                {
-                    // Node is only referenced once.
+            }
 
-                    // Force inlining on CompositionPath nodes that are only referenced once, because they are always very simple.
-                    if (node.Type == Graph.NodeType.CompositionPath)
-                    {
-                        var pathSourceFactoryCall = CallFactoryFromFor(node, ((CompositionPath)node.Object).Source);
-                        node.ForceInline($"{New} CompositionPath({_stringifier.FactoryCall(pathSourceFactoryCall)})");
-                    }
+            // Force inlining on CompositionPath nodes that are only referenced once, because they are always very simple.
+            foreach (var node in _nodes)
+            {
+                if (node.Type == Graph.NodeType.CompositionPath && FilteredInRefs(node).Count() == 1)
+                {
+                    node.RequiresStorage = false;
+                    var pathSourceFactoryCall = CallFactoryFromFor(node, ((CompositionPath)node.Object).Source);
+                    node.ForceInline($"{New} CompositionPath({_stringifier.FactoryCall(pathSourceFactoryCall)})");
                 }
             }
 

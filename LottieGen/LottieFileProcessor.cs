@@ -2,17 +2,17 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.IO;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools;
-using System;
-using System.IO;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
 
 /// <summary>
 /// Processes a single Lottie file to produce various generated outputs.
@@ -51,10 +51,18 @@ sealed class LottieFileProcessor
 
     internal static bool ProcessFile(CommandLineOptions options, Reporter reporter, string file, string outputFolder)
     {
-        return new LottieFileProcessor(options, reporter, file, outputFolder).Run();
+        try
+        {
+            return new LottieFileProcessor(options, reporter, file, outputFolder).Run();
+        }
+        catch
+        {
+            reporter.ErrorStream.WriteLine($"Unhandled exception processing: {file}");
+            throw;
+        }
     }
 
-    internal bool Run()
+    bool Run()
     {
         // Make sure we can write to the output directory.
         if (!TryEnsureDirectoryExists(_outputFolder))
