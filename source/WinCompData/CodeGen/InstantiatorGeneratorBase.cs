@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Numerics;
 using System.Text;
@@ -1456,7 +1457,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
         string Float(float value) => _stringifier.Float(value);
 
         // A float for use in an id.
-        static string FloatId(float value) => value.ToString("0.###").Replace('.', 'p').Replace('-', 'm');
+        static string FloatId(float value) => value.ToString("0.###", CultureInfo.InvariantCulture).Replace('.', 'p').Replace('-', 'm');
 
         string Int(int value) => _stringifier.Int32(value);
 
@@ -1681,8 +1682,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             /// <inheritdoc/>
             public virtual string Float(float value) =>
                 Math.Floor(value) == value
-                    ? value.ToString("0")
-                    : value.ToString("G9") + "F";
+                    ? value.ToString("0", CultureInfo.InvariantCulture)
+                    : value.ToString("G9", CultureInfo.InvariantCulture) + "F";
 
             /// <inheritdoc/>
             public virtual string Int32(int value) => value.ToString();

@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
 {
@@ -35,8 +36,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
             // scientific notation (e.g. 1.2E06)
             var fValue = (float)value;
             return Math.Floor(fValue) == fValue
-                ? fValue.ToString("0")
-                : fValue.ToString("0.0####################");
+                ? fValue.ToString("0", CultureInfo.InvariantCulture)
+                : fValue.ToString("0.0####################", CultureInfo.InvariantCulture);
         }
 
         /// <inheritdoc/>
