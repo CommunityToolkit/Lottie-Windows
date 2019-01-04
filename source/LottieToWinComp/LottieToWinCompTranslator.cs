@@ -1110,6 +1110,38 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return result;
         }
 
+        // Discover patterns that we don't yet support and report any issues.
+        void CheckForUnsupportedShapeGroup(in ReadOnlySpan<ShapeLayerContent> contents)
+        {
+            // Count the number of geometries. More than 1 geometry is currently not properly supported
+            // unless they're all paths.
+            var pathCount = 0;
+            var geometryCount = 0;
+
+            for (var i = 0; i < contents.Length; i++)
+            {
+                switch (contents[i].ContentType)
+                {
+                    case ShapeContentType.Ellipse:
+                    case ShapeContentType.Polystar:
+                    case ShapeContentType.Rectangle:
+                        geometryCount++;
+                        break;
+                    case ShapeContentType.Path:
+                        pathCount++;
+                        geometryCount++;
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            if (geometryCount > 1 && pathCount != geometryCount)
+            {
+                _unsupported.CombiningMultipleShapes();
+            }
+        }
+
         CompositionShape TranslateShapeLayerContents(
             TranslationContext context,
             ShapeContentContext shapeContext,
@@ -1135,19 +1167,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 // equals the Count of the repeater). In each set, replace the repeater with
                 // the transform of the repeater, multiplied.
 
-                // Copy the items into an array.
-                var contentsItems = contents.ToArray();
-
                 // Find the index of the repeater
                 var repeaterIndex = 0;
-                while (contentsItems[repeaterIndex].ContentType != ShapeContentType.Repeater)
+                while (contents[repeaterIndex].ContentType != ShapeContentType.Repeater)
                 {
                     // Keep going until the first repeater is found.
                     repeaterIndex++;
                 }
 
                 // Get the repeater.
-                var repeater = (Repeater)contentsItems[repeaterIndex];
+                var repeater = (Repeater)contents[repeaterIndex];
 
                 var repeaterCount = context.TrimAnimatable(repeater.Count);
                 var repeaterOffset = context.TrimAnimatable(repeater.Offset);
@@ -1161,8 +1190,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 else
                 {
                     // Get the items before the repeater, and the items after the repeater.
-                    var itemsBeforeRepeater = contentsItems.Take(repeaterIndex).ToArray();
-                    var itemsAfterRepeater = contentsItems.Skip(repeaterIndex + 1).ToArray();
+                    var itemsBeforeRepeater = contents.Slice(0, repeaterIndex).ToArray();
+                    var itemsAfterRepeater = contents.Slice(repeaterIndex + 1).ToArray();
 
                     var nonAnimatedRepeaterCount = (int)Math.Round(repeaterCount.InitialValue);
                     for (var i = 0; i < nonAnimatedRepeaterCount; i++)
@@ -1180,6 +1209,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     return result;
                 }
             }
+
+            CheckForUnsupportedShapeGroup(contents);
 
             var stack = new Stack<ShapeLayerContent>(contents.ToArray());
 
