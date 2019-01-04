@@ -47,18 +47,20 @@ function IndexDirectoryTree
     $itemCount = 0
     foreach($item in $children)
     {
-        if ($itemCount++ % 2000)
-        {
-            $percentComplete = 100 * $itemCount / $children.Count
-            Write-Progress -Activity "Examining files in $dir" -PercentComplete $percentComplete -Status "$itemCount / $($children.Count)"
-        }
-
         $relativePath = $item.FullName.Substring($directoryPrefixLength)
         $hash = Get-FileHash $item.FullName
         if ($hash)
         {
             $result.Add($relativePath, $hash.Hash)
         }
+
+        if ($itemCount % 100 -eq 0)
+        {
+            $percentComplete = 100 * $itemCount / $children.Count
+            Write-Progress -Activity "Examining files in $dir" -PercentComplete $percentComplete -Status "$itemCount / $($children.Count)"
+        }
+
+        $itemCount++
     }
 
     Write-Progress -Activity "Examining files in $dir" -Completed
