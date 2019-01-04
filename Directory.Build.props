@@ -28,8 +28,7 @@
     <!-- Default to not creating a NuPkg. Set this to True in projects that should generate a NuPkg -->
     <IsPackable>False</IsPackable>
 
-    <!-- TODO - temporarily turn off warnings as errors while we get the build working on GitHub -->
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 
     <!-- TODO - temporarily turn off warnings about XML comments while we get the build working on GitHub -->
     <NoWarn>1591</NoWarn>

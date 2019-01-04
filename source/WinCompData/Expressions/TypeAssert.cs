@@ -24,8 +24,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
         /// <inheritdoc/>
         protected override Expression Simplify() => this;
 
-        // There is no syntax for a type assert, so just return the child syntax.
         /// <inheritdoc/>
+        // There is no syntax for a type assert, so just return the child syntax.
         protected override string CreateExpressionString() => _child.ToString();
 
         /// <inheritdoc/>

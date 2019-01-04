@@ -22,6 +22,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
         /// <summary>
         /// Analyzes the given tree and returns information about its compatibility with a runtime.
         /// </summary>
+        /// <returns>An object with properties describing the compatibility requirements of the tree.</returns>
         public static ApiCompatibility Analyze(CompositionObject graphRoot)
         {
             // Always require CompostionGeometryClip - this ensures that we are never compatible with

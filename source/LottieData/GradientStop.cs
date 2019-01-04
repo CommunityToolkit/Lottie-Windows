@@ -44,6 +44,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// Returns the first gradient stop in a sequence that is a color. Opacity will always be
         /// set to 1.
         /// </summary>
+        /// <returns>The first gradient stop in the sequence.</returns>
         public static Color GetFirstColor(ReadOnlySpan<GradientStop> gradientStops)
         {
             foreach (var stop in gradientStops)
