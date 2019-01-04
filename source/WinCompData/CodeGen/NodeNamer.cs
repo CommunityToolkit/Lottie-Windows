@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Numerics;
 
@@ -253,7 +254,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             return result;
         }
 
-        static string FloatId(float value) => value.ToString("0.###").Replace('.', 'p').Replace('-', 'm');
+        static string FloatId(float value) => value.ToString("0.###", CultureInfo.InvariantCulture).Replace('.', 'p').Replace('-', 'm');
 
         // A Vector2 for use in an id.
         static string Vector2Id(Vector2 size)
