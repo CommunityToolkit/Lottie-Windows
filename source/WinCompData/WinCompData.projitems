@@ -94,5 +94,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Visual.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Wg\IGeometrySource2D.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Wui\Color.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Wui\Colors.cs" />
   </ItemGroup>
 </Project>

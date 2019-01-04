@@ -7,4 +7,4 @@ dotnet tool uninstall -g LottieGen
 @for /f "tokens=2,3,4,5,6 delims=." %%A in ('dir /b %~dp0\..\bin\nupkg\LottieGen.*.nupkg') do @set PackageVersion=%%A.%%B.%%C.%%D.%%E
 
 :: Install
-dotnet tool install LottieGen -g --version %PackageVersion% --add-source f:\GitHub\Lottie-Windows\bin\nupkg
++dotnet tool install LottieGen -g --version %PackageVersion% --add-source %~dp0\..\bin\nupkg

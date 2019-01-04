@@ -228,3 +228,9 @@ msbuild.binlog
 
 # Lottie project internal development directories
 /internal/
+
+# Output from running LottieGen over a corpus for testing
+LottieGenOutput-*/
+
+# Visual Studio debugging configuration file.
+launchSettings.json

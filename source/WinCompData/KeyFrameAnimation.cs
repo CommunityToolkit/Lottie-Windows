@@ -14,7 +14,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
     {
         readonly SortedList<float, KeyFrame> _keyFrames = new SortedList<float, KeyFrame>();
 
-        protected private KeyFrameAnimation(KeyFrameAnimation<T> other)
+        private protected KeyFrameAnimation(KeyFrameAnimation<T> other)
             : base(other)
         {
             if (other != null)
@@ -68,7 +68,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 
         public abstract class KeyFrame
         {
-            protected private KeyFrame()
+            private protected KeyFrame()
             {
             }
 

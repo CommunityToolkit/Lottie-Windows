@@ -23,7 +23,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
         readonly Dictionary<Wg.IGeometrySource2D, T> _canvasGeometryReferences = new Dictionary<Wg.IGeometrySource2D, T>();
         readonly Dictionary<CompositionObject, T> _compositionObjectReferences = new Dictionary<CompositionObject, T>();
         readonly Dictionary<CompositionPath, T> _compositionPathReferences = new Dictionary<CompositionPath, T>();
-        readonly Dictionary<CompositionObjectType, int> _compositionObjectCounter = new Dictionary<CompositionObjectType, int>();
+
         int _positionCounter;
 
         ObjectGraph(bool includeVertices)
@@ -166,15 +166,46 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
             }
 
             // Reference the animators after referencing all the other contents of the object. This is
-            // done to ensure the position of animators is higher than the position of other
+            // done to ensure the Position of animators is greater than the position of other
             // references. This ordering is consistent with how CompositionObjects are initialized:
             // 1. Instantiate the object
-            // 2. Assign the values for the object's properties
-            // 3. Start the animations
-            foreach (var animator in obj.Animators)
+            // 2. Assign the values for the object's properties and property set properties
+            // 3. Start the animations for the object's properties
+            // 4. Start the animations for the object's property set properties.
+            //
+            // Treat CompositionPropertySet specially: Start the animations on an object's property
+            // set when starting the animations on the owning object, unless there is no owning object
+            // (i.e. it's a property set that was directly created rather than being implicitly
+            // created by a CompositionObject's .Properties property).
+            if (obj.Type == CompositionObjectType.CompositionPropertySet)
             {
-                Reference(node, animator.Animation);
-                Reference(node, animator.Controller);
+                if (((CompositionPropertySet)obj).Owner == null)
+                {
+                    // Unowned CompositionPropertySet - can't have animations referenced
+                    // from its owner, so reference them here.
+                    foreach (var animator in obj.Animators)
+                    {
+                        Reference(node, animator.Animation);
+                        Reference(node, animator.Controller);
+                    }
+                }
+            }
+            else
+            {
+                // Reference the animations for the object's properties
+                foreach (var animator in obj.Animators)
+                {
+                    Reference(node, animator.Animation);
+                    Reference(node, animator.Controller);
+                }
+
+                var propertySet = obj.Properties;
+                var propertySetNode = this[propertySet];
+                foreach (var animator in propertySet.Animators)
+                {
+                    Reference(propertySetNode, animator.Animation);
+                    Reference(propertySetNode, animator.Controller);
+                }
             }
         }
 
@@ -218,6 +249,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
                     return VisitCombination((CanvasGeometry.Combination)obj, node);
                 case CanvasGeometry.GeometryType.Ellipse:
                     return VisitEllipse((CanvasGeometry.Ellipse)obj, node);
+                case CanvasGeometry.GeometryType.Group:
+                    return VisitGroup((CanvasGeometry.Group)obj, node);
                 case CanvasGeometry.GeometryType.Path:
                     return VisitPath((CanvasGeometry.Path)obj, node);
                 case CanvasGeometry.GeometryType.RoundedRectangle:
@@ -249,6 +282,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
 
         bool VisitEllipse(CanvasGeometry.Ellipse obj, T node)
         {
+            return VisitCanvasGeometry(obj, node);
+        }
+
+        bool VisitGroup(CanvasGeometry.Group obj, T node)
+        {
+            foreach (var geometry in obj.Geometries)
+            {
+                Reference(node, geometry);
+            }
+
             return VisitCanvasGeometry(obj, node);
         }
 

@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
+using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
 {
@@ -14,6 +15,25 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
     /// </summary>
     sealed class CompositionObjectDgmlSerializer
     {
+        // The categories of each node in the DGML graph. The category determines the appearance in the graph.
+        static readonly Category CategoryRoot = new Category("Root", Colors.MediumVioletRed);
+        static readonly Category CategoryContainerVisual = new Category("ContainerVisual", Colors.DarkRed);
+        static readonly Category CategoryContainerVisualAnimated = new Category("AnimatedContainerVisual", "Animated ContainerVisual", Colors.Crimson);
+        static readonly Category CategoryShapeVisual = new Category("ShapeVisual", Colors.CornflowerBlue);
+        static readonly Category CategoryShapeVisualAnimated = new Category("AnimatedShapeVisual", "Animated ShapeVisual", Colors.RoyalBlue);
+        static readonly Category CategoryContainerShape = new Category("ContainerShape", Colors.SeaGreen);
+        static readonly Category CategoryContainerShapeAnimated = new Category("AnimatedContainerShape", "Animated ContainerShape", Colors.Teal);
+        static readonly Category CategoryShape = new Category("Shape", Colors.Yellow);
+        static readonly Category CategoryShapeAnimated = new Category("AnimatedShape", "Animated Shape", Colors.Wheat);
+        static readonly Category CategoryEllipse = new Category("Ellipse", Colors.DarkGoldenrod);
+        static readonly Category CategoryEllipseAnimated = new Category("AnimatedEllipse", "Animated Ellipse", Colors.Goldenrod);
+        static readonly Category CategoryPath = new Category("Path", Colors.DarkOrange);
+        static readonly Category CategoryPathAnimated = new Category("AnimatedPath", "Animated Path", Colors.Orange);
+        static readonly Category CategoryRectangle = new Category("Rectangle", Colors.SandyBrown);
+        static readonly Category CategoryRectangleAnimated = new Category("AnimatedRectangle", "Animated Rectangle", Colors.Yellow);
+        static readonly Category CategoryRoundedRectangle = new Category("RoundedRectangle", Colors.Plum);
+        static readonly Category CategoryAnimatedAnimatedRoundedRectangle = new Category("AnimatedRoundedRectangle", "Animated RoundedRectangle", Colors.Purple);
+
         static readonly XNamespace ns = "http://schemas.microsoft.com/vs/2009/dgml";
         ObjectGraph<ObjectData> _objectGraph;
         int _idGenerator;
@@ -53,28 +73,34 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
 
             var rootNode = _objectGraph[compositionObject];
 
-            // Give the root object a special name and color.
+            // Give the root object a special name and category.
             rootNode.Name = $"{rootNode.Name} (Root)";
-            rootNode.Category = "Root";
+            rootNode.Category = CategoryRoot;
 
             // Get the groups.
             var groups = GroupTree(rootNode, null).ToArray();
 
+            // Get the Nodes for the objects that are going to show up in the DGML.
+            var objectNodes = _objectGraph.Nodes.Where(n => n.IsDgmlNode).ToArray();
+
             // Create the DGML nodes.
             var nodes =
-                from n in _objectGraph.Nodes
-                where n.IsDgmlNode
-                select CreateNodeXml(id: n.Id, label: n.Name, category: n.Category);
+                from n in objectNodes
+                select CreateNodeXml(id: n.Id, label: n.Name, category: n.Category.Id);
 
             // Create the DGML nodes for the groups.
             nodes = nodes.Concat(
                 from gn in groups
                 select CreateNodeXml(id: gn.Id, label: gn.GroupName, @group: "Expanded"));
 
+            // Create the categories used by object nodes.
+            var categories =
+                (from n in objectNodes
+                 select n.Category).Distinct();
+
             // Create the links between the nodes.
             var links =
-                from n in _objectGraph.Nodes
-                where n.IsDgmlNode
+                from n in objectNodes
                 from otherNode in n.Children
                 select new XElement(ns + "Link", new XAttribute("Source", n.Id), new XAttribute("Target", otherNode.Id));
 
@@ -100,6 +126,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
                     new XElement(ns + "Links", links.Concat(containsLinks)),
                     new XElement(
                         ns + "Categories",
+                        categories.Select(c => c.ToXElement()).Append(
                         new XElement(
                             ns + "Category",
                             new XAttribute("Id", "Contains"),
@@ -109,31 +136,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
                             new XAttribute("CanLinkedNodesBeDataDriven", "True"),
                             new XAttribute("IncomingActionLabel", "Contained By"),
                             new XAttribute("IsContainment", "True"),
-                            new XAttribute("OutgoingActionLabel", "Contains")),
-                        new XElement(
-                            ns + "Category",
-                            new XAttribute("Id", "ShapeVisual"),
-                            new XAttribute("Label", "ShapeVisual"),
-                            new XAttribute("Background", "#FF44CCCC"),
-                            new XAttribute("IsTag", "True")),
-                        new XElement(
-                            ns + "Category",
-                            new XAttribute("Id", "Root"),
-                            new XAttribute("Label", "Root"),
-                            new XAttribute("Background", "#FFDF0174"),
-                            new XAttribute("IsTag", "True")),
-                        new XElement(
-                            ns + "Category",
-                            new XAttribute("Id", "ContainerShape"),
-                            new XAttribute("Label", "ContainerShape"),
-                            new XAttribute("Background", "#FF44CCCC"),
-                            new XAttribute("IsTag", "True")),
-                        new XElement(
-                            ns + "Category",
-                            new XAttribute("Id", "Shape"),
-                            new XAttribute("Label", "Shape"),
-                            new XAttribute("Background", "#FFF7FE2E"),
-                            new XAttribute("IsTag", "True"))
+                            new XAttribute("OutgoingActionLabel", "Contains")))
                             ),
                     new XElement(
                         ns + "Properties",
@@ -175,15 +178,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
             }));
         }
 
-        static IEnumerable<XAttribute> CreateAttributes(IEnumerable<(string Name, string Value)> attrs)
+        static IEnumerable<XAttribute> CreateAttributes(IEnumerable<(string name, string value)> attrs)
         {
-#pragma warning disable SA1312 // Variable names should begin with lower-case letter
-            foreach (var (Name, Value) in attrs)
-#pragma warning restore SA1312 // Variable names should begin with lower-case letter
+            foreach (var (name, value) in attrs)
             {
-                if (Value != null)
+                if (value != null)
                 {
-                    yield return new XAttribute(Name, Value);
+                    yield return new XAttribute(name, value);
                 }
             }
         }
@@ -249,7 +250,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
 
             internal string Name { get; set; }
 
-            internal string Category { get; set; }
+            internal Category Category { get; set; }
 
             internal bool IsDgmlNode { get; private set; }
 
@@ -262,6 +263,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
             // in the graph.
             internal void Initialize(CompositionObjectDgmlSerializer owner)
             {
+                // Set a category for the node, or leave it null if it's not
+                // to be displayed in the graph.
                 _owner = owner;
                 var obj = Object as CompositionObject;
                 if (obj != null)
@@ -287,22 +290,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
                         case CompositionObjectType.StepEasingFunction:
                         case CompositionObjectType.Vector2KeyFrameAnimation:
                         case CompositionObjectType.Vector3KeyFrameAnimation:
+                            // Do not display in the graph.
                             return;
                         case CompositionObjectType.CompositionContainerShape:
-                            Category = "ContainerShape";
+                            Category = IsAnimatedCompositionObject ? CategoryContainerShapeAnimated : CategoryContainerShape;
                             break;
                         case CompositionObjectType.CompositionSpriteShape:
-                            {
-                                Category = "Shape";
-                            }
-
+                            Category = GetCategory((CompositionSpriteShape)obj);
                             break;
                         case CompositionObjectType.ContainerVisual:
+                            Category = IsAnimatedCompositionObject ? CategoryContainerVisualAnimated : CategoryContainerVisual;
                             break;
                         case CompositionObjectType.ShapeVisual:
-                            Category = "ShapeVisual";
+                            Category = IsAnimatedCompositionObject ? CategoryShapeVisualAnimated : CategoryShapeVisual;
                             break;
-
                         default:
                             throw new InvalidOperationException();
                     }
@@ -327,6 +328,51 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
             }
 
             public override string ToString() => Id;
+
+            bool IsAnimatedCompositionObject
+            {
+                get
+                {
+                    var obj = (CompositionObject)Object;
+                    return obj.Animators.Any() || obj.Properties.Animators.Any();
+                }
+            }
+
+            bool IsSpriteShapeWithAnimatedGeometory
+            {
+                get
+                {
+                    var obj = (CompositionSpriteShape)Object;
+                    var geometry = obj.Geometry;
+                    return geometry != null && (geometry.Animators.Any() || geometry.Properties.Animators.Any());
+                }
+            }
+
+            static Category GetCategory(CompositionSpriteShape shape)
+            {
+                var isAnimated = shape.Animators.Any() || shape.Properties.Animators.Any();
+                var geometry = shape.Geometry;
+                if (geometry == null)
+                {
+                    return isAnimated ? CategoryShapeAnimated : CategoryShape;
+                }
+
+                var isGeometryAnimated = geometry.Animators.Any() || geometry.Properties.Animators.Any();
+
+                switch (geometry.Type)
+                {
+                    case CompositionObjectType.CompositionEllipseGeometry:
+                        return isGeometryAnimated ? CategoryEllipseAnimated : CategoryEllipse;
+                    case CompositionObjectType.CompositionPathGeometry:
+                        return isGeometryAnimated ? CategoryPathAnimated : CategoryPath;
+                    case CompositionObjectType.CompositionRectangleGeometry:
+                        return isGeometryAnimated ? CategoryRectangleAnimated : CategoryRectangle;
+                    case CompositionObjectType.CompositionRoundedRectangleGeometry:
+                        return isGeometryAnimated ? CategoryAnimatedAnimatedRoundedRectangle : CategoryRoundedRectangle;
+                    default:
+                        throw new InvalidOperationException();
+                }
+            }
         }
 
         sealed class GroupNode
@@ -347,6 +393,37 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
             internal string GroupName { get; set; }
 
             public override string ToString() => Id;
+        }
+
+        sealed class Category
+        {
+            readonly string _label;
+            readonly Color _backgroundColor;
+
+            internal Category(string id, string label, Color backgroundColor)
+            {
+                Id = id;
+                _label = label;
+                _backgroundColor = backgroundColor;
+            }
+
+            internal Category(string idAndLabel, Color backgroundColor)
+                : this(idAndLabel, idAndLabel, backgroundColor)
+            {
+            }
+
+            internal string Id { get; private set; }
+
+            internal XElement ToXElement()
+            {
+                return new XElement(ns + "Category", CreateAttributes(new[]
+                {
+                    ("Id", Id),
+                    ("Label", _label),
+                    ("Background", $"#{_backgroundColor.Hex}"),
+                    ("IsTag", "True"),
+                }));
+            }
         }
     }
 }

@@ -11,7 +11,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 #endif
     abstract class Visual : CompositionObject
     {
-        protected private Visual()
+        private protected Visual()
         {
         }
 

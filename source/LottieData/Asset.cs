@@ -9,7 +9,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 #endif
     abstract class Asset
     {
-        protected private Asset(string id)
+        private protected Asset(string id)
         {
             Id = id;
         }

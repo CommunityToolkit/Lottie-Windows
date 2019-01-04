@@ -1950,7 +1950,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         {
             static readonly KeyFrame<T>[] s_emptyKeyFrames = new KeyFrame<T>[0];
 
-            protected private AnimatableParser()
+            private protected AnimatableParser()
             {
             }
 

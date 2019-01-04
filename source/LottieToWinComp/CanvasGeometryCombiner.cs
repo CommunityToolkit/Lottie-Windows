@@ -109,6 +109,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         ellipse.Y,
                         ellipse.RadiusX,
                         ellipse.RadiusY);
+                case Wcd.Mgcg.CanvasGeometry.GeometryType.Group:
+                    var group = (Wcd.Mgcg.CanvasGeometry.Group)geometry;
+                    var geometries = group.Geometries.Select(g => ToWin2dCanvasGeometry(g)).ToArray();
+                    return Win2D.CanvasGeometry.CreateGroup(
+                        null,
+                        geometries,
+                        group.FilledRegionDetermination);
                 case Wcd.Mgcg.CanvasGeometry.GeometryType.Path:
                     using (var builder = new Win2D.CanvasPathBuilder(null))
                     {

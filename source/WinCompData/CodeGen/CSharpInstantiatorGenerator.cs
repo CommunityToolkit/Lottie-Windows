@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Linq;
 using System.Numerics;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui;
@@ -153,6 +154,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             builder.Indent();
             builder.WriteLine($"null,");
             builder.WriteLine($"{Float(obj.X)}, {Float(obj.Y)}, {Float(obj.RadiusX)}, {Float(obj.RadiusY)});");
+            builder.UnIndent();
+        }
+
+        /// <inheritdoc/>
+        protected override void WriteCanvasGeometryGroupFactory(CodeBuilder builder, CanvasGeometry.Group obj, string typeName, string fieldName)
+        {
+            builder.WriteLine($"var result = {FieldAssignment(fieldName)}CanvasGeometry.CreateGroup(");
+            builder.Indent();
+            builder.WriteLine($"null,");
+            builder.WriteLine($"new CanvasGeometry[] {{ {string.Join(", ", obj.Geometries.Select(g => CallFactoryFor(g)) ) } }},");
+            builder.WriteLine($"{_stringifier.FilledRegionDetermination(obj.FilledRegionDetermination)});");
             builder.UnIndent();
         }
 

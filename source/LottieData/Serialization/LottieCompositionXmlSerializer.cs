@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Tools
+namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 {
 #if PUBLIC_LottieData
     public

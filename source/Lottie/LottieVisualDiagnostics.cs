@@ -83,7 +83,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         public string GenerateLottieXml()
         {
             if (LottieComposition == null) { return null; }
-            return LottieData.Tools.LottieCompositionXmlSerializer.ToXml(LottieComposition).ToString();
+            return LottieData.Serialization.LottieCompositionXmlSerializer.ToXml(LottieComposition).ToString();
         }
 
         public string GenerateWinCompXml()

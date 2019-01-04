@@ -20,10 +20,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 #endif
     abstract class Layer : LottieObject
     {
-        static readonly Mask[] _emptyMasks = new Mask[0];
         readonly Mask[] _masks;
 
-        protected private Layer(
+        private protected Layer(
             string name,
             int index,
             int? parent,
