@@ -8,23 +8,23 @@ LottieGen is built as a [.NET Core global tool](https://docs.microsoft.com/en-us
 ## Installing
 *The following commands are examples only - adjust the paths and versions as necessary ...*
 
-The latest release version can be installed from NuGet:
+The latest release version can be installed from NuGet (https://www.nuget.org/packages/LottieGen):
 
-    dotnet tool install lottiegen -g
+    dotnet tool install -g LottieGen
 
-Prerelease versions can be installed from NuGet:
+The latest prerelease version can be installed from NuGet:
 
-    dotnet tool install lottiegen -g --version 1.0.0-prerelease01
+    dotnet tool install -g LottieGen --version 5.0.0-prerelease
 
 
-CI builds can be installed from MyGet:
+CI builds can be installed from MyGet (https://dotnet.myget.org/feed/uwpcommunitytoolkit/package/nuget/LottieGen):
 
-    dotnet tool install LottieGen -g --version 1.0.0-build.1.g26d7c6442f --add-source https://dotnet.myget.org/F/uwpcommunitytoolkit/api/v3/index.json 
+    dotnet tool install -g LottieGen --add-source https://dotnet.myget.org/F/uwpcommunitytoolkit/api/v3/index.json --version 5.0.0-build.11
 
 
 Local builds can be installed from your bin\nupkg directory:
 
-    dotnet tool install LottieGen -g --version 1.0.0-build.14.g1d4752119a --add-source f:\GitHub\Lottie-Windows\bin\nupkg
+    dotnet tool install -g LottieGen --add-source f:\GitHub\Lottie-Windows\bin\nupkg --version 5.0.0-build.11.g31523b44e4
 
 ## Uninstalling
     dotnet tool uninstall -g LottieGen
