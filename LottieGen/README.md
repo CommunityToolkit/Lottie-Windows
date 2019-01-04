@@ -12,9 +12,9 @@ The latest release version can be installed from NuGet (https://www.nuget.org/pa
 
     dotnet tool install -g LottieGen
 
-Prerelease versions can be installed from NuGet:
+The latest prerelease version can be installed from NuGet:
 
-    dotnet tool install -g LottieGen --version 5.0.0-prerelease01
+    dotnet tool install -g LottieGen --version 5.0.0-prerelease
 
 
 CI builds can be installed from MyGet (https://dotnet.myget.org/feed/uwpcommunitytoolkit/package/nuget/LottieGen):
