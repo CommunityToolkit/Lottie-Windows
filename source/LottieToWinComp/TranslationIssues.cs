@@ -151,6 +151,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             Report("LT0026", "Mask with multiple shapes");
         }
 
+        internal void CombiningMultipleShapes()
+        {
+            Report("LT0027", "CombiningMultipleShapes");
+        }
+
         void Report(string code, string description)
         {
             _issues.Add((code, description));
