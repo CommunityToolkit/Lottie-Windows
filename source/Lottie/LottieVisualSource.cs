@@ -39,13 +39,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         Uri _uriSource;
         ContentFactory _contentFactory;
 
+        /// <summary>
+        /// Gets the options for the <see cref="LottieVisualSource"/>.
+        /// </summary>
         // Optimize Lotties by default. Optimization takes a little longer but usually produces much
         // more efficient translations. The only reason someone would turn optimization off is if
         // the time to translate is too high, but in that case the Lottie is probably going to perform
         // so badly on the machine that it won't really be usable with our without optimization.
-        /// <summary>
-        /// Gets the options for the <see cref="LottieVisualSource"/>.
-        /// </summary>
         public static DependencyProperty OptionsProperty { get; } =
             RegisterDp(nameof(Options), LottieVisualOptions.Optimize);
 
@@ -99,6 +99,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         /// <summary>
         /// Called by XAML to convert a string to an <see cref="IAnimatedVisualSource"/>.
         /// </summary>
+        /// <returns>The <see cref="LottieVisualSource"/> for the given url.</returns>
         public static LottieVisualSource CreateFromString(string uri)
         {
             var uriUri = StringToUri(uri);
@@ -138,10 +139,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             return LoadAsync(sourceUri == null ? null : new Loader(this, sourceUri)).AsAsyncAction();
         }
 
-        // TODO: currently explicitly implemented interfaces are causing a problem with .NET Native. Make them implicit for now.
         /// <summary>
         /// Implements <see cref="IDynamicAnimatedVisualSource"/>.
         /// </summary>
+        // TODO: currently explicitly implemented interfaces are causing a problem with .NET Native. Make them implicit for now.
         public event TypedEventHandler<IDynamicAnimatedVisualSource, object> AnimatedVisualInvalidated
         {
             add
@@ -159,14 +160,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             }
         }
 
-        // TODO: currently explicitly implemented interfaces are causing a problem with .NET Native. Make them implicit for now.
-        //bool IAnimatedVisualSource.TryCreateAnimatedVisual(
         /// <summary>
         /// Implements <see cref="IAnimatedVisualSource"/>.
         /// </summary>
         /// <param name="compositor">The <see cref="Compositor"/> that can be used as a factory for the resulting <see cref="IAnimatedVisual"/>.</param>
         /// <param name="diagnostics">An optional object that may provide extra information about the result.</param>
         /// <returns>An <see cref="IAnimatedVisual"/>.</returns>
+        // TODO: currently explicitly implemented interfaces are causing a problem with .NET Native. Make them implicit for now.
+        //bool IAnimatedVisualSource.TryCreateAnimatedVisual(
         public IAnimatedVisual TryCreateAnimatedVisual(
             Compositor compositor,
             out object diagnostics)
@@ -305,7 +306,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             }
 
             // Asynchronously loads WinCompData from a Lottie file.
-            internal async Task<ContentFactory> LoadAsync(LottieVisualOptions Options)
+            internal async Task<ContentFactory> LoadAsync(LottieVisualOptions options)
             {
                 if (_uri == null && _storageFile == null)
                 {
@@ -315,10 +316,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
 
                 LottieVisualDiagnostics diagnostics = null;
                 Stopwatch sw = null;
-                if (Options.HasFlag(LottieVisualOptions.IncludeDiagnostics))
+                if (options.HasFlag(LottieVisualOptions.IncludeDiagnostics))
                 {
                     sw = Stopwatch.StartNew();
-                    diagnostics = new LottieVisualDiagnostics { Options = Options };
+                    diagnostics = new LottieVisualDiagnostics { Options = options };
                 }
 
                 var result = new ContentFactory(diagnostics);

@@ -34,6 +34,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
         /// <summary>
         /// Returns the graph of nodes reachable from the given <see cref="CompositionObject"/> root.
         /// </summary>
+        /// <returns>A <see cref="Graph"/> for the given Composition tree.</returns>
         public static new ObjectGraph<T> FromCompositionObject(CompositionObject root, bool includeVertices)
         {
             var result = new ObjectGraph<T>(includeVertices);
@@ -249,6 +250,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
                     return VisitCombination((CanvasGeometry.Combination)obj, node);
                 case CanvasGeometry.GeometryType.Ellipse:
                     return VisitEllipse((CanvasGeometry.Ellipse)obj, node);
+                case CanvasGeometry.GeometryType.Group:
+                    return VisitGroup((CanvasGeometry.Group)obj, node);
                 case CanvasGeometry.GeometryType.Path:
                     return VisitPath((CanvasGeometry.Path)obj, node);
                 case CanvasGeometry.GeometryType.RoundedRectangle:
@@ -280,6 +283,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
 
         bool VisitEllipse(CanvasGeometry.Ellipse obj, T node)
         {
+            return VisitCanvasGeometry(obj, node);
+        }
+
+        bool VisitGroup(CanvasGeometry.Group obj, T node)
+        {
+            foreach (var geometry in obj.Geometries)
+            {
+                Reference(node, geometry);
+            }
+
             return VisitCanvasGeometry(obj, node);
         }
 

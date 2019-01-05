@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using Microsoft.Graphics.Canvas.Geometry;
 using Wc = Windows.UI.Composition;
@@ -38,6 +39,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         /// Creates a new instance of <see cref="Windows.UI.Composition.Visual"/>
         /// described by the given <see cref="WinCompData.Visual"/>.
         /// </summary>
+        /// <returns>The <see cref="Windows.UI.Composition.Visual"/>.</returns>
         internal static Wc.Visual CreateVisual(Wc.Compositor compositor, Wd.Visual visual)
         {
             var converter = new Instantiator(compositor);
@@ -992,6 +994,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                         ellipse.Y,
                         ellipse.RadiusX,
                         ellipse.RadiusY);
+                case Wd.Mgcg.CanvasGeometry.GeometryType.Group:
+                    var group = (Wd.Mgcg.CanvasGeometry.Group)canvasGeometry;
+                    return CanvasGeometry.CreateGroup(
+                        null,
+                        group.Geometries.Select(g => GetCanvasGeometry(g)).ToArray(),
+                        FilledRegionDetermination(group.FilledRegionDetermination));
                 case Wd.Mgcg.CanvasGeometry.GeometryType.Path:
                     using (var builder = new CanvasPathBuilder(null))
                     {

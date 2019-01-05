@@ -25,6 +25,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// <summary>
         /// Returns the <see cref="Asset"/> with the given id, or null if not found.
         /// </summary>
+        /// <returns>The <see cref="Asset"/> with the given id, or null if not found.</returns>
         public Asset GetAssetById(string id)
         {
             if (id == null)

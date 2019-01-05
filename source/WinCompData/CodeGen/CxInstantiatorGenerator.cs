@@ -88,8 +88,8 @@ public:
 }}";
         }
 
-        // Called by the base class to write the start of the file (i.e. everything up to the body of the Instantiator class).
         /// <inheritdoc/>
+        // Called by the base class to write the start of the file (i.e. everything up to the body of the Instantiator class).
         protected override void WriteFileStart(
             CodeBuilder builder,
             CodeGenInfo info)
@@ -144,8 +144,8 @@ public:
             builder.WriteLine("ComPtr<ID2D1Factory> _d2dFactory;");
         }
 
-        // Called by the base class to write the end of the file (i.e. everything after the body of the Instantiator class).
         /// <inheritdoc/>
+        // Called by the base class to write the end of the file (i.e. everything after the body of the Instantiator class).
         protected override void WriteFileEnd(
             CodeBuilder builder,
             CodeGenInfo info)
@@ -268,6 +268,30 @@ public:
             builder.WriteLine("&ellipse));");
             builder.UnIndent();
             builder.WriteLine($"result = {FieldAssignment(fieldName)}new GeoSource(ellipse.Get());");
+        }
+
+        /// <inheritdoc/>
+        protected override void WriteCanvasGeometryGroupFactory(CodeBuilder builder, CanvasGeometry.Group obj, string typeName, string fieldName)
+        {
+            builder.WriteLine($"auto geometries = ComPtr<ID2D1Geometry>[{obj.Geometries.Length}];");
+            builder.OpenScope();
+            for (var i = 0; i < obj.Geometries.Length; i++)
+            {
+                var geometry = obj.Geometries[i];
+                builder.WriteLine($"{CallFactoryFor(geometry)}->GetGeometry(&geometries[{i}]);");
+            }
+
+            builder.CloseScope();
+            builder.WriteLine($"{typeName} result;");
+            builder.WriteLine("ComPtr<ID2D1GeometryGroup> group;");
+            builder.WriteLine("FFHR(_d2dFactory->CreateGeometryGroup(");
+            builder.Indent();
+            builder.WriteLine($"{FilledRegionDetermination(obj.FilledRegionDetermination)},");
+            builder.WriteLine("&geometries,");
+            builder.WriteLine($"{obj.Geometries.Length},");
+            builder.WriteLine("&group));");
+            builder.UnIndent();
+            builder.WriteLine($"result = {FieldAssignment(fieldName)}new GeoSource(group.Get());");
         }
 
         /// <inheritdoc/>

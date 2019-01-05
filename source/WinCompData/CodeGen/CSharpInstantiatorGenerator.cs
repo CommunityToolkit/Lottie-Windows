@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Linq;
 using System.Numerics;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui;
@@ -36,6 +37,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
         /// Returns the C# code for a factory that will instantiate the given <see cref="Visual"/> as a
         /// Windows.UI.Composition Visual.
         /// </summary>
+        /// <returns>The C# code.</returns>
         public static string CreateFactoryCode(
             string className,
             Visual rootVisual,
@@ -54,8 +56,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             return generator.GenerateCode(className, width, height);
         }
 
-        // Called by the base class to write the start of the file (i.e. everything up to the body of the Instantiator class).
         /// <inheritdoc/>
+        // Called by the base class to write the start of the file (i.e. everything up to the body of the Instantiator class).
         protected override void WriteFileStart(CodeBuilder builder, CodeGenInfo info)
         {
             if (info.RequiresWin2d)
@@ -96,8 +98,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             builder.OpenScope();
         }
 
-        // Called by the base class to write the end of the file (i.e. everything after the body of the Instantiator class).
         /// <inheritdoc/>
+        // Called by the base class to write the end of the file (i.e. everything after the body of the Instantiator class).
         protected override void WriteFileEnd(
             CodeBuilder builder,
             CodeGenInfo info)
@@ -153,6 +155,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             builder.Indent();
             builder.WriteLine($"null,");
             builder.WriteLine($"{Float(obj.X)}, {Float(obj.Y)}, {Float(obj.RadiusX)}, {Float(obj.RadiusY)});");
+            builder.UnIndent();
+        }
+
+        /// <inheritdoc/>
+        protected override void WriteCanvasGeometryGroupFactory(CodeBuilder builder, CanvasGeometry.Group obj, string typeName, string fieldName)
+        {
+            builder.WriteLine($"var result = {FieldAssignment(fieldName)}CanvasGeometry.CreateGroup(");
+            builder.Indent();
+            builder.WriteLine($"null,");
+            builder.WriteLine($"new CanvasGeometry[] {{ {string.Join(", ", obj.Geometries.Select(g => CallFactoryFor(g)) ) } }},");
+            builder.WriteLine($"{_stringifier.FilledRegionDetermination(obj.FilledRegionDetermination)});");
             builder.UnIndent();
         }
 

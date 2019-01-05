@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Numerics;
 using System.Text;
@@ -105,16 +106,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
                     // Node is referenced more than once, so it requires storage.
                     node.RequiresStorage = true;
                 }
-                else
-                {
-                    // Node is only referenced once.
+            }
 
-                    // Force inlining on CompositionPath nodes that are only referenced once, because they are always very simple.
-                    if (node.Type == Graph.NodeType.CompositionPath)
-                    {
-                        var pathSourceFactoryCall = CallFactoryFromFor(node, ((CompositionPath)node.Object).Source);
-                        node.ForceInline($"{New} CompositionPath({_stringifier.FactoryCall(pathSourceFactoryCall)})");
-                    }
+            // Force inlining on CompositionPath nodes that are only referenced once, because they are always very simple.
+            foreach (var node in _nodes)
+            {
+                if (node.Type == Graph.NodeType.CompositionPath && FilteredInRefs(node).Count() == 1)
+                {
+                    node.RequiresStorage = false;
+                    var pathSourceFactoryCall = CallFactoryFromFor(node, ((CompositionPath)node.Object).Source);
+                    node.ForceInline($"{New} CompositionPath({_stringifier.FactoryCall(pathSourceFactoryCall)})");
                 }
             }
 
@@ -132,6 +133,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
         /// as  C# and C++.
         /// Returns null on failure.
         /// </summary>
+        /// <returns>A name, or null.</returns>
         public static string TrySynthesizeClassName(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
@@ -225,6 +227,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             string fieldName);
 
         /// <summary>
+        /// Writes CanvasGeometery.Ellipse factory code.
+        /// </summary>
+        /// <param name="builder">A <see cref="CodeBuilder"/> used to create the code.</param>
+        /// <param name="obj">Describes the object that should be instantiated by the factory code.</param>
+        /// <param name="typeName">The type of the result.</param>
+        /// <param name="fieldName">If not null, the name of the field in which the result is stored.</param>
+        protected abstract void WriteCanvasGeometryGroupFactory(
+            CodeBuilder builder,
+            CanvasGeometry.Group obj,
+            string typeName,
+            string fieldName);
+
+        /// <summary>
         /// Writes CanvasGeometery.Path factory code.
         /// </summary>
         /// <param name="builder">A <see cref="CodeBuilder"/> used to create the code.</param>
@@ -266,6 +281,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
         /// <summary>
         /// Call this to generate the code. Returns a string containing the generated code.
         /// </summary>
+        /// <returns>The code.</returns>
         protected string GenerateCode(
             string className,
             float width,
@@ -330,6 +346,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
         /// <summary>
         /// Returns the code to call the factory for the given object.
         /// </summary>
+        /// <returns>The code to call the factory for the given object.</returns>
         protected string CallFactoryFor(CanvasGeometry obj)
         {
             return CallFactoryFromFor(_currentObjectFactoryNode, obj);
@@ -338,8 +355,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
         // Returns the code to call the factory for the given node from the given node.
         string CallFactoryFromFor(ObjectData callerNode, ObjectData calleeNode)
         {
-            string result;
-            if (callerNode.CallFactoryFromForCache.TryGetValue(calleeNode, out result))
+            if (callerNode.CallFactoryFromForCache.TryGetValue(calleeNode, out string result))
             {
                 // Return the factory from the cache.
                 return result;
@@ -528,22 +544,28 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
         bool GenerateCanvasGeometryFactory(CodeBuilder builder, CanvasGeometry obj, ObjectData node)
         {
             WriteObjectFactoryStart(builder, node);
+            var typeName = _stringifier.ReferenceTypeName(node.TypeName);
+            var fieldName = node.FieldName;
+
             switch (obj.Type)
             {
                 case CanvasGeometry.GeometryType.Combination:
-                    WriteCanvasGeometryCombinationFactory(builder, (CanvasGeometry.Combination)obj, _stringifier.ReferenceTypeName(node.TypeName), node.FieldName);
+                    WriteCanvasGeometryCombinationFactory(builder, (CanvasGeometry.Combination)obj, typeName, fieldName);
                     break;
                 case CanvasGeometry.GeometryType.Ellipse:
-                    WriteCanvasGeometryEllipseFactory(builder, (CanvasGeometry.Ellipse)obj, _stringifier.ReferenceTypeName(node.TypeName), node.FieldName);
+                    WriteCanvasGeometryEllipseFactory(builder, (CanvasGeometry.Ellipse)obj, typeName, fieldName);
+                    break;
+                case CanvasGeometry.GeometryType.Group:
+                    WriteCanvasGeometryGroupFactory(builder, (CanvasGeometry.Group)obj, typeName, fieldName);
                     break;
                 case CanvasGeometry.GeometryType.Path:
-                    WriteCanvasGeometryPathFactory(builder, (CanvasGeometry.Path)obj, _stringifier.ReferenceTypeName(node.TypeName), node.FieldName);
+                    WriteCanvasGeometryPathFactory(builder, (CanvasGeometry.Path)obj, typeName, fieldName);
                     break;
                 case CanvasGeometry.GeometryType.RoundedRectangle:
-                    WriteCanvasGeometryRoundedRectangleFactory(builder, (CanvasGeometry.RoundedRectangle)obj, _stringifier.ReferenceTypeName(node.TypeName), node.FieldName);
+                    WriteCanvasGeometryRoundedRectangleFactory(builder, (CanvasGeometry.RoundedRectangle)obj, typeName, fieldName);
                     break;
                 case CanvasGeometry.GeometryType.TransformedGeometry:
-                    WriteCanvasGeometryTransformedGeometryFactory(builder, (CanvasGeometry.TransformedGeometry)obj, _stringifier.ReferenceTypeName(node.TypeName), node.FieldName);
+                    WriteCanvasGeometryTransformedGeometryFactory(builder, (CanvasGeometry.TransformedGeometry)obj, typeName, fieldName);
                     break;
                 default:
                     throw new InvalidOperationException();
@@ -1437,7 +1459,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
         string Float(float value) => _stringifier.Float(value);
 
         // A float for use in an id.
-        static string FloatId(float value) => value.ToString("0.###").Replace('.', 'p').Replace('-', 'm');
+        static string FloatId(float value) => value.ToString("0.###", CultureInfo.InvariantCulture).Replace('.', 'p').Replace('-', 'm');
 
         string Int(int value) => _stringifier.Int32(value);
 
@@ -1662,8 +1684,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             /// <inheritdoc/>
             public virtual string Float(float value) =>
                 Math.Floor(value) == value
-                    ? value.ToString("0")
-                    : value.ToString("G9") + "F";
+                    ? value.ToString("0", CultureInfo.InvariantCulture)
+                    : value.ToString("G9", CultureInfo.InvariantCulture) + "F";
 
             /// <inheritdoc/>
             public virtual string Int32(int value) => value.ToString();
