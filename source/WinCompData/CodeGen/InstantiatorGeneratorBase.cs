@@ -133,6 +133,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
         /// as  C# and C++.
         /// Returns null on failure.
         /// </summary>
+        /// <returns>A name, or null.</returns>
         public static string TrySynthesizeClassName(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
@@ -280,6 +281,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
         /// <summary>
         /// Call this to generate the code. Returns a string containing the generated code.
         /// </summary>
+        /// <returns>The code.</returns>
         protected string GenerateCode(
             string className,
             float width,
@@ -344,6 +346,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
         /// <summary>
         /// Returns the code to call the factory for the given object.
         /// </summary>
+        /// <returns>The code to call the factory for the given object.</returns>
         protected string CallFactoryFor(CanvasGeometry obj)
         {
             return CallFactoryFromFor(_currentObjectFactoryNode, obj);
@@ -352,8 +355,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
         // Returns the code to call the factory for the given node from the given node.
         string CallFactoryFromFor(ObjectData callerNode, ObjectData calleeNode)
         {
-            string result;
-            if (callerNode.CallFactoryFromForCache.TryGetValue(calleeNode, out result))
+            if (callerNode.CallFactoryFromForCache.TryGetValue(calleeNode, out string result))
             {
                 // Return the factory from the cache.
                 return result;

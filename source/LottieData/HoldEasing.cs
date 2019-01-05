@@ -24,15 +24,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// <inheritdoc/>
         public override EasingType Type => EasingType.Hold;
 
-        // All SetpEeasings are equivalent.
         /// <inheritdoc/>
+        // All HoldEasings are equivalent.
         public override int GetHashCode() => (int)Type;
 
         /// <inheritdoc/>
         public override bool Equals(object obj) => Equals(obj as HoldEasing);
 
-        // All LinearEasings are equivalent.
         /// <inheritdoc/>
+        // All HoldEasings are equivalent.
         public bool Equals(HoldEasing other) => other != null;
 
         /// <inheritdoc/>

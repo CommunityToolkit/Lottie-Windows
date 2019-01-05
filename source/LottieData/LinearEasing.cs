@@ -23,15 +23,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// <inheritdoc/>
         public override string ToString() => nameof(LinearEasing);
 
-        // All LinearEasings are equivalent.
         /// <inheritdoc/>
+        // All LinearEasings are equivalent.
         public override int GetHashCode() => (int)Type;
 
         /// <inheritdoc/>
         public override bool Equals(object obj) => Equals(obj as LinearEasing);
 
-        // All LinearEasings are equivalent.
         /// <inheritdoc/>
+        // All LinearEasings are equivalent.
         public bool Equals(LinearEasing other) => other != null;
     }
 }

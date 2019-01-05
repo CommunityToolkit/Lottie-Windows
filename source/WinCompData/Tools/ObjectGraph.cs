@@ -34,6 +34,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
         /// <summary>
         /// Returns the graph of nodes reachable from the given <see cref="CompositionObject"/> root.
         /// </summary>
+        /// <returns>A <see cref="Graph"/> for the given Composition tree.</returns>
         public static new ObjectGraph<T> FromCompositionObject(CompositionObject root, bool includeVertices)
         {
             var result = new ObjectGraph<T>(includeVertices);

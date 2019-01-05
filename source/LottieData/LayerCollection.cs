@@ -35,11 +35,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// Returns the <see cref="Layer"/>s in the <see cref="LayerCollection"/> in
         /// painting order.
         /// </summary>
+        /// <returns>The <see cref="Layer"/>s in painting order.</returns>
         public IEnumerable<Layer> GetLayersBottomToTop() => _layers;
 
         /// <summary>
         /// Returns the <see cref="Layer"/> with the given id, or null if no matching <see cref="Layer"/> is found.
         /// </summary>
+        /// <returns>The corresponding <see cref="Layer"/> or null if <paramref name="id"/> does not match
+        /// a single <see cref="Layer"/> in the collection.</returns>
         public Layer GetLayerById(int? id)
         {
             if (!id.HasValue)

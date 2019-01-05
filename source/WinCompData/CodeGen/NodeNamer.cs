@@ -26,6 +26,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
         /// Takes a list of nodes and generates unique names for them. Returns a list of node + name pairs.
         /// The names are chosen to be descriptive and usable in code generation.
         /// </summary>
+        /// <returns>A lot of node + name pairs usable in code generation.</returns>
         public static IEnumerable<(TNode, string)> GenerateNodeNames(IEnumerable<TNode> nodes)
         {
             var nodesByTypeName = new Dictionary<string, List<TNode>>();

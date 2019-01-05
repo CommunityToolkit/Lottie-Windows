@@ -77,6 +77,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui
         /// <summary>
         /// Attempts to get the friendly name for this color.
         /// </summary>
+        /// <returns><c>true</c> if a friendly name was returned.</returns>
         public bool TryGetFriendlyName(out string name)
         {
             name = GetFriendlyName(A, R, G, B);

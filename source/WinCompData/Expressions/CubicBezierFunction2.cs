@@ -135,8 +135,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
             }
         }
 
-        // (1-t)^3P0 + 3(1-t)^2tP1 + 3(1-t)t^2P2 + t^3P3
         /// <inheritdoc/>
+        // (1-t)^3P0 + 3(1-t)^2tP1 + 3(1-t)t^2P2 + t^3P3
         protected override Expression Simplify()
         {
             var oneMinusT = Subtract(Scalar(1), _t);

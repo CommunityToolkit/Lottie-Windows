@@ -28,6 +28,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// Validates the given <see cref="LottieComposition"/> against all of the validation rules.
         /// Returns a list of validation issues, or an empty list if no issues were found.
         /// </summary>
+        /// <returns>A list of the issues discovered during validation.</returns>
         public static (string Code, string Description)[] Validate(LottieComposition lottieComposition)
         {
             if (lottieComposition == null)

@@ -81,8 +81,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         }
 
         /// <summary>
-        /// Parses a Lottie file to create a <see cref="LottieData.LottieComposition"/>.
+        /// Parses a Lottie file to create a <see cref="LottieComposition"/>.
         /// </summary>
+        /// <returns>A <see cref="LottieComposition"/> read from the json stream.</returns>
         public static LottieComposition ReadLottieCompositionFromJsonStream(
             Stream stream,
             Options options,

@@ -88,8 +88,8 @@ public:
 }}";
         }
 
-        // Called by the base class to write the start of the file (i.e. everything up to the body of the Instantiator class).
         /// <inheritdoc/>
+        // Called by the base class to write the start of the file (i.e. everything up to the body of the Instantiator class).
         protected override void WriteFileStart(
             CodeBuilder builder,
             CodeGenInfo info)
@@ -144,8 +144,8 @@ public:
             builder.WriteLine("ComPtr<ID2D1Factory> _d2dFactory;");
         }
 
-        // Called by the base class to write the end of the file (i.e. everything after the body of the Instantiator class).
         /// <inheritdoc/>
+        // Called by the base class to write the end of the file (i.e. everything after the body of the Instantiator class).
         protected override void WriteFileEnd(
             CodeBuilder builder,
             CodeGenInfo info)

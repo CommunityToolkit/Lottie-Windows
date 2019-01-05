@@ -115,11 +115,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
         /// <summary>
         /// Returns an equivalent expression, simplified if possible.
         /// </summary>
+        /// <returns>An equivalent expression, simplified if possible.</returns>
         protected abstract Expression Simplify();
 
         /// <summary>
         /// Returns the expression as a string for use by WinComp animations.
         /// </summary>
+        /// <returns>The exression as a string suitable for use in the Composition expression animation APIs.</returns>
         protected abstract string CreateExpressionString();
 
         protected static string Parenthesize(Expression expression) =>
