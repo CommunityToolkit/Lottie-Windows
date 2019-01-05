@@ -39,6 +39,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         /// Creates a new instance of <see cref="Windows.UI.Composition.Visual"/>
         /// described by the given <see cref="WinCompData.Visual"/>.
         /// </summary>
+        /// <returns>The <see cref="Windows.UI.Composition.Visual"/>.</returns>
         internal static Wc.Visual CreateVisual(Wc.Compositor compositor, Wd.Visual visual)
         {
             var converter = new Instantiator(compositor);

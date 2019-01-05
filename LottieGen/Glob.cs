@@ -12,6 +12,8 @@ static class Glob
     /// <summary>
     /// Returns the files that match the given pattern.
     /// </summary>
+    /// <returns>A list of pairs identifying the path to each file, and a path relative to the deepest
+    /// non-wildcarded part of the input.</returns>
     internal static IEnumerable<(string path, string relativePath)> EnumerateFiles(string value)
     {
         // Break the pattern into non-wildcarded directory and the pattern to match.

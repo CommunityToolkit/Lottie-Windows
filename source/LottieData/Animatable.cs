@@ -92,12 +92,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         public bool IsAnimated => _keyFrames.Length > 1;
 
         /// <summary>
-        /// Returns true if this value is always equal to the given value.
+        /// Returns <c>true</c> if this value is always equal to the given value.
         /// </summary>
+        /// <returns><c>true</c> if this value is always equal to the given value.</returns>
         public bool AlwaysEquals(T value) => !IsAnimated && value.Equals(InitialValue);
 
-        // Not a great hash code because it ignore the KeyFrames, but quick.
         /// <inheritdoc/>
+        // Not a great hash code because it ignore the KeyFrames, but quick.
         public override int GetHashCode() => InitialValue.GetHashCode();
 
         /// <inheritdoc/>

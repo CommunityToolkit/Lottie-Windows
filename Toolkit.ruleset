@@ -89,28 +89,39 @@
     <Rule Id="SA1633" Action="None" />
     <Rule Id="SA1634" Action="None" />
     <Rule Id="SA1652" Action="None" />
+
     <!-- Rules that differ from what other Toolkit projects use -->
-    <!-- SA1308 - disallows m_, s_, and c_ field name prefixes. -->
+    <!-- Field 's_foo' should not begin with the prefix 's_' -->
     <Rule Id="SA1308" Action="None" />
-    <!-- SA1005: Single line comment must begin with a space. Conflicts with our pattern for commenting out code. -->
+
+    <!-- Single line comment must begin with a space. Conflicts with our pattern for commenting out code. -->
     <Rule Id="SA1005" Action="None" />
-    <!-- SA1623: Documentation for read/write properties needs to mention the setter. Conflicts with SA1624 for properties with implicit fields. -->
+
+    <!-- Static members should appear before non-static members -->
+    <Rule Id="SA1204" Action="None" />
+
+    <!-- Documentation for read/write properties needs to mention the setter. Conflicts with SA1624 for properties with implicit fields. -->
     <Rule Id="SA1623"  Action="None" />
+
+    <!-- Element 'Foo' should declare an access modifier -->
+    <Rule Id="SA1400" Action="None" />
 
     <!-- Temporarily disabled rules for Lottie as we integrate into the Windows Community Toolkit -->
     <!-- SA1008: Opening parenthesis must not be preceded by a space. Not make sense in , ( where space
         needs space followed -->
     <Rule Id="SA1008" Action="None" />
+
+    <!-- Closing parenthesis should not be preceded by a space. -->
     <Rule Id="SA1009" Action="None" />
+
     <!-- SA1024: Colon must be followed by a space. Not make sense in Colors definition.-->
     <Rule Id="SA1024" Action="None" />
+
     <!-- SA1102: Query clause must follow previous clause. Not make sense with comments.-->
     <Rule Id="SA1102" Action="None" />
-    <Rule Id="SA1204" Action="None" />
+
+    <!-- Static readonly fields should begin with upper-case letter -->
     <Rule Id="SA1311" Action="None" />
-    <Rule Id="SA1313" Action="None" />
-    <Rule Id="SA1400" Action="None" />
-    <Rule Id="SA1514" Action="None" />
-    <Rule Id="SA1615" Action="None" />
+
   </Rules>
 </RuleSet>

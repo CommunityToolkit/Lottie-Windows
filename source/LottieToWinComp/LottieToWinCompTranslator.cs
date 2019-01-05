@@ -47,10 +47,11 @@ using TypeConstraint = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions.T
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 {
-    // See: https://helpx.adobe.com/pdf/after_effects_reference.pdf for the After Effects semantics.
     /// <summary>
     /// Translates a <see cref="LottieData.LottieComposition"/> to an equivalent <see cref="Visual"/>.
     /// </summary>
+    /// <remarks>See https://helpx.adobe.com/pdf/after_effects_reference.pdf"/> for the
+    /// After Effects semantics.</remarks>
 #if PUBLIC
     public
 #endif
@@ -124,8 +125,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// <param name="strictTranslation">If true, throw an exception if translation issues are found.</param>
         /// <param name="visual">The <see cref="Visual"/> that contains the translated Lottie.</param>
         /// <param name="translationIssues">A list of issues that were encountered during the translation.</param>
+        /// <returns><c>true</c> if the <see cref="LottieComposition"/> was translated.</returns>
         public static bool TryTranslateLottieComposition(
-            LottieData.LottieComposition lottieComposition,
+            LottieComposition lottieComposition,
             bool strictTranslation,
             out Visual visual,
             out (string Code, string Description)[] translationIssues) =>
@@ -144,6 +146,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// <param name="addCodegenDescriptions">Add descriptions to objects for comments on generated code.</param>
         /// <param name="visual">The <see cref="Visual"/> that contains the translated Lottie.</param>
         /// <param name="translationIssues">A list of issues that were encountered during the translation.</param>
+        /// <returns><c>true</c> if the <see cref="LottieComposition"/> was translated.</returns>
         public static bool TryTranslateLottieComposition(
             LottieComposition lottieComposition,
             bool strictTranslation,
@@ -168,8 +171,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             return true;
         }
-
-        internal Optimizer Optimizer => _lottieDataOptimizer;
 
         void Translate()
         {
