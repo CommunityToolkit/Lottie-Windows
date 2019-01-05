@@ -283,7 +283,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
                 if (mask.Mode != Mask.MaskMode.Additive)
                 {
-                    _unsupported.MaskWithUnsupportedMode(mask.Mode);
+                    _unsupported.MaskWithUnsupportedMode(mask.Mode.ToString());
                 }
 
                 // Translation currently does not support having multiple paths for masks.
@@ -390,7 +390,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             if (layer.BlendMode != BlendMode.Normal)
             {
-                _unsupported.BlendMode(layer.BlendMode);
+                _unsupported.BlendMode(layer.BlendMode.ToString());
             }
 
             if (layer.TimeStretch != 1)

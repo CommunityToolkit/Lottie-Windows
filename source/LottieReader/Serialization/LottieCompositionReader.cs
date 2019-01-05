@@ -45,7 +45,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         };
 
         readonly AnimatableColorParser _animatableColorParser;
-        readonly ParsingIssues _issues = new ParsingIssues();
+        readonly ParsingIssues _issues = new ParsingIssues(throwOnIssue: false);
 
         Options _options;
 
@@ -96,7 +96,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             }
             catch (Exception e)
             {
-                var issueCollector = new ParsingIssues();
+                var issueCollector = new ParsingIssues(throwOnIssue: false);
                 issueCollector.FailedToParseJson(e.Message);
                 issues = issueCollector.GetIssues();
                 return null;
