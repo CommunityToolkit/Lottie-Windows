@@ -2560,10 +2560,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 offsetExpression = CreateExpressionAnimation(container.IsShape
                     ? (Expr)Expr.Vector2(
                         Expr.Subtract(Expr.Scalar(initialPosition.X), Expr.Scalar("my.Anchor.X")),
-                        Expr.Subtract(Expr.Scalar(initialPosition.Y), Expr.Scalar("myAnchor.Y")))
+                        Expr.Subtract(Expr.Scalar(initialPosition.Y), Expr.Scalar("my.Anchor.Y")))
                     : (Expr)Expr.Vector3(
                         Expr.Subtract(Expr.Scalar(initialPosition.X), Expr.Scalar("my.Anchor.X")),
-                        Expr.Subtract(Expr.Scalar(initialPosition.Y), Expr.Scalar("myAnchor.Y"))));
+                        Expr.Subtract(Expr.Scalar(initialPosition.Y), Expr.Scalar("my.Anchor.Y"))));
             }
 
             if (!positionIsAnimated && !anchorIsAnimated)
