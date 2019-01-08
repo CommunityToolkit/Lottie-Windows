@@ -17,7 +17,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
     sealed class LottieCompositionValidator
     {
         readonly LottieComposition _lottieComposition;
-        readonly ValidationIssues _issues = new ValidationIssues();
+        readonly ValidationIssues _issues = new ValidationIssues(throwOnIssue: false);
 
         LottieCompositionValidator(LottieComposition lottieComposition)
         {

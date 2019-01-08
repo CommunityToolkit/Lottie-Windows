@@ -1,0 +1,6 @@
+﻿<#@ include file="IssuesClassGenerator.t4" #>
+<#+
+    const string className = "ParsingIssues";
+	const string namespaceName = "Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization";
+	const string prefixFilter = "LP";
+#>
