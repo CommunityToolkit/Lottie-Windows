@@ -43,9 +43,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             }
         }
 
-        public override string Color(Color value) => $"ColorHelper::FromArgb({Hex(value.A)}, {Hex(value.R)}, {Hex(value.G)}, {Hex(value.B)})";
+        public override string Color(Color value) => $"{{ {Hex(value.A)}, {Hex(value.R)}, {Hex(value.G)}, {Hex(value.B)} }}";
 
-        public override string Deref => "->";
+        public override string Deref => "."; //TODO this is a hack to support smart pointers as it will break dereffing on actual pointers
 
         public override string FilledRegionDetermination(Mgcg.CanvasFilledRegionDetermination value)
         {
@@ -66,9 +66,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
         public override string ScopeResolve => "::";
 
-        public override string New => "ref new";
+        public override string String(string value) => $"L\"{value}\"";
+
+        public override string New => string.Empty; //TODO: if we want to continue supporting Cx we'll have to refactor this, also it is semantically incorrect for true c++
 
         public override string Null => "nullptr";
+
+        public override string NullInit => $"{{ {Null} }}";
 
         public override string Matrix3x2(Matrix3x2 value)
         {
@@ -86,7 +90,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             value == "CanvasGeometry"
                 // C++ uses a typdef for CanvasGeometry that is ComPtr<GeoSource>, thus no hat pointer
                 ? "CanvasGeometry"
-                : $"{value}^";
+                : $"{value}"; // TODO: if we want to continue supporting Cx we'll have to refactor this
 
         public override string TimeSpan(TimeSpan value) => TimeSpan(Int64(value.Ticks));
 
@@ -94,15 +98,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
         public override string Var => "auto";
 
-        public override string Vector2(Vector2 value) => $"{{ {Float(value.X)}, {Float(value.Y)} }}";
+        public override string Vector2(Vector2 value) => $"{{ {Float(value.X)}, {Float(value.Y)} }}"; //TODO
 
         public override string Vector3(Vector3 value) => $"{{ {Float(value.X)}, {Float(value.Y)}, {Float(value.Z)} }}";
 
         public override string IListAdd => "Append";
 
-        public override string FactoryCall(string value) => $"CanvasGeometryToIGeometrySource2D({value})";
+        public override string FactoryCall(string value) => $"{value}.as<IGeometrySource2D>()";  //TODO refactor
 
-        public string FailFastWrapper(string value) => $"FFHR({value})";
+        public string FailFastWrapper(string value) => $"check_hresult({value})"; //TODO: refactor if keeping cx
 
         /// <summary>
         /// Gets the code for a class that wraps an ID2D1Geometry in an IGeometrySource2DInterop
@@ -112,71 +116,28 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
         /// The implementation is very simple - just enough to satisfy CompositionPath.
         /// </summary>
         public string GeoSourceClass =>
-@"class GeoSource final :
-    public ABI::Windows::Graphics::IGeometrySource2D,
-    public ABI::Windows::Graphics::IGeometrySource2DInterop
- {
-    ULONG _cRef;
-    ComPtr<ID2D1Geometry> _cpGeometry;
+@"struct GeoSource final : implements<GeoSource,
+	Windows::Graphics::IGeometrySource2D,
+	ABI::Windows::Graphics::IGeometrySource2DInterop>
+{
+	GeoSource(com_ptr<ID2D1Geometry> const & pGeometry) :
+		_cpGeometry(pGeometry)
+	{ }
 
-public:
-    GeoSource(ID2D1Geometry* pGeometry)
-        : _cRef(1)
-        , _cpGeometry(pGeometry)
-    { }
+	IFACEMETHODIMP GetGeometry(ID2D1Geometry** value) override
+	{
+		_cpGeometry.copy_to(value);
+		return S_OK;
+	}
 
-    IFACEMETHODIMP QueryInterface(REFIID iid, void ** ppvObject) override
-    {
-        if (iid == __uuidof(ABI::Windows::Graphics::IGeometrySource2DInterop))
-        {
-            AddRef();
-            *ppvObject = static_cast<ABI::Windows::Graphics::IGeometrySource2DInterop*>(this);
-            return S_OK;
-        }
-        return E_NOINTERFACE;
-    }
+	IFACEMETHODIMP TryGetGeometryUsingFactory(ID2D1Factory*, ID2D1Geometry** result) override
+	{
+		*result = nullptr;
+		return E_NOTIMPL;
+	}
 
-    IFACEMETHODIMP_(ULONG) AddRef() override
-    {
-        return InterlockedIncrement(&_cRef);
-    }
-
-    IFACEMETHODIMP_(ULONG) Release() override
-    {
-        ULONG cRef = InterlockedDecrement(&_cRef);
-        if (cRef == 0)
-        {
-            delete this;
-        }
-        return cRef;
-    }
-
-    IFACEMETHODIMP GetIids(ULONG*, IID**) override
-    {
-        return E_NOTIMPL;
-    }
-
-    IFACEMETHODIMP GetRuntimeClassName(HSTRING*) override
-    {
-        return E_NOTIMPL;
-    }
-
-    IFACEMETHODIMP GetTrustLevel(TrustLevel*) override
-    {
-        return E_NOTIMPL;
-    }
-
-    IFACEMETHODIMP GetGeometry(ID2D1Geometry** value) override
-    {
-        *value = _cpGeometry.Get();
-        (*value)->AddRef();
-        return S_OK;
-    }
-
-    IFACEMETHODIMP TryGetGeometryUsingFactory(ID2D1Factory*, ID2D1Geometry**) override
-    {
-        return E_NOTIMPL;
-    }
+private:
+	com_ptr<ID2D1Geometry> _cpGeometry;
 };
 ";
     }

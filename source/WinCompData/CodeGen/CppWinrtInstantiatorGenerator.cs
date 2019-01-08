@@ -104,23 +104,15 @@ public:
                 builder.WriteLine("#include <d2d1_1.h>");
                 builder.WriteLine("#include <d2d1helper.h>");
 
-                // floatY, floatYxZ
-                builder.WriteLine("#include \"WindowsNumerics.h\"");
-
                 // Interop
                 builder.WriteLine("#include <Windows.Graphics.Interop.h>");
-
-                // ComPtr
-                builder.WriteLine("#include <wrl.h>");
             }
 
             builder.WriteLine();
+            builder.WriteLine("using namespace winrt;");
             builder.WriteLine("using namespace Windows::Foundation;");
-            builder.WriteLine("using namespace Windows::Foundation::Numerics;");
-            builder.WriteLine("using namespace Windows::UI;");
             builder.WriteLine("using namespace Windows::UI::Composition;");
             builder.WriteLine("using namespace Windows::Graphics;");
-            builder.WriteLine("using namespace Microsoft::WRL;");
             builder.WriteLine();
 
             // Put the Instantiator class in an anonymous namespace.
@@ -131,18 +123,18 @@ public:
             builder.WriteLine($"{_stringifier.GeoSourceClass}");
 
             // Typedef to simplify generation
-            builder.WriteLine("typedef ComPtr<GeoSource> CanvasGeometry;");
+            builder.WriteLine("typedef com_ptr<GeoSource> CanvasGeometry;");
         }
 
         /// <inheritdoc/>
         protected override void WriteInstantiatorStart(CodeBuilder builder, CodeGenInfo info)
         {
             // Start writing the instantiator.
-            builder.WriteLine("ref class AnimatedVisual sealed : public Microsoft::UI::Xaml::Controls::IAnimatedVisual");
+            builder.WriteLine("class AnimatedVisual //sealed : public Microsoft::UI::Xaml::Controls::IAnimatedVisual");
             builder.OpenScope();
 
             // D2D factory field.
-            builder.WriteLine("ComPtr<ID2D1Factory> _d2dFactory;");
+            builder.WriteLine("com_ptr<ID2D1Factory> _d2dFactory;");
         }
 
         // Called by the base class to write the end of the file (i.e. everything after the body of the Instantiator class).
@@ -151,39 +143,23 @@ public:
             CodeBuilder builder,
             CodeGenInfo info)
         {
-            // Utility method for D2D geometries
-            builder.WriteLine("static IGeometrySource2D^ CanvasGeometryToIGeometrySource2D(CanvasGeometry geo)");
-            builder.OpenScope();
-            builder.WriteLine("ComPtr<ABI::Windows::Graphics::IGeometrySource2D> interop = geo.Detach();");
-            builder.WriteLine("return reinterpret_cast<IGeometrySource2D^>(interop.Get());");
-            builder.CloseScope();
-            builder.WriteLine();
-
-            // Utility method for fail-fasting on bad HRESULTs from d2d operations
-            builder.WriteLine("static void FFHR(HRESULT hr)");
-            builder.OpenScope();
-            builder.WriteLine("if (hr != S_OK)");
-            builder.OpenScope();
-            builder.WriteLine("RoFailFastWithErrorContext(hr);");
-            builder.CloseScope();
-            builder.CloseScope();
-            builder.WriteLine();
-
             // Write the constructor for the instantiator.
             builder.UnIndent();
             builder.WriteLine("public:");
             builder.Indent();
-            builder.WriteLine("AnimatedVisual(Compositor^ compositor)");
+            builder.WriteLine("AnimatedVisual(const Compositor& compositor)");
 
             // Initializer list.
             builder.Indent();
             builder.WriteLine(": _c(compositor)");
 
             // Instantiate the reusable ExpressionAnimation.
-            builder.WriteLine($", {info.ReusableExpressionAnimationFieldName}(compositor->CreateExpressionAnimation())");
+            builder.WriteLine($", {info.ReusableExpressionAnimationFieldName}(compositor.CreateExpressionAnimation())");
+            builder.WriteLine($", _root(nullptr)");
+            builder.WriteLine($", c_durationTicks(50050000L)"); //TODO duration shouldn't be hardcoded
             builder.UnIndent();
             builder.OpenScope();
-            builder.WriteLine($"{FailFastWrapper("D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, _d2dFactory.GetAddressOf())")};");
+            builder.WriteLine($"{FailFastWrapper("D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, _d2dFactory.put())")};");
 
             // Instantiate the root. This will cause the whole Visual tree to be built and animations started.
             builder.WriteLine("Root();");
@@ -194,19 +170,19 @@ public:
 
             // Write the members on IAnimatedVisual.
             builder.WriteLine();
-            builder.WriteLine("property Windows::Foundation::TimeSpan Duration");
+            builder.WriteLine("Windows::Foundation::TimeSpan get_duration()");
             builder.OpenScope();
-            builder.WriteLine("virtual Windows::Foundation::TimeSpan get() { return { c_durationTicks }; }");
+            builder.WriteLine("return Windows::Foundation::TimeSpan { c_durationTicks };");
             builder.CloseScope();
             builder.WriteLine();
-            builder.WriteLine("property Windows::UI::Composition::Visual^ RootVisual");
+            builder.WriteLine("Windows::UI::Composition::Visual RootVisual()");
             builder.OpenScope();
-            builder.WriteLine("virtual Windows::UI::Composition::Visual^ get() { return _root; }");
+            builder.WriteLine("return _root;");
             builder.CloseScope();
             builder.WriteLine();
-            builder.WriteLine("property Windows::Foundation::Numerics::float2 Size");
+            builder.WriteLine("Windows::Foundation::Numerics::float2 Size()");
             builder.OpenScope();
-            builder.WriteLine($"virtual Windows::Foundation::Numerics::float2 get() {{ return {Vector2(info.CompositionDeclaredSize)}; }}");
+            builder.WriteLine($"return Windows::Foundation::Numerics::float2   {Vector2(info.CompositionDeclaredSize)}; ");
             builder.CloseScope();
             builder.WriteLine();
 
@@ -218,20 +194,21 @@ public:
             builder.WriteLine("} // end namespace");
             builder.WriteLine();
 
-            // Generate the method that creates an instance of the composition.
-            builder.WriteLine($"Microsoft::UI::Xaml::Controls::IAnimatedVisual^ AnimatedVisuals::{info.ClassName}::TryCreateAnimatedVisual(");
-            builder.Indent();
-            builder.WriteLine("Compositor^ compositor,");
-            builder.WriteLine("Object^* diagnostics)");
-            builder.UnIndent();
-            builder.OpenScope();
-            builder.WriteLine("diagnostics = nullptr;");
-            builder.WriteLine("if (!IsRuntimeCompatible())");
-            builder.OpenScope();
-            builder.WriteLine("return nullptr;");
-            builder.CloseScope();
-            builder.WriteLine("return ref new AnimatedVisual(compositor);");
-            builder.CloseScope();
+            //TODO: this needs porting
+            //// Generate the method that creates an instance of the composition.
+            //builder.WriteLine($"//Microsoft::UI::Xaml::Controls::IAnimatedVisual^ AnimatedVisuals::{info.ClassName}::TryCreateAnimatedVisual(");
+            //builder.Indent();
+            //builder.WriteLine("//Compositor^ compositor,");
+            //builder.WriteLine("//Object^* diagnostics)");
+            //builder.UnIndent();
+            //builder.OpenScope();
+            //builder.WriteLine("//diagnostics = nullptr;");
+            //builder.WriteLine("//if (!IsRuntimeCompatible())");
+            //builder.OpenScope();
+            //builder.WriteLine("//return nullptr;");
+            //builder.CloseScope();
+            //builder.WriteLine("//return ref new AnimatedVisual(compositor);");
+            //builder.CloseScope();
         }
 
         /// <inheritdoc/>
@@ -241,11 +218,11 @@ public:
             builder.WriteLine("ID2D1Geometry *geoA = nullptr, *geoB = nullptr;");
             builder.WriteLine($"{CallFactoryFor(obj.A)}->GetGeometry(&geoA);");
             builder.WriteLine($"{CallFactoryFor(obj.B)}->GetGeometry(&geoB);");
-            builder.WriteLine("ComPtr<ID2D1PathGeometry> path;");
-            builder.WriteLine($"{FailFastWrapper("_d2dFactory->CreatePathGeometry(&path)")};");
-            builder.WriteLine("ComPtr<ID2D1GeometrySink> sink;");
-            builder.WriteLine($"{FailFastWrapper("path->Open(&sink)")};");
-            builder.WriteLine($"FFHR(geoA->CombineWithGeometry(");
+            builder.WriteLine("com_ptr<ID2D1PathGeometry> path;");
+            builder.WriteLine($"{FailFastWrapper("_d2dFactory->CreatePathGeometry(path.put())")};");
+            builder.WriteLine("com_ptr<ID2D1GeometrySink> sink;");
+            builder.WriteLine($"{FailFastWrapper("path->Open(sink.put())")};");
+            builder.WriteLine($"check_hresult(geoA->CombineWithGeometry(");
             builder.Indent();
             builder.WriteLine($"geoB,");
             builder.WriteLine($"{_stringifier.CanvasGeometryCombine(obj.CombineMode)},");
@@ -262,11 +239,11 @@ public:
         protected override void WriteCanvasGeometryEllipseFactory(CodeBuilder builder, CanvasGeometry.Ellipse obj, string typeName, string fieldName)
         {
             builder.WriteLine($"{typeName} result;");
-            builder.WriteLine("ComPtr<ID2D1EllipseGeometry> ellipse;");
+            builder.WriteLine("com_ptr<ID2D1EllipseGeometry> ellipse;");
             builder.WriteLine("FFHR(_d2dFactory->CreateEllipseGeometry(");
             builder.Indent();
             builder.WriteLine($"D2D1::Ellipse({{{Float(obj.X)},{Float(obj.Y)}}}, {Float(obj.RadiusX)}, {Float(obj.RadiusY)}),");
-            builder.WriteLine("&ellipse));");
+            builder.WriteLine("ellipse.put()));");
             builder.UnIndent();
             builder.WriteLine($"result = {FieldAssignment(fieldName)}new GeoSource(ellipse.Get());");
         }
@@ -277,10 +254,10 @@ public:
             builder.WriteLine($"{typeName} result;");
 
             // D2D Setup
-            builder.WriteLine("ComPtr<ID2D1PathGeometry> path;");
-            builder.WriteLine($"{FailFastWrapper("_d2dFactory->CreatePathGeometry(&path)")};");
-            builder.WriteLine("ComPtr<ID2D1GeometrySink> sink;");
-            builder.WriteLine($"{FailFastWrapper("path->Open(&sink)")};");
+            builder.WriteLine("com_ptr<ID2D1PathGeometry> path;");
+            builder.WriteLine($"{FailFastWrapper("_d2dFactory->CreatePathGeometry(path.put())")};");
+            builder.WriteLine("com_ptr<ID2D1GeometrySink> sink;");
+            builder.WriteLine($"{FailFastWrapper("path->Open(sink.put())")};");
 
             if (obj.FilledRegionDetermination != CanvasFilledRegionDetermination.Alternate)
             {
@@ -311,20 +288,18 @@ public:
             }
 
             builder.WriteLine($"{FailFastWrapper("sink->Close()")};");
-            builder.WriteLine("GeoSource* rawResult = new GeoSource(path.Get());");
-            builder.WriteLine($"result = {FieldAssignment(fieldName)}rawResult;");
-            builder.WriteLine("rawResult->Release();");
+            builder.WriteLine("result.attach(new GeoSource(path));");
         }
 
         /// <inheritdoc/>
         protected override void WriteCanvasGeometryRoundedRectangleFactory(CodeBuilder builder, CanvasGeometry.RoundedRectangle obj, string typeName, string fieldName)
         {
             builder.WriteLine($"{typeName} result;");
-            builder.WriteLine("ComPtr<ID2D1RoundedRectangleGeometry> rect;");
+            builder.WriteLine("com_ptr<ID2D1RoundedRectangleGeometry> rect;");
             builder.WriteLine("FFHR(_d2dFactory->CreateRoundedRectangleGeometry(");
             builder.Indent();
             builder.WriteLine($"D2D1::RoundedRect({{{Float(obj.X)},{Float(obj.Y)}}}, {Float(obj.RadiusX)}, {Float(obj.RadiusY)}),");
-            builder.WriteLine("&rect));");
+            builder.WriteLine("rect.put()));");
             builder.UnIndent();
             builder.WriteLine($"result = {FieldAssignment(fieldName)}new GeoSource(rect.Get());");
         }

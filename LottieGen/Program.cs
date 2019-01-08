@@ -438,6 +438,18 @@ sealed class Program
                     _profiler.OnCodeGenFinished();
                     break;
 
+                case Lang.WinrtCpp:
+                    codeGenSucceeded &= TryGenerateCppWinrtCode(
+                        className,
+                        optimizedWincompDataRootVisual,
+                        (float)lottieComposition.Width,
+                        (float)lottieComposition.Height,
+                        lottieComposition.Duration,
+                        Path.Combine(outputFolder, $"{lottieFileNameBase}.h"),
+                        Path.Combine(outputFolder, $"{lottieFileNameBase}.cpp"));
+                    _profiler.OnCodeGenFinished();
+                    break;
+
                 case Lang.LottieXml:
                     codeGenSucceeded &= TryGenerateLottieXml(
                         lottieComposition,
@@ -658,6 +670,55 @@ sealed class Program
         string outputCppFilePath)
     {
         CxInstantiatorGenerator.CreateFactoryCode(
+                className,
+                rootVisual,
+                compositionWidth,
+                compositionHeight,
+                duration,
+                Path.GetFileName(outputHeaderFilePath),
+                out var cppText,
+                out var hText,
+                _options.DisableCodeGenOptimizer);
+
+        if (string.IsNullOrWhiteSpace(cppText))
+        {
+            WriteError("Failed to generate the .cpp code.");
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(hText))
+        {
+            WriteError("Failed to generate the .h code.");
+            return false;
+        }
+
+        if (!TryWriteTextFile(outputHeaderFilePath, hText))
+        {
+            WriteError($"Failed to write .h code to {outputHeaderFilePath}");
+            return false;
+        }
+
+        if (!TryWriteTextFile(outputCppFilePath, cppText))
+        {
+            WriteError($"Failed to write .cpp code to {outputCppFilePath}");
+            return false;
+        }
+
+        WriteInfo($"Header code for class {className} written to {outputHeaderFilePath}");
+        WriteInfo($"Source code for class {className} written to {outputCppFilePath}");
+        return true;
+    }
+
+    bool TryGenerateCppWinrtCode(
+       string className,
+       Visual rootVisual,
+       float compositionWidth,
+       float compositionHeight,
+       TimeSpan duration,
+       string outputHeaderFilePath,
+       string outputCppFilePath)
+    {
+        CppWinrtInstantiatorGenerator.CreateFactoryCode(
                 className,
                 rootVisual,
                 compositionWidth,

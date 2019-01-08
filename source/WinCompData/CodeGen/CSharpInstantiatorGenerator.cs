@@ -233,6 +233,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
             public override string Null => "null";
 
+            public override string NullInit => " = {Null}";
+
             public override string IListAdd => "Add";
 
             public override string FactoryCall(string value) => value;

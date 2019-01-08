@@ -311,7 +311,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
                 if (node.RequiresStorage)
                 {
                     // Generate a field for the storage.
-                    WriteField(builder, _stringifier.ReferenceTypeName(node.TypeName), node.FieldName);
+                    WriteFieldNullInit(builder, _stringifier.ReferenceTypeName(node.TypeName), node.FieldName);
                 }
             }
 
@@ -490,7 +490,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             // Write the RuntimeCompatibility() method.
             builder.WriteLine("static bool IsRuntimeCompatible()");
             builder.OpenScope();
-            builder.WriteLine($"if (!Windows{_stringifier.ScopeResolve}Foundation{_stringifier.ScopeResolve}Metadata{_stringifier.ScopeResolve}ApiInformation{_stringifier.ScopeResolve}IsTypePresent(\"Windows.UI.Composition.CompositionGeometricClip\"))");
+            builder.WriteLine($"if (!Windows{_stringifier.ScopeResolve}Foundation{_stringifier.ScopeResolve}Metadata{_stringifier.ScopeResolve}ApiInformation{_stringifier.ScopeResolve}IsTypePresent(L\"Windows.UI.Composition.CompositionGeometricClip\"))");
             builder.OpenScope();
             builder.WriteLine("return false;");
             builder.CloseScope();
@@ -502,6 +502,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
         void WriteField(CodeBuilder builder, string typeName, string fieldName)
         {
             builder.WriteLine($"{typeName} {fieldName};");
+        }
+
+        void WriteFieldNullInit(CodeBuilder builder, string typeName, string fieldName)
+        {
+            builder.WriteLine($"{typeName} {fieldName} {NullInit(Null)};");
         }
 
         // Generates code for the given node. The code is written into the CodeBuilder on the node.
@@ -690,12 +695,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
             if (obj.IsFinalStepSingleFrame)
             {
-                builder.WriteLine($"result{Deref}IsFinalStepSingleFrame  = {Bool(obj.IsFinalStepSingleFrame)};");
+                builder.WriteLine($"result{Deref}IsFinalStepSingleFrame({Bool(obj.IsFinalStepSingleFrame)});");
             }
 
             if (obj.IsInitialStepSingleFrame)
             {
-                builder.WriteLine($"result{Deref}IsInitialStepSingleFrame  = {Bool(obj.IsInitialStepSingleFrame)};");
+                builder.WriteLine($"result{Deref}IsInitialStepSingleFrame({Bool(obj.IsInitialStepSingleFrame)});");
             }
 
             if (obj.StepCount != 1)
@@ -722,7 +727,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             WriteObjectFactoryStart(builder, node);
             WriteCreateAssignment(builder, node, $"_c{Deref}CreateExpressionAnimation()");
             InitializeCompositionAnimation(builder, obj, node);
-            builder.WriteLine($"result{Deref}Expression = {String(obj.Expression.ToString())};");
+            builder.WriteLine($"result{Deref}Expression({String(obj.Expression.ToString())});");
             StartAnimations(builder, obj, node);
             WriteObjectFactoryEnd(builder);
             return true;
@@ -754,7 +759,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             if (!animationNode.RequiresStorage && animator.Animation is ExpressionAnimation expressionAnimation)
             {
                 builder.WriteLine($"{SingletonExpressionAnimationName}{Deref}ClearAllParameters();");
-                builder.WriteLine($"{SingletonExpressionAnimationName}{Deref}Expression = {String(expressionAnimation.Expression.ToString())};");
+                builder.WriteLine($"{SingletonExpressionAnimationName}{Deref}Expression({String(expressionAnimation.Expression.ToString())});");
 
                 // If there is a Target set it. Note however that the Target isn't used for anything
                 // interesting in this scenario, and there is no way to reset the Target to an
@@ -821,7 +826,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             var propertySet = obj.Properties;
             if (!propertySet.IsEmpty)
             {
-                builder.WriteLine($"{Var} propertySet = {localName}{Deref}Properties;");
+                builder.WriteLine($"{Var} propertySet = {localName}{Deref}Properties();");
                 foreach (var prop in propertySet.ScalarProperties)
                 {
                     builder.WriteLine($"propertySet{Deref}InsertScalar({String(prop.Key)}, {Float(prop.Value)});");
@@ -845,47 +850,47 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
             if (obj.CenterPoint.HasValue)
             {
-                builder.WriteLine($"result{Deref}CenterPoint = {Vector3(obj.CenterPoint.Value)};");
+                builder.WriteLine($"result{Deref}CenterPoint({Vector3(obj.CenterPoint.Value)});");
             }
 
             if (obj.Clip != null)
             {
-                builder.WriteLine($"result{Deref}Clip = {CallFactoryFromFor(node, obj.Clip)};");
+                builder.WriteLine($"result{Deref}Clip({CallFactoryFromFor(node, obj.Clip)});");
             }
 
             if (obj.Offset.HasValue)
             {
-                builder.WriteLine($"result{Deref}Offset = {Vector3(obj.Offset.Value)};");
+                builder.WriteLine($"result{Deref}Offset({Vector3(obj.Offset.Value)});");
             }
 
             if (obj.Opacity.HasValue)
             {
-                builder.WriteLine($"result{Deref}Opacity = {Float(obj.Opacity.Value)};");
+                builder.WriteLine($"result{Deref}Opacity({Float(obj.Opacity.Value)});");
             }
 
             if (obj.RotationAngleInDegrees.HasValue)
             {
-                builder.WriteLine($"result{Deref}RotationAngleInDegrees = {Float(obj.RotationAngleInDegrees.Value)};");
+                builder.WriteLine($"result{Deref}RotationAngleInDegrees({Float(obj.RotationAngleInDegrees.Value)});");
             }
 
             if (obj.RotationAxis.HasValue)
             {
-                builder.WriteLine($"result{Deref}RotationAxis = {Vector3(obj.RotationAxis.Value)};");
+                builder.WriteLine($"result{Deref}RotationAxis({Vector3(obj.RotationAxis.Value)});");
             }
 
             if (obj.Scale.HasValue)
             {
-                builder.WriteLine($"result{Deref}Scale = {Vector3(obj.Scale.Value)};");
+                builder.WriteLine($"result{Deref}Scale({Vector3(obj.Scale.Value)});");
             }
 
             if (obj.Size.HasValue)
             {
-                builder.WriteLine($"result{Deref}Size = {Vector2(obj.Size.Value)};");
+                builder.WriteLine($"result{Deref}Size({Vector2(obj.Size.Value)});");
             }
 
             if (obj.TransformMatrix.HasValue)
             {
-                builder.WriteLine($"result{Deref}TransformMatrix = {Matrix4x4(obj.TransformMatrix.Value)};");
+                builder.WriteLine($"result{Deref}TransformMatrix({Matrix4x4(obj.TransformMatrix.Value)});");
             }
         }
 
@@ -910,27 +915,27 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
             if (obj.CenterPoint.HasValue)
             {
-                builder.WriteLine($"result{Deref}CenterPoint = {Vector2(obj.CenterPoint.Value)};");
+                builder.WriteLine($"result{Deref}CenterPoint({Vector2(obj.CenterPoint.Value)});");
             }
 
             if (obj.Offset != null)
             {
-                builder.WriteLine($"result{Deref}Offset = {Vector2(obj.Offset.Value)};");
+                builder.WriteLine($"result{Deref}Offset({Vector2(obj.Offset.Value)});");
             }
 
             if (obj.RotationAngleInDegrees.HasValue)
             {
-                builder.WriteLine($"result{Deref}RotationAngleInDegrees = {Float(obj.RotationAngleInDegrees.Value)};");
+                builder.WriteLine($"result{Deref}RotationAngleInDegrees({Float(obj.RotationAngleInDegrees.Value)});");
             }
 
             if (obj.Scale.HasValue)
             {
-                builder.WriteLine($"result{Deref}Scale = {Vector2(obj.Scale.Value)};");
+                builder.WriteLine($"result{Deref}Scale({Vector2(obj.Scale.Value)});");
             }
 
             if (obj.TransformMatrix.HasValue)
             {
-                builder.WriteLine($"result{Deref}TransformMatrix = {Matrix3x2(obj.TransformMatrix.Value)};");
+                builder.WriteLine($"result{Deref}TransformMatrix({Matrix3x2(obj.TransformMatrix.Value)});");
             }
         }
 
@@ -940,7 +945,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
             if (obj.Children.Any())
             {
-                builder.WriteLine($"{Var} children = result{Deref}Children;");
+                builder.WriteLine($"{Var} children = result{Deref}Children();");
                 foreach (var child in obj.Children)
                 {
                     builder.WriteLine($"children{Deref}InsertAtTop({CallFactoryFromFor(node, child)});");
@@ -994,7 +999,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
         void InitializeKeyFrameAnimation(CodeBuilder builder, KeyFrameAnimation_ obj, ObjectData node)
         {
             InitializeCompositionAnimation(builder, obj, node);
-            builder.WriteLine($"result{Deref}Duration = {TimeSpan(obj.Duration)};");
+            builder.WriteLine($"result{Deref}Duration(TimeSpan{TimeSpan(obj.Duration)});");
         }
 
         bool GenerateColorKeyFrameAnimationFactory(CodeBuilder builder, ColorKeyFrameAnimation obj, ObjectData node)
@@ -1173,7 +1178,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
                 builder.WriteLine($"result{Deref}Center = {Vector2(obj.Center)};");
             }
 
-            builder.WriteLine($"result{Deref}Radius = {Vector2(obj.Radius)};");
+            builder.WriteLine($"result{Deref}Radius({Vector2(obj.Radius)});");
             StartAnimations(builder, obj, node);
             WriteObjectFactoryEnd(builder);
             return true;
@@ -1218,7 +1223,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
             if (obj.Shapes.Any())
             {
-                builder.WriteLine($"{Var} shapes = result{Deref}Shapes;");
+                builder.WriteLine($"{Var} shapes = result{Deref}Shapes();"); //TODO this change will impact c# codegen
                 foreach (var shape in obj.Shapes)
                 {
                     builder.WriteComment(shape.ShortDescription);
@@ -1239,7 +1244,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
             if (obj.Shapes.Any())
             {
-                builder.WriteLine($"{Var} shapes = result{Deref}Shapes;");
+                builder.WriteLine($"{Var} shapes = result{Deref}Shapes();");
                 foreach (var shape in obj.Shapes)
                 {
                     builder.WriteLine($"shapes{Deref}{IListAdd}({CallFactoryFromFor(node, shape)});");
@@ -1259,37 +1264,37 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
             if (obj.FillBrush != null)
             {
-                builder.WriteLine($"result{Deref}FillBrush = {CallFactoryFromFor(node, obj.FillBrush)};");
+                builder.WriteLine($"result{Deref}FillBrush({CallFactoryFromFor(node, obj.FillBrush)});");
             }
 
             if (obj.Geometry != null)
             {
-                builder.WriteLine($"result{Deref}Geometry = {CallFactoryFromFor(node, obj.Geometry)};");
+                builder.WriteLine($"result{Deref}Geometry({CallFactoryFromFor(node, obj.Geometry)});");
             }
 
             if (obj.IsStrokeNonScaling)
             {
-                builder.WriteLine("result{Deref}IsStrokeNonScaling = true;");
+                builder.WriteLine("result{Deref}IsStrokeNonScaling(true);");
             }
 
             if (obj.StrokeBrush != null)
             {
-                builder.WriteLine($"result{Deref}StrokeBrush = {CallFactoryFromFor(node, obj.StrokeBrush)};");
+                builder.WriteLine($"result{Deref}StrokeBrush({CallFactoryFromFor(node, obj.StrokeBrush)});");
             }
 
             if (obj.StrokeDashCap != CompositionStrokeCap.Flat)
             {
-                builder.WriteLine($"result{Deref}StrokeDashCap = {StrokeCap(obj.StrokeDashCap)};");
+                builder.WriteLine($"result{Deref}StrokeDashCap({StrokeCap(obj.StrokeDashCap)});");
             }
 
             if (obj.StrokeDashOffset != 0)
             {
-                builder.WriteLine($"result{Deref}StrokeDashOffset = {Float(obj.StrokeDashOffset)};");
+                builder.WriteLine($"result{Deref}StrokeDashOffset({Float(obj.StrokeDashOffset)});");
             }
 
             if (obj.StrokeDashArray.Count > 0)
             {
-                builder.WriteLine($"{Var} strokeDashArray = result{Deref}StrokeDashArray;");
+                builder.WriteLine($"{Var} strokeDashArray(result{Deref}StrokeDashArray);");
                 foreach (var strokeDash in obj.StrokeDashArray)
                 {
                     builder.WriteLine($"strokeDashArray{Deref}{IListAdd}({Float(strokeDash)});");
@@ -1298,27 +1303,27 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
             if (obj.StrokeEndCap != CompositionStrokeCap.Flat)
             {
-                builder.WriteLine($"result{Deref}StrokeEndCap = {StrokeCap(obj.StrokeEndCap)};");
+                builder.WriteLine($"result{Deref}StrokeEndCap({StrokeCap(obj.StrokeEndCap)});");
             }
 
             if (obj.StrokeLineJoin != CompositionStrokeLineJoin.Miter)
             {
-                builder.WriteLine($"result{Deref}StrokeLineJoin = {StrokeLineJoin(obj.StrokeLineJoin)};");
+                builder.WriteLine($"result{Deref}StrokeLineJoin({StrokeLineJoin(obj.StrokeLineJoin)});");
             }
 
             if (obj.StrokeStartCap != CompositionStrokeCap.Flat)
             {
-                builder.WriteLine($"result{Deref}StrokeStartCap = {StrokeCap(obj.StrokeStartCap)};");
+                builder.WriteLine($"result{Deref}StrokeStartCap({StrokeCap(obj.StrokeStartCap)});");
             }
 
             if (obj.StrokeMiterLimit != 1)
             {
-                builder.WriteLine($"result{Deref}StrokeMiterLimit = {Float(obj.StrokeMiterLimit)};");
+                builder.WriteLine($"result{Deref}StrokeMiterLimit({Float(obj.StrokeMiterLimit)});");
             }
 
             if (obj.StrokeThickness != 1)
             {
-                builder.WriteLine($"result{Deref}StrokeThickness = {Float(obj.StrokeThickness)};");
+                builder.WriteLine($"result{Deref}StrokeThickness({Float(obj.StrokeThickness)});");
             }
 
             StartAnimations(builder, obj, node);
@@ -1411,6 +1416,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
         string New => _stringifier.New;
 
         string Null => _stringifier.Null;
+
+        string NullInit(string value) => _stringifier.NullInit;
 
         string ScopeResolve => _stringifier.ScopeResolve;
 
@@ -1583,6 +1590,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
             string Null { get; }
 
+            string NullInit { get; }
+
             string Readonly(string value);
 
             string ReferenceTypeName(string value);
@@ -1625,6 +1634,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
             /// <inheritdoc/>
             public abstract string Null { get; }
+
+            /// <inheritdoc/>
+            public abstract string NullInit { get; }
 
             /// <inheritdoc/>
             public abstract string Readonly(string value);
