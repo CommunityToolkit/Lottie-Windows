@@ -274,7 +274,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 case ShapeContentType.Transform:
                     return FromTransform((Transform)content, superclassContent);
                 case ShapeContentType.Path:
-                    return FromPath((Shape)content, superclassContent);
+                    return FromPath((Path)content, superclassContent);
                 case ShapeContentType.Ellipse:
                     return FromEllipse((Ellipse)content, superclassContent);
                 case ShapeContentType.Rectangle:
@@ -483,7 +483,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             return result;
         }
 
-        YamlObject FromPath(Shape content, YamlMap superclassContent)
+        YamlObject FromPath(Path content, YamlMap superclassContent)
         {
             var result = superclassContent;
             return result;
