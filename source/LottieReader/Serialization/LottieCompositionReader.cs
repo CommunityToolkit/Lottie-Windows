@@ -904,7 +904,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 case "rc":
                     return ReadRectangle(obj);
                 case "sh":
-                    return ReadShape(obj);
+                    return ReadPath(obj);
                 case "tm":
                     return ReadTrimPath(obj);
                 case "mm":
@@ -1268,7 +1268,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             return new Rectangle(name.Name, name.MatchName, direction, position, size, cornerRadius);
         }
 
-        Shape ReadShape(JObject obj)
+        Path ReadPath(JObject obj)
         {
             // Not clear whether we need to read these fields.
             IgnoreFieldThatIsNotYetSupported(obj, "ind");
@@ -1281,7 +1281,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             var geometry = ReadAnimatableGeometry(obj.GetNamedObject("ks"));
             var direction = ReadBool(obj, "d") == true;
             AssertAllFieldsRead(obj);
-            return new Shape(name.Name, name.MatchName, direction, geometry);
+            return new Path(name.Name, name.MatchName, direction, geometry);
         }
 
         TrimPath ReadTrimPath(JObject obj)

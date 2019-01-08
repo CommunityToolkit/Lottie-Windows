@@ -25,7 +25,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         public string SuggestedFileName =>
             string.IsNullOrWhiteSpace(FileName)
                 ? "MyComposition"
-                : Path.GetFileNameWithoutExtension(FileName);
+                : System.IO.Path.GetFileNameWithoutExtension(FileName);
 
         public string SuggestedClassName
         {

@@ -120,9 +120,9 @@ sealed class Program
             }
         }
 #else
-        Parallel.ForEach(matchingInputFiles, (inputFile) =>
+        Parallel.ForEach(matchingInputFiles, ((string path, string relativePath) inputFile) =>
         {
-            if (!LottieFileProcessor.ProcessFile(_options, _reporter, inputFile.path, Path.Combine(outputFolder, inputFile.relativePath)))
+            if (!LottieFileProcessor.ProcessFile(_options, _reporter, inputFile.path, System.IO.Path.Combine(outputFolder, inputFile.relativePath)))
             {
                 succeeded = false;
             }
@@ -133,7 +133,7 @@ sealed class Program
 
     static string MakeAbsolutePath(string path)
     {
-        return Path.IsPathRooted(path) ? path : Path.Combine(Directory.GetCurrentDirectory(), path);
+        return System.IO.Path.IsPathRooted(path) ? path : System.IO.Path.Combine(Directory.GetCurrentDirectory(), path);
     }
 
     static void ShowHelp(TextWriter writer)
@@ -191,5 +191,5 @@ EXAMPLES:
        Generate Grotz.cs in the C:\temp directory from the Lottie file Bar.json:
 
          {0} -i Bar.json -L cs -ClassName Grotz -o C:\temp",
-Path.GetFileNameWithoutExtension(Assembly.GetEntryAssembly().ManifestModule.Name));
+System.IO.Path.GetFileNameWithoutExtension(Assembly.GetEntryAssembly().ManifestModule.Name));
 }

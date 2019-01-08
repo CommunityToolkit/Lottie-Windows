@@ -63,7 +63,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 case LottieObjectType.RoundedCorner:
                     return FromRoundedCorner((RoundedCorner)obj);
                 case LottieObjectType.Shape:
-                    return FromShape((Shape)obj);
+                    return FromShape((Path)obj);
                 case LottieObjectType.ShapeGroup:
                     return FromShapeGroup((ShapeGroup)obj);
                 case LottieObjectType.ShapeLayer:
@@ -336,7 +336,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 case ShapeContentType.Transform:
                     return FromTransform((Transform)content);
                 case ShapeContentType.Path:
-                    return FromPath((Shape)content);
+                    return FromPath((Path)content);
                 case ShapeContentType.Ellipse:
                     return FromEllipse((Ellipse)content);
                 case ShapeContentType.Rectangle:
@@ -539,7 +539,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             return $"{keyFrame.Value}@{keyFrame.Frame}({keyFrame.Easing.Type})";
         }
 
-        XElement FromPath(Shape content)
+        XElement FromPath(Path content)
         {
             return new XElement("Path", GetContents());
             IEnumerable<XObject> GetContents()
@@ -566,9 +566,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             }
         }
 
-        XElement FromShape(Shape content)
+        XElement FromShape(Path content)
         {
-            return new XElement("Shape", GetContents());
+            return new XElement("Path", GetContents());
             IEnumerable<XObject> GetContents()
             {
                 foreach (var item in GetShapeLayerContentContents(content))

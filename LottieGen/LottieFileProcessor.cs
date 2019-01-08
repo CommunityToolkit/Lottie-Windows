@@ -45,7 +45,7 @@ sealed class LottieFileProcessor
         // Get an appropriate name for a generated class.
         _className =
             InstantiatorGeneratorBase.TrySynthesizeClassName(_options.ClassName) ??
-            InstantiatorGeneratorBase.TrySynthesizeClassName(Path.GetFileNameWithoutExtension(_file)) ??
+            InstantiatorGeneratorBase.TrySynthesizeClassName(System.IO.Path.GetFileNameWithoutExtension(_file)) ??
             InstantiatorGeneratorBase.TrySynthesizeClassName("Lottie");  // If all else fails, just call it Lottie.
     }
 
@@ -134,7 +134,7 @@ sealed class LottieFileProcessor
 
     bool TryGenerateCode()
     {
-        var outputFileBase = Path.Combine(_outputFolder, Path.GetFileNameWithoutExtension(_file));
+        var outputFileBase = System.IO.Path.Combine(_outputFolder, System.IO.Path.GetFileNameWithoutExtension(_file));
 
         var codeGenSucceeded = true;
         foreach (var lang in _options.Languages)
@@ -215,7 +215,7 @@ sealed class LottieFileProcessor
             "ExpressionAnimationCount,PropertySetPropertyCount,SpriteShapeCount");
         sb.Append($"\"{key}\"");
         AppendColumnValue(_file);
-        AppendColumnValue(Path.GetFileName(_file));
+        AppendColumnValue(System.IO.Path.GetFileName(_file));
         AppendColumnValue(_lottieStats.Version);
         AppendColumnValue(_lottieStats.Duration.TotalSeconds);
         AppendColumnValue(issues.Count());
@@ -377,7 +377,7 @@ sealed class LottieFileProcessor
                 (float)_lottieComposition.Width,
                 (float)_lottieComposition.Height,
                 _lottieComposition.Duration,
-                Path.GetFileName(outputHeaderFilePath),
+                System.IO.Path.GetFileName(outputHeaderFilePath),
                 out var cppText,
                 out var hText,
                 _options.DisableCodeGenOptimizer);

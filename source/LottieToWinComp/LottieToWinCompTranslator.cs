@@ -1242,20 +1242,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         break;
                     case ShapeContentType.Path:
                         {
-                            var path = (Shape)shapeContent;
-                            List<Shape> paths = null;
+                            var path = (Path)shapeContent;
+                            List<Path> paths = null;
 
-                            if (!path.PathData.IsAnimated)
+                            if (!path.Data.IsAnimated)
                             {
-                                while (stack.TryPeek(out var item) && item.ContentType == ShapeContentType.Path && !((Shape)item).PathData.IsAnimated)
+                                while (stack.TryPeek(out var item) && item.ContentType == ShapeContentType.Path && !((Path)item).Data.IsAnimated)
                                 {
                                     if (paths == null)
                                     {
-                                        paths = new List<Shape>();
+                                        paths = new List<Path>();
                                         paths.Add(path);
                                     }
 
-                                    paths.Add((Shape)stack.Pop());
+                                    paths.Add((Path)stack.Pop());
                                 }
                             }
 
@@ -1478,7 +1478,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         break;
 
                     case ShapeContentType.Path:
-                        yield return CreateWin2dPathGeometryFromShape(context, shapeContext, (Shape)shapeContent, pathFillType, optimizeLines: true);
+                        yield return CreateWin2dPathGeometryFromShape(context, shapeContext, (Path)shapeContent, pathFillType, optimizeLines: true);
                         break;
                     case ShapeContentType.Ellipse:
                         yield return CreateWin2dEllipseGeometry(context, shapeContext, (Ellipse)shapeContent);
@@ -1578,11 +1578,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         CanvasGeometry CreateWin2dPathGeometryFromShape(
             TranslationContext context,
             ShapeContentContext shapeContext,
-            Shape path,
+            Path path,
             SolidColorFill.PathFillType fillType,
             bool optimizeLines)
         {
-            var pathData = context.TrimAnimatable(path.PathData);
+            var pathData = context.TrimAnimatable(path.Data);
 
             if (pathData.IsAnimated)
             {
@@ -1879,9 +1879,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         }
 
         // Groups multiple Shapes into a D2D geometry group.
-        CompositionShape TranslatePathGroupContent(TranslationContext context, ShapeContentContext shapeContext, IEnumerable<Shape> shapeContents)
+        CompositionShape TranslatePathGroupContent(TranslationContext context, ShapeContentContext shapeContext, IEnumerable<Path> paths)
         {
-            Debug.Assert(shapeContents.All(sh => !sh.PathData.IsAnimated), "Precondition");
+            Debug.Assert(paths.All(sh => !sh.Data.IsAnimated), "Precondition");
 
             CheckForRoundedCornersOnPath(context, shapeContext);
 
@@ -1893,7 +1893,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var compositionPath = new CompositionPath(
                 CanvasGeometry.CreateGroup(
                     null,
-                    shapeContents.Select(sh => CreateWin2dPathGeometry(sh.PathData.InitialValue, fillType, Sn.Matrix3x2.Identity, optimizeLines: true)).ToArray(),
+                    paths.Select(sh => CreateWin2dPathGeometry(sh.Data.InitialValue, fillType, Sn.Matrix3x2.Identity, optimizeLines: true)).ToArray(),
                     FilledRegionDetermination(fillType)));
 
             compositionPathGeometry.Path = compositionPath;
@@ -1903,7 +1903,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             if (_addDescriptions)
             {
-                var shapeContentName = string.Join("+", shapeContents.Select(sh => sh.Name).Where(a => a != null));
+                var shapeContentName = string.Join("+", paths.Select(sh => sh.Name).Where(a => a != null));
                 Describe(compositionSpriteShape, shapeContentName);
                 Describe(compositionPathGeometry, $"{shapeContentName}.PathGeometry");
             }
@@ -1913,12 +1913,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return compositionSpriteShape;
         }
 
-        CompositionShape TranslatePathContent(TranslationContext context, ShapeContentContext shapeContext, Shape shapeContent)
+        CompositionShape TranslatePathContent(TranslationContext context, ShapeContentContext shapeContext, Path path)
         {
             CheckForRoundedCornersOnPath(context, shapeContext);
 
             // Map Path's Geometry data to PathGeometry.Path
-            var pathGeometry = context.TrimAnimatable(_lottieDataOptimizer.GetOptimized(shapeContent.PathData));
+            var pathGeometry = context.TrimAnimatable(_lottieDataOptimizer.GetOptimized(path.Data));
 
             // A path is represented as a SpriteShape with a CompositionPathGeometry.
             var compositionPathGeometry = CreatePathGeometry();
@@ -1940,8 +1940,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             if (_addDescriptions)
             {
-                Describe(compositionSpriteShape, shapeContent.Name);
-                Describe(compositionPathGeometry, $"{shapeContent.Name}.PathGeometry");
+                Describe(compositionSpriteShape, path.Name);
+                Describe(compositionPathGeometry, $"{path.Name}.PathGeometry");
             }
 
             TranslateAndApplyShapeContentContext(context, shapeContext, compositionSpriteShape, 0);

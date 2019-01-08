@@ -7,22 +7,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 #if PUBLIC_LottieData
     public
 #endif
-    sealed class Shape : ShapeLayerContent
+    sealed class Path : ShapeLayerContent
     {
-        public Shape(
+        public Path(
             string name,
             string matchName,
             bool direction,
-            Animatable<Sequence<BezierSegment>> geometry)
+            Animatable<Sequence<BezierSegment>> geometryData)
             : base(name, matchName)
         {
             Direction = direction;
-            PathData = geometry;
+            Data = geometryData;
         }
 
         public bool Direction { get; }
 
-        public Animatable<Sequence<BezierSegment>> PathData { get; }
+        public Animatable<Sequence<BezierSegment>> Data { get; }
 
         /// <inheritdoc/>
         public override ShapeContentType ContentType => ShapeContentType.Path;
