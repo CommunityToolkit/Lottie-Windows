@@ -633,6 +633,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                         var solidWidth = ReadInt(obj, "sw").Value;
                         var solidHeight = ReadInt(obj, "sh").Value;
                         var solidColor = ReadColorFromString(obj.GetNamedString("sc"));
+
                         AssertAllFieldsRead(obj);
                         return new SolidLayer(
                             name,
@@ -856,27 +857,34 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         static Color ReadColorFromString(string hex)
         {
-            var index = 1; // Skip '#'
-
-            // '#AARRGGBB'
-            byte a = 255;
-            if (hex.Length == 9)
+            if (string.IsNullOrWhiteSpace(hex))
             {
-                a = Convert.ToByte(hex.Substring(index, 2), 16);
-                index += 2;
+                return Color.TransparentBlack;
             }
+            else
+            {
+                var index = 1; // Skip '#'
 
-            var r = Convert.ToByte(hex.Substring(index, 2), 16);
-            index += 2;
-            var g = Convert.ToByte(hex.Substring(index, 2), 16);
-            index += 2;
-            var b = Convert.ToByte(hex.Substring(index, 2), 16);
+                // '#AARRGGBB'
+                byte a = 255;
+                if (hex.Length == 9)
+                {
+                    a = Convert.ToByte(hex.Substring(index, 2), 16);
+                    index += 2;
+                }
 
-            return Color.FromArgb(
-                a / 255.0,
-                r / 255.0,
-                g / 255.0,
-                b / 255.0);
+                var r = Convert.ToByte(hex.Substring(index, 2), 16);
+                index += 2;
+                var g = Convert.ToByte(hex.Substring(index, 2), 16);
+                index += 2;
+                var b = Convert.ToByte(hex.Substring(index, 2), 16);
+
+                return Color.FromArgb(
+                    a / 255.0,
+                    r / 255.0,
+                    g / 255.0,
+                    b / 255.0);
+            }
         }
 
         ShapeLayerContent ReadShapeContent(JObject obj)
