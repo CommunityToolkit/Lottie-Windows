@@ -57,7 +57,7 @@ sealed class LottieFileProcessor
         }
         catch
         {
-            reporter.ErrorStream.WriteLine($"Unhandled exception processing: {file}");
+            reporter.WriteError($"Unhandled exception processing: {file}");
             throw;
         }
     }
