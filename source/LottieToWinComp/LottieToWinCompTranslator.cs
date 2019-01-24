@@ -236,7 +236,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             foreach (var item in items)
             {
-                var layerIsMattedLayer = item.Item2.LayerMatteType == Layer.MatteType.Add;
+                var layerIsMattedLayer = false;
+#if AllowVisualSurface
+                layerIsMattedLayer = item.Item2.LayerMatteType == Layer.MatteType.Add;
 
                 if (item.Item2.LayerMatteType == Layer.MatteType.Invert)
                 {
@@ -251,6 +253,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     yield return shapeVisual;
                     shapeVisual = null;
                 }
+#else
+                if (item.Item2.LayerMatteType == Layer.MatteType.Add ||
+                    item.Item2.LayerMatteType == Layer.MatteType.Invert)
+                {
+                    _unsupported.Matte();
+                }
+#endif
 
                 Visual visual = null;
 
@@ -303,11 +312,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     else if (mattedVisual != null)
                     {
                         var compositedMatteVisual = TranslateMatteLayer(context, visual, mattedVisual);
-#if AllowVisualSurface
                         yield return (Visual)compositedMatteVisual;
-#else
-                        _unsupported.Matte();
-#endif
                         mattedVisual = null;
                     }
                     else
