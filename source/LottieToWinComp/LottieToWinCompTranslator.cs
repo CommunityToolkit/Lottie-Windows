@@ -16,6 +16,14 @@
 // property without going through a controller. Enable this to prevent flashes.
 #define ControllersSynchronizationWorkaround
 
+// define POST_RS5_SDK if using an SDK that is for a release
+// after RS5
+#if POST_RS5_SDK
+// For allowing of Windows.UI.Composition.VisualSurface and the
+// Lottie features that rely on it
+#define AllowVisualSurface
+#endif
+
 //#define LinearEasingOnSpatialBeziers
 // Use Win2D to create paths from geometry combines when merging shape layers.
 //#define PreCombineGeometries
@@ -208,7 +216,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             // Layers are translated into either a Visual tree or a Shape tree. Convert the list of Visual and
             // Shape roots to a list of Visual roots by wrapping the Shape trees in ShapeVisuals.
-            var translatedAsVisuals = VisualsAndShapesToVisuals(context, translatedLayers.Select(a => a.translatedLayer));
+            var translatedAsVisuals = VisualsAndShapesToVisuals(context, translatedLayers);
 
             var containerChildren = container.Children;
             foreach (var translatedVisual in translatedAsVisuals)
@@ -218,13 +226,35 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         }
 
         // Takes a list of Visuals and Shapes and returns a list of Visuals.
-        IEnumerable<Visual> VisualsAndShapesToVisuals(TranslationContext context, IEnumerable<CompositionObject> items)
+        IEnumerable<Visual> VisualsAndShapesToVisuals(TranslationContext context, IEnumerable<(CompositionObject, Layer)> items)
         {
             ShapeVisual shapeVisual = null;
 
+            // Save off the visual for the layer to be matted when we encounter it. The very next
+            // layer (when walking the layers in reverse index order) is the matte layer
+            Visual mattedVisual = null;
+
             foreach (var item in items)
             {
-                switch (item.Type)
+                var layerIsMattedLayer = item.Item2.LayerMatteType == Layer.MatteType.Add;
+
+                if (item.Item2.LayerMatteType == Layer.MatteType.Invert)
+                {
+                    _unsupported.UnsupportedMatteType(item.Item2.LayerMatteType.ToString());
+                }
+
+                // If this layer is a matted layer then it should have its own shape visual if
+                // it needs one
+                if (layerIsMattedLayer &&
+                    shapeVisual != null)
+                {
+                    yield return shapeVisual;
+                    shapeVisual = null;
+                }
+
+                Visual visual = null;
+
+                switch (item.Item1.Type)
                 {
                     case CompositionObjectType.CompositionContainerShape:
                     case CompositionObjectType.CompositionSpriteShape:
@@ -240,7 +270,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 #endif
                         }
 
-                        shapeVisual.Shapes.Add((CompositionShape)item);
+                        shapeVisual.Shapes.Add((CompositionShape)item.Item1);
+
+                        if (layerIsMattedLayer ||
+                            mattedVisual != null)
+                        {
+                            visual = shapeVisual;
+                            shapeVisual = null;
+                        }
+
                         break;
                     case CompositionObjectType.ContainerVisual:
                     case CompositionObjectType.ShapeVisual:
@@ -250,10 +288,32 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                             shapeVisual = null;
                         }
 
-                        yield return (Visual)item;
+                        visual = (Visual)item.Item1;
                         break;
                     default:
                         throw new InvalidOperationException();
+                }
+
+                if (visual != null)
+                {
+                    if (layerIsMattedLayer)
+                    {
+                        mattedVisual = visual;
+                    }
+                    else if (mattedVisual != null)
+                    {
+                        var compositedMatteVisual = TranslateMatteLayer(context, visual, mattedVisual);
+#if AllowVisualSurface
+                        yield return (Visual)compositedMatteVisual;
+#else
+                        _unsupported.Matte();
+#endif
+                        mattedVisual = null;
+                    }
+                    else
+                    {
+                        yield return visual;
+                    }
                 }
             }
 
@@ -378,6 +438,35 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var parent = CreateContainerVisual();
             parent.Children.Add(rootContainerVisual);
             return parent;
+        }
+
+        // Translate a matte layer and the layer to be matted into the composited resulting brush.
+        // This brush will be used to paint a sprite visual. The brush is created by using a mask brush
+        // which will use the matted layer as a source and the matte layer as an alpha mask.
+        // A visual tree is turned into a brush by using the CompositionVisualSurface.
+        CompositionObject TranslateMatteLayer(TranslationContext context, Visual matteLayer, Visual mattedLayer)
+        {
+            // Calculate the context size which we will use as the size of the images we want to use
+            // for the matte content and the content to be matted.
+            var contextSize = new Sn.Vector2((float)context.Width, (float)context.Height);
+
+            var matteLayerVisualSurface = _c.CreateVisualSurface();
+            matteLayerVisualSurface.SourceVisual = matteLayer;
+            matteLayerVisualSurface.SourceSize = contextSize;
+
+            var mattedLayerVisualSurface = _c.CreateVisualSurface();
+            mattedLayerVisualSurface.SourceVisual = mattedLayer;
+            mattedLayerVisualSurface.SourceSize = contextSize;
+
+            var maskBrush = _c.CreateMaskBrush();
+            maskBrush.Source = _c.CreateSurfaceBrush(mattedLayerVisualSurface);
+            maskBrush.Mask = _c.CreateSurfaceBrush(matteLayerVisualSurface);
+
+            var compositedVisual = _c.CreateSpriteVisual();
+            compositedVisual.Brush = maskBrush;
+            compositedVisual.Size = matteLayerVisualSurface.SourceSize;
+
+            return compositedVisual;
         }
 
         // Translates a Lottie layer into null a Visual or a Shape.

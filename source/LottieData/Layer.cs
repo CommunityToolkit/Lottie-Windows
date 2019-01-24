@@ -35,7 +35,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             BlendMode blendMode,
             bool is3d,
             bool autoOrient,
-            IEnumerable<Mask> masks)
+            IEnumerable<Mask> masks,
+            MatteType layerMatteType)
             : base(name)
         {
             Index = index;
@@ -50,6 +51,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             Is3d = is3d;
             AutoOrient = autoOrient;
             _masks = masks != null ? masks.ToArray() : null;
+            LayerMatteType = layerMatteType;
         }
 
         public bool AutoOrient { get; }
@@ -98,6 +100,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// </summary>
         public ReadOnlySpan<Mask> Masks => _masks;
 
+        public MatteType LayerMatteType { get; }
+
         public enum LayerType
         {
             PreComp,
@@ -106,6 +110,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             Null,
             Shape,
             Text,
+        }
+
+        public enum MatteType
+        {
+            None = 0,
+            Add,
+            Invert,
+            Uknonwn,
         }
     }
 }

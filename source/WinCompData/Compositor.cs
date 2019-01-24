@@ -58,5 +58,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
         public CompositionRectangleGeometry CreateRectangleGeometry() => new CompositionRectangleGeometry();
 
         public CompositionRoundedRectangleGeometry CreateRoundedRectangleGeometry() => new CompositionRoundedRectangleGeometry();
+
+        public SpriteVisual CreateSpriteVisual() => new SpriteVisual();
+
+        public CompositionMaskBrush CreateMaskBrush() => new CompositionMaskBrush();
+
+        public CompositionVisualSurface CreateVisualSurface() => new CompositionVisualSurface();
+
+        public CompositionSurfaceBrush CreateSurfaceBrush(ICompositionSurface surface) => new CompositionSurfaceBrush(surface);
     }
 }

@@ -56,6 +56,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         public static implicit operator YamlScalar(ShapeContentType type) => new YamlScalar(type, type.ToString());
 
+        public static implicit operator YamlScalar(Layer.MatteType type) => new YamlScalar(type, type.ToString());
+
         public override string ToString() => _presention;
     }
 }

@@ -25,6 +25,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CompositionEllipseGeometry.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionGeometricClip.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionGeometry.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CompositionMaskBrush.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionObject.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionObjectType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionPath.cs" />
@@ -36,7 +37,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)CompositionSpriteShape.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionStrokeCap.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionStrokeLineJoin.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CompositionSurfaceBrush.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionViewBox.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CompositionVisualSurface.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Compositor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ContainerVisual.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CubicBezierEasingFunction.cs" />
@@ -64,6 +67,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Expressions\UntypedExpression.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Expressions\Vector2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Expressions\Vector3.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ICompositionSurface.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IContainShapes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IDescribable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)InsetClip.cs" />
@@ -81,6 +85,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\CompositionObjectDgmlSerializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\CompositionObjectXmlSerializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ShapeVisual.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SpriteVisual.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)StepEasingFunction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\CanonicalizedNode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\Canonicalizer.cs" />

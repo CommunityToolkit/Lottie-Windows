@@ -2,6 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+// define POST_RS5_SDK if using an SDK that is for a release
+// after RS5
+#if POST_RS5_SDK
+// For allowing of Windows.UI.Composition.VisualSurface and the
+// Lottie features that rely on it
+#define AllowVisualSurface
+#endif
+
 using System.Linq;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
@@ -14,9 +22,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
 #endif
     sealed class ApiCompatibility
     {
-        ApiCompatibility(bool requiresCompositionGeometricClip)
+        ApiCompatibility(bool requiresCompositionGeometricClip, bool requiresCompositionVisualSurface)
         {
             RequiresCompositionGeometricClip = requiresCompositionGeometricClip;
+            RequiresCompositionVisualSurface = requiresCompositionVisualSurface;
         }
 
         /// <summary>
@@ -27,9 +36,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
         {
             // Always require CompostionGeometryClip - this ensures that we are never compatible with
             // RS4 (geometries are flaky in RS4, and CompositionGeometryClip is new in RS5).
-            return new ApiCompatibility(requiresCompositionGeometricClip: true);
+            return new ApiCompatibility(
+                                        requiresCompositionGeometricClip: true,
+#if AllowVisualSurface
+                                        requiresCompositionVisualSurface : true
+#else
+                                        requiresCompositionVisualSurface : false
+#endif
+            );
         }
 
         public bool RequiresCompositionGeometricClip { get; }
+
+        public bool RequiresCompositionVisualSurface { get; }
     }
 }

@@ -560,6 +560,7 @@ sealed class LottieFileProcessor
         WriteStatsLine("EllipseGeometry", beforeOptimization.EllipseGeometryCount, afterOptimization.EllipseGeometryCount);
         WriteStatsLine("ExpressionAnimation", beforeOptimization.ExpressionAnimationCount, afterOptimization.ExpressionAnimationCount);
         WriteStatsLine("GeometricClip", beforeOptimization.GeometricClipCount, afterOptimization.GeometricClipCount);
+        WriteStatsLine("MaskBrushCount", beforeOptimization.MaskBrushCount, afterOptimization.MaskBrushCount);
         WriteStatsLine("InsetClip", beforeOptimization.InsetClipCount, afterOptimization.InsetClipCount);
         WriteStatsLine("LinearEasingFunction", beforeOptimization.LinearEasingFunctionCount, afterOptimization.LinearEasingFunctionCount);
         WriteStatsLine("PathGeometry", beforeOptimization.PathGeometryCount, afterOptimization.PathGeometryCount);
@@ -571,10 +572,13 @@ sealed class LottieFileProcessor
         WriteStatsLine("ScalarKeyFrameAnimation", beforeOptimization.ScalarKeyFrameAnimationCount, afterOptimization.ScalarKeyFrameAnimationCount);
         WriteStatsLine("ShapeVisual", beforeOptimization.ShapeVisualCount, afterOptimization.ShapeVisualCount);
         WriteStatsLine("SpriteShape", beforeOptimization.SpriteShapeCount, afterOptimization.SpriteShapeCount);
+        WriteStatsLine("SpriteVisualCount", beforeOptimization.SpriteVisualCount, afterOptimization.SpriteVisualCount);
         WriteStatsLine("StepEasingFunction", beforeOptimization.StepEasingFunctionCount, afterOptimization.StepEasingFunctionCount);
+        WriteStatsLine("SurfaceBrushCount", beforeOptimization.SurfaceBrushCount, afterOptimization.SurfaceBrushCount);
         WriteStatsLine("Vector2KeyFrameAnimation", beforeOptimization.Vector2KeyFrameAnimationCount, afterOptimization.Vector2KeyFrameAnimationCount);
         WriteStatsLine("Vector3KeyFrameAnimation", beforeOptimization.Vector3KeyFrameAnimationCount, afterOptimization.Vector3KeyFrameAnimationCount);
         WriteStatsLine("ViewBox", beforeOptimization.ViewBoxCount, afterOptimization.ViewBoxCount);
+        WriteStatsLine("VisualSurfaceCount", beforeOptimization.VisualSurfaceCount, afterOptimization.VisualSurfaceCount);
 
         void WriteStatsLine(string name, int before, int after)
         {

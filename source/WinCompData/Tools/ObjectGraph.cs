@@ -108,6 +108,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
                 case CompositionObjectType.CompositionEllipseGeometry:
                     VisitCompositionEllipseGeometry((CompositionEllipseGeometry)obj, node);
                     break;
+                case CompositionObjectType.CompositionGeometricClip:
+                    VisitCompositionGeometricClip((CompositionGeometricClip)obj, node);
+                    break;
+                case CompositionObjectType.CompositionMaskBrush:
+                    VisitCompositionMaskBrush((CompositionMaskBrush)obj, node);
+                    break;
                 case CompositionObjectType.CompositionPathGeometry:
                     VisitCompositionPathGeometry((CompositionPathGeometry)obj, node);
                     break;
@@ -123,8 +129,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
                 case CompositionObjectType.CompositionSpriteShape:
                     VisitCompositionSpriteShape((CompositionSpriteShape)obj, node);
                     break;
+                case CompositionObjectType.CompositionSurfaceBrush:
+                    VisitCompositionSurfaceBrush((CompositionSurfaceBrush)obj, node);
+                    break;
                 case CompositionObjectType.CompositionViewBox:
                     VisitCompositionViewBox((CompositionViewBox)obj, node);
+                    break;
+                case CompositionObjectType.CompositionVisualSurface:
+                    VisitCompositionVisualSurface((CompositionVisualSurface)obj, node);
                     break;
                 case CompositionObjectType.ContainerVisual:
                     VisitContainerVisual((ContainerVisual)obj, node);
@@ -138,9 +150,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
                 case CompositionObjectType.InsetClip:
                     VisitInsetClip((InsetClip)obj, node);
                     break;
-                case CompositionObjectType.CompositionGeometricClip:
-                    VisitCompositionGeometricClip((CompositionGeometricClip)obj, node);
-                    break;
                 case CompositionObjectType.LinearEasingFunction:
                     VisitLinearEasingFunction((LinearEasingFunction)obj, node);
                     break;
@@ -152,6 +161,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
                     break;
                 case CompositionObjectType.ShapeVisual:
                     VisitShapeVisual((ShapeVisual)obj, node);
+                    break;
+                case CompositionObjectType.SpriteVisual:
+                    VisitSpriteVisual((SpriteVisual)obj, node);
                     break;
                 case CompositionObjectType.StepEasingFunction:
                     VisitStepEasingFunction((StepEasingFunction)obj, node);
@@ -357,13 +369,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
             return VisitCompositionClip(obj, node);
         }
 
-        bool VisitCompositionGeometricClip(CompositionGeometricClip obj, T node)
-        {
-            VisitCompositionClip(obj, node);
-            Reference(node, obj.Geometry);
-            return true;
-        }
-
         bool VisitCompositionEasingFunction(CompositionEasingFunction obj, T node)
         {
             return VisitCompositionObject(obj, node);
@@ -431,9 +436,23 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
             return true;
         }
 
+        bool VisitCompositionSurfaceBrush(CompositionSurfaceBrush obj, T node)
+        {
+            VisitCompositionBrush(obj, node);
+            Reference(node, (CompositionObject)obj.Surface);
+            return true;
+        }
+
         bool VisitCompositionViewBox(CompositionViewBox obj, T node)
         {
             return VisitCompositionObject(obj, node);
+        }
+
+        bool VisitCompositionVisualSurface(CompositionVisualSurface obj, T node)
+        {
+            VisitCompositionObject(obj, node);
+            Reference(node, obj.SourceVisual);
+            return true;
         }
 
         bool VisitCompositionGeometry(CompositionGeometry obj, T node)
@@ -444,6 +463,21 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
         bool VisitCompositionEllipseGeometry(CompositionEllipseGeometry obj, T node)
         {
             return VisitCompositionGeometry(obj, node);
+        }
+
+        bool VisitCompositionGeometricClip(CompositionGeometricClip obj, T node)
+        {
+            VisitCompositionClip(obj, node);
+            Reference(node, obj.Geometry);
+            return true;
+        }
+
+        bool VisitCompositionMaskBrush(CompositionMaskBrush obj, T node)
+        {
+            VisitCompositionObject(obj, node);
+            Reference(node, obj.Source);
+            Reference(node, obj.Mask);
+            return true;
         }
 
         bool VisitCompositionPathGeometry(CompositionPathGeometry obj, T node)
@@ -499,6 +533,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
                 Reference(node, shape);
             }
 
+            return true;
+        }
+
+        bool VisitSpriteVisual(SpriteVisual obj, T node)
+        {
+            VisitVisual(obj, node);
+            Reference(node, obj.Brush);
             return true;
         }
 
