@@ -220,6 +220,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     yield return FromMask(layer.Masks[i]);
                 }
             }
+
+            yield return new XAttribute(nameof(layer.LayerMatteType), layer.LayerMatteType);
         }
 
         XElement FromPreCompLayer(PreCompLayer layer)

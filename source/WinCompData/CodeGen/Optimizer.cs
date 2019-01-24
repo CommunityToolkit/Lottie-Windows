@@ -289,6 +289,25 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             return result;
         }
 
+        SpriteVisual GetSpriteVisual(SpriteVisual obj)
+        {
+            if (GetExisting(obj, out SpriteVisual result))
+            {
+                return result;
+            }
+
+            result = CacheAndInitializeVisual(obj, _c.CreateSpriteVisual());
+
+            if (obj.Brush != null)
+            {
+                result.Brush = GetCompositionBrush(obj.Brush);
+            }
+
+            InitializeContainerVisual(obj, result);
+            StartAnimationsAndFreeze(obj, result);
+            return result;
+        }
+
         ContainerVisual GetContainerVisual(ContainerVisual obj)
         {
             if (GetExisting(obj, out ContainerVisual result))
@@ -389,6 +408,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
                     return GetCompositionEllipseGeometry((CompositionEllipseGeometry)obj);
                 case CompositionObjectType.CompositionGeometricClip:
                     return GetCompositionGeometricClip((CompositionGeometricClip)obj);
+                case CompositionObjectType.CompositionMaskBrush:
+                    return GetCompositionMaskBrush((CompositionMaskBrush)obj);
                 case CompositionObjectType.CompositionPathGeometry:
                     return GetCompositionPathGeometry((CompositionPathGeometry)obj);
                 case CompositionObjectType.CompositionPropertySet:
@@ -399,8 +420,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
                     return GetCompositionRoundedRectangleGeometry((CompositionRoundedRectangleGeometry)obj);
                 case CompositionObjectType.CompositionSpriteShape:
                     return GetCompositionSpriteShape((CompositionSpriteShape)obj);
+                case CompositionObjectType.CompositionSurfaceBrush:
+                    return GetCompositionSurfaceBrush((CompositionSurfaceBrush)obj);
                 case CompositionObjectType.CompositionViewBox:
                     return GetCompositionViewBox((CompositionViewBox)obj);
+                case CompositionObjectType.CompositionVisualSurface:
+                    return GetCompositionVisualSurface((CompositionVisualSurface)obj);
                 case CompositionObjectType.ContainerVisual:
                     return GetContainerVisual((ContainerVisual)obj);
                 case CompositionObjectType.CubicBezierEasingFunction:
@@ -417,6 +442,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
                     return GetScalarKeyFrameAnimation((ScalarKeyFrameAnimation)obj);
                 case CompositionObjectType.ShapeVisual:
                     return GetShapeVisual((ShapeVisual)obj);
+                case CompositionObjectType.SpriteVisual:
+                    return GetSpriteVisual((SpriteVisual)obj);
                 case CompositionObjectType.StepEasingFunction:
                     return GetStepEasingFunction((StepEasingFunction)obj);
                 case CompositionObjectType.Vector2KeyFrameAnimation:
@@ -470,6 +497,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
                     return GetContainerVisual((ContainerVisual)obj);
                 case CompositionObjectType.ShapeVisual:
                     return GetShapeVisual((ShapeVisual)obj);
+                case CompositionObjectType.SpriteVisual:
+                    return GetSpriteVisual((SpriteVisual)obj);
                 default:
                     throw new InvalidOperationException();
             }
@@ -727,6 +756,29 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             return result;
         }
 
+        CompositionMaskBrush GetCompositionMaskBrush(CompositionMaskBrush obj)
+        {
+            if (GetExisting(obj, out CompositionMaskBrush result))
+            {
+                return result;
+            }
+
+            result = CacheAndInitializeCompositionObject(obj, _c.CreateMaskBrush());
+
+            if (obj.Source != null)
+            {
+                result.Source = GetCompositionBrush(obj.Source);
+            }
+
+            if (obj.Mask != null)
+            {
+                result.Mask = GetCompositionBrush(obj.Mask);
+            }
+
+            StartAnimationsAndFreeze(obj, result);
+            return result;
+        }
+
         LinearEasingFunction GetLinearEasingFunction(LinearEasingFunction obj)
         {
             if (GetExisting(obj, out LinearEasingFunction result))
@@ -797,6 +849,34 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
             result = CacheAndInitializeCompositionObject(obj, _c.CreateViewBox());
             result.Size = obj.Size;
+            StartAnimationsAndFreeze(obj, result);
+            return result;
+        }
+
+        CompositionVisualSurface GetCompositionVisualSurface(CompositionVisualSurface obj)
+        {
+            if (GetExisting(obj, out CompositionVisualSurface result))
+            {
+                return result;
+            }
+
+            result = CacheAndInitializeCompositionObject(obj, _c.CreateVisualSurface());
+
+            if (obj.SourceVisual != null)
+            {
+                result.SourceVisual = GetVisual(obj.SourceVisual);
+            }
+
+            if (obj.SourceSize != null)
+            {
+                result.SourceSize = obj.SourceSize.Value;
+            }
+
+            if (obj.SourceOffset != null)
+            {
+                result.SourceOffset = obj.SourceOffset.Value;
+            }
+
             StartAnimationsAndFreeze(obj, result);
             return result;
         }
@@ -913,6 +993,24 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             if (obj.FillBrush != null)
             {
                 result.FillBrush = GetCompositionBrush(obj.FillBrush);
+            }
+
+            StartAnimationsAndFreeze(obj, result);
+            return result;
+        }
+
+        CompositionSurfaceBrush GetCompositionSurfaceBrush(CompositionSurfaceBrush obj)
+        {
+            if (GetExisting(obj, out CompositionSurfaceBrush result))
+            {
+                return result;
+            }
+
+            result = CacheAndInitializeCompositionObject(obj, _c.CreateSurfaceBrush(obj.Surface));
+
+            if (obj.Surface != null)
+            {
+                result.Surface = GetCompositionSurface(obj.Surface);
             }
 
             StartAnimationsAndFreeze(obj, result);
@@ -1118,7 +1216,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
         CompositionBrush GetCompositionBrush(CompositionBrush obj)
         {
-            return GetCompositionColorBrush((CompositionColorBrush)obj);
+            switch (obj.Type)
+            {
+                case CompositionObjectType.CompositionColorBrush:
+                    return GetCompositionColorBrush((CompositionColorBrush)obj);
+                case CompositionObjectType.CompositionMaskBrush:
+                    return GetCompositionMaskBrush((CompositionMaskBrush)obj);
+                case CompositionObjectType.CompositionSurfaceBrush:
+                    return GetCompositionSurfaceBrush((CompositionSurfaceBrush)obj);
+                default:
+                    throw new InvalidOperationException();
+            }
         }
 
         CompositionColorBrush GetCompositionColorBrush(CompositionColorBrush obj)
@@ -1131,6 +1239,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             result = CacheAndInitializeCompositionObject(obj, _c.CreateColorBrush(obj.Color));
             StartAnimationsAndFreeze(obj, result);
             return result;
+        }
+
+        ICompositionSurface GetCompositionSurface(ICompositionSurface obj)
+        {
+            if (obj is CompositionObject compositionObject)
+            {
+                if (GetCompositionObject(compositionObject) is ICompositionSurface compositionSurface)
+                {
+                    return compositionSurface;
+                }
+            }
+
+            throw new InvalidOperationException();
         }
     }
 }

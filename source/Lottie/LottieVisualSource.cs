@@ -640,6 +640,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 return false;
             }
 
+            if (compatibility.RequiresCompositionVisualSurface &&
+                !ApiInformation.IsTypePresent("Windows.UI.Composition.CompositionVisualSurface"))
+            {
+                return false;
+            }
+
             return true;
         }
 
