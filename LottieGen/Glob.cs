@@ -30,10 +30,12 @@ static class Glob
 
             // Get the path of the directory where the file is, relative to the
             // non-wildcarded part of the input.
-            var relativePath = filePath.Substring(directory.Length + 1, filePath.Length - directory.Length - fileName.Length - 1);
+            var relativePath = filePath.Substring(directory.Length, filePath.Length - fileName.Length - directory.Length);
 
             yield return (filePath, relativePath);
         }
+
+        yield break;
     }
 
     static IEnumerable<string> EnumerateFilesInternal(string directory, string[] pattern)
@@ -120,8 +122,9 @@ static class Glob
 
     /// <summary>
     /// Splits a path into a non-wildcarded directory path and
-    /// directory segments where the first segment is a leaf
-    /// or contains wildcards.
+    /// directory segments where the first segment is a leaf or
+    /// contains wildcards. The returned directory path will
+    /// end with a forward slash.
     /// </summary>
     static (string directoryPath, string[] segments) SplitPath(string path)
     {
@@ -157,6 +160,19 @@ static class Glob
         if (string.IsNullOrEmpty(directoryPath))
         {
             directoryPath = @".\";
+        }
+
+        if (directoryPath.EndsWith(":"))
+        {
+            // The directory path is just a drive letter with no directory.
+            // Ensure it is treated as the current directory on the drive.
+            directoryPath += @".\";
+        }
+
+        // Ensure that we always have a trailing backslash. Callers expect this.
+        if (!directoryPath.EndsWith(@"\"))
+        {
+            directoryPath += @"\";
         }
 
         return (Path.GetFullPath(directoryPath), pattern);
