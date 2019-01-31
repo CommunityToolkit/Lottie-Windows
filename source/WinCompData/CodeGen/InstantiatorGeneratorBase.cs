@@ -1453,12 +1453,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
             if (obj.SourceSize != null)
             {
-                builder.WriteLine($"result.SourceSize = {Vector2(obj.SourceSize.Value)};");
+                builder.WriteLine($"result{Deref}SourceSize = {Vector2(obj.SourceSize.Value)};");
             }
 
             if (obj.SourceOffset != null)
             {
-                builder.WriteLine($"result.SourceOffset = {Vector2(obj.SourceOffset.Value)};");
+                builder.WriteLine($"result{Deref}SourceOffset = {Vector2(obj.SourceOffset.Value)};");
             }
 
             StartAnimations(builder, obj, node);
