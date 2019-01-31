@@ -23,6 +23,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
         readonly int _colorKeyFrameAnimationCount;
         readonly int _colorBrushCount;
         readonly int _containerShapeCount;
+        readonly int _effectBrushCount;
         readonly int _ellipseGeometryCount;
         readonly int _geometricClipCount;
         readonly int _maskBrushCount;
@@ -71,6 +72,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
                         break;
                     case CompositionObjectType.CompositionContainerShape:
                         _containerShapeCount++;
+                        break;
+                    case CompositionObjectType.CompositionEffectBrush:
+                        _effectBrushCount++;
                         break;
                     case CompositionObjectType.CompositionEllipseGeometry:
                         _ellipseGeometryCount++;
@@ -168,6 +172,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
         public int ColorBrushCount => _colorBrushCount;
 
         public int ContainerShapeCount => _containerShapeCount;
+
+        public int EffectBrushCount => _effectBrushCount;
 
         public int EllipseGeometryCount => _ellipseGeometryCount;
 

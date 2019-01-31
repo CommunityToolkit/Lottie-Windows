@@ -22,6 +22,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CompositionColorBrush.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionContainerShape.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionEasingFunction.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CompositionEffectBrush.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionEllipseGeometry.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionGeometricClip.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionGeometry.cs" />
@@ -74,6 +75,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)KeyFrameAnimation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)KeyFrameAnimation_.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LinearEasingFunction.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Mgce\CanvasComposite.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Mgce\CompositeEffect.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Mgcg\CanvasFigureLoop.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Mgcg\CanvasFilledRegionDetermination.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Mgcg\CanvasGeometry.cs" />

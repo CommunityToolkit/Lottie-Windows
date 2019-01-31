@@ -105,6 +105,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
                 case CompositionObjectType.CompositionContainerShape:
                     VisitCompositionContainerShape((CompositionContainerShape)obj, node);
                     break;
+                case CompositionObjectType.CompositionEffectBrush:
+                    VisitCompositionEffectBrush((CompositionEffectBrush)obj, node);
+                    break;
                 case CompositionObjectType.CompositionEllipseGeometry:
                     VisitCompositionEllipseGeometry((CompositionEllipseGeometry)obj, node);
                     break;
@@ -512,6 +515,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
             foreach (var shape in obj.Shapes)
             {
                 Reference(node, shape);
+            }
+
+            return true;
+        }
+
+        bool VisitCompositionEffectBrush(CompositionEffectBrush obj, T node)
+        {
+            VisitCompositionBrush(obj, node);
+            foreach (var parameter in obj.SourceParameters)
+            {
+                Reference(node, parameter.Value);
             }
 
             return true;

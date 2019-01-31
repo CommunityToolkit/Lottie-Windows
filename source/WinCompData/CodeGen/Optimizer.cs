@@ -404,6 +404,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
                     return GetCompositionColorBrush((CompositionColorBrush)obj);
                 case CompositionObjectType.CompositionContainerShape:
                     return GetCompositionContainerShape((CompositionContainerShape)obj);
+                case CompositionObjectType.CompositionEffectBrush:
+                    return GetCompositionEffectBrush((CompositionEffectBrush)obj);
                 case CompositionObjectType.CompositionEllipseGeometry:
                     return GetCompositionEllipseGeometry((CompositionEllipseGeometry)obj);
                 case CompositionObjectType.CompositionGeometricClip:
@@ -881,6 +883,24 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             return result;
         }
 
+        CompositionEffectBrush GetCompositionEffectBrush(CompositionEffectBrush obj)
+        {
+            if (GetExisting(obj, out CompositionEffectBrush result))
+            {
+                return result;
+            }
+
+            result = CacheAndInitializeCompositionObject(obj, _c.CreateEffectBrush(obj.Effect));
+
+            foreach (var source in obj.SourceParameters)
+            {
+                result.SourceParameters.Add(source.Key, GetCompositionBrush(source.Value));
+            }
+
+            StartAnimationsAndFreeze(obj, result);
+            return result;
+        }
+
         CompositionShape GetCompositionShape(CompositionShape obj)
         {
             switch (obj.Type)
@@ -1220,6 +1240,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             {
                 case CompositionObjectType.CompositionColorBrush:
                     return GetCompositionColorBrush((CompositionColorBrush)obj);
+                case CompositionObjectType.CompositionEffectBrush:
+                    return GetCompositionEffectBrush((CompositionEffectBrush)obj);
                 case CompositionObjectType.CompositionMaskBrush:
                     return GetCompositionMaskBrush((CompositionMaskBrush)obj);
                 case CompositionObjectType.CompositionSurfaceBrush:

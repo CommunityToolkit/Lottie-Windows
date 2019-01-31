@@ -119,6 +119,8 @@ public:
             builder.WriteLine("using namespace Windows::UI;");
             builder.WriteLine("using namespace Windows::UI::Composition;");
             builder.WriteLine("using namespace Windows::Graphics;");
+            builder.WriteLine("using namespace Microsoft::Graphics::Canvas;");
+            builder.WriteLine("using namespace Microsoft::Graphics::Canvas::Effects;");
             builder.WriteLine("using namespace Microsoft::WRL;");
             builder.WriteLine();
 

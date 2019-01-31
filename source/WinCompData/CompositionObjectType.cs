@@ -13,6 +13,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
         ColorKeyFrameAnimation,
         CompositionColorBrush,
         CompositionContainerShape,
+        CompositionEffectBrush,
         CompositionEllipseGeometry,
         CompositionGeometricClip,
         CompositionMaskBrush,

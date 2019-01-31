@@ -16,6 +16,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using Microsoft.Graphics.Canvas.Effects;
 using Microsoft.Graphics.Canvas.Geometry;
 using Wc = Windows.UI.Composition;
 using Wd = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
@@ -341,6 +342,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                     return GetCompositionColorBrush((Wd.CompositionColorBrush)obj);
                 case Wd.CompositionObjectType.CompositionContainerShape:
                     return GetCompositionContainerShape((Wd.CompositionContainerShape)obj);
+                case Wd.CompositionObjectType.CompositionEffectBrush:
+                    return GetCompositionEffectBrush((Wd.CompositionEffectBrush)obj);
                 case Wd.CompositionObjectType.CompositionEllipseGeometry:
                     return GetCompositionEllipseGeometry((Wd.CompositionEllipseGeometry)obj);
                 case Wd.CompositionObjectType.CompositionGeometricClip:
@@ -894,6 +897,34 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             return result;
         }
 
+        Wc.CompositionEffectBrush GetCompositionEffectBrush(Wd.CompositionEffectBrush obj)
+        {
+            if (GetExisting(obj, out Wc.CompositionEffectBrush result))
+            {
+                return result;
+            }
+
+            var compositeEffect = new CompositeEffect();
+            compositeEffect.Mode = (Graphics.Canvas.CanvasComposite)obj.Effect.Mode;
+            foreach (var source in obj.Effect.Sources)
+            {
+                compositeEffect.Sources.Add(new Wc.CompositionEffectSourceParameter(source));
+            }
+
+            var effectFactory = _c.CreateEffectFactory(compositeEffect);
+            var compositeEffectBrush = effectFactory.CreateBrush();
+
+            result = CacheAndInitializeCompositionObject(obj, compositeEffectBrush);
+
+            foreach (var sourceParameters in obj.SourceParameters)
+            {
+                result.SetSourceParameter(sourceParameters.Key, GetCompositionBrush(sourceParameters.Value));
+            }
+
+            StartAnimations(obj, result);
+            return result;
+        }
+
         Wc.CompositionSpriteShape GetCompositionSpriteShape(Wd.CompositionSpriteShape obj)
         {
             if (GetExisting(obj, out Wc.CompositionSpriteShape result))
@@ -1172,6 +1203,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             {
                 case Wd.CompositionObjectType.CompositionColorBrush:
                     return GetCompositionColorBrush((Wd.CompositionColorBrush)obj);
+                case Wd.CompositionObjectType.CompositionEffectBrush:
+                    return GetCompositionEffectBrush((Wd.CompositionEffectBrush)obj);
                 case Wd.CompositionObjectType.CompositionMaskBrush:
                     return GetCompositionMaskBrush((Wd.CompositionMaskBrush)obj);
                 case Wd.CompositionObjectType.CompositionSurfaceBrush:
