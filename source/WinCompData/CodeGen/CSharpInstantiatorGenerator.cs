@@ -62,6 +62,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
         {
             if (info.RequiresWin2d)
             {
+                builder.WriteLine("using Microsoft.Graphics.Canvas;");
+                builder.WriteLine("using Microsoft.Graphics.Canvas.Effects;");
                 builder.WriteLine("using Microsoft.Graphics.Canvas.Geometry;");
             }
 
