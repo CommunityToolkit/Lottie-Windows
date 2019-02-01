@@ -26,7 +26,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)CompositionEllipseGeometry.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionGeometricClip.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionGeometry.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CompositionMaskBrush.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionObject.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionObjectType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionPath.cs" />

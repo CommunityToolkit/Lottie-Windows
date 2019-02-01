@@ -61,8 +61,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 
         public SpriteVisual CreateSpriteVisual() => new SpriteVisual();
 
-        public CompositionMaskBrush CreateMaskBrush() => new CompositionMaskBrush();
-
         public CompositionVisualSurface CreateVisualSurface() => new CompositionVisualSurface();
 
         public CompositionSurfaceBrush CreateSurfaceBrush(ICompositionSurface surface) => new CompositionSurfaceBrush(surface);

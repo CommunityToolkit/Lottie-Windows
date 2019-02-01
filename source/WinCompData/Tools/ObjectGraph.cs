@@ -114,9 +114,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
                 case CompositionObjectType.CompositionGeometricClip:
                     VisitCompositionGeometricClip((CompositionGeometricClip)obj, node);
                     break;
-                case CompositionObjectType.CompositionMaskBrush:
-                    VisitCompositionMaskBrush((CompositionMaskBrush)obj, node);
-                    break;
                 case CompositionObjectType.CompositionPathGeometry:
                     VisitCompositionPathGeometry((CompositionPathGeometry)obj, node);
                     break;
@@ -472,14 +469,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
         {
             VisitCompositionClip(obj, node);
             Reference(node, obj.Geometry);
-            return true;
-        }
-
-        bool VisitCompositionMaskBrush(CompositionMaskBrush obj, T node)
-        {
-            VisitCompositionObject(obj, node);
-            Reference(node, obj.Source);
-            Reference(node, obj.Mask);
             return true;
         }
 

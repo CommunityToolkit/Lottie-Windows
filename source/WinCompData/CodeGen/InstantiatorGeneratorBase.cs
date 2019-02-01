@@ -611,8 +611,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
                     return GenerateCompositionEllipseGeometryFactory(builder, (CompositionEllipseGeometry)obj, node);
                 case CompositionObjectType.CompositionGeometricClip:
                     return GenerateCompositionGeometricClipFactory(builder, (CompositionGeometricClip)obj, node);
-                case CompositionObjectType.CompositionMaskBrush:
-                    return GenerateCompositionMaskBrushFactory(builder, (CompositionMaskBrush)obj, node);
                 case CompositionObjectType.CompositionPathGeometry:
                     return GenerateCompositionPathGeometryFactory(builder, (CompositionPathGeometry)obj, node);
                 case CompositionObjectType.CompositionPropertySet:
@@ -1219,27 +1217,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             }
 
             builder.WriteLine($"result{Deref}Radius = {Vector2(obj.Radius)};");
-            StartAnimations(builder, obj, node);
-            WriteObjectFactoryEnd(builder);
-            return true;
-        }
-
-        bool GenerateCompositionMaskBrushFactory(CodeBuilder builder, CompositionMaskBrush obj, ObjectData node)
-        {
-            WriteObjectFactoryStart(builder, node);
-            WriteCreateAssignment(builder, node, $"_c{Deref}CreateMaskBrush()");
-            InitializeCompositionBrush(builder, obj, node);
-
-            if (obj.Source != null)
-            {
-                builder.WriteLine($"result{Deref}Source = {CallFactoryFromFor(node, obj.Source)};");
-            }
-
-            if (obj.Mask != null)
-            {
-                builder.WriteLine($"result{Deref}Mask = {CallFactoryFromFor(node, obj.Mask)};");
-            }
-
             StartAnimations(builder, obj, node);
             WriteObjectFactoryEnd(builder);
             return true;

@@ -16,7 +16,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
         CompositionEffectBrush,
         CompositionEllipseGeometry,
         CompositionGeometricClip,
-        CompositionMaskBrush,
         CompositionPathGeometry,
         CompositionPropertySet,
         CompositionRectangleGeometry,
