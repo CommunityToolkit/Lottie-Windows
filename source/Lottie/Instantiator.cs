@@ -368,8 +368,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                     return GetCubicBezierEasingFunction((Wd.CubicBezierEasingFunction)obj);
                 case Wd.CompositionObjectType.ExpressionAnimation:
                     return GetExpressionAnimation((Wd.ExpressionAnimation)obj);
-                case Wd.CompositionObjectType.CompositionMaskBrush:
-                    return GetCompositionMaskBrush((Wd.CompositionMaskBrush)obj);
                 case Wd.CompositionObjectType.CompositionSurfaceBrush:
                     return GetCompositionSurfaceBrush((Wd.CompositionSurfaceBrush)obj);
                 case Wd.CompositionObjectType.InsetClip:
@@ -712,29 +710,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             }
 
             result = CacheAndInitializeCompositionObject(obj, _c.CreateGeometricClip(GetCompositionGeometry(obj.Geometry)));
-            StartAnimations(obj, result);
-            return result;
-        }
-
-        Wc.CompositionMaskBrush GetCompositionMaskBrush(Wd.CompositionMaskBrush obj)
-        {
-            if (GetExisting(obj, out Wc.CompositionMaskBrush result))
-            {
-                return result;
-            }
-
-            result = CacheAndInitializeCompositionObject(obj, _c.CreateMaskBrush());
-
-            if (obj.Source != null)
-            {
-                result.Source = GetCompositionBrush(obj.Source);
-            }
-
-            if (obj.Mask != null)
-            {
-                result.Mask = GetCompositionBrush(obj.Mask);
-            }
-
             StartAnimations(obj, result);
             return result;
         }
@@ -1205,8 +1180,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                     return GetCompositionColorBrush((Wd.CompositionColorBrush)obj);
                 case Wd.CompositionObjectType.CompositionEffectBrush:
                     return GetCompositionEffectBrush((Wd.CompositionEffectBrush)obj);
-                case Wd.CompositionObjectType.CompositionMaskBrush:
-                    return GetCompositionMaskBrush((Wd.CompositionMaskBrush)obj);
                 case Wd.CompositionObjectType.CompositionSurfaceBrush:
                     return GetCompositionSurfaceBrush((Wd.CompositionSurfaceBrush)obj);
                 default:

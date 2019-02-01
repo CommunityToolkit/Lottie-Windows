@@ -234,17 +234,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             // Save off the visual for the layer to be matted when we encounter it. The very next
             // layer (when walking the layers in reverse index order) is the matte layer
             Visual mattedVisual = null;
+            Layer.MatteType matteType = Layer.MatteType.None;
 
             foreach (var item in items)
             {
                 var layerIsMattedLayer = false;
 #if AllowVisualSurface
-                layerIsMattedLayer = item.Item2.LayerMatteType == Layer.MatteType.Add;
-
-                if (item.Item2.LayerMatteType == Layer.MatteType.Invert)
-                {
-                    _unsupported.UnsupportedMatteType(item.Item2.LayerMatteType.ToString());
-                }
+                layerIsMattedLayer = item.Item2.LayerMatteType == Layer.MatteType.Add ||
+                                    item.Item2.LayerMatteType == Layer.MatteType.Invert;
 
                 // If this layer is a matted layer then it should have its own shape visual if
                 // it needs one
@@ -309,12 +306,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     if (layerIsMattedLayer)
                     {
                         mattedVisual = visual;
+                        matteType = item.Item2.LayerMatteType;
                     }
                     else if (mattedVisual != null)
                     {
-                        var compositedMatteVisual = TranslateMatteLayer(context, visual, mattedVisual);
+                        var compositedMatteVisual = TranslateMatteLayer(context, visual, mattedVisual, matteType == Layer.MatteType.Invert);
                         yield return (Visual)compositedMatteVisual;
                         mattedVisual = null;
+                        matteType = Layer.MatteType.None;
                     }
                     else
                     {
@@ -421,12 +420,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         maskShapeVisual.Size = contextSize;
                         maskShapeVisual.Offset = maskShapeTree ? Vector3(-contextSize.X / 2, -contextSize.Y / 2, 0) : Vector3(0);
 
-                        var maskVisualSurface = CreateVisualSurface();
-                        maskVisualSurface.SourceVisual = maskShapeVisual;
-                        maskVisualSurface.SourceSize = contextSize;
-                        maskVisualSurface.SourceOffset = maskShapeTree ? Vector2(-contextSize.X / 2, -contextSize.Y / 2) : Vector2(0);
-                        CompositionSurfaceBrush maskVisualSurfaceBrush = CreateSurfaceBrush(maskVisualSurface);
-
                         var visualForMaskChildren = visualForMask.Children;
                         var sourceContainerVisual = CreateContainerVisual();
                         foreach (var child in visualForMaskChildren)
@@ -434,27 +427,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                             sourceContainerVisual.Children.Add(child);
                         }
 
-                        var sourceVisualSurface = CreateVisualSurface();
-                        sourceVisualSurface.SourceVisual = sourceContainerVisual;
-                        sourceVisualSurface.SourceSize = contextSize;
-                        sourceVisualSurface.SourceOffset = maskShapeTree ? Vector2(-contextSize.X / 2, -contextSize.Y / 2) : Vector2(0);
-                        CompositionSurfaceBrush sourceVisualSurfaceBrush = CreateSurfaceBrush(sourceVisualSurface);
-
-                        var compositeEffect = new CompositeEffect();
-                        compositeEffect.Mode = CanvasComposite.DestinationOut;
-
-                        compositeEffect.Sources.Add("destination");
-                        compositeEffect.Sources.Add("source");
-
-                        var maskEffectBrush = CreateEffectBrush(compositeEffect);
-
-                        maskEffectBrush.SourceParameters.Add("destination", sourceVisualSurfaceBrush);
-                        maskEffectBrush.SourceParameters.Add("source", maskVisualSurfaceBrush);
-
-                        var compositedVisual = CreateSpriteVisual();
-                        compositedVisual.Brush = maskEffectBrush;
-                        compositedVisual.Size = contextSize;
-                        compositedVisual.Offset = maskShapeTree ? Vector3(-contextSize.X / 2, -contextSize.Y / 2, 0) : Vector3(0);
+                        var compositedVisual = CompositeVisuals(
+                                                maskShapeVisual,
+                                                sourceContainerVisual,
+                                                contextSize,
+                                                maskShapeTree ? Vector2(-contextSize.X / 2, -contextSize.Y / 2) : Vector2(0),
+                                                CanvasComposite.DestinationOut);
 
                         visualForMask.Children.Clear();
                         visualForMask.Children.Add(compositedVisual);
@@ -540,27 +518,67 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         // This brush will be used to paint a sprite visual. The brush is created by using a mask brush
         // which will use the matted layer as a source and the matte layer as an alpha mask.
         // A visual tree is turned into a brush by using the CompositionVisualSurface.
-        CompositionObject TranslateMatteLayer(TranslationContext context, Visual matteLayer, Visual mattedLayer)
+        CompositionObject TranslateMatteLayer(
+            TranslationContext context,
+            Visual matteLayer,
+            Visual mattedLayer,
+            bool invert = false)
         {
             // Calculate the context size which we will use as the size of the images we want to use
             // for the matte content and the content to be matted.
-            var contextSize = new Sn.Vector2((float)context.Width, (float)context.Height);
+            var contextSize = Vector2(context.Width, context.Height);
 
             var matteLayerVisualSurface = CreateVisualSurface();
             matteLayerVisualSurface.SourceVisual = matteLayer;
             matteLayerVisualSurface.SourceSize = contextSize;
+            var matteSurfaceBrush = CreateSurfaceBrush(matteLayerVisualSurface);
 
             var mattedLayerVisualSurface = CreateVisualSurface();
             mattedLayerVisualSurface.SourceVisual = mattedLayer;
             mattedLayerVisualSurface.SourceSize = contextSize;
+            var mattedSurfaceBrush = CreateSurfaceBrush(mattedLayerVisualSurface);
 
-            var maskBrush = CreateMaskBrush();
-            maskBrush.Source = CreateSurfaceBrush(mattedLayerVisualSurface);
-            maskBrush.Mask = CreateSurfaceBrush(matteLayerVisualSurface);
+            return CompositeVisuals(
+                        matteLayer,
+                        mattedLayer,
+                        contextSize,
+                        Sn.Vector2.Zero, invert ? CanvasComposite.DestinationOut : CanvasComposite.DestinationIn);
+        }
+
+        SpriteVisual CompositeVisuals(
+            Visual source,
+            Visual destination,
+            Sn.Vector2 size,
+            Sn.Vector2 offset,
+            CanvasComposite compositeMode)
+        {
+            var sourceVisualSurface = CreateVisualSurface();
+            sourceVisualSurface.SourceVisual = source;
+            sourceVisualSurface.SourceSize = size;
+            sourceVisualSurface.SourceOffset = offset;
+            CompositionSurfaceBrush sourceVisualSurfaceBrush = CreateSurfaceBrush(sourceVisualSurface);
+
+            var destinationVisualSurface = CreateVisualSurface();
+            destinationVisualSurface.SourceVisual = destination;
+            destinationVisualSurface.SourceSize = size;
+            destinationVisualSurface.SourceOffset = offset;
+            CompositionSurfaceBrush destinationVisualSurfaceBrush = CreateSurfaceBrush(destinationVisualSurface);
+
+            var compositeEffect = new CompositeEffect();
+            compositeEffect.Mode = compositeMode;
+
+            compositeEffect.Sources.Add("destination");
+            compositeEffect.Sources.Add("source");
+
+            var effectBrush = CreateEffectBrush(compositeEffect);
+
+            effectBrush.SourceParameters.Add("destination", destinationVisualSurfaceBrush);
+            effectBrush.SourceParameters.Add("source", sourceVisualSurfaceBrush);
 
             var compositedVisual = CreateSpriteVisual();
-            compositedVisual.Brush = maskBrush;
-            compositedVisual.Size = matteLayerVisualSurface.SourceSize;
+            compositedVisual.Brush = effectBrush;
+            compositedVisual.Size = size;
+            compositedVisual.Offset = Vector3(offset.X, offset.Y, 0);
 
             return compositedVisual;
         }
@@ -3589,11 +3607,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         SpriteVisual CreateSpriteVisual()
         {
             return _c.CreateSpriteVisual();
-        }
-
-        CompositionMaskBrush CreateMaskBrush()
-        {
-            return _c.CreateMaskBrush();
         }
 
         CompositionEffectBrush CreateEffectBrush(CompositeEffect effect)

@@ -26,7 +26,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
         readonly int _effectBrushCount;
         readonly int _ellipseGeometryCount;
         readonly int _geometricClipCount;
-        readonly int _maskBrushCount;
         readonly int _pathGeometryCount;
         readonly int _propertySetCount;
         readonly int _rectangleGeometryCount;
@@ -81,9 +80,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
                         break;
                     case CompositionObjectType.CompositionGeometricClip:
                         _geometricClipCount++;
-                        break;
-                    case CompositionObjectType.CompositionMaskBrush:
-                        _maskBrushCount++;
                         break;
                     case CompositionObjectType.CompositionPathGeometry:
                         _pathGeometryCount++;
@@ -178,8 +174,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
         public int EllipseGeometryCount => _ellipseGeometryCount;
 
         public int GeometricClipCount => _geometricClipCount;
-
-        public int MaskBrushCount => _maskBrushCount;
 
         public int PathGeometryCount => _pathGeometryCount;
 
