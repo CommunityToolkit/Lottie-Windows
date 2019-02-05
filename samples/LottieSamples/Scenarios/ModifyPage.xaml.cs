@@ -1,0 +1,30 @@
+﻿using System;
+using Windows.UI;
+using Windows.UI.Core;
+using Windows.UI.ViewManagement;
+using Windows.UI.Xaml.Controls;
+
+namespace LottieSamples.Scenarios
+{
+    public sealed partial class ModifyPage : Page
+    {
+        public ModifyPage()
+        {
+            this.InitializeComponent();
+            var settings = new UISettings();
+            settings.ColorValuesChanged += ModifyPage_ColorValuesChanged;
+        }
+
+        private async void ModifyPage_ColorValuesChanged(UISettings sender, object args)
+        {
+            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
+                                        () =>
+                                        {
+                                            Modified_Source_LottieLogo1.BackgroundColor = (Color)Resources["SystemBaseHighColor"];
+                                            Modified_Source_LottieLogo1.HighlightColor = (Color)Resources["SystemAccentColor"];
+                                            Modified_Source_LottieLogo1.TextColor = (Color)Resources["SystemAltHighColor"];
+                                        }
+                                     );
+        }
+    }
+}

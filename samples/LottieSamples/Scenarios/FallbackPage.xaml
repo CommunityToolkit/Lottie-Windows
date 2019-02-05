@@ -1,0 +1,66 @@
+﻿<Page
+    x:Class="LottieSamples.Scenarios.FallbackPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:winui="using:Microsoft.UI.Xaml.Controls"
+    xmlns:lottie="using:Microsoft.Toolkit.Uwp.UI.Lottie"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+        <StackPanel VerticalAlignment="Center">
+            <!--#region IntroText-->
+            <RichTextBlock Style="{StaticResource IntroTextBlock}">
+                <Paragraph>
+                    In case your Lottie source fails to load due to an invalid json file or 
+                    if your app is running on a Windows 10 version prior to 1809, the
+                    <Span FontFamily="Consolas">AnimatedVisualPlayer</Span>
+                    allows you to provide custom xaml content via a
+                    <Span FontFamily="Consolas">DataTemplate</Span> as fallback.
+                    <LineBreak/>
+                    In this example, we cause the player to fallback to a static image,
+                    <Span FontFamily="Consolas">Assets/LottieLogo1.png</Span>, by providing a Lottie source that doesn't exist.
+                    <LineBreak/>
+                </Paragraph>
+            </RichTextBlock>
+            <!--#endregion-->
+
+            <Border Style="{StaticResource LottiePlayer}">
+
+                <!-- AnimatedVisualPlayer -->
+                <winui:AnimatedVisualPlayer x:Name="Fallback_Player">
+                    <!--LottieVisualSource with invalid UriSource to cause fallback -->
+                    <lottie:LottieVisualSource x:Name="Json_Source" UriSource="http://dots.microsoft.com/notarealfile.json" />
+                    <!-- Fallback Content: Custom XAML content that is rendered if Source fails to load 
+                         or if app is on Windows 10 verion < 1809 -->
+                    <winui:AnimatedVisualPlayer.FallbackContent>
+                        <DataTemplate>
+                            <!-- Static Image for Fallback. 
+                                 Because this is in a DataTemplate, the Image is only instantiated when in the fallback case.-->
+                            <Image Source="/Assets/LottieLogo1.png"/>
+                        </DataTemplate>
+                    </winui:AnimatedVisualPlayer.FallbackContent>
+                </winui:AnimatedVisualPlayer>
+            </Border>
+
+            <!--#region OutroText-->
+            <RichTextBlock Style="{StaticResource OutroTextBlock}">
+                <Paragraph>
+                    To learn more, check out the
+                    <Hyperlink NavigateUri="">
+                        xaml
+                    </Hyperlink>
+                    and read the related
+                    <Hyperlink NavigateUri="">
+                        how-to doc
+                    </Hyperlink>
+                    on handling fallback cases.
+                    <LineBreak/>
+                </Paragraph>
+            </RichTextBlock>
+            <!--#endregion-->
+        </StackPanel>
+    </Grid>
+</Page>
