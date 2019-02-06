@@ -13,9 +13,11 @@
             <!--#region IntroText-->
             <RichTextBlock Style="{StaticResource IntroTextBlock}">
                 <Paragraph>
-                    Here, instead of playing a Lottie animation, we use
-                    <Span FontFamily="Consolas">Animations/LightBulb.json</Span>
-                    to demonstrate how to display its individual frames.<Run FontWeight="SemiBold">Use</Run>
+                    Here, instead of playing
+                    <Span FontFamily="Consolas">AnimatedVisuals/LightBulb.json</Span>, 
+                    we display individual frames from the Lottie animation.
+                    <LineBreak/>
+                    <Run FontWeight="SemiBold">Use</Run>
                     the ProgressSlider and LightSwitch below to scrub through all the frames
                     or to toggle between the inital and final frames respectively.
                     <LineBreak />

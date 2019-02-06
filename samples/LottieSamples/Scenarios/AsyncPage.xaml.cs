@@ -13,29 +13,34 @@ namespace LottieSamples.Scenarios
     {
         private static readonly (double fromProgress, double toProgress, bool looping) s_hoveredSegment = (0, 0.35, false);
         private static readonly (double fromProgress, double toProgress, bool looping) s_clickedSegment = (0.35, 1, false);
+        private bool _isPlaying;
 
         public AsyncPage()
         {
             this.InitializeComponent();
-            ConfigurePlayOrder();
+            PlayAnimations();
         }
 
         private void Players_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
             // If the animations have completed, start playing again on user interaction.
-            if (!PlayerOne.IsPlaying && !PlayerTwo.IsPlaying)
+            if (!_isPlaying)
             {
-                ConfigurePlayOrder();
+                PlayAnimations();
             }
         }
 
-        private async void ConfigurePlayOrder()
+        private async void PlayAnimations()
         {
-            // Repeat playing sequences 5 times.
+            _isPlaying = true;
+
+            // Repeat playing sequences 3 times.
             for (int i=0; i<3; i++)
             {
                 await PlayAnimationSequencesAsync();
-            }           
+            }
+
+            _isPlaying = false;
         }
 
         private async Task PlayAnimationSequencesAsync()

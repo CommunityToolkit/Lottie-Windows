@@ -15,8 +15,7 @@
                 <RichTextBlock>
                     <Paragraph>
                         We build upon the previous scenarios to create an animated icon with interactive behaviors.
-                        <Span FontFamily="Consolas">Animations/LightBulb.cs</Span>
-                        contains the following segments on its timeline:
+                        The Lottie animation, as created in AfterEffects, contains the following segments on its timeline:
                         <LineBreak />
                     </Paragraph>
                 </RichTextBlock>
@@ -44,7 +43,7 @@
                         To make the animation interactive, we configure the playback of segments or display of individual frames
                         based on PointerEntered/Exited/Clicked events.
                         <Span FontWeight="SemiBold">Interact</Span>
-                        with Lottie animation below by hovering and clicking to see the results.
+                        with the Lottie animation below by hovering and clicking to see the results.
                         <LineBreak />
                     </Paragraph>
                 </RichTextBlock>

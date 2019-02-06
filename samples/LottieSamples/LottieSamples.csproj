@@ -92,9 +92,9 @@
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Animations\LightBulb.cs" />
-    <Compile Include="Animations\LottieLogo1.cs" />
-    <Compile Include="Animations\LottieLogo1_Modified.cs" />
+    <Compile Include="AnimatedVisuals\LightBulb.cs" />
+    <Compile Include="AnimatedVisuals\LottieLogo1.cs" />
+    <Compile Include="AnimatedVisuals\LottieLogo1_Modified.cs" />
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
@@ -130,10 +130,10 @@
     <AppxManifest Include="Package.appxmanifest">
       <SubType>Designer</SubType>
     </AppxManifest>
-    <Content Include="Animations\LightBulb.json">
+    <Content Include="AnimatedVisuals\LightBulb.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Animations\LottieLogo1.json">
+    <Content Include="AnimatedVisuals\LottieLogo1.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <None Include="LottieSamples_TemporaryKey.pfx" />

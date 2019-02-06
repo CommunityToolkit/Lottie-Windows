@@ -17,31 +17,29 @@
                         While Lottie animations on other platforms require you to use a json file,
                         Lottie-Windows allows you to use a codegen'ed class which provides better performance.
                         You'll need to
-                        <Span FontWeight="SemiBold">include</Span>
-                        :
+                        <Span FontWeight="SemiBold">include</Span>:
                         <LineBreak />
                     </Paragraph>
                 </RichTextBlock>
-                <RichTextBlock FontFamily="Segoe UI"
-                               Style="{StaticResource IndentedText}">
+                <RichTextBlock Style="{StaticResource IndentedText}">
                     <Paragraph>
                         &#x2022;
                         <Hyperlink NavigateUri="https://www.nuget.org/packages/Microsoft.UI.Xaml/">
                             <Span FontFamily="Consolas">Microsoft.UI.Xaml.AnimatedVisualPlayer</Span>
                         </Hyperlink>
                     </Paragraph>
-                    <Paragraph FontFamily="Segoe UI">
+                    <Paragraph>
                         &#x2022;
-                        <Span FontFamily="Consolas">Animations/LottieLogo1.cs</Span>
-                        which was generated from the json file using either the
+                        <Span FontFamily="Consolas">AnimatedVisuals/LottieLogo1.cs</Span>
+                        which was generated from
+                        <Span FontFamily="Consolas">LottieLogo1.json</Span> using either the
                         <Hyperlink NavigateUri="aka.ms/lottieviewer">
-                            LottieViewer
+                            LottieViewer GUI
                         </Hyperlink>
-                        GUI or
+                        or
                         <Hyperlink NavigateUri="aka.ms/lottiegen">
-                            LottieGen
+                            LottieGen CLI
                         </Hyperlink>
-                        CLI
                         <LineBreak />
                     </Paragraph>
                 </RichTextBlock>
@@ -51,7 +49,7 @@
             <Border Style="{StaticResource LottiePlayer}">
                 <!--  AnimatedVisualPlayer with AutoPlay  -->
                 <winui:AnimatedVisualPlayer x:Name="Codegen_Player">
-                    <!--  Codegen source with C# class: /Animations/LottieLogo1.cs  -->
+                    <!--  Codegen source with C# class: AnimatedVisuals/LottieLogo1.cs  -->
                     <animatedvisuals:LottieLogo1 />
                 </winui:AnimatedVisualPlayer>
             </Border>

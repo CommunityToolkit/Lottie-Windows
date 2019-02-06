@@ -51,8 +51,7 @@
                     <Paragraph>
                         <LineBreak />
                         x 3 times
-                        (
-                        <Span FontWeight="SemiBold">interact</Span>
+                        (<Span FontWeight="SemiBold">interact</Span>
                         to restart sequence)
                         <LineBreak />
                     </Paragraph>

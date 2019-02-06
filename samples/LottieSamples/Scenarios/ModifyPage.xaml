@@ -13,7 +13,7 @@
             <!--#region IntroText-->
             <RichTextBlock Style="{StaticResource IntroTextBlock}">
                 <Paragraph>
-                    In this bonus scenario, we progammatically customize a Lottie animation: this capability may be used
+                    In this bonus scenario, we progammatically customize a Lottie animation: this capability may be useful
                     for theming, branding, high-contrast, adaptive layout, etc.
                     Since Lottie-Windows ultimately generates a tree of
                     <Span FontFamily="Consolas">Windows.UI.Composition</Span>
@@ -21,9 +21,9 @@
                     it's possible to modify these objects at run-time.
                     <LineBreak />
                     Here,
-                    <Span FontFamily="Consolas">Animations/LottieLogo1.cs</Span>
+                    <Span FontFamily="Consolas">LottieLogo1.cs</Span>
                     is modified into
-                    <Span FontFamily="Consolas">Animations/LottieLogo1_Modified.cs</Span>
+                    <Span FontFamily="Consolas">AnimatedVisuals/LottieLogo1_Modified.cs</Span>
                     such that its colors are based on dynamically changing Xaml ThemeResources.
                     We replace the CompositionColorBrushes used for Teal, Turquoise, and White with SystemBaseHighColor,
                     SystemAccentColor, and SystemAltHighColor respectively.
@@ -36,7 +36,7 @@
                 <winui:AnimatedVisualPlayer x:Name="Modified_Player">
                     <!--
                         Codegen Source that has been modified with DependencyProperties to dynamically
-                        update color values defined in the AfterEffects file: /Animations/LottieLogo1_Modified.cs
+                        update color values defined in the AfterEffects file: AnimatedVisuals/LottieLogo1_Modified.cs
                     -->
                     <animatedvisuals:LottieLogo1_Modified x:Name="Modified_Source_LottieLogo1"
                                                           BackgroundColor="{ThemeResource SystemBaseHighColor}"

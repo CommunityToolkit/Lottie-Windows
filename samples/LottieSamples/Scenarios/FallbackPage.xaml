@@ -19,8 +19,8 @@
                     allows you to provide custom xaml content as fallback.
                     <LineBreak />
                     In this example, we cause the player to fallback to a static image,
-                    <Span FontFamily="Consolas">Assets/LottieLogo1.png</Span>
-                    , by setting a Lottie source that doesn't exist.
+                    <Span FontFamily="Consolas">Assets/LottieLogo1.png</Span>,
+                    by setting a Lottie source that doesn't exist.
                     <LineBreak />
                 </Paragraph>
             </RichTextBlock>

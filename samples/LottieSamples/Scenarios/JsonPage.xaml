@@ -15,13 +15,11 @@
                 <RichTextBlock>
                     <Paragraph>
                         <Span>To render our first Lottie animation, we use</Span>
-                        <Span FontFamily="Consolas">Animations/LottieLogo1.json</Span>
+                        <Span FontFamily="Consolas">AnimatedVisuals/LottieLogo1.json</Span>
                         which was generated from Adobe Afterffects using
-                        <Hyperlink NavigateUri="http://aescripts.com/bodymovin/">Bodymovin</Hyperlink>
-                        .
+                        <Hyperlink NavigateUri="http://aescripts.com/bodymovin/">Bodymovin</Hyperlink>.
                         You'll need to
-                        <Span FontWeight="SemiBold">include</Span>
-                        :
+                        <Span FontWeight="SemiBold">include</Span>:
                         <LineBreak />
                     </Paragraph>
                 </RichTextBlock>
@@ -48,7 +46,7 @@
                 <winui:AnimatedVisualPlayer x:Name="Json_Player">
                     <!--  LottieVisualSource that parses a JSON Uri at run-time  -->
                     <lottie:LottieVisualSource x:Name="Json_Source"
-                                               UriSource="ms-appx:///Animations/LottieLogo1.json" />
+                                               UriSource="ms-appx:///AnimatedVisuals/LottieLogo1.json" />
                 </winui:AnimatedVisualPlayer>
             </Border>
 
