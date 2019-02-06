@@ -129,11 +129,6 @@ namespace LottieViewer
             // Start playing.
             await player.PlayAsync(fromProgress: 0, toProgress: 0.599, looped: false);
 
-            // Collapse splash screen visibility.
-            splashGrid.Visibility = player.Visibility = Visibility.Collapsed;
-
-            // Restore the original content.
-            splashGrid.Children.Clear();
             Window.Current.Content = originalWindowContent;
         }
 
