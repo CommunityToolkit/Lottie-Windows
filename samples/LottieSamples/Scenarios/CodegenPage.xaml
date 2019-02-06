@@ -33,11 +33,11 @@
                         <Span FontFamily="Consolas">AnimatedVisuals/LottieLogo1.cs</Span>
                         which was generated from
                         <Span FontFamily="Consolas">LottieLogo1.json</Span> using either the
-                        <Hyperlink NavigateUri="aka.ms/lottieviewer">
+                        <Hyperlink NavigateUri="https://www.microsoft.com/p/lottie-viewer/9p7x9k692tmw">
                             LottieViewer GUI
                         </Hyperlink>
                         or
-                        <Hyperlink NavigateUri="aka.ms/lottiegen">
+                        <Hyperlink NavigateUri="https://github.com/windows-toolkit/Lottie-Windows/tree/master/LottieGen">
                             LottieGen CLI
                         </Hyperlink>
                         <LineBreak />
