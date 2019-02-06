@@ -1,13 +1,12 @@
-﻿<Page
-    x:Class="LottieSamples.Scenarios.SegmentPage"
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:winui="using:Microsoft.UI.Xaml.Controls"
-    xmlns:animatedvisuals="using:AnimatedVisuals"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+﻿<Page x:Class="LottieSamples.Scenarios.SegmentPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:animatedvisuals="using:AnimatedVisuals"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:winui="using:Microsoft.UI.Xaml.Controls"
+      Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+      mc:Ignorable="d">
 
     <Grid>
         <StackPanel VerticalAlignment="Center">
@@ -16,8 +15,9 @@
                 <RichTextBlock>
                     <Paragraph>
                         We build upon the previous scenarios to create an animated icon with interactive behaviors.
-                        <Span FontFamily="Consolas">Animations/LightBulb.cs</Span> contains the following segments on its timeline:
-                        <LineBreak/>
+                        <Span FontFamily="Consolas">Animations/LightBulb.cs</Span>
+                        contains the following segments on its timeline:
+                        <LineBreak />
                     </Paragraph>
                 </RichTextBlock>
                 <RichTextBlock Style="{StaticResource IndentedText}">
@@ -36,28 +36,30 @@
                     <Paragraph>
                         &#x2022;
                         'Checked' static frame at progress 1
-                        <LineBreak/>
+                        <LineBreak />
                     </Paragraph>
                 </RichTextBlock>
                 <RichTextBlock>
                     <Paragraph>
                         To make the animation interactive, we configure the playback of segments or display of individual frames
                         based on PointerEntered/Exited/Clicked events.
-                        <Span FontWeight="SemiBold">Interact</Span> with Lottie animation below by hovering and clicking to see the results.                  
-                        <LineBreak/>
+                        <Span FontWeight="SemiBold">Interact</Span>
+                        with Lottie animation below by hovering and clicking to see the results.
+                        <LineBreak />
                     </Paragraph>
                 </RichTextBlock>
             </StackPanel>
             <!--#endregion-->
 
             <Border Style="{StaticResource LottiePlayer}">
-                <!-- AnimatedVisualPlayer with Pointer Event Handlers -->
-                <winui:AnimatedVisualPlayer x:Name="Segments_Player" AutoPlay="False"
+                <!--  AnimatedVisualPlayer with Pointer Event Handlers  -->
+                <winui:AnimatedVisualPlayer x:Name="Segments_Player"
+                                            AutoPlay="False"
                                             PointerEntered="Segments_Player_PointerEntered"
                                             PointerExited="Segments_Player_PointerExited"
                                             PointerPressed="Segments_Player_PointerPressed">
-                    <!-- Codegen Source -->
-                    <animatedvisuals:LightBulb/>
+                    <!--  Codegen Source  -->
+                    <animatedvisuals:LightBulb />
                 </winui:AnimatedVisualPlayer>
             </Border>
 

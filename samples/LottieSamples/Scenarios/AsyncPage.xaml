@@ -1,13 +1,12 @@
-﻿<Page
-    x:Class="LottieSamples.Scenarios.AsyncPage"
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:winui="using:Microsoft.UI.Xaml.Controls"
-    xmlns:animatedvisuals="using:AnimatedVisuals"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+﻿<Page x:Class="LottieSamples.Scenarios.AsyncPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:animatedvisuals="using:AnimatedVisuals"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:winui="using:Microsoft.UI.Xaml.Controls"
+      Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+      mc:Ignorable="d">
 
     <Grid>
         <StackPanel VerticalAlignment="Center">
@@ -21,7 +20,7 @@
                         <Span FontFamily="Consolas">await</Span>
                         its completion.
                         In this example, we use two players, A and B, with the same Lottie animation to coordinate the following playback sequence:
-                        <LineBreak/>
+                        <LineBreak />
                     </Paragraph>
                 </RichTextBlock>
                 <RichTextBlock Style="{StaticResource IndentedText}">
@@ -50,41 +49,57 @@
                         A and B play 'Clicked' segment
                     </Paragraph>
                     <Paragraph>
-                        <LineBreak/>
+                        <LineBreak />
                         x 3 times
-                        (<Span FontWeight="SemiBold">interact</Span> to restart sequence)
-                        <LineBreak/>
+                        (
+                        <Span FontWeight="SemiBold">interact</Span>
+                        to restart sequence)
+                        <LineBreak />
                     </Paragraph>
                 </RichTextBlock>
             </StackPanel>
             <!--#endregion-->
 
-            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+            <StackPanel HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal">
 
-                <Border x:Name="PlayerOneBorder" Style="{StaticResource LottiePlayerSmall}">
-                    <!-- AnimatedVisualPlayer A -->
-                    <winui:AnimatedVisualPlayer x:Name="PlayerOne" AutoPlay="False"
+                <Border x:Name="PlayerOneBorder"
+                        Style="{StaticResource LottiePlayerSmall}">
+                    <!--  AnimatedVisualPlayer A  -->
+                    <winui:AnimatedVisualPlayer x:Name="PlayerOne"
+                                                AutoPlay="False"
                                                 PointerEntered="Players_PointerEntered">
-                        <animatedvisuals:LightBulb/>
+                        <animatedvisuals:LightBulb />
                     </winui:AnimatedVisualPlayer>
                 </Border>
 
-                <Border x:Name="PlayerTwoBorder" Style="{StaticResource LottiePlayerSmall}">
-                    <!-- AnimatedVisualPlayer B -->
-                    <winui:AnimatedVisualPlayer x:Name="PlayerTwo" AutoPlay="False"
+                <Border x:Name="PlayerTwoBorder"
+                        Style="{StaticResource LottiePlayerSmall}">
+                    <!--  AnimatedVisualPlayer B  -->
+                    <winui:AnimatedVisualPlayer x:Name="PlayerTwo"
+                                                AutoPlay="False"
                                                 PointerEntered="Players_PointerEntered">
-                        <animatedvisuals:LightBulb/>
+                        <animatedvisuals:LightBulb />
                     </winui:AnimatedVisualPlayer>
                 </Border>
             </StackPanel>
-            
+
             <Grid Width="440">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
+                    <ColumnDefinition />
+                    <ColumnDefinition />
                 </Grid.ColumnDefinitions>
-                <TextBlock x:Name="PlayerOneText" HorizontalAlignment="Center" Grid.Column="0">A</TextBlock>
-                <TextBlock x:Name="PlayerTwoText" HorizontalAlignment="Center" Grid.Column="1">B</TextBlock>
+                <TextBlock x:Name="PlayerOneText"
+                           Grid.Column="0"
+                           HorizontalAlignment="Center">
+                    A
+                </TextBlock>
+                <TextBlock x:Name="PlayerTwoText"
+                           Grid.Column="1"
+                           HorizontalAlignment="Center">
+                    B
+                </TextBlock>
             </Grid>
 
             <!--#region OutroText-->
@@ -97,7 +112,8 @@
                     and read the relevant section in this
                     <Hyperlink NavigateUri="">
                         how-to doc
-                    </Hyperlink>.
+                    </Hyperlink>
+                    .
                 </Paragraph>
             </RichTextBlock>
             <!--#endregion-->

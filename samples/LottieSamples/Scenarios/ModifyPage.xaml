@@ -1,13 +1,12 @@
-﻿<Page
-    x:Class="LottieSamples.Scenarios.ModifyPage"
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:winui="using:Microsoft.UI.Xaml.Controls"
-    xmlns:animatedvisuals="using:AnimatedVisuals"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+﻿<Page x:Class="LottieSamples.Scenarios.ModifyPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:animatedvisuals="using:AnimatedVisuals"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:winui="using:Microsoft.UI.Xaml.Controls"
+      Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+      mc:Ignorable="d">
 
     <Grid>
         <StackPanel VerticalAlignment="Center">
@@ -17,27 +16,32 @@
                     In this bonus scenario, we progammatically customize a Lottie animation: this capability may be used
                     for theming, branding, high-contrast, adaptive layout, etc.
                     Since Lottie-Windows ultimately generates a tree of
-                    <Span FontFamily="Consolas">Windows.UI.Composition</Span> visuals, shapes, brushes, and animations,
+                    <Span FontFamily="Consolas">Windows.UI.Composition</Span>
+                    visuals, shapes, brushes, and animations,
                     it's possible to modify these objects at run-time.
-                    <LineBreak/>
+                    <LineBreak />
                     Here,
-                    <Span FontFamily="Consolas">Animations/LottieLogo1.cs</Span> is modified into
-                    <Span FontFamily="Consolas">Animations/LottieLogo1_Modified.cs</Span> such that its colors are based on dynamically changing Xaml ThemeResources. 
+                    <Span FontFamily="Consolas">Animations/LottieLogo1.cs</Span>
+                    is modified into
+                    <Span FontFamily="Consolas">Animations/LottieLogo1_Modified.cs</Span>
+                    such that its colors are based on dynamically changing Xaml ThemeResources.
                     We replace the CompositionColorBrushes used for Teal, Turquoise, and White with SystemBaseHighColor,
                     SystemAccentColor, and SystemAltHighColor respectively.
-                    <LineBreak/>
+                    <LineBreak />
                 </Paragraph>
             </RichTextBlock>
             <!--#endregion-->
 
             <Border Style="{StaticResource LottiePlayer}">
                 <winui:AnimatedVisualPlayer x:Name="Modified_Player">
-                    <!--Codegen Source that has been modified with DependencyProperties to dynamically
-                        update color values defined in the AfterEffects file: /Animations/LottieLogo1_Modified.cs -->
+                    <!--
+                        Codegen Source that has been modified with DependencyProperties to dynamically
+                        update color values defined in the AfterEffects file: /Animations/LottieLogo1_Modified.cs
+                    -->
                     <animatedvisuals:LottieLogo1_Modified x:Name="Modified_Source_LottieLogo1"
                                                           BackgroundColor="{ThemeResource SystemBaseHighColor}"
                                                           HighlightColor="{ThemeResource SystemAccentColor}"
-                                                          TextColor="{ThemeResource SystemAltHighColor}"/>
+                                                          TextColor="{ThemeResource SystemAltHighColor}" />
                 </winui:AnimatedVisualPlayer>
             </Border>
 
@@ -47,15 +51,17 @@
                     Check out the
                     <Hyperlink NavigateUri="">
                         modified codegen class
-                    </Hyperlink> +
+                    </Hyperlink>
+                    +
                     <Hyperlink NavigateUri="">
                         xaml
-                    </Hyperlink> +
+                    </Hyperlink>
+                    +
                     <Hyperlink NavigateUri="">
                         code-behind
                     </Hyperlink>
                     to get a sense of how DependencyProperties may be used to dynamically update Lottie animations.
-                    <LineBreak/>
+                    <LineBreak />
                 </Paragraph>
             </RichTextBlock>
             <!--#endregion-->

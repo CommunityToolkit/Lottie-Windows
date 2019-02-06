@@ -1,27 +1,28 @@
-﻿<Page
-    x:Class="LottieSamples.Scenarios.JsonPage"
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:winui="using:Microsoft.UI.Xaml.Controls"
-    xmlns:lottie="using:Microsoft.Toolkit.Uwp.UI.Lottie"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+﻿<Page x:Class="LottieSamples.Scenarios.JsonPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:lottie="using:Microsoft.Toolkit.Uwp.UI.Lottie"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:winui="using:Microsoft.UI.Xaml.Controls"
+      Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+      mc:Ignorable="d">
 
     <Grid>
         <StackPanel VerticalAlignment="Center">
-            <!--#region IntroText -->
+            <!--#region IntroText-->
             <StackPanel Style="{StaticResource IntroTextContainer}">
                 <RichTextBlock>
                     <Paragraph>
                         <Span>To render our first Lottie animation, we use</Span>
                         <Span FontFamily="Consolas">Animations/LottieLogo1.json</Span>
                         which was generated from Adobe Afterffects using
-                        <Hyperlink NavigateUri="http://aescripts.com/bodymovin/">Bodymovin</Hyperlink>.
+                        <Hyperlink NavigateUri="http://aescripts.com/bodymovin/">Bodymovin</Hyperlink>
+                        .
                         You'll need to
-                        <Span FontWeight="SemiBold">include</Span>:
-                        <LineBreak/>
+                        <Span FontWeight="SemiBold">include</Span>
+                        :
+                        <LineBreak />
                     </Paragraph>
                 </RichTextBlock>
                 <RichTextBlock Style="{StaticResource IndentedText}">
@@ -36,18 +37,18 @@
                         <Hyperlink NavigateUri="https://www.nuget.org/packages/Microsoft.Toolkit.Uwp.UI.Lottie/">
                             <Span FontFamily="Consolas">Microsoft.Toolkit.Uwp.UI.Lottie</Span>
                         </Hyperlink>
-                        <LineBreak/>
+                        <LineBreak />
                     </Paragraph>
                 </RichTextBlock>
             </StackPanel>
             <!--#endregion-->
 
             <Border Style="{StaticResource LottiePlayer}">
-                <!-- AnimatedVisualPlayer with AutoPlay-->
+                <!--  AnimatedVisualPlayer with AutoPlay  -->
                 <winui:AnimatedVisualPlayer x:Name="Json_Player">
-                    <!--LottieVisualSource that parses a JSON Uri at run-time-->
-                    <lottie:LottieVisualSource x:Name="Json_Source" 
-                                               UriSource="ms-appx:///Animations/LottieLogo1.json"/>
+                    <!--  LottieVisualSource that parses a JSON Uri at run-time  -->
+                    <lottie:LottieVisualSource x:Name="Json_Source"
+                                               UriSource="ms-appx:///Animations/LottieLogo1.json" />
                 </winui:AnimatedVisualPlayer>
             </Border>
 
