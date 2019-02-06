@@ -1,5 +1,5 @@
 ﻿# Lottie Samples
-The Lottie Samples project generates a simple C# UWP Store app that walks through basic scenarios to help users get started with Lottie-Windows. These samples cover the following topics:
+The Lottie Samples project generates a simple C# UWP Store app that walks through the following basic scenarios to help users get started with Lottie-Windows:
 
 * Getting started with json
 * Getting started with codegen
