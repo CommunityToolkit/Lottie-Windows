@@ -85,7 +85,7 @@ namespace LottieSamples
             splashGrid.Background = (SolidColorBrush)Current.Resources["SystemControlHighlightAccentBrush"];
             Window.Current.Content = splashGrid;
 
-            // Modified LottieLogo1 animation
+            // Use modified LottieLogo1 animation based on user's accent color.
             var lottieSource = new LottieLogo1_Modified();
             lottieSource.BackgroundColor = (Color)Resources["SystemAccentColor"];
             lottieSource.HighlightColor = (Color)Resources["SystemAccentColorDark2"];

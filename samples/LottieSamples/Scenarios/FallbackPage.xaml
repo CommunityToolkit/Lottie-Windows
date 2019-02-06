@@ -17,11 +17,10 @@
                     In case your Lottie source fails to load due to an invalid json file or 
                     if your app is running on a Windows 10 version prior to 1809, the
                     <Span FontFamily="Consolas">AnimatedVisualPlayer</Span>
-                    allows you to provide custom xaml content via a
-                    <Span FontFamily="Consolas">DataTemplate</Span> as fallback.
+                    allows you to provide custom xaml content as fallback.
                     <LineBreak/>
                     In this example, we cause the player to fallback to a static image,
-                    <Span FontFamily="Consolas">Assets/LottieLogo1.png</Span>, by providing a Lottie source that doesn't exist.
+                    <Span FontFamily="Consolas">Assets/LottieLogo1.png</Span>, by setting a Lottie source that doesn't exist.
                     <LineBreak/>
                 </Paragraph>
             </RichTextBlock>

@@ -14,8 +14,8 @@
             <!--#region IntroText-->
             <RichTextBlock Style="{StaticResource IntroTextBlock}">
                 <Paragraph>
-                    In this bonus scenario, we progammatically customize a Lottie animation, whcih may be useful
-                    for the purposes of theming, branding, high-contrast/ accessibility, adaptive layout, and several other usecases.
+                    In this bonus scenario, we progammatically customize a Lottie animation: this capability may be used
+                    for theming, branding, high-contrast, adaptive layout, etc.
                     Since Lottie-Windows ultimately generates a tree of
                     <Span FontFamily="Consolas">Windows.UI.Composition</Span> visuals, shapes, brushes, and animations,
                     it's possible to modify these objects at run-time.
@@ -23,7 +23,7 @@
                     Here,
                     <Span FontFamily="Consolas">Animations/LottieLogo1.cs</Span> is modified into
                     <Span FontFamily="Consolas">Animations/LottieLogo1_Modified.cs</Span> such that its colors are based on dynamically changing Xaml ThemeResources. 
-                    We replace the CompositionColorBrushes used to paint with Teal, Turquoise, and White with SystemBaseHighColor,
+                    We replace the CompositionColorBrushes used for Teal, Turquoise, and White with SystemBaseHighColor,
                     SystemAccentColor, and SystemAltHighColor respectively.
                     <LineBreak/>
                 </Paragraph>
