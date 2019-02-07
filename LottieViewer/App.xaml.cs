@@ -110,42 +110,27 @@ namespace LottieViewer
         // returned Task completes when the animation finishes.
         async Task RunAnimatedSplashScreenAsync()
         {
-            // Insert splashGrid above the current window content.
+            // Insert splashBorder above the current window content.
             var originalWindowContent = Window.Current.Content;
-            var splashGrid = new Grid();
-            Window.Current.Content = splashGrid;
+            var splashBorder = new Border();
+            splashBorder.Background = (SolidColorBrush)Current.Resources["LottieBasicBrush"];
 
             var player = new AnimatedVisualPlayer
             {
-                Stretch = Stretch.UniformToFill,
+                Stretch = Stretch.Uniform,
                 AutoPlay = false,
                 Source = new LottieLogo(),
             };
 
-            splashGrid.Children.Add(originalWindowContent);
-            splashGrid.Children.Add(player);
+            splashBorder.Child = player;
+
+            Window.Current.Content = splashBorder;
 
             // Start playing.
             await player.PlayAsync(fromProgress: 0, toProgress: 0.599, looped: false);
 
-            // Fade out the splash screen
-            var storyboard = new Storyboard();
-            storyboard.Children.Add(new DoubleAnimation()
-            {
-                From = 1,
-                To = 0,
-                Duration = TimeSpan.FromSeconds(0.15),
-            });
-            Storyboard.SetTargetProperty(storyboard, "Opacity");
-            Storyboard.SetTarget(storyboard, player);
-            storyboard.Begin();
-            storyboard.Completed += (sender, e)
-                =>
-            {
-                // Restore the original content.
-                splashGrid.Children.Clear();
-                Window.Current.Content = originalWindowContent;
-            };
+            // Reset window content after the splashscreen animation has completed.
+            Window.Current.Content = originalWindowContent;
         }
 
         /// <summary>
