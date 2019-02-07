@@ -82,12 +82,11 @@ namespace LottieSamples
         // returned Task completes when the animation finishes.
         async Task RunAnimatedSplashScreenAsync()
         {
-            // Insert splashGrid above the current window content.
+            // Insert splashBorder above the current window content.
             var originalWindowContent = Window.Current.Content;
 
-            var splashGrid = new Grid();
-            splashGrid.Background = (SolidColorBrush)Current.Resources["SystemControlHighlightAccentBrush"];
-            Window.Current.Content = splashGrid;
+            var splashBorder = new Border();
+            splashBorder.Background = (SolidColorBrush)Current.Resources["SystemControlHighlightAccentBrush"];       
 
             // Use modified LottieLogo1 animation based on user's accent color.
             var lottieSource = new LottieLogo1_Modified();
@@ -102,12 +101,13 @@ namespace LottieSamples
                 Source = lottieSource,
             };
 
-            splashGrid.Children.Add(originalWindowContent);
-            splashGrid.Children.Add(player);
+            splashBorder.Child = player;
+            Window.Current.Content = splashBorder;
 
             // Start playing the splashscreen animation.
             await player.PlayAsync(fromProgress: 0, toProgress: 0.599, looped: false);
 
+            // Reset window content after the splashscreen animation has completed.
             Window.Current.Content = originalWindowContent;
         }
 
