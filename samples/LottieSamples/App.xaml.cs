@@ -108,12 +108,6 @@ namespace LottieSamples
             // Start playing the splashscreen animation.
             await player.PlayAsync(fromProgress: 0, toProgress: 0.599, looped: false);
 
-            // Hide the splash screen.
-            splashGrid.Visibility = Visibility.Collapsed;
-            player.Visibility = Visibility.Collapsed;
-
-            // Restore the original content.
-            splashGrid.Children.Clear();
             Window.Current.Content = originalWindowContent;
         }
 
