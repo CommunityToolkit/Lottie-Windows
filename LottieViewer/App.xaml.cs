@@ -110,11 +110,10 @@ namespace LottieViewer
         // returned Task completes when the animation finishes.
         async Task RunAnimatedSplashScreenAsync()
         {
-            // Insert splashGrid above the current window content.
+            // Insert splashBorder above the current window content.
             var originalWindowContent = Window.Current.Content;
-            var splashGrid = new Grid();
-            splashGrid.Background = (SolidColorBrush)Current.Resources["LottieBasicBrush"];
-            Window.Current.Content = splashGrid;
+            var splashBorder = new Border();
+            splashBorder.Background = (SolidColorBrush)Current.Resources["LottieBasicBrush"];
 
             var player = new AnimatedVisualPlayer
             {
@@ -123,12 +122,14 @@ namespace LottieViewer
                 Source = new LottieLogo(),
             };
 
-            splashGrid.Children.Add(originalWindowContent);
-            splashGrid.Children.Add(player);
+            splashBorder.Child = player;
+
+            Window.Current.Content = splashBorder;
 
             // Start playing.
             await player.PlayAsync(fromProgress: 0, toProgress: 0.599, looped: false);
 
+            // Reset window content after the splashscreen animation has completed.
             Window.Current.Content = originalWindowContent;
         }
 
