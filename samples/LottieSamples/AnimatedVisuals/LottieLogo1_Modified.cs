@@ -21,81 +21,54 @@ namespace AnimatedVisuals
     sealed class LottieLogo1_Modified : DependencyObject, IAnimatedVisualSource
     {
         // MODIFICATION: Create BackgroundColor DependencyProperty to bind from XAML.
-        public static readonly DependencyProperty BackgroundColorProperty = DependencyProperty.Register("BackgroundColor",
-           typeof(object), typeof(LottieLogo1_Modified), new PropertyMetadata(null, OnBackgroundColorPropertyChanged));
-
-        static void OnBackgroundColorPropertyChanged(DependencyObject obj, DependencyPropertyChangedEventArgs args)
-        {
-            ((LottieLogo1_Modified)obj).OnBackgroundColorPropertyChanged(args);
-        }
-
-        void OnBackgroundColorPropertyChanged(DependencyPropertyChangedEventArgs args)
-        {
-            var newValue = (Color)args.NewValue;
-            ColorBrush_AlmostDarkTurquoise_FF00D1C1().Color = newValue;
-        }
-
-        public object BackgroundColor
-        {
-            get { return GetValue(BackgroundColorProperty); }
-            set { SetValue(BackgroundColorProperty, value); }
-        }
-
-        // MODIFICATION: Create HighlightColor DependencyProperty to bind from XAML.
-        public static readonly DependencyProperty HighlightColorProperty = DependencyProperty.Register("HighlightColor",
-   typeof(object), typeof(LottieLogo1_Modified), new PropertyMetadata(null, OnHighlightColorPropertyChanged));
-
-        static void OnHighlightColorPropertyChanged(DependencyObject obj, DependencyPropertyChangedEventArgs args)
-        {
-            ((LottieLogo1_Modified)obj).OnHighlightColorPropertyChanged(args);
-        }
-
-        void OnHighlightColorPropertyChanged(DependencyPropertyChangedEventArgs args)
-        {
-            var newValue = (Color)args.NewValue;
-            ColorBrush_AlmostTeal_FF007A87().Color = newValue;
-        }
-
-        public object HighlightColor
-        {
-            get { return GetValue(HighlightColorProperty); }
-            set { SetValue(HighlightColorProperty, value); }
-        }
+        public static readonly DependencyProperty BackgroundColorProperty = 
+            DependencyProperty.Register("BackgroundColor", typeof(Color), typeof(LottieLogo1_Modified),
+                new PropertyMetadata(Color.FromArgb(0xFF, 0x00, 0xD1, 0xC1),
+                    (obj, args) => ((LottieLogo1_Modified)obj).ColorBrush_AlmostDarkTurquoise_FF00D1C1().Color = (Color)args.NewValue));
 
         // MODIFICATION: Create TextColor DependencyProperty to bind from XAML.
-        public static readonly DependencyProperty TextColorProperty = DependencyProperty.Register("TextColor",
-   typeof(object), typeof(LottieLogo1_Modified), new PropertyMetadata(null, OnTextColorPropertyChanged));
+        public static readonly DependencyProperty TextColorProperty =
+            DependencyProperty.Register("TextColor", typeof(Color), typeof(LottieLogo1_Modified),
+                new PropertyMetadata(Color.FromArgb(0xFF, 0xFF, 0xFF, 0xFF),
+                    (obj, args) => ((LottieLogo1_Modified)obj).ColorBrush_White().Color = (Color)args.NewValue));
 
-        static void OnTextColorPropertyChanged(DependencyObject obj, DependencyPropertyChangedEventArgs args)
-        {
-            ((LottieLogo1_Modified)obj).OnTextColorPropertyChanged(args);
-        }
+        // MODIFICATION: Create HighlightColor DependencyProperty to bind from XAML.
+        public static readonly DependencyProperty HighlightColorProperty =
+            DependencyProperty.Register("HighlightColor", typeof(Color), typeof(LottieLogo1_Modified),
+                new PropertyMetadata(Color.FromArgb(0xFF, 0x00, 0x7A, 0x87), 
+                    (obj, args) => ((LottieLogo1_Modified)obj).ColorBrush_AlmostTeal_FF007A87().Color = (Color)args.NewValue));
 
-        void OnTextColorPropertyChanged(DependencyPropertyChangedEventArgs args)
-        {
-            var newValue = (Color)args.NewValue;
-            ColorBrush_White().Color = newValue;
-        }
-
-        public object TextColor
-        {
-            get { return GetValue(TextColorProperty); }
-            set { SetValue(TextColorProperty, value); }
-        }
-
-        // MODIFICATION: Move the creation of the ColorBrush that was used to originally paint geometry Turquoise
-        // with one of the same name whose Color is now modifed by the StrokeColor Property.
+        // MODIFICATION: Move the creation of the ColorBrush with new ones that bear the same name,
+        // whose Color is now modifed by the StrokeColor Property.
         CompositionColorBrush _colorBrush_AlmostTeal_FF007A87;
         CompositionColorBrush _colorBrush_AlmostDarkTurquoise_FF00D1C1;
         CompositionColorBrush _colorBrush_White;
 
+        public Color BackgroundColor
+        {
+            get { return (Color)GetValue(BackgroundColorProperty); }
+            set { SetValue(BackgroundColorProperty, value); }
+        }
+
+        public Color HighlightColor
+        {
+            get { return (Color)GetValue(HighlightColorProperty); }
+            set { SetValue(HighlightColorProperty, value); }
+        }
+
+        public Color TextColor
+        {
+            get { return (Color)GetValue(TextColorProperty); }
+            set { SetValue(TextColorProperty, value); }
+        }
+  
         CompositionColorBrush ColorBrush_AlmostTeal_FF007A87()
         {
             if (_colorBrush_AlmostTeal_FF007A87 != null)
             {
                 return _colorBrush_AlmostTeal_FF007A87;
             }
-            return _colorBrush_AlmostTeal_FF007A87 = Window.Current.Compositor.CreateColorBrush(Color.FromArgb(0xFF, 0x00, 0x7A, 0x87));
+            return _colorBrush_AlmostTeal_FF007A87 = Window.Current.Compositor.CreateColorBrush(HighlightColor);
         }
 
         CompositionColorBrush ColorBrush_AlmostDarkTurquoise_FF00D1C1()
@@ -104,7 +77,7 @@ namespace AnimatedVisuals
             {
                 return _colorBrush_AlmostDarkTurquoise_FF00D1C1;
             }
-            return _colorBrush_AlmostDarkTurquoise_FF00D1C1 = Window.Current.Compositor.CreateColorBrush(Color.FromArgb(0xFF, 0x00, 0xD1, 0xC1));
+            return _colorBrush_AlmostDarkTurquoise_FF00D1C1 = Window.Current.Compositor.CreateColorBrush(BackgroundColor);
         }
 
         CompositionColorBrush ColorBrush_White()
@@ -113,9 +86,8 @@ namespace AnimatedVisuals
             {
                 return _colorBrush_White;
             }
-            return _colorBrush_White = Window.Current.Compositor.CreateColorBrush(Color.FromArgb(0xFF, 0xFF, 0xFF, 0xFF));
+            return _colorBrush_White = Window.Current.Compositor.CreateColorBrush(TextColor);
         }
-
 
         public IAnimatedVisual TryCreateAnimatedVisual(Compositor compositor, out object diagnostics)
         {

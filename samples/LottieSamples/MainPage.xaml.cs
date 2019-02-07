@@ -64,14 +64,12 @@ namespace LottieSamples
 
         private void NavView_Navigate(string navItemTag, NavigationTransitionInfo transitionInfo)
         {
-            Type _page = null;
-
             var item = _pages.FirstOrDefault(p => p.Tag.Equals(navItemTag));
-            _page = item.Page;
+            var pageType = item.Page;
 
-            if (!(_page is null))
+            if (!(pageType is null))
             {
-                ContentFrame.Navigate(_page, null, transitionInfo);
+                ContentFrame.Navigate(pageType, null, transitionInfo);
             }
         }
 

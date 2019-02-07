@@ -39,11 +39,7 @@ namespace LottieSamples.Scenarios
         {
             // Stop the animation, which completes PlayAsync and resets to initial frame. 
             Playback_Player.Stop();
-
-            if ((bool)PauseButton.IsChecked)
-            {
-                PauseButton.IsChecked = false;
-            }
+            PauseButton.IsChecked = false;
         }
 
         private void ReverseButton_Click(object sender, RoutedEventArgs e)

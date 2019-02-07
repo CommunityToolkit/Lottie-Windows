@@ -21,14 +21,13 @@ namespace LottieSamples.Scenarios
 
         private async void ModifyPage_ColorValuesChanged(UISettings sender, object args)
         {
-            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
-                                        () =>
-                                        {
-                                            Modified_Source_LottieLogo1.BackgroundColor = (Color)Resources["SystemBaseHighColor"];
-                                            Modified_Source_LottieLogo1.HighlightColor = (Color)Resources["SystemAccentColor"];
-                                            Modified_Source_LottieLogo1.TextColor = (Color)Resources["SystemAltHighColor"];
-                                        }
-                                     );
+            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                {
+                    Modified_Source_LottieLogo1.BackgroundColor = (Color)Resources["SystemBaseHighColor"];
+                    Modified_Source_LottieLogo1.HighlightColor = (Color)Resources["SystemAccentColor"];
+                    Modified_Source_LottieLogo1.TextColor = (Color)Resources["SystemAltHighColor"];
+                }
+            );                                     
         }
     }
 }
