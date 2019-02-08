@@ -77,15 +77,14 @@ $@"#pragma once
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace AnimatedVisuals 
+namespace AnimatedVisuals
 {{
-ref class {className} sealed : public Microsoft::UI::Xaml::Controls::IAnimatedVisualSource
-{{
-public:
-    virtual Microsoft::UI::Xaml::Controls::IAnimatedVisual^ TryCreateAnimatedVisual(
-        Windows::UI::Composition::Compositor^ compositor,
-        Platform::Object^* diagnostics);
-}};
+	struct SampleSource : winrt::implements<SampleSource, winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisualSource>
+	{{
+		winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual TryCreateAnimatedVisual(
+			winrt::Windows::UI::Composition::Compositor const& compositor,
+			winrt::Windows::Foundation::IInspectable& diagnostics);
+	}};
 }}";
         }
 
@@ -113,6 +112,7 @@ public:
             builder.WriteLine("using namespace Windows::Foundation;");
             builder.WriteLine("using namespace Windows::UI::Composition;");
             builder.WriteLine("using namespace Windows::Graphics;");
+            builder.WriteLine("using namespace Microsoft::UI::Xaml::Controls;");
             builder.WriteLine();
 
             // Put the Instantiator class in an anonymous namespace.
@@ -130,7 +130,7 @@ public:
         protected override void WriteInstantiatorStart(CodeBuilder builder, CodeGenInfo info)
         {
             // Start writing the instantiator.
-            builder.WriteLine("class AnimatedVisual //sealed : public Microsoft::UI::Xaml::Controls::IAnimatedVisual");
+            builder.WriteLine("struct AnimatedVisual : implements<AnimatedVisual,IAnimatedVisual> ");
             builder.OpenScope();
 
             // D2D factory field.
@@ -170,7 +170,7 @@ public:
 
             // Write the members on IAnimatedVisual.
             builder.WriteLine();
-            builder.WriteLine("Windows::Foundation::TimeSpan get_duration()");
+            builder.WriteLine("Windows::Foundation::TimeSpan Duration()");
             builder.OpenScope();
             builder.WriteLine("return Windows::Foundation::TimeSpan { c_durationTicks };");
             builder.CloseScope();
@@ -194,21 +194,20 @@ public:
             builder.WriteLine("} // end namespace");
             builder.WriteLine();
 
-            //TODO: this needs porting
             //// Generate the method that creates an instance of the composition.
-            //builder.WriteLine($"//Microsoft::UI::Xaml::Controls::IAnimatedVisual^ AnimatedVisuals::{info.ClassName}::TryCreateAnimatedVisual(");
-            //builder.Indent();
-            //builder.WriteLine("//Compositor^ compositor,");
-            //builder.WriteLine("//Object^* diagnostics)");
-            //builder.UnIndent();
-            //builder.OpenScope();
-            //builder.WriteLine("//diagnostics = nullptr;");
-            //builder.WriteLine("//if (!IsRuntimeCompatible())");
-            //builder.OpenScope();
-            //builder.WriteLine("//return nullptr;");
-            //builder.CloseScope();
-            //builder.WriteLine("//return ref new AnimatedVisual(compositor);");
-            //builder.CloseScope();
+            builder.WriteLine($"IAnimatedVisual AnimatedVisuals::{info.ClassName}::TryCreateAnimatedVisual(");
+            builder.Indent();
+            builder.WriteLine("Compositor const& compositor,");
+            builder.WriteLine("IInspectable& diagnostics)");
+            builder.UnIndent();
+            builder.OpenScope();
+            builder.WriteLine("diagnostics = nullptr;");
+            builder.WriteLine("//if (!IsRuntimeCompatible())");
+            builder.OpenScope();
+            builder.WriteLine("//return nullptr;");
+            builder.CloseScope();
+            builder.WriteLine("return make<AnimatedVisual>(compositor);");
+            builder.CloseScope();
         }
 
         /// <inheritdoc/>
