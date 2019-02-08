@@ -227,7 +227,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         }
 
         // Takes a list of Visuals and Shapes and returns a list of Visuals.
-        IEnumerable<Visual> VisualsAndShapesToVisuals(TranslationContext context, IEnumerable<(CompositionObject, Layer)> items)
+        IEnumerable<Visual> VisualsAndShapesToVisuals(TranslationContext context, IEnumerable<(CompositionObject translatedLayer, Layer layer)> items)
         {
             ShapeVisual shapeVisual = null;
 
@@ -240,8 +240,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             {
                 var layerIsMattedLayer = false;
 #if AllowVisualSurface
-                layerIsMattedLayer = item.Item2.LayerMatteType == Layer.MatteType.Add ||
-                                    item.Item2.LayerMatteType == Layer.MatteType.Invert;
+                layerIsMattedLayer = item.layer.LayerMatteType == Layer.MatteType.Add ||
+                                    item.layer.LayerMatteType == Layer.MatteType.Invert;
 
                 // If this layer is a matted layer then it should have its own shape visual if
                 // it needs one
@@ -252,8 +252,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     shapeVisual = null;
                 }
 #else
-                if (item.Item2.LayerMatteType == Layer.MatteType.Add ||
-                    item.Item2.LayerMatteType == Layer.MatteType.Invert)
+                if (item.layer.LayerMatteType == Layer.MatteType.Add ||
+                    item.layer.LayerMatteType == Layer.MatteType.Invert)
                 {
                     _unsupported.Matte();
                 }
@@ -261,7 +261,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
                 Visual visual = null;
 
-                switch (item.Item1.Type)
+                switch (item.translatedLayer.Type)
                 {
                     case CompositionObjectType.CompositionContainerShape:
                     case CompositionObjectType.CompositionSpriteShape:
@@ -277,7 +277,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 #endif
                         }
 
-                        shapeVisual.Shapes.Add((CompositionShape)item.Item1);
+                        shapeVisual.Shapes.Add((CompositionShape)item.translatedLayer);
 
                         if (layerIsMattedLayer ||
                             mattedVisual != null)
@@ -295,7 +295,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                             shapeVisual = null;
                         }
 
-                        visual = (Visual)item.Item1;
+                        visual = (Visual)item.translatedLayer;
                         break;
                     default:
                         throw new InvalidOperationException();
@@ -306,7 +306,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     if (layerIsMattedLayer)
                     {
                         mattedVisual = visual;
-                        matteType = item.Item2.LayerMatteType;
+                        matteType = item.layer.LayerMatteType;
                     }
                     else if (mattedVisual != null)
                     {

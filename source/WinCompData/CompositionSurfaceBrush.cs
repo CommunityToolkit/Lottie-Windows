@@ -21,7 +21,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
         public ICompositionSurface Surface { get; set; }
 
         // NOTE: Windows.UI.Composition.CompositionSurfaceBrush has more members. Only the members
-        // that are needed has been added here.
+        // that are needed have been added here.
 
         /// <inheritdoc/>
         public override CompositionObjectType Type => CompositionObjectType.CompositionSurfaceBrush;
