@@ -658,7 +658,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
             if (obj.Geometry != null)
             {
-                builder.WriteLine($"result{Deref}Geometry = {CallFactoryFromFor(node, obj.Geometry)};");
+                builder.WriteLine($"result{Deref}Geometry({CallFactoryFromFor(node, obj.Geometry)});"); //TODO will break c# since change is in base
             }
 
             StartAnimations(builder, obj, node);
