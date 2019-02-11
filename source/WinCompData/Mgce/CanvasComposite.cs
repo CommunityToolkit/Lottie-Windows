@@ -4,6 +4,7 @@
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce
 {
+    // NOTE: The values of this enum are made to match those of Microsoft.Graphics.Canvas.CanvasComposite
 #if PUBLIC_WinCompData
     public
 #endif

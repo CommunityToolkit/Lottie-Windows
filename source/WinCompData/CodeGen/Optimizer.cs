@@ -880,10 +880,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
         {
             switch (obj.Type)
             {
-                case CompositionObjectType.CompositionSpriteShape:
-                    return GetCompositionSpriteShape((CompositionSpriteShape)obj);
                 case CompositionObjectType.CompositionContainerShape:
                     return GetCompositionContainerShape((CompositionContainerShape)obj);
+                case CompositionObjectType.CompositionSpriteShape:
+                    return GetCompositionSpriteShape((CompositionSpriteShape)obj);
                 default:
                     throw new InvalidOperationException();
             }

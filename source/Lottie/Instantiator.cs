@@ -827,10 +827,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         {
             switch (obj.Type)
             {
-                case Wd.CompositionObjectType.CompositionSpriteShape:
-                    return GetCompositionSpriteShape((Wd.CompositionSpriteShape)obj);
                 case Wd.CompositionObjectType.CompositionContainerShape:
                     return GetCompositionContainerShape((Wd.CompositionContainerShape)obj);
+                case Wd.CompositionObjectType.CompositionSpriteShape:
+                    return GetCompositionSpriteShape((Wd.CompositionSpriteShape)obj);
                 default:
                     throw new InvalidOperationException();
             }

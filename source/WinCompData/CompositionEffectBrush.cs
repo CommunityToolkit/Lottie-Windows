@@ -11,14 +11,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 #endif
     class CompositionEffectBrush : CompositionBrush
     {
-        readonly Dictionary<string, CompositionBrush> _sourceParameters = new Dictionary<string, CompositionBrush>();
-
         internal CompositionEffectBrush(Mgce.CompositeEffect effect)
         {
             this.Effect = effect;
         }
 
-        public Dictionary<string, CompositionBrush> SourceParameters => _sourceParameters;
+        public Dictionary<string, CompositionBrush> SourceParameters { get; } = new Dictionary<string, CompositionBrush>();
 
         public Mgce.CompositeEffect Effect { get; }
 
