@@ -71,15 +71,13 @@
             <RichTextBlock Style="{StaticResource OutroTextBlock}">
                 <Paragraph>
                     To learn more, check out the
-                    <Hyperlink NavigateUri="">
-                        the
+                    <Hyperlink NavigateUri="https://github.com/windows-toolkit/Lottie-Windows/blob/master/samples/LottieSamples/Scenarios/ProgressPage.xaml">
                         xaml
                     </Hyperlink>
                     +
-                    <Hyperlink NavigateUri="">
+                    <Hyperlink NavigateUri="https://github.com/windows-toolkit/Lottie-Windows/blob/master/samples/LottieSamples/Scenarios/ProgressPage.xaml.cs">
                         code-behind
-                    </Hyperlink>
-                    .
+                    </Hyperlink>.
                     <LineBreak />
                 </Paragraph>
             </RichTextBlock>

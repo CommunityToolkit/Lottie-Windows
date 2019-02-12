@@ -41,7 +41,8 @@
                 <RichTextBlock>
                     <Paragraph>
                         To make the animation interactive, we configure the playback of segments or display of individual frames
-                        based on PointerEntered/Exited/Clicked events.
+                        based on
+                        <Span FontFamily="Consolas">PointerEntered/Exited/Pressed</Span> events.
                         <Span FontWeight="SemiBold">Interact</Span>
                         with the Lottie animation below by hovering and clicking to see the results.
                         <LineBreak />
@@ -66,14 +67,14 @@
             <RichTextBlock Style="{StaticResource OutroTextBlock}">
                 <Paragraph>
                     To learn more, check out the
-                    <Hyperlink NavigateUri="">
+                    <Hyperlink NavigateUri="https://github.com/windows-toolkit/Lottie-Windows/blob/master/samples/LottieSamples/Scenarios/SegmentPage.xaml.cs">
                         code-behind
                     </Hyperlink>
-                    and read the related
-                    <Hyperlink NavigateUri="">
-                        how-to doc
+                    and read
+                    <Hyperlink NavigateUri="https://docs.microsoft.com/windows/communitytoolkit/animations/lottie-scenarios/segments">
+                        this tutorial
                     </Hyperlink>
-                    on configuring playback for segments of an animation's timeline.
+                    on interactive segments on an animation timeline.
                 </Paragraph>
             </RichTextBlock>
             <!--#endregion-->

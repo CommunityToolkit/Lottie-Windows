@@ -16,7 +16,9 @@
                     <Paragraph>
                         The
                         <Span FontFamily="Consolas">AnimatedVisualPlayer</Span>
-                        has a PlayAsync method that allows us to
+                        has a
+                        <Span FontFamily="Consolas">PlayAsync</Span>
+                        method that allows us to
                         <Span FontFamily="Consolas">await</Span>
                         its completion.
                         In this example, we use two players, A and B, with the same Lottie animation to coordinate the following playback sequence:
@@ -105,14 +107,13 @@
             <RichTextBlock Style="{StaticResource OutroTextBlock}">
                 <Paragraph>
                     To learn more about the PlayAsync method, check out the
-                    <Hyperlink NavigateUri="">
+                    <Hyperlink NavigateUri="https://github.com/windows-toolkit/Lottie-Windows/blob/master/samples/LottieSamples/Scenarios/AsyncPage.xaml.cs">
                         code-behind
                     </Hyperlink>
-                    and read the relevant section in this
-                    <Hyperlink NavigateUri="">
-                        how-to doc
-                    </Hyperlink>
-                    .
+                    and read
+                    <Hyperlink NavigateUri="https://docs.microsoft.com/windows/communitytoolkit/animations/lottie-scenarios/async_play">
+                        this tutorial
+                    </Hyperlink>.
                 </Paragraph>
             </RichTextBlock>
             <!--#endregion-->
