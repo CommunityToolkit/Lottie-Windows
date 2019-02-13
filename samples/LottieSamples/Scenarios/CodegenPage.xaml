@@ -59,7 +59,7 @@
                 <Paragraph>
                     To learn more, check out the
                     <Hyperlink NavigateUri="https://github.com/windows-toolkit/Lottie-Windows/blob/master/samples/LottieSamples/Scenarios/CodegenPage.xaml">
-                        xaml
+                        XAML
                     </Hyperlink>
                     and read
                     <Hyperlink NavigateUri="https://docs.microsoft.com/windows/communitytoolkit/animations/lottie-scenarios/getting_started_codegen">
@@ -67,7 +67,7 @@
                     </Hyperlink>
                     on using codegen classes with Lottie-Windows and a comparison of the
                     <Hyperlink NavigateUri="https://docs.microsoft.com/windows/communitytoolkit/animations/lottie-scenarios/json_codegen">
-                        json v/s codegen
+                        JSON v/s Codegen
                     </Hyperlink>
                     approaches.
                     <LineBreak />

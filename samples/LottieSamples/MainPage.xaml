@@ -28,7 +28,7 @@
                                        Text="1" />
                             <TextBlock>
                                 <Run>Getting Started with</Run>
-                                <Run FontWeight="SemiBold">Json</Run>
+                                <Run FontWeight="SemiBold">JSON</Run>
                             </TextBlock>
                         </StackPanel>
                     </NavigationViewItem.Content>
