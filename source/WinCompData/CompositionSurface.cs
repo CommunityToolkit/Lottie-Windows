@@ -7,7 +7,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 #if PUBLIC_WinCompData
     public
 #endif
-    interface ICompositionSurface
+    abstract class CompositionSurface : CompositionObject
     {
     }
 }

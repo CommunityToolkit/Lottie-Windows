@@ -9,7 +9,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 #if PUBLIC_WinCompData
     public
 #endif
-    class CompositionEffectBrush : CompositionBrush
+    sealed class CompositionEffectBrush : CompositionBrush
     {
         internal CompositionEffectBrush(Mgce.CompositeEffect effect)
         {

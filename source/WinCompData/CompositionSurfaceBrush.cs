@@ -7,18 +7,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 #if PUBLIC_WinCompData
     public
 #endif
-    class CompositionSurfaceBrush : CompositionBrush
+    sealed class CompositionSurfaceBrush : CompositionBrush
     {
         internal CompositionSurfaceBrush()
         {
         }
 
-        internal CompositionSurfaceBrush(ICompositionSurface surface)
+        internal CompositionSurfaceBrush(CompositionSurface surface)
         {
             Surface = surface;
         }
 
-        public ICompositionSurface Surface { get; set; }
+        public CompositionSurface Surface { get; set; }
 
         // NOTE: Windows.UI.Composition.CompositionSurfaceBrush has more members. Only the members
         // that are needed have been added here.

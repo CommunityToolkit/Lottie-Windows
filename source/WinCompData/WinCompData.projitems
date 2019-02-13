@@ -37,6 +37,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CompositionSpriteShape.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionStrokeCap.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionStrokeLineJoin.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CompositionSurface.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionSurfaceBrush.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionViewBox.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionVisualSurface.cs" />
@@ -67,7 +68,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Expressions\UntypedExpression.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Expressions\Vector2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Expressions\Vector3.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ICompositionSurface.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IContainShapes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IDescribable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)InsetClip.cs" />

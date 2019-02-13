@@ -844,10 +844,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
                 result.SourceVisual = GetVisual(obj.SourceVisual);
             }
 
-            if (obj.SourceSize != null)
-            {
-                result.SourceSize = obj.SourceSize.Value;
-            }
+            result.SourceSize = obj.SourceSize;
 
             if (obj.SourceOffset != null)
             {
@@ -1236,14 +1233,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             return result;
         }
 
-        ICompositionSurface GetCompositionSurface(ICompositionSurface obj)
+        CompositionSurface GetCompositionSurface(CompositionSurface obj)
         {
-            if (obj is CompositionObject compositionObject)
+            if (GetCompositionObject(obj) is CompositionSurface compositionSurface)
             {
-                if (GetCompositionObject(compositionObject) is ICompositionSurface compositionSurface)
-                {
-                    return compositionSurface;
-                }
+                return compositionSurface;
             }
 
             throw new InvalidOperationException();

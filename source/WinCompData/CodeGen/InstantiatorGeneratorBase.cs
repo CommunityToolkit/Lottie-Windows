@@ -1,14 +1,6 @@
 // Copyright(c) Microsoft Corporation.All rights reserved.
 // Licensed under the MIT License.
 
-// define POST_RS5_SDK if using an SDK that is for a release
-// after RS5
-#if POST_RS5_SDK
-// For allowing of Windows.UI.Composition.VisualSurface and the
-// Lottie features that rely on it
-#define AllowVisualSurface
-#endif
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -517,12 +509,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             builder.OpenScope();
             builder.WriteLine("return false;");
             builder.CloseScope();
-#if AllowVisualSurface
             builder.WriteLine($"if (!Windows{_stringifier.ScopeResolve}Foundation{_stringifier.ScopeResolve}Metadata{_stringifier.ScopeResolve}ApiInformation{_stringifier.ScopeResolve}IsTypePresent(\"Windows.UI.Composition.CompositionVisualSurface\"))");
             builder.OpenScope();
             builder.WriteLine("return false;");
             builder.CloseScope();
-#endif
             builder.WriteLine("return true;");
             builder.CloseScope();
             builder.WriteLine();
@@ -1458,7 +1448,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
             if (obj.SourceSize != null)
             {
-                builder.WriteLine($"result{Deref}SourceSize = {Vector2(obj.SourceSize.Value)};");
+                builder.WriteLine($"result{Deref}SourceSize = {Vector2(obj.SourceSize)};");
             }
 
             if (obj.SourceOffset != null)

@@ -117,7 +117,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             None = 0,
             Add,
             Invert,
-            Uknonwn,
         }
     }
 }

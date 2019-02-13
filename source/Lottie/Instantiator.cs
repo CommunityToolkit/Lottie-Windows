@@ -5,7 +5,10 @@
 #define ReuseExpressionAnimation
 
 // define POST_RS5_SDK if using an SDK that is for a release
-// after RS5
+// after RS5. This is necessary because the build system does
+// not easily support SDKs that are still prerelease.
+// Once the release that has VisualSurface is out, this #if can
+// be removed.
 #if POST_RS5_SDK
 // For allowing of Windows.UI.Composition.VisualSurface and the
 // Lottie features that rely on it
@@ -1199,14 +1202,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             return result;
         }
 
-        Wc.ICompositionSurface GetCompositionSurface(Wd.ICompositionSurface obj)
+        Wc.ICompositionSurface GetCompositionSurface(Wd.CompositionSurface obj)
         {
-            if (obj is Wd.CompositionObject compositionObject)
+            if (GetCompositionObject(obj) is Wc.ICompositionSurface compositionSurface)
             {
-                if (GetCompositionObject(compositionObject) is Wc.ICompositionSurface compositionSurface)
-                {
-                    return compositionSurface;
-                }
+                return compositionSurface;
             }
 
             throw new InvalidOperationException();

@@ -9,7 +9,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 #if PUBLIC_WinCompData
     public
 #endif
-    class CompositionVisualSurface : CompositionObject, ICompositionSurface
+    sealed class CompositionVisualSurface : CompositionSurface
     {
         internal CompositionVisualSurface()
         {
@@ -17,7 +17,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 
         public Visual SourceVisual { get; set; }
 
-        public Vector2? SourceSize { get; set; }
+        public Vector2 SourceSize { get; set; }
 
         public Vector2? SourceOffset { get; set; }
 
