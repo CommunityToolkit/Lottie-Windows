@@ -33,14 +33,14 @@
                         <Span FontFamily="Consolas">AnimatedVisuals/LottieLogo1.cs</Span>
                         which was generated from
                         <Span FontFamily="Consolas">LottieLogo1.json</Span> using either the
-                        <Hyperlink NavigateUri="https://www.microsoft.com/p/lottie-viewer/9p7x9k692tmw">
-                            LottieViewer GUI
-                        </Hyperlink>
-                        or
-                        <Hyperlink NavigateUri="https://github.com/windows-toolkit/Lottie-Windows/tree/master/LottieGen">
+                        <Hyperlink NavigateUri="https://aka.ms/lottiegen">
                             LottieGen CLI
                         </Hyperlink>
-                        <LineBreak />
+                        or
+                        <Hyperlink NavigateUri="https://aka.ms/lottieviewer">
+                            LottieViewer GUI
+                        </Hyperlink>.
+                        <LineBreak/>
                     </Paragraph>
                 </RichTextBlock>
             </StackPanel>
@@ -58,16 +58,16 @@
             <RichTextBlock Style="{StaticResource OutroTextBlock}">
                 <Paragraph>
                     To learn more, check out the
-                    <Hyperlink NavigateUri="">
-                        xaml
+                    <Hyperlink NavigateUri="https://github.com/windows-toolkit/Lottie-Windows/blob/master/samples/LottieSamples/Scenarios/CodegenPage.xaml">
+                        XAML
                     </Hyperlink>
-                    and read the related
-                    <Hyperlink NavigateUri="">
-                        how-to doc
+                    and read
+                    <Hyperlink NavigateUri="https://docs.microsoft.com/windows/communitytoolkit/animations/lottie-scenarios/getting_started_codegen">
+                        this tutorial
                     </Hyperlink>
-                    on using codegen classes with Lottie-Windows, including a comparison of the
-                    <Hyperlink NavigateUri="">
-                        json v/s codegen
+                    on using codegen classes with Lottie-Windows and a comparison of the
+                    <Hyperlink NavigateUri="https://docs.microsoft.com/windows/communitytoolkit/animations/lottie-scenarios/json_codegen">
+                        JSON v/s Codegen
                     </Hyperlink>
                     approaches.
                     <LineBreak />

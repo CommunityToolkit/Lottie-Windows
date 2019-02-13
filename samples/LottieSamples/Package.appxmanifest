@@ -3,7 +3,7 @@
   <Identity Name="988a7cd8-90d6-4c07-8c03-d42868076929" Publisher="CN=developer" Version="1.0.0.0" />
   <mp:PhoneIdentity PhoneProductId="988a7cd8-90d6-4c07-8c03-d42868076929" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
   <Properties>
-    <DisplayName>LottieSamples</DisplayName>
+    <DisplayName>Lottie Samples</DisplayName>
     <PublisherDisplayName>developer</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
@@ -15,7 +15,7 @@
   </Resources>
   <Applications>
     <Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="LottieSamples.App">
-      <uap:VisualElements DisplayName="LottieSamples" Square150x150Logo="Assets\Square150x150Logo.png" Square44x44Logo="Assets\Square44x44Logo.png" Description="LottieSamples" BackgroundColor="transparent">
+      <uap:VisualElements DisplayName="Lottie Samples" Square150x150Logo="Assets\Square150x150Logo.png" Square44x44Logo="Assets\Square44x44Logo.png" Description="Lottie Samples" BackgroundColor="transparent">
         <uap:LockScreen Notification="badge" BadgeLogo="Assets\BadgeLogo.png" />
         <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" Square310x310Logo="Assets\LargeTile.png" Square71x71Logo="Assets\SmallTile.png">
         </uap:DefaultTile>

@@ -102,28 +102,28 @@
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Scenarios\AsyncPage.xaml.cs">
-      <DependentUpon>Scenario\AsyncPage.xaml</DependentUpon>
+      <DependentUpon>AsyncPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Scenarios\CodegenPage.xaml.cs">
-      <DependentUpon>Scenario\AsyncPage.xaml</DependentUpon>
+      <DependentUpon>CodegenPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Scenarios\FallbackPage.xaml.cs">
-      <DependentUpon>Scenario\FallbackPage.xaml</DependentUpon>
+      <DependentUpon>FallbackPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Scenarios\JsonPage.xaml.cs">
-      <DependentUpon>Scenario\JsonPage.xaml</DependentUpon>
+      <DependentUpon>JsonPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Scenarios\ModifyPage.xaml.cs">
-      <DependentUpon>Scenario\ModifyPage.xaml</DependentUpon>
+      <DependentUpon>ModifyPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Scenarios\PlaybackPage.xaml.cs">
-      <DependentUpon>Scenario\PlaybackPage.xaml</DependentUpon>
+      <DependentUpon>PlaybackPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Scenarios\ProgressPage.xaml.cs">
-      <DependentUpon>Scenario\ProgressPage.xaml</DependentUpon>
+      <DependentUpon>ProgressPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Scenarios\SegmentPage.xaml.cs">
-      <DependentUpon>Scenario\SegmentPage.xaml</DependentUpon>
+      <DependentUpon>SegmentPage.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>

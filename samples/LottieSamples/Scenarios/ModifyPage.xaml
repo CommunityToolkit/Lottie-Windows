@@ -49,15 +49,15 @@
             <RichTextBlock Style="{StaticResource OutroTextBlock}">
                 <Paragraph>
                     Check out the
-                    <Hyperlink NavigateUri="">
+                    <Hyperlink NavigateUri="https://github.com/windows-toolkit/Lottie-Windows/blob/master/samples/LottieSamples/AnimatedVisuals/LottieLogo1_Modified.cs">
                         modified codegen class
                     </Hyperlink>
                     +
-                    <Hyperlink NavigateUri="">
-                        xaml
+                    <Hyperlink NavigateUri="https://github.com/windows-toolkit/Lottie-Windows/blob/master/samples/LottieSamples/Scenarios/ModifyPage.xaml">
+                        XAML
                     </Hyperlink>
                     +
-                    <Hyperlink NavigateUri="">
+                    <Hyperlink NavigateUri="https://github.com/windows-toolkit/Lottie-Windows/blob/master/samples/LottieSamples/Scenarios/ModifyPage.xaml.cs">
                         code-behind
                     </Hyperlink>
                     to get a sense of how DependencyProperties may be used to dynamically update Lottie animations.
