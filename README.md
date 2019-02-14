@@ -1,17 +1,24 @@
 # Lottie-Windows
 
-Lottie-Windows is a library and tools for efficiently rendering Lottie animations on Windows 10. Lottie-Windows is part of the .NET Foundation.
+Lottie-Windows is a library that renders [Adobe AfterEffects](https://www.adobe.com/products/aftereffects.html) animations natively in your application. This project adds Windows to the [Lottie](http://airbnb.io/lottie/) family of cross-platform tools also targeting [Android](https://github.com/airbnb/lottie-android), [iOS](https://github.com/airbnb/lottie-ios), and [Web](https://github.com/airbnb/lottie-web).
 
-Lottie-Windows works directly with JSON, but for even better performance it can codegen optimized C# and C++ code.
+Lottie simplifies the design-to-code workflow for bringing engaging, interactive vector animations to your Windows applications, with significant improvements in terms of performance, quality, and engineering efficiency over traditional approaches such as gifs, manually coded animations, etc. Lottie-Windows uses the [Windows.UI.Composition APIs](https://docs.microsoft.com/windows/uwp/composition/visual-layer) to provide smooth 60fps animations and resolution-independent vector graphics.
 
 Lottie-Winddows consists of 3 related products:
-* Lottie-Windows library
-* LottieGen command-line tool for generating code
-* Lottie Viewer app 
+* **Lottie-Windows** library for parsing and translating Bodymovin JSON files
+* **LottieGen** command-line tool for generating C# or C++ code to be used instead of JSON
+* **Lottie Viewer** application for previewing Bodymovin JSON and also generating code 
 
 ## <a name="supported"></a> Supported SDKs
 * October 2018 Update (17763)
 
+## <a name="documentation"></a> Getting Started
+* [Documentation and Tutorials](https://aka.ms/lottiedocs)
+* [Lottie Viewer](https://aka.ms/lottieviewer)
+
+## <a name="documentation"></a> Code Samples
+
+* [Lottie Samples](https://aka.ms/lottiesamples) application with simple code examples of common scenarios
 
 ## Feedback and Requests
 Please use [GitHub Issues](https://github.com/windows-toolkit/Lottie-Windows/issues) for bug reports and feature requests.
