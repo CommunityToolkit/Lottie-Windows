@@ -26,6 +26,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
         internal void WriteLine(string line)
         {
+            //Debug.WriteLine(line);
             _lines.Add(new CodeLine { Text = line, IndentCount = _indentCount });
         }
 
