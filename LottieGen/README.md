@@ -1,8 +1,8 @@
-# LottieGen command line code generator for Lottie-Windows
+# LottieGen command-line code generator for Lottie-Windows
 
-LottieGen is a tool for generating C#, C++, and other outputs from Lottie .json files.
+LottieGen is a tool for generating C#, C++, and other outputs from Lottie / Bodymovin JSON files. LottieGen is built as a [.NET Core global tool](https://docs.microsoft.com/en-us/dotnet/core/tools/global-tools), which means it will run anywhere .NET Core is available, including Linux and Mac.
 
-LottieGen is built as a [.NET Core global tool](https://docs.microsoft.com/en-us/dotnet/core/tools/global-tools), which means it will run anywhere .NET Core is available, including Linux and Mac.
+LottieGen requires [.NET Core 2.2 SDK](https://dotnet.microsoft.com/download/dotnet-core/2.2) or later.
 
 ## Installing
 *The following commands are examples only; adjust the paths and versions as necessary.*
