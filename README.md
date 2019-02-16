@@ -4,6 +4,8 @@ Lottie-Windows is a library for rendering [Adobe AfterEffects](https://www.adobe
 
 Lottie simplifies the design-to-code workflow for bringing engaging, interactive vector animations to your Windows applications, with significant improvements in terms of performance, quality, and engineering efficiency over traditional approaches such as gifs, manually coded animations, etc. Lottie-Windows uses the [Windows.UI.Composition APIs](https://docs.microsoft.com/windows/uwp/composition/visual-layer) to provide smooth 60fps animations and resolution-independent vector graphics.
 
+![Lottie-Windows Gif](/images/LottieWindows_Intro.gif)
+
 Lottie-Winddows consists of 3 related products:
 * **Lottie-Windows** library for parsing and translating [Bodymovin](https://aescripts.com/bodymovin/) JSON files
 * **LottieGen** command-line tool for generating C# or C++ code to be used instead of JSON
@@ -14,7 +16,7 @@ Lottie-Winddows consists of 3 related products:
 
 ## <a name="documentation"></a> Getting Started
 * [Documentation and Tutorials](https://aka.ms/lottiedocs)
-* [Lottie Samples](https://aka.ms/lottiesamples) application with simple code examples of common scenarios
+* [Lottie Samples](https://aka.ms/lottiesamples)
 * [Lottie Viewer](https://aka.ms/lottieviewer)
 
 ## Build Status
