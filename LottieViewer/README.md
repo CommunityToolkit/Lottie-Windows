@@ -7,3 +7,8 @@ If the orange warning icon lights up, click on it to see any issues that Lottie-
 
 ### Generating code with Lottie Viewer
 Lottie Viewer allows a Lottie file to be saved as generated code. For maximum control and many extra features for generating code use the [LottieGen](../LottieGen) command line tool.
+
+
+![LottieViewer_Capture](../images/LottieViewer_Capture.gif)
+
+<a href='//www.microsoft.com/store/apps/9P7X9K692TMW?ocid=badge'><img src='https://assets.windowsphone.com/85864462-9c82-451e-9355-a3d5f874397a/English_get-it-from-MS_InvariantCulture_Default.png' alt='English badge' width='284px' height='104px'/></a>
