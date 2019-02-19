@@ -1,5 +1,5 @@
 # Lottie-Windows
-Lottie-Windows produces the [`LottieVisualSource`](https://docs.microsoft.com/dotnet/api/microsoft.toolkit.uwp.ui.lottie.lottievisualsource) which is consumed by the [`Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer`](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.animatedvisualplayer) to render Lottie JSON files.
+Lottie-Windows provides the [`LottieVisualSource`](https://docs.microsoft.com/dotnet/api/microsoft.toolkit.uwp.ui.lottie.lottievisualsource) which is consumed by the [`Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer`](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.animatedvisualplayer) to render Lottie JSON files.
 
 The Lottie-Windows project generates a NuGet package for use by Windows apps.
 
