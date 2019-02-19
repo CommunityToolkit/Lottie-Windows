@@ -7,9 +7,9 @@ Lottie simplifies the design-to-code workflow for bringing engaging, interactive
 ![Lottie-Windows Gif](/images/LottieWindows_Intro.gif)
 
 Lottie-Winddows consists of 3 related products:
-* **Lottie-Windows** library for parsing and translating [Bodymovin](https://aescripts.com/bodymovin/) JSON files
-* **LottieGen** command-line tool for generating C# or C++ code to be used instead of JSON
-* **Lottie Viewer** application for previewing JSON and also generating code 
+* **[Lottie-Windows](/Lottie-Windows)** library for parsing and translating [Bodymovin](https://aescripts.com/bodymovin/) JSON files
+* **[LottieGen](/LottieGen)** command-line tool for generating C# or C++ code to be used instead of JSON
+* **[Lottie Viewer](/LottieViewer)** application for previewing JSON and also generating code 
 
 ## <a name="supported"></a> Supported SDKs
 * October 2018 Update (17763)
