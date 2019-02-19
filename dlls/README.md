@@ -18,7 +18,7 @@ Conceptually, there are 5 *modules* in Lottie-Windows:
 | WinCompData     | data model for Windows.UI.Composition  |    - |
 
 The modules help abstract the design, and dependencies between modules always form a DAG (Directed Acyclic Graph). 
-The DAG is enforced by building each module as an assembly (DLL) so that *if the DAG is broken `the build of the DLLs will break`.*
+The DAG is enforced by building each module as an assembly (DLL) so that **if the DAG is broken the build of the DLLs will break**.
 
 But we don't actually use the DLLs in any of the other projects; instead, we mush all of the source code together using shared projects. This saves the extra step of building the Lottie-Windows nuget project before any other projects, and it means there are fewer binaries to be packaged up and copied around.
 
