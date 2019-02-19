@@ -6,13 +6,13 @@ Lottie-Windows aligns its major version with the Windows Community Toolkit.
 
 The following Adobe AfterEffects features are supported:
 
-Layer types:
+**Layer types**
 * Precomp
 * Null
 * Solid
 * Shape
 
-Transforms:
+**Transforms**
 * Anchor Point
 * Position
 * Scale
@@ -20,7 +20,7 @@ Transforms:
 * Opacity *
 * Parenting
 
-Shape:
+**Shape**
 * Ellipse
 * Rectangle
 * Rounded Rectangle
@@ -34,12 +34,12 @@ Shape:
     * Intersect
     * Exclude Intersection
 
-Fill:
+**Fill**
 * Color
 * Opacity *
 * Fill Rule
 
-Stroke:
+**Stroke**
 * Color
 * Opacity *
 * Width
@@ -48,11 +48,11 @@ Stroke:
 * Miter Limit
 * Dashes
 
-Mask:
+**Mask**
 * Mask Path
 * Add
 
-Keyframe Interpolation:
+**Interpolation**
 * Linear 
 * Cubic Bezier
 * Hold
