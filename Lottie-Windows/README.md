@@ -10,4 +10,4 @@ The Lottie-Windows project generates a NuGet package for use by Windows apps.
 
 ## Usage
 
-To get started with using the Lottie-Windows library in your XAML, follow [this tutorial](https://docs.microsoft.com/windows/communitytoolkit/animations/lottie-scenarios/getting_started_json).
+To get started using the Lottie-Windows library in your XAML, follow [this tutorial](https://docs.microsoft.com/windows/communitytoolkit/animations/lottie-scenarios/getting_started_json).
