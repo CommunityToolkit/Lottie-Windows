@@ -1,7 +1,7 @@
 ﻿<Project Sdk="MSBuild.Sdk.Extras">
 
   <PropertyGroup>
-    <TargetFramework>uap10.0.16299</TargetFramework>
+    <TargetFramework>uap10.0.15063</TargetFramework>
 
     <OutputType>winmdobj</OutputType>
     <IsPackable>True</IsPackable>
