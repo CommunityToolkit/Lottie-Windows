@@ -2,6 +2,7 @@
 <#@ assembly name="System.Core" #>
 <#@ assembly name="System.Xml" #>
 <#@ assembly name="System.Xml.Linq" #>
+<#@ import namespace="System.IO" #>
 <#@ import namespace="System.Linq" #>
 <#@ import namespace="System.Text" #>
 <#@ import namespace="System.Text.RegularExpressions" #>
@@ -44,14 +45,33 @@ namespace <#=namespaceName#>
 <#  
     var regex = new Regex("({.*?})");
 
-    var doc = XDocument.Load("Issues.xml");
-    foreach (var issue in doc.Root.Elements())
+    // Get the .md files with the prefix matching the type of issues class being generated.
+    var mdFiles = Directory.EnumerateFiles(".", $"{prefixFilter}????.md").ToArray();
+
+    foreach (var mdFile in mdFiles)
     {
-        var id = issue.Element("id").Value;
-        if (id.StartsWith(prefixFilter))
-        {
-            var text = issue.Element("text").Value;
-            var method = issue.Element("method").Value;
+        // The issue id is the name of the file without the extension.
+        var issueId = Path.GetFileNameWithoutExtension(mdFile);
+
+        // Read the file.
+        const string commentPrefix = "[comment]: # (";
+        var mdCommentLines = 
+            (from line in File.ReadAllLines(mdFile)
+            where line.StartsWith(commentPrefix)
+            select line.Substring(commentPrefix.Length).TrimEnd(')')).ToArray();
+
+        const string namePrefix = "name:";
+        const string textPrefix = "text:";
+
+        var name = 
+            (from line in mdCommentLines
+            where line.StartsWith(namePrefix)
+            select line.Substring(namePrefix.Length)).FirstOrDefault();
+
+        var text = 
+            (from line in mdCommentLines
+            where line.StartsWith(textPrefix)
+            select line.Substring(textPrefix.Length)).FirstOrDefault();
 
             // Look for parameters in the string.
             var parameterMatches = regex.Matches(text);
@@ -62,8 +82,7 @@ namespace <#=namespaceName#>
             var hasParameters = parameters.Any();
 
             WriteLine("");
-            WriteLine($"        internal void {method}({parameterList}) => Report(\"{id}\", {(hasParameters ? "$" : "")}\"{text}\");");
-        }
+            WriteLine($"        internal void {name}({parameterList}) => Report(\"{issueId}\", {(hasParameters ? "$" : "")}\"{text}\");");
     }
 #>
 
