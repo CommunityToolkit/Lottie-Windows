@@ -31,7 +31,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.UI.Xaml">
-      <Version>2.1.181025003-prerelease</Version>
+      <Version>2.1.190218001-prerelease</Version>
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </PackageReference>
