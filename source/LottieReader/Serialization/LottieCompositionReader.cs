@@ -540,7 +540,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             IgnoreFieldThatIsNotYetSupported(obj, "td");
 
             var name = obj.GetNamedString("nm", string.Empty);
-            var layerIndex = ReadInt(obj, "ind").Value;
+            var layerIndex = ReadInt(obj, "ind") ?? throw new LottieCompositionReaderException("Missing layer index");
             var parentIndex = ReadInt(obj, "parent");
             var is3d = ReadBool(obj, "ddd") == true;
             var autoOrient = ReadBool(obj, "ao") == true;
@@ -1967,7 +1967,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
             internal void ParseJson(LottieCompositionReader reader, JObject obj, out IEnumerable<KeyFrame<T>> keyFrames, out T initialValue)
             {
-                var isAnimated = ReadBool(obj, "a") == true;
+                // Deprecated "a" field meant "isAnimated". The existence of key frames means the same thing.
+                reader.IgnoreFieldIntentionally(obj, "a");
 
                 keyFrames = s_emptyKeyFrames;
                 initialValue = default(T);
@@ -2022,11 +2023,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                             break;
                     }
                 }
-
-                if (isAnimated && keyFrames == s_emptyKeyFrames)
-                {
-                    throw new LottieCompositionReaderException("Expected keyframes.");
-                }
             }
 
             static bool HasKeyframes(JArray array)
@@ -2046,26 +2042,35 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
                 // -
                 // Keyframes are encoded in Lottie as an array consisting of a sequence
-                // of start and end value with start frame and easing function. The final
-                // entry in the array is the frame at which the last interpolation ends.
+                // of start value with start frame and easing function. The final entry in the
+                // array is the frame at which the last interpolation ends.
+                // [
+                //   { startValue_1, startFrame_1 },  # interpolates from startValue_1 to startValue_2 from startFrame_1 to startFrame_2
+                //   { startValue_2, startFrame_2 },  # interpolates from startValue_2 to startValue_3 from startFrame_2 to startFrame_3
+                //   { startValue_3, startFrame_3 },  # interpolates from startValue_3 to startValue_4 from startFrame_3 to startFrame_4
+                //   { startValue_4, startFrame_4 }
+                // ]
+                // Earlier versions of Bodymovin used an endValue in each key frame.
                 // [
                 //   { startValue_1, endValue_1, startFrame_1 },  # interpolates from startValue_1 to endValue_1 from startFrame_1 to startFrame_2
                 //   { startValue_2, endValue_2, startFrame_2 },  # interpolates from startValue_2 to endValue_2 from startFrame_2 to startFrame_3
                 //   { startValue_3, endValue_3, startFrame_3 },  # interpolates from startValue_3 to endValue_3 from startFrame_3 to startFrame_4
                 //   { startFrame_4 }
                 // ]
+                //
+                // In order to handle the current and old formats, we detect the presence of the endValue field.
+                // If there's an endValue field, the keyframes are using the old format.
+                //
                 // We convert these to keyframes that match the Windows.UI.Composition notion of a keyframe,
                 // which is a triple: {endValue, endTime, easingFunction}.
                 // An initial keyframe is created to describe the initial value. It has no easing function.
+                //
                 // -
                 T endValue = default(T);
 
                 // The initial keyframe has the same value as the initial value. Easing therefore doesn't
-                // matter, but might as well use hold as it's the simplest (it does not interpolation)
+                // matter, but might as well use hold as it's the simplest (it does not interpolate).
                 Easing easing = HoldEasing.Instance;
-
-                // Start by holding from the initial value.
-                bool isHolding = true;
 
                 // SpatialBeziers.
                 var ti = default(Vector3);
@@ -2076,7 +2081,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 {
                     var lottieKeyFrame = jsonArray[i].AsObject();
 
-                    // "n" is a name on the keyframe. Never seems to be useful.
+                    // "n" is a name on the keyframe. It is not useful and has been deprecated in Bodymovin.
                     reader.IgnoreFieldIntentionally(lottieKeyFrame, "n");
 
                     // Read the start frame.
@@ -2084,25 +2089,30 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
                     if (i == count - 1)
                     {
-                        // This is the final frame. Final frames optionally don't have a value.
-                        if (!lottieKeyFrame.ContainsKey("s"))
+                        // This is the final key frame.
+                        // If parsing the old format, this key frame will just have the "t" startFrame value.
+                        // If parsing the new format, this key frame will also have the "s" startValue.
+                        var finalStartValue = lottieKeyFrame.GetNamedValue("s");
+                        if (finalStartValue == null)
                         {
-                            // It has no value associated with it.
+                            // Old format.
                             yield return new KeyFrame<T>(startFrame, endValue, to, ti, easing);
-                            break;
                         }
+                        else
+                        {
+                            // New format.
+                            yield return new KeyFrame<T>(startFrame, ReadValue(finalStartValue), to, ti, easing);
+                        }
+
+                        // No more key frames to read.
+                        break;
                     }
 
                     // Read the start value.
                     var startValue = ReadValue(lottieKeyFrame.GetNamedValue("s"));
 
-                    // The start of the next entry must be the same as the end of the previous entry
-                    // unless in a hold.
-                    if (!isHolding && !endValue.Equals(startValue))
-                    {
-                        throw new InvalidOperationException();
-                    }
-
+                    // Output a keyframe that describes how to interpolate to this start value. The easing information
+                    // comes from the previous Lottie keyframe.
                     yield return new KeyFrame<T>(startFrame, startValue, to, ti, easing);
 
                     // Spatial control points.
@@ -2117,7 +2127,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     {
                         // Hold the current value. The next value comes from the start
                         // of the next entry.
-                        isHolding = true;
                         easing = HoldEasing.Instance;
 
                         // Synthesize an endValue. This is only used if this is the final frame.
@@ -2139,10 +2148,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                             easing = LinearEasing.Instance;
                         }
 
-                        // Read the end value. The end frame number isn't known until
-                        // the next pair is read.
-                        endValue = ReadValue(lottieKeyFrame.GetNamedValue("e"));
+                        var endValueObject = lottieKeyFrame.GetNamedValue("e");
+                        endValue = endValueObject != null ? ReadValue(endValueObject) : default(T);
                     }
+
+                    // "e" is the end value of a key frame but has been deprecated because it should always be equal
+                    // to the start value of the next key frame.
+                    reader.IgnoreFieldIntentionally(lottieKeyFrame, "e");
 
                     reader.AssertAllFieldsRead(lottieKeyFrame);
                 }

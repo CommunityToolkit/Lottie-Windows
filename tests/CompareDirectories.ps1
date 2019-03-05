@@ -83,7 +83,7 @@ foreach($item in $dir1Contents.GetEnumerator() | sort-object 'Key')
 
     if (!$dir2Contents.ContainsKey($key))
     {
-        write-host -ForegroundColor $dir1Color "Only in `$Directory1: $key"
+        write-host -ForegroundColor $dir1Color "Only in $($Directory1): $key"
         $hasErrors = $true
     }
     elseif ($item.Value -ne $dir2Contents[$key])
@@ -101,9 +101,9 @@ foreach($item in $dir2Contents.GetEnumerator() | sort-object 'Key')
 {
     $key = $item.Key
 
-    if (!$dir2Contents.ContainsKey($key))
+    if (!$dir1Contents.ContainsKey($key))
     {
-        write-host -ForegroundColor $dir2Color "Only in `$Directory2: $key"
+        write-host -ForegroundColor $dir2Color "Only in $($Directory2): $key"
         $hasErrors = $true
     }
 }
