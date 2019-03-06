@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
@@ -512,9 +513,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
         bool VisitCompositionEffectBrush(CompositionEffectBrush obj, T node)
         {
             VisitCompositionBrush(obj, node);
-            foreach (var parameter in obj.SourceParameters)
+
+            var effectBase = obj.GetFactory().GetEffect();
+
+            if (effectBase.Type == Mgce.GraphicsEffectType.CompositeEffect)
             {
-                Reference(node, parameter.Value);
+                var effect = (CompositeEffect)effectBase;
+                foreach (var source in effect.Sources)
+                {
+                    Reference(node, obj.GetSourceParameter(source.Name));
+                }
+            }
+            else
+            {
+                throw new InvalidOperationException();
             }
 
             return true;

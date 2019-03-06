@@ -9,7 +9,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 #if PUBLIC_WinCompData
     public
 #endif
-    sealed class CompositionVisualSurface : CompositionSurface
+    sealed class CompositionVisualSurface : CompositionSurfaceBase
     {
         internal CompositionVisualSurface()
         {

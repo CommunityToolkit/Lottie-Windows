@@ -10,14 +10,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce
 #if PUBLIC_WinCompData
     public
 #endif
-    class CompositeEffect
+    sealed class CompositeEffect : GraphicsEffectBase
     {
-        public CompositeEffect()
+        internal CompositeEffect()
         {
         }
 
         public CanvasComposite Mode { get; set; }
 
-        public IList<string> Sources { get; } = new ListOfNeverNull<string>();
+        public IList<CompositionEffectSourceParameter> Sources { get; } = new ListOfNeverNull<CompositionEffectSourceParameter>();
+
+        public override GraphicsEffectType Type => GraphicsEffectType.CompositeEffect;
     }
 }

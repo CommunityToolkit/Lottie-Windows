@@ -13,12 +13,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
         {
         }
 
-        internal CompositionSurfaceBrush(CompositionSurface surface)
+        internal CompositionSurfaceBrush(CompositionSurfaceBase surface)
         {
             Surface = surface;
         }
 
-        public CompositionSurface Surface { get; set; }
+        public CompositionSurfaceBase Surface { get; set; }
 
         // NOTE: Windows.UI.Composition.CompositionSurfaceBrush has more members. Only the members
         // that are needed have been added here.

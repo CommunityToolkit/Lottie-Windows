@@ -23,6 +23,7 @@ using Microsoft.Graphics.Canvas.Effects;
 using Microsoft.Graphics.Canvas.Geometry;
 using Wc = Windows.UI.Composition;
 using Wd = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
+using Mgce = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie
 {
@@ -882,21 +883,30 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 return result;
             }
 
-            var compositeEffect = new CompositeEffect();
-            compositeEffect.Mode = (Graphics.Canvas.CanvasComposite)obj.Effect.Mode;
-            foreach (var source in obj.Effect.Sources)
+            var effectBase = obj.GetFactory().GetEffect();
+
+            if (effectBase.Type == Mgce.GraphicsEffectType.CompositeEffect)
             {
-                compositeEffect.Sources.Add(new Wc.CompositionEffectSourceParameter(source));
+                var effect = (Mgce.CompositeEffect)effectBase;
+
+                var compositeEffect = new CompositeEffect();
+                compositeEffect.Mode = (Graphics.Canvas.CanvasComposite)effect.Mode;
+
+                var effectFactory = _c.CreateEffectFactory(compositeEffect);
+                var compositeEffectBrush = effectFactory.CreateBrush();
+
+                result = CacheAndInitializeCompositionObject(obj, compositeEffectBrush);
+
+                foreach (var source in effect.Sources)
+                {
+                    compositeEffect.Sources.Add(new Wc.CompositionEffectSourceParameter(source.Name));
+
+                    result.SetSourceParameter(source.Name, GetCompositionBrush(obj.GetSourceParameter(source.Name)));
+                }
             }
-
-            var effectFactory = _c.CreateEffectFactory(compositeEffect);
-            var compositeEffectBrush = effectFactory.CreateBrush();
-
-            result = CacheAndInitializeCompositionObject(obj, compositeEffectBrush);
-
-            foreach (var sourceParameters in obj.SourceParameters)
+            else
             {
-                result.SetSourceParameter(sourceParameters.Key, GetCompositionBrush(sourceParameters.Value));
+                throw new InvalidOperationException();
             }
 
             StartAnimations(obj, result);

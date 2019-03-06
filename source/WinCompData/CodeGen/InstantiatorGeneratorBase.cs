@@ -1312,20 +1312,27 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
         {
             WriteObjectFactoryStart(builder, node);
 
-            builder.WriteLine($"{Var} compositeEffect = {New} CompositeEffect();");
-            builder.WriteLine($"compositeEffect{Deref}Mode = {CanvasCompositeMode(obj.Effect.Mode)};");
-            foreach (var source in obj.Effect.Sources)
+            var effectBase = obj.GetFactory().GetEffect();
+
+            if (effectBase.Type == Mgce.GraphicsEffectType.CompositeEffect)
             {
-                builder.WriteLine($"compositeEffect{Deref}Sources{Deref}{IListAdd}({New} CompositionEffectSourceParameter({String(source)}));");
+                builder.WriteLine($"{Var} compositeEffect = {New} CompositeEffect();");
+                builder.WriteLine($"compositeEffect{Deref}Mode = {CanvasCompositeMode(effect.Mode)};");
+
+                builder.WriteLine($"{Var} effectFactory = _c{Deref}CreateEffectFactory(compositeEffect);");
+                WriteCreateAssignment(builder, node, $"effectFactory{Deref}CreateBrush()");
+                InitializeCompositionBrush(builder, obj, node);
+
+                foreach (var source in effect.Sources)
+                {
+                    builder.WriteLine($"compositeEffect{Deref}Sources{Deref}{IListAdd}({New} CompositionEffectSourceParameter({String(source.Name)}));");
+
+                    builder.WriteLine($"result{Deref}SetSourceParameter({String(source.Name)}, {CallFactoryFromFor(node, obj.GetSourceParameter(source.Name))});");
+                }
             }
-
-            builder.WriteLine($"{Var} effectFactory = _c{Deref}CreateEffectFactory(compositeEffect);");
-            WriteCreateAssignment(builder, node, $"effectFactory{Deref}CreateBrush()");
-            InitializeCompositionBrush(builder, obj, node);
-
-            foreach (var sourceParameters in obj.SourceParameters)
+            else
             {
-                builder.WriteLine($"result{Deref}SetSourceParameter({String(sourceParameters.Key)}, {CallFactoryFromFor(node, sourceParameters.Value)});");
+                throw new InvalidOperationException();
             }
 
             StartAnimations(builder, obj, node);

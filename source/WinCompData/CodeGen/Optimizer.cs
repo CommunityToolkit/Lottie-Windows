@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
+using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools;
 
@@ -862,11 +863,30 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
                 return result;
             }
 
-            result = CacheAndInitializeCompositionObject(obj, _c.CreateEffectBrush(obj.Effect));
+            var effectBase = obj.GetFactory().GetEffect();
 
-            foreach (var source in obj.SourceParameters)
+            if (effectBase.Type == Mgce.GraphicsEffectType.CompositeEffect)
             {
-                result.SourceParameters.Add(source.Key, GetCompositionBrush(source.Value));
+                var effect = (CompositeEffect)effectBase;
+
+                var compositeEffect = new CompositeEffect();
+                compositeEffect.Mode = effect.Mode;
+
+                var effectFactory = _c.CreateEffectFactory(compositeEffect);
+                var compositeEffectBrush = effectFactory.CreateBrush();
+
+                result = CacheAndInitializeCompositionObject(obj, compositeEffectBrush);
+
+                foreach (var source in effect.Sources)
+                {
+                    compositeEffect.Sources.Add(new CompositionEffectSourceParameter(source.Name));
+
+                    result.SetSourceParameter(source.Name, GetCompositionBrush(obj.GetSourceParameter(source.Name)));
+                }
+            }
+            else
+            {
+                throw new InvalidOperationException();
             }
 
             StartAnimationsAndFreeze(obj, result);
@@ -1233,9 +1253,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             return result;
         }
 
-        CompositionSurface GetCompositionSurface(CompositionSurface obj)
+        CompositionSurfaceBase GetCompositionSurface(CompositionSurfaceBase obj)
         {
-            if (GetCompositionObject(obj) is CompositionSurface compositionSurface)
+            if (GetCompositionObject(obj) is CompositionSurfaceBase compositionSurface)
             {
                 return compositionSurface;
             }
