@@ -21,9 +21,9 @@ using System.Linq;
 using System.Numerics;
 using Microsoft.Graphics.Canvas.Effects;
 using Microsoft.Graphics.Canvas.Geometry;
+using Mgce = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce;
 using Wc = Windows.UI.Composition;
 using Wd = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
-using Mgce = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie
 {
@@ -1212,7 +1212,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             return result;
         }
 
-        Wc.ICompositionSurface GetCompositionSurface(Wd.CompositionSurface obj)
+        Wc.ICompositionSurface GetCompositionSurface(Wd.CompositionSurfaceBase obj)
         {
             if (GetCompositionObject(obj) is Wc.ICompositionSurface compositionSurface)
             {

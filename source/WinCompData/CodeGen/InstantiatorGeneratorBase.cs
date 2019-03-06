@@ -1316,6 +1316,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
             if (effectBase.Type == Mgce.GraphicsEffectType.CompositeEffect)
             {
+                var effect = (Mgce.CompositeEffect)effectBase;
+
                 builder.WriteLine($"{Var} compositeEffect = {New} CompositeEffect();");
                 builder.WriteLine($"compositeEffect{Deref}Mode = {CanvasCompositeMode(effect.Mode)};");
 
