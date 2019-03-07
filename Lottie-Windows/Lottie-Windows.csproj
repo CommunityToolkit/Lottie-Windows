@@ -1,11 +1,11 @@
 ﻿<Project Sdk="MSBuild.Sdk.Extras">
 
   <PropertyGroup>
-    <TargetFramework>uap10.0.17763</TargetFramework>
+    <TargetFramework>uap10.0.16299</TargetFramework>
+
     <OutputType>winmdobj</OutputType>
     <IsPackable>True</IsPackable>
     
-    <!-- <AppDesignerFolder>Properties</AppDesignerFolder> -->
     <RootNamespace>Microsoft.Toolkit.Uwp.UI.Lottie</RootNamespace>
     <AssemblyName>Microsoft.Toolkit.Uwp.UI.Lottie</AssemblyName>
 
@@ -31,7 +31,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.UI.Xaml">
-      <Version>2.1.181025003-prerelease</Version>
+      <Version>2.1.190218001-prerelease</Version>
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </PackageReference>
