@@ -27,7 +27,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             string refId,
             double width,
             double height,
-            IEnumerable<Mask> masks)
+            IEnumerable<Mask> masks,
+            MatteType layerMatteType)
             : base(
                  name,
                  index,
@@ -41,7 +42,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
                  blendMode,
                  is3d,
                  autoOrient,
-                 masks)
+                 masks,
+                 layerMatteType)
         {
             RefId = refId;
             Width = width;

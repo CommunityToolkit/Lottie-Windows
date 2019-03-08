@@ -24,7 +24,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             BlendMode blendMode,
             bool is3d,
             bool autoOrient,
-            IEnumerable<Mask> masks)
+            IEnumerable<Mask> masks,
+            MatteType layerMatteType)
             : base(
                  name,
                  index,
@@ -38,7 +39,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
                  blendMode,
                  is3d,
                  autoOrient,
-                 masks)
+                 masks,
+                 layerMatteType)
         {
         }
 

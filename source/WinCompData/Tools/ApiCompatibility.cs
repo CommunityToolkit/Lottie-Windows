@@ -14,9 +14,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
 #endif
     sealed class ApiCompatibility
     {
-        ApiCompatibility(bool requiresCompositionGeometricClip)
+        ApiCompatibility()
         {
-            RequiresCompositionGeometricClip = requiresCompositionGeometricClip;
         }
 
         /// <summary>
@@ -25,11 +24,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
         /// <returns>An object with properties describing the compatibility requirements of the tree.</returns>
         public static ApiCompatibility Analyze(CompositionObject graphRoot)
         {
+            var objectGraph = ObjectGraph<Graph.Node>.FromCompositionObject(graphRoot, includeVertices: false);
+            var requiresCompositionVisualSurface =
+                (from node in objectGraph.CompositionObjectNodes
+                 where node.Object.Type == CompositionObjectType.CompositionVisualSurface
+                 select node).Any();
+
             // Always require CompostionGeometryClip - this ensures that we are never compatible with
             // RS4 (geometries are flaky in RS4, and CompositionGeometryClip is new in RS5).
-            return new ApiCompatibility(requiresCompositionGeometricClip: true);
+            return new ApiCompatibility { RequiresCompositionGeometricClip = true, RequiresCompositionVisualSurface = requiresCompositionVisualSurface };
         }
 
-        public bool RequiresCompositionGeometricClip { get; }
+        public bool RequiresCompositionGeometricClip { get; private set; }
+
+        public bool RequiresCompositionVisualSurface { get; private set; }
     }
 }

@@ -565,11 +565,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 _issues.LayerEffects();
             }
 
-            if (obj.ContainsKey("tt"))
-            {
-                _issues.Mattes();
-            }
-
             // ----------------------
             // Layer Transform
             // ----------------------
@@ -594,6 +589,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             // 'masksProperties' with the plural 'masks'.
             var maskProperties = obj.GetNamedArray("masksProperties", null);
             var masks = maskProperties != null ? ReadMaskProperties(maskProperties) : null;
+
+            var matteType = TTToMatteType(obj.GetNamedNumber("tt", (double)Layer.MatteType.None));
 
             switch (TyToLayerType(obj.GetNamedNumber("ty", double.NaN)))
             {
@@ -625,7 +622,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                             refId,
                             width,
                             height,
-                            masks);
+                            masks,
+                            matteType);
                     }
 
                 case Layer.LayerType.Solid:
@@ -651,7 +649,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                             blendMode,
                             is3d,
                             autoOrient,
-                            masks);
+                            masks,
+                            matteType);
                     }
 
                 case Layer.LayerType.Image:
@@ -673,7 +672,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                             is3d,
                             autoOrient,
                             refId,
-                            masks);
+                            masks,
+                            matteType);
                     }
 
                 case Layer.LayerType.Null:
@@ -693,7 +693,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                             blendMode,
                             is3d,
                             autoOrient,
-                            masks);
+                            masks,
+                            matteType);
                     }
 
                 case Layer.LayerType.Shape:
@@ -715,7 +716,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                             blendMode,
                             is3d,
                             autoOrient,
-                            masks);
+                            masks,
+                            matteType);
                     }
 
                 case Layer.LayerType.Text:
@@ -741,7 +743,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                             is3d,
                             autoOrient,
                             refId,
-                            masks);
+                            masks,
+                            matteType);
                     }
 
                 default:
@@ -2334,6 +2337,21 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         {
             Linear,
             Radial,
+        }
+
+        static Layer.MatteType TTToMatteType(double tt)
+        {
+            if (tt == (int)tt)
+            {
+                switch ((int)tt)
+                {
+                    case 0: return Layer.MatteType.None;
+                    case 1: return Layer.MatteType.Add;
+                    case 2: return Layer.MatteType.Invert;
+                }
+            }
+
+            throw new LottieCompositionReaderException($"Unexpected matte type: {tt}");
         }
 
         // Indicates that the given field will not be read because we don't yet support it.

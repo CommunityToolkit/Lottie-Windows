@@ -4,11 +4,24 @@
 
 #define ReuseExpressionAnimation
 
+// define POST_RS5_SDK if using an SDK that is for a release
+// after RS5. This is necessary because the build system does
+// not easily support SDKs that are still prerelease.
+// Once the release that has VisualSurface is out, this #if can
+// be removed.
+#if POST_RS5_SDK
+// For allowing of Windows.UI.Composition.VisualSurface and the
+// Lottie features that rely on it
+#define AllowVisualSurface
+#endif
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using Microsoft.Graphics.Canvas.Effects;
 using Microsoft.Graphics.Canvas.Geometry;
+using Mgce = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce;
 using Wc = Windows.UI.Composition;
 using Wd = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 
@@ -232,6 +245,24 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             return result;
         }
 
+        Wc.SpriteVisual GetSpriteVisual(Wd.SpriteVisual obj)
+        {
+            if (GetExisting(obj, out Wc.SpriteVisual result))
+            {
+                return result;
+            }
+
+            result = CacheAndInitializeVisual(obj, _c.CreateSpriteVisual());
+
+            if (obj.Brush != null)
+            {
+                result.Brush = GetCompositionBrush(obj.Brush);
+            }
+
+            StartAnimations(obj, result);
+            return result;
+        }
+
         Wc.ContainerVisual GetContainerVisual(Wd.ContainerVisual obj)
         {
             if (GetExisting(obj, out Wc.ContainerVisual result))
@@ -241,6 +272,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
 
             result = CacheAndInitializeVisual(obj, _c.CreateContainerVisual());
             InitializeContainerVisual(obj, result);
+
             StartAnimations(obj, result);
             return result;
         }
@@ -314,8 +346,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                     return GetCompositionColorBrush((Wd.CompositionColorBrush)obj);
                 case Wd.CompositionObjectType.CompositionContainerShape:
                     return GetCompositionContainerShape((Wd.CompositionContainerShape)obj);
+                case Wd.CompositionObjectType.CompositionEffectBrush:
+                    return GetCompositionEffectBrush((Wd.CompositionEffectBrush)obj);
                 case Wd.CompositionObjectType.CompositionEllipseGeometry:
                     return GetCompositionEllipseGeometry((Wd.CompositionEllipseGeometry)obj);
+                case Wd.CompositionObjectType.CompositionGeometricClip:
+                    return GetCompositionGeometricClip((Wd.CompositionGeometricClip)obj);
                 case Wd.CompositionObjectType.CompositionPathGeometry:
                     return GetCompositionPathGeometry((Wd.CompositionPathGeometry)obj);
                 case Wd.CompositionObjectType.CompositionPropertySet:
@@ -328,16 +364,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                     return GetCompositionSpriteShape((Wd.CompositionSpriteShape)obj);
                 case Wd.CompositionObjectType.CompositionViewBox:
                     return GetCompositionViewBox((Wd.CompositionViewBox)obj);
+                case Wd.CompositionObjectType.CompositionVisualSurface:
+                    return GetCompositionVisualSurface((Wd.CompositionVisualSurface)obj);
                 case Wd.CompositionObjectType.ContainerVisual:
                     return GetContainerVisual((Wd.ContainerVisual)obj);
                 case Wd.CompositionObjectType.CubicBezierEasingFunction:
                     return GetCubicBezierEasingFunction((Wd.CubicBezierEasingFunction)obj);
                 case Wd.CompositionObjectType.ExpressionAnimation:
                     return GetExpressionAnimation((Wd.ExpressionAnimation)obj);
+                case Wd.CompositionObjectType.CompositionSurfaceBrush:
+                    return GetCompositionSurfaceBrush((Wd.CompositionSurfaceBrush)obj);
                 case Wd.CompositionObjectType.InsetClip:
                     return GetInsetClip((Wd.InsetClip)obj);
-                case Wd.CompositionObjectType.CompositionGeometricClip:
-                    return GetCompositionGeometricClip((Wd.CompositionGeometricClip)obj);
                 case Wd.CompositionObjectType.LinearEasingFunction:
                     return GetLinearEasingFunction((Wd.LinearEasingFunction)obj);
                 case Wd.CompositionObjectType.PathKeyFrameAnimation:
@@ -346,6 +384,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                     return GetScalarKeyFrameAnimation((Wd.ScalarKeyFrameAnimation)obj);
                 case Wd.CompositionObjectType.ShapeVisual:
                     return GetShapeVisual((Wd.ShapeVisual)obj);
+                case Wd.CompositionObjectType.SpriteVisual:
+                    return GetSpriteVisual((Wd.SpriteVisual)obj);
                 case Wd.CompositionObjectType.StepEasingFunction:
                     return GetStepEasingFunction((Wd.StepEasingFunction)obj);
                 case Wd.CompositionObjectType.Vector2KeyFrameAnimation:
@@ -399,6 +439,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                     return GetContainerVisual((Wd.ContainerVisual)obj);
                 case Wd.CompositionObjectType.ShapeVisual:
                     return GetShapeVisual((Wd.ShapeVisual)obj);
+                case Wd.CompositionObjectType.SpriteVisual:
+                    return GetSpriteVisual((Wd.SpriteVisual)obj);
                 default:
                     throw new InvalidOperationException();
             }
@@ -750,14 +792,49 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             return result;
         }
 
+#if AllowVisualSurface
+        Wc.CompositionVisualSurface GetCompositionVisualSurface(Wd.CompositionVisualSurface obj)
+        {
+            if (GetExisting(obj, out Wc.CompositionVisualSurface result))
+            {
+                return result;
+            }
+
+            result = CacheAndInitializeCompositionObject(obj, _c.CreateVisualSurface());
+
+            if (obj.SourceVisual != null)
+            {
+                result.SourceVisual = GetVisual(obj.SourceVisual);
+            }
+
+            if (obj.SourceSize != null)
+            {
+                result.SourceSize = obj.SourceSize.Value;
+            }
+
+            if (obj.SourceOffset != null)
+            {
+                result.SourceOffset = obj.SourceOffset.Value;
+            }
+
+            StartAnimations(obj, result);
+            return result;
+        }
+#else
+        Wc.CompositionObject GetCompositionVisualSurface(Wd.CompositionVisualSurface obj)
+        {
+            throw new InvalidOperationException();
+        }
+#endif
+
         Wc.CompositionShape GetCompositionShape(Wd.CompositionShape obj)
         {
             switch (obj.Type)
             {
-                case Wd.CompositionObjectType.CompositionSpriteShape:
-                    return GetCompositionSpriteShape((Wd.CompositionSpriteShape)obj);
                 case Wd.CompositionObjectType.CompositionContainerShape:
                     return GetCompositionContainerShape((Wd.CompositionContainerShape)obj);
+                case Wd.CompositionObjectType.CompositionSpriteShape:
+                    return GetCompositionSpriteShape((Wd.CompositionSpriteShape)obj);
                 default:
                     throw new InvalidOperationException();
             }
@@ -793,6 +870,43 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             foreach (var child in obj.Shapes)
             {
                 shapeCollection.Add(GetCompositionShape(child));
+            }
+
+            StartAnimations(obj, result);
+            return result;
+        }
+
+        Wc.CompositionEffectBrush GetCompositionEffectBrush(Wd.CompositionEffectBrush obj)
+        {
+            if (GetExisting(obj, out Wc.CompositionEffectBrush result))
+            {
+                return result;
+            }
+
+            var effectBase = obj.GetFactory().GetEffect();
+
+            if (effectBase.Type == Mgce.GraphicsEffectType.CompositeEffect)
+            {
+                var effect = (Mgce.CompositeEffect)effectBase;
+
+                var compositeEffect = new CompositeEffect();
+                compositeEffect.Mode = (Graphics.Canvas.CanvasComposite)effect.Mode;
+
+                var effectFactory = _c.CreateEffectFactory(compositeEffect);
+                var compositeEffectBrush = effectFactory.CreateBrush();
+
+                result = CacheAndInitializeCompositionObject(obj, compositeEffectBrush);
+
+                foreach (var source in effect.Sources)
+                {
+                    compositeEffect.Sources.Add(new Wc.CompositionEffectSourceParameter(source.Name));
+
+                    result.SetSourceParameter(source.Name, GetCompositionBrush(obj.GetSourceParameter(source.Name)));
+                }
+            }
+            else
+            {
+                throw new InvalidOperationException();
             }
 
             StartAnimations(obj, result);
@@ -862,6 +976,24 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             if (obj.FillBrush != null)
             {
                 result.FillBrush = GetCompositionBrush(obj.FillBrush);
+            }
+
+            StartAnimations(obj, result);
+            return result;
+        }
+
+        Wc.CompositionSurfaceBrush GetCompositionSurfaceBrush(Wd.CompositionSurfaceBrush obj)
+        {
+            if (GetExisting(obj, out Wc.CompositionSurfaceBrush result))
+            {
+                return result;
+            }
+
+            result = CacheAndInitializeCompositionObject(obj, _c.CreateSurfaceBrush());
+
+            if (obj.Surface != null)
+            {
+                result.Surface = GetCompositionSurface(obj.Surface);
             }
 
             StartAnimations(obj, result);
@@ -1055,7 +1187,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
 
         Wc.CompositionBrush GetCompositionBrush(Wd.CompositionBrush obj)
         {
-            return GetCompositionColorBrush((Wd.CompositionColorBrush)obj);
+            switch (obj.Type)
+            {
+                case Wd.CompositionObjectType.CompositionColorBrush:
+                    return GetCompositionColorBrush((Wd.CompositionColorBrush)obj);
+                case Wd.CompositionObjectType.CompositionEffectBrush:
+                    return GetCompositionEffectBrush((Wd.CompositionEffectBrush)obj);
+                case Wd.CompositionObjectType.CompositionSurfaceBrush:
+                    return GetCompositionSurfaceBrush((Wd.CompositionSurfaceBrush)obj);
+                default:
+                    throw new InvalidOperationException();
+            }
         }
 
         Wc.CompositionColorBrush GetCompositionColorBrush(Wd.CompositionColorBrush obj)
@@ -1068,6 +1210,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             result = CacheAndInitializeCompositionObject(obj, _c.CreateColorBrush(Color(obj.Color)));
             StartAnimations(obj, result);
             return result;
+        }
+
+        Wc.ICompositionSurface GetCompositionSurface(Wd.CompositionSurfaceBase obj)
+        {
+            if (GetCompositionObject(obj) is Wc.ICompositionSurface compositionSurface)
+            {
+                return compositionSurface;
+            }
+
+            throw new InvalidOperationException();
         }
 
         static Wc.CompositionStrokeLineJoin StrokeLineJoin(Wd.CompositionStrokeLineJoin value)

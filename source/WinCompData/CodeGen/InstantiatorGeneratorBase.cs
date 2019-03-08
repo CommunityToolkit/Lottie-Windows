@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Linq;
 using System.Numerics;
 using System.Text;
+using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui;
@@ -508,6 +509,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             builder.OpenScope();
             builder.WriteLine("return false;");
             builder.CloseScope();
+            builder.WriteLine($"if (!Windows{_stringifier.ScopeResolve}Foundation{_stringifier.ScopeResolve}Metadata{_stringifier.ScopeResolve}ApiInformation{_stringifier.ScopeResolve}IsTypePresent(\"Windows.UI.Composition.CompositionVisualSurface\"))");
+            builder.OpenScope();
+            builder.WriteLine("return false;");
+            builder.CloseScope();
             builder.WriteLine("return true;");
             builder.CloseScope();
             builder.WriteLine();
@@ -590,8 +595,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
                     return GenerateCompositionColorBrushFactory(builder, (CompositionColorBrush)obj, node);
                 case CompositionObjectType.CompositionContainerShape:
                     return GenerateContainerShapeFactory(builder, (CompositionContainerShape)obj, node);
+                case CompositionObjectType.CompositionEffectBrush:
+                    return GenerateCompositionEffectBrushFactory(builder, (CompositionEffectBrush)obj, node);
                 case CompositionObjectType.CompositionEllipseGeometry:
                     return GenerateCompositionEllipseGeometryFactory(builder, (CompositionEllipseGeometry)obj, node);
+                case CompositionObjectType.CompositionGeometricClip:
+                    return GenerateCompositionGeometricClipFactory(builder, (CompositionGeometricClip)obj, node);
                 case CompositionObjectType.CompositionPathGeometry:
                     return GenerateCompositionPathGeometryFactory(builder, (CompositionPathGeometry)obj, node);
                 case CompositionObjectType.CompositionPropertySet:
@@ -603,8 +612,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
                     return GenerateCompositionRoundedRectangleGeometryFactory(builder, (CompositionRoundedRectangleGeometry)obj, node);
                 case CompositionObjectType.CompositionSpriteShape:
                     return GenerateSpriteShapeFactory(builder, (CompositionSpriteShape)obj, node);
+                case CompositionObjectType.CompositionSurfaceBrush:
+                    return GenerateCompositionSurfaceBrushFactory(builder, (CompositionSurfaceBrush)obj, node);
                 case CompositionObjectType.CompositionViewBox:
                     return GenerateCompositionViewBoxFactory(builder, (CompositionViewBox)obj, node);
+                case CompositionObjectType.CompositionVisualSurface:
+                    return GenerateCompositionVisualSurfaceFactory(builder, (CompositionVisualSurface)obj, node);
                 case CompositionObjectType.ContainerVisual:
                     return GenerateContainerVisualFactory(builder, (ContainerVisual)obj, node);
                 case CompositionObjectType.CubicBezierEasingFunction:
@@ -613,8 +626,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
                     return GenerateExpressionAnimationFactory(builder, (ExpressionAnimation)obj, node);
                 case CompositionObjectType.InsetClip:
                     return GenerateInsetClipFactory(builder, (InsetClip)obj, node);
-                case CompositionObjectType.CompositionGeometricClip:
-                    return GenerateCompositionGeometricClip(builder, (CompositionGeometricClip)obj, node);
                 case CompositionObjectType.LinearEasingFunction:
                     return GenerateLinearEasingFunctionFactory(builder, (LinearEasingFunction)obj, node);
                 case CompositionObjectType.PathKeyFrameAnimation:
@@ -623,6 +634,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
                     return GenerateScalarKeyFrameAnimationFactory(builder, (ScalarKeyFrameAnimation)obj, node);
                 case CompositionObjectType.ShapeVisual:
                     return GenerateShapeVisualFactory(builder, (ShapeVisual)obj, node);
+                case CompositionObjectType.SpriteVisual:
+                    return GenerateSpriteVisualFactory(builder, (SpriteVisual)obj, node);
                 case CompositionObjectType.StepEasingFunction:
                     return GenerateStepEasingFunctionFactory(builder, (StepEasingFunction)obj, node);
                 case CompositionObjectType.Vector2KeyFrameAnimation:
@@ -665,7 +678,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             return true;
         }
 
-        bool GenerateCompositionGeometricClip(CodeBuilder builder, CompositionGeometricClip obj, ObjectData node)
+        bool GenerateCompositionGeometricClipFactory(CodeBuilder builder, CompositionGeometricClip obj, ObjectData node)
         {
             WriteObjectFactoryStart(builder, node);
             WriteCreateAssignment(builder, node, $"_c{Deref}CreateGeometricClip()");
@@ -1259,6 +1272,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             return true;
         }
 
+        bool GenerateSpriteVisualFactory(CodeBuilder builder, SpriteVisual obj, ObjectData node)
+        {
+            WriteObjectFactoryStart(builder, node);
+            WriteCreateAssignment(builder, node, $"_c{Deref}CreateSpriteVisual()");
+            InitializeVisual(builder, obj, node);
+
+            if (obj.Brush != null)
+            {
+                builder.WriteLine($"result{Deref}Brush = {CallFactoryFromFor(node, obj.Brush)};");
+            }
+
+            StartAnimations(builder, obj, node);
+            WriteObjectFactoryEnd(builder);
+            return true;
+        }
+
         bool GenerateContainerShapeFactory(CodeBuilder builder, CompositionContainerShape obj, ObjectData node)
         {
             WriteObjectFactoryStart(builder, node);
@@ -1272,6 +1301,40 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
                 {
                     builder.WriteLine($"shapes{Deref}{IListAdd}({CallFactoryFromFor(node, shape)});");
                 }
+            }
+
+            StartAnimations(builder, obj, node);
+            WriteObjectFactoryEnd(builder);
+            return true;
+        }
+
+        bool GenerateCompositionEffectBrushFactory(CodeBuilder builder, CompositionEffectBrush obj, ObjectData node)
+        {
+            WriteObjectFactoryStart(builder, node);
+
+            var effectBase = obj.GetFactory().GetEffect();
+
+            if (effectBase.Type == Mgce.GraphicsEffectType.CompositeEffect)
+            {
+                var effect = (Mgce.CompositeEffect)effectBase;
+
+                builder.WriteLine($"{Var} compositeEffect = {New} CompositeEffect();");
+                builder.WriteLine($"compositeEffect{Deref}Mode = {CanvasCompositeMode(effect.Mode)};");
+
+                builder.WriteLine($"{Var} effectFactory = _c{Deref}CreateEffectFactory(compositeEffect);");
+                WriteCreateAssignment(builder, node, $"effectFactory{Deref}CreateBrush()");
+                InitializeCompositionBrush(builder, obj, node);
+
+                foreach (var source in effect.Sources)
+                {
+                    builder.WriteLine($"compositeEffect{Deref}Sources{Deref}{IListAdd}({New} CompositionEffectSourceParameter({String(source.Name)}));");
+
+                    builder.WriteLine($"result{Deref}SetSourceParameter({String(source.Name)}, {CallFactoryFromFor(node, obj.GetSourceParameter(source.Name))});");
+                }
+            }
+            else
+            {
+                throw new InvalidOperationException();
             }
 
             StartAnimations(builder, obj, node);
@@ -1354,12 +1417,54 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             return true;
         }
 
+        bool GenerateCompositionSurfaceBrushFactory(CodeBuilder builder, CompositionSurfaceBrush obj, ObjectData node)
+        {
+            WriteObjectFactoryStart(builder, node);
+            WriteCreateAssignment(builder, node, $"_c{Deref}CreateSurfaceBrush()");
+            InitializeCompositionBrush(builder, obj, node);
+
+            if (obj.Surface != null)
+            {
+                builder.WriteLine($"result{Deref}Surface = {CallFactoryFromFor(node, (CompositionObject)obj.Surface)};");
+            }
+
+            StartAnimations(builder, obj, node);
+            WriteObjectFactoryEnd(builder);
+            return true;
+        }
+
         bool GenerateCompositionViewBoxFactory(CodeBuilder builder, CompositionViewBox obj, ObjectData node)
         {
             WriteObjectFactoryStart(builder, node);
             WriteCreateAssignment(builder, node, $"_c{Deref}CreateViewBox()");
             InitializeCompositionObject(builder, obj, node);
             builder.WriteLine($"result.Size = {Vector2(obj.Size)};");
+            StartAnimations(builder, obj, node);
+            WriteObjectFactoryEnd(builder);
+            return true;
+        }
+
+        bool GenerateCompositionVisualSurfaceFactory(CodeBuilder builder, CompositionVisualSurface obj, ObjectData node)
+        {
+            WriteObjectFactoryStart(builder, node);
+            WriteCreateAssignment(builder, node, $"_c{Deref}CreateVisualSurface()");
+            InitializeCompositionObject(builder, obj, node);
+
+            if (obj.SourceVisual != null)
+            {
+                builder.WriteLine($"result{Deref}SourceVisual = {CallFactoryFromFor(node, obj.SourceVisual)};");
+            }
+
+            if (obj.SourceSize != null)
+            {
+                builder.WriteLine($"result{Deref}SourceSize = {Vector2(obj.SourceSize)};");
+            }
+
+            if (obj.SourceOffset != null)
+            {
+                builder.WriteLine($"result{Deref}SourceOffset = {Vector2(obj.SourceOffset.Value)};");
+            }
+
             StartAnimations(builder, obj, node);
             WriteObjectFactoryEnd(builder);
             return true;
@@ -1503,6 +1608,41 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
                     return $"CompositionStrokeLineJoin{ScopeResolve}Round";
                 case CompositionStrokeLineJoin.MiterOrBevel:
                     return $"CompositionStrokeLineJoin{ScopeResolve}MiterOrBevel";
+                default:
+                    throw new InvalidOperationException();
+            }
+        }
+
+        string CanvasCompositeMode(CanvasComposite value)
+        {
+            switch (value)
+            {
+                case CanvasComposite.SourceOver:
+                    return $"CanvasComposite{ScopeResolve}SourceOver";
+                case CanvasComposite.DestinationOver:
+                    return $"CanvasComposite{ScopeResolve}DestinationOver";
+                case CanvasComposite.SourceIn:
+                    return $"CanvasComposite{ScopeResolve}SourceIn";
+                case CanvasComposite.DestinationIn:
+                    return $"CanvasComposite{ScopeResolve}DestinationIn";
+                case CanvasComposite.SourceOut:
+                    return $"CanvasComposite{ScopeResolve}SourceOut";
+                case CanvasComposite.DestinationOut:
+                    return $"CanvasComposite{ScopeResolve}DestinationOut";
+                case CanvasComposite.SourceAtop:
+                    return $"CanvasComposite{ScopeResolve}SourceAtop";
+                case CanvasComposite.DestinationAtop:
+                    return $"CanvasComposite{ScopeResolve}DestinationAtop";
+                case CanvasComposite.Xor:
+                    return $"CanvasComposite{ScopeResolve}Xor";
+                case CanvasComposite.Add:
+                    return $"CanvasComposite{ScopeResolve}Add";
+                case CanvasComposite.Copy:
+                    return $"CanvasComposite{ScopeResolve}Copy";
+                case CanvasComposite.BoundedCopy:
+                    return $"CanvasComposite{ScopeResolve}BoundedCopy";
+                case CanvasComposite.MaskInvert:
+                    return $"CanvasComposite{ScopeResolve}MaskInvert";
                 default:
                     throw new InvalidOperationException();
             }
