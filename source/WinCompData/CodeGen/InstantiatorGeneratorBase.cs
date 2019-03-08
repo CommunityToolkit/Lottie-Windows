@@ -8,7 +8,7 @@ using System.Globalization;
 using System.Linq;
 using System.Numerics;
 using System.Text;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce;
+using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgc;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui;
@@ -1457,7 +1457,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
             if (obj.SourceSize != null)
             {
-                builder.WriteLine($"result{Deref}SourceSize = {Vector2(obj.SourceSize)};");
+                builder.WriteLine($"result{Deref}SourceSize = {Vector2(obj.SourceSize.Value)};");
             }
 
             if (obj.SourceOffset != null)

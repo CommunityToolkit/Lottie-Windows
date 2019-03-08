@@ -76,7 +76,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)KeyFrameAnimation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)KeyFrameAnimation_.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LinearEasingFunction.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Mgce\CanvasComposite.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Mgc\CanvasComposite.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Mgce\CompositeEffect.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Mgce\GraphicsEffectBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Mgce\GraphicsEffectType.cs" />

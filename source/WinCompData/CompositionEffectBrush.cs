@@ -11,18 +11,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 #endif
     sealed class CompositionEffectBrush : CompositionBrush
     {
-        CompositionEffectFactory _factory;
-        Dictionary<string, CompositionBrush> _sourceParameters = new Dictionary<string, CompositionBrush>();
+        readonly CompositionEffectFactory _factory;
+        readonly Dictionary<string, CompositionBrush> _sourceParameters = new Dictionary<string, CompositionBrush>();
 
         internal CompositionEffectBrush(CompositionEffectFactory factory)
         {
             _factory = factory;
         }
 
-        public CompositionBrush GetSourceParameter(string name)
-        {
-            return _sourceParameters[name];
-        }
+        public CompositionBrush GetSourceParameter(string name) => _sourceParameters[name];
 
         public void SetSourceParameter(string name, CompositionBrush source)
         {

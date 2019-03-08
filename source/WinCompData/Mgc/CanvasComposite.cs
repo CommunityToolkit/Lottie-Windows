@@ -2,9 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce
+namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgc
 {
-    // NOTE: The values of this enum are made to match those of Microsoft.Graphics.Canvas.CanvasComposite
 #if PUBLIC_WinCompData
     public
 #endif

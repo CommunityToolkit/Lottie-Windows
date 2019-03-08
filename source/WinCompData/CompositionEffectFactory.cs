@@ -11,7 +11,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 #endif
     sealed class CompositionEffectFactory
     {
-        GraphicsEffectBase _effect;
+        readonly GraphicsEffectBase _effect;
 
         internal CompositionEffectFactory(GraphicsEffectBase effect)
         {

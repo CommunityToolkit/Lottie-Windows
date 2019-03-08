@@ -9,10 +9,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 #endif
     sealed class CompositionSurfaceBrush : CompositionBrush
     {
-        internal CompositionSurfaceBrush()
-        {
-        }
-
         internal CompositionSurfaceBrush(CompositionSurfaceBase surface)
         {
             Surface = surface;

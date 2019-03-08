@@ -4,14 +4,14 @@
 
 #define ReuseExpressionAnimation
 
-// define POST_RS5_SDK if using an SDK that is for a release
+// Define POST_RS5_SDK if using an SDK that is for a release
 // after RS5. This is necessary because the build system does
 // not easily support SDKs that are still prerelease.
 // Once the release that has VisualSurface is out, this #if can
 // be removed.
 #if POST_RS5_SDK
 // For allowing of Windows.UI.Composition.VisualSurface and the
-// Lottie features that rely on it
+// Lottie features that rely on it.
 #define AllowVisualSurface
 #endif
 
@@ -19,9 +19,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using Microsoft.Graphics.Canvas.Effects;
 using Microsoft.Graphics.Canvas.Geometry;
-using Mgce = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce;
+using Mgc = Microsoft.Graphics.Canvas;
+using Mgce = Microsoft.Graphics.Canvas.Effects;
 using Wc = Windows.UI.Composition;
 using Wd = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 
@@ -883,30 +883,32 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 return result;
             }
 
-            var effectBase = obj.GetFactory().GetEffect();
+            var effect = obj.GetFactory().GetEffect();
 
-            if (effectBase.Type == Mgce.GraphicsEffectType.CompositeEffect)
+            switch (effect.Type)
             {
-                var effect = (Mgce.CompositeEffect)effectBase;
+                case Wd.Mgce.GraphicsEffectType.CompositeEffect:
+                    var wdCompositeEffect = (Wd.Mgce.CompositeEffect)effect;
 
-                var compositeEffect = new CompositeEffect();
-                compositeEffect.Mode = (Graphics.Canvas.CanvasComposite)effect.Mode;
+                    var wcCompositeEffect = new Mgce.CompositeEffect
+                    {
+                        Mode = CanvasComposite(wdCompositeEffect.Mode),
+                    };
 
-                var effectFactory = _c.CreateEffectFactory(compositeEffect);
-                var compositeEffectBrush = effectFactory.CreateBrush();
+                    var effectFactory = _c.CreateEffectFactory(wcCompositeEffect);
+                    var compositeEffectBrush = effectFactory.CreateBrush();
 
-                result = CacheAndInitializeCompositionObject(obj, compositeEffectBrush);
+                    result = CacheAndInitializeCompositionObject(obj, compositeEffectBrush);
 
-                foreach (var source in effect.Sources)
-                {
-                    compositeEffect.Sources.Add(new Wc.CompositionEffectSourceParameter(source.Name));
+                    foreach (var source in wdCompositeEffect.Sources)
+                    {
+                        wcCompositeEffect.Sources.Add(new Wc.CompositionEffectSourceParameter(source.Name));
+                        result.SetSourceParameter(source.Name, GetCompositionBrush(obj.GetSourceParameter(source.Name)));
+                    }
 
-                    result.SetSourceParameter(source.Name, GetCompositionBrush(obj.GetSourceParameter(source.Name)));
-                }
-            }
-            else
-            {
-                throw new InvalidOperationException();
+                    break;
+                default:
+                    throw new InvalidOperationException();
             }
 
             StartAnimations(obj, result);
@@ -1214,12 +1216,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
 
         Wc.ICompositionSurface GetCompositionSurface(Wd.CompositionSurfaceBase obj)
         {
-            if (GetCompositionObject(obj) is Wc.ICompositionSurface compositionSurface)
+            switch (obj.Type)
             {
-                return compositionSurface;
+                case Wd.CompositionObjectType.CompositionVisualSurface:
+                    return (Wc.ICompositionSurface)GetCompositionObject(obj);
+                default:
+                    throw new InvalidOperationException();
             }
-
-            throw new InvalidOperationException();
         }
 
         static Wc.CompositionStrokeLineJoin StrokeLineJoin(Wd.CompositionStrokeLineJoin value)
@@ -1268,6 +1271,41 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                     return CanvasFilledRegionDetermination.Alternate;
                 case Wd.Mgcg.CanvasFilledRegionDetermination.Winding:
                     return CanvasFilledRegionDetermination.Winding;
+                default:
+                    throw new InvalidOperationException();
+            }
+        }
+
+        static Mgc.CanvasComposite CanvasComposite(Wd.Mgc.CanvasComposite value)
+        {
+            switch (value)
+            {
+                case Wd.Mgc.CanvasComposite.SourceOver:
+                    return Mgc.CanvasComposite.SourceOver;
+                case Wd.Mgc.CanvasComposite.DestinationOver:
+                    return Mgc.CanvasComposite.DestinationOver;
+                case Wd.Mgc.CanvasComposite.SourceIn:
+                    return Mgc.CanvasComposite.SourceIn;
+                case Wd.Mgc.CanvasComposite.DestinationIn:
+                    return Mgc.CanvasComposite.DestinationIn;
+                case Wd.Mgc.CanvasComposite.SourceOut:
+                    return Mgc.CanvasComposite.SourceOut;
+                case Wd.Mgc.CanvasComposite.DestinationOut:
+                    return Mgc.CanvasComposite.DestinationOut;
+                case Wd.Mgc.CanvasComposite.SourceAtop:
+                    return Mgc.CanvasComposite.SourceAtop;
+                case Wd.Mgc.CanvasComposite.DestinationAtop:
+                    return Mgc.CanvasComposite.DestinationAtop;
+                case Wd.Mgc.CanvasComposite.Xor:
+                    return Mgc.CanvasComposite.Xor;
+                case Wd.Mgc.CanvasComposite.Add:
+                    return Mgc.CanvasComposite.Add;
+                case Wd.Mgc.CanvasComposite.Copy:
+                    return Mgc.CanvasComposite.Copy;
+                case Wd.Mgc.CanvasComposite.BoundedCopy:
+                    return Mgc.CanvasComposite.BoundedCopy;
+                case Wd.Mgc.CanvasComposite.MaskInvert:
+                    return Mgc.CanvasComposite.MaskInvert;
                 default:
                     throw new InvalidOperationException();
             }

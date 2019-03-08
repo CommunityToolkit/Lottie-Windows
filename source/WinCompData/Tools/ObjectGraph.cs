@@ -440,7 +440,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
         bool VisitCompositionSurfaceBrush(CompositionSurfaceBrush obj, T node)
         {
             VisitCompositionBrush(obj, node);
-            Reference(node, (CompositionObject)obj.Surface);
+            Reference(node, obj.Surface);
             return true;
         }
 
