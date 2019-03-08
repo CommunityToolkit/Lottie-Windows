@@ -12,36 +12,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
     sealed class SolidLayer : Layer
     {
         public SolidLayer(
-            string name,
-            int index,
-            int? parent,
-            bool isHidden,
-            Transform transform,
+            in LayerArgs args,
             int width,
             int height,
-            Color color,
-            double timeStretch,
-            double startFrame,
-            double inFrame,
-            double outFrame,
-            BlendMode blendMode,
-            bool is3d,
-            bool autoOrient,
-            IEnumerable<Mask> masks)
-            : base(
-             name,
-             index,
-             parent,
-             isHidden,
-             transform,
-             timeStretch,
-             startFrame,
-             inFrame,
-             outFrame,
-             blendMode,
-             is3d,
-             autoOrient,
-             masks)
+            Color color)
+            : base(in args)
         {
             Color = color;
             Height = height;
