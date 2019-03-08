@@ -16,34 +16,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         readonly ShapeLayerContent[] _shapes;
 
         public ShapeLayer(
-            string name,
-            IEnumerable<ShapeLayerContent> shapes,
-            int index,
-            int? parent,
-            bool isHidden,
-            Transform transform,
-            double timeStretch,
-            double startFrame,
-            double inFrame,
-            double outFrame,
-            BlendMode blendMode,
-            bool is3d,
-            bool autoOrient,
-            IEnumerable<Mask> masks)
-         : base(
-             name,
-             index,
-             parent,
-             isHidden,
-             transform,
-             timeStretch,
-             startFrame,
-             inFrame,
-             outFrame,
-             blendMode,
-             is3d,
-             autoOrient,
-             masks)
+            in LayerArgs args,
+            IEnumerable<ShapeLayerContent> shapes)
+         : base(in args)
         {
             _shapes = shapes.ToArray();
         }
