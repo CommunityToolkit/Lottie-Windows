@@ -2,13 +2,13 @@
 
 # Default owners for everything in the repo, unless a later
 # match takes precedence.
-*       @simeoncran @sohchatt
+*       @eliezerpMS @simeoncran @sohchatt
 
 # File types
-*.cs    @simeoncran
-*proj   @simeoncran
-*sln    @simeoncran
-*.md    @simeoncran @sohchatt
+*.cs    @eliezerpMS @simeoncran
+*proj   @eliezerpMS @simeoncran
+*sln    @eliezerpMS @simeoncran
+*.md    @sohchatt @eliezerpMS @simeoncran
 
 # Directories
-/build/ @simeoncran
+/build/ @eliezerpMS @simeoncran
