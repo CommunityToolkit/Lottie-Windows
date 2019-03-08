@@ -22,36 +22,21 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
     {
         readonly Mask[] _masks;
 
-        private protected Layer(
-            string name,
-            int index,
-            int? parent,
-            bool isHidden,
-            Transform transform,
-            double timeStretch,
-            double startFrame,
-            double inFrame,
-            double outFrame,
-            BlendMode blendMode,
-            bool is3d,
-            bool autoOrient,
-            IEnumerable<Mask> masks,
-            MatteType layerMatteType)
-            : base(name)
+        private protected Layer(in LayerArgs args)
+            : base(args.Name)
         {
-            Index = index;
-            Parent = parent;
-            IsHidden = isHidden;
-            Transform = transform;
-            TimeStretch = timeStretch;
-            StartTime = startFrame;
-            InPoint = inFrame;
-            OutPoint = outFrame;
-            BlendMode = blendMode;
-            Is3d = is3d;
-            AutoOrient = autoOrient;
-            _masks = masks != null ? masks.ToArray() : null;
-            LayerMatteType = layerMatteType;
+            Index = args.Index;
+            Parent = args.Parent;
+            IsHidden = args.IsHidden;
+            Transform = args.Transform;
+            TimeStretch = args.TimeStretch;
+            StartTime = args.StartFrame;
+            InPoint = args.InFrame;
+            OutPoint = args.OutFrame;
+            BlendMode = args.BlendMode;
+            Is3d = args.Is3d;
+            AutoOrient = args.AutoOrient;
+            _masks = args.Masks != null ? args.Masks.ToArray() : null;
         }
 
         public bool AutoOrient { get; }
@@ -100,7 +85,34 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// </summary>
         public ReadOnlySpan<Mask> Masks => _masks;
 
-        public MatteType LayerMatteType { get; }
+        public ref struct LayerArgs
+        {
+            public string Name { get; set; }
+
+            public int Index { get; set; }
+
+            public int? Parent { get; set; }
+
+            public bool IsHidden { get; set; }
+
+            public Transform Transform { get; set; }
+
+            public double TimeStretch { get; set; }
+
+            public double StartFrame { get; set; }
+
+            public double InFrame { get; set; }
+
+            public double OutFrame { get; set; }
+
+            public BlendMode BlendMode { get; set; }
+
+            public bool Is3d { get; set; }
+
+            public bool AutoOrient { get; set; }
+
+            public IEnumerable<Mask> Masks { get; set; }
+        }
 
         public enum LayerType
         {
@@ -110,13 +122,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             Null,
             Shape,
             Text,
-        }
-
-        public enum MatteType
-        {
-            None = 0,
-            Add,
-            Invert,
         }
     }
 }

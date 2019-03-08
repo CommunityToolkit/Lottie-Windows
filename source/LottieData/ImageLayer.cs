@@ -12,36 +12,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
     sealed class ImageLayer : Layer
     {
         public ImageLayer(
-            string name,
-            int index,
-            int? parent,
-            bool isHidden,
-            Transform transform,
-            double timeStretch,
-            double startFrame,
-            double inFrame,
-            double outFrame,
-            BlendMode blendMode,
-            bool is3d,
-            bool autoOrient,
-            string refId,
-            IEnumerable<Mask> masks,
-            MatteType layerMatteType)
-            : base(
-                 name,
-                 index,
-                 parent,
-                 isHidden,
-                 transform,
-                 timeStretch,
-                 startFrame,
-                 inFrame,
-                 outFrame,
-                 blendMode,
-                 is3d,
-                 autoOrient,
-                 masks,
-                 layerMatteType)
+            in LayerArgs args,
+            string refId)
+            : base(in args)
         {
             RefId = refId;
         }

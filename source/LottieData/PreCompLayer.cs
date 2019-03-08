@@ -12,38 +12,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
     sealed class PreCompLayer : Layer
     {
         public PreCompLayer(
-            string name,
-            int index,
-            int? parent,
-            bool isHidden,
-            Transform transform,
-            double timeStretch,
-            double startFrame,
-            double inFrame,
-            double outFrame,
-            BlendMode blendMode,
-            bool is3d,
-            bool autoOrient,
+            in LayerArgs args,
             string refId,
             double width,
-            double height,
-            IEnumerable<Mask> masks,
-            MatteType layerMatteType)
-            : base(
-                 name,
-                 index,
-                 parent,
-                 isHidden,
-                 transform,
-                 timeStretch,
-                 startFrame,
-                 inFrame,
-                 outFrame,
-                 blendMode,
-                 is3d,
-                 autoOrient,
-                 masks,
-                 layerMatteType)
+            double height)
+            : base(in args)
         {
             RefId = refId;
             Width = width;

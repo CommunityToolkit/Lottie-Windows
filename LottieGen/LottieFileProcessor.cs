@@ -31,8 +31,8 @@ sealed class LottieFileProcessor
     Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Tools.Stats _lottieStats;
     (string Code, string Description)[] _readerIssues;
     (string Code, string Description)[] _translationIssues;
-    Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools.Stats _beforeOptimizationStats;
-    Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools.Stats _afterOptimizationStats;
+    Stats _beforeOptimizationStats;
+    Stats _afterOptimizationStats;
     Visual _rootVisual;
 
     LottieFileProcessor(CommandLineOptions options, Reporter reporter, string file, string outputFolder)
@@ -530,8 +530,8 @@ sealed class LottieFileProcessor
 
     static void WriteCodeGenStatsReport(
         TextWriter writer,
-        Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools.Stats beforeOptimization,
-        Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools.Stats afterOptimization)
+        Stats beforeOptimization,
+        Stats afterOptimization)
     {
         if (beforeOptimization == null)
         {
@@ -550,38 +550,37 @@ sealed class LottieFileProcessor
 
         // Report on the after stats and indicate how much optimization
         // improved things (where it did).
-        WriteStatsLine("CanvasGeometry", beforeOptimization.CanvasGeometryCount, afterOptimization.CanvasGeometryCount);
-        WriteStatsLine("ColorBrush", beforeOptimization.ColorBrushCount, afterOptimization.ColorBrushCount);
-        WriteStatsLine("ColorKeyFrameAnimation", beforeOptimization.ColorKeyFrameAnimationCount, afterOptimization.ColorKeyFrameAnimationCount);
-        WriteStatsLine("CompositionPath", beforeOptimization.CompositionPathCount, afterOptimization.CompositionPathCount);
-        WriteStatsLine("ContainerShape", beforeOptimization.ContainerShapeCount, afterOptimization.ContainerShapeCount);
-        WriteStatsLine("ContainerVisual", beforeOptimization.ContainerVisualCount, afterOptimization.ContainerVisualCount);
-        WriteStatsLine("CubicBezierEasingFunction", beforeOptimization.CubicBezierEasingFunctionCount, afterOptimization.CubicBezierEasingFunctionCount);
-        WriteStatsLine("EffectBrush", beforeOptimization.EffectBrushCount, afterOptimization.EffectBrushCount);
-        WriteStatsLine("EllipseGeometry", beforeOptimization.EllipseGeometryCount, afterOptimization.EllipseGeometryCount);
-        WriteStatsLine("ExpressionAnimation", beforeOptimization.ExpressionAnimationCount, afterOptimization.ExpressionAnimationCount);
-        WriteStatsLine("GeometricClip", beforeOptimization.GeometricClipCount, afterOptimization.GeometricClipCount);
-        WriteStatsLine("InsetClip", beforeOptimization.InsetClipCount, afterOptimization.InsetClipCount);
-        WriteStatsLine("LinearEasingFunction", beforeOptimization.LinearEasingFunctionCount, afterOptimization.LinearEasingFunctionCount);
-        WriteStatsLine("PathGeometry", beforeOptimization.PathGeometryCount, afterOptimization.PathGeometryCount);
-        WriteStatsLine("PathKeyFrameAnimation", beforeOptimization.PathKeyFrameAnimationCount, afterOptimization.PathKeyFrameAnimationCount);
-        WriteStatsLine("Property value", beforeOptimization.PropertySetPropertyCount, afterOptimization.PropertySetPropertyCount);
-        WriteStatsLine("PropertySet", beforeOptimization.PropertySetCount, afterOptimization.PropertySetCount);
-        WriteStatsLine("RectangleGeometry", beforeOptimization.RectangleGeometryCount, afterOptimization.RectangleGeometryCount);
-        WriteStatsLine("RoundedRectangleGeometry", beforeOptimization.RoundedRectangleGeometryCount, afterOptimization.RoundedRectangleGeometryCount);
-        WriteStatsLine("ScalarKeyFrameAnimation", beforeOptimization.ScalarKeyFrameAnimationCount, afterOptimization.ScalarKeyFrameAnimationCount);
-        WriteStatsLine("ShapeVisual", beforeOptimization.ShapeVisualCount, afterOptimization.ShapeVisualCount);
-        WriteStatsLine("SpriteShape", beforeOptimization.SpriteShapeCount, afterOptimization.SpriteShapeCount);
-        WriteStatsLine("SpriteVisualCount", beforeOptimization.SpriteVisualCount, afterOptimization.SpriteVisualCount);
-        WriteStatsLine("StepEasingFunction", beforeOptimization.StepEasingFunctionCount, afterOptimization.StepEasingFunctionCount);
-        WriteStatsLine("SurfaceBrushCount", beforeOptimization.SurfaceBrushCount, afterOptimization.SurfaceBrushCount);
-        WriteStatsLine("Vector2KeyFrameAnimation", beforeOptimization.Vector2KeyFrameAnimationCount, afterOptimization.Vector2KeyFrameAnimationCount);
-        WriteStatsLine("Vector3KeyFrameAnimation", beforeOptimization.Vector3KeyFrameAnimationCount, afterOptimization.Vector3KeyFrameAnimationCount);
-        WriteStatsLine("ViewBox", beforeOptimization.ViewBoxCount, afterOptimization.ViewBoxCount);
-        WriteStatsLine("VisualSurfaceCount", beforeOptimization.VisualSurfaceCount, afterOptimization.VisualSurfaceCount);
+        WriteStatsLine("CanvasGeometry", s => s.CanvasGeometryCount);
+        WriteStatsLine("ColorBrush", s => s.ColorBrushCount);
+        WriteStatsLine("ColorKeyFrameAnimation", s => s.ColorKeyFrameAnimationCount);
+        WriteStatsLine("CompositionPath", s => s.CompositionPathCount);
+        WriteStatsLine("ContainerShape", s => s.ContainerShapeCount);
+        WriteStatsLine("ContainerVisual", s => s.ContainerVisualCount);
+        WriteStatsLine("CubicBezierEasingFunction", s => s.CubicBezierEasingFunctionCount);
+        WriteStatsLine("EllipseGeometry", s => s.EllipseGeometryCount);
+        WriteStatsLine("ExpressionAnimation", s => s.ExpressionAnimationCount);
+        WriteStatsLine("GeometricClip", s => s.GeometricClipCount);
+        WriteStatsLine("InsetClip", s => s.InsetClipCount);
+        WriteStatsLine("LinearEasingFunction", s => s.LinearEasingFunctionCount);
+        WriteStatsLine("PathGeometry", s => s.PathGeometryCount);
+        WriteStatsLine("PathKeyFrameAnimation", s => s.PathKeyFrameAnimationCount);
+        WriteStatsLine("Property value", s => s.PropertySetPropertyCount);
+        WriteStatsLine("PropertySet", s => s.PropertySetCount);
+        WriteStatsLine("RectangleGeometry", s => s.RectangleGeometryCount);
+        WriteStatsLine("RoundedRectangleGeometry", s => s.RoundedRectangleGeometryCount);
+        WriteStatsLine("ScalarKeyFrameAnimation", s => s.ScalarKeyFrameAnimationCount);
+        WriteStatsLine("ShapeVisual", s => s.ShapeVisualCount);
+        WriteStatsLine("SpriteShape", s => s.SpriteShapeCount);
+        WriteStatsLine("StepEasingFunction", s => s.StepEasingFunctionCount);
+        WriteStatsLine("Vector2KeyFrameAnimation", s => s.Vector2KeyFrameAnimationCount);
+        WriteStatsLine("Vector3KeyFrameAnimation", s => s.Vector3KeyFrameAnimationCount);
+        WriteStatsLine("ViewBox", s => s.ViewBoxCount);
 
-        void WriteStatsLine(string name, int before, int after)
+        void WriteStatsLine(string name, Func<Stats, int> selector)
         {
+            var before = selector(beforeOptimization);
+            var after = selector(afterOptimization);
+
             if (after > 0 || before > 0)
             {
                 const int nameWidth = 26;

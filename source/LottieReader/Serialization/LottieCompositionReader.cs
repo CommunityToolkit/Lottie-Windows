@@ -539,13 +539,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             IgnoreFieldThatIsNotYetSupported(obj, "sy");
             IgnoreFieldThatIsNotYetSupported(obj, "td");
 
-            var name = obj.GetNamedString("nm", string.Empty);
-            var layerIndex = ReadInt(obj, "ind") ?? throw new LottieCompositionReaderException("Missing layer index");
-            var parentIndex = ReadInt(obj, "parent");
-            var is3d = ReadBool(obj, "ddd") == true;
-            var autoOrient = ReadBool(obj, "ao") == true;
-            var blendMode = BmToBlendMode(obj.GetNamedNumber("bm", 0));
-            var isHidden = ReadBool(obj, "hd") == true;
+            // Field 'hasMask' is deprecated and thus we are intentionally ignoring it
+            IgnoreFieldIntentionally(obj, "hasMask");
+
+            var layerArgs = default(Layer.LayerArgs);
+
+            layerArgs.Name = obj.GetNamedString("nm", string.Empty);
+            layerArgs.Index = ReadInt(obj, "ind") ?? throw new LottieCompositionReaderException("Missing layer index");
+            layerArgs.Parent = ReadInt(obj, "parent");
+            layerArgs.Is3d = ReadBool(obj, "ddd") == true;
+            layerArgs.AutoOrient = ReadBool(obj, "ao") == true;
+            layerArgs.BlendMode = BmToBlendMode(obj.GetNamedNumber("bm", 0));
+            layerArgs.IsHidden = ReadBool(obj, "hd") == true;
             var render = ReadBool(obj, "render") != false;
 
             if (!render)
@@ -555,7 +560,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             }
 
             // Warnings
-            if (name.EndsWith(".ai") || obj.GetNamedString("cl", string.Empty) == "ai")
+            if (layerArgs.Name.EndsWith(".ai") || obj.GetNamedString("cl", string.Empty) == "ai")
             {
                 _issues.IllustratorLayers();
             }
@@ -565,32 +570,32 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 _issues.LayerEffects();
             }
 
+            if (obj.ContainsKey("tt"))
+            {
+                _issues.Mattes();
+            }
+
             // ----------------------
             // Layer Transform
             // ----------------------
-            var transform = ReadTransform(obj.GetNamedObject("ks"));
+            layerArgs.Transform = ReadTransform(obj.GetNamedObject("ks"));
 
             // ------------------------------
             // Layer Animation
             // ------------------------------
-            var timeStretch = obj.GetNamedNumber("sr", 1.0);
+            layerArgs.TimeStretch = obj.GetNamedNumber("sr", 1.0);
 
             // Time when the layer starts
-            var startFrame = obj.GetNamedNumber("st");
+            layerArgs.StartFrame = obj.GetNamedNumber("st");
 
             // Time when the layer becomes visible.
-            var inFrame = obj.GetNamedNumber("ip");
-            var outFrame = obj.GetNamedNumber("op");
-
-            // Field 'hasMask' is deprecated and thus we are intentionally ignoring it
-            IgnoreFieldIntentionally(obj, "hasMask");
+            layerArgs.InFrame = obj.GetNamedNumber("ip");
+            layerArgs.OutFrame = obj.GetNamedNumber("op");
 
             // NOTE: The spec specifies this as 'maskProperties' but the BodyMovin tool exports
             // 'masksProperties' with the plural 'masks'.
             var maskProperties = obj.GetNamedArray("masksProperties", null);
-            var masks = maskProperties != null ? ReadMaskProperties(maskProperties) : null;
-
-            var matteType = TTToMatteType(obj.GetNamedNumber("tt", (double)Layer.MatteType.None));
+            layerArgs.Masks = maskProperties != null ? ReadMaskProperties(maskProperties) : null;
 
             switch (TyToLayerType(obj.GetNamedNumber("ty", double.NaN)))
             {
@@ -606,24 +611,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                         }
 
                         AssertAllFieldsRead(obj);
-                        return new PreCompLayer(
-                            name,
-                            layerIndex,
-                            parentIndex,
-                            isHidden,
-                            transform,
-                            timeStretch,
-                            startFrame,
-                            inFrame,
-                            outFrame,
-                            blendMode,
-                            is3d,
-                            autoOrient,
-                            refId,
-                            width,
-                            height,
-                            masks,
-                            matteType);
+                        return new PreCompLayer(in layerArgs, refId, width, height);
                     }
 
                 case Layer.LayerType.Solid:
@@ -633,24 +621,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                         var solidColor = ReadColorFromString(obj.GetNamedString("sc"));
 
                         AssertAllFieldsRead(obj);
-                        return new SolidLayer(
-                            name,
-                            layerIndex,
-                            parentIndex,
-                            isHidden,
-                            transform,
-                            solidWidth,
-                            solidHeight,
-                            solidColor,
-                            timeStretch,
-                            startFrame,
-                            inFrame,
-                            outFrame,
-                            blendMode,
-                            is3d,
-                            autoOrient,
-                            masks,
-                            matteType);
+                        return new SolidLayer(in layerArgs, solidWidth, solidHeight, solidColor);
                     }
 
                 case Layer.LayerType.Image:
@@ -658,66 +629,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                         var refId = obj.GetNamedString("refId", string.Empty);
 
                         AssertAllFieldsRead(obj);
-                        return new ImageLayer(
-                            name,
-                            layerIndex,
-                            parentIndex,
-                            isHidden,
-                            transform,
-                            timeStretch,
-                            startFrame,
-                            inFrame,
-                            outFrame,
-                            blendMode,
-                            is3d,
-                            autoOrient,
-                            refId,
-                            masks,
-                            matteType);
+                        return new ImageLayer(in layerArgs, refId);
                     }
 
                 case Layer.LayerType.Null:
-                    {
                         AssertAllFieldsRead(obj);
-
-                        return new NullLayer(
-                            name,
-                            layerIndex,
-                            parentIndex,
-                            isHidden,
-                            transform,
-                            timeStretch,
-                            startFrame,
-                            inFrame,
-                            outFrame,
-                            blendMode,
-                            is3d,
-                            autoOrient,
-                            masks,
-                            matteType);
-                    }
+                        return new NullLayer(in layerArgs);
 
                 case Layer.LayerType.Shape:
                     {
                         var shapes = ReadShapes(obj);
 
                         AssertAllFieldsRead(obj);
-                        return new ShapeLayer(
-                            name,
-                            shapes,
-                            layerIndex,
-                            parentIndex,
-                            isHidden,
-                            transform,
-                            timeStretch,
-                            startFrame,
-                            inFrame,
-                            outFrame,
-                            blendMode,
-                            is3d,
-                            autoOrient,
-                            masks,
-                            matteType);
+                        return new ShapeLayer(in layerArgs, shapes);
                     }
 
                 case Layer.LayerType.Text:
@@ -729,26 +653,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                         ReadTextData(obj.GetNamedObject("t"));
 
                         AssertAllFieldsRead(obj);
-                        return new TextLayer(
-                            name,
-                            layerIndex,
-                            parentIndex,
-                            isHidden,
-                            transform,
-                            timeStretch,
-                            startFrame,
-                            inFrame,
-                            outFrame,
-                            blendMode,
-                            is3d,
-                            autoOrient,
-                            refId,
-                            masks,
-                            matteType);
+                        return new TextLayer(in layerArgs, refId);
                     }
 
-                default:
-                    throw new InvalidOperationException();
+                default: throw new InvalidOperationException();
             }
         }
 
@@ -2337,21 +2245,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         {
             Linear,
             Radial,
-        }
-
-        static Layer.MatteType TTToMatteType(double tt)
-        {
-            if (tt == (int)tt)
-            {
-                switch ((int)tt)
-                {
-                    case 0: return Layer.MatteType.None;
-                    case 1: return Layer.MatteType.Add;
-                    case 2: return Layer.MatteType.Invert;
-                }
-            }
-
-            throw new LottieCompositionReaderException($"Unexpected matte type: {tt}");
         }
 
         // Indicates that the given field will not be read because we don't yet support it.

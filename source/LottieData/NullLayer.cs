@@ -11,36 +11,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 #endif
     sealed class NullLayer : Layer
     {
-        public NullLayer(
-            string name,
-            int index,
-            int? parent,
-            bool isHidden,
-            Transform transform,
-            double timeStretch,
-            double startFrame,
-            double inFrame,
-            double outFrame,
-            BlendMode blendMode,
-            bool is3d,
-            bool autoOrient,
-            IEnumerable<Mask> masks,
-            MatteType layerMatteType)
-            : base(
-                 name,
-                 index,
-                 parent,
-                 isHidden,
-                 transform,
-                 timeStretch,
-                 startFrame,
-                 inFrame,
-                 outFrame,
-                 blendMode,
-                 is3d,
-                 autoOrient,
-                 masks,
-                 layerMatteType)
+        public NullLayer(in LayerArgs args)
+            : base(in args)
         {
         }
 
