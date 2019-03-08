@@ -1312,29 +1312,30 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
         {
             WriteObjectFactoryStart(builder, node);
 
-            var effectBase = obj.GetFactory().GetEffect();
+            var effectBase = obj.GetEffect();
 
-            if (effectBase.Type == Mgce.GraphicsEffectType.CompositeEffect)
+            switch (effectBase.Type)
             {
-                var effect = (Mgce.CompositeEffect)effectBase;
+                case Mgce.GraphicsEffectType.CompositeEffect:
+                    var effect = (Mgce.CompositeEffect)effectBase;
 
-                builder.WriteLine($"{Var} compositeEffect = {New} CompositeEffect();");
-                builder.WriteLine($"compositeEffect{Deref}Mode = {CanvasCompositeMode(effect.Mode)};");
+                    builder.WriteLine($"{Var} compositeEffect = {New} CompositeEffect();");
+                    builder.WriteLine($"compositeEffect{Deref}Mode = {CanvasCompositeMode(effect.Mode)};");
 
-                builder.WriteLine($"{Var} effectFactory = _c{Deref}CreateEffectFactory(compositeEffect);");
-                WriteCreateAssignment(builder, node, $"effectFactory{Deref}CreateBrush()");
-                InitializeCompositionBrush(builder, obj, node);
+                    builder.WriteLine($"{Var} effectFactory = _c{Deref}CreateEffectFactory(compositeEffect);");
+                    WriteCreateAssignment(builder, node, $"effectFactory{Deref}CreateBrush()");
+                    InitializeCompositionBrush(builder, obj, node);
 
-                foreach (var source in effect.Sources)
-                {
-                    builder.WriteLine($"compositeEffect{Deref}Sources{Deref}{IListAdd}({New} CompositionEffectSourceParameter({String(source.Name)}));");
+                    foreach (var source in effect.Sources)
+                    {
+                        builder.WriteLine($"compositeEffect{Deref}Sources{Deref}{IListAdd}({New} CompositionEffectSourceParameter({String(source.Name)}));");
 
-                    builder.WriteLine($"result{Deref}SetSourceParameter({String(source.Name)}, {CallFactoryFromFor(node, obj.GetSourceParameter(source.Name))});");
-                }
-            }
-            else
-            {
-                throw new InvalidOperationException();
+                        builder.WriteLine($"result{Deref}SetSourceParameter({String(source.Name)}, {CallFactoryFromFor(node, obj.GetSourceParameter(source.Name))});");
+                    }
+
+                    break;
+                default:
+                    throw new InvalidOperationException();
             }
 
             StartAnimations(builder, obj, node);
@@ -1948,7 +1949,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             internal bool RequiresStorage { get; set; }
 
             // Set to indicate that the node relies on Win2D / D2D.
-            internal bool RequiresWin2D => Object is CanvasGeometry;
+            internal bool RequiresWin2D => (Object is CanvasGeometry) || (Object is CompositionEffectBrush);
 
             // True if the code to create the object will be generated inline.
             internal bool Inlined => _overriddenFactoryCall != null;

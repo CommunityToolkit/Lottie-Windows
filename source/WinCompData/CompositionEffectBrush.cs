@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 {
@@ -11,12 +12,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 #endif
     sealed class CompositionEffectBrush : CompositionBrush
     {
-        readonly CompositionEffectFactory _factory;
+        readonly GraphicsEffectBase _effect;
         readonly Dictionary<string, CompositionBrush> _sourceParameters = new Dictionary<string, CompositionBrush>();
 
-        internal CompositionEffectBrush(CompositionEffectFactory factory)
+        internal CompositionEffectBrush(GraphicsEffectBase effect)
         {
-            _factory = factory;
+            _effect = effect;
         }
 
         public CompositionBrush GetSourceParameter(string name) => _sourceParameters[name];
@@ -26,7 +27,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
             _sourceParameters.Add(name, source);
         }
 
-        public CompositionEffectFactory GetFactory() => _factory;
+        public GraphicsEffectBase GetEffect() => _effect;
 
         public override CompositionObjectType Type => CompositionObjectType.CompositionEffectBrush;
     }

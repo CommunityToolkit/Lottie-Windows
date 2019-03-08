@@ -863,30 +863,33 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
                 return result;
             }
 
-            var effectBase = obj.GetFactory().GetEffect();
+            var effectBase = obj.GetEffect();
 
-            if (effectBase.Type == Mgce.GraphicsEffectType.CompositeEffect)
+            switch (effectBase.Type)
             {
-                var effect = (CompositeEffect)effectBase;
+                case GraphicsEffectType.CompositeEffect:
+                    var compositeEffect = (CompositeEffect)effectBase;
 
-                var compositeEffect = new CompositeEffect();
-                compositeEffect.Mode = effect.Mode;
+                    var newCompositeEffect = new CompositeEffect
+                    {
+                        Mode = compositeEffect.Mode,
+                    };
 
-                var effectFactory = _c.CreateEffectFactory(compositeEffect);
-                var compositeEffectBrush = effectFactory.CreateBrush();
+                    var effectFactory = _c.CreateEffectFactory(newCompositeEffect);
+                    var compositeEffectBrush = effectFactory.CreateBrush();
 
-                result = CacheAndInitializeCompositionObject(obj, compositeEffectBrush);
+                    result = CacheAndInitializeCompositionObject(obj, compositeEffectBrush);
 
-                foreach (var source in effect.Sources)
-                {
-                    compositeEffect.Sources.Add(new CompositionEffectSourceParameter(source.Name));
+                    foreach (var source in compositeEffect.Sources)
+                    {
+                        newCompositeEffect.Sources.Add(new CompositionEffectSourceParameter(source.Name));
 
-                    result.SetSourceParameter(source.Name, GetCompositionBrush(obj.GetSourceParameter(source.Name)));
-                }
-            }
-            else
-            {
-                throw new InvalidOperationException();
+                        result.SetSourceParameter(source.Name, GetCompositionBrush(obj.GetSourceParameter(source.Name)));
+                    }
+
+                    break;
+                default:
+                    throw new InvalidOperationException();
             }
 
             StartAnimationsAndFreeze(obj, result);

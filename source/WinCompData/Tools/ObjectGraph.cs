@@ -514,19 +514,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
         {
             VisitCompositionBrush(obj, node);
 
-            var effectBase = obj.GetFactory().GetEffect();
+            var effect = obj.GetEffect();
 
-            if (effectBase.Type == Mgce.GraphicsEffectType.CompositeEffect)
+            switch (effect.Type)
             {
-                var effect = (CompositeEffect)effectBase;
-                foreach (var source in effect.Sources)
-                {
-                    Reference(node, obj.GetSourceParameter(source.Name));
-                }
-            }
-            else
-            {
-                throw new InvalidOperationException();
+                case GraphicsEffectType.CompositeEffect:
+                    foreach (var source in ((CompositeEffect)effect).Sources)
+                    {
+                        Reference(node, obj.GetSourceParameter(source.Name));
+                    }
+
+                    break;
+                default:
+                    throw new InvalidOperationException();
             }
 
             return true;

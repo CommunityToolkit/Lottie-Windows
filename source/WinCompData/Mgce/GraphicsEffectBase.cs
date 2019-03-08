@@ -4,6 +4,10 @@
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce
 {
+    /// <summary>
+    /// This class is the base type for effects. It is used to ensure
+    /// that all effects have a known type.
+    /// </summary>
 #if PUBLIC_WinCompData
     public
 #endif

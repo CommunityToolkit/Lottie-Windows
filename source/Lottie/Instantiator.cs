@@ -883,19 +883,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 return result;
             }
 
-            var effect = obj.GetFactory().GetEffect();
+            var effect = obj.GetEffect();
 
             switch (effect.Type)
             {
                 case Wd.Mgce.GraphicsEffectType.CompositeEffect:
                     var wdCompositeEffect = (Wd.Mgce.CompositeEffect)effect;
 
-                    var wcCompositeEffect = new Mgce.CompositeEffect
-                    {
-                        Mode = CanvasComposite(wdCompositeEffect.Mode),
-                    };
-
-                    var effectFactory = _c.CreateEffectFactory(wcCompositeEffect);
+                    var effectFactory = GetCompositionEffectFactory(new Wd.CompositionEffectFactory(effect), out var wcCompositeEffect);
                     var compositeEffectBrush = effectFactory.CreateBrush();
 
                     result = CacheAndInitializeCompositionObject(obj, compositeEffectBrush);
@@ -1223,6 +1218,21 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 default:
                     throw new InvalidOperationException();
             }
+        }
+
+        Wc.CompositionEffectFactory GetCompositionEffectFactory(Wd.CompositionEffectFactory obj, out Mgce.CompositeEffect wcCompositeEffect)
+        {
+            var cachedValueExists = GetExisting(obj, out Wc.CompositionEffectFactory result);
+
+            wcCompositeEffect = new Mgce.CompositeEffect
+            {
+                Mode = CanvasComposite(((Wd.Mgce.CompositeEffect)obj.GetEffect()).Mode),
+            };
+
+            result = _c.CreateEffectFactory(wcCompositeEffect);
+
+            StartAnimations(obj, result);
+            return result;
         }
 
         static Wc.CompositionStrokeLineJoin StrokeLineJoin(Wd.CompositionStrokeLineJoin value)

@@ -9,7 +9,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 #if PUBLIC_WinCompData
     public
 #endif
-    sealed class CompositionEffectFactory
+    sealed class CompositionEffectFactory : CompositionObject
     {
         readonly GraphicsEffectBase _effect;
 
@@ -20,9 +20,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 
         public CompositionEffectBrush CreateBrush()
         {
-            return new CompositionEffectBrush(this);
+            return new CompositionEffectBrush(_effect);
         }
 
         public GraphicsEffectBase GetEffect() => _effect;
+
+        /// <inheritdoc/>
+        public override CompositionObjectType Type => CompositionObjectType.CompositionEffectFactory;
     }
 }

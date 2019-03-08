@@ -4,6 +4,12 @@
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 {
+    /// <summary>
+    /// This is the base for Composition Surface objects and ensures that
+    /// all Composition Surface objects are also CompositionObjects. Composition
+    /// Surface objects use this as a base instead of an interface to avoid
+    /// dynamic type casting.
+    /// </summary>
 #if PUBLIC_WinCompData
     public
 #endif
