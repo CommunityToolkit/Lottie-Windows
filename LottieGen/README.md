@@ -11,7 +11,7 @@ The latest release version can be [installed from NuGet](https://www.nuget.org/p
 
     dotnet tool install -g LottieGen
 
-The latest prerelease version can be installed from NuGet:
+A specific version can be installed from NuGet:
 
     dotnet tool install -g LottieGen --version 5.1.1
 
