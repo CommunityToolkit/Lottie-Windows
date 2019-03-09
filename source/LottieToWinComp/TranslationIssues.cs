@@ -86,10 +86,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal void CombiningMultipleShapes() => Report("LT0027", "CombiningMultipleShapes");
 
-        internal void UnsupportedMatteType(string type) => Report("LT0028", $"Matte type: {type}");
-
-        internal void Matte() => Report("LT0029", "Matte");
-
         void Report(string code, string description)
         {
             _issues.Add((code, description));

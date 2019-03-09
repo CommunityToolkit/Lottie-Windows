@@ -44,6 +44,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         internal void LayerEffects() => Report("LP0008", "Layer effects");
 
+        internal void Mattes() => Report("LP0009", "Mattes");
+
         internal void TimeRemappingOfPreComps() => Report("LP0011", "Time remapping of precomp layers");
 
         internal void UnexpectedShapeContentType(string type) => Report("LP0012", $"Unexpected shape content type: {type}");

@@ -24,6 +24,7 @@ using Mgc = Microsoft.Graphics.Canvas;
 using Mgce = Microsoft.Graphics.Canvas.Effects;
 using Wc = Windows.UI.Composition;
 using Wd = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
+using Wge = Windows.Graphics.Effects;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie
 {
@@ -259,6 +260,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 result.Brush = GetCompositionBrush(obj.Brush);
             }
 
+            InitializeContainerVisual(obj, result);
             StartAnimations(obj, result);
             return result;
         }
@@ -884,17 +886,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             }
 
             var effect = obj.GetEffect();
+            var effectFactory = GetCompositionEffectFactory(new Wd.CompositionEffectFactory(effect), out var graphicsEffect);
+            var compositeEffectBrush = effectFactory.CreateBrush();
+
+            result = CacheAndInitializeCompositionObject(obj, compositeEffectBrush);
 
             switch (effect.Type)
             {
                 case Wd.Mgce.GraphicsEffectType.CompositeEffect:
                     var wdCompositeEffect = (Wd.Mgce.CompositeEffect)effect;
-
-                    var effectFactory = GetCompositionEffectFactory(new Wd.CompositionEffectFactory(effect), out var wcCompositeEffect);
-                    var compositeEffectBrush = effectFactory.CreateBrush();
-
-                    result = CacheAndInitializeCompositionObject(obj, compositeEffectBrush);
-
+                    var wcCompositeEffect = (Mgce.CompositeEffect)graphicsEffect;
                     foreach (var source in wdCompositeEffect.Sources)
                     {
                         wcCompositeEffect.Sources.Add(new Wc.CompositionEffectSourceParameter(source.Name));
@@ -1220,16 +1221,28 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             }
         }
 
-        Wc.CompositionEffectFactory GetCompositionEffectFactory(Wd.CompositionEffectFactory obj, out Mgce.CompositeEffect wcCompositeEffect)
+        Wc.CompositionEffectFactory GetCompositionEffectFactory(Wd.CompositionEffectFactory obj, out Wge.IGraphicsEffect graphicsEffect)
         {
-            var cachedValueExists = GetExisting(obj, out Wc.CompositionEffectFactory result);
-
-            wcCompositeEffect = new Mgce.CompositeEffect
+            switch (obj.GetEffect().Type)
             {
-                Mode = CanvasComposite(((Wd.Mgce.CompositeEffect)obj.GetEffect()).Mode),
-            };
+                case Wd.Mgce.GraphicsEffectType.CompositeEffect:
+                    var wcCompositeEffect = new Mgce.CompositeEffect
+                    {
+                        Mode = CanvasComposite(((Wd.Mgce.CompositeEffect)obj.GetEffect()).Mode),
+                    };
 
-            result = _c.CreateEffectFactory(wcCompositeEffect);
+                    graphicsEffect = wcCompositeEffect;
+                    break;
+                default:
+                    throw new InvalidOperationException();
+            }
+
+            if (GetExisting(obj, out Wc.CompositionEffectFactory result))
+            {
+                return result;
+            }
+
+            result = _c.CreateEffectFactory(graphicsEffect);
 
             StartAnimations(obj, result);
             return result;
