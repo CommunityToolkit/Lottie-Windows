@@ -65,7 +65,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
                 builder.WriteLine("using Microsoft.Graphics.Canvas;");
             }
 
-            if (info.UsesCanvas)
+            if (info.UsesCanvasEffects)
             {
                 builder.WriteLine("using Microsoft.Graphics.Canvas.Effects;");
             }

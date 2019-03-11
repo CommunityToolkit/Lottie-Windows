@@ -118,7 +118,7 @@ public:
             {
                 // throw an exception in this case for now. In the future the necessary
                 // C++ code gen will be added
-                throw new InvalidOperationException();
+                throw new InvalidOperationException("Win2D dependency detected.");
             }
 
             builder.WriteLine();

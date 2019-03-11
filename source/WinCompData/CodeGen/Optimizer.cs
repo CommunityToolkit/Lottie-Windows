@@ -847,7 +847,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
             result.SourceSize = obj.SourceSize;
 
-            result.SourceOffset = obj.SourceOffset.Value;
+            result.SourceOffset = obj.SourceOffset;
 
             StartAnimationsAndFreeze(obj, result);
             return result;
@@ -1255,13 +1255,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
         CompositionSurfaceBase GetCompositionSurface(CompositionSurfaceBase obj)
         {
-            if (GetExisting(obj, out CompositionSurfaceBase result))
+            switch (obj.Type)
             {
-                return result;
+                case CompositionObjectType.CompositionVisualSurface:
+                    return GetCompositionVisualSurface((CompositionVisualSurface)obj);
+                default:
+                    throw new InvalidOperationException();
             }
-
-            StartAnimationsAndFreeze(obj, result);
-            return result;
         }
     }
 }

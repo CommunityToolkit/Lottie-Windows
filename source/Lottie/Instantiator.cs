@@ -809,15 +809,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 result.SourceVisual = GetVisual(obj.SourceVisual);
             }
 
-            if (obj.SourceSize != null)
-            {
-                result.SourceSize = obj.SourceSize.Value;
-            }
+            result.SourceSize = obj.SourceSize;
 
-            if (obj.SourceOffset != null)
-            {
-                result.SourceOffset = obj.SourceOffset.Value;
-            }
+            result.SourceOffset = obj.SourceOffset;
 
             StartAnimations(obj, result);
             return result;
