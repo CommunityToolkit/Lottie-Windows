@@ -37,6 +37,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             Is3d = args.Is3d;
             AutoOrient = args.AutoOrient;
             _masks = args.Masks != null ? args.Masks.ToArray() : null;
+            LayerMatteType = args.LayerMatteType;
         }
 
         public bool AutoOrient { get; }
@@ -85,6 +86,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// </summary>
         public ReadOnlySpan<Mask> Masks => _masks;
 
+        public MatteType LayerMatteType { get; }
+
         public ref struct LayerArgs
         {
             public string Name { get; set; }
@@ -112,6 +115,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             public bool AutoOrient { get; set; }
 
             public IEnumerable<Mask> Masks { get; set; }
+
+            public MatteType LayerMatteType { get; set; }
         }
 
         public enum LayerType
@@ -122,6 +127,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             Null,
             Shape,
             Text,
+        }
+
+        public enum MatteType
+        {
+            None = 0,
+            Add,
+            Invert,
         }
     }
 }

@@ -557,6 +557,7 @@ sealed class LottieFileProcessor
         WriteStatsLine("ContainerShape", s => s.ContainerShapeCount);
         WriteStatsLine("ContainerVisual", s => s.ContainerVisualCount);
         WriteStatsLine("CubicBezierEasingFunction", s => s.CubicBezierEasingFunctionCount);
+        WriteStatsLine("EffectBrush", s => s.EffectBrushCount);
         WriteStatsLine("EllipseGeometry", s => s.EllipseGeometryCount);
         WriteStatsLine("ExpressionAnimation", s => s.ExpressionAnimationCount);
         WriteStatsLine("GeometricClip", s => s.GeometricClipCount);
@@ -571,10 +572,13 @@ sealed class LottieFileProcessor
         WriteStatsLine("ScalarKeyFrameAnimation", s => s.ScalarKeyFrameAnimationCount);
         WriteStatsLine("ShapeVisual", s => s.ShapeVisualCount);
         WriteStatsLine("SpriteShape", s => s.SpriteShapeCount);
+        WriteStatsLine("SpriteVisualCount", s => s.SpriteVisualCount);
         WriteStatsLine("StepEasingFunction", s => s.StepEasingFunctionCount);
+        WriteStatsLine("SurfaceBrushCount", s => s.SurfaceBrushCount);
         WriteStatsLine("Vector2KeyFrameAnimation", s => s.Vector2KeyFrameAnimationCount);
         WriteStatsLine("Vector3KeyFrameAnimation", s => s.Vector3KeyFrameAnimationCount);
         WriteStatsLine("ViewBox", s => s.ViewBoxCount);
+        WriteStatsLine("VisualSurfaceCount", s => s.VisualSurfaceCount);
 
         void WriteStatsLine(string name, Func<Stats, int> selector)
         {

@@ -22,6 +22,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)CompositionColorBrush.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionContainerShape.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionEasingFunction.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CompositionEffectBrush.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CompositionEffectFactory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CompositionEffectSourceParameter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionEllipseGeometry.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionGeometricClip.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionGeometry.cs" />
@@ -36,7 +39,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)CompositionSpriteShape.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionStrokeCap.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionStrokeLineJoin.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CompositionSurfaceBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CompositionSurfaceBrush.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionViewBox.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CompositionVisualSurface.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Compositor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ContainerVisual.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CubicBezierEasingFunction.cs" />
@@ -70,6 +76,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)KeyFrameAnimation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)KeyFrameAnimation_.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LinearEasingFunction.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Mgc\CanvasComposite.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Mgce\CompositeEffect.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Mgce\GraphicsEffectBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Mgce\GraphicsEffectType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Mgcg\CanvasFigureLoop.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Mgcg\CanvasFilledRegionDetermination.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Mgcg\CanvasGeometry.cs" />
@@ -81,6 +91,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\CompositionObjectDgmlSerializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\CompositionObjectXmlSerializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ShapeVisual.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SpriteVisual.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)StepEasingFunction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\CanonicalizedNode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\Canonicalizer.cs" />

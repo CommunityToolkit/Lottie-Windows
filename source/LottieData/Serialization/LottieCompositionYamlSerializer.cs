@@ -184,6 +184,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             superclassContent.Add("TimeStretch", layer.TimeStretch);
             superclassContent.Add("Transform", FromShapeLayerContent(layer.Transform));
             superclassContent.Add("Masks", FromSpan(layer.Masks, FromMask));
+            superclassContent.Add("MatteType", layer.LayerMatteType);
 
             switch (layer.Type)
             {

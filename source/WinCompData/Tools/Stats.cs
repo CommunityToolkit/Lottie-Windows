@@ -23,6 +23,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
         readonly int _colorKeyFrameAnimationCount;
         readonly int _colorBrushCount;
         readonly int _containerShapeCount;
+        readonly int _effectBrushCount;
         readonly int _ellipseGeometryCount;
         readonly int _geometricClipCount;
         readonly int _pathGeometryCount;
@@ -30,7 +31,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
         readonly int _rectangleGeometryCount;
         readonly int _roundedRectangleGeometryCount;
         readonly int _spriteShapeCount;
+        readonly int _surfaceBrushCount;
         readonly int _viewBoxCount;
+        readonly int _visualSurfaceCount;
         readonly int _containerVisualCount;
         readonly int _cubicBezierEasingFunctionCount;
         readonly int _expressionAnimationCount;
@@ -39,6 +42,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
         readonly int _pathKeyFrameAnimationCount;
         readonly int _scalarKeyFrameAnimationCount;
         readonly int _shapeVisualCount;
+        readonly int _spriteVisualCount;
         readonly int _stepEasingFunctionCount;
         readonly int _vector2KeyFrameAnimationCount;
         readonly int _vector3KeyFrameAnimationCount;
@@ -67,6 +71,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
                         break;
                     case CompositionObjectType.CompositionContainerShape:
                         _containerShapeCount++;
+                        break;
+                    case CompositionObjectType.CompositionEffectBrush:
+                        _effectBrushCount++;
                         break;
                     case CompositionObjectType.CompositionEllipseGeometry:
                         _ellipseGeometryCount++;
@@ -97,8 +104,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
                     case CompositionObjectType.CompositionSpriteShape:
                         _spriteShapeCount++;
                         break;
+                    case CompositionObjectType.CompositionSurfaceBrush:
+                        _surfaceBrushCount++;
+                        break;
                     case CompositionObjectType.CompositionViewBox:
                         _viewBoxCount++;
+                        break;
+                    case CompositionObjectType.CompositionVisualSurface:
+                        _visualSurfaceCount++;
                         break;
                     case CompositionObjectType.ContainerVisual:
                         _containerVisualCount++;
@@ -123,6 +136,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
                         break;
                     case CompositionObjectType.ShapeVisual:
                         _shapeVisualCount++;
+                        break;
+                    case CompositionObjectType.SpriteVisual:
+                        _spriteVisualCount++;
                         break;
                     case CompositionObjectType.StepEasingFunction:
                         _stepEasingFunctionCount++;
@@ -153,6 +169,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
 
         public int ContainerShapeCount => _containerShapeCount;
 
+        public int EffectBrushCount => _effectBrushCount;
+
         public int EllipseGeometryCount => _ellipseGeometryCount;
 
         public int GeometricClipCount => _geometricClipCount;
@@ -169,7 +187,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
 
         public int SpriteShapeCount => _spriteShapeCount;
 
+        public int SurfaceBrushCount => _surfaceBrushCount;
+
         public int ViewBoxCount => _viewBoxCount;
+
+        public int VisualSurfaceCount => _visualSurfaceCount;
 
         public int ContainerVisualCount => _containerVisualCount;
 
@@ -186,6 +208,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
         public int ScalarKeyFrameAnimationCount => _scalarKeyFrameAnimationCount;
 
         public int ShapeVisualCount => _shapeVisualCount;
+
+        public int SpriteVisualCount => _spriteVisualCount;
 
         public int StepEasingFunctionCount => _stepEasingFunctionCount;
 

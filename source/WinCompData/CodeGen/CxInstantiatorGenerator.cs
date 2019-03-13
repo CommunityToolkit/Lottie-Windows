@@ -96,7 +96,7 @@ public:
         {
             builder.WriteLine("#include \"pch.h\"");
             builder.WriteLine($"#include \"{_headerFileName}\"");
-            if (info.RequiresWin2d)
+            if (info.UsesCanvasEffects)
             {
                 // D2D
                 builder.WriteLine("#include \"d2d1.h\"");
@@ -111,6 +111,14 @@ public:
 
                 // ComPtr
                 builder.WriteLine("#include <wrl.h>");
+            }
+
+            if (info.UsesCanvasEffects ||
+                info.UsesCanvas)
+            {
+                // throw an exception in this case for now. In the future the necessary
+                // C++ code gen will be added
+                throw new InvalidOperationException("Win2D dependency detected.");
             }
 
             builder.WriteLine();
