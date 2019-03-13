@@ -11,17 +11,17 @@ The latest release version can be [installed from NuGet](https://www.nuget.org/p
 
     dotnet tool install -g LottieGen
 
-The latest prerelease version can be installed from NuGet:
+A specific version can be installed from NuGet:
 
-    dotnet tool install -g LottieGen --version 5.1.0
+    dotnet tool install -g LottieGen --version 5.1.1
 
 CI builds can be [installed from MyGet](https://dotnet.myget.org/feed/uwpcommunitytoolkit/package/nuget/LottieGen):
 
-    dotnet tool install -g LottieGen --add-source https://dotnet.myget.org/F/uwpcommunitytoolkit/api/v3/index.json --version 5.1.0-build.11
+    dotnet tool install -g LottieGen --add-source https://dotnet.myget.org/F/uwpcommunitytoolkit/api/v3/index.json --version 5.1.1-build.11
 
 Local builds can be installed from your bin\nupkg directory:
 
-    dotnet tool install -g LottieGen --add-source f:\GitHub\Lottie-Windows\bin\nupkg --version 5.1.0-build.11.g31523b44e4
+    dotnet tool install -g LottieGen --add-source f:\GitHub\Lottie-Windows\bin\nupkg --version 5.1.1-build.11.g31523b44e4
     
 ## Updating
     dotnet tool update -g LottieGen
