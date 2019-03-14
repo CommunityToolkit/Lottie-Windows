@@ -1,6 +1,14 @@
 ﻿<Project Sdk="MSBuild.Sdk.Extras">
 
   <PropertyGroup>
+    
+    <!-- Description -->
+    <Title>Lottie-Windows</Title>
+    <Description>
+      Render Adobe AfterEffects animations natively on Windows: https://aka.ms/lottie
+    </Description>
+    <PackageTags>Lottie Bodymovin AfterEffects Animations UWP Windows Toolkit</PackageTags>
+    
     <TargetFramework>uap10.0.16299</TargetFramework>
 
     <OutputType>winmdobj</OutputType>
