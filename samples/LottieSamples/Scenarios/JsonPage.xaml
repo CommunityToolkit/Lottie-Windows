@@ -15,7 +15,7 @@
                 <RichTextBlock>
                     <Paragraph>
                         <Span>To render our first Lottie animation, we use</Span>
-                        <Span FontFamily="Consolas">AnimatedVisuals/LottieLogo1.json</Span>
+                        <Span FontFamily="Consolas">Assets/LottieLogo1.json</Span>
                         which was generated from Adobe AfterEffects using
                         <Hyperlink NavigateUri="http://aescripts.com/bodymovin/">Bodymovin</Hyperlink>.
                         You'll need to
@@ -27,7 +27,7 @@
                     <Paragraph>
                         &#x2022;
                         <Hyperlink NavigateUri="https://www.nuget.org/packages/Microsoft.UI.Xaml/">
-                            <Span FontFamily="Consolas">Microsoft.UI.Xaml.AnimatedVisualPlayer</Span>
+                            <Span FontFamily="Consolas">Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer</Span>
                         </Hyperlink>
                     </Paragraph>
                     <Paragraph>
@@ -46,7 +46,7 @@
                 <winui:AnimatedVisualPlayer x:Name="Json_Player">
                     <!--  LottieVisualSource that parses a JSON Uri at run-time  -->
                     <lottie:LottieVisualSource x:Name="Json_Source"
-                                               UriSource="ms-appx:///AnimatedVisuals/LottieLogo1.json" />
+                                               UriSource="ms-appx:///Assets/LottieLogo1.json" />
                 </winui:AnimatedVisualPlayer>
             </Border>
 
