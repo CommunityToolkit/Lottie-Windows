@@ -25,8 +25,15 @@
                     <Paragraph>
                         &#x2022;
                         <Hyperlink NavigateUri="https://www.nuget.org/packages/Microsoft.UI.Xaml/">
-                            <Span FontFamily="Consolas">Microsoft.UI.Xaml.AnimatedVisualPlayer</Span>
+                            <Span FontFamily="Consolas">Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer</Span>
                         </Hyperlink>
+                    </Paragraph>
+                    <Paragraph>
+                        &#x2022;
+                        <Hyperlink NavigateUri="https://www.nuget.org/packages/Win2D.uwp/">
+                            <Span FontFamily="Consolas">Microsoft.Graphics.Canvas</Span>
+                        </Hyperlink>
+                        if codegen-ing C#.
                     </Paragraph>
                     <Paragraph>
                         &#x2022;
