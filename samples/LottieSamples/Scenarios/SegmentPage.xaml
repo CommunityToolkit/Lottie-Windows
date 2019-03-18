@@ -42,7 +42,7 @@
                     <Paragraph>
                         To make the animation interactive, we configure the playback of segments or display of individual frames
                         based on
-                        <Span FontFamily="Consolas">PointerEntered/Exited/Pressed</Span> events.
+                        pointer entered, exited, and pressed events.
                         <Span FontWeight="SemiBold">Interact</Span>
                         with the Lottie animation below by hovering and clicking to see the results.
                         <LineBreak />

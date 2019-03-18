@@ -130,10 +130,10 @@
     <AppxManifest Include="Package.appxmanifest">
       <SubType>Designer</SubType>
     </AppxManifest>
-    <Content Include="AnimatedVisuals\LightBulb.json">
+    <Content Include="Assets\LightBulb.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="AnimatedVisuals\LottieLogo1.json">
+    <Content Include="Assets\LottieLogo1.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <None Include="LottieSamples_TemporaryKey.pfx" />
@@ -236,17 +236,15 @@
       <Version>6.1.9</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Toolkit.Uwp.UI.Lottie">
-      <Version>5.1.0</Version>
+      <Version>5.1.1</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.UI.Xaml">
-      <Version>2.1.190131001-prerelease</Version>
+      <Version>2.1.190218001-prerelease</Version>
     </PackageReference>
   </ItemGroup>
-
-    <Target Name="Pack">
+  <Target Name="Pack">
     <!-- Dummy target to mute warnings about attempts to create a NuPkg -->
   </Target>
-
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>

@@ -24,7 +24,7 @@ namespace LottieSamples.Scenarios
         private async void InitializeJsonSource()
         {
             // We'll need to set the JSON Source in code-behind in order to await it ...
-            await Progress_Source.SetSourceAsync(new Uri("ms-appx:///AnimatedVisuals/LightBulb.json"));
+            await Progress_Source.SetSourceAsync(new Uri("ms-appx:///Assets/LightBulb.json"));
 
             // ... so that when the SetSourceAsync completes, we can enable the Switch + Slider for user interaction.
             LightToggle.IsEnabled = ProgressSlider.IsEnabled = true;
