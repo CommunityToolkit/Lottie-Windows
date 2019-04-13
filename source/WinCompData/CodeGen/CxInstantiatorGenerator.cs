@@ -82,7 +82,7 @@ ref class {className} sealed : public Microsoft::UI::Xaml::Controls::IAnimatedVi
 {{
 public:
     virtual Microsoft::UI::Xaml::Controls::IAnimatedVisual^ TryCreateAnimatedVisual(
-        Compositor^ compositor,
+        Windows::UI::Composition::Compositor^ compositor,
         Platform::Object^* diagnostics);
 }};
 }}";
