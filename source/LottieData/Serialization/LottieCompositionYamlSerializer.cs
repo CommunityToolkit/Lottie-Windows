@@ -157,6 +157,31 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         YamlObject FromImageAsset(ImageAsset asset)
         {
+            switch (asset.ImageType)
+            {
+                case ImageAsset.ImageAssetType.Embedded:
+                    return FromEmbeddedImageAsset((EmbeddedImageAsset)asset);
+                case ImageAsset.ImageAssetType.External:
+                    return FromExternalImageAsset((ExternalImageAsset)asset);
+                default:
+                    throw new InvalidOperationException();
+            }
+        }
+
+        YamlObject FromEmbeddedImageAsset(EmbeddedImageAsset asset)
+        {
+            return new YamlMap
+            {
+                { "Id", asset.Id },
+                { "Width", asset.Width },
+                { "Height", asset.Height },
+                { "Format", asset.Format},
+                { "Bytes", asset.Bytes.Length},
+            };
+        }
+
+        YamlObject FromExternalImageAsset(ExternalImageAsset asset)
+        {
             return new YamlMap
             {
                 { "Id", asset.Id },
