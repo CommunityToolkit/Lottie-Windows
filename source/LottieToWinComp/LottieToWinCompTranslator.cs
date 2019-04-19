@@ -252,6 +252,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
                         yield return (Visual)item;
                         break;
+                    case CompositionObjectType.SpriteVisual:
+                        if (shapeVisual != null)
+                        {
+                            yield return shapeVisual;
+                            shapeVisual = null;
+                        }
+
+                        yield return (Visual)item;
+                        break;
                     default:
                         throw new InvalidOperationException();
                 }
@@ -651,10 +660,26 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         Visual TranslateImageLayer(TranslationContext context, ImageLayer layer)
         {
-            // Not yet implemented. Currently CompositionShape does not support SurfaceBrush as of RS4.
-            // TODO - but this is a visual now, so we could support it.
-            _unsupported.ImageLayer();
-            return null;
+            var result = _c.CreateSpriteVisual();
+
+            var referencedLayersAsset = _lc.Assets.GetAssetById(layer.RefId);
+            switch (referencedLayersAsset.Type)
+            {
+                case Asset.AssetType.Image:
+                    var myImage = (ImageAsset)referencedLayersAsset;
+                    result.Size = new Sn.Vector2((float)myImage.Width, (float)myImage.Height);
+                    var brush = CreateColorBrush(LottieData.Color.FromArgb(1, 1, 0, 0));
+                    result.Brush = brush;
+
+                    // Apply the transform to the new container at the top.
+                    TranslateAndApplyTransform(context, layer.Transform, result);
+                    break;
+                default:
+                    //_unsupported.IncorrectAssetType();
+                    break;
+            }
+
+            return result;
         }
 
         Visual TranslatePreCompLayerToVisual(TranslationContext context, PreCompLayer layer)
