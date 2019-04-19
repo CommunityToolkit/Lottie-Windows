@@ -452,61 +452,61 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             throw EofException;
         }
 
-        ImageAsset CreateImageAsset(string id, double width, double height, string imagePath, string fileName)
+        static ImageAsset CreateImageAsset(string id, double width, double height, string imagePath, string fileName)
         {
-            // fileName is either the name of a file at imagePath, or a data: url containing the image embedded.
-
             // Colon is never valid for a file name. If fileName contains a colon it is probably a URL.
             var colonIndex = fileName.IndexOf(':');
-            if (string.IsNullOrWhiteSpace(imagePath) && colonIndex >= 0)
+            return string.IsNullOrWhiteSpace(imagePath) && colonIndex > 0
+                ? (ImageAsset)CreateEmbeddedImageAsset(id, width, height, dataUrl: fileName)
+                : new ExternalImageAsset(id, width, height, imagePath, fileName);
+        }
+
+        static EmbeddedImageAsset CreateEmbeddedImageAsset(string id, double width, double height, string dataUrl)
+        {
+            var colonIndex = dataUrl.IndexOf(':');
+            var urlScheme = dataUrl.Substring(0, colonIndex);
+            switch (urlScheme)
             {
-                var urlScheme = fileName.Substring(0, colonIndex);
-                switch (urlScheme)
-                {
-                    case "data":
-                        // We only support the data: scheme
-                        break;
-                    default:
-                        throw new LottieCompositionReaderException($"Unsupported image asset url scheme: \"{urlScheme}\".");
-                }
-
-                // The mime type follows the colon, up to the first comma.
-                var commaIndex = fileName.IndexOf(',', colonIndex + 1);
-                if (commaIndex <= 0)
-                {
-                    throw new LottieCompositionReaderException("Missing image asset url mime type.");
-                }
-
-                var (type, subtype, parameters) = ParseMimeType(fileName.Substring(colonIndex + 1, commaIndex - colonIndex - 1));
-                if (type != "image")
-                {
-                    throw new LottieCompositionReaderException($"Unsupported mime type: \"{type}\".");
-                }
-
-                switch (subtype)
-                {
-                    case "png":
-                    case "jpg":
-                        break;
-
-                    case "jpeg":
-                        // Standardize on "jpg" for the convenience of consumers.
-                        subtype = "jpg";
-                        break;
-
-                    default:
-                        throw new LottieCompositionReaderException($"Unsupported mime image subtype: \"{subtype}\".");
-                }
-
-                // The embedded data starts after the comma.
-                var bytes = Convert.FromBase64String(fileName.Substring(commaIndex + 1));
-
-                return new EmbeddedImageAsset(id, width, height, bytes, subtype);
+                case "data":
+                    // We only support the data: scheme
+                    break;
+                default:
+                    throw new LottieCompositionReaderException($"Unsupported image asset url scheme: \"{urlScheme}\".");
             }
-            else
+
+            // The mime type follows the colon, up to the first comma.
+            var commaIndex = dataUrl.IndexOf(',', colonIndex + 1);
+            if (commaIndex <= 0)
             {
-                return new ExternalImageAsset(id, width, height, imagePath, fileName);
+                throw new LottieCompositionReaderException("Missing image asset url mime type.");
             }
+
+            var (type, subtype, parameters) = ParseMimeType(dataUrl.Substring(colonIndex + 1, commaIndex - colonIndex - 1));
+
+            if (type != "image")
+            {
+                throw new LottieCompositionReaderException($"Unsupported mime type: \"{type}\".");
+            }
+
+            switch (subtype)
+            {
+                case "png":
+                case "jpg":
+                    break;
+
+                case "jpeg":
+                    // Standardize on "jpg" for the convenience of consumers.
+                    subtype = "jpg";
+                    break;
+
+                default:
+                    throw new LottieCompositionReaderException($"Unsupported mime image subtype: \"{subtype}\".");
+            }
+
+            // The embedded data starts after the comma.
+            var bytes = Convert.FromBase64String(dataUrl.Substring(commaIndex + 1));
+
+            return new EmbeddedImageAsset(id, width, height, bytes, subtype);
         }
 
         static (string type, string subtype, string[] parameter) ParseMimeType(string mimeType)
