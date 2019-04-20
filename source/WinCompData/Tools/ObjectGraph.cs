@@ -223,6 +223,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
             }
         }
 
+        bool Reference(T from, ICompositionSurface obj)
+        {
+            switch (obj.TypeName)
+            {
+                case nameof(CompositionVisualSurface):
+                    Reference(from, (CompositionObject)obj);
+                    return true;
+
+                case "LoadedImageSurface": // Not yet implemented.
+                default:
+                    throw new InvalidOperationException();
+            }
+        }
+
         bool Reference(T from, CompositionPath obj)
         {
             if (_compositionPathReferences.TryGetValue(obj, out var node))

@@ -53,8 +53,9 @@
 
   <Import Project="..\source\LottieToWinComp\LottieToWinComp.projitems" Label="Shared" />
   <Import Project="..\source\LottieData\LottieData.projitems" Label="Shared" />
-  <Import Project="..\source\WinCompData\WinCompData.projitems" Label="Shared" />
   <Import Project="..\source\LottieReader\LottieReader.projitems" Label="Shared" />
   <Import Project="..\source\Lottie\Lottie.projitems" Label="Shared" />
+  <Import Project="..\source\WinCompData\WinCompData.projitems" Label="Shared" />
+  <Import Project="..\source\WinUIXamlMediaData\WinUIXamlMediaData.projitems" Label="Shared" />
 
 </Project>

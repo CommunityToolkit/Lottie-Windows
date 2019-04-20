@@ -1204,12 +1204,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             return result;
         }
 
-        Wc.ICompositionSurface GetCompositionSurface(Wd.CompositionSurfaceBase obj)
+        Wc.ICompositionSurface GetCompositionSurface(Wd.ICompositionSurface obj)
         {
-            switch (obj.Type)
+            switch (obj.TypeName)
             {
-                case Wd.CompositionObjectType.CompositionVisualSurface:
-                    return (Wc.ICompositionSurface)GetCompositionObject(obj);
+                case nameof(Wd.CompositionVisualSurface):
+                    return (Wc.ICompositionSurface)GetCompositionObject((Wd.CompositionVisualSurface)obj);
+
+                case "LoadedImageSurface": // Not yet implemented.
                 default:
                     throw new InvalidOperationException();
             }

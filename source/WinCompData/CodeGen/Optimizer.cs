@@ -1253,12 +1253,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             return result;
         }
 
-        CompositionSurfaceBase GetCompositionSurface(CompositionSurfaceBase obj)
+        ICompositionSurface GetCompositionSurface(ICompositionSurface obj)
         {
-            switch (obj.Type)
+            switch (obj.TypeName)
             {
-                case CompositionObjectType.CompositionVisualSurface:
+                case nameof(CompositionVisualSurface):
                     return GetCompositionVisualSurface((CompositionVisualSurface)obj);
+
+                case "LoadedImageSurface": // Not yet implemented.
                 default:
                     throw new InvalidOperationException();
             }
