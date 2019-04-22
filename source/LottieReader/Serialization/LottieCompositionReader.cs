@@ -436,7 +436,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                             }
                             else if (imagePath != null && fileName != null)
                             {
-                                return new ImageAsset(id, width, height, imagePath, fileName);
+                                return CreateImageAsset(id, width, height, imagePath, fileName);
                             }
                             else
                             {
@@ -450,6 +450,71 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             }
 
             throw EofException;
+        }
+
+        static ImageAsset CreateImageAsset(string id, double width, double height, string imagePath, string fileName)
+        {
+            // Colon is never valid for a file name. If fileName contains a colon it is probably a URL.
+            var colonIndex = fileName.IndexOf(':');
+            return string.IsNullOrWhiteSpace(imagePath) && colonIndex > 0
+                ? (ImageAsset)CreateEmbeddedImageAsset(id, width, height, dataUrl: fileName)
+                : new ExternalImageAsset(id, width, height, imagePath, fileName);
+        }
+
+        static EmbeddedImageAsset CreateEmbeddedImageAsset(string id, double width, double height, string dataUrl)
+        {
+            var colonIndex = dataUrl.IndexOf(':');
+            var urlScheme = dataUrl.Substring(0, colonIndex);
+            switch (urlScheme)
+            {
+                case "data":
+                    // We only support the data: scheme
+                    break;
+                default:
+                    throw new LottieCompositionReaderException($"Unsupported image asset url scheme: \"{urlScheme}\".");
+            }
+
+            // The mime type follows the colon, up to the first comma.
+            var commaIndex = dataUrl.IndexOf(',', colonIndex + 1);
+            if (commaIndex <= 0)
+            {
+                throw new LottieCompositionReaderException("Missing image asset url mime type.");
+            }
+
+            var (type, subtype, parameters) = ParseMimeType(dataUrl.Substring(colonIndex + 1, commaIndex - colonIndex - 1));
+
+            if (type != "image")
+            {
+                throw new LottieCompositionReaderException($"Unsupported mime type: \"{type}\".");
+            }
+
+            switch (subtype)
+            {
+                case "png":
+                case "jpg":
+                    break;
+
+                case "jpeg":
+                    // Standardize on "jpg" for the convenience of consumers.
+                    subtype = "jpg";
+                    break;
+
+                default:
+                    throw new LottieCompositionReaderException($"Unsupported mime image subtype: \"{subtype}\".");
+            }
+
+            // The embedded data starts after the comma.
+            var bytes = Convert.FromBase64String(dataUrl.Substring(commaIndex + 1));
+
+            return new EmbeddedImageAsset(id, width, height, bytes, subtype);
+        }
+
+        static (string type, string subtype, string[] parameter) ParseMimeType(string mimeType)
+        {
+            var typeAndParameters = mimeType.Split(';').Select(s => s.Trim()).ToArray();
+            var typeAndSubtype = typeAndParameters[0].Split('/');
+            var parameters = typeAndParameters.Skip(1).ToArray();
+            return (typeAndSubtype[0], typeAndSubtype.Length > 1 ? typeAndSubtype[1] : string.Empty, parameters);
         }
 
         Char ParseChar(JsonReader reader)
@@ -630,8 +695,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     }
 
                 case Layer.LayerType.Null:
-                        AssertAllFieldsRead(obj);
-                        return new NullLayer(in layerArgs);
+                    AssertAllFieldsRead(obj);
+                    return new NullLayer(in layerArgs);
 
                 case Layer.LayerType.Shape:
                     {

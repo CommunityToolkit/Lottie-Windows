@@ -5,31 +5,33 @@
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 {
     /// <summary>
-    /// A reference to an image.
+    /// An image.
     /// </summary>
 #if PUBLIC_LottieData
     public
 #endif
-    sealed class ImageAsset : Asset
+    abstract class ImageAsset : Asset
     {
-        public ImageAsset(string id, double width, double height, string path, string fileName)
+        public ImageAsset(string id, double width, double height)
             : base(id)
         {
             Width = width;
             Height = height;
-            Path = path;
-            FileName = fileName;
         }
 
         public double Width { get; }
 
         public double Height { get; }
 
-        public string Path { get; }
-
-        public string FileName { get; }
-
         /// <inheritdoc/>
         public override AssetType Type => AssetType.Image;
+
+        public abstract ImageAssetType ImageType { get; }
+
+        public enum ImageAssetType
+        {
+            Embedded,
+            External,
+        }
     }
 }
