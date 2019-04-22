@@ -176,7 +176,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 { "Width", asset.Width },
                 { "Height", asset.Height },
                 { "Format", asset.Format},
-                { "Bytes", asset.Bytes.Length},
+                { "SizeInBytes", asset.Bytes.Length},
             };
         }
 

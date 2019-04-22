@@ -163,7 +163,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 new XAttribute(nameof(imageAsset.Width), imageAsset.Width),
                 new XAttribute(nameof(imageAsset.Height), imageAsset.Height),
                 new XAttribute(nameof(imageAsset.Format), imageAsset.Format),
-                new XAttribute(nameof(imageAsset.Bytes), imageAsset.Bytes.Length));
+                new XAttribute("SizeInBytes", imageAsset.Bytes.Length));
         }
 
         XElement FromExternalImageAsset(ExternalImageAsset imageAsset)
