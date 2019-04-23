@@ -33,11 +33,11 @@
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.5.2" />
   </ItemGroup>
 
+  <Import Project="..\source\LottieData\LottieData.projitems" Label="Shared" />
   <Import Project="..\source\LottieReader\LottieReader.projitems" Label="Shared" />
   <Import Project="..\source\LottieToWinComp\LottieToWinComp.projitems" Label="Shared" />
+  <Import Project="..\source\UIData\UIData.projitems" Label="Shared" />
   <Import Project="..\source\WinCompData\WinCompData.projitems" Label="Shared" />
-  <Import Project="..\source\WinUIXamlMediaData\\WinUIXamlMediaData.projitems" Label="Shared" />
-  <Import Project="..\source\UIData\\UIData.projitems" Label="Shared" />
-  <Import Project="..\source\LottieData\LottieData.projitems" Label="Shared" />
+  <Import Project="..\source\WinUIXamlMediaData\WinUIXamlMediaData.projitems" Label="Shared" />
 
 </Project>
