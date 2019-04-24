@@ -6,7 +6,7 @@ using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData
 {
-#if PUBLIC_WinUIXamlMedia
+#if PUBLIC_WinUIXamlMediaData
     public
 #endif
     sealed class LoadedImageSurface : ICompositionSurface
