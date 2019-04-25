@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools;
+using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Foundation;
 using Windows.Foundation.Metadata;
@@ -419,7 +419,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                     if (translateSucceeded && optimizationEnabled)
                     {
                         // Optimize.
-                        wincompDataRootVisual = WinCompData.CodeGen.Optimizer.Optimize(wincompDataRootVisual, ignoreCommentProperties: true);
+                        wincompDataRootVisual = UIData.CodeGen.Optimizer.Optimize(wincompDataRootVisual, ignoreCommentProperties: true);
 
                         if (diagnostics != null)
                         {

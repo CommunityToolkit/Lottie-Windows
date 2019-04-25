@@ -8,13 +8,6 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)AnimationController.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\CodeBuilder.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\CppStringifier.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\CSharpInstantiatorGenerator.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\CxInstantiatorGenerator.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\InstantiatorGeneratorBase.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\NodeNamer.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\Optimizer.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\TreeReducer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ColorKeyFrameAnimation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionAnimation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionBrush.cs" />
@@ -88,18 +81,11 @@
     <Compile Include="$(MSBuildThisFileDirectory)Mgc\CanvasDevice.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PathKeyFrameAnimation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ScalarKeyFrameAnimation.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Serialization\CompositionObjectDgmlSerializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\CompositionObjectXmlSerializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ShapeVisual.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SpriteVisual.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)StepEasingFunction.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\CanonicalizedNode.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\Canonicalizer.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Tools\ApiCompatibility.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Tools\Graph.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tools\ListOfNeverNull.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Tools\ObjectGraph.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Tools\Stats.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Vector2KeyFrameAnimation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Vector3KeyFrameAnimation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Visual.cs" />

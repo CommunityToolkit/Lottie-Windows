@@ -3,11 +3,13 @@
 
 using System;
 using System.Numerics;
+using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
+using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
+namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 {
-#if PUBLIC_WinCompData
+#if PUBLIC_UIData
     public
 #endif
     sealed class CxInstantiatorGenerator : InstantiatorGeneratorBase

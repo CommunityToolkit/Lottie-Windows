@@ -5,11 +5,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools;
+using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui;
+using Wg = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wg;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
+namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 {
     static class Canonicalizer
     {

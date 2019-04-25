@@ -7,17 +7,21 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
+using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools;
+using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools;
+using Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData;
+using Wg = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wg;
+using Wui = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
+namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 {
     /// <summary>
     /// Transforms a WinCompData tree to an equivalent tree, optimizing the tree
     /// where possible.
     /// </summary>
-#if PUBLIC_WinCompData
+#if PUBLIC_UIData
     public
 #endif
     sealed class Optimizer
@@ -1260,7 +1264,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
                 case nameof(CompositionVisualSurface):
                     return GetCompositionVisualSurface((CompositionVisualSurface)obj);
 
-                case "LoadedImageSurface": // Not yet implemented.
+                case nameof(LoadedImageSurface): // Not yet implemented.
                 default:
                     throw new InvalidOperationException();
             }

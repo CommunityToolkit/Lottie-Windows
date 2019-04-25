@@ -19,17 +19,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
         internal bool IsEmpty => _lines.Count == 0;
 
-        internal void WriteLine()
+        public void WriteLine()
         {
             WriteLine(string.Empty);
         }
 
-        internal void WriteLine(string line)
+        public void WriteLine(string line)
         {
             _lines.Add(new CodeLine { Text = line, IndentCount = _indentCount });
         }
 
-        internal void WriteComment(string comment)
+        public void WriteComment(string comment)
         {
             if (!string.IsNullOrWhiteSpace(comment))
             {
@@ -45,24 +45,24 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             _lines.Add(new CodeLine { Text = builder, IndentCount = _indentCount });
         }
 
-        internal void OpenScope()
+        public void OpenScope()
         {
             WriteLine("{");
             Indent();
         }
 
-        internal void CloseScope()
+        public void CloseScope()
         {
             UnIndent();
             WriteLine("}");
         }
 
-        internal void Indent()
+        public void Indent()
         {
             _indentCount++;
         }
 
-        internal void UnIndent()
+        public void UnIndent()
         {
             Debug.Assert(_indentCount > 0, "Unmatched Indent()/UnIndent() calls");
             _indentCount--;
@@ -79,7 +79,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             return ToString(0);
         }
 
-        internal string ToString(int indentCount)
+        public string ToString(int indentCount)
         {
             var sb = new StringBuilder();
             foreach (var line in _lines)
