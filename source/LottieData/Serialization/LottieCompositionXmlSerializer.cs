@@ -144,13 +144,37 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         XElement FromImageAsset(ImageAsset asset)
         {
+            switch (asset.ImageType)
+            {
+                case ImageAsset.ImageAssetType.Embedded:
+                    return FromEmbeddedImageAsset((EmbeddedImageAsset)asset);
+                case ImageAsset.ImageAssetType.External:
+                    return FromExternalImageAsset((ExternalImageAsset)asset);
+                default:
+                    throw new InvalidOperationException();
+            }
+        }
+
+        XElement FromEmbeddedImageAsset(EmbeddedImageAsset imageAsset)
+        {
             return new XElement(
                 nameof(ImageAsset),
-                new XAttribute(nameof(asset.Id), asset.Id),
-                new XAttribute(nameof(asset.Width), asset.Width),
-                new XAttribute(nameof(asset.Height), asset.Height),
-                new XAttribute(nameof(asset.Path), asset.Path),
-                new XAttribute(nameof(asset.FileName), asset.FileName));
+                new XAttribute(nameof(imageAsset.Id), imageAsset.Id),
+                new XAttribute(nameof(imageAsset.Width), imageAsset.Width),
+                new XAttribute(nameof(imageAsset.Height), imageAsset.Height),
+                new XAttribute(nameof(imageAsset.Format), imageAsset.Format),
+                new XAttribute("SizeInBytes", imageAsset.Bytes.Length));
+        }
+
+        XElement FromExternalImageAsset(ExternalImageAsset imageAsset)
+        {
+            return new XElement(
+                nameof(ImageAsset),
+                new XAttribute(nameof(imageAsset.Id), imageAsset.Id),
+                new XAttribute(nameof(imageAsset.Width), imageAsset.Width),
+                new XAttribute(nameof(imageAsset.Height), imageAsset.Height),
+                new XAttribute(nameof(imageAsset.Path), imageAsset.Path),
+                new XAttribute(nameof(imageAsset.FileName), imageAsset.FileName));
         }
 
         XElement FromLayerCollection(LayerCollection layers)

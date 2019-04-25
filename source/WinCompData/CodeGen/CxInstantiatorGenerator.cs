@@ -96,7 +96,8 @@ public:
         {
             builder.WriteLine("#include \"pch.h\"");
             builder.WriteLine($"#include \"{_headerFileName}\"");
-            if (info.UsesCanvasEffects)
+            if (info.UsesCanvasEffects ||
+                info.UsesCanvasGeometry)
             {
                 // D2D
                 builder.WriteLine("#include \"d2d1.h\"");
@@ -201,19 +202,19 @@ public:
 
             // Write the members on IAnimatedVisual.
             builder.WriteLine();
-            builder.WriteLine("property Windows::Foundation::TimeSpan Duration");
+            builder.WriteLine("property TimeSpan Duration");
             builder.OpenScope();
-            builder.WriteLine("virtual Windows::Foundation::TimeSpan get() { return { c_durationTicks }; }");
+            builder.WriteLine("virtual TimeSpan get() { return { c_durationTicks }; }");
             builder.CloseScope();
             builder.WriteLine();
-            builder.WriteLine("property Windows::UI::Composition::Visual^ RootVisual");
+            builder.WriteLine("property Visual^ RootVisual");
             builder.OpenScope();
-            builder.WriteLine("virtual Windows::UI::Composition::Visual^ get() { return _root; }");
+            builder.WriteLine("virtual Visual^ get() { return _root; }");
             builder.CloseScope();
             builder.WriteLine();
-            builder.WriteLine("property Windows::Foundation::Numerics::float2 Size");
+            builder.WriteLine("property float2 Size");
             builder.OpenScope();
-            builder.WriteLine($"virtual Windows::Foundation::Numerics::float2 get() {{ return {Vector2(info.CompositionDeclaredSize)}; }}");
+            builder.WriteLine($"virtual float2 get() {{ return {Vector2(info.CompositionDeclaredSize)}; }}");
             builder.CloseScope();
             builder.WriteLine();
 
@@ -281,7 +282,7 @@ public:
         /// <inheritdoc/>
         protected override void WriteCanvasGeometryGroupFactory(CodeBuilder builder, CanvasGeometry.Group obj, string typeName, string fieldName)
         {
-            builder.WriteLine($"auto geometries = ComPtr<ID2D1Geometry>[{obj.Geometries.Length}];");
+            builder.WriteLine($"ComPtr<ID2D1Geometry> geometries[{obj.Geometries.Length}];");
             builder.OpenScope();
             for (var i = 0; i < obj.Geometries.Length; i++)
             {
@@ -295,7 +296,7 @@ public:
             builder.WriteLine("FFHR(_d2dFactory->CreateGeometryGroup(");
             builder.Indent();
             builder.WriteLine($"{FilledRegionDetermination(obj.FilledRegionDetermination)},");
-            builder.WriteLine("&geometries,");
+            builder.WriteLine("geometries[0].GetAddressOf(),");
             builder.WriteLine($"{obj.Geometries.Length},");
             builder.WriteLine("&group));");
             builder.UnIndent();

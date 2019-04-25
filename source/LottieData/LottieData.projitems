@@ -19,6 +19,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)\CubicBezierEasing.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Easing.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Ellipse.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\EmbeddedImageAsset.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\ExternalImageAsset.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Font.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\GradientStop.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\HoldEasing.cs" />
