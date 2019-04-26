@@ -8,15 +8,16 @@ using System.Globalization;
 using System.Linq;
 using System.Numerics;
 
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools;
+using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools;
+using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
+namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 {
     /// <summary>
     /// Generates names for the nodes in an <see cref="ObjectGraph{T}"/>.
     /// </summary>
     /// <typeparam name="TNode">The type of the data associated with each node.</typeparam>
-#if PUBLIC_WinCompData
+#if PUBLIC_UIData
     public
 #endif
     static class NodeNamer<TNode>

@@ -3,13 +3,14 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Linq;
+using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
+namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 {
     /// <summary>
     /// Analyzes a tree to determine the features of the runtime required to instantiate it.
     /// </summary>
-#if PUBLIC_WinCompData
+#if PUBLIC_UIData
     public
 #endif
     sealed class ApiCompatibility

@@ -31,9 +31,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 
         public IEnumerable<KeyValuePair<string, Vector2>> Vector2Properties => _vector2Properties;
 
-        internal IEnumerable<string> PropertyNames => _scalarProperties.Keys.Concat(_vector2Properties.Keys);
+        public IEnumerable<string> PropertyNames => _scalarProperties.Keys.Concat(_vector2Properties.Keys);
 
-        internal bool IsEmpty => _scalarProperties.Count + _vector2Properties.Count == 0;
+        public bool IsEmpty => _scalarProperties.Count + _vector2Properties.Count == 0;
 
         /// <inheritdoc/>
         public override CompositionObjectType Type => CompositionObjectType.CompositionPropertySet;

@@ -10,8 +10,9 @@ using System.Text;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp;
+using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen;
+using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools;
 
 /// <summary>
@@ -662,7 +663,7 @@ sealed class LottieFileProcessor
             _reporter.WriteInfo(IssueToString(_file, issue));
         }
 
-        _beforeOptimizationStats = new Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools.Stats(_rootVisual);
+        _beforeOptimizationStats = new Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools.Stats(_rootVisual);
         _profiler.OnUnmeasuredFinished();
 
         if (!translateSucceeded)
@@ -677,7 +678,7 @@ sealed class LottieFileProcessor
             _rootVisual = Optimizer.Optimize(_rootVisual, ignoreCommentProperties: true);
             _profiler.OnOptimizationFinished();
 
-            _afterOptimizationStats = new Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools.Stats(_rootVisual);
+            _afterOptimizationStats = new Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools.Stats(_rootVisual);
             _profiler.OnUnmeasuredFinished();
         }
 

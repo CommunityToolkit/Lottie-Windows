@@ -5,12 +5,14 @@
 using System;
 using System.Linq;
 using System.Numerics;
+using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui;
+using Mgcg = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
+namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 {
-#if PUBLIC_WinCompData
+#if PUBLIC_UIData
     public
 #endif
     sealed class CSharpInstantiatorGenerator : InstantiatorGeneratorBase

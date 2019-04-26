@@ -4,9 +4,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen;
+using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie
 {

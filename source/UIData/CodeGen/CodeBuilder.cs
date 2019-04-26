@@ -6,9 +6,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
+namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 {
-#if PUBLIC_WinCompData
+#if PUBLIC_UIData
     public
 #endif
     sealed class CodeBuilder
