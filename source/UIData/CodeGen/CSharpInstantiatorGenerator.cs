@@ -6,7 +6,6 @@ using System;
 using System.Linq;
 using System.Numerics;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui;
 using Mgcg = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;

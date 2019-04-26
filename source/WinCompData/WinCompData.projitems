@@ -7,7 +7,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)AnimationController.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\CodeBuilder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ColorKeyFrameAnimation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionAnimation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionBrush.cs" />

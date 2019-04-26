@@ -6,9 +6,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
+namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 {
-#if PUBLIC_WinCompData
+#if PUBLIC_UIData
     public
 #endif
     sealed class CodeBuilder
@@ -19,17 +19,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
         internal bool IsEmpty => _lines.Count == 0;
 
-        public void WriteLine()
+        internal void WriteLine()
         {
             WriteLine(string.Empty);
         }
 
-        public void WriteLine(string line)
+        internal void WriteLine(string line)
         {
             _lines.Add(new CodeLine { Text = line, IndentCount = _indentCount });
         }
 
-        public void WriteComment(string comment)
+        internal void WriteComment(string comment)
         {
             if (!string.IsNullOrWhiteSpace(comment))
             {
@@ -45,24 +45,24 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             _lines.Add(new CodeLine { Text = builder, IndentCount = _indentCount });
         }
 
-        public void OpenScope()
+        internal void OpenScope()
         {
             WriteLine("{");
             Indent();
         }
 
-        public void CloseScope()
+        internal void CloseScope()
         {
             UnIndent();
             WriteLine("}");
         }
 
-        public void Indent()
+        internal void Indent()
         {
             _indentCount++;
         }
 
-        public void UnIndent()
+        internal void UnIndent()
         {
             Debug.Assert(_indentCount > 0, "Unmatched Indent()/UnIndent() calls");
             _indentCount--;
@@ -79,7 +79,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             return ToString(0);
         }
 
-        public string ToString(int indentCount)
+        internal string ToString(int indentCount)
         {
             var sb = new StringBuilder();
             foreach (var line in _lines)

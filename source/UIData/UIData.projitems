@@ -8,6 +8,7 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\CanonicalizedNode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\Canonicalizer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\CodeBuilder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\CppStringifier.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\CSharpInstantiatorGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\CxInstantiatorGenerator.cs" />

@@ -10,7 +10,6 @@ using System.Numerics;
 using System.Text;
 using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgc;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui;
