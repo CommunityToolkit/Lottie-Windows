@@ -4,14 +4,15 @@
 
 using System;
 using System.Linq;
+using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
+namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 {
     /// <summary>
     /// Calculates stats for a WinCompData tree. Used to report the size of data
     /// and the effectiveness of optimization.
     /// </summary>
-#if PUBLIC_WinCompData
+#if PUBLIC_UIData
     public
 #endif
     sealed class Stats

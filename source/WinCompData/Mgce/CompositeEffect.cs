@@ -13,10 +13,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce
 #endif
     sealed class CompositeEffect : GraphicsEffectBase
     {
-        internal CompositeEffect()
-        {
-        }
-
         public CanvasComposite Mode { get; set; }
 
         public IList<CompositionEffectSourceParameter> Sources { get; } = new ListOfNeverNull<CompositionEffectSourceParameter>();
