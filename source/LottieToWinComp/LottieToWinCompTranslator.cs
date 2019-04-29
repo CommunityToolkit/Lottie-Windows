@@ -67,7 +67,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         // The name used to bind to the property set that contains the Progress property.
         const string RootName = "_";
         readonly LottieComposition _lc;
-        readonly TranslationIssues _unsupported;
+        readonly TranslationIssues _issues;
         readonly bool _addDescriptions;
         readonly Compositor _c;
         readonly ContainerVisual _rootVisual;
@@ -107,7 +107,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         {
             _lc = lottieComposition;
             _c = compositor;
-            _unsupported = new TranslationIssues(strictTranslation);
+            _issues = new TranslationIssues(strictTranslation);
             _addDescriptions = addDescriptions;
 
             // Create the root.
@@ -169,7 +169,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
                 // Set the out parameters.
                 visual = translator._rootVisual;
-                translationIssues = translator._unsupported.GetIssues();
+                translationIssues = translator._issues.GetIssues();
             }
 
             return true;
@@ -181,10 +181,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             AddTranslatedLayersToContainerVisual(_rootVisual, context, _lc.Layers, compositionDescription: "Root");
             if (_lc.Is3d)
             {
-                if (_lc.Is3d)
-                {
-                    _unsupported.ThreeD();
-                }
+                _issues.ThreeDIsNotSupported();
             }
         }
 
@@ -289,25 +286,25 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
                 if (mask.Inverted)
                 {
-                    _unsupported.MaskWithInvert();
+                    _issues.MaskWithInvert();
                 }
 
                 if (mask.Opacity.IsAnimated ||
                     mask.Opacity.InitialValue != 100)
                 {
-                    _unsupported.MaskWithAlpha();
+                    _issues.MaskWithAlpha();
                 }
 
                 if (mask.Mode != Mask.MaskMode.Additive)
                 {
-                    _unsupported.MaskWithUnsupportedMode(mask.Mode.ToString());
+                    _issues.MaskWithUnsupportedMode(mask.Mode.ToString());
                 }
 
                 // Translation currently does not support having multiple paths for masks.
                 // If possible users should combine masks when exporting to json.
                 if (layer.Masks.Length > 1)
                 {
-                    _unsupported.MultipleShapeMasks();
+                    _issues.MultipleShapeMasks();
                 }
 
                 // Add a mask as a clip path if it can support the mask properties
@@ -402,17 +399,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         {
             if (layer.Is3d)
             {
-                _unsupported.ThreeDLayer();
+                _issues.ThreeDLayerIsNotSupported();
             }
 
             if (layer.BlendMode != BlendMode.Normal)
             {
-                _unsupported.BlendMode(layer.BlendMode.ToString());
+                _issues.BlendMode(layer.BlendMode.ToString());
             }
 
             if (layer.TimeStretch != 1)
             {
-                _unsupported.TimeStretch();
+                _issues.TimeStretch();
             }
 
             if (layer.IsHidden)
@@ -678,16 +675,24 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             containerVisualContentNode.Children.Add(content);
 
             var referencedLayersAsset = _lc.Assets.GetAssetById(layer.RefId);
+            if (referencedLayersAsset == null)
+            {
+                _issues.ReferencedAssetDoesNotExist();
+                return null;
+            }
+
             switch (referencedLayersAsset.Type)
             {
                 case Asset.AssetType.Image:
                     var imageAsset = (ImageAsset)referencedLayersAsset;
                     content.Size = new Sn.Vector2((float)imageAsset.Width, (float)imageAsset.Height);
+
+                    // TODO: Remove the red brush. This is for prototype purpose.
                     var brush = CreateColorBrush(LottieData.Color.FromArgb(1, 1, 0, 0));
                     content.Brush = brush;
                     break;
                 default:
-                    _unsupported.InvalidAssetType();
+                    _issues.InvalidAssetReferenceFromCurrentLayer(layer.Type.ToString(), layer.RefId, referencedLayersAsset.Type.ToString(), Asset.AssetType.Image.ToString());
                     break;
             }
 
@@ -695,7 +700,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 #else
             // Not yet implemented. Currently CompositionShape does not support SurfaceBrush as of RS4.
             // TODO - but this is a visual now, so we could support it.
-            _unsupported.ImageLayer();
+            _issues.ImageLayerIsNotSupported();
             return null;
 #endif
         }
@@ -726,6 +731,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             // TODO - the animations produced inside a PreComp need to be time-mapped.
             var referencedLayersAsset = _lc.Assets.GetAssetById(layer.RefId);
+            if (referencedLayersAsset == null)
+            {
+                _issues.ReferencedAssetDoesNotExist();
+                return null;
+            }
+
             switch (referencedLayersAsset.Type)
             {
                 case Asset.AssetType.LayerCollection:
@@ -737,16 +748,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     AddTranslatedLayersToContainerVisual(contentsNode, subContext, referencedLayers, $"{layer.Name}:{layerCollectionAsset.Id}");
                     break;
                 case Asset.AssetType.Image:
-#if EnableImageLayer
-                    var content = CreateSpriteVisual();
-                    contentsNode.Children.Add(content);
-                    var imageAsset = (ImageAsset)referencedLayersAsset;
-                    content.Size = new Sn.Vector2((float)imageAsset.Width, (float)imageAsset.Height);
-                    var brush = CreateColorBrush(LottieData.Color.FromArgb(1, 1, 0, 0));
-                    content.Brush = brush;
-#else
-                    _unsupported.ImageAssets();
-#endif
+                    _issues.InvalidAssetReferenceFromCurrentLayer(layer.Type.ToString(), layer.RefId, referencedLayersAsset.Type.ToString(), Asset.AssetType.LayerCollection.ToString());
                     break;
                 default:
                     throw new InvalidOperationException();
@@ -787,7 +789,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     switch (popped.ContentType)
                     {
                         case ShapeContentType.LinearGradientFill:
-                            _owner._unsupported.GradientFill();
+                            _owner._issues.GradientFill();
                             {
                                 // We don't yet support gradient fill, but we can at least
                                 // draw something. Use data from the first gradient stop as the fill.
@@ -801,7 +803,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
                             break;
                         case ShapeContentType.RadialGradientFill:
-                            _owner._unsupported.GradientFill();
+                            _owner._issues.GradientFill();
                             {
                                 // We don't yet support gradient fill, but we can at least
                                 // draw something. Use data from the first gradient stop as the fill.
@@ -817,7 +819,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
                         case ShapeContentType.LinearGradientStroke:
                         case ShapeContentType.RadialGradientStroke:
-                            _owner._unsupported.GradientStroke();
+                            _owner._issues.GradientStroke();
                             break;
 
                         case ShapeContentType.SolidColorFill:
@@ -911,7 +913,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     else
                     {
                         // The animations overlap. We currently don't support this case.
-                        _owner._unsupported.AnimationMultiplication();
+                        _owner._issues.AnimationMultiplication();
                         return a;
                     }
                 }
@@ -1005,7 +1007,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     }
                 }
 
-                _owner._unsupported.MultipleFills();
+                _owner._issues.MultipleFills();
                 return b;
             }
 
@@ -1032,7 +1034,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 }
 
                 // The new stroke should be in addition to the existing stroke. And colors should blend.
-                _owner._unsupported.MultipleStrokes();
+                _owner._issues.MultipleStrokes();
                 return b;
             }
 
@@ -1061,7 +1063,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     }
                 }
 
-                _owner._unsupported.MultipleAnimatedRoundedCorners();
+                _owner._issues.MultipleAnimatedRoundedCorners();
                 return b;
             }
 
@@ -1105,7 +1107,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     }
                 }
 
-                _owner._unsupported.MultipleTrimPaths();
+                _owner._issues.MultipleTrimPaths();
                 return b;
             }
         }
@@ -1191,7 +1193,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             if (geometryCount > 1 && pathCount != geometryCount)
             {
-                _unsupported.CombiningMultipleShapes();
+                _issues.CombiningMultipleShapes();
             }
         }
 
@@ -1238,7 +1240,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 if (repeaterCount.IsAnimated || repeaterOffset.IsAnimated || repeaterOffset.InitialValue != 0)
                 {
                     // TODO - handle all cases.
-                    _unsupported.Repeater();
+                    _issues.Repeater();
                 }
                 else
                 {
@@ -1326,7 +1328,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
                         break;
                     case ShapeContentType.Polystar:
-                        _unsupported.Polystar();
+                        _issues.Polystar();
                         break;
                     case ShapeContentType.Rectangle:
                         container.Shapes.Add(TranslateRectangleContent(context, shapeContext, (Rectangle)shapeContent));
@@ -1350,7 +1352,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         break;
                     case ShapeContentType.Repeater:
                         // TODO - handle all cases. Not clear whether this is valid. Seen on 0605.traffic_light.
-                        _unsupported.Repeater();
+                        _issues.Repeater();
                         break;
                     default:
                     case ShapeContentType.SolidColorStroke:
@@ -1463,7 +1465,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 {
                     // There will be stack overflows if the CanvasGeometry.Combine is too large.
                     // Usually not a problem, but handle degenerate cases.
-                    _unsupported.MergingALargeNumberOfShapes();
+                    _issues.MergingALargeNumberOfShapes();
                     geometries = geometries.Take(50).ToArray();
                 }
 
@@ -1511,7 +1513,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         yield return MergeShapeLayerContent(context, shapeContext, stack, ((MergePaths)shapeContent).Mode);
                         break;
                     case ShapeContentType.Repeater:
-                        _unsupported.Repeater();
+                        _issues.Repeater();
                         break;
                     case ShapeContentType.Transform:
                         // TODO - do we need to clear out the transform when we've finished with this call to CreateCanvasGeometries?? Maybe the caller should clone the context.
@@ -1539,7 +1541,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         yield return CreateWin2dRectangleGeometry(context, shapeContext, (Rectangle)shapeContent);
                         break;
                     case ShapeContentType.Polystar:
-                        _unsupported.Polystar();
+                        _issues.Polystar();
                         break;
                     default:
                         throw new InvalidOperationException();
@@ -1638,7 +1640,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             if (pathData.IsAnimated)
             {
-                _unsupported.CombiningAnimatedShapes();
+                _issues.CombiningAnimatedShapes();
             }
 
             var transform = CreateMatrixFromTransform(context, shapeContext.Transform);
@@ -1664,7 +1666,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             if (ellipsePosition.IsAnimated || ellipseDiameter.IsAnimated)
             {
-                _unsupported.CombiningAnimatedShapes();
+                _issues.CombiningAnimatedShapes();
             }
 
             var xRadius = ellipseDiameter.InitialValue.X / 2;
@@ -1701,7 +1703,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             if (position.IsAnimated || size.IsAnimated || cornerRadius.IsAnimated)
             {
-                _unsupported.CombiningAnimatedShapes();
+                _issues.CombiningAnimatedShapes();
             }
 
             var width = size.InitialValue.X;
@@ -1900,7 +1902,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             if (size.IsAnimated && isPartialTrimPath)
             {
                 // Warn that we might be getting things wrong
-                _unsupported.AnimatedRectangleWithTrimPath();
+                _issues.AnimatedRectangleWithTrimPath();
             }
 
             var width = size.InitialValue.X;
@@ -1925,7 +1927,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 if (trimmedRadius.IsAnimated || trimmedRadius.InitialValue != 0)
                 {
                     // TODO - can rounded corners be implemented by composing cubic beziers?
-                    _unsupported.PathWithRoundedCorners();
+                    _issues.PathWithRoundedCorners();
                 }
             }
         }
@@ -2195,7 +2197,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 if (trimOffsetDegrees != 0)
                 {
                     // TODO - can be handled with another property.
-                    _unsupported.AnimatedTrimOffsetWithStaticTrimOffset();
+                    _issues.AnimatedTrimOffsetWithStaticTrimOffset();
                 }
 
                 if (trimPathOffsetDegrees.IsAnimated)
@@ -2341,7 +2343,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         Visual TranslateTextLayer(TranslationContext context, TextLayer layer)
         {
             // Text layers are not yet suported.
-            _unsupported.TextLayer();
+            _issues.TextLayer();
             return null;
         }
 
@@ -3164,7 +3166,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 if (opacityPercent.IsAnimated)
                 {
                     // TOOD: multiply animations to produce a new set of key frames for the opacity-multiplied color.
-                    _unsupported.OpacityAndColorAnimatedTogether();
+                    _issues.OpacityAndColorAnimatedTogether();
                     return color;
                 }
                 else

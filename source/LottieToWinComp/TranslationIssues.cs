@@ -46,9 +46,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal void GradientStroke() => Report("LT0007", "Gradient stroke");
 
-        internal void ImageAssets() => Report("LT0008", "Image assets");
-
-        internal void ImageLayer() => Report("LT0009", "Image layers");
+        internal void ImageLayerIsNotSupported() => Report("LT0009", "Image layers is not supported");
 
         internal void MergingALargeNumberOfShapes() => Report("LT0010", "Merging a large number of shapes");
 
@@ -70,9 +68,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal void TextLayer() => Report("LT0019", "Text layer");
 
-        internal void ThreeD() => Report("LT0020", "3d composition");
+        internal void ThreeDIsNotSupported() => Report("LT0020", "3d composition is not supported");
 
-        internal void ThreeDLayer() => Report("LT0021", "3d layer");
+        internal void ThreeDLayerIsNotSupported() => Report("LT0021", "3d layer is not supported");
 
         internal void TimeStretch() => Report("LT0022", "Time stretch");
 
@@ -86,7 +84,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal void CombiningMultipleShapes() => Report("LT0027", "CombiningMultipleShapes");
 
-        internal void InvalidAssetType() => Report("LT0028", "Non-image asset in image layer");
+        internal void ReferencedAssetDoesNotExist() => Report("LT0028", "ReferencedAssetDoesNotExist");
+
+        internal void InvalidAssetReferenceFromCurrentLayer(string currentLayerType, string assetRefId, string assetType, string expectedAssetType) => Report("LT0029", $"{currentLayerType} referenced asset {assetRefId} of type {assetType} which is invalid. Expected asset of type {expectedAssetType}.");
 
         void Report(string code, string description)
         {
