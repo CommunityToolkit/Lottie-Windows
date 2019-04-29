@@ -2,6 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+// Enable use of Image Layer
+#define EnableImageLayer
+
 // Enable workaround for RS5 where rotated rectangles were not drawn correctly.
 #define WorkAroundRectangleGeometryHalfDrawn
 
@@ -200,9 +203,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             // Set descriptions on each translate layer so that it's clear where the layer starts.
             if (_addDescriptions)
             {
-                foreach (var pair in translatedLayers)
+                foreach (var (translatedLayer, layer) in translatedLayers)
                 {
-                    Describe(pair.translatedLayer, $"Layer ({pair.layer.Type}): {pair.layer.Name}");
+                    // Add a description if not added already.
+                    if (translatedLayer.ShortDescription == null)
+                    {
+                        Describe(translatedLayer, $"Layer ({layer.Type}): {layer.Name}");
+                    }
                 }
             }
 
@@ -660,26 +667,37 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         Visual TranslateImageLayer(TranslationContext context, ImageLayer layer)
         {
-            var result = _c.CreateSpriteVisual();
+#if EnableImageLayer
+            if (!TryCreateContainerVisualTransformChain(context, layer, out var containerVisualRootNode, out var containerVisualContentNode))
+            {
+                // The layer is never visible.
+                return null;
+            }
+
+            var content = CreateSpriteVisual();
+            containerVisualContentNode.Children.Add(content);
 
             var referencedLayersAsset = _lc.Assets.GetAssetById(layer.RefId);
             switch (referencedLayersAsset.Type)
             {
                 case Asset.AssetType.Image:
-                    var myImage = (ImageAsset)referencedLayersAsset;
-                    result.Size = new Sn.Vector2((float)myImage.Width, (float)myImage.Height);
+                    var imageAsset = (ImageAsset)referencedLayersAsset;
+                    content.Size = new Sn.Vector2((float)imageAsset.Width, (float)imageAsset.Height);
                     var brush = CreateColorBrush(LottieData.Color.FromArgb(1, 1, 0, 0));
-                    result.Brush = brush;
-
-                    // Apply the transform to the new container at the top.
-                    TranslateAndApplyTransform(context, layer.Transform, result);
+                    content.Brush = brush;
                     break;
                 default:
-                    //_unsupported.IncorrectAssetType();
+                    _unsupported.InvalidAssetType();
                     break;
             }
 
-            return result;
+            return containerVisualRootNode;
+#else
+            // Not yet implemented. Currently CompositionShape does not support SurfaceBrush as of RS4.
+            // TODO - but this is a visual now, so we could support it.
+            _unsupported.ImageLayer();
+            return null;
+#endif
         }
 
         Visual TranslatePreCompLayerToVisual(TranslationContext context, PreCompLayer layer)
@@ -719,7 +737,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     AddTranslatedLayersToContainerVisual(contentsNode, subContext, referencedLayers, $"{layer.Name}:{layerCollectionAsset.Id}");
                     break;
                 case Asset.AssetType.Image:
+#if EnableImageLayer
+                    var content = CreateSpriteVisual();
+                    contentsNode.Children.Add(content);
+                    var imageAsset = (ImageAsset)referencedLayersAsset;
+                    content.Size = new Sn.Vector2((float)imageAsset.Width, (float)imageAsset.Height);
+                    var brush = CreateColorBrush(LottieData.Color.FromArgb(1, 1, 0, 0));
+                    content.Brush = brush;
+#else
                     _unsupported.ImageAssets();
+#endif
                     break;
                 default:
                     throw new InvalidOperationException();
@@ -3395,6 +3422,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         ContainerVisual CreateContainerVisual()
         {
             return _c.CreateContainerVisual();
+        }
+
+        SpriteVisual CreateSpriteVisual()
+        {
+            return _c.CreateSpriteVisual();
         }
 
         ShapeVisual CreateShapeVisual()
