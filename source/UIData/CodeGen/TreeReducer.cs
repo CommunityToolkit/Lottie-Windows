@@ -6,9 +6,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools;
+using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools;
+using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
+namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 {
     /// <summary>
     /// Optimizes a <see cref="Visual"/> tree by combining and removing containers.
@@ -196,7 +197,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             var containerNodes =
                 (from pair in graph.CompositionObjectNodes
                  where pair.Object.Type == CompositionObjectType.CompositionContainerShape
-                 select (Container: (CompositionContainerShape)pair.Object, Parent: (IContainShapes)pair.Node.Parent)).ToArray();
+                 select (container: (CompositionContainerShape)pair.Object, parent: (IContainShapes)pair.Node.Parent)).ToArray();
 
             // Keep track of which containers were removed so we don't consider them again.
             var removed = new HashSet<CompositionContainerShape>();

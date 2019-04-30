@@ -3,10 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
+namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 {
-#if PUBLIC_WinCompData
+#if PUBLIC_UIData
     public
 #endif
     abstract class Graph

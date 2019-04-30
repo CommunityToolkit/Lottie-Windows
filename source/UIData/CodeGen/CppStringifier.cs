@@ -5,8 +5,9 @@
 using System;
 using System.Numerics;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui;
+using Mgcg = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
+namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 {
     /// <summary>
     /// Stringifiers for C++ syntax.

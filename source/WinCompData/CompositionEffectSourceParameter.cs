@@ -9,7 +9,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 #endif
     sealed class CompositionEffectSourceParameter
     {
-        internal CompositionEffectSourceParameter(string name)
+        public CompositionEffectSourceParameter(string name)
         {
             Name = name;
         }

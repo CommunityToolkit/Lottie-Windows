@@ -5,16 +5,19 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
+using Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData;
+using Wg = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wg;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
+namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 {
     /// <summary>
     /// The graph of creatable objects reachable from a <see cref="CompositionObject"/>.
     /// </summary>
     /// <typeparam name="T">The type of the data associated with each node.</typeparam>
-#if PUBLIC_WinCompData
+#if PUBLIC_UIData
     public
 #endif
     sealed class ObjectGraph<T> : Graph
@@ -231,7 +234,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
                     Reference(from, (CompositionObject)obj);
                     return true;
 
-                case "LoadedImageSurface": // Not yet implemented.
+                case nameof(LoadedImageSurface): // Not yet implemented.
                 default:
                     throw new InvalidOperationException();
             }
