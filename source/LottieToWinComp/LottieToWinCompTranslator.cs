@@ -335,24 +335,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         }
 
         // Helper for shape trees that need a mask applied
-        ContainerVisual TranslateAndApplyMasksOnShapeTree(
+        Visual TranslateAndApplyMasksOnShapeTree(
             TranslationContext context,
             Layer layer,
             CompositionContainerShape containerShapeToMask)
         {
-            if (layer.Masks != null &&
-                layer.Masks.Any())
-            {
-                var contextSize = Vector2(context.Width, context.Height);
+            var contextSize = Vector2(context.Width, context.Height);
 
-                var contentShapeVisual = CreateShapeVisual();
-                contentShapeVisual.Size = contextSize;
-                contentShapeVisual.Shapes.Add(containerShapeToMask);
+            var contentShapeVisual = CreateShapeVisual();
+            contentShapeVisual.Size = contextSize;
+            contentShapeVisual.Shapes.Add(containerShapeToMask);
 
-                return TranslateAndApplyMasks(context, layer, contentShapeVisual);
-            }
-
-            return null;
+            return TranslateAndApplyMasks(context, layer, contentShapeVisual);
         }
 
         Mask.MaskMode TranslateAndAddMaskPaths(
@@ -440,7 +434,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         // use it as a brush. The final masked result is achieved by taking the visual to be masked, putting
         // it into a VisualSurface, then taking the mask and putting that in a VisualSurface and then combining
         // the result with a composite effect.
-        ContainerVisual TranslateAndApplyMasks(
+        Visual TranslateAndApplyMasks(
             TranslationContext context,
             Layer layer,
             Visual visualToBeMasked)
@@ -478,7 +472,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 }
             }
 
-            return null;
+            // Currently no callers do anything useful if this function fails to apply the mask.
+            // In the event of failure, return the visual that was supposed to be masked.
+            return visualToBeMasked;
         }
 
         // Translate a matte layer and the layer to be matted into the composited resulting brush.
