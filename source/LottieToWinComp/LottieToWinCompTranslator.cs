@@ -260,7 +260,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 if (item.layer.LayerMatteType == Layer.MatteType.Add ||
                     item.layer.LayerMatteType == Layer.MatteType.Invert)
                 {
-                    _unsupported.Matte();
+                    _issues.MattesAreNotSupported();
                 }
 #endif
 
@@ -334,6 +334,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
         }
 
+        // Helper for shape trees that need a mask applied
         ContainerVisual TranslateAndApplyMasksOnShapeTree(
             TranslationContext context,
             Layer layer,
@@ -374,21 +375,21 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     bool maskCanBeTranslated = true;
                     if (mask.Inverted)
                     {
-                    	_issues.MaskWithInvertIsNotSupported();
+                        _issues.MaskWithInvertIsNotSupported();
                         maskCanBeTranslated = false;
                     }
 
                     if (mask.Opacity.IsAnimated ||
                         mask.Opacity.InitialValue != 100)
                     {
-                    	_issues.MaskWithAlphaIsNotSupported();
+                        _issues.MaskWithAlphaIsNotSupported();
                         maskCanBeTranslated = false;
                     }
 
                     if (mask.Mode != Mask.MaskMode.Additive &&
                         mask.Mode != Mask.MaskMode.Subtract)
                     {
-                    	_issues.MaskWithUnsupportedMode(mask.Mode.ToString());
+                        _issues.MaskWithUnsupportedMode(mask.Mode.ToString());
                         maskCanBeTranslated = false;
                     }
 
@@ -425,7 +426,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         }
                         else
                         {
-                            // TODO: Eli - add supported issue about how mask modes must all be the same type
+                            _issues.MaskModesDoNotMatch();
                         }
                     }
                 }
@@ -434,6 +435,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return maskMode;
         }
 
+        // Translate a mask into shapes for a shape visual. The mask is applied to the visual to be masked
+        // using the VisualSurface. The VisualSurface can take the rendered contents of a visual tree and
+        // use it as a brush. The final masked result is achieved by taking the visual to be masked, putting
+        // it into a VisualSurface, then taking the mask and putting that in a VisualSurface and then combining
+        // the result with a composite effect.
         ContainerVisual TranslateAndApplyMasks(
             TranslationContext context,
             Layer layer,
@@ -903,7 +909,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             {
                 result.Children.Add(rootNode);
             }
-			
+
             return result;
         }
 
@@ -3586,11 +3592,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         CompositionSurfaceBrush CreateSurfaceBrush(ICompositionSurface surface)
         {
             return _c.CreateSurfaceBrush(surface);
-        }
-
-        SpriteVisual CreateSpriteVisual()
-        {
-            return _c.CreateSpriteVisual();
         }
 
         CompositionEffectBrush CreateEffectBrush(CompositeEffect effect)

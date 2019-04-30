@@ -88,6 +88,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal void InvalidAssetReferenceFromLayer(string layerType, string assetRefId, string assetType, string expectedAssetType) => Report("LT0029", $"{layerType} referenced asset {assetRefId} of type {assetType} which is invalid. Expected an asset of type {expectedAssetType}.");
 
+        internal void MattesAreNotSupported() => Report("LT0030", "Mattes are not supported.");
+
+        internal void MaskModesDoNotMatch() => Report("LT0031", "A multiple shape mask is only supported if the shapes all have the same mode.");
+
         void Report(string code, string description)
         {
             _issues.Add((code, description));
