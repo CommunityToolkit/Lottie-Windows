@@ -663,26 +663,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 return null;
             }
 
+            var imageAsset = (ImageAsset)GetAssetById(assetId: layer.RefId, expectedAssetType: Asset.AssetType.Image, layerType: layer.Type);
+            if (imageAsset == null)
+            {
+                return null;
+            }
+
             var content = CreateSpriteVisual();
             containerVisualContentNode.Children.Add(content);
+            content.Size = new Sn.Vector2((float)imageAsset.Width, (float)imageAsset.Height);
 
-            var referencedLayersAsset = GetAssetById(layer.RefId);
-
-            switch (referencedLayersAsset.Type)
-            {
-                case Asset.AssetType.Image:
-                    var imageAsset = (ImageAsset)referencedLayersAsset;
-                    content.Size = new Sn.Vector2((float)imageAsset.Width, (float)imageAsset.Height);
-
-                    // For prototyping purpose, adding a red brush as a placeholder for where an image asset should be drawn.
-                    // TODO - remove red brush and support image asset.
-                    var brush = CreateColorBrush(LottieData.Color.FromArgb(1, 1, 0, 0));
-                    content.Brush = brush;
-                    break;
-                default:
-                    _issues.InvalidAssetReferenceFromCurrentLayer(layer.Type.ToString(), layer.RefId, referencedLayersAsset.Type.ToString(), Asset.AssetType.Image.ToString());
-                    break;
-            }
+            // For prototyping purpose, adding a red brush as a placeholder for where an image asset should be drawn.
+            // TODO - remove red brush and support image asset.
+            var brush = CreateColorBrush(LottieData.Color.FromArgb(1, 1, 0, 0));
+            content.Brush = brush;
 
             return containerVisualRootNode;
 #else
@@ -718,35 +712,31 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 #endif
 
             // TODO - the animations produced inside a PreComp need to be time-mapped.
-            var referencedLayersAsset = GetAssetById(layer.RefId);
-
-            switch (referencedLayersAsset.Type)
+            var layerCollectionAsset = (LayerCollectionAsset)GetAssetById(assetId: layer.RefId, expectedAssetType: Asset.AssetType.LayerCollection, layerType: layer.Type);
+            if (layerCollectionAsset == null)
             {
-                case Asset.AssetType.LayerCollection:
-                    var layerCollectionAsset = (LayerCollectionAsset)referencedLayersAsset;
-                    var referencedLayers = layerCollectionAsset.Layers;
-
-                    // Push the reference layers onto the stack. These will be used to look up parent transforms for layers under this precomp.
-                    var subContext = new TranslationContext(context, layer, referencedLayers);
-                    AddTranslatedLayersToContainerVisual(contentsNode, subContext, referencedLayers, $"{layer.Name}:{layerCollectionAsset.Id}");
-                    break;
-                case Asset.AssetType.Image:
-                    _issues.InvalidAssetReferenceFromCurrentLayer(layer.Type.ToString(), layer.RefId, referencedLayersAsset.Type.ToString(), Asset.AssetType.LayerCollection.ToString());
-                    break;
-                default:
-                    throw new InvalidOperationException();
+                return null;
             }
+
+            // Push the reference layers onto the stack. These will be used to look up parent transforms for layers under this precomp.
+            var referencedLayers = layerCollectionAsset.Layers;
+            var subContext = new TranslationContext(context, layer, referencedLayers);
+            AddTranslatedLayersToContainerVisual(contentsNode, subContext, referencedLayers, $"{layer.Name}:{layerCollectionAsset.Id}");
 
             return result;
         }
 
-        internal Asset GetAssetById(string assetId)
+        Asset GetAssetById(string assetId, Asset.AssetType expectedAssetType, Layer.LayerType layerType)
         {
             var referencedAsset = _lc.Assets.GetAssetById(assetId);
             if (referencedAsset == null)
             {
                 _issues.ReferencedAssetDoesNotExist(assetId);
-                return null;
+            }
+            else if (referencedAsset.Type != expectedAssetType)
+            {
+                _issues.InvalidAssetReferenceFromLayer(layerType.ToString(), assetId, referencedAsset.Type.ToString(), expectedAssetType.ToString());
+                referencedAsset = null;
             }
 
             return referencedAsset;

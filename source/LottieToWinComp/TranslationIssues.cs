@@ -86,7 +86,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal void ReferencedAssetDoesNotExist(string RefId) => Report("LT0028", $"Referenced asset {RefId} does not exist");
 
-        internal void InvalidAssetReferenceFromCurrentLayer(string currentLayerType, string assetRefId, string assetType, string expectedAssetType) => Report("LT0029", $"{currentLayerType} referenced asset {assetRefId} of type {assetType} which is invalid. Expected an asset of type {expectedAssetType}.");
+        internal void InvalidAssetReferenceFromLayer(string layerType, string assetRefId, string assetType, string expectedAssetType) => Report("LT0029", $"{layerType} referenced asset {assetRefId} of type {assetType} which is invalid. Expected an asset of type {expectedAssetType}.");
 
         void Report(string code, string description)
         {
