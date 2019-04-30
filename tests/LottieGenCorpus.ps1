@@ -73,7 +73,7 @@ Write-Host -ForegroundColor Green $outputPath
 
 # Run LottieGen over everything in the corpus.
 Write-Host -ForegroundColor Blue -NoNewline 'Executing: '
-Write-Host -ForegroundColor Green "dotnet $lottieGenDll -i $CorpusDirectory\**json -o $outputPath -l cs -l cppcx -l lottiexml -l wincompxml -l dgml -l stats"
+Write-Host -ForegroundColor Green "dotnet $lottieGenDll -i $CorpusDirectory\**json -o $outputPath -l cs -l cppcx -l lottiexml -l lottieyaml -l wincompxml -l dgml -l stats"
 Write-Host -ForegroundColor Blue '...'
 
 $errorLog = "$outputPath\Errors_and_Warnings.log"
