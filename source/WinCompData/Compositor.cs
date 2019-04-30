@@ -66,5 +66,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
         public CompositionSurfaceBrush CreateSurfaceBrush(ICompositionSurface surface) => new CompositionSurfaceBrush(surface);
 
         public CompositionEffectFactory CreateEffectFactory(Mgce.GraphicsEffectBase effect) => new CompositionEffectFactory(effect);
+
+        public CompositionEffectBrush CreateEffectBrush(Mgce.GraphicsEffectBase effect) => new CompositionEffectBrush(effect);
     }
 }

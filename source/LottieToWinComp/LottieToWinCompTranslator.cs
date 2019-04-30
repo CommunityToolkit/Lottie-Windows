@@ -16,6 +16,14 @@
 // property without going through a controller. Enable this to prevent flashes.
 #define ControllersSynchronizationWorkaround
 
+// define POST_RS5_SDK if using an SDK that is for a release
+// after RS5
+#if POST_RS5_SDK
+// For allowing of Windows.UI.Composition.VisualSurface and the
+// Lottie features that rely on it
+#define AllowVisualSurface
+#endif
+
 //#define LinearEasingOnSpatialBeziers
 // Use Win2D to create paths from geometry combines when merging shape layers.
 //#define PreCombineGeometries
@@ -36,6 +44,8 @@ using System.Linq;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
+using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgc;
+using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
 using static Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp.ExpressionFactory;
 
@@ -208,7 +218,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             // Layers are translated into either a Visual tree or a Shape tree. Convert the list of Visual and
             // Shape roots to a list of Visual roots by wrapping the Shape trees in ShapeVisuals.
-            var translatedAsVisuals = VisualsAndShapesToVisuals(context, translatedLayers.Select(a => a.translatedLayer));
+            var translatedAsVisuals = VisualsAndShapesToVisuals(context, translatedLayers);
 
             var containerChildren = container.Children;
             foreach (var translatedVisual in translatedAsVisuals)
@@ -218,13 +228,41 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         }
 
         // Takes a list of Visuals and Shapes and returns a list of Visuals.
-        IEnumerable<Visual> VisualsAndShapesToVisuals(TranslationContext context, IEnumerable<CompositionObject> items)
+        IEnumerable<Visual> VisualsAndShapesToVisuals(TranslationContext context, IEnumerable<(CompositionObject translatedLayer, Layer layer)> items)
         {
             ShapeVisual shapeVisual = null;
 
+            // Save off the visual for the layer to be matted when we encounter it. The very next
+            // layer (when walking the layers in reverse index order) is the matte layer
+            Visual mattedVisual = null;
+            Layer.MatteType matteType = Layer.MatteType.None;
+
             foreach (var item in items)
             {
-                switch (item.Type)
+                var layerIsMattedLayer = false;
+#if AllowVisualSurface
+                layerIsMattedLayer = item.layer.LayerMatteType == Layer.MatteType.Add ||
+                                    item.layer.LayerMatteType == Layer.MatteType.Invert;
+
+                // If this layer is a matted layer then it should have its own shape visual if
+                // it needs one
+                if (layerIsMattedLayer &&
+                    shapeVisual != null)
+                {
+                    yield return shapeVisual;
+                    shapeVisual = null;
+                }
+#else
+                if (item.layer.LayerMatteType == Layer.MatteType.Add ||
+                    item.layer.LayerMatteType == Layer.MatteType.Invert)
+                {
+                    _unsupported.Matte();
+                }
+#endif
+
+                Visual visual = null;
+
+                switch (item.translatedLayer.Type)
                 {
                     case CompositionObjectType.CompositionContainerShape:
                     case CompositionObjectType.CompositionSpriteShape:
@@ -240,7 +278,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 #endif
                         }
 
-                        shapeVisual.Shapes.Add((CompositionShape)item);
+                        shapeVisual.Shapes.Add((CompositionShape)item.translatedLayer);
+
+                        if (layerIsMattedLayer ||
+                            mattedVisual != null)
+                        {
+                            visual = shapeVisual;
+                            shapeVisual = null;
+                        }
+
                         break;
                     case CompositionObjectType.ContainerVisual:
                     case CompositionObjectType.ShapeVisual:
@@ -250,10 +296,30 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                             shapeVisual = null;
                         }
 
-                        yield return (Visual)item;
+                        visual = (Visual)item.translatedLayer;
                         break;
                     default:
                         throw new InvalidOperationException();
+                }
+
+                if (visual != null)
+                {
+                    if (layerIsMattedLayer)
+                    {
+                        mattedVisual = visual;
+                        matteType = item.layer.LayerMatteType;
+                    }
+                    else if (mattedVisual != null)
+                    {
+                        var compositedMatteVisual = TranslateMatteLayer(context, visual, mattedVisual, matteType == Layer.MatteType.Invert);
+                        yield return (Visual)compositedMatteVisual;
+                        mattedVisual = null;
+                        matteType = Layer.MatteType.None;
+                    }
+                    else
+                    {
+                        yield return visual;
+                    }
                 }
             }
 
@@ -263,121 +329,224 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
         }
 
-        void TranslateAndApplyMask(TranslationContext context, Layer layer, Visual visualForMask)
+        ContainerVisual TranslateAndApplyMasksOnShapeTree(
+            TranslationContext context,
+            Layer layer,
+            CompositionContainerShape containerShapeToMask)
         {
-#if !NoClipping
             if (layer.Masks != null &&
                 layer.Masks.Any())
             {
-                var mask = layer.Masks[0];
+                var contextSize = Vector2(context.Width, context.Height);
 
-                if (mask.Inverted)
+                var contentShapeVisual = CreateShapeVisual();
+                contentShapeVisual.Size = contextSize;
+                contentShapeVisual.Shapes.Add(containerShapeToMask);
+
+                return TranslateAndApplyMasks(context, layer, contentShapeVisual);
+            }
+
+            return null;
+        }
+
+        Mask.MaskMode TranslateAndAddMaskPaths(
+            TranslationContext context,
+            Layer layer,
+            CompositionContainerShape maskContainerShape)
+        {
+            Mask.MaskMode maskMode = Mask.MaskMode.None;
+
+#if AllowVisualSurface
+            if (layer.Masks != null &&
+                layer.Masks.Any())
+            {
+                // Translate the mask paths
+                List<(Mask mask, CompositionPathGeometry geometry)> compositionPathGeometryMasks = new List<(Mask mask, CompositionPathGeometry geometry)>();
+                for (var i = 0; i < layer.Masks.Length; i++)
                 {
-                    _unsupported.MaskWithInvert();
-                }
+                    var mask = layer.Masks[i];
 
-                if (mask.Opacity.IsAnimated ||
-                    mask.Opacity.InitialValue != 100)
-                {
-                    _unsupported.MaskWithAlpha();
-                }
-
-                if (mask.Mode != Mask.MaskMode.Additive)
-                {
-                    _unsupported.MaskWithUnsupportedMode(mask.Mode.ToString());
-                }
-
-                // Translation currently does not support having multiple paths for masks.
-                // If possible users should combine masks when exporting to json.
-                if (layer.Masks.Length > 1)
-                {
-                    _unsupported.MultipleShapeMasks();
-                }
-
-                // Add a mask as a clip path if it can support the mask properties
-                if (!mask.Inverted &&
-                    mask.Opacity.InitialValue == 100 &&
-                    !mask.Opacity.IsAnimated &&
-                    mask.Mode == Mask.MaskMode.Additive &&
-                    layer.Masks.Length == 1)
-                {
-                    var geometry = context.TrimAnimatable(_lottieDataOptimizer.GetOptimized(mask.Points));
-
-                    var compositionPathGeometry = CreatePathGeometry();
-                    compositionPathGeometry.Path = CompositionPathFromPathGeometry(
-                        geometry.InitialValue,
-                        SolidColorFill.PathFillType.EvenOdd,
-                        optimizeLines: true);
-
-                    var compositionGeometricClip = CreateCompositionGeometricClip();
-                    compositionGeometricClip.Geometry = compositionPathGeometry;
-
-                    if (_addDescriptions)
+                    bool maskCanBeTranslated = true;
+                    if (mask.Inverted)
                     {
-                        Describe(compositionGeometricClip, mask.Name);
-                        Describe(compositionPathGeometry, $"{mask.Name}.PathGeometry");
+                        _unsupported.MaskWithInvert();
+                        maskCanBeTranslated = false;
                     }
 
-                    if (geometry.IsAnimated)
+                    if (mask.Opacity.IsAnimated ||
+                        mask.Opacity.InitialValue != 100)
                     {
-                        ApplyPathKeyFrameAnimation(context, geometry, SolidColorFill.PathFillType.EvenOdd, compositionPathGeometry, "Path", "Path", null);
+                        _unsupported.MaskWithAlpha();
+                        maskCanBeTranslated = false;
                     }
 
-                    visualForMask.Clip = compositionGeometricClip;
+                    if (mask.Mode != Mask.MaskMode.Additive &&
+                        mask.Mode != Mask.MaskMode.Subtract)
+                    {
+                        _unsupported.MaskWithUnsupportedMode(mask.Mode.ToString());
+                        maskCanBeTranslated = false;
+                    }
+
+                    if (maskCanBeTranslated)
+                    {
+                        var geometry = context.TrimAnimatable(_lottieDataOptimizer.GetOptimized(mask.Points));
+
+                        var compositionPathGeometry = CreatePathGeometry();
+                        compositionPathGeometry.Path = CompositionPathFromPathGeometry(
+                            geometry.InitialValue,
+                            SolidColorFill.PathFillType.EvenOdd,
+                            optimizeLines: true);
+
+                        if (geometry.IsAnimated)
+                        {
+                            ApplyPathKeyFrameAnimation(context, geometry, SolidColorFill.PathFillType.EvenOdd, compositionPathGeometry, "Path", "Path", null);
+                        }
+
+                        if (maskMode == Mask.MaskMode.None)
+                        {
+                            maskMode = mask.Mode;
+                        }
+
+                        if (mask.Mode == maskMode)
+                        {
+                            var maskSpriteShape = CreateSpriteShape();
+                            maskSpriteShape.Geometry = compositionPathGeometry;
+
+                            // The mask geometry needs to be colored with something so that it can be used
+                            // as a mask.
+                            maskSpriteShape.FillBrush = CreateColorBrush(LottieData.Color.FromArgb(1, 0, 0, 0));
+
+                            maskContainerShape.Shapes.Add(maskSpriteShape);
+                        }
+                        else
+                        {
+                            // TODO: Eli - add supported issue about how mask modes must all be the same type
+                        }
+                    }
                 }
             }
 #endif
+            return maskMode;
         }
 
-        ContainerVisual ApplyMaskToTreeWithShapes(
+        ContainerVisual TranslateAndApplyMasks(
             TranslationContext context,
             Layer layer,
-            CompositionContainerShape containerShape,
-            ContainerVisual contentContainerVisual,
-            ContainerVisual rootContainerVisual)
+            Visual visualToBeMasked)
         {
-            // Add a mask to a shape tree by inserting a ShapeVisual as the CompositionContainerShape parent and then
-            // adding the mask to it. A new container shape at the root of this tree is returned.
-            //
-            //
-            //     +------------------------+
-            //     | ContainerVisual parent |
-            //     +------------------------+
-            //            ^
-            //            |
-            //     +-----------------------+
-            //     |  rootContainerVisual  |
-            //     +-----------------------+
-            //            ^
-            //            |
-            //     +------------------------+
-            //     | contentContainerVisual | -- Mask is added to this visual
-            //     +------------------------+
-            //            ^
-            //            |
-            //     +-------------+
-            //     | shapeVisual | -- The shape visual is necessary to add the shape tree to be clipped
-            //     +-------------+
-            //            ^
-            //            |
-            //     +----------------+
-            //     | containerShape |
-            //     +----------------+
-            var shapeVisual = CreateShapeVisual();
-            shapeVisual.Shapes.Add(containerShape);
-            shapeVisual.Size = Vector2(context.Width, context.Height);
+            if (layer.Masks != null &&
+                layer.Masks.Any())
+            {
+                if (!TryCreateContainerShapeTransformChain(context, layer, out var containerShapeMaskRootNode, out var containerShapeMaskContentNode))
+                {
+                    // The layer is never visible.
+                    return null;
+                }
 
-            contentContainerVisual.Children.Add(shapeVisual);
+                var contextSize = Vector2(context.Width, context.Height);
 
-            // Apply the mask to the content node
-            TranslateAndApplyMask(context, layer, contentContainerVisual);
+                var maskShapeVisual = CreateShapeVisual();
+                maskShapeVisual.Size = contextSize;
+                maskShapeVisual.Shapes.Add(containerShapeMaskRootNode);
 
-            // Add a parent container visual that has no transforms so that the tree
-            // structure matches what is expected. Otherwise we assert when trying to
-            // add a description when when one already exists.
-            var parent = CreateContainerVisual();
-            parent.Children.Add(rootContainerVisual);
-            return parent;
+                var maskMode = TranslateAndAddMaskPaths(context, layer, containerShapeMaskContentNode);
+
+                // Do not add the mask if we failed to translate and add it
+                if (maskMode != Mask.MaskMode.None)
+                {
+                    var compositedVisual = CompositeVisuals(
+                                                maskShapeVisual,
+                                                visualToBeMasked,
+                                                contextSize,
+                                                Sn.Vector2.Zero,
+                                                maskMode == Mask.MaskMode.Additive ? CanvasComposite.DestinationIn : CanvasComposite.DestinationOut);
+
+                    var layerRootContainerVisual = CreateContainerVisual();
+                    layerRootContainerVisual.Children.Add(compositedVisual);
+                    return layerRootContainerVisual;
+                }
+            }
+
+            return null;
+        }
+
+        // Translate a matte layer and the layer to be matted into the composited resulting brush.
+        // This brush will be used to paint a sprite visual. The brush is created by using a mask brush
+        // which will use the matted layer as a source and the matte layer as an alpha mask.
+        // A visual tree is turned into a brush by using the CompositionVisualSurface.
+        CompositionObject TranslateMatteLayer(
+            TranslationContext context,
+            Visual matteLayer,
+            Visual mattedLayer,
+            bool invert = false)
+        {
+            // Calculate the context size which we will use as the size of the images we want to use
+            // for the matte content and the content to be matted.
+            var contextSize = Vector2(context.Width, context.Height);
+
+            var matteLayerVisualSurface = CreateVisualSurface();
+            matteLayerVisualSurface.SourceVisual = matteLayer;
+            matteLayerVisualSurface.SourceSize = contextSize;
+            var matteSurfaceBrush = CreateSurfaceBrush(matteLayerVisualSurface);
+
+            var mattedLayerVisualSurface = CreateVisualSurface();
+            mattedLayerVisualSurface.SourceVisual = mattedLayer;
+            mattedLayerVisualSurface.SourceSize = contextSize;
+            var mattedSurfaceBrush = CreateSurfaceBrush(mattedLayerVisualSurface);
+
+            return CompositeVisuals(
+                        matteLayer,
+                        mattedLayer,
+                        contextSize,
+                        Sn.Vector2.Zero, invert ? CanvasComposite.DestinationOut : CanvasComposite.DestinationIn);
+        }
+
+        SpriteVisual CompositeVisuals(
+            Visual source,
+            Visual destination,
+            Sn.Vector2 size,
+            Sn.Vector2 offset,
+            CanvasComposite compositeMode)
+        {
+            // There is a bug where if the root visual is set as a
+            // source for a visual surface then its animations do not work.
+            // To work around this bug a top level parent is added for the
+            // source and destination.
+            var sourceIntermediateParent = CreateContainerVisual();
+            sourceIntermediateParent.Children.Add(source);
+
+            var destinationIntermediateParent = CreateContainerVisual();
+            destinationIntermediateParent.Children.Add(destination);
+
+            var sourceVisualSurface = CreateVisualSurface();
+            sourceVisualSurface.SourceVisual = sourceIntermediateParent;
+            sourceVisualSurface.SourceSize = size;
+            sourceVisualSurface.SourceOffset = offset;
+            var sourceVisualSurfaceBrush = CreateSurfaceBrush(sourceVisualSurface);
+
+            var destinationVisualSurface = CreateVisualSurface();
+            destinationVisualSurface.SourceVisual = destinationIntermediateParent;
+            destinationVisualSurface.SourceSize = size;
+            destinationVisualSurface.SourceOffset = offset;
+            var destinationVisualSurfaceBrush = CreateSurfaceBrush(destinationVisualSurface);
+
+            var compositeEffect = new CompositeEffect();
+            compositeEffect.Mode = compositeMode;
+
+            compositeEffect.Sources.Add(new CompositionEffectSourceParameter("destination"));
+            compositeEffect.Sources.Add(new CompositionEffectSourceParameter("source"));
+
+            var effectBrush = CreateEffectBrush(compositeEffect);
+
+            effectBrush.SetSourceParameter("destination", destinationVisualSurfaceBrush);
+            effectBrush.SetSourceParameter("source", sourceVisualSurfaceBrush);
+
+            var compositedVisual = CreateSpriteVisual();
+            compositedVisual.Brush = effectBrush;
+            compositedVisual.Size = size;
+            compositedVisual.Offset = Vector3(offset.X, offset.Y, 0);
+
+            return compositedVisual;
         }
 
         // Translates a Lottie layer into null a Visual or a Shape.
@@ -668,12 +837,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             var result = CreateContainerVisual();
 
-            result.Children.Add(rootNode);
-
 #if !NoClipping
-            // Apply the mask to the content node
-            TranslateAndApplyMask(context, layer, contentsNode);
-
             // PreComps must clip to their size.
             result.Clip = CreateInsetClip();
 
@@ -698,6 +862,23 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     break;
                 default:
                     throw new InvalidOperationException();
+            }
+
+            // Add mask if the layer has masks.
+            // This must be done after all children are added to the content node.
+            bool layerHasMasks = false;
+#if !NoClipping
+            layerHasMasks = layer.Masks != null && layer.Masks.Any();
+#endif
+            if (layerHasMasks)
+            {
+                var compositedVisual = TranslateAndApplyMasks(context, layer, rootNode);
+
+                result.Children.Add(compositedVisual);
+            }
+            else
+            {
+                result.Children.Add(rootNode);
             }
 
             return result;
@@ -1061,42 +1242,26 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         // May return null if the layer does not produce any renderable content.
         ShapeOrVisual? TranslateShapeLayer(TranslationContext context, ShapeLayer layer)
         {
-            bool layerHasMasks = false;
-#if !NoClipping
-            layerHasMasks = layer.Masks.Any();
-#endif
-            ContainerVisual containerVisualRootNode = null;
-            ContainerVisual containerVisualContentNode = null;
             CompositionContainerShape containerShapeRootNode = null;
             CompositionContainerShape containerShapeContentNode = null;
-            if (layerHasMasks)
-            {
-                if (!TryCreateContainerVisualTransformChain(context, layer, out containerVisualRootNode, out containerVisualContentNode))
-                {
-                    // The layer is never visible.
-                    return null;
-                }
 
-                containerShapeContentNode = CreateContainerShape();
-            }
-            else
+            if (!TryCreateContainerShapeTransformChain(context, layer, out containerShapeRootNode, out containerShapeContentNode))
             {
-                if (!TryCreateContainerShapeTransformChain(context, layer, out containerShapeRootNode, out containerShapeContentNode))
-                {
-                    // The layer is never visible.
-                    return null;
-                }
+                // The layer is never visible.
+                return null;
             }
 
             var shapeContext = new ShapeContentContext(this);
             shapeContext.UpdateOpacityFromTransform(layer.Transform);
 
             containerShapeContentNode.Shapes.Add(TranslateShapeLayerContents(context, shapeContext, layer.Contents));
-            return
+
+            var layerHasMasks = false;
 #if !NoClipping
-                 layerHasMasks ? ApplyMaskToTreeWithShapes(context, layer, containerShapeContentNode, containerVisualContentNode, containerVisualRootNode) :
+            layerHasMasks = layer.Masks.Any();
 #endif
-                    (ShapeOrVisual)containerShapeRootNode;
+
+            return layerHasMasks ? (ShapeOrVisual)TranslateAndApplyMasksOnShapeTree(context, layer, containerShapeRootNode) : containerShapeRootNode;
         }
 
         CompositionShape TranslateGroupShapeContent(TranslationContext context, ShapeContentContext shapeContext, ShapeGroup group)
@@ -2236,31 +2401,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 return null;
             }
 
-            bool layerHasMasks = false;
-#if !NoClipping
-            layerHasMasks = layer.Masks.Any();
-#endif
-            ContainerVisual containerVisualRootNode = null;
-            ContainerVisual containerVisualContentNode = null;
             CompositionContainerShape containerShapeRootNode = null;
             CompositionContainerShape containerShapeContentNode = null;
-            if (layerHasMasks)
+            if (!TryCreateContainerShapeTransformChain(context, layer, out containerShapeRootNode, out containerShapeContentNode))
             {
-                if (!TryCreateContainerVisualTransformChain(context, layer, out containerVisualRootNode, out containerVisualContentNode))
-                {
-                    // The layer is never visible.
-                    return null;
-                }
-
-                containerShapeContentNode = CreateContainerShape();
-            }
-            else
-            {
-                if (!TryCreateContainerShapeTransformChain(context, layer, out containerShapeRootNode, out containerShapeContentNode))
-                {
-                    // The layer is never visible.
-                    return null;
-                }
+                // The layer is never visible.
+                return null;
             }
 
             var rectangleGeometry = CreateRectangleGeometry();
@@ -2279,11 +2425,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 Describe(rectangleGeometry, "SolidLayerRectangle.RectangleGeometry");
             }
 
-            return
+            var layerHasMasks = false;
 #if !NoClipping
-            layerHasMasks ? ApplyMaskToTreeWithShapes(context, layer, containerShapeContentNode, containerVisualContentNode, containerVisualRootNode) :
+            layerHasMasks = layer.Masks.Any();
 #endif
-                 (ShapeOrVisual)containerShapeRootNode;
+
+            return layerHasMasks ? (ShapeOrVisual)TranslateAndApplyMasksOnShapeTree(context, layer, containerShapeRootNode) : containerShapeRootNode;
         }
 
         Visual TranslateTextLayer(TranslationContext context, TextLayer layer)
@@ -3387,6 +3534,26 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return _c.CreateExpressionAnimation(expression);
         }
 
+        CompositionVisualSurface CreateVisualSurface()
+        {
+            return _c.CreateVisualSurface();
+        }
+
+        CompositionSurfaceBrush CreateSurfaceBrush(ICompositionSurface surface)
+        {
+            return _c.CreateSurfaceBrush(surface);
+        }
+
+        SpriteVisual CreateSpriteVisual()
+        {
+            return _c.CreateSpriteVisual();
+        }
+
+        CompositionEffectBrush CreateEffectBrush(CompositeEffect effect)
+        {
+            return _c.CreateEffectBrush(effect);
+        }
+
         static CompositionStrokeCap StrokeCap(SolidColorStroke.LineCapType lineCapType)
         {
             switch (lineCapType)
@@ -3480,6 +3647,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         static Sn.Vector2 ClampedVector2(float x, float y) => Vector2(Clamp(x, 0, 1), Clamp(y, 0, 1));
 
         static Sn.Vector3 Vector3(double x, double y, double z) => new Sn.Vector3((float)x, (float)y, (float)z);
+
+        static Sn.Vector3 Vector3(float x) => new Sn.Vector3((float)x, (float)x, (float)x);
 
         static Sn.Vector3 Vector3(LottieData.Vector3 vector3) => new Sn.Vector3((float)vector3.X, (float)vector3.Y, (float)vector3.Z);
 

@@ -809,9 +809,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 result.SourceVisual = GetVisual(obj.SourceVisual);
             }
 
-            result.SourceSize = obj.SourceSize;
+            result.SourceSize = obj.SourceSize.Value;
 
-            result.SourceOffset = obj.SourceOffset;
+            result.SourceOffset = obj.SourceOffset.Value;
 
             StartAnimations(obj, result);
             return result;
@@ -879,26 +879,23 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 return result;
             }
 
+            var compositeEffect = new Mgce.CompositeEffect();
+            compositeEffect.Mode = CanvasComposite(((Wd.Mgce.CompositeEffect)obj.GetEffect()).Mode);
             var effect = obj.GetEffect();
-            var effectFactory = GetCompositionEffectFactory(new Wd.CompositionEffectFactory(effect), out var graphicsEffect);
+            var wdCompositeEffect = (Wd.Mgce.CompositeEffect)effect;
+            foreach (var source in wdCompositeEffect.Sources)
+            {
+                compositeEffect.Sources.Add(new Wc.CompositionEffectSourceParameter(source.Name));
+            }
+
+            var effectFactory = _c.CreateEffectFactory(compositeEffect);
             var compositeEffectBrush = effectFactory.CreateBrush();
 
             result = CacheAndInitializeCompositionObject(obj, compositeEffectBrush);
 
-            switch (effect.Type)
+            foreach (var source in wdCompositeEffect.Sources)
             {
-                case Wd.Mgce.GraphicsEffectType.CompositeEffect:
-                    var wdCompositeEffect = (Wd.Mgce.CompositeEffect)effect;
-                    var wcCompositeEffect = (Mgce.CompositeEffect)graphicsEffect;
-                    foreach (var source in wdCompositeEffect.Sources)
-                    {
-                        wcCompositeEffect.Sources.Add(new Wc.CompositionEffectSourceParameter(source.Name));
-                        result.SetSourceParameter(source.Name, GetCompositionBrush(obj.GetSourceParameter(source.Name)));
-                    }
-
-                    break;
-                default:
-                    throw new InvalidOperationException();
+                result.SetSourceParameter(source.Name, GetCompositionBrush(obj.GetSourceParameter(source.Name)));
             }
 
             StartAnimations(obj, result);
@@ -1215,33 +1212,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 default:
                     throw new InvalidOperationException();
             }
-        }
-
-        Wc.CompositionEffectFactory GetCompositionEffectFactory(Wd.CompositionEffectFactory obj, out Wge.IGraphicsEffect graphicsEffect)
-        {
-            switch (obj.GetEffect().Type)
-            {
-                case Wd.Mgce.GraphicsEffectType.CompositeEffect:
-                    var wcCompositeEffect = new Mgce.CompositeEffect
-                    {
-                        Mode = CanvasComposite(((Wd.Mgce.CompositeEffect)obj.GetEffect()).Mode),
-                    };
-
-                    graphicsEffect = wcCompositeEffect;
-                    break;
-                default:
-                    throw new InvalidOperationException();
-            }
-
-            if (GetExisting(obj, out Wc.CompositionEffectFactory result))
-            {
-                return result;
-            }
-
-            result = _c.CreateEffectFactory(graphicsEffect);
-
-            StartAnimations(obj, result);
-            return result;
         }
 
         static Wc.CompositionStrokeLineJoin StrokeLineJoin(Wd.CompositionStrokeLineJoin value)
