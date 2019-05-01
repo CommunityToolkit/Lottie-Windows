@@ -879,23 +879,47 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 return result;
             }
 
-            var compositeEffect = new Mgce.CompositeEffect();
-            compositeEffect.Mode = CanvasComposite(((Wd.Mgce.CompositeEffect)obj.GetEffect()).Mode);
             var effect = obj.GetEffect();
-            var wdCompositeEffect = (Wd.Mgce.CompositeEffect)effect;
-            foreach (var source in wdCompositeEffect.Sources)
+
+            Wge.IGraphicsEffect graphicsEffect = null;
+
+            // Initialize the effect
+            switch (effect.Type)
             {
-                compositeEffect.Sources.Add(new Wc.CompositionEffectSourceParameter(source.Name));
+                case Wd.Mgce.GraphicsEffectType.CompositeEffect:
+                    var compositeEffect = new Mgce.CompositeEffect();
+                    graphicsEffect = compositeEffect;
+                    compositeEffect.Mode = CanvasComposite(((Wd.Mgce.CompositeEffect)obj.GetEffect()).Mode);
+                    var wdCompositeEffect = (Wd.Mgce.CompositeEffect)effect;
+                    foreach (var source in wdCompositeEffect.Sources)
+                    {
+                        compositeEffect.Sources.Add(new Wc.CompositionEffectSourceParameter(source.Name));
+                    }
+
+                    break;
+                default:
+                    throw new InvalidOperationException();
             }
 
-            var effectFactory = _c.CreateEffectFactory(compositeEffect);
-            var compositeEffectBrush = effectFactory.CreateBrush();
+            // Create the EffectFactory.
+            // The IGraphicsEffect must be fully initialized and populated before calling CreateEffectFactory
+            var effectFactory = _c.CreateEffectFactory(graphicsEffect);
 
-            result = CacheAndInitializeCompositionObject(obj, compositeEffectBrush);
-
-            foreach (var source in wdCompositeEffect.Sources)
+            // Initialize the brush
+            switch (effect.Type)
             {
-                result.SetSourceParameter(source.Name, GetCompositionBrush(obj.GetSourceParameter(source.Name)));
+                case Wd.Mgce.GraphicsEffectType.CompositeEffect:
+                    var compositeEffectBrush = effectFactory.CreateBrush();
+                    result = CacheAndInitializeCompositionObject(obj, compositeEffectBrush);
+                    var wdCompositeEffect = (Wd.Mgce.CompositeEffect)effect;
+                    foreach (var source in wdCompositeEffect.Sources)
+                    {
+                        result.SetSourceParameter(source.Name, GetCompositionBrush(obj.GetSourceParameter(source.Name)));
+                    }
+
+                    break;
+                default:
+                    throw new InvalidOperationException();
             }
 
             StartAnimations(obj, result);

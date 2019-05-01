@@ -237,7 +237,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             ShapeVisual shapeVisual = null;
 
             // Save off the visual for the layer to be matted when we encounter it. The very next
-            // layer (when walking the layers in reverse index order) is the matte layer
+            // layer is the matte layer
             Visual mattedVisual = null;
             Layer.MatteType matteType = Layer.MatteType.None;
 
@@ -248,8 +248,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 layerIsMattedLayer = item.layer.LayerMatteType == Layer.MatteType.Add ||
                                     item.layer.LayerMatteType == Layer.MatteType.Invert;
 
-                // If this layer is a matted layer then it should have its own shape visual if
-                // it needs one
+                // If this layer is a matted layer then it should have its own shape visual
+                // return the current shape visual that has been accumulating shapes, if it already exists.
                 if (layerIsMattedLayer &&
                     shapeVisual != null)
                 {
@@ -356,16 +356,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         {
             Mask.MaskMode maskMode = Mask.MaskMode.None;
 
-#if AllowVisualSurface
             if (layer.Masks != null &&
                 layer.Masks.Any())
             {
                 // Translate the mask paths
-                List<(Mask mask, CompositionPathGeometry geometry)> compositionPathGeometryMasks = new List<(Mask mask, CompositionPathGeometry geometry)>();
-                for (var i = 0; i < layer.Masks.Length; i++)
+                var compositionPathGeometryMasks = new List<(Mask mask, CompositionPathGeometry geometry)>();
+                foreach (var mask in layer.Masks)
                 {
-                    var mask = layer.Masks[i];
-
                     bool maskCanBeTranslated = true;
                     if (mask.Inverted)
                     {
@@ -414,7 +411,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
                             // The mask geometry needs to be colored with something so that it can be used
                             // as a mask.
-                            maskSpriteShape.FillBrush = CreateColorBrush(LottieData.Color.FromArgb(1, 0, 0, 0));
+                            maskSpriteShape.FillBrush = CreateColorBrush(LottieData.Color.Black);
 
                             maskContainerShape.Shapes.Add(maskSpriteShape);
                         }
@@ -425,7 +422,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     }
                 }
             }
-#endif
+
             return maskMode;
         }
 
@@ -442,6 +439,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             if (layer.Masks != null &&
                 layer.Masks.Any())
             {
+#if AllowVisualSurface
+                // Create the same transform chain that the visualToBeMasked has so that the mask and the visualToBeMasked can be
+                // correctly overlaid.
                 if (!TryCreateContainerShapeTransformChain(context, layer, out var containerShapeMaskRootNode, out var containerShapeMaskContentNode))
                 {
                     // The layer is never visible.
@@ -470,6 +470,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     layerRootContainerVisual.Children.Add(compositedVisual);
                     return layerRootContainerVisual;
                 }
+#else
+                _issues.MasksNotSupported();
+#endif
             }
 
             // Currently no callers do anything useful if this function fails to apply the mask.

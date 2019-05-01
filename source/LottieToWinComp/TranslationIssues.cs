@@ -92,6 +92,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal void MaskModesDoNotMatch() => Report("LT0031", "A multiple shape mask is only supported if the shapes all have the same mode.");
 
+        internal void MasksNotSupported() => Report("LT0032", "Masks are not supported.");
+
         void Report(string code, string description)
         {
             _issues.Add((code, description));
