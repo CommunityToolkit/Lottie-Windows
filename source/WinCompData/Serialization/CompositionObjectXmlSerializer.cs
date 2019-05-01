@@ -116,6 +116,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
                 case CompositionObjectType.Vector2KeyFrameAnimation:
                     yield return FromVector2KeyFrameAnimation((Vector2KeyFrameAnimation)obj);
                     break;
+                case CompositionObjectType.SpriteVisual:
+                    yield return FromSpriteVisual((SpriteVisual)obj);
+                    break;
+                case CompositionObjectType.CompositionSurfaceBrush:
+                    yield return FromCompositionSurfaceBrush((CompositionSurfaceBrush)obj);
+                    break;
                 default:
                     throw new InvalidOperationException();
             }
@@ -782,6 +788,28 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
         XElement FromVector3(string name, Vector3 obj)
         {
             return new XElement(name, new XAttribute(nameof(obj.X), obj.X), new XAttribute(nameof(obj.Y), obj.Y), new XAttribute(nameof(obj.Z), obj.Z));
+        }
+
+        XElement FromSpriteVisual(SpriteVisual obj)
+        {
+            return new XElement(GetCompositionObjectName(obj), GetContents());
+            IEnumerable<XObject> GetContents()
+            {
+                foreach (var item in GetVisualContents(obj))
+                {
+                    yield return item;
+                }
+
+                if (obj.Brush != null)
+                {
+                    yield return new XElement(nameof(obj.Brush), FromCompositionObject(obj.Brush));
+                }
+            }
+        }
+
+        XElement FromCompositionSurfaceBrush(CompositionSurfaceBrush obj)
+        {
+            return new XElement(GetCompositionObjectName(obj));
         }
     }
 }
