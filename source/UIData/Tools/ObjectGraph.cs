@@ -27,6 +27,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
         readonly Dictionary<Wg.IGeometrySource2D, T> _canvasGeometryReferences = new Dictionary<Wg.IGeometrySource2D, T>();
         readonly Dictionary<CompositionObject, T> _compositionObjectReferences = new Dictionary<CompositionObject, T>();
         readonly Dictionary<CompositionPath, T> _compositionPathReferences = new Dictionary<CompositionPath, T>();
+        readonly Dictionary<LoadedImageSurface, T> _loadedImageSurfaceReferences = new Dictionary<LoadedImageSurface, T>();
 
         int _positionCounter;
 
@@ -57,11 +58,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
         public IEnumerable<(T Node, CompositionPath Object)> CompositionPathNodes =>
             _compositionPathReferences.Values.Select(n => (n, (CompositionPath)n.Object));
 
+        public IEnumerable<(T Node, LoadedImageSurface Object)> LoadedImageSurfaceNodes =>
+            _loadedImageSurfaceReferences.Values.Select(n => (n, (LoadedImageSurface)n.Object));
+
         internal T this[Wg.IGeometrySource2D obj] => _canvasGeometryReferences[obj];
 
         internal T this[CompositionObject obj] => _compositionObjectReferences[obj];
 
         internal T this[CompositionPath obj] => _compositionPathReferences[obj];
+
+        internal T this[LoadedImageSurface obj] => _loadedImageSurfaceReferences[obj];
 
         void Reference(T from, CompositionObject obj)
         {
@@ -228,16 +234,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
         bool Reference(T from, ICompositionSurface obj)
         {
-            switch (obj.TypeName)
+            switch (obj)
             {
-                case nameof(CompositionVisualSurface):
-                    Reference(from, (CompositionObject)obj);
-                    return true;
-
-                case nameof(LoadedImageSurface): // Not yet implemented.
+                case CompositionObject compositionObject:
+                    Reference(from, compositionObject);
+                    break;
+                case LoadedImageSurface loadedImageSurface:
+                    Reference(from, loadedImageSurface);
+                    break;
                 default:
                     throw new InvalidOperationException();
             }
+
+            return true;
         }
 
         bool Reference(T from, CompositionPath obj)
@@ -291,6 +300,24 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 default:
                     throw new InvalidOperationException();
             }
+        }
+
+        bool Reference(T from, LoadedImageSurface obj)
+        {
+            if (_loadedImageSurfaceReferences.TryGetValue(obj, out var node))
+            {
+                AddVertex(from, node);
+                return true;
+            }
+            else
+            {
+                node = new T { Object = obj };
+                InitializeNode(node, NodeType.LoadedImageSurface, _positionCounter++);
+                AddVertex(from, node);
+                _loadedImageSurfaceReferences.Add(obj, node);
+            }
+
+            return VisitLoadedImageSurface(obj, node);
         }
 
         bool VisitAnimationController(AnimationController obj, T node)
@@ -598,6 +625,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 Reference(node, child);
             }
 
+            return true;
+        }
+
+        bool VisitLoadedImageSurface(LoadedImageSurface obj, T node)
+        {
             return true;
         }
     }

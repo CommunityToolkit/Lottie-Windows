@@ -23,6 +23,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData
             return new LoadedImageSurface(bytes);
         }
 
-        string ICompositionSurface.TypeName => nameof(LoadedImageSurface);
+        public byte[] Bytes => _bytes;
     }
 }
