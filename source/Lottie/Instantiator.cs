@@ -17,14 +17,18 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.InteropServices.WindowsRuntime;
 using Microsoft.Graphics.Canvas.Geometry;
 using Mgc = Microsoft.Graphics.Canvas;
 using Mgce = Microsoft.Graphics.Canvas.Effects;
 using Wc = Windows.UI.Composition;
 using Wd = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Wge = Windows.Graphics.Effects;
+using Wm = Windows.UI.Xaml.Media;
+using Wmd = Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie
 {
@@ -1206,15 +1210,28 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
 
         Wc.ICompositionSurface GetCompositionSurface(Wd.ICompositionSurface obj)
         {
-            switch (obj.TypeName)
+            switch (obj)
             {
-                case nameof(Wd.CompositionVisualSurface):
-                    return (Wc.ICompositionSurface)GetCompositionObject((Wd.CompositionVisualSurface)obj);
-
-                case "LoadedImageSurface": // Not yet implemented.
+                case Wd.CompositionVisualSurface compositionVisualSurface:
+                    return (Wc.ICompositionSurface)GetCompositionObject(compositionVisualSurface);
+                case Wmd.LoadedImageSurface loadedImageSurface:
+                    return GetLoadedImageSurface(loadedImageSurface);
                 default:
                     throw new InvalidOperationException();
             }
+        }
+
+        Wm.LoadedImageSurface GetLoadedImageSurface(Wmd.LoadedImageSurface obj)
+        {
+            if (GetExisting(obj, out Wm.LoadedImageSurface result))
+            {
+                return result;
+            }
+
+            var bytes = obj.Bytes;
+            result = Wm.LoadedImageSurface.StartLoadFromStream(bytes.AsBuffer().AsStream().AsRandomAccessStream());
+            Cache(obj, result);
+            return result;
         }
 
         Wc.CompositionEffectFactory GetCompositionEffectFactory(Wd.CompositionEffectFactory obj, out Wge.IGraphicsEffect graphicsEffect)

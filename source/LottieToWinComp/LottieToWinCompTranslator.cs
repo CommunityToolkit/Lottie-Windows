@@ -40,6 +40,7 @@ using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
+using Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData;
 using static Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp.ExpressionFactory;
 
 using CubicBezierFunction2 = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions.CubicBezierFunction2;
@@ -669,14 +670,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 return null;
             }
 
+            if (imageAsset.ImageType != ImageAsset.ImageAssetType.Embedded)
+            {
+                _issues.ExternalImageTypeIsNotSupported();
+                return null;
+            }
+
             var content = CreateSpriteVisual();
             containerVisualContentNode.Children.Add(content);
             content.Size = new Sn.Vector2((float)imageAsset.Width, (float)imageAsset.Height);
 
-            // For prototyping purpose, adding a red brush as a placeholder for where an image asset should be drawn.
-            // TODO - remove red brush and support image asset.
-            var brush = CreateColorBrush(LottieData.Color.FromArgb(1, 1, 0, 0));
-            content.Brush = brush;
+            var embeddedImageAsset = (EmbeddedImageAsset)imageAsset;
+            var surface = LoadedImageSurface.StartLoadFromStream(embeddedImageAsset.Bytes);
+            var imageBrush = CreateSurfaceBrush(surface);
+            content.Brush = imageBrush;
 
             return containerVisualRootNode;
 #else
@@ -3429,6 +3436,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         ExpressionAnimation CreateExpressionAnimation(Expr expression)
         {
             return _c.CreateExpressionAnimation(expression);
+        }
+
+        CompositionSurfaceBrush CreateSurfaceBrush(ICompositionSurface surface)
+        {
+            return _c.CreateSurfaceBrush(surface);
         }
 
         static CompositionStrokeCap StrokeCap(SolidColorStroke.LineCapType lineCapType)

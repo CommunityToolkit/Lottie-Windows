@@ -92,6 +92,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             return _graph[obj].Canonical;
         }
 
+        ObjectData NodeFor(LoadedImageSurface obj)
+        {
+            return _graph[obj].Canonical;
+        }
+
         bool GetExisting<T>(T key, out T result)
             where T : CompositionObject
         {
@@ -108,6 +113,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         bool GetExisting(CompositionPath key, out CompositionPath result)
         {
             result = (CompositionPath)NodeFor(key).Copied;
+            return result != null;
+        }
+
+        bool GetExisting(LoadedImageSurface key, out LoadedImageSurface result)
+        {
+            result = (LoadedImageSurface)NodeFor(key).Copied;
             return result != null;
         }
 
@@ -261,6 +272,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         }
 
         CompositionPath Cache(CompositionPath key, CompositionPath obj)
+        {
+            var node = NodeFor(key);
+            Debug.Assert(node.Copied == null, "Precondition");
+            Debug.Assert(!ReferenceEquals(key, obj), "Precondition");
+            node.Copied = obj;
+            return obj;
+        }
+
+        LoadedImageSurface Cache(LoadedImageSurface key, LoadedImageSurface obj)
         {
             var node = NodeFor(key);
             Debug.Assert(node.Copied == null, "Precondition");
@@ -857,6 +877,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             return result;
         }
 
+        LoadedImageSurface GetLoadedImageSurface(LoadedImageSurface obj)
+        {
+            if (GetExisting(obj, out LoadedImageSurface result))
+            {
+                return result;
+            }
+
+            var bytes = obj.Bytes;
+            result = LoadedImageSurface.StartLoadFromStream(bytes);
+            Cache(obj, result);
+            return result;
+        }
+
         CompositionEffectBrush GetCompositionEffectBrush(CompositionEffectBrush obj)
         {
             if (GetExisting(obj, out CompositionEffectBrush result))
@@ -1259,12 +1292,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         ICompositionSurface GetCompositionSurface(ICompositionSurface obj)
         {
-            switch (obj.TypeName)
+            switch (obj)
             {
-                case nameof(CompositionVisualSurface):
-                    return GetCompositionVisualSurface((CompositionVisualSurface)obj);
-
-                case nameof(LoadedImageSurface): // Not yet implemented.
+                case CompositionVisualSurface compositionVisualSurface:
+                    return GetCompositionVisualSurface(compositionVisualSurface);
+                case LoadedImageSurface loadedImageSurface:
+                    return GetLoadedImageSurface(loadedImageSurface);
                 default:
                     throw new InvalidOperationException();
             }
