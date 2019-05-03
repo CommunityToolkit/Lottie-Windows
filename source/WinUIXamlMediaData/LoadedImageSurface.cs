@@ -9,7 +9,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData
 #if PUBLIC_WinUIXamlMediaData
     public
 #endif
-    sealed class LoadedImageSurface : ICompositionSurface
+    class LoadedImageSurface : ICompositionSurface, IDescribable
     {
         readonly byte[] _bytes;
 
@@ -24,5 +24,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData
         }
 
         public byte[] Bytes => _bytes;
+
+        /// <inheritdoc/>
+        public string LongDescription { get; set; }
+
+        /// <inheritdoc/>
+        public string ShortDescription { get; set; }
     }
 }

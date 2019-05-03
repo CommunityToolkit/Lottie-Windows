@@ -5,6 +5,7 @@ using System;
 using System.Numerics;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
+using Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 {
@@ -374,6 +375,12 @@ public:
             builder.WriteLine("FFHR(_d2dFactory->CreateTransformedGeometry(geoA, transformMatrix, &transformed));");
             builder.WriteLine("geoA->Release();");
             builder.WriteLine($"result = {FieldAssignment(fieldName)}new GeoSource(transformed);");
+        }
+
+        /// <inheritdoc/>
+        protected override void WriteLoadedImageSurfaceFactory(CodeBuilder builder, LoadedImageSurface obj, string fieldName)
+        {
+            builder.WriteLine($"auto result = LoadedImageSurface.StartLoadFromStream(arr.AsBuffer().AsStream().AsRandomAccessStream());");
         }
 
         string CanvasFigureLoop(CanvasFigureLoop value) => _stringifier.CanvasFigureLoop(value);

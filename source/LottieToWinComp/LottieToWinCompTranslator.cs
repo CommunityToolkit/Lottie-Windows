@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 // Enable use of Image Layer
-//#define EnableImageLayer
+#define EnableImageLayer
 
 // Enable workaround for RS5 where rotated rectangles were not drawn correctly.
 #define WorkAroundRectangleGeometryHalfDrawn
@@ -684,6 +684,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var surface = LoadedImageSurface.StartLoadFromStream(embeddedImageAsset.Bytes);
             var imageBrush = CreateSurfaceBrush(surface);
             content.Brush = imageBrush;
+
+            if (_addDescriptions)
+            {
+                Describe(surface, $"{layer.Name}, {embeddedImageAsset.Width}x{embeddedImageAsset.Height}");
+            }
 
             return containerVisualRootNode;
 #else

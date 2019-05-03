@@ -886,6 +886,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             var bytes = obj.Bytes;
             result = LoadedImageSurface.StartLoadFromStream(bytes);
+            InitializeIDescribable(obj, result);
             Cache(obj, result);
             return result;
         }

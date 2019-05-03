@@ -47,7 +47,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             return result;
         }
 
-        public IEnumerable<T> Nodes => _compositionObjectReferences.Values.Concat(_compositionPathReferences.Values).Concat(_canvasGeometryReferences.Values);
+        public IEnumerable<T> Nodes
+        {
+            get
+            {
+                return _compositionObjectReferences.Values.Concat(_compositionPathReferences.Values).Concat(_canvasGeometryReferences.Values).Concat(_loadedImageSurfaceReferences.Values);
+            }
+        }
 
         public IEnumerable<(T Node, CanvasGeometry Object)> CanvasGeometryNodes =>
             _canvasGeometryReferences.Values.Select(n => (n, (CanvasGeometry)n.Object));
