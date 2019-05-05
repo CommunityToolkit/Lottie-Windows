@@ -116,7 +116,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
         /// The implementation is very simple - just enough to satisfy CompositionPath.
         /// </summary>
         public string GeoSourceClass =>
-@"struct GeoSource final : implements<GeoSource,
+@"struct GeoSource : implements<GeoSource,
 	Windows::Graphics::IGeometrySource2D,
 	ABI::Windows::Graphics::IGeometrySource2DInterop>
 {

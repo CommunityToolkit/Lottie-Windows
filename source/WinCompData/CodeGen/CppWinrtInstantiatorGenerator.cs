@@ -231,7 +231,7 @@ namespace AnimatedVisuals
             builder.WriteLine("geoA->Release();");
             builder.WriteLine("geoB->Release();");
             builder.WriteLine($"{FailFastWrapper("sink->Close()")};");
-            builder.WriteLine($"result = {FieldAssignment(fieldName)}new GeoSource(path.Get());");
+            builder.WriteLine($"result = {FieldAssignment(fieldName)}winrt::make_self<GeoSource>(path.Get());");
         }
 
         /// <inheritdoc/>
@@ -244,7 +244,7 @@ namespace AnimatedVisuals
             builder.WriteLine($"D2D1::Ellipse({{{Float(obj.X)},{Float(obj.Y)}}}, {Float(obj.RadiusX)}, {Float(obj.RadiusY)}),");
             builder.WriteLine("ellipse.put()));");
             builder.UnIndent();
-            builder.WriteLine($"result = {FieldAssignment(fieldName)}new GeoSource(ellipse.Get());");
+            builder.WriteLine($"result = {FieldAssignment(fieldName)}winrt::make_self<GeoSource>(ellipse.Get());");
         }
 
         /// <inheritdoc/>
@@ -287,7 +287,7 @@ namespace AnimatedVisuals
             }
 
             builder.WriteLine($"{FailFastWrapper("sink->Close()")};");
-            builder.WriteLine("result.attach(new GeoSource(path));");
+            builder.WriteLine("result = winrt::make_self<GeoSource>(path);");
         }
 
         /// <inheritdoc/>
@@ -300,7 +300,7 @@ namespace AnimatedVisuals
             builder.WriteLine($"D2D1::RoundedRect({{{Float(obj.X)},{Float(obj.Y)}}}, {Float(obj.RadiusX)}, {Float(obj.RadiusY)}),");
             builder.WriteLine("rect.put()));");
             builder.UnIndent();
-            builder.WriteLine($"result = {FieldAssignment(fieldName)}new GeoSource(rect.Get());");
+            builder.WriteLine($"result = {FieldAssignment(fieldName)}winrt::make_self<GeoSource>(rect.Get());");
         }
 
         /// <inheritdoc/>
@@ -314,7 +314,7 @@ namespace AnimatedVisuals
             builder.WriteLine($"{CallFactoryFor(obj.SourceGeometry)}->GetGeometry(&geoA);");
             builder.WriteLine("FFHR(_d2dFactory->CreateTransformedGeometry(geoA, transformMatrix, &transformed));");
             builder.WriteLine("geoA->Release();");
-            builder.WriteLine($"result = {FieldAssignment(fieldName)}new GeoSource(transformed);");
+            builder.WriteLine($"result = {FieldAssignment(fieldName)}winrt::make_self<GeoSource>(transformed);");
         }
 
         string CanvasFigureLoop(CanvasFigureLoop value) => _stringifier.CanvasFigureLoop(value);
