@@ -4,20 +4,24 @@
 
 using System;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
+namespace Microsoft.Toolkit.Uwp.UI.Lottie.YamlData
 {
+    /// <summary>
+    /// A scalar value.
+    /// </summary>
+#if PUBLIC_YamlData
+    public
+#endif
     sealed class YamlScalar : YamlObject
     {
         readonly object _value;
         readonly string _presention;
 
-        YamlScalar(object value, string presentation)
+        internal YamlScalar(object value, string presentation)
         {
             _value = value;
             _presention = presentation;
         }
-
-        internal override YamlObjectKind Kind => YamlObjectKind.Scalar;
 
         public static implicit operator YamlScalar(string value)
         {
@@ -44,20 +48,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         public static implicit operator YamlScalar(TimeSpan value) => new YamlScalar(value, value.ToString());
 
-        public static implicit operator YamlScalar(Color value) => new YamlScalar(value, $"'{value.ToString()}'");
-
         public static implicit operator YamlScalar(Version value) => new YamlScalar(value, value.ToString());
 
-        public static implicit operator YamlScalar(Easing.EasingType type) => new YamlScalar(type, type.ToString());
-
-        public static implicit operator YamlScalar(Layer.LayerType type) => new YamlScalar(type, type.ToString());
-
-        public static implicit operator YamlScalar(Mask.MaskMode type) => new YamlScalar(type, type.ToString());
-
-        public static implicit operator YamlScalar(ShapeContentType type) => new YamlScalar(type, type.ToString());
-
-        public static implicit operator YamlScalar(Layer.MatteType type) => new YamlScalar(type, type.ToString());
-
         public override string ToString() => _presention;
+
+        internal override YamlObjectKind Kind => YamlObjectKind.Scalar;
     }
 }

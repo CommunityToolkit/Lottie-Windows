@@ -56,12 +56,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)\Sequence.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Serialization\LottieCompositionXmlSerializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Serialization\LottieCompositionYamlSerializer.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)\Serialization\YamlMap.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)\Serialization\YamlObject.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)\Serialization\YamlObjectKind.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)\Serialization\YamlScalar.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)\Serialization\YamlSequence.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)\Serialization\YamlWriter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\ShapeContentType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\ShapeGroup.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\ShapeLayer.cs" />
