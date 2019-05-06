@@ -20,7 +20,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.YamlData
         readonly HashSet<string> _keys = new HashSet<string>();
 
         /// <summary>
-        /// Adds the give value to the map.
+        /// Adds the given value to the map.
         /// </summary>
         /// <param name="key">The property name.</param>
         /// <param name="value">The property value.</param>
@@ -36,7 +36,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.YamlData
         }
 
         /// <summary>
-        /// Adds the give scalar to the map.
+        /// Adds the given scalar to the map.
         /// </summary>
         /// <param name="key">The property name.</param>
         /// <param name="value">The property value.</param>
