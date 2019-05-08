@@ -1228,8 +1228,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 return result;
             }
 
-            var bytes = obj.Bytes;
-            result = Wm.LoadedImageSurface.StartLoadFromStream(bytes.AsBuffer().AsStream().AsRandomAccessStream());
+            switch (obj.LoadType)
+            {
+                case Wmd.LoadedImageSurface.LoadedImageSurfaceLoadType.FromStream:
+                    var bytes = obj.Bytes;
+                    result = Wm.LoadedImageSurface.StartLoadFromStream(bytes.AsBuffer().AsStream().AsRandomAccessStream());
+                    break;
+                case Wmd.LoadedImageSurface.LoadedImageSurfaceLoadType.FromUri:
+                    var filePath = obj.FilePath;
+                    result = Wm.LoadedImageSurface.StartLoadFromUri(new Uri($"ms-appx:///{filePath})"));
+                    break;
+            }
+
             Cache(obj, result);
             return result;
         }

@@ -670,24 +670,38 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 return null;
             }
 
-            if (imageAsset.ImageType != ImageAsset.ImageAssetType.Embedded)
-            {
-                _issues.ExternalImageTypeIsNotSupported();
-                return null;
-            }
-
             var content = CreateSpriteVisual();
             containerVisualContentNode.Children.Add(content);
             content.Size = new Sn.Vector2((float)imageAsset.Width, (float)imageAsset.Height);
 
-            var embeddedImageAsset = (EmbeddedImageAsset)imageAsset;
-            var surface = LoadedImageSurface.StartLoadFromStream(embeddedImageAsset.Bytes);
-            var imageBrush = CreateSurfaceBrush(surface);
+            LoadedImageSurface surface = null;
+            CompositionSurfaceBrush imageBrush = null;
+            double imageAssetWidth = 0;
+            double imageAssetHeight = 0;
+
+            switch (imageAsset.ImageType)
+            {
+                case ImageAsset.ImageAssetType.Embedded:
+                    var embeddedImageAsset = (EmbeddedImageAsset)imageAsset;
+                    surface = LoadedImageSurface.StartLoadFromStream(embeddedImageAsset.Bytes);
+                    imageAssetWidth = embeddedImageAsset.Width;
+                    imageAssetHeight = embeddedImageAsset.Height;
+                    break;
+                case ImageAsset.ImageAssetType.External:
+                    var externalImageAsset = (ExternalImageAsset)imageAsset;
+                    surface = LoadedImageSurface.StartLoadFromUri($"{externalImageAsset.Path}{externalImageAsset.FileName}");
+                    imageAssetWidth = externalImageAsset.Width;
+                    imageAssetHeight = externalImageAsset.Height;
+                    _issues.ExternalImageFilesExpected($"{externalImageAsset.Path}{externalImageAsset.FileName}");
+                    break;
+            }
+
+            imageBrush = CreateSurfaceBrush(surface);
             content.Brush = imageBrush;
 
             if (_addDescriptions)
             {
-                Describe(surface, $"{layer.Name}, {embeddedImageAsset.Width}x{embeddedImageAsset.Height}");
+                Describe(surface, $"{layer.Name}, {imageAssetWidth}x{imageAssetHeight}");
             }
 
             return containerVisualRootNode;

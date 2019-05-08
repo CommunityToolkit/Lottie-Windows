@@ -84,7 +84,8 @@ namespace LottieViewer
                 // If an unrecognized file type is specified, treat it as C#.
                 default:
                 case ".cs":
-                    await FileIO.WriteTextAsync(pickedFile, diagnostics.GenerateCSharpCode());
+                    diagnostics.GenerateCSharpCode(out var csText);
+                    await FileIO.WriteTextAsync(pickedFile, csText);
                     break;
                 case ".cpp":
                     await GenerateCxCodeAsync(diagnostics, suggestedClassName, pickedFile);

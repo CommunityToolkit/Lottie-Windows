@@ -90,17 +90,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             return WinCompData.Tools.CompositionObjectXmlSerializer.ToXml(RootVisual).ToString();
         }
 
-        public string GenerateCSharpCode()
+        public void GenerateCSharpCode(out string csText)
         {
-            if (LottieComposition == null) { return null; }
+            if (LottieComposition == null)
+            {
+                csText = null;
+                return;
+            }
 
-            return
-                CSharpInstantiatorGenerator.CreateFactoryCode(
-                    SuggestedClassName,
-                    RootVisual,
-                    (float)LottieComposition.Width,
-                    (float)LottieComposition.Height,
-                    LottieComposition.Duration);
+            CSharpInstantiatorGenerator.CreateFactoryCode(
+                SuggestedClassName,
+                RootVisual,
+                (float)LottieComposition.Width,
+                (float)LottieComposition.Height,
+                LottieComposition.Duration,
+                out csText,
+                out var infoText);
         }
 
         public void GenerateCxCode(string headerFileName, out string cppText, out string hText)
@@ -119,7 +124,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 LottieComposition.Duration,
                 headerFileName,
                 out cppText,
-                out hText);
+                out hText,
+                out var infoText);
         }
 
         public KeyValuePair<string, double>[] Markers { get; internal set; } = EmptyMarkersArray;

@@ -88,7 +88,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal void InvalidAssetReferenceFromLayer(string layerType, string assetRefId, string assetType, string expectedAssetType) => Report("LT0029", $"{layerType} referenced asset {assetRefId} of type {assetType} which is invalid. Expected an asset of type {expectedAssetType}.");
 
-        internal void ExternalImageTypeIsNotSupported() => Report("LT0030", "External image type is not supported");
+        internal void ExternalImageFilesExpected(string filePath) => Report("LT0030", $"External image file expected at {filePath}");
 
         void Report(string code, string description)
         {

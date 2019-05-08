@@ -72,10 +72,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 // ColorKeyFrameAnimations must be canonicalized before color brushes are canonicalized.
                 CanonicalizeColorBrushes();
 
-                //CanonicalizeLoadedImageSurface();
+                CanonicalizeLoadedImageSurface(LoadedImageSurface.LoadedImageSurfaceLoadType.FromStream);
+                CanonicalizeLoadedImageSurface(LoadedImageSurface.LoadedImageSurfaceLoadType.FromUri);
 
                 // LoadedImageSurfaces must be canonicalized before surface brushes are canonicalized.
-                //CanonicalizeCompositionSurfaceBrushes();
+                CanonicalizeCompositionSurfaceBrushes();
             }
 
             TNode NodeFor(Wg.IGeometrySource2D obj) => _graph[obj].Canonical;
@@ -138,12 +139,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     select (item.Node, (TC)obj);
             }
 
-            IEnumerable<(TNode Node, TC Object)> GetCanonicalizableLoadedImageSurfaces<TC>()
+            IEnumerable<(TNode Node, TC Object)> GetCanonicalizableLoadedImageSurfaces<TC>(LoadedImageSurface.LoadedImageSurfaceLoadType type)
                 where TC : LoadedImageSurface
             {
                 return
                     from item in _graph.LoadedImageSurfaceNodes
                     let obj = item.Object
+                    where obj.LoadType == type
                     select (item.Node, (TC)obj);
             }
 
@@ -526,13 +528,31 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 CanonicalizeGrouping(grouping);
             }
 
-            void CanonicalizeLoadedImageSurface()
+            void CanonicalizeLoadedImageSurface(LoadedImageSurface.LoadedImageSurfaceLoadType type)
             {
                 // Canonicalize LoadeImageSurfaces.
-                var items = GetCanonicalizableLoadedImageSurfaces<LoadedImageSurface>();
+                var items = GetCanonicalizableLoadedImageSurfaces<LoadedImageSurface>(type);
 
-                var grouping = items.GroupBy(i => i.Object.Bytes, i => i.Node, ByteArrayComparer.Instance);
-                CanonicalizeGrouping(grouping);
+                switch (type)
+                {
+                    case LoadedImageSurface.LoadedImageSurfaceLoadType.FromStream:
+                        var grouping = items.GroupBy(i => i.Object.Bytes, i => i.Node, ByteArrayComparer.Instance);
+                        CanonicalizeGrouping(grouping);
+                        break;
+                    case LoadedImageSurface.LoadedImageSurfaceLoadType.FromUri:
+                        var groupingExternal =
+                            from item in items
+                            let obj = item.Object
+                            group item.Node by
+                            new
+                            {
+                                obj.FilePath,
+                            }
+                            into grouped
+                            select grouped;
+                        CanonicalizeGrouping(groupingExternal);
+                        break;
+                }
             }
 
             static void CanonicalizeGrouping<TKey>(IEnumerable<IGrouping<TKey, TNode>> grouping)

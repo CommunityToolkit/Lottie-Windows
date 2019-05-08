@@ -42,13 +42,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// Returns the C# code for a factory that will instantiate the given <see cref="Visual"/> as a
         /// Windows.UI.Composition Visual.
         /// </summary>
-        /// <returns>The C# code.</returns>
-        public static string CreateFactoryCode(
+        public static void CreateFactoryCode(
             string className,
             Visual rootVisual,
             float width,
             float height,
             TimeSpan duration,
+            out string csText,
+            out string infoText,
             bool disableFieldOptimization = false)
         {
             var generator = new CSharpInstantiatorGenerator(
@@ -58,7 +59,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                                 disableFieldOptimization: disableFieldOptimization,
                                 stringifier: new CSharpStringifier());
 
-            return generator.GenerateCode(className, width, height);
+            csText = generator.GenerateCode(className, width, height);
+
+            infoText = generator.GenerateInfoText(className);
         }
 
         /// <inheritdoc/>
@@ -80,11 +83,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 builder.WriteLine("using Microsoft.Graphics.Canvas.Geometry;");
             }
 
-            if (info.UsesLoadedImageSurface)
+            if (info.UsesLoadedImageSurfaceFromStream || info.UsesLoadedImageSurfaceFromUri)
             {
                 builder.WriteLine("using Windows.UI.Xaml.Media;");
-                builder.WriteLine("using System.IO;");
-                builder.WriteLine("using System.Runtime.InteropServices.WindowsRuntime;");
+                if (info.UsesLoadedImageSurfaceFromStream)
+                {
+                    builder.WriteLine("using System.IO;");
+                    builder.WriteLine("using System.Runtime.InteropServices.WindowsRuntime;");
+                }
             }
 
             builder.WriteLine("using Microsoft.UI.Xaml.Controls;");
@@ -250,9 +256,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         }
 
         /// <inheritdoc/>
-        protected override void WriteLoadedImageSurfaceFactory(CodeBuilder builder, LoadedImageSurface obj, string fieldName)
+        protected override void WriteLoadedImageSurfaceFactory(CodeBuilder builder, CodeGenInfo info, LoadedImageSurface obj, string fieldName)
         {
-            builder.WriteLine($"var result = Windows.UI.Xaml.Media.LoadedImageSurface.StartLoadFromStream({fieldName}.AsBuffer().AsStream().AsRandomAccessStream());");
+            switch (obj.LoadType)
+            {
+                case LoadedImageSurface.LoadedImageSurfaceLoadType.FromStream:
+                    builder.WriteLine($"var result = Windows.UI.Xaml.Media.LoadedImageSurface.StartLoadFromStream({fieldName}.AsBuffer().AsStream().AsRandomAccessStream());");
+                    break;
+                case LoadedImageSurface.LoadedImageSurfaceLoadType.FromUri:
+                    builder.WriteLine($"var result = Windows.UI.Xaml.Media.LoadedImageSurface.StartLoadFromUri(new Uri(\"{_stringifier.AppPackageAssetsFolderUri}/{info.ClassName}/{obj.FilePath}\"));");
+                    break;
+            }
         }
 
         static void BytesToCSharpLiteral(CodeBuilder builder, byte[] bytes, int maximumColumns = 100)

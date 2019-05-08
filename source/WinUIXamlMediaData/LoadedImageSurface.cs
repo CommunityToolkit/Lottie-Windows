@@ -12,10 +12,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData
     class LoadedImageSurface : ICompositionSurface, IDescribable
     {
         readonly byte[] _bytes;
+        readonly string _filePath;
+        readonly LoadedImageSurfaceLoadType _loadType;
 
         LoadedImageSurface(byte[] bytes)
         {
             _bytes = bytes;
+            _loadType = LoadedImageSurfaceLoadType.FromStream;
+        }
+
+        LoadedImageSurface(string filePath)
+        {
+            _filePath = filePath;
+            _loadType = LoadedImageSurfaceLoadType.FromUri;
         }
 
         public static LoadedImageSurface StartLoadFromStream(byte[] bytes)
@@ -23,12 +32,27 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData
             return new LoadedImageSurface(bytes);
         }
 
+        public static LoadedImageSurface StartLoadFromUri(string filePath)
+        {
+            return new LoadedImageSurface(filePath);
+        }
+
         public byte[] Bytes => _bytes;
+
+        public string FilePath => _filePath;
+
+        public LoadedImageSurfaceLoadType LoadType => _loadType;
 
         /// <inheritdoc/>
         public string LongDescription { get; set; }
 
         /// <inheritdoc/>
         public string ShortDescription { get; set; }
+
+        public enum LoadedImageSurfaceLoadType
+        {
+            FromStream,
+            FromUri,
+        }
     }
 }
