@@ -7,8 +7,14 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
+namespace Microsoft.Toolkit.Uwp.UI.Lottie.YamlData
 {
+    /// <summary>
+    /// Serializes a Yaml object into a <see cref="TextWriter"/>.
+    /// </summary>
+#if PUBLIC_YamlData
+    public
+#endif
     sealed class YamlWriter
     {
         const int _maximumWidth = 120;
@@ -18,12 +24,45 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         int _indentColumn;
         int _inlineColumn;
 
-        internal YamlWriter(TextWriter writer)
+        public YamlWriter(TextWriter writer)
         {
             _writer = writer;
         }
 
-        internal void Write(string value)
+        /// <summary>
+        /// Writes the given object to the output.
+        /// </summary>
+        /// <param name="obj">The object to write.</param>
+        public void WriteObject(YamlObject obj)
+        {
+            if (obj == null)
+            {
+                WriteInline("~");
+            }
+            else
+            {
+                switch (obj.Kind)
+                {
+                    case YamlObjectKind.Scalar:
+                        WriteScalar((YamlScalar)obj);
+                        break;
+                    case YamlObjectKind.Map:
+                        WriteMap((YamlMap)obj);
+                        break;
+                    case YamlObjectKind.Sequence:
+                        WriteSequence((YamlSequence)obj);
+                        break;
+                    default:
+                        throw new InvalidOperationException();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Writes the given string to the output.
+        /// </summary>
+        /// <param name="value">The string to write.</param>
+        public void Write(string value)
         {
             if (_indentColumn > _column)
             {
@@ -51,31 +90,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         {
             _writer.WriteLine();
             _column = 0;
-        }
-
-        internal void WriteObject(YamlObject obj)
-        {
-            if (obj == null)
-            {
-                WriteInline("~");
-            }
-            else
-            {
-                switch (obj.Kind)
-                {
-                    case YamlObjectKind.Scalar:
-                        WriteScalar((YamlScalar)obj);
-                        break;
-                    case YamlObjectKind.Map:
-                        WriteMap((YamlMap)obj);
-                        break;
-                    case YamlObjectKind.Sequence:
-                        WriteSequence((YamlSequence)obj);
-                        break;
-                    default:
-                        throw new InvalidOperationException();
-                }
-            }
         }
 
         void WriteScalar(YamlScalar obj)

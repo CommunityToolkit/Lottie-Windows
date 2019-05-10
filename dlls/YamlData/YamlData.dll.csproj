@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Configurations>Debug;Release</Configurations>
+    <LangVersion>latest</LangVersion>
+    <DefineConstants>PUBLIC_YamlData</DefineConstants>
+  </PropertyGroup>
+
+  <Import Project="..\..\source\YamlData\YamlData.projitems" Label="Shared" />
+
+</Project>

@@ -6,13 +6,14 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Microsoft.Toolkit.Uwp.UI.Lottie.YamlData;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 {
 #if PUBLIC_LottieData
     public
 #endif
-    sealed class LottieCompositionYamlSerializer
+    sealed class LottieCompositionYamlSerializer : YamlFactory
     {
         public static void WriteYaml(LottieComposition root, TextWriter writer, string comment = null)
         {
@@ -199,7 +200,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         YamlObject FromLayer(Layer layer, YamlMap superclassContent)
         {
-            superclassContent.Add("Type", layer.Type);
+            superclassContent.Add("Type", Scalar(layer.Type));
             superclassContent.Add("Parent", layer.Parent);
             superclassContent.Add("Index", layer.Index);
             superclassContent.Add("IsHidden", layer.IsHidden);
@@ -209,7 +210,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             superclassContent.Add("TimeStretch", layer.TimeStretch);
             superclassContent.Add("Transform", FromShapeLayerContent(layer.Transform));
             superclassContent.Add("Masks", FromSpan(layer.Masks, FromMask));
-            superclassContent.Add("MatteType", layer.LayerMatteType);
+            superclassContent.Add("MatteType", Scalar(layer.LayerMatteType));
 
             switch (layer.Type)
             {
@@ -244,7 +245,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             var result = superclassContent;
             result.Add("Width", layer.Width);
             result.Add("Height", layer.Height);
-            result.Add("Color", layer.Color);
+            result.Add("Color", Scalar(layer.Color));
             return result;
         }
 
@@ -279,7 +280,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         YamlObject FromShapeLayerContent(ShapeLayerContent content, YamlMap superclassContent)
         {
             superclassContent.Add("MatchName", content.MatchName);
-            superclassContent.Add("ContentType", content.ContentType);
+            superclassContent.Add("ContentType", Scalar(content.ContentType));
 
             switch (content.ContentType)
             {
@@ -326,7 +327,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             {
                 { "Name", mask.Name },
                 { "Inverted", mask.Inverted },
-                { "Mode", mask.Mode },
+                { "Mode", Scalar(mask.Mode) },
                 { "Opacity", FromAnimatable(mask.Opacity) },
                 { "Points", FromAnimatable(mask.Points, p => FromSequence(p, FromBezierSegment)) },
             };
@@ -483,14 +484,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             return result;
         }
 
-        static YamlMap FromKeyFrame<T>(KeyFrame<T> keyFrame, Func<T, YamlObject> valueSelector)
+        YamlMap FromKeyFrame<T>(KeyFrame<T> keyFrame, Func<T, YamlObject> valueSelector)
             where T : IEquatable<T>
         {
             var result = new YamlMap
             {
                 { "Frame", keyFrame.Frame },
                 { "Value", valueSelector(keyFrame.Value) },
-                { "Easing", keyFrame.Easing.Type },
+                { "Easing", Scalar(keyFrame.Easing.Type) },
             };
 
             if (keyFrame is KeyFrame<Vector3>)
@@ -574,5 +575,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             var result = superclassContent;
             return result;
         }
+
+        YamlScalar Scalar(Color value) => Scalar(value, $"'{value.ToString()}'");
+
+        YamlScalar Scalar(Easing.EasingType type) => Scalar(type, type.ToString());
+
+        YamlScalar Scalar(Layer.LayerType type) => Scalar(type, type.ToString());
+
+        YamlScalar Scalar(Mask.MaskMode type) => Scalar(type, type.ToString());
+
+        YamlScalar Scalar(ShapeContentType type) => Scalar(type, type.ToString());
+
+        YamlScalar Scalar(Layer.MatteType type) => Scalar(type, type.ToString());
     }
 }
