@@ -264,7 +264,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     builder.WriteLine($"var result = Windows.UI.Xaml.Media.LoadedImageSurface.StartLoadFromStream({fieldName}.AsBuffer().AsStream().AsRandomAccessStream());");
                     break;
                 case LoadedImageSurface.LoadedImageSurfaceLoadType.FromUri:
-                    builder.WriteLine($"var result = Windows.UI.Xaml.Media.LoadedImageSurface.StartLoadFromUri(new Uri(\"{_stringifier.AppPackageAssetsFolderUri}/{info.ClassName}/{obj.FilePath}\"));");
+                    builder.WriteLine($"var result = Windows.UI.Xaml.Media.LoadedImageSurface.StartLoadFromUri(new Uri(\"{_stringifier.ExternalImageFileUri(info.ClassName, obj.FilePath)}\"));");
                     break;
             }
         }

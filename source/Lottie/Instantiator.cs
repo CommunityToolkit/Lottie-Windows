@@ -1235,8 +1235,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                     result = Wm.LoadedImageSurface.StartLoadFromStream(bytes.AsBuffer().AsStream().AsRandomAccessStream());
                     break;
                 case Wmd.LoadedImageSurface.LoadedImageSurfaceLoadType.FromUri:
-                    var filePath = obj.FilePath;
-                    result = Wm.LoadedImageSurface.StartLoadFromUri(new Uri($"ms-appx:///{filePath})"));
+                    result = null;
                     break;
             }
 

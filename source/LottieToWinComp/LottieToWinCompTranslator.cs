@@ -397,7 +397,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             if (layer.BlendMode != BlendMode.Normal)
             {
-                _issues.BlendModeNotNormal(layer.BlendMode.ToString());
+                _issues.BlendModeNotNormal(layer.Name, layer.BlendMode.ToString());
             }
 
             if (layer.TimeStretch != 1)

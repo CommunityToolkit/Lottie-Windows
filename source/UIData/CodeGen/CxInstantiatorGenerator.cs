@@ -418,7 +418,7 @@ public:
             switch (obj.LoadType)
             {
                 case LoadedImageSurface.LoadedImageSurfaceLoadType.FromStream:
-                    builder.WriteLine("InMemoryRandomAccessStream ^ stream = ref new InMemoryRandomAccessStream()");
+                    builder.WriteLine("InMemoryRandomAccessStream ^ stream = ref new InMemoryRandomAccessStream();");
                     builder.WriteLine("DataWriter ^ dataWriter = ref new DataWriter(stream->GetOutputStreamAt(0));");
                     builder.WriteLine($"dataWriter->WriteBytes({fieldName});");
                     builder.WriteLine("dataWriter->StoreAsync();");
@@ -427,14 +427,14 @@ public:
                     builder.WriteLine($"{_stringifier.Var} result = Windows::UI::Xaml::Media::LoadedImageSurface::StartLoadFromStream(stream);");
                     break;
                 case LoadedImageSurface.LoadedImageSurfaceLoadType.FromUri:
-                    builder.WriteLine($"{_stringifier.Var} result = Windows::UI::Xaml::Media::LoadedImageSurface::StartLoadFromUri(ref new Uri(\"{_stringifier.AppPackageAssetsFolderUri}/{info.ClassName}/{obj.FilePath}\"));");
+                    builder.WriteLine($"{_stringifier.Var} result = Windows::UI::Xaml::Media::LoadedImageSurface::StartLoadFromUri(ref new Uri(\"{_stringifier.ExternalImageFileUri(info.ClassName, obj.FilePath)}\"));");
                     break;
             }
         }
 
-        protected override void WriteBytesField(CodeBuilder builder, LoadedImageSurface obj, string fieldName)
+        protected override void WriteBytesField(CodeBuilder builder, string fieldName)
         {
-            builder.WriteLine($"const Array<byte>^ {fieldName} = ref new Array<byte>");
+            builder.WriteLine($"{_stringifier.Static} {_stringifier.Const($"Array<byte>^ {fieldName}")} = ref new Array<byte>");
         }
 
         string CanvasFigureLoop(CanvasFigureLoop value) => _stringifier.CanvasFigureLoop(value);

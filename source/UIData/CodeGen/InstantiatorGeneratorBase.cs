@@ -296,9 +296,27 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             Wmd.LoadedImageSurface obj,
             string fieldName);
 
-        protected virtual void WriteBytesField(CodeBuilder builder, Wmd.LoadedImageSurface obj, string fieldName)
+        void WriteBytesArray(CodeBuilder builder, ObjectData[] nodes)
         {
-            builder.WriteLine($"{_stringifier.Static} readonly byte[] {fieldName} = new byte[]");
+            foreach (var node in nodes)
+            {
+                if (node.UsesLoadedImageSurfaceFromStream)
+                {
+                    WriteBytesField(builder, node.LoadedImageSurfaceBytesFieldName);
+                    builder.OpenScope();
+                    var loadedImageSurface = (Wmd.LoadedImageSurface)node.Object;
+                    builder.BytesToLiteral(loadedImageSurface.Bytes);
+                    builder.UnIndent();
+                    builder.WriteLine("};");
+                }
+            }
+
+            builder.WriteLine();
+        }
+
+        protected virtual void WriteBytesField(CodeBuilder builder, string fieldName)
+        {
+            builder.WriteLine($"{_stringifier.Static} {_stringifier.Readonly($"byte[] {fieldName}")} = new byte[]");
         }
 
         /// <summary>
@@ -335,6 +353,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             // up to the start of the Instantiator class.
             WriteFileStart(builder, info);
 
+            // Write the LoadedImageSurface byte arrays.
+            WriteBytesArray(builder, _nodes);
+
             // Write the IsRuntimeCompatible() method.
             WriteIsRuntimeCompatibleMethod(builder);
 
@@ -354,17 +375,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 {
                     // Generate a field for the storage.
                     WriteField(builder, _stringifier.ReferenceTypeName(node.TypeName), node.FieldName);
-                }
-
-                // Write the LoadedImageSurface byte arrays.
-                if (node.UsesLoadedImageSurfaceFromStream)
-                {
-                    var loadedImageSurface = (Wmd.LoadedImageSurface)node.Object;
-                    WriteBytesField(builder, loadedImageSurface, node.LoadedImageSurfaceBytesFieldName);
-                    builder.OpenScope();
-                    BytesToLiteral(builder, loadedImageSurface.Bytes);
-                    builder.UnIndent();
-                    builder.WriteLine("};");
                 }
             }
 
@@ -1870,7 +1880,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             string Static { get; }
 
-            string AppPackageAssetsFolderUri { get; }
+            string ExternalImageFileUri(string className, string filePath);
         }
 
         /// <summary>
@@ -1964,7 +1974,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             public virtual string Static => "static";
 
-            public virtual string AppPackageAssetsFolderUri => "ms-appx:///Assets";
+            public virtual string ExternalImageFileUri(string className, string filePath) => $"ms-appx:///Assets/{className}/{filePath}";
         }
 
         // A node in the object graph, annotated with extra stuff to assist in code generation.
@@ -2107,52 +2117,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             // Sets the first character to lower case.
             static string CamelCase(string value) => $"_{char.ToLowerInvariant(value[0])}{value.Substring(1)}";
-        }
-
-        // TODO: Move into CodeBuilder.
-        static void BytesToLiteral(CodeBuilder builder, byte[] bytes, int maximumColumns = 100)
-        {
-            const string indent = "    ";
-            var bytesLines = BytesToBytesList(bytes, maximumColumns - 1 - indent.Length).ToArray();
-
-            int i = 0;
-
-            for (i = 0; i < bytesLines.Length - 1; i++)
-            {
-                builder.WriteLine($"{bytesLines[i]},");
-            }
-
-            builder.WriteLine(bytesLines[i]);
-        }
-
-        static IEnumerable<string> BytesToBytesList(byte[] bytes, int maximumWidth)
-        {
-            const string delimeter = ", ";
-
-            var byteStrings = bytes.Select(b => b.ToString());
-
-            // Keep pulling byte strings into the current collection until the length gets too long or we run out.
-            var accumulator = new List<string>();
-            var currentWidth = 0;
-            foreach (var bs in byteStrings)
-            {
-                if (currentWidth + (delimeter.Length * accumulator.Count) + bs.Length > maximumWidth)
-                {
-                    // There is no room for the next byte string. Output what we have.
-                    yield return string.Join(delimeter, accumulator);
-                    accumulator.Clear();
-                    currentWidth = 0;
-                }
-
-                accumulator.Add(bs.ToString());
-                currentWidth += bs.Length;
-            }
-
-            // If there are any bytes left over, output them now.
-            if (accumulator.Count > 0)
-            {
-                yield return string.Join(", ", accumulator);
-            }
         }
 
         /// <summary>
