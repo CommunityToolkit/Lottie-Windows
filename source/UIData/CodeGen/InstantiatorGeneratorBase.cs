@@ -296,8 +296,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             Wmd.LoadedImageSurface obj,
             string fieldName);
 
-        void WriteBytesArray(CodeBuilder builder, ObjectData[] nodes)
+        void WriteBytesFields(CodeBuilder builder, ObjectData[] nodes)
         {
+            bool bytesWritten = false;
+
             foreach (var node in nodes)
             {
                 if (node.UsesLoadedImageSurfaceFromStream)
@@ -308,10 +310,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     builder.BytesToLiteral(loadedImageSurface.Bytes);
                     builder.UnIndent();
                     builder.WriteLine("};");
+                    bytesWritten = true;
                 }
             }
 
-            builder.WriteLine();
+            if (bytesWritten)
+            {
+                builder.WriteLine();
+            }
         }
 
         protected virtual void WriteBytesField(CodeBuilder builder, string fieldName)
@@ -354,7 +360,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             WriteFileStart(builder, info);
 
             // Write the LoadedImageSurface byte arrays.
-            WriteBytesArray(builder, _nodes);
+            WriteBytesFields(builder, _nodes);
 
             // Write the IsRuntimeCompatible() method.
             WriteIsRuntimeCompatibleMethod(builder);
