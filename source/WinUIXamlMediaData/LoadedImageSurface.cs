@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
+using Microsoft.Toolkit.Uwp.UI.Lottie.WinStorageStreamsData;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData
 {
@@ -21,6 +22,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData
         public static LoadedImageSurface StartLoadFromStream(byte[] bytes)
         {
             return new LoadedImageSurface(bytes);
+        }
+
+        public static LoadedImageSurface StartLoadFromStream(IRandomAccessStream bytes)
+        {
+            // Implementation coming soon.
+            throw new System.NotImplementedException();
         }
 
         public byte[] Bytes => _bytes;
