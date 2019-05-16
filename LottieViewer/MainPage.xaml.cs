@@ -84,8 +84,7 @@ namespace LottieViewer
                 // If an unrecognized file type is specified, treat it as C#.
                 default:
                 case ".cs":
-                    diagnostics.GenerateCSharpCode(out var csText);
-                    await FileIO.WriteTextAsync(pickedFile, csText);
+                    await FileIO.WriteTextAsync(pickedFile, diagnostics.GenerateCSharpCode());
                     break;
                 case ".cpp":
                     await GenerateCxCodeAsync(diagnostics, suggestedClassName, pickedFile);
@@ -116,17 +115,6 @@ namespace LottieViewer
                 return;
             }
 
-            // Ask the user to pick a name for the ICompositionSource.h file.
-            var iCompositionSourceFilePicker = new FileSavePicker
-            {
-                SuggestedStartLocation = PickerLocationId.DocumentsLibrary,
-                SuggestedFileName = "ICompositionSource.h",
-            };
-
-            // Dropdown of file types the user can save the file as
-            iCompositionSourceFilePicker.FileTypeChoices.Add("ICompositionSource header", new[] { ".h" });
-            var iCompositionSourceHeader = await iCompositionSourceFilePicker.PickSaveFileAsync();
-
             // Generate the .cpp and the .h text.
             diagnostics.GenerateCxCode(hFile.Name, out var cppText, out var hText);
 
@@ -137,28 +125,6 @@ namespace LottieViewer
             if (hFile != null)
             {
                 await FileIO.WriteTextAsync(hFile, hText);
-            }
-
-            // Write the ICompositionSource.h file if the user specified it.
-            if (iCompositionSourceHeader != null)
-            {
-                await FileIO.WriteLinesAsync(iCompositionSourceHeader, new[]
-                {
-                    "#pragma once",
-                    "namespace Compositions",
-                    "{",
-                    "    public interface class ICompositionSource",
-                    "    {",
-                    "        virtual bool TryCreateAnimatedVisual(",
-                    "        Windows::UI::Composition::Compositor^ compositor,",
-                    "        Windows::UI::Composition::Visual^* rootVisual,",
-                    "        Windows::Foundation::Numerics::float2* size,",
-                    "        Windows::Foundation::TimeSpan* duration,",
-                    "        Platform::Object^* diagnostics);",
-                    "    };",
-                    "}",
-                    string.Empty,
-                });
             }
         }
 

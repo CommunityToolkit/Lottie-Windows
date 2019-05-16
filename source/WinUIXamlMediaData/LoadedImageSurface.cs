@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData
@@ -9,39 +10,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData
 #if PUBLIC_WinUIXamlMediaData
     public
 #endif
-    class LoadedImageSurface : ICompositionSurface, IDescribable
+    abstract class LoadedImageSurface : ICompositionSurface, IDescribable
     {
-        readonly byte[] _bytes;
-        readonly string _filePath;
-        readonly LoadedImageSurfaceLoadType _loadType;
-
-        LoadedImageSurface(byte[] bytes)
+        private protected LoadedImageSurface()
         {
-            _bytes = bytes;
-            _loadType = LoadedImageSurfaceLoadType.FromStream;
         }
 
-        LoadedImageSurface(string filePath)
-        {
-            _filePath = filePath;
-            _loadType = LoadedImageSurfaceLoadType.FromUri;
-        }
+        public byte[] Bytes { get; set; }
 
-        public static LoadedImageSurface StartLoadFromStream(byte[] bytes)
-        {
-            return new LoadedImageSurface(bytes);
-        }
-
-        public static LoadedImageSurface StartLoadFromUri(string filePath)
-        {
-            return new LoadedImageSurface(filePath);
-        }
-
-        public byte[] Bytes => _bytes;
-
-        public string FilePath => _filePath;
-
-        public LoadedImageSurfaceLoadType LoadType => _loadType;
+        public Uri ImageUri { get; set; }
 
         /// <inheritdoc/>
         public string LongDescription { get; set; }
@@ -49,7 +26,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData
         /// <inheritdoc/>
         public string ShortDescription { get; set; }
 
-        public enum LoadedImageSurfaceLoadType
+        public abstract LoadedImageSurfaceType Type { get; }
+
+        public enum LoadedImageSurfaceType
         {
             FromStream,
             FromUri,

@@ -1228,15 +1228,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 return result;
             }
 
-            switch (obj.LoadType)
+            switch (obj.Type)
             {
-                case Wmd.LoadedImageSurface.LoadedImageSurfaceLoadType.FromStream:
+                case Wmd.LoadedImageSurface.LoadedImageSurfaceType.FromStream:
                     var bytes = obj.Bytes;
                     result = Wm.LoadedImageSurface.StartLoadFromStream(bytes.AsBuffer().AsStream().AsRandomAccessStream());
                     break;
-                case Wmd.LoadedImageSurface.LoadedImageSurfaceLoadType.FromUri:
+                case Wmd.LoadedImageSurface.LoadedImageSurfaceType.FromUri:
+                    // Loading external image asset is not supported yet. LottieViewer will show this as an issue.
                     result = null;
                     break;
+                default:
+                    throw new InvalidOperationException();
             }
 
             Cache(obj, result);

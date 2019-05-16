@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System;
+using System.Collections.Generic;
 using System.Numerics;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
@@ -18,6 +19,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         readonly string _headerFileName;
 
         CxInstantiatorGenerator(
+            string className,
             CompositionObject graphRoot,
             TimeSpan duration,
             bool setCommentProperties,
@@ -25,6 +27,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             CppStringifier stringifier,
             string headerFileName)
             : base(
+                  className: className,
                   graphRoot: graphRoot,
                   duration: duration,
                   setCommentProperties: setCommentProperties,
@@ -39,20 +42,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// Returns the Cx code for a factory that will instantiate the given <see cref="Visual"/> as a
         /// Windows.UI.Composition Visual.
         /// </summary>
-        public static void CreateFactoryCode(
+        /// <returns>A tuple containing the cpp code, header code, and list of referenced asset files.</returns>
+        public static Tuple<string, string, List<string>> CreateFactoryCode(
             string className,
             Visual rootVisual,
             float width,
             float height,
             TimeSpan duration,
             string headerFileName,
-            out string cppText,
-            out string hText,
-            out string infoText,
-            // Rarely set options used mostly for testing.
-            bool disableFieldOptimization = false)
+            bool disableFieldOptimization)
         {
             var generator = new CxInstantiatorGenerator(
+                className: className,
                 graphRoot: rootVisual,
                 duration: duration,
                 disableFieldOptimization: disableFieldOptimization,
@@ -60,11 +61,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 stringifier: new CppStringifier(),
                 headerFileName: headerFileName);
 
-            cppText = generator.GenerateCode(className, width, height);
+            var cppText = generator.GenerateCode(className, width, height);
 
-            hText = GenerateHeaderText(className);
+            var hText = GenerateHeaderText(className);
 
-            infoText = generator.GenerateInfoText(className);
+            var infoText = generator.GetAssetFileList(className);
+
+            return new Tuple<string, string, List<string>>(cppText, hText, infoText);
         }
 
         // Generates the .h file contents.
@@ -120,7 +123,7 @@ public:
                 builder.WriteLine("#include <wrl.h>");
             }
 
-            if (info.UsesLoadedImageSurfaceFromStream)
+            if (info.UsesStreams)
             {
                 builder.WriteLine("#include <iostream>");
             }
@@ -140,14 +143,15 @@ public:
             builder.WriteLine("using namespace Windows::UI::Composition;");
             builder.WriteLine("using namespace Windows::Graphics;");
             builder.WriteLine("using namespace Microsoft::WRL;");
-            if (info.UsesLoadedImageSurfaceFromStream || info.UsesLoadedImageSurfaceFromUri)
+            if (info.UsesNamespaceWindowsUIXamlMedia)
             {
                 builder.WriteLine("using namespace Windows::UI::Xaml::Media;");
-                if (info.UsesLoadedImageSurfaceFromStream)
-                {
-                    builder.WriteLine("using namespace Platform;");
-                    builder.WriteLine("using namespace Windows::Storage::Streams;");
-                }
+            }
+
+            if (info.UsesStreams)
+            {
+                builder.WriteLine("using namespace Platform;");
+                builder.WriteLine("using namespace Windows::Storage::Streams;");
             }
 
             builder.WriteLine();
@@ -413,28 +417,23 @@ public:
         }
 
         /// <inheritdoc/>
-        protected override void WriteLoadedImageSurfaceFactory(CodeBuilder builder, CodeGenInfo info, LoadedImageSurface obj, string fieldName)
+        protected override void WriteLoadedImageSurfaceFactory(CodeBuilder builder, CodeGenInfo info, LoadedImageSurface obj, string fieldName, string imageUriString)
         {
-            switch (obj.LoadType)
+            switch (obj.Type)
             {
-                case LoadedImageSurface.LoadedImageSurfaceLoadType.FromStream:
-                    builder.WriteLine("InMemoryRandomAccessStream ^ stream = ref new InMemoryRandomAccessStream();");
-                    builder.WriteLine("DataWriter ^ dataWriter = ref new DataWriter(stream->GetOutputStreamAt(0));");
+                case LoadedImageSurface.LoadedImageSurfaceType.FromStream:
+                    builder.WriteLine("auto stream = ref new InMemoryRandomAccessStream();");
+                    builder.WriteLine("auto dataWriter = ref new DataWriter(stream->GetOutputStreamAt(0));");
                     builder.WriteLine($"dataWriter->WriteBytes({fieldName});");
                     builder.WriteLine("dataWriter->StoreAsync();");
                     builder.WriteLine("dataWriter->FlushAsync();");
                     builder.WriteLine("stream->Seek(0);");
                     builder.WriteLine($"{_stringifier.Var} result = Windows::UI::Xaml::Media::LoadedImageSurface::StartLoadFromStream(stream);");
                     break;
-                case LoadedImageSurface.LoadedImageSurfaceLoadType.FromUri:
-                    builder.WriteLine($"{_stringifier.Var} result = Windows::UI::Xaml::Media::LoadedImageSurface::StartLoadFromUri(ref new Uri(\"{_stringifier.ExternalImageFileUri(info.ClassName, obj.FilePath)}\"));");
+                case LoadedImageSurface.LoadedImageSurfaceType.FromUri:
+                    builder.WriteLine($"{_stringifier.Var} result = Windows::UI::Xaml::Media::LoadedImageSurface::StartLoadFromUri(ref new Uri(\"{imageUriString}\"));");
                     break;
             }
-        }
-
-        protected override void WriteBytesField(CodeBuilder builder, string fieldName)
-        {
-            builder.WriteLine($"{_stringifier.Static} {_stringifier.Const($"Array<byte>^ {fieldName}")} = ref new Array<byte>");
         }
 
         string CanvasFigureLoop(CanvasFigureLoop value) => _stringifier.CanvasFigureLoop(value);

@@ -55,6 +55,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         ObjectData _currentObjectFactoryNode;
 
         protected InstantiatorGeneratorBase(
+            string className,
             CompositionObject graphRoot,
             TimeSpan duration,
             bool setCommentProperties,
@@ -130,6 +131,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             if (_rootNode.InReferences.Any())
             {
                 _rootNode.RequiresStorage = true;
+            }
+
+            // Set the Uri of the external image file to /Assets/<className>/<filePath>/<fileName>
+            foreach (var node in _nodes.Where(n => n.UsesAssetFile))
+            {
+                var loadedImageSurfaceObj = (Wmd.LoadedImageSurfaceFromUri)node.Object;
+                var imageUriString = loadedImageSurfaceObj.ImageUri.ToString();
+
+                if (imageUriString.StartsWith("file:///"))
+                {
+                    var trimmedUri = imageUriString.Substring("file:///".Length);
+                    node.LoadedImageSurfaceImageUriString = $"ms-appx:///Assets/{className}/{trimmedUri}";
+                }
             }
         }
 
@@ -290,39 +304,38 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// <param name="info">A <see cref="CodeGenInfo"/> used to get information about the code.</param>
         /// <param name="obj">Describes the object that should be instantiated by the factory code.</param>
         /// <param name="fieldName">The name of the Bytes field that should be used for StartLoadFromStream().</param>
+        /// <param name="imageUriString">The string representation of the Uri of the image file that should be used for StartLoadedFromUri().</param>
         protected abstract void WriteLoadedImageSurfaceFactory(
             CodeBuilder builder,
             CodeGenInfo info,
             Wmd.LoadedImageSurface obj,
-            string fieldName);
+            string fieldName,
+            string imageUriString);
 
-        void WriteBytesFields(CodeBuilder builder, ObjectData[] nodes)
-        {
-            bool bytesWritten = false;
-
-            foreach (var node in nodes)
-            {
-                if (node.UsesLoadedImageSurfaceFromStream)
-                {
-                    WriteBytesField(builder, node.LoadedImageSurfaceBytesFieldName);
-                    builder.OpenScope();
-                    var loadedImageSurface = (Wmd.LoadedImageSurface)node.Object;
-                    builder.BytesToLiteral(loadedImageSurface.Bytes);
-                    builder.UnIndent();
-                    builder.WriteLine("};");
-                    bytesWritten = true;
-                }
-            }
-
-            if (bytesWritten)
-            {
-                builder.WriteLine();
-            }
-        }
-
+        /// <summary>
+        /// Write a Bytes field.
+        /// </summary>
+        /// <param name="builder">A <see cref="CodeBuilder"/> used to create the code.</param>
+        /// <param name="fieldName">The name of the Bytes field to be written.</param>
         protected virtual void WriteBytesField(CodeBuilder builder, string fieldName)
         {
-            builder.WriteLine($"{_stringifier.Static} {_stringifier.Readonly($"byte[] {fieldName}")} = new byte[]");
+            builder.WriteLine($"{_stringifier.Static} {_stringifier.Readonly(_stringifier.ReferenceTypeName(_stringifier.ByteArray))} {fieldName} = {_stringifier.New} {_stringifier.ByteArray}");
+        }
+
+        /// <summary>
+        /// Call this to get a list of the asset files referenced by the generated code.
+        /// </summary>
+        /// <param name="className">Class name of the code.</param>
+        /// <returns>List of asset files.</returns>
+        protected List<string> GetAssetFileList(string className)
+        {
+            var assetList = new List<string>();
+            foreach (var node in _nodes.Where(n => n.UsesAssetFile))
+            {
+                    assetList.Add($"{node.LoadedImageSurfaceImageUriString}");
+            }
+
+            return assetList;
         }
 
         /// <summary>
@@ -345,8 +358,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 usesCanvas: _nodes.Where(n => n.UsesCanvas).Any(),
                 usesCanvasEffects: _nodes.Where(n => n.UsesCanvasEffects).Any(),
                 usesCanvasGeometry: _nodes.Where(n => n.UsesCanvasGeometry).Any(),
-                usesLoadedImageSurfaceFromStream: _nodes.Where(n => n.UsesLoadedImageSurfaceFromStream).Any(),
-                usesLoadedImageSurfaceFromUri: _nodes.Where(n => n.UsesLoadedImageSurfaceFromUri).Any()
+                usesNamespaceWindowsUIXamlMedia: _nodes.Where(n => n.UsesNamespaceWindowsUIXamlMedia).Any(),
+                usesStreams: _nodes.Where(n => n.UsesStream).Any()
                 );
 
             // Write the auto-generated warning comment.
@@ -360,7 +373,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             WriteFileStart(builder, info);
 
             // Write the LoadedImageSurface byte arrays.
-            WriteBytesFields(builder, _nodes);
+            WriteBytesFields(builder);
 
             // Write the IsRuntimeCompatible() method.
             WriteIsRuntimeCompatibleMethod(builder);
@@ -584,6 +597,27 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         void WriteField(CodeBuilder builder, string typeName, string fieldName)
         {
             builder.WriteLine($"{typeName} {fieldName};");
+        }
+
+        void WriteBytesFields(CodeBuilder builder)
+        {
+            bool bytesWritten = false;
+
+            foreach (var node in _nodes.Where(n => n.UsesStream))
+            {
+                    WriteBytesField(builder, node.LoadedImageSurfaceBytesFieldName);
+                    builder.OpenScope();
+                    var loadedImageSurface = (Wmd.LoadedImageSurface)node.Object;
+                    builder.BytesToLiteral(loadedImageSurface.Bytes);
+                    builder.UnIndent();
+                    builder.WriteLine("};");
+                    bytesWritten = true;
+            }
+
+            if (bytesWritten)
+            {
+                builder.WriteLine();
+            }
         }
 
         // Generates code for the given node. The code is written into the CodeBuilder on the node.
@@ -1559,9 +1593,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         bool GenerateLoadedImageSurfaceFactory(CodeBuilder builder, CodeGenInfo info, Wmd.LoadedImageSurface obj, ObjectData node)
         {
             var fieldName = node.LoadedImageSurfaceBytesFieldName;
+            var imageUri = node.LoadedImageSurfaceImageUriString;
 
             WriteObjectFactoryStart(builder, node);
-            WriteLoadedImageSurfaceFactory(builder, info, obj, fieldName);
+            WriteLoadedImageSurfaceFactory(builder, info, obj, fieldName, imageUri);
             WriteObjectFactoryEnd(builder);
             return true;
         }
@@ -1752,7 +1787,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// <summary>
         /// Holds information about the code being generated.
         /// </summary>
-        protected sealed class CodeGenInfo
+        protected internal sealed class CodeGenInfo
         {
             internal CodeGenInfo(
                 string className,
@@ -1763,8 +1798,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 bool usesCanvas,
                 bool usesCanvasEffects,
                 bool usesCanvasGeometry,
-                bool usesLoadedImageSurfaceFromStream,
-                bool usesLoadedImageSurfaceFromUri)
+                bool usesNamespaceWindowsUIXamlMedia,
+                bool usesStreams)
             {
                 ClassName = className;
                 ReusableExpressionAnimationFieldName = reusableExpressionAnimationFieldName;
@@ -1774,8 +1809,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 UsesCanvas = usesCanvas;
                 UsesCanvasEffects = usesCanvasEffects;
                 UsesCanvasGeometry = usesCanvasGeometry;
-                UsesLoadedImageSurfaceFromStream = usesLoadedImageSurfaceFromStream;
-                UsesLoadedImageSurfaceFromUri = usesLoadedImageSurfaceFromUri;
+                UsesNamespaceWindowsUIXamlMedia = usesNamespaceWindowsUIXamlMedia;
+                UsesStreams = usesStreams;
             }
 
             /// <summary>
@@ -1809,14 +1844,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             public bool UsesCanvasGeometry { get; }
 
             /// <summary>
-            /// Gets a value indicating whether the composition will load an image surface from stream.
+            /// Gets a value indicating whether the composition uses the Windows.UI.Xaml.Media namespace.
             /// </summary>
-            public bool UsesLoadedImageSurfaceFromStream { get; }
+            public bool UsesNamespaceWindowsUIXamlMedia { get; }
 
             /// <summary>
-            /// Gets a value indicating whether the composition will load an image surface from uri.
+            /// Gets a value indicating whether the composition uses streams.
             /// </summary>
-            public bool UsesLoadedImageSurfaceFromUri { get; }
+            public bool UsesStreams { get; }
 
             /// <summary>
             /// Gets the name of the field in the instantiator class that hold the reusable ExpressionAnimation.
@@ -1886,7 +1921,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             string Static { get; }
 
-            string ExternalImageFileUri(string className, string filePath);
+            string ByteArray { get; }
         }
 
         /// <summary>
@@ -1980,7 +2015,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             public virtual string Static => "static";
 
-            public virtual string ExternalImageFileUri(string className, string filePath) => $"ms-appx:///Assets/{className}/{filePath}";
+            public abstract string ByteArray { get; }
         }
 
         // A node in the object graph, annotated with extra stuff to assist in code generation.
@@ -2079,17 +2114,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             // Set to indicate that the node relies on Microsoft.Graphics.Canvas.Geometry namespace
             internal bool UsesCanvasGeometry => Object is CanvasGeometry;
 
-            // Set to indicate that the node is a LoadedImageSurface that loads from a stream.
-            internal bool UsesLoadedImageSurfaceFromStream => Object is Wmd.LoadedImageSurface lis && lis.LoadType == Wmd.LoadedImageSurface.LoadedImageSurfaceLoadType.FromStream;
+            // Set to indicate that the node uses the Windows.UI.Xaml.Media namespace.
+            internal bool UsesNamespaceWindowsUIXamlMedia => Object is Wmd.LoadedImageSurface;
 
-            // Set to indicate that the node is a LoadedImageSurface that loads from a Uri.
-            internal bool UsesLoadedImageSurfaceFromUri => Object is Wmd.LoadedImageSurface lis && lis.LoadType == Wmd.LoadedImageSurface.LoadedImageSurfaceLoadType.FromUri;
+            // Set to indicate that the node uses stream(s).
+            internal bool UsesStream => Object is Wmd.LoadedImageSurface lis && lis.Type == Wmd.LoadedImageSurface.LoadedImageSurfaceType.FromStream;
+
+            // Set to indicate that the node uses asset file(s).
+            internal bool UsesAssetFile => Object is Wmd.LoadedImageSurface lis && lis.Type == Wmd.LoadedImageSurface.LoadedImageSurfaceType.FromUri;
 
             // True if the code to create the object will be generated inline.
             internal bool Inlined => _overriddenFactoryCall != null;
 
             // Identifies the byte array of a LoadedImageSurface.
             internal string LoadedImageSurfaceBytesFieldName => $"s_{Name}_Bytes";
+
+            internal string LoadedImageSurfaceImageUriString { get; set; }
 
             internal void ForceInline(string replacementFactoryCall)
             {
@@ -2123,26 +2163,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             // Sets the first character to lower case.
             static string CamelCase(string value) => $"_{char.ToLowerInvariant(value[0])}{value.Substring(1)}";
-        }
-
-        /// <summary>
-        /// Call this to generate information text to output to the user.
-        /// </summary>
-        /// <param name="className">Class name of the code.</param>
-        /// <returns>Information about the code.</returns>
-        protected string GenerateInfoText(string className)
-        {
-            var infoBuilder = new CodeBuilder();
-            foreach (var node in _nodes)
-            {
-                if (node.UsesLoadedImageSurfaceFromUri)
-                {
-                    var loadedImageSurface = (Wmd.LoadedImageSurface)node.Object;
-                    infoBuilder.WriteLine($"To use the generated code files, add /{className}/{loadedImageSurface.FilePath} to your app package's Assets folder.");
-                }
-            }
-
-            return infoBuilder.ToString();
         }
     }
 }

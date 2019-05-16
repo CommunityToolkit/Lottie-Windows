@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -339,28 +340,37 @@ sealed class LottieFileProcessor
             return false;
         }
 
-        CSharpInstantiatorGenerator.CreateFactoryCode(
+        var generatedCode = CSharpInstantiatorGenerator.CreateFactoryCode(
                 _className,
                 _rootVisual,
                 (float)_lottieComposition.Width,
                 (float)_lottieComposition.Height,
                 _lottieComposition.Duration,
-                out var csText,
-                out var infoText,
                 _options.DisableCodeGenOptimizer);
 
-        if (string.IsNullOrWhiteSpace(csText))
+        if (generatedCode == null)
+        {
+            _reporter.WriteError("Failed to generate code.");
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(generatedCode.Item1))
         {
             _reporter.WriteError("Failed to create the C# code.");
             return false;
         }
 
-        var result = TryWriteTextFile(outputFilePath, csText);
+        var result = TryWriteTextFile(outputFilePath, generatedCode.Item1);
 
         if (result)
         {
             _reporter.WriteInfo($"C# code for class {_className} written to {outputFilePath}");
-            _reporter.WriteInfo(infoText);
+
+            if (generatedCode.Item2 != null)
+            {
+                // Write out the list of asset files referenced by the code.
+                WriteAssetFiles(generatedCode.Item2);
+            }
         }
 
         return result;
@@ -375,43 +385,52 @@ sealed class LottieFileProcessor
             return false;
         }
 
-        CxInstantiatorGenerator.CreateFactoryCode(
+        var generatedCode = CxInstantiatorGenerator.CreateFactoryCode(
                 _className,
                 _rootVisual,
                 (float)_lottieComposition.Width,
                 (float)_lottieComposition.Height,
                 _lottieComposition.Duration,
                 System.IO.Path.GetFileName(outputHeaderFilePath),
-                out var cppText,
-                out var hText,
-                out var infoText,
                 _options.DisableCodeGenOptimizer);
 
-        if (string.IsNullOrWhiteSpace(cppText))
+        if (generatedCode == null)
+        {
+            _reporter.WriteError("Failed to generate code.");
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(generatedCode.Item1))
         {
             _reporter.WriteError("Failed to generate the .cpp code.");
             return false;
         }
 
-        if (string.IsNullOrWhiteSpace(hText))
+        if (string.IsNullOrWhiteSpace(generatedCode.Item2))
         {
             _reporter.WriteError("Failed to generate the .h code.");
             return false;
         }
 
-        if (!TryWriteTextFile(outputHeaderFilePath, hText))
+        if (!TryWriteTextFile(outputHeaderFilePath, generatedCode.Item2))
         {
             return false;
         }
 
-        if (!TryWriteTextFile(outputCppFilePath, cppText))
+        if (!TryWriteTextFile(outputCppFilePath, generatedCode.Item1))
         {
             return false;
         }
 
         _reporter.WriteInfo($"Header code for class {_className} written to {outputHeaderFilePath}");
         _reporter.WriteInfo($"Source code for class {_className} written to {outputCppFilePath}");
-        _reporter.WriteInfo(infoText);
+
+        if (generatedCode.Item3 != null)
+        {
+            // Write out the list of asset files referenced by the code.
+            WriteAssetFiles(generatedCode.Item3);
+        }
+
         return true;
     }
 
@@ -689,5 +708,13 @@ sealed class LottieFileProcessor
 
         _isTranslatedSuccessfully = true;
         return true;
+    }
+
+    void WriteAssetFiles(List<string> assetList)
+    {
+        foreach (var a in assetList)
+        {
+            _reporter.WriteInfo($"Generated code references {a}. Make sure your app can access this file.");
+        }
     }
 }

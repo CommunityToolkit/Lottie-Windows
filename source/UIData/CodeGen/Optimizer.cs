@@ -884,15 +884,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 return result;
             }
 
-            switch (obj.LoadType)
+            switch (obj.Type)
             {
-                case LoadedImageSurface.LoadedImageSurfaceLoadType.FromStream:
+                case LoadedImageSurface.LoadedImageSurfaceType.FromStream:
                     var bytes = obj.Bytes;
-                    result = LoadedImageSurface.StartLoadFromStream(bytes);
+                    result = LoadedImageSurfaceFromStream.StartLoadFromStream(bytes);
                     break;
-                case LoadedImageSurface.LoadedImageSurfaceLoadType.FromUri:
-                    var filePath = obj.FilePath;
-                    result = LoadedImageSurface.StartLoadFromUri(filePath);
+                case LoadedImageSurface.LoadedImageSurfaceType.FromUri:
+                    var filePath = obj.ImageUri;
+                    result = LoadedImageSurfaceFromUri.StartLoadFromUri(filePath);
                     break;
             }
 

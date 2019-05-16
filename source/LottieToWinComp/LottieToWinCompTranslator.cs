@@ -2,9 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-// Enable use of Image Layer
-#define EnableImageLayer
-
 // Enable workaround for RS5 where rotated rectangles were not drawn correctly.
 #define WorkAroundRectangleGeometryHalfDrawn
 
@@ -657,7 +654,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         Visual TranslateImageLayer(TranslationContext context, ImageLayer layer)
         {
-#if EnableImageLayer
             if (!TryCreateContainerVisualTransformChain(context, layer, out var containerVisualRootNode, out var containerVisualContentNode))
             {
                 // The layer is never visible.
@@ -674,29 +670,30 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             containerVisualContentNode.Children.Add(content);
             content.Size = new Sn.Vector2((float)imageAsset.Width, (float)imageAsset.Height);
 
-            LoadedImageSurface surface = null;
-            CompositionSurfaceBrush imageBrush = null;
-            double imageAssetWidth = 0;
-            double imageAssetHeight = 0;
+            LoadedImageSurface surface;
+            double imageAssetWidth;
+            double imageAssetHeight;
 
             switch (imageAsset.ImageType)
             {
                 case ImageAsset.ImageAssetType.Embedded:
                     var embeddedImageAsset = (EmbeddedImageAsset)imageAsset;
-                    surface = LoadedImageSurface.StartLoadFromStream(embeddedImageAsset.Bytes);
+                    surface = LoadedImageSurfaceFromStream.StartLoadFromStream(embeddedImageAsset.Bytes);
                     imageAssetWidth = embeddedImageAsset.Width;
                     imageAssetHeight = embeddedImageAsset.Height;
                     break;
                 case ImageAsset.ImageAssetType.External:
                     var externalImageAsset = (ExternalImageAsset)imageAsset;
-                    surface = LoadedImageSurface.StartLoadFromUri($"{externalImageAsset.Path}{externalImageAsset.FileName}");
+                    surface = LoadedImageSurfaceFromUri.StartLoadFromUri(new Uri($"file:///{externalImageAsset.Path}{externalImageAsset.FileName}"));
                     imageAssetWidth = externalImageAsset.Width;
                     imageAssetHeight = externalImageAsset.Height;
                     _issues.ExternalImageFilesExpected($"{externalImageAsset.Path}{externalImageAsset.FileName}");
                     break;
+                default:
+                    throw new InvalidOperationException();
             }
 
-            imageBrush = CreateSurfaceBrush(surface);
+            var imageBrush = CreateSurfaceBrush(surface);
             content.Brush = imageBrush;
 
             if (_addDescriptions)
@@ -705,12 +702,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
 
             return containerVisualRootNode;
-#else
-            // Not yet implemented. Currently CompositionShape does not support SurfaceBrush as of RS4.
-            // TODO - but this is a visual now, so we could support it.
-            _issues.ImageLayerIsNotSupported();
-            return null;
-#endif
         }
 
         Visual TranslatePreCompLayerToVisual(TranslationContext context, PreCompLayer layer)

@@ -72,8 +72,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 // ColorKeyFrameAnimations must be canonicalized before color brushes are canonicalized.
                 CanonicalizeColorBrushes();
 
-                CanonicalizeLoadedImageSurface(LoadedImageSurface.LoadedImageSurfaceLoadType.FromStream);
-                CanonicalizeLoadedImageSurface(LoadedImageSurface.LoadedImageSurfaceLoadType.FromUri);
+                CanonicalizeLoadedImageSurface(LoadedImageSurface.LoadedImageSurfaceType.FromStream);
+                CanonicalizeLoadedImageSurface(LoadedImageSurface.LoadedImageSurfaceType.FromUri);
 
                 // LoadedImageSurfaces must be canonicalized before surface brushes are canonicalized.
                 CanonicalizeCompositionSurfaceBrushes();
@@ -139,13 +139,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     select (item.Node, (TC)obj);
             }
 
-            IEnumerable<(TNode Node, TC Object)> GetCanonicalizableLoadedImageSurfaces<TC>(LoadedImageSurface.LoadedImageSurfaceLoadType type)
+            IEnumerable<(TNode Node, TC Object)> GetCanonicalizableLoadedImageSurfaces<TC>(LoadedImageSurface.LoadedImageSurfaceType type)
                 where TC : LoadedImageSurface
             {
                 return
                     from item in _graph.LoadedImageSurfaceNodes
                     let obj = item.Object
-                    where obj.LoadType == type
+                    where obj.Type == type
                     select (item.Node, (TC)obj);
             }
 
@@ -336,8 +336,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 var grouping =
                     from item in items
                     let obj = item.obj
-                    let animators = obj.Animators.ToArray()
-                    where animators.Length == 0
+                    where obj.Animators.Count == 0
                     group item.Node by CanonicalObject<ICompositionSurface>(obj.Surface) into grouped
                     select grouped;
 
@@ -528,27 +527,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 CanonicalizeGrouping(grouping);
             }
 
-            void CanonicalizeLoadedImageSurface(LoadedImageSurface.LoadedImageSurfaceLoadType type)
+            void CanonicalizeLoadedImageSurface(LoadedImageSurface.LoadedImageSurfaceType type)
             {
                 // Canonicalize LoadeImageSurfaces.
                 var items = GetCanonicalizableLoadedImageSurfaces<LoadedImageSurface>(type);
 
                 switch (type)
                 {
-                    case LoadedImageSurface.LoadedImageSurfaceLoadType.FromStream:
+                    case LoadedImageSurface.LoadedImageSurfaceType.FromStream:
                         var grouping = items.GroupBy(i => i.Object.Bytes, i => i.Node, ByteArrayComparer.Instance);
                         CanonicalizeGrouping(grouping);
                         break;
-                    case LoadedImageSurface.LoadedImageSurfaceLoadType.FromUri:
+                    case LoadedImageSurface.LoadedImageSurfaceType.FromUri:
                         var groupingExternal =
                             from item in items
                             let obj = item.Object
-                            group item.Node by
-                            new
-                            {
-                                obj.FilePath,
-                            }
-                            into grouped
+                            group item.Node by obj.ImageUri into grouped
                             select grouped;
                         CanonicalizeGrouping(groupingExternal);
                         break;

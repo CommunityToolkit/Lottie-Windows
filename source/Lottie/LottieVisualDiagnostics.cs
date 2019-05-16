@@ -90,22 +90,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             return WinCompData.Tools.CompositionObjectXmlSerializer.ToXml(RootVisual).ToString();
         }
 
-        public void GenerateCSharpCode(out string csText)
+        public string GenerateCSharpCode()
         {
-            if (LottieComposition == null)
-            {
-                csText = null;
-                return;
-            }
+            if (LottieComposition == null) { return null; }
 
-            CSharpInstantiatorGenerator.CreateFactoryCode(
+            var generatedCode = CSharpInstantiatorGenerator.CreateFactoryCode(
                 SuggestedClassName,
                 RootVisual,
                 (float)LottieComposition.Width,
                 (float)LottieComposition.Height,
                 LottieComposition.Duration,
-                out csText,
-                out var infoText);
+                false);
+
+            return generatedCode == null ? null : generatedCode.Item1;
         }
 
         public void GenerateCxCode(string headerFileName, out string cppText, out string hText)
@@ -116,16 +113,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 return;
             }
 
-            CxInstantiatorGenerator.CreateFactoryCode(
+            var generatedCode = CxInstantiatorGenerator.CreateFactoryCode(
                 SuggestedClassName,
                 RootVisual,
                 (float)LottieComposition.Width,
                 (float)LottieComposition.Height,
                 LottieComposition.Duration,
                 headerFileName,
-                out cppText,
-                out hText,
-                out var infoText);
+                false);
+
+            cppText = generatedCode == null ? null : generatedCode.Item1;
+            hText = generatedCode == null ? null : generatedCode.Item2;
         }
 
         public KeyValuePair<string, double>[] Markers { get; internal set; } = EmptyMarkersArray;
