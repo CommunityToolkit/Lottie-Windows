@@ -340,7 +340,7 @@ sealed class LottieFileProcessor
             return false;
         }
 
-        var generatedCode = CSharpInstantiatorGenerator.CreateFactoryCode(
+        (string csText, IEnumerable<string> assetList) = CSharpInstantiatorGenerator.CreateFactoryCode(
                 _className,
                 _rootVisual,
                 (float)_lottieComposition.Width,
@@ -348,28 +348,22 @@ sealed class LottieFileProcessor
                 _lottieComposition.Duration,
                 _options.DisableCodeGenOptimizer);
 
-        if (generatedCode == null)
-        {
-            _reporter.WriteError("Failed to generate code.");
-            return false;
-        }
-
-        if (string.IsNullOrWhiteSpace(generatedCode.Item1))
+        if (string.IsNullOrWhiteSpace(csText))
         {
             _reporter.WriteError("Failed to create the C# code.");
             return false;
         }
 
-        var result = TryWriteTextFile(outputFilePath, generatedCode.Item1);
+        var result = TryWriteTextFile(outputFilePath, csText);
 
         if (result)
         {
             _reporter.WriteInfo($"C# code for class {_className} written to {outputFilePath}");
 
-            if (generatedCode.Item2 != null)
+            if (assetList != null)
             {
                 // Write out the list of asset files referenced by the code.
-                WriteAssetFiles(generatedCode.Item2);
+                WriteAssetFiles(assetList);
             }
         }
 
@@ -385,7 +379,7 @@ sealed class LottieFileProcessor
             return false;
         }
 
-        var generatedCode = CxInstantiatorGenerator.CreateFactoryCode(
+        (string cppText, string hText, IEnumerable<string> assetList) = CxInstantiatorGenerator.CreateFactoryCode(
                 _className,
                 _rootVisual,
                 (float)_lottieComposition.Width,
@@ -394,30 +388,24 @@ sealed class LottieFileProcessor
                 System.IO.Path.GetFileName(outputHeaderFilePath),
                 _options.DisableCodeGenOptimizer);
 
-        if (generatedCode == null)
-        {
-            _reporter.WriteError("Failed to generate code.");
-            return false;
-        }
-
-        if (string.IsNullOrWhiteSpace(generatedCode.Item1))
+        if (string.IsNullOrWhiteSpace(cppText))
         {
             _reporter.WriteError("Failed to generate the .cpp code.");
             return false;
         }
 
-        if (string.IsNullOrWhiteSpace(generatedCode.Item2))
+        if (string.IsNullOrWhiteSpace(hText))
         {
             _reporter.WriteError("Failed to generate the .h code.");
             return false;
         }
 
-        if (!TryWriteTextFile(outputHeaderFilePath, generatedCode.Item2))
+        if (!TryWriteTextFile(outputHeaderFilePath, hText))
         {
             return false;
         }
 
-        if (!TryWriteTextFile(outputCppFilePath, generatedCode.Item1))
+        if (!TryWriteTextFile(outputCppFilePath, cppText))
         {
             return false;
         }
@@ -425,10 +413,10 @@ sealed class LottieFileProcessor
         _reporter.WriteInfo($"Header code for class {_className} written to {outputHeaderFilePath}");
         _reporter.WriteInfo($"Source code for class {_className} written to {outputCppFilePath}");
 
-        if (generatedCode.Item3 != null)
+        if (assetList != null)
         {
             // Write out the list of asset files referenced by the code.
-            WriteAssetFiles(generatedCode.Item3);
+            WriteAssetFiles(assetList);
         }
 
         return true;
@@ -710,7 +698,7 @@ sealed class LottieFileProcessor
         return true;
     }
 
-    void WriteAssetFiles(List<string> assetList)
+    void WriteAssetFiles(IEnumerable<string> assetList)
     {
         foreach (var a in assetList)
         {

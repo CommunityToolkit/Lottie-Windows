@@ -535,17 +535,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 switch (type)
                 {
                     case LoadedImageSurface.LoadedImageSurfaceType.FromStream:
-                        var grouping = items.GroupBy(i => i.Object.Bytes, i => i.Node, ByteArrayComparer.Instance);
+                        var grouping = items.GroupBy(i => ((LoadedImageSurfaceFromStream)i.Object).Bytes, i => i.Node, ByteArrayComparer.Instance);
                         CanonicalizeGrouping(grouping);
                         break;
                     case LoadedImageSurface.LoadedImageSurfaceType.FromUri:
                         var groupingExternal =
                             from item in items
-                            let obj = item.Object
-                            group item.Node by obj.ImageUri into grouped
+                            let obj = (LoadedImageSurfaceFromUri)item.Object
+                            group item.Node by obj.Uri into grouped
                             select grouped;
                         CanonicalizeGrouping(groupingExternal);
                         break;
+                    default:
+                        throw new InvalidOperationException();
                 }
             }
 

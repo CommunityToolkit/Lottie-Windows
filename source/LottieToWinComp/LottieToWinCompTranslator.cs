@@ -671,22 +671,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             content.Size = new Sn.Vector2((float)imageAsset.Width, (float)imageAsset.Height);
 
             LoadedImageSurface surface;
-            double imageAssetWidth;
-            double imageAssetHeight;
+            double imageAssetWidth = imageAsset.Width;
+            double imageAssetHeight = imageAsset.Height;
 
             switch (imageAsset.ImageType)
             {
                 case ImageAsset.ImageAssetType.Embedded:
                     var embeddedImageAsset = (EmbeddedImageAsset)imageAsset;
-                    surface = LoadedImageSurfaceFromStream.StartLoadFromStream(embeddedImageAsset.Bytes);
-                    imageAssetWidth = embeddedImageAsset.Width;
-                    imageAssetHeight = embeddedImageAsset.Height;
+                    surface = LoadedImageSurface.StartLoadFromStream(embeddedImageAsset.Bytes);
                     break;
                 case ImageAsset.ImageAssetType.External:
                     var externalImageAsset = (ExternalImageAsset)imageAsset;
-                    surface = LoadedImageSurfaceFromUri.StartLoadFromUri(new Uri($"file:///{externalImageAsset.Path}{externalImageAsset.FileName}"));
-                    imageAssetWidth = externalImageAsset.Width;
-                    imageAssetHeight = externalImageAsset.Height;
+                    surface = LoadedImageSurface.StartLoadFromUri(new Uri($"file://localhost/{externalImageAsset.Path}{externalImageAsset.FileName}"));
                     _issues.ExternalImageFilesExpected($"{externalImageAsset.Path}{externalImageAsset.FileName}");
                     break;
                 default:

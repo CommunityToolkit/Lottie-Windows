@@ -239,8 +239,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// Write bytes array as string literals.
         /// </summary>
         /// <param name="bytes">Bytes to be converted to string literals.</param>
-        /// <param name="maximumColumns">(Optional) Width limit of the output byte line. Default to 100 so it will fit on screen of the CodeGen file.</param>
-        internal void BytesToLiteral(byte[] bytes, int maximumColumns = 100)
+        /// <param name="maximumColumns">Width limit of the output byte line. Default to 100 so it will fit on screen of the CodeGen file.</param>
+        internal void BytesToLiteral(byte[] bytes, int maximumColumns)
         {
             var bytesLines = BytesToBytesList(bytes, maximumColumns - 1 - IndentSize).ToArray();
 
@@ -254,7 +254,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             WriteLine(bytesLines[i]);
         }
 
-        private static IEnumerable<string> BytesToBytesList(byte[] bytes, int maximumWidth)
+        static IEnumerable<string> BytesToBytesList(byte[] bytes, int maximumWidth)
         {
             const string delimeter = ", ";
 

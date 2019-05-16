@@ -12,13 +12,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData
 #endif
     abstract class LoadedImageSurface : ICompositionSurface, IDescribable
     {
-        private protected LoadedImageSurface()
+        protected LoadedImageSurface()
         {
         }
-
-        public byte[] Bytes { get; set; }
-
-        public Uri ImageUri { get; set; }
 
         /// <inheritdoc/>
         public string LongDescription { get; set; }
@@ -27,6 +23,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData
         public string ShortDescription { get; set; }
 
         public abstract LoadedImageSurfaceType Type { get; }
+
+        public static LoadedImageSurfaceFromStream StartLoadFromStream(byte[] bytes)
+        {
+            return new LoadedImageSurfaceFromStream(bytes);
+        }
+
+        public static LoadedImageSurfaceFromUri StartLoadFromUri(Uri uri)
+        {
+            return new LoadedImageSurfaceFromUri(uri);
+        }
 
         public enum LoadedImageSurfaceType
         {

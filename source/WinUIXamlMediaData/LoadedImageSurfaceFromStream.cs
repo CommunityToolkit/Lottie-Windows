@@ -11,15 +11,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData
 #endif
     sealed class LoadedImageSurfaceFromStream : LoadedImageSurface
     {
-        private LoadedImageSurfaceFromStream(byte[] bytes)
+        internal LoadedImageSurfaceFromStream(byte[] bytes)
         {
             Bytes = bytes;
         }
 
-        public static LoadedImageSurfaceFromStream StartLoadFromStream(byte[] bytes)
-        {
-            return new LoadedImageSurfaceFromStream(bytes);
-        }
+        public byte[] Bytes { get; }
 
         public override LoadedImageSurfaceType Type => LoadedImageSurfaceType.FromStream;
     }

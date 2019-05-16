@@ -887,13 +887,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             switch (obj.Type)
             {
                 case LoadedImageSurface.LoadedImageSurfaceType.FromStream:
-                    var bytes = obj.Bytes;
+                    var bytes = ((LoadedImageSurfaceFromStream)obj).Bytes;
                     result = LoadedImageSurfaceFromStream.StartLoadFromStream(bytes);
                     break;
                 case LoadedImageSurface.LoadedImageSurfaceType.FromUri:
-                    var filePath = obj.ImageUri;
-                    result = LoadedImageSurfaceFromUri.StartLoadFromUri(filePath);
+                    var uri = ((LoadedImageSurfaceFromUri)obj).Uri;
+                    result = LoadedImageSurfaceFromUri.StartLoadFromUri(uri);
                     break;
+                default:
+                    throw new InvalidOperationException();
             }
 
             InitializeIDescribable(obj, result);

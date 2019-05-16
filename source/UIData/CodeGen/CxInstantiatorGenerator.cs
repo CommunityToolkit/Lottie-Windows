@@ -42,8 +42,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// Returns the Cx code for a factory that will instantiate the given <see cref="Visual"/> as a
         /// Windows.UI.Composition Visual.
         /// </summary>
-        /// <returns>A tuple containing the cpp code, header code, and list of referenced asset files.</returns>
-        public static Tuple<string, string, List<string>> CreateFactoryCode(
+        /// <returns>A value tuple containing the cpp code, header code, and list of referenced asset files.</returns>
+        public static (string cppText, string hText, IEnumerable<string> assetList) CreateFactoryCode(
             string className,
             Visual rootVisual,
             float width,
@@ -65,9 +65,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             var hText = GenerateHeaderText(className);
 
-            var infoText = generator.GetAssetFileList(className);
+            var assetList = generator.GetAssetFileList();
 
-            return new Tuple<string, string, List<string>>(cppText, hText, infoText);
+            return (cppText, hText, assetList);
         }
 
         // Generates the .h file contents.

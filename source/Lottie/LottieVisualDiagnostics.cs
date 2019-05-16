@@ -94,15 +94,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         {
             if (LottieComposition == null) { return null; }
 
-            var generatedCode = CSharpInstantiatorGenerator.CreateFactoryCode(
+            return CSharpInstantiatorGenerator.CreateFactoryCode(
                 SuggestedClassName,
                 RootVisual,
                 (float)LottieComposition.Width,
                 (float)LottieComposition.Height,
                 LottieComposition.Duration,
-                false);
-
-            return generatedCode == null ? null : generatedCode.Item1;
+                disableFieldOptimization: false).csText;
         }
 
         public void GenerateCxCode(string headerFileName, out string cppText, out string hText)
@@ -113,17 +111,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 return;
             }
 
-            var generatedCode = CxInstantiatorGenerator.CreateFactoryCode(
+            (string cppText, string hText, IEnumerable<string> assetList) generatedCode = CxInstantiatorGenerator.CreateFactoryCode(
                 SuggestedClassName,
                 RootVisual,
                 (float)LottieComposition.Width,
                 (float)LottieComposition.Height,
                 LottieComposition.Duration,
                 headerFileName,
-                false);
+                disableFieldOptimization: false);
 
-            cppText = generatedCode == null ? null : generatedCode.Item1;
-            hText = generatedCode == null ? null : generatedCode.Item2;
+            cppText = generatedCode.cppText;
+            hText = generatedCode.hText;
         }
 
         public KeyValuePair<string, double>[] Markers { get; internal set; } = EmptyMarkersArray;

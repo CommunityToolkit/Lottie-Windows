@@ -45,7 +45,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// Windows.UI.Composition Visual.
         /// </summary>
         /// <returns>A tuple containing the C# code and list of referenced asset files.</returns>
-        public static Tuple<string, List<string>> CreateFactoryCode(
+        public static (string csText, IEnumerable<string> assetList) CreateFactoryCode(
             string className,
             Visual rootVisual,
             float width,
@@ -63,9 +63,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             var csText = generator.GenerateCode(className, width, height);
 
-            var infoText = generator.GetAssetFileList(className);
+            var assetList = generator.GetAssetFileList();
 
-            return new Tuple<string, List<string>>(csText, infoText);
+            return (csText, assetList);
         }
 
         /// <inheritdoc/>

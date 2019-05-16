@@ -1231,11 +1231,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             switch (obj.Type)
             {
                 case Wmd.LoadedImageSurface.LoadedImageSurfaceType.FromStream:
-                    var bytes = obj.Bytes;
+                    var bytes = ((Wmd.LoadedImageSurfaceFromStream)obj).Bytes;
                     result = Wm.LoadedImageSurface.StartLoadFromStream(bytes.AsBuffer().AsStream().AsRandomAccessStream());
                     break;
                 case Wmd.LoadedImageSurface.LoadedImageSurfaceType.FromUri:
-                    // Loading external image asset is not supported yet. LottieViewer will show this as an issue.
+                    // Loading external image asset is not supported yet and it is captured on the issue list.
                     result = null;
                     break;
                 default:

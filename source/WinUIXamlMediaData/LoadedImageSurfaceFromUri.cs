@@ -11,15 +11,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData
 #endif
     sealed class LoadedImageSurfaceFromUri : LoadedImageSurface
     {
-        private LoadedImageSurfaceFromUri(Uri imageUri)
+        internal LoadedImageSurfaceFromUri(Uri uri)
         {
-            ImageUri = imageUri;
+            Uri = uri;
         }
 
-        public static LoadedImageSurfaceFromUri StartLoadFromUri(Uri imageUri)
-        {
-            return new LoadedImageSurfaceFromUri(imageUri);
-        }
+        public Uri Uri { get; }
 
         public override LoadedImageSurfaceType Type => LoadedImageSurfaceType.FromUri;
     }

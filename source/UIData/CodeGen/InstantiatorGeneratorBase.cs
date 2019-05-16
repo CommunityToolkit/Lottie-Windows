@@ -137,12 +137,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             foreach (var node in _nodes.Where(n => n.UsesAssetFile))
             {
                 var loadedImageSurfaceObj = (Wmd.LoadedImageSurfaceFromUri)node.Object;
-                var imageUriString = loadedImageSurfaceObj.ImageUri.ToString();
+                var imageUri = loadedImageSurfaceObj.Uri;
 
-                if (imageUriString.StartsWith("file:///"))
+                if (imageUri.IsFile)
                 {
-                    var trimmedUri = imageUriString.Substring("file:///".Length);
-                    node.LoadedImageSurfaceImageUriString = $"ms-appx:///Assets/{className}/{trimmedUri}";
+                    node.LoadedImageSurfaceImageUriString = $"ms-appx:///Assets/{className}{imageUri.AbsolutePath}";
                 }
             }
         }
@@ -317,7 +316,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// </summary>
         /// <param name="builder">A <see cref="CodeBuilder"/> used to create the code.</param>
         /// <param name="fieldName">The name of the Bytes field to be written.</param>
-        protected virtual void WriteBytesField(CodeBuilder builder, string fieldName)
+        protected void WriteBytesField(CodeBuilder builder, string fieldName)
         {
             builder.WriteLine($"{_stringifier.Static} {_stringifier.Readonly(_stringifier.ReferenceTypeName(_stringifier.ByteArray))} {fieldName} = {_stringifier.New} {_stringifier.ByteArray}");
         }
@@ -325,17 +324,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// <summary>
         /// Call this to get a list of the asset files referenced by the generated code.
         /// </summary>
-        /// <param name="className">Class name of the code.</param>
         /// <returns>List of asset files.</returns>
-        protected List<string> GetAssetFileList(string className)
+        protected IEnumerable<string> GetAssetFileList()
         {
-            var assetList = new List<string>();
-            foreach (var node in _nodes.Where(n => n.UsesAssetFile))
-            {
-                    assetList.Add($"{node.LoadedImageSurfaceImageUriString}");
-            }
-
-            return assetList;
+            return _nodes.Where(n => n.UsesAssetFile).Select(n => n.LoadedImageSurfaceImageUriString).Distinct();
         }
 
         /// <summary>
@@ -607,8 +599,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             {
                     WriteBytesField(builder, node.LoadedImageSurfaceBytesFieldName);
                     builder.OpenScope();
-                    var loadedImageSurface = (Wmd.LoadedImageSurface)node.Object;
-                    builder.BytesToLiteral(loadedImageSurface.Bytes);
+                    var loadedImageSurface = (Wmd.LoadedImageSurfaceFromStream)node.Object;
+                    builder.BytesToLiteral(loadedImageSurface.Bytes, maximumColumns: 100);
                     builder.UnIndent();
                     builder.WriteLine("};");
                     bytesWritten = true;
