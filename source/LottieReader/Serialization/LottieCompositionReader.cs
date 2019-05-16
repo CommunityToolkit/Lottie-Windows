@@ -609,7 +609,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
             var layerArgs = default(Layer.LayerArgs);
 
-            layerArgs.Name = obj.GetNamedString("nm", string.Empty);
+            layerArgs.Name = ReadName(obj);
             layerArgs.Index = ReadInt(obj, "ind") ?? throw new LottieCompositionReaderException("Missing layer index");
             layerArgs.Parent = ReadInt(obj, "parent");
             layerArgs.Is3d = ReadBool(obj, "ddd") == true;
@@ -787,7 +787,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 IgnoreFieldThatIsNotYetSupported(obj, "x");
 
                 var inverted = obj.GetNamedBoolean("inv");
-                var name = obj.GetNamedString("nm");
+                var name = ReadName(obj);
                 var animatedGeometry = ReadAnimatableGeometry(obj.GetNamedObject("pt"));
                 var opacity = ReadAnimatableFloat(obj.GetNamedObject("o"));
                 var mode = Mask.MaskMode.None;
@@ -862,11 +862,36 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             }
         }
 
+        string ReadName(JObject obj)
+        {
+            if (_options.HasFlag(Options.IgnoreNames))
+            {
+                IgnoreFieldIntentionally(obj, "nm");
+                return string.Empty;
+            }
+            else
+            {
+                return obj.GetNamedString("nm", string.Empty);
+            }
+        }
+
+        string ReadMatchName(JObject obj)
+        {
+            if (_options.HasFlag(Options.IgnoreMatchNames))
+            {
+                IgnoreFieldIntentionally(obj, "mn");
+                return string.Empty;
+            }
+            else
+            {
+                return obj.GetNamedString("mn", string.Empty);
+            }
+        }
+
         void ReadShapeLayerContentArgs(JObject obj, ref ShapeLayerContent.ShapeLayerContentArgs args)
         {
-            var name = ReadName(obj);
-            args.Name = name.Name;
-            args.MatchName = name.MatchName;
+            args.Name = ReadName(obj);
+            args.MatchName = ReadMatchName(obj);
             args.BlendMode = BmToBlendMode(obj.GetNamedNumber("bm", 0));
         }
 
@@ -934,7 +959,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             IgnoreFieldThatIsNotYetSupported(obj, "fillEnabled");
             IgnoreFieldThatIsNotYetSupported(obj, "hd");
 
-            var name = ReadName(obj);
             var color = ReadColor(obj);
             var opacityPercent = ReadOpacityPercent(obj);
             var strokeWidth = ReadAnimatableFloat(obj.GetNamedObject("w"));
@@ -1007,7 +1031,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             // highlightAngle - ReadAnimatableFloat(obj.GetNamedObject("a")) - but is optional
             IgnoreFieldThatIsNotYetSupported(obj, "1");
 
-            var name = ReadName(obj);
             var opacityPercent = ReadOpacityPercent(obj);
             var strokeWidth = ReadAnimatableFloat(obj.GetNamedObject("w"));
             var capType = LcToLineCapType(obj.GetNamedNumber("lc"));
@@ -1039,7 +1062,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             // highlightAngle - ReadAnimatableFloat(obj.GetNamedObject("a")) - but is optional
             IgnoreFieldThatIsNotYetSupported(obj, "1");
 
-            var name = ReadName(obj);
             var opacityPercent = ReadOpacityPercent(obj);
             var strokeWidth = ReadAnimatableFloat(obj.GetNamedObject("w"));
             var capType = LcToLineCapType(obj.GetNamedNumber("lc"));
@@ -1066,7 +1088,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             IgnoreFieldThatIsNotYetSupported(obj, "cl");
             IgnoreFieldThatIsNotYetSupported(obj, "hd");
 
-            var name = ReadName(obj);
             var color = ReadColor(obj);
             var opacityPercent = ReadOpacityPercent(obj);
             var isWindingFill = ReadBool(obj, "r") == true;
@@ -1096,7 +1117,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             IgnoreFieldThatIsNotYetSupported(obj, "r");
             IgnoreFieldThatIsNotYetSupported(obj, "1");
 
-            var name = ReadName(obj);
             var opacityPercent = ReadOpacityPercent(obj);
             var startPoint = ReadAnimatableVector3(obj.GetNamedObject("s"));
             var endPoint = ReadAnimatableVector3(obj.GetNamedObject("e"));
@@ -1133,7 +1153,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             IgnoreFieldThatIsNotYetSupported(obj, "r");
             IgnoreFieldThatIsNotYetSupported(obj, "hd");
 
-            var name = ReadName(obj);
             var opacityPercent = ReadOpacityPercent(obj);
             var startPoint = ReadAnimatableVector2(obj.GetNamedObject("s"));
             var endPoint = ReadAnimatableVector2(obj.GetNamedObject("e"));
@@ -1153,7 +1172,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             IgnoreFieldThatIsNotYetSupported(obj, "closed");
             IgnoreFieldThatIsNotYetSupported(obj, "hd");
 
-            var name = ReadName(obj);
             var position = ReadAnimatableVector3(obj.GetNamedObject("p"));
             var diameter = ReadAnimatableVector3(obj.GetNamedObject("s"));
             var direction = ReadBool(obj, "d") == true;
@@ -1166,7 +1184,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             // Not clear whether we need to read these fields.
             IgnoreFieldThatIsNotYetSupported(obj, "ix");
 
-            var name = ReadName(obj);
             var direction = ReadBool(obj, "d") == true;
 
             var type = SyToPolystarType(obj.GetNamedNumber("sy", double.NaN));
@@ -1243,7 +1260,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             // Not clear whether we need to read these fields.
             IgnoreFieldThatIsNotYetSupported(obj, "hd");
 
-            var name = ReadName(obj);
             var direction = ReadBool(obj, "d") == true;
             var position = ReadAnimatableVector3(obj.GetNamedObject("p"));
             var size = ReadAnimatableVector3(obj.GetNamedObject("s"));
@@ -1262,7 +1278,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             IgnoreFieldThatIsNotYetSupported(obj, "cl");
             IgnoreFieldThatIsNotYetSupported(obj, "closed");
 
-            var name = ReadName(obj);
             var geometry = ReadAnimatableGeometry(obj.GetNamedObject("ks"));
             var direction = ReadBool(obj, "d") == true;
             AssertAllFieldsRead(obj);
@@ -1275,7 +1290,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             IgnoreFieldThatIsNotYetSupported(obj, "ix");
             IgnoreFieldThatIsNotYetSupported(obj, "hd");
 
-            var name = ReadName(obj);
             var startPercent = ReadAnimatableFloat(obj.GetNamedObject("s"));
             var endPercent = ReadAnimatableFloat(obj.GetNamedObject("e"));
             var offsetDegrees = ReadAnimatableFloat(obj.GetNamedObject("o"));
@@ -1291,7 +1305,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         Repeater ReadRepeater(JObject obj, in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
         {
-            var name = ReadName(obj);
             var count = ReadAnimatableFloat(obj.GetNamedObject("c"));
             var offset = ReadAnimatableFloat(obj.GetNamedObject("o"));
             var transform = ReadRepeaterTransform(obj.GetNamedObject("tr"), in shapeLayerContentArgs);
@@ -1303,7 +1316,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             // Not clear whether we need to read these fields.
             IgnoreFieldThatIsNotYetSupported(obj, "hd");
 
-            var name = ReadName(obj);
             var mergeMode = MmToMergeMode(obj.GetNamedNumber("mm"));
             AssertAllFieldsRead(obj);
             return new MergePaths(
@@ -1317,7 +1329,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             IgnoreFieldThatIsNotYetSupported(obj, "hd");
             IgnoreFieldThatIsNotYetSupported(obj, "ix");
 
-            var name = ReadName(obj);
             var radius = ReadAnimatableFloat(obj.GetNamedObject("r"));
             AssertAllFieldsRead(obj);
             return new RoundedCorner(
@@ -1621,36 +1632,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             }
 
             return new Vector2(x, y);
-        }
-
-        struct AfterEffectsName
-        {
-            internal string Name;
-            internal string MatchName;
-        }
-
-        AfterEffectsName ReadName(JObject obj)
-        {
-            var result = new AfterEffectsName { };
-            if (_options.HasFlag(Options.IgnoreNames))
-            {
-                IgnoreFieldIntentionally(obj, "nm");
-            }
-            else
-            {
-                result.Name = obj.GetNamedString("nm", string.Empty);
-            }
-
-            if (_options.HasFlag(Options.IgnoreMatchNames))
-            {
-                IgnoreFieldIntentionally(obj, "mn");
-            }
-            else
-            {
-                result.MatchName = obj.GetNamedString("mn", string.Empty);
-            }
-
-            return result;
         }
 
         sealed class AnimatableVector2Parser : AnimatableParser<Vector2>
@@ -1983,7 +1964,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
                         // Extremely rare fields seen in 1 Lottie file. Ignore.
                         case "nm": // Name
-                        case "mn": // ??
+                        case "mn": // MatchName
                         case "hd": // IsHidden
                             break;
 
