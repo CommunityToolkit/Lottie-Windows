@@ -10,10 +10,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
     sealed class MergePaths : ShapeLayerContent
     {
         public MergePaths(
-            string name,
-            string matchName,
+            in ShapeLayerContentArgs args,
             MergeMode mergeMode)
-            : base(name, matchName)
+            : base(in args)
         {
             Mode = mergeMode;
         }

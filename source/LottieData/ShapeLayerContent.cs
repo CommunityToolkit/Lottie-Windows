@@ -9,11 +9,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 #endif
     abstract class ShapeLayerContent : LottieObject
     {
-        private protected ShapeLayerContent(string name, string matchName)
-            : base(name)
+        private protected ShapeLayerContent(in ShapeLayerContentArgs args)
+            : base(args.Name)
         {
-            MatchName = matchName;
+            BlendMode = args.BlendMode;
+            MatchName = args.MatchName;
         }
+
+        public BlendMode BlendMode { get; }
 
         public string MatchName { get; }
 
@@ -21,5 +24,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// Gets the <see cref="ShapeContentType"/> of the <see cref="ShapeLayerContent"/> object.
         /// </summary>
         public abstract ShapeContentType ContentType { get; }
+
+        public ref struct ShapeLayerContentArgs
+        {
+            public string Name { get; set; }
+
+            public string MatchName { get; set; }
+
+            public BlendMode BlendMode { get; set; }
+        }
     }
 }

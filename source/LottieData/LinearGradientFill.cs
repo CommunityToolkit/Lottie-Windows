@@ -10,13 +10,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
     sealed class LinearGradientFill : ShapeLayerContent
     {
         public LinearGradientFill(
-            string name,
-            string matchName,
+            in ShapeLayerContentArgs args,
             Animatable<double> opacityPercent,
             Animatable<Vector2> startPoint,
             Animatable<Vector2> endPoint,
             Animatable<Sequence<GradientStop>> gradientStops)
-            : base(name, matchName)
+            : base(in args)
         {
             OpacityPercent = opacityPercent;
             StartPoint = startPoint;

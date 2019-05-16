@@ -638,7 +638,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             // ----------------------
             // Layer Transform
             // ----------------------
-            layerArgs.Transform = ReadTransform(obj.GetNamedObject("ks"));
+            var shapeLayerContentArgs = default(ShapeLayerContent.ShapeLayerContentArgs);
+            ReadShapeLayerContentArgs(obj, ref shapeLayerContentArgs);
+            layerArgs.Transform = ReadTransform(obj.GetNamedObject("ks"), in shapeLayerContentArgs);
 
             // ------------------------------
             // Layer Animation
@@ -860,49 +862,58 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             }
         }
 
+        void ReadShapeLayerContentArgs(JObject obj, ref ShapeLayerContent.ShapeLayerContentArgs args)
+        {
+            var name = ReadName(obj);
+            args.Name = name.Name;
+            args.MatchName = name.MatchName;
+            args.BlendMode = BmToBlendMode(obj.GetNamedNumber("bm", 0));
+        }
+
         ShapeLayerContent ReadShapeContent(JObject obj)
         {
+            var args = default(ShapeLayerContent.ShapeLayerContentArgs);
+            ReadShapeLayerContentArgs(obj, ref args);
+
             var type = obj.GetNamedString("ty");
 
             switch (type)
             {
                 case "gr":
-                    return ReadShapeGroup(obj);
+                    return ReadShapeGroup(obj, in args);
                 case "st":
-                    return ReadSolidColorStroke(obj);
+                    return ReadSolidColorStroke(obj, in args);
                 case "gs":
-                    return ReadGradientStroke(obj);
+                    return ReadGradientStroke(obj, in args);
                 case "fl":
-                    return ReadSolidColorFill(obj);
+                    return ReadSolidColorFill(obj, in args);
                 case "gf":
-                    return ReadGradientFill(obj);
+                    return ReadGradientFill(obj, in args);
                 case "tr":
-                    return ReadTransform(obj);
+                    return ReadTransform(obj, in args);
                 case "el":
-                    return ReadEllipse(obj);
+                    return ReadEllipse(obj, in args);
                 case "sr":
-                    return ReadPolystar(obj);
+                    return ReadPolystar(obj, in args);
                 case "rc":
-                    return ReadRectangle(obj);
+                    return ReadRectangle(obj, in args);
                 case "sh":
-                    return ReadPath(obj);
+                    return ReadPath(obj, in args);
                 case "tm":
-                    return ReadTrimPath(obj);
+                    return ReadTrimPath(obj, in args);
                 case "mm":
-                    return ReadMergePaths(obj);
+                    return ReadMergePaths(obj, in args);
                 case "rd":
-                    return ReadRoundedCorner(obj);
+                    return ReadRoundedCorner(obj, in args);
                 case "rp":
-                    return ReadRepeater(obj);
+                    return ReadRepeater(obj, in args);
                 default:
-                    break;
+                    _issues.UnexpectedShapeContentType(type);
+                    return null;
             }
-
-            _issues.UnexpectedShapeContentType(type);
-            return null;
         }
 
-        ShapeGroup ReadShapeGroup(JObject obj)
+        ShapeGroup ReadShapeGroup(JObject obj, in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
         {
             // Not clear whether we need to read these fields.
             IgnoreFieldThatIsNotYetSupported(obj, "cix");
@@ -910,15 +921,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             IgnoreFieldThatIsNotYetSupported(obj, "ix");
             IgnoreFieldThatIsNotYetSupported(obj, "hd");
 
-            var name = ReadName(obj);
             var numberOfProperties = ReadInt(obj, "np");
             var items = ReadShapesList(obj.GetNamedArray("it", null));
             AssertAllFieldsRead(obj);
-            return new ShapeGroup(name.Name, name.MatchName, items);
+            return new ShapeGroup(in shapeLayerContentArgs, items);
         }
 
         // "st"
-        SolidColorStroke ReadSolidColorStroke(JObject obj)
+        SolidColorStroke ReadSolidColorStroke(JObject obj, in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
         {
             // Not clear whether we need to read these fields.
             IgnoreFieldThatIsNotYetSupported(obj, "fillEnabled");
@@ -957,8 +967,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
             AssertAllFieldsRead(obj);
             return new SolidColorStroke(
-                name.Name,
-                name.MatchName,
+                in shapeLayerContentArgs,
                 offset ?? s_animatable_0,
                 dashPattern,
                 color,
@@ -970,20 +979,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         }
 
         // gs
-        ShapeLayerContent ReadGradientStroke(JObject obj)
+        ShapeLayerContent ReadGradientStroke(JObject obj, in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
         {
             switch (TToGradientType(obj.GetNamedNumber("t")))
             {
                 case GradientType.Linear:
-                    return ReadLinearGradientStroke(obj);
+                    return ReadLinearGradientStroke(obj, in shapeLayerContentArgs);
                 case GradientType.Radial:
-                    return ReadRadialGradientStroke(obj);
+                    return ReadRadialGradientStroke(obj, in shapeLayerContentArgs);
                 default:
                     throw new InvalidOperationException();
             }
         }
 
-        LinearGradientStroke ReadLinearGradientStroke(JObject obj)
+        LinearGradientStroke ReadLinearGradientStroke(JObject obj, in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
         {
             _issues.GradientStrokes();
 
@@ -1009,8 +1018,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
             AssertAllFieldsRead(obj);
             return new LinearGradientStroke(
-                name.Name,
-                name.MatchName,
+                in shapeLayerContentArgs,
                 opacityPercent,
                 strokeWidth,
                 capType,
@@ -1018,7 +1026,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 miterLimit);
         }
 
-        RadialGradientStroke ReadRadialGradientStroke(JObject obj)
+        RadialGradientStroke ReadRadialGradientStroke(JObject obj, in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
         {
             _issues.GradientStrokes();
 
@@ -1042,8 +1050,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
             AssertAllFieldsRead(obj);
             return new RadialGradientStroke(
-                name.Name,
-                name.MatchName,
+                in shapeLayerContentArgs,
                 opacityPercent,
                 strokeWidth,
                 capType,
@@ -1052,7 +1059,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         }
 
         // "fl"
-        SolidColorFill ReadSolidColorFill(JObject obj)
+        SolidColorFill ReadSolidColorFill(JObject obj, in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
         {
             // Not clear whether we need to read these fields.
             IgnoreFieldThatIsNotYetSupported(obj, "fillEnabled");
@@ -1065,24 +1072,24 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             var isWindingFill = ReadBool(obj, "r") == true;
             var fillType = isWindingFill ? SolidColorFill.PathFillType.Winding : SolidColorFill.PathFillType.EvenOdd;
             AssertAllFieldsRead(obj);
-            return new SolidColorFill(name.Name, name.MatchName, fillType, color, opacityPercent);
+            return new SolidColorFill(in shapeLayerContentArgs, fillType, color, opacityPercent);
         }
 
         // gf
-        ShapeLayerContent ReadGradientFill(JObject obj)
+        ShapeLayerContent ReadGradientFill(JObject obj, in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
         {
             switch (TToGradientType(obj.GetNamedNumber("t")))
             {
                 case GradientType.Linear:
-                    return ReadLinearGradientFill(obj);
+                    return ReadLinearGradientFill(obj, in shapeLayerContentArgs);
                 case GradientType.Radial:
-                    return ReadRadialGradientFill(obj);
+                    return ReadRadialGradientFill(obj, in shapeLayerContentArgs);
                 default:
                     throw new InvalidOperationException();
             }
         }
 
-        RadialGradientFill ReadRadialGradientFill(JObject obj)
+        RadialGradientFill ReadRadialGradientFill(JObject obj, in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
         {
             // Not clear whether we need to read these fields.
             IgnoreFieldThatIsNotYetSupported(obj, "hd");
@@ -1111,8 +1118,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
             AssertAllFieldsRead(obj);
             return new RadialGradientFill(
-                name.Name,
-                name.MatchName,
+                in shapeLayerContentArgs,
                 opacityPercent: opacityPercent,
                 startPoint: startPoint,
                 endPoint: endPoint,
@@ -1121,7 +1127,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 highlightDegrees: null);
         }
 
-        LinearGradientFill ReadLinearGradientFill(JObject obj)
+        LinearGradientFill ReadLinearGradientFill(JObject obj, in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
         {
             // Not clear whether we need to read these fields.
             IgnoreFieldThatIsNotYetSupported(obj, "r");
@@ -1134,15 +1140,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             var gradientStops = ReadAnimatableGradientStops(obj.GetNamedObject("g"));
             AssertAllFieldsRead(obj);
             return new LinearGradientFill(
-                name.Name,
-                name.MatchName,
+                in shapeLayerContentArgs,
                 opacityPercent: opacityPercent,
                 startPoint: startPoint,
                 endPoint: endPoint,
                 gradientStops: gradientStops);
         }
 
-        Ellipse ReadEllipse(JObject obj)
+        Ellipse ReadEllipse(JObject obj, in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
         {
             // Not clear whether we need to read these fields.
             IgnoreFieldThatIsNotYetSupported(obj, "closed");
@@ -1153,10 +1158,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             var diameter = ReadAnimatableVector3(obj.GetNamedObject("s"));
             var direction = ReadBool(obj, "d") == true;
             AssertAllFieldsRead(obj);
-            return new Ellipse(name.Name, name.MatchName, direction, position, diameter);
+            return new Ellipse(in shapeLayerContentArgs, direction, position, diameter);
         }
 
-        Polystar ReadPolystar(JObject obj)
+        Polystar ReadPolystar(JObject obj, in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
         {
             // Not clear whether we need to read these fields.
             IgnoreFieldThatIsNotYetSupported(obj, "ix");
@@ -1221,8 +1226,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
             AssertAllFieldsRead(obj);
             return new Polystar(
-                name.Name,
-                name.MatchName,
+                in shapeLayerContentArgs,
                 direction,
                 type,
                 points,
@@ -1234,7 +1238,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 outerRoundedness);
         }
 
-        Rectangle ReadRectangle(JObject obj)
+        Rectangle ReadRectangle(JObject obj, in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
         {
             // Not clear whether we need to read these fields.
             IgnoreFieldThatIsNotYetSupported(obj, "hd");
@@ -1246,10 +1250,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             var cornerRadius = ReadAnimatableFloat(obj.GetNamedObject("r"));
 
             AssertAllFieldsRead(obj);
-            return new Rectangle(name.Name, name.MatchName, direction, position, size, cornerRadius);
+            return new Rectangle(in shapeLayerContentArgs, direction, position, size, cornerRadius);
         }
 
-        Path ReadPath(JObject obj)
+        Path ReadPath(JObject obj, in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
         {
             // Not clear whether we need to read these fields.
             IgnoreFieldThatIsNotYetSupported(obj, "ind");
@@ -1262,10 +1266,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             var geometry = ReadAnimatableGeometry(obj.GetNamedObject("ks"));
             var direction = ReadBool(obj, "d") == true;
             AssertAllFieldsRead(obj);
-            return new Path(name.Name, name.MatchName, direction, geometry);
+            return new Path(in shapeLayerContentArgs, direction, geometry);
         }
 
-        TrimPath ReadTrimPath(JObject obj)
+        TrimPath ReadTrimPath(JObject obj, in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
         {
             // Not clear whether we need to read these fields.
             IgnoreFieldThatIsNotYetSupported(obj, "ix");
@@ -1278,24 +1282,23 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             var trimType = MToTrimType(obj.GetNamedNumber("m", 1));
             AssertAllFieldsRead(obj);
             return new TrimPath(
-                name.Name,
-                name.MatchName,
+                in shapeLayerContentArgs,
                 trimType,
                 startPercent,
                 endPercent,
                 offsetDegrees);
         }
 
-        Repeater ReadRepeater(JObject obj)
+        Repeater ReadRepeater(JObject obj, in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
         {
             var name = ReadName(obj);
             var count = ReadAnimatableFloat(obj.GetNamedObject("c"));
             var offset = ReadAnimatableFloat(obj.GetNamedObject("o"));
-            var transform = ReadRepeaterTransform(obj.GetNamedObject("tr"));
-            return new Repeater(count, offset, transform, name.Name, name.MatchName);
+            var transform = ReadRepeaterTransform(obj.GetNamedObject("tr"), in shapeLayerContentArgs);
+            return new Repeater(in shapeLayerContentArgs, count, offset, transform);
         }
 
-        MergePaths ReadMergePaths(JObject obj)
+        MergePaths ReadMergePaths(JObject obj, in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
         {
             // Not clear whether we need to read these fields.
             IgnoreFieldThatIsNotYetSupported(obj, "hd");
@@ -1304,12 +1307,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             var mergeMode = MmToMergeMode(obj.GetNamedNumber("mm"));
             AssertAllFieldsRead(obj);
             return new MergePaths(
-                name.Name,
-                name.MatchName,
+                in shapeLayerContentArgs,
                 mergeMode);
         }
 
-        RoundedCorner ReadRoundedCorner(JObject obj)
+        RoundedCorner ReadRoundedCorner(JObject obj, in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
         {
             // Not clear whether we need to read these fields.
             IgnoreFieldThatIsNotYetSupported(obj, "hd");
@@ -1319,8 +1321,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             var radius = ReadAnimatableFloat(obj.GetNamedObject("r"));
             AssertAllFieldsRead(obj);
             return new RoundedCorner(
-                name.Name,
-                name.MatchName,
+                in shapeLayerContentArgs,
                 radius);
         }
 
@@ -1359,13 +1360,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         // Reads the transform for a repeater. Repeater transforms are the same as regular transforms
         // except they have an extra couple properties.
-        RepeaterTransform ReadRepeaterTransform(JObject obj)
+        RepeaterTransform ReadRepeaterTransform(JObject obj, in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
         {
             var startOpacityPercent = ReadOpacityPercentFromObject(obj.GetNamedObject("so", null));
             var endOpacityPercent = ReadOpacityPercentFromObject(obj.GetNamedObject("eo", null));
-            var transform = ReadTransform(obj);
+            var transform = ReadTransform(obj, in shapeLayerContentArgs);
             return new RepeaterTransform(
-                transform.Name,
+                in shapeLayerContentArgs,
                 transform.Anchor,
                 transform.Position,
                 transform.ScalePercent,
@@ -1375,7 +1376,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 endOpacityPercent);
         }
 
-        Transform ReadTransform(JObject obj)
+        Transform ReadTransform(JObject obj, in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
         {
             IAnimatableVector3 anchor = null;
             IAnimatableVector3 position = null;
@@ -1424,9 +1425,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             }
 
             var opacityPercent = ReadOpacityPercent(obj);
-            var name = ReadName(obj);
 
-            return new Transform(name.Name, anchor, position, scalePercent, rotation, opacityPercent);
+            return new Transform(in shapeLayerContentArgs, anchor, position, scalePercent, rotation, opacityPercent);
         }
 
         static bool? ReadBool(JObject obj, string name)
