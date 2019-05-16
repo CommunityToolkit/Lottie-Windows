@@ -20,7 +20,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             Animatable<double> outerRadius,
             Animatable<double> innerRoundedness,
             Animatable<double> outerRoundedness)
-            : base(args)
+            : base(in args)
         {
             Direction = direction;
             StarType = starType;
