@@ -10,10 +10,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
     sealed class RoundedCorner : ShapeLayerContent
     {
         public RoundedCorner(
-            string name,
-            string matchName,
+            in ShapeLayerContentArgs args,
             Animatable<double> radius)
-            : base(name, matchName)
+            : base(in args)
         {
             Radius = radius;
         }

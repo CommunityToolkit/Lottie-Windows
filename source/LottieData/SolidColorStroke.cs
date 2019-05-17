@@ -16,8 +16,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         readonly double[] _dashPattern;
 
         public SolidColorStroke(
-            string name,
-            string matchName,
+            in ShapeLayerContentArgs args,
             Animatable<double> dashOffset,
             IEnumerable<double> dashPattern,
             Animatable<Color> color,
@@ -26,7 +25,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             LineCapType capType,
             LineJoinType joinType,
             double miterLimit)
-            : base(name, matchName)
+            : base(in args)
         {
             DashOffset = dashOffset;
             _dashPattern = dashPattern.ToArray();

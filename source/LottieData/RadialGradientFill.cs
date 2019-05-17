@@ -10,15 +10,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
     sealed class RadialGradientFill : ShapeLayerContent
     {
         public RadialGradientFill(
-            string name,
-            string matchName,
+            in ShapeLayerContentArgs args,
             Animatable<double> opacityPercent,
             IAnimatableVector3 startPoint,
             IAnimatableVector3 endPoint,
             Animatable<Sequence<GradientStop>> gradientStops,
             Animatable<double> highlightLength,
             Animatable<double> highlightDegrees)
-            : base(name, matchName)
+            : base(in args)
         {
             OpacityPercent = opacityPercent;
             StartPoint = startPoint;

@@ -10,13 +10,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
     sealed class Rectangle : ShapeLayerContent
     {
         public Rectangle(
-            string name,
-            string matchName,
+            in ShapeLayerContentArgs args,
             bool direction,
             IAnimatableVector3 position,
             IAnimatableVector3 size,
             Animatable<double> cornerRadius)
-            : base(name, matchName)
+            : base(in args)
         {
             Direction = direction;
             Position = position;

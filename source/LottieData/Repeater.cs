@@ -13,12 +13,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
     sealed class Repeater : ShapeLayerContent
     {
         public Repeater(
+            in ShapeLayerContentArgs args,
             Animatable<double> count,
             Animatable<double> offset,
-            RepeaterTransform transform,
-            string name,
-            string matchName)
-            : base(name, matchName)
+            RepeaterTransform transform)
+            : base(in args)
         {
             Count = count;
             Offset = offset;

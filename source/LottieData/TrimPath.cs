@@ -10,13 +10,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
     sealed class TrimPath : ShapeLayerContent
     {
         public TrimPath(
-            string name,
-            string matchName,
+            in ShapeLayerContentArgs args,
             TrimType trimPathType,
             Animatable<double> startPercent,
             Animatable<double> endPercent,
             Animatable<double> offsetDegrees)
-            : base(name, matchName)
+            : base(in args)
         {
             TrimPathType = trimPathType;
             StartPercent = startPercent;

@@ -10,12 +10,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
     sealed class Ellipse : ShapeLayerContent
     {
         public Ellipse(
-            string name,
-            string matchName,
+            in ShapeLayerContentArgs args,
             bool direction,
             IAnimatableVector3 position,
             IAnimatableVector3 diameter)
-            : base(name, matchName)
+            : base(in args)
         {
             Direction = direction;
             Position = position;
