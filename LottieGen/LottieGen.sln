@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
+# Visual Studio Version 15
 VisualStudioVersion = 15.0.28307.572
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "LottieData", "..\source\LottieData\LottieData.shproj", "{B3DB16EE-A821-4474-A188-E64926529BBD}"
@@ -24,9 +24,12 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "UIData", "..\source\UIData\
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "YamlData", "..\source\YamlData\YamlData.shproj", "{39C6B7F3-5E75-4019-82AB-00FD8A0A06E2}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "WinStorageStreamsData", "..\source\WinStorageStreamsData\WinStorageStreamsData.shproj", "{2202E218-DD9F-496A-AEF4-3F07F0EA5B9D}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		..\source\LottieToWinComp\LottieToWinComp.projitems*{0340244a-683c-405e-838b-f93872779532}*SharedItemsImports = 13
+		..\source\WinStorageStreamsData\WinStorageStreamsData.projitems*{2202e218-dd9f-496a-aef4-3f07f0ea5b9d}*SharedItemsImports = 13
 		..\source\WinUIXamlMediaData\WinUIXamlMediaData.projitems*{30059ca7-0745-4eec-8d11-b14850a70c98}*SharedItemsImports = 13
 		..\source\YamlData\YamlData.projitems*{39c6b7f3-5e75-4019-82ab-00fd8a0a06e2}*SharedItemsImports = 13
 		..\source\LottieReader\LottieReader.projitems*{4e7d8957-3f5f-46e1-99a8-2012b806c9b0}*SharedItemsImports = 13
@@ -68,6 +71,7 @@ Global
 		{30059CA7-0745-4EEC-8D11-B14850A70C98} = {AB232F35-AAF7-4AE2-B1D2-45DD9BC2F7D7}
 		{74601E6C-2DFE-4842-B170-047941ABFF2C} = {AB232F35-AAF7-4AE2-B1D2-45DD9BC2F7D7}
 		{39C6B7F3-5E75-4019-82AB-00FD8A0A06E2} = {AB232F35-AAF7-4AE2-B1D2-45DD9BC2F7D7}
+		{2202E218-DD9F-496A-AEF4-3F07F0EA5B9D} = {AB232F35-AAF7-4AE2-B1D2-45DD9BC2F7D7}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {51B9BB4C-5196-41CF-950C-12B04AD8A61C}

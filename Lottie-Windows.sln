@@ -64,9 +64,14 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "YamlData", "source\YamlData
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "YamlData.dll", "dlls\YamlData\YamlData.dll.csproj", "{CB587630-3CFD-4BB3-867C-3F5B1FFBC738}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "WinStorageStreamsData", "source\WinStorageStreamsData\WinStorageStreamsData.shproj", "{2202E218-DD9F-496A-AEF4-3F07F0EA5B9D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WinStorageStreamsData.dll", "dlls\WinStorageStreamsData\WinStorageStreamsData.dll.csproj", "{9F30F34F-0E4D-47DB-8468-DB0ED6965092}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		source\LottieToWinComp\LottieToWinComp.projitems*{0340244a-683c-405e-838b-f93872779532}*SharedItemsImports = 13
+		source\WinStorageStreamsData\WinStorageStreamsData.projitems*{2202e218-dd9f-496a-aef4-3f07f0ea5b9d}*SharedItemsImports = 13
 		source\WinUIXamlMediaData\WinUIXamlMediaData.projitems*{30059ca7-0745-4eec-8d11-b14850a70c98}*SharedItemsImports = 13
 		source\YamlData\YamlData.projitems*{39c6b7f3-5e75-4019-82ab-00fd8a0a06e2}*SharedItemsImports = 13
 		source\LottieReader\LottieReader.projitems*{4e7d8957-3f5f-46e1-99a8-2012b806c9b0}*SharedItemsImports = 13
@@ -76,6 +81,7 @@ Global
 		source\Lottie\Lottie.projitems*{5120efd7-a556-46bf-8d56-f65f1ef9a305}*SharedItemsImports = 4
 		source\UIData\UIData.projitems*{5120efd7-a556-46bf-8d56-f65f1ef9a305}*SharedItemsImports = 4
 		source\WinCompData\WinCompData.projitems*{5120efd7-a556-46bf-8d56-f65f1ef9a305}*SharedItemsImports = 4
+		source\WinStorageStreamsData\WinStorageStreamsData.projitems*{5120efd7-a556-46bf-8d56-f65f1ef9a305}*SharedItemsImports = 4
 		source\WinUIXamlMediaData\WinUIXamlMediaData.projitems*{5120efd7-a556-46bf-8d56-f65f1ef9a305}*SharedItemsImports = 4
 		source\YamlData\YamlData.projitems*{5120efd7-a556-46bf-8d56-f65f1ef9a305}*SharedItemsImports = 4
 		source\UIData\UIData.projitems*{74601e6c-2dfe-4842-b170-047941abff2c}*SharedItemsImports = 13
@@ -222,19 +228,23 @@ Global
 		{CB587630-3CFD-4BB3-867C-3F5B1FFBC738}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{CB587630-3CFD-4BB3-867C-3F5B1FFBC738}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CB587630-3CFD-4BB3-867C-3F5B1FFBC738}.Debug|ARM.ActiveCfg = Debug|Any CPU
-		{CB587630-3CFD-4BB3-867C-3F5B1FFBC738}.Debug|ARM.Build.0 = Debug|Any CPU
 		{CB587630-3CFD-4BB3-867C-3F5B1FFBC738}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{CB587630-3CFD-4BB3-867C-3F5B1FFBC738}.Debug|x64.Build.0 = Debug|Any CPU
 		{CB587630-3CFD-4BB3-867C-3F5B1FFBC738}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{CB587630-3CFD-4BB3-867C-3F5B1FFBC738}.Debug|x86.Build.0 = Debug|Any CPU
 		{CB587630-3CFD-4BB3-867C-3F5B1FFBC738}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CB587630-3CFD-4BB3-867C-3F5B1FFBC738}.Release|Any CPU.Build.0 = Release|Any CPU
 		{CB587630-3CFD-4BB3-867C-3F5B1FFBC738}.Release|ARM.ActiveCfg = Release|Any CPU
-		{CB587630-3CFD-4BB3-867C-3F5B1FFBC738}.Release|ARM.Build.0 = Release|Any CPU
 		{CB587630-3CFD-4BB3-867C-3F5B1FFBC738}.Release|x64.ActiveCfg = Release|Any CPU
-		{CB587630-3CFD-4BB3-867C-3F5B1FFBC738}.Release|x64.Build.0 = Release|Any CPU
 		{CB587630-3CFD-4BB3-867C-3F5B1FFBC738}.Release|x86.ActiveCfg = Release|Any CPU
-		{CB587630-3CFD-4BB3-867C-3F5B1FFBC738}.Release|x86.Build.0 = Release|Any CPU
+		{9F30F34F-0E4D-47DB-8468-DB0ED6965092}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9F30F34F-0E4D-47DB-8468-DB0ED6965092}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9F30F34F-0E4D-47DB-8468-DB0ED6965092}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{9F30F34F-0E4D-47DB-8468-DB0ED6965092}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{9F30F34F-0E4D-47DB-8468-DB0ED6965092}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{9F30F34F-0E4D-47DB-8468-DB0ED6965092}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9F30F34F-0E4D-47DB-8468-DB0ED6965092}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9F30F34F-0E4D-47DB-8468-DB0ED6965092}.Release|ARM.ActiveCfg = Release|Any CPU
+		{9F30F34F-0E4D-47DB-8468-DB0ED6965092}.Release|x64.ActiveCfg = Release|Any CPU
+		{9F30F34F-0E4D-47DB-8468-DB0ED6965092}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -257,6 +267,8 @@ Global
 		{12059276-646C-47A4-8D24-C92CFD99EC04} = {C75BD686-21A6-4EB3-8D4B-D5A01C019C52}
 		{39C6B7F3-5E75-4019-82AB-00FD8A0A06E2} = {AB232F35-AAF7-4AE2-B1D2-45DD9BC2F7D7}
 		{CB587630-3CFD-4BB3-867C-3F5B1FFBC738} = {C75BD686-21A6-4EB3-8D4B-D5A01C019C52}
+		{2202E218-DD9F-496A-AEF4-3F07F0EA5B9D} = {AB232F35-AAF7-4AE2-B1D2-45DD9BC2F7D7}
+		{9F30F34F-0E4D-47DB-8468-DB0ED6965092} = {C75BD686-21A6-4EB3-8D4B-D5A01C019C52}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {51B9BB4C-5196-41CF-950C-12B04AD8A61C}
