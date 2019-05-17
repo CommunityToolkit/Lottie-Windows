@@ -24,7 +24,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData
             return new LoadedImageSurface(bytes);
         }
 
-        public static LoadedImageSurface StartLoadFromStream(IRandomAccessStream bytes)
+        public static LoadedImageSurface StartLoadFromStream(IRandomAccessStream stream)
         {
             // Implementation coming soon.
             throw new System.NotImplementedException();
