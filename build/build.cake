@@ -58,7 +58,7 @@ void MSBuildSolution(
             // Restrict to a single CPU. There is some
             // race condition that is causing files
             // to be in use when they need to be
-            // overwriten. Restricting to a single
+            // overwritten. Restricting to a single
             // CPU fixes this.
             MaxCpuCount = 1,
         }.WithTarget(target);
