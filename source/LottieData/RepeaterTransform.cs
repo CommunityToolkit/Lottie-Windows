@@ -10,7 +10,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
     sealed class RepeaterTransform : Transform
     {
         public RepeaterTransform(
-            string name,
+            in ShapeLayerContentArgs args,
             IAnimatableVector3 anchor,
             IAnimatableVector3 position,
             IAnimatableVector3 scalePercent,
@@ -18,7 +18,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             Animatable<double> opacityPercent,
             Animatable<double> startOpacityPercent,
             Animatable<double> endOpacityPercent)
-            : base(name, anchor, position, scalePercent, rotationDegrees, opacityPercent)
+            : base(in args, anchor, position, scalePercent, rotationDegrees, opacityPercent)
         {
             StartOpacityPercent = startOpacityPercent;
             EndOpacityPercent = endOpacityPercent;

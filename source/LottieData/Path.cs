@@ -10,11 +10,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
     sealed class Path : ShapeLayerContent
     {
         public Path(
-            string name,
-            string matchName,
+            in ShapeLayerContentArgs args,
             bool direction,
             Animatable<Sequence<BezierSegment>> geometryData)
-            : base(name, matchName)
+            : base(in args)
         {
             Direction = direction;
             Data = geometryData;
