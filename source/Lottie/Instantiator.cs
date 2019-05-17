@@ -1235,7 +1235,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                     result = Wm.LoadedImageSurface.StartLoadFromStream(bytes.AsBuffer().AsStream().AsRandomAccessStream());
                     break;
                 case Wmd.LoadedImageSurface.LoadedImageSurfaceType.FromUri:
-                    // Loading external image asset is not supported yet and it is captured on the issue list.
+                    // Loading image surface from Uri is not supported yet.
                     result = null;
                     break;
                 default:

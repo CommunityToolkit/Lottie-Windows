@@ -106,8 +106,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         public string FailFastWrapper(string value) => $"FFHR({value})";
 
-        public string Const(string value) => $"const {value}";
-
         /// <summary>
         /// Gets the code for a class that wraps an ID2D1Geometry in an IGeometrySource2DInterop
         /// as required by CompositionPath.

@@ -133,7 +133,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 _rootNode.RequiresStorage = true;
             }
 
-            // Set the Uri of the external image file to /Assets/<className>/<filePath>/<fileName>
+            // Set the Uri of the image file for LoadedImageSurfaceFromUri to $"ms-appx:///Assets/<className>/<filePath>/<fileName>.
             foreach (var node in _nodes.Where(n => n.UsesAssetFile))
             {
                 var loadedImageSurfaceObj = (Wmd.LoadedImageSurfaceFromUri)node.Object;
@@ -324,7 +324,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// <summary>
         /// Call this to get a list of the asset files referenced by the generated code.
         /// </summary>
-        /// <returns>List of asset files.</returns>
+        /// <returns>
+        /// List of asset files and their relative path to the Asset folder in a UWP that are referenced by the generated code.
+        /// An item in the returned list has format "ms-appx:///Assets/subFolder/fileName", which the generated code
+        /// will use to load the file from.
+        /// </returns>
         protected IEnumerable<string> GetAssetFileList()
         {
             return _nodes.Where(n => n.UsesAssetFile).Select(n => n.LoadedImageSurfaceImageUriString).Distinct();
@@ -1651,7 +1655,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             _currentObjectFactoryNode = null;
         }
 
-        string Const(string value) => $"const {value}";
+        string Const(string value) => _stringifier.Const(value);
 
         string Deref => _stringifier.Deref;
 
@@ -1914,6 +1918,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             string Static { get; }
 
             string ByteArray { get; }
+
+            string Const(string value);
         }
 
         /// <summary>
@@ -2005,9 +2011,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             public string Hex(int value) => $"0x{value.ToString("X2")}";
 
-            public virtual string Static => "static";
+            public string Static => "static";
 
             public abstract string ByteArray { get; }
+
+            public string Const(string value) => $"const {value}";
         }
 
         // A node in the object graph, annotated with extra stuff to assist in code generation.

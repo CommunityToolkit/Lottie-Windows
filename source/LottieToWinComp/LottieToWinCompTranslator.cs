@@ -671,8 +671,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             content.Size = new Sn.Vector2((float)imageAsset.Width, (float)imageAsset.Height);
 
             LoadedImageSurface surface;
-            double imageAssetWidth = imageAsset.Width;
-            double imageAssetHeight = imageAsset.Height;
+            var imageAssetWidth = imageAsset.Width;
+            var imageAssetHeight = imageAsset.Height;
 
             switch (imageAsset.ImageType)
             {
@@ -683,7 +683,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 case ImageAsset.ImageAssetType.External:
                     var externalImageAsset = (ExternalImageAsset)imageAsset;
                     surface = LoadedImageSurface.StartLoadFromUri(new Uri($"file://localhost/{externalImageAsset.Path}{externalImageAsset.FileName}"));
-                    _issues.ExternalImageFilesExpected($"{externalImageAsset.Path}{externalImageAsset.FileName}");
+                    _issues.ImageFileExpected($"{externalImageAsset.Path}{externalImageAsset.FileName}");
                     break;
                 default:
                     throw new InvalidOperationException();

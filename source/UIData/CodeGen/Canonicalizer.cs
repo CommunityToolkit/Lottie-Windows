@@ -529,7 +529,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             void CanonicalizeLoadedImageSurface(LoadedImageSurface.LoadedImageSurfaceType type)
             {
-                // Canonicalize LoadeImageSurfaces.
+                // Canonicalize LoadedImageSurfaces.
                 var items = GetCanonicalizableLoadedImageSurfaces<LoadedImageSurface>(type);
 
                 switch (type)

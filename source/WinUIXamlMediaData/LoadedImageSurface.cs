@@ -12,7 +12,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData
 #endif
     abstract class LoadedImageSurface : ICompositionSurface, IDescribable
     {
-        protected LoadedImageSurface()
+        private protected LoadedImageSurface()
         {
         }
 
