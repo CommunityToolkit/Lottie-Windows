@@ -620,7 +620,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 opacityNode.Children.Add(rootNode);
                 rootNode = opacityNode;
 
-                if (!layerOpacityPercent.IsAnimated)
+                if (layerOpacityPercent.IsAnimated)
                 {
                     ApplyScalarKeyFrameAnimation(context, context.TrimAnimatable(layerOpacityPercent), opacityNode, "Opacity", "Layer opacity animation");
                 }
