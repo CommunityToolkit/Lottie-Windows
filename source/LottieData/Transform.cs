@@ -10,13 +10,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
     class Transform : ShapeLayerContent
     {
         public Transform(
-            string name,
+            in ShapeLayerContentArgs args,
             IAnimatableVector3 anchor,
             IAnimatableVector3 position,
             IAnimatableVector3 scalePercent,
             Animatable<double> rotationDegrees,
             Animatable<double> opacityPercent)
-            : base(name, string.Empty)
+            : base(in args)
         {
             Anchor = anchor;
             Position = position;

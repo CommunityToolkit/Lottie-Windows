@@ -55,7 +55,12 @@ void MSBuildSolution(
     MSBuildSettings SettingsWithTarget() =>
         new MSBuildSettings
         {
-            MaxCpuCount = 0,
+            // Restrict to a single CPU. There is some
+            // race condition that is causing files
+            // to be in use when they need to be
+            // overwritten. Restricting to a single
+            // CPU fixes this.
+            MaxCpuCount = 1,
         }.WithTarget(target);
 
     MSBuildSettings SetProperties(MSBuildSettings settings)
@@ -302,6 +307,19 @@ Task("StyleXaml")
 Task("Default")
     .IsDependentOn("Package");
 
+
+//////////////////////////////////////////////////////////////////////
+// Dependency tree
+//////////////////////////////////////////////////////////////////////
+//
+// Default
+//   Package
+//     InheritDoc
+//       Build
+//         Version
+//           Verify
+//             Clean
+//
 //////////////////////////////////////////////////////////////////////
 // EXECUTION
 //////////////////////////////////////////////////////////////////////

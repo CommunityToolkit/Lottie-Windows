@@ -12,14 +12,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
     sealed class LinearGradientStroke : ShapeLayerContent
     {
         public LinearGradientStroke(
-            string name,
-            string matchName,
+            in ShapeLayerContentArgs args,
             Animatable<double> opacityPercent,
             Animatable<double> strokeWidth,
             LineCapType capType,
             LineJoinType joinType,
             double miterLimit)
-            : base(name, matchName)
+            : base(in args)
         {
             OpacityPercent = opacityPercent;
             StrokeWidth = strokeWidth;

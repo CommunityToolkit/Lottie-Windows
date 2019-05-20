@@ -4,6 +4,7 @@
 
 using System;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
+using Microsoft.Toolkit.Uwp.UI.Lottie.WinStorageStreamsData;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData
 {
@@ -29,6 +30,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData
             return new LoadedImageSurfaceFromStream(bytes);
         }
 
+        public static LoadedImageSurface StartLoadFromStream(IRandomAccessStream stream)
+        {
+            // Implementation coming soon.
+            throw new System.NotImplementedException();
+        }
+        
         public static LoadedImageSurfaceFromUri StartLoadFromUri(Uri uri)
         {
             return new LoadedImageSurfaceFromUri(uri);
@@ -38,6 +45,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData
         {
             FromStream,
             FromUri,
-        }
+        }        
     }
 }

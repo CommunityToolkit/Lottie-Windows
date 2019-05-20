@@ -16,10 +16,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         readonly ShapeLayerContent[] _items;
 
         public ShapeGroup(
-            string name,
-            string matchName,
+            in ShapeLayerContentArgs args,
             IEnumerable<ShapeLayerContent> items)
-            : base(name, matchName)
+            : base(in args)
         {
             _items = items.ToArray();
         }

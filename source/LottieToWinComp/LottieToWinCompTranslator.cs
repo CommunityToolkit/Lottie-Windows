@@ -792,8 +792,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                                 // We don't yet support gradient fill, but we can at least
                                 // draw something. Use data from the first gradient stop as the fill.
                                 var lgf = (LinearGradientFill)popped;
+                                var lgfArgs = default(ShapeLayerContent.ShapeLayerContentArgs);
+                                lgfArgs.BlendMode = lgf.BlendMode;
                                 Fill = new SolidColorFill(
-                                    null, null,
+                                    in lgfArgs,
                                     SolidColorFill.PathFillType.EvenOdd,
                                     new Animatable<Color>(GradientStop.GetFirstColor(lgf.GradientStops.InitialValue.Items), null),
                                     lgf.OpacityPercent);
@@ -806,8 +808,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                                 // We don't yet support gradient fill, but we can at least
                                 // draw something. Use data from the first gradient stop as the fill.
                                 var rgf = (RadialGradientFill)popped;
+                                var rgfArgs = default(ShapeLayerContent.ShapeLayerContentArgs);
+                                rgfArgs.BlendMode = rgf.BlendMode;
                                 Fill = new SolidColorFill(
-                                    null, null,
+                                    in rgfArgs,
                                     SolidColorFill.PathFillType.EvenOdd,
                                     new Animatable<Color>(GradientStop.GetFirstColor(rgf.GradientStops.InitialValue.Items), null),
                                     rgf.OpacityPercent);
@@ -1276,6 +1280,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 }
 
                 var shapeContent = stack.Pop();
+
+                // Complain if the BlendMode is not supported.
+                if (shapeContent.BlendMode != BlendMode.Normal)
+                {
+                    _issues.BlendModeNotNormal(shapeContent.BlendMode.ToString());
+                }
+
                 switch (shapeContent.ContentType)
                 {
                     case ShapeContentType.Ellipse:

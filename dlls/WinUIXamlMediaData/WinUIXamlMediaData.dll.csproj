@@ -11,5 +11,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\WinCompData\WinCompData.dll.csproj" />
+    <ProjectReference Include="..\WinStorageStreamsData\WinStorageStreamsData.dll.csproj" />
   </ItemGroup>
 </Project>
