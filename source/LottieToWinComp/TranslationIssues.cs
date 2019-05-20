@@ -38,7 +38,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal void AnimationMultiplicationIsNotSupported() => Report("LT0003", "Multiplication of two or more animated values is not supported");
 
-        internal void BlendModeNotNormal(string blendMode) => Report("LT0004", $"Blend mode is {blendMode}. Expected Normal.");
+        internal void BlendModeNotNormal(string layer, string blendMode) => Report("LT0004", $"{layer} has {blendMode} as blend mode. Only Normal is supported.");
 
         internal void CombiningAnimatedShapesIsNotSupported() => Report("LT0005", "Combining animated shapes is not supported");
 
@@ -88,7 +88,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal void InvalidAssetReferenceFromLayer(string layerType, string assetRefId, string assetType, string expectedAssetType) => Report("LT0029", $"{layerType} referenced asset {assetRefId} of type {assetType} which is invalid. Expected an asset of type {expectedAssetType}.");
 
-        internal void ExternalImageTypeIsNotSupported() => Report("LT0030", "External image type is not supported");
+        internal void ImageFileRequired(string filePath) => Report("LT0030", $"Image file required at {filePath}");
 
         void Report(string code, string description)
         {

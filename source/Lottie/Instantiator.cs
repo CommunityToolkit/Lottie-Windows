@@ -1228,8 +1228,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 return result;
             }
 
-            var bytes = obj.Bytes;
-            result = Wm.LoadedImageSurface.StartLoadFromStream(bytes.AsBuffer().AsStream().AsRandomAccessStream());
+            switch (obj.Type)
+            {
+                case Wmd.LoadedImageSurface.LoadedImageSurfaceType.FromStream:
+                    var bytes = ((Wmd.LoadedImageSurfaceFromStream)obj).Bytes;
+                    result = Wm.LoadedImageSurface.StartLoadFromStream(bytes.AsBuffer().AsStream().AsRandomAccessStream());
+                    break;
+                case Wmd.LoadedImageSurface.LoadedImageSurfaceType.FromUri:
+                    // Loading image surface from Uri is not supported yet.
+                    result = null;
+                    break;
+                default:
+                    throw new InvalidOperationException();
+            }
+
             Cache(obj, result);
             return result;
         }

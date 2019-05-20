@@ -6,6 +6,8 @@
     <SharedGUID>30059ca7-0745-4eec-8d11-b14850a70c98</SharedGUID>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)LoadedImageSurfaceFromUri.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LoadedImageSurfaceFromStream.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LoadedImageSurface.cs" />
   </ItemGroup>
 </Project>

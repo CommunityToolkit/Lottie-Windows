@@ -632,7 +632,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
             if (obj.ContainsKey("ef"))
             {
-                _issues.LayerEffects();
+                _issues.LayerEffectsIsNotSupported(layerArgs.Name);
             }
 
             // ----------------------

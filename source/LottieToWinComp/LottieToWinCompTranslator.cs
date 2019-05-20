@@ -2,9 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-// Enable use of Image Layer
-//#define EnableImageLayer
-
 // Enable workaround for RS5 where rotated rectangles were not drawn correctly.
 #define WorkAroundRectangleGeometryHalfDrawn
 
@@ -397,7 +394,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             if (layer.BlendMode != BlendMode.Normal)
             {
-                _issues.BlendModeNotNormal(layer.BlendMode.ToString());
+                _issues.BlendModeNotNormal(layer.Name, layer.BlendMode.ToString());
             }
 
             if (layer.TimeStretch != 1)
@@ -687,7 +684,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         Visual TranslateImageLayer(TranslationContext context, ImageLayer layer)
         {
-#if EnableImageLayer
             if (!TryCreateContainerVisualTransformChain(context, layer, out var containerVisualRootNode, out var containerVisualContentNode))
             {
                 // The layer is never visible.
@@ -700,28 +696,38 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 return null;
             }
 
-            if (imageAsset.ImageType != ImageAsset.ImageAssetType.Embedded)
-            {
-                _issues.ExternalImageTypeIsNotSupported();
-                return null;
-            }
-
             var content = CreateSpriteVisual();
             containerVisualContentNode.Children.Add(content);
             content.Size = new Sn.Vector2((float)imageAsset.Width, (float)imageAsset.Height);
 
-            var embeddedImageAsset = (EmbeddedImageAsset)imageAsset;
-            var surface = LoadedImageSurface.StartLoadFromStream(embeddedImageAsset.Bytes);
+            LoadedImageSurface surface;
+            var imageAssetWidth = imageAsset.Width;
+            var imageAssetHeight = imageAsset.Height;
+
+            switch (imageAsset.ImageType)
+            {
+                case ImageAsset.ImageAssetType.Embedded:
+                    var embeddedImageAsset = (EmbeddedImageAsset)imageAsset;
+                    surface = LoadedImageSurface.StartLoadFromStream(embeddedImageAsset.Bytes);
+                    break;
+                case ImageAsset.ImageAssetType.External:
+                    var externalImageAsset = (ExternalImageAsset)imageAsset;
+                    surface = LoadedImageSurface.StartLoadFromUri(new Uri($"file://localhost/{externalImageAsset.Path}{externalImageAsset.FileName}"));
+                    _issues.ImageFileRequired($"{externalImageAsset.Path}{externalImageAsset.FileName}");
+                    break;
+                default:
+                    throw new InvalidOperationException();
+            }
+
             var imageBrush = CreateSurfaceBrush(surface);
             content.Brush = imageBrush;
 
+            if (_addDescriptions)
+            {
+                Describe(surface, $"{layer.Name}, {imageAssetWidth}x{imageAssetHeight}");
+            }
+
             return containerVisualRootNode;
-#else
-            // Not yet implemented. Currently CompositionShape does not support SurfaceBrush as of RS4.
-            // TODO - but this is a visual now, so we could support it.
-            _issues.ImageLayerIsNotSupported();
-            return null;
-#endif
         }
 
         Visual TranslatePreCompLayerToVisual(TranslationContext context, PreCompLayer layer)
@@ -1178,7 +1184,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 shapeContext.UpdateOpacityFromTransform(layer.Transform);
             }
 
-            containerShapeContentNode.Shapes.Add(TranslateShapeLayerContents(context, shapeContext, layer.Contents));
+            containerShapeContentNode.Shapes.Add(TranslateShapeLayerContents(context, layer, shapeContext, layer.Contents));
             return
 #if !NoClipping
                  layerHasMasks ? ApplyMaskToTreeWithShapes(context, layer, containerShapeContentNode, containerVisualContentNode, containerVisualRootNode) :
@@ -1186,9 +1192,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     (ShapeOrVisual)containerShapeRootNode;
         }
 
-        CompositionShape TranslateGroupShapeContent(TranslationContext context, ShapeContentContext shapeContext, ShapeGroup group)
+        CompositionShape TranslateGroupShapeContent(TranslationContext context, Layer layer, ShapeContentContext shapeContext, ShapeGroup group)
         {
-            var result = TranslateShapeLayerContents(context, shapeContext, group.Items);
+            var result = TranslateShapeLayerContents(context, layer, shapeContext, group.Items);
 
             if (_addDescriptions)
             {
@@ -1232,6 +1238,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         CompositionShape TranslateShapeLayerContents(
             TranslationContext context,
+            Layer layer,
             ShapeContentContext shapeContext,
             in ReadOnlySpan<ShapeLayerContent> contents)
         {
@@ -1291,7 +1298,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         var generatedItems = itemsBeforeRepeater.Concat(Enumerable.Repeat(repeater.Transform, i + 1)).Concat(itemsAfterRepeater).ToArray();
 
                         // Recurse to translate the synthesized items.
-                        container.Shapes.Add(TranslateShapeLayerContents(context, shapeContext, generatedItems));
+                        container.Shapes.Add(TranslateShapeLayerContents(context, layer, shapeContext, generatedItems));
                     }
 
                     return result;
@@ -1315,7 +1322,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 // Complain if the BlendMode is not supported.
                 if (shapeContent.BlendMode != BlendMode.Normal)
                 {
-                    _issues.BlendModeNotNormal(shapeContent.BlendMode.ToString());
+                    _issues.BlendModeNotNormal(layer.Name, shapeContent.BlendMode.ToString());
                 }
 
                 switch (shapeContent.ContentType)
@@ -1324,7 +1331,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         container.Shapes.Add(TranslateEllipseContent(context, shapeContext, (Ellipse)shapeContent));
                         break;
                     case ShapeContentType.Group:
-                        container.Shapes.Add(TranslateGroupShapeContent(context, shapeContext.Clone(), (ShapeGroup)shapeContent));
+                        container.Shapes.Add(TranslateGroupShapeContent(context, layer, shapeContext.Clone(), (ShapeGroup)shapeContent));
                         break;
                     case ShapeContentType.MergePaths:
                         var mergedPaths = TranslateMergePathsContent(context, shapeContext, stack, ((MergePaths)shapeContent).Mode);
