@@ -1147,7 +1147,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var shapeContext = new ShapeContentContext(this);
             shapeContext.UpdateOpacityFromTransform(layer.Transform);
 
-            containerShapeContentNode.Shapes.Add(TranslateShapeLayerContents(context, shapeContext, layer.Contents));
+            containerShapeContentNode.Shapes.Add(TranslateShapeLayerContents(context, layer, shapeContext, layer.Contents));
             return
 #if !NoClipping
                  layerHasMasks ? ApplyMaskToTreeWithShapes(context, layer, containerShapeContentNode, containerVisualContentNode, containerVisualRootNode) :
@@ -1155,9 +1155,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     (ShapeOrVisual)containerShapeRootNode;
         }
 
-        CompositionShape TranslateGroupShapeContent(TranslationContext context, ShapeContentContext shapeContext, ShapeGroup group)
+        CompositionShape TranslateGroupShapeContent(TranslationContext context, Layer layer, ShapeContentContext shapeContext, ShapeGroup group)
         {
-            var result = TranslateShapeLayerContents(context, shapeContext, group.Items);
+            var result = TranslateShapeLayerContents(context, layer, shapeContext, group.Items);
 
             if (_addDescriptions)
             {
@@ -1201,6 +1201,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         CompositionShape TranslateShapeLayerContents(
             TranslationContext context,
+            Layer layer,
             ShapeContentContext shapeContext,
             in ReadOnlySpan<ShapeLayerContent> contents)
         {
@@ -1260,7 +1261,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         var generatedItems = itemsBeforeRepeater.Concat(Enumerable.Repeat(repeater.Transform, i + 1)).Concat(itemsAfterRepeater).ToArray();
 
                         // Recurse to translate the synthesized items.
-                        container.Shapes.Add(TranslateShapeLayerContents(context, shapeContext, generatedItems));
+                        container.Shapes.Add(TranslateShapeLayerContents(context, layer, shapeContext, generatedItems));
                     }
 
                     return result;
@@ -1284,7 +1285,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 // Complain if the BlendMode is not supported.
                 if (shapeContent.BlendMode != BlendMode.Normal)
                 {
-                    _issues.BlendModeNotNormal(context.Layer.Name, shapeContent.BlendMode.ToString());
+                    _issues.BlendModeNotNormal(layer.Name, shapeContent.BlendMode.ToString());
                 }
 
                 switch (shapeContent.ContentType)
@@ -1293,7 +1294,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         container.Shapes.Add(TranslateEllipseContent(context, shapeContext, (Ellipse)shapeContent));
                         break;
                     case ShapeContentType.Group:
-                        container.Shapes.Add(TranslateGroupShapeContent(context, shapeContext.Clone(), (ShapeGroup)shapeContent));
+                        container.Shapes.Add(TranslateGroupShapeContent(context, layer, shapeContext.Clone(), (ShapeGroup)shapeContent));
                         break;
                     case ShapeContentType.MergePaths:
                         var mergedPaths = TranslateMergePathsContent(context, shapeContext, stack, ((MergePaths)shapeContent).Mode);

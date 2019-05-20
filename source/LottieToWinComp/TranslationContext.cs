@@ -15,7 +15,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
     /// </summary>
     sealed class TranslationContext
     {
-        internal Layer Layer { get; }
+        Layer Layer { get; }
 
         internal TranslationContext ContainingContext { get; }
 
