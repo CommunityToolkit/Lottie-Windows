@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -9,6 +10,7 @@ using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui;
+using Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData;
 using Wg = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wg;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
@@ -69,6 +71,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
                 // ColorKeyFrameAnimations must be canonicalized before color brushes are canonicalized.
                 CanonicalizeColorBrushes();
+
+                CanonicalizeLoadedImageSurface(LoadedImageSurface.LoadedImageSurfaceType.FromStream);
+                CanonicalizeLoadedImageSurface(LoadedImageSurface.LoadedImageSurfaceType.FromUri);
+
+                // LoadedImageSurfaces must be canonicalized before surface brushes are canonicalized.
+                CanonicalizeCompositionSurfaceBrushes();
             }
 
             TNode NodeFor(Wg.IGeometrySource2D obj) => _graph[obj].Canonical;
@@ -77,11 +85,30 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             TNode NodeFor(CompositionPath obj) => _graph[obj].Canonical;
 
+            TNode NodeFor(LoadedImageSurface obj) => _graph[obj].Canonical;
+
+            TNode NodeFor(ICompositionSurface obj)
+            {
+                switch (obj)
+                {
+                    case CompositionObject compositionObject:
+                        return _graph[compositionObject].Canonical;
+                    case LoadedImageSurface loadedImageSurface:
+                        return _graph[loadedImageSurface].Canonical;
+                    default:
+                        throw new InvalidOperationException();
+                }
+            }
+
             TC CanonicalObject<TC>(Wg.IGeometrySource2D obj) => (TC)NodeFor(obj).Object;
 
             TC CanonicalObject<TC>(CompositionObject obj) => (TC)NodeFor(obj).Object;
 
             TC CanonicalObject<TC>(CompositionPath obj) => (TC)NodeFor(obj).Object;
+
+            TC CanonicalObject<TC>(LoadedImageSurface obj) => (TC)NodeFor(obj).Object;
+
+            TC CanonicalObject<TC>(ICompositionSurface obj) => (TC)NodeFor(obj).Object;
 
             IEnumerable<(TNode Node, TC Object)> GetCompositionObjects<TC>(CompositionObjectType type)
                 where TC : CompositionObject
@@ -107,6 +134,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             {
                 return
                     from item in _graph.CanvasGeometryNodes
+                    let obj = item.Object
+                    where obj.Type == type
+                    select (item.Node, (TC)obj);
+            }
+
+            IEnumerable<(TNode Node, TC Object)> GetCanonicalizableLoadedImageSurfaces<TC>(LoadedImageSurface.LoadedImageSurfaceType type)
+                where TC : LoadedImageSurface
+            {
+                return
+                    from item in _graph.LoadedImageSurfaceNodes
                     let obj = item.Object
                     where obj.Type == type
                     select (item.Node, (TC)obj);
@@ -279,6 +316,28 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                         obj.Color.B,
                         canonicalAnimator,
                     } into grouped
+                    select grouped;
+
+                CanonicalizeGrouping(grouping);
+            }
+
+            void CanonicalizeCompositionSurfaceBrushes()
+            {
+                // Canonicalize surface brushes that have no animations.
+                var nodes = GetCompositionObjects<CompositionSurfaceBrush>(CompositionObjectType.CompositionSurfaceBrush);
+
+                var items =
+                    from item in nodes
+                    let obj = item.Object
+                    where (_ignoreCommentProperties || obj.Comment == null)
+                       && obj.Properties.IsEmpty
+                    select (item.Node, obj);
+
+                var grouping =
+                    from item in items
+                    let obj = item.obj
+                    where obj.Animators.Count == 0
+                    group item.Node by CanonicalObject<ICompositionSurface>(obj.Surface) into grouped
                     select grouped;
 
                 CanonicalizeGrouping(grouping);
@@ -468,6 +527,30 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 CanonicalizeGrouping(grouping);
             }
 
+            void CanonicalizeLoadedImageSurface(LoadedImageSurface.LoadedImageSurfaceType type)
+            {
+                // Canonicalize LoadedImageSurfaces.
+                var items = GetCanonicalizableLoadedImageSurfaces<LoadedImageSurface>(type);
+
+                switch (type)
+                {
+                    case LoadedImageSurface.LoadedImageSurfaceType.FromStream:
+                        var grouping = items.GroupBy(i => ((LoadedImageSurfaceFromStream)i.Object).Bytes, i => i.Node, ByteArrayComparer.Instance);
+                        CanonicalizeGrouping(grouping);
+                        break;
+                    case LoadedImageSurface.LoadedImageSurfaceType.FromUri:
+                        var groupingExternal =
+                            from item in items
+                            let obj = (LoadedImageSurfaceFromUri)item.Object
+                            group item.Node by obj.Uri into grouped
+                            select grouped;
+                        CanonicalizeGrouping(groupingExternal);
+                        break;
+                    default:
+                        throw new InvalidOperationException();
+                }
+            }
+
             static void CanonicalizeGrouping<TKey>(IEnumerable<IGrouping<TKey, TNode>> grouping)
             {
                 foreach (var group in grouping)
@@ -484,6 +567,26 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                         node.Canonical = canonical;
                         node.NodesInGroup = groupArray;
                     }
+                }
+            }
+
+            sealed class ByteArrayComparer : IEqualityComparer<byte[]>
+            {
+                ByteArrayComparer()
+                {
+                }
+
+                internal static ByteArrayComparer Instance { get; } = new ByteArrayComparer();
+
+                bool IEqualityComparer<byte[]>.Equals(byte[] x, byte[] y)
+                {
+                    return x.SequenceEqual(y);
+                }
+
+                int IEqualityComparer<byte[]>.GetHashCode(byte[] obj)
+                {
+                    // This is not a great hash code but is good enough for what we need.
+                    return obj.Length;
                 }
             }
         }
