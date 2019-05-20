@@ -141,7 +141,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
                 if (imageUri.IsFile)
                 {
-                    node.LoadedImageSurfaceImageUriString = $"ms-appx:///Assets/{className}{imageUri.AbsolutePath}";
+                    node.LoadedImageSurfaceImageUri = new Uri($"ms-appx:///Assets/{className}{imageUri.AbsolutePath}");
                 }
             }
         }
@@ -303,13 +303,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// <param name="info">A <see cref="CodeGenInfo"/> used to get information about the code.</param>
         /// <param name="obj">Describes the object that should be instantiated by the factory code.</param>
         /// <param name="fieldName">The name of the Bytes field that should be used for StartLoadFromStream().</param>
-        /// <param name="imageUriString">The string representation of the Uri of the image file that should be used for StartLoadedFromUri().</param>
+        /// <param name="imageUri">The Uri of the image file that should be used for StartLoadedFromUri().</param>
         protected abstract void WriteLoadedImageSurfaceFactory(
             CodeBuilder builder,
             CodeGenInfo info,
             Wmd.LoadedImageSurface obj,
             string fieldName,
-            string imageUriString);
+            Uri imageUri);
 
         /// <summary>
         /// Write a Bytes field.
@@ -329,9 +329,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// An item in the returned list has format "ms-appx:///Assets/subFolder/fileName", which the generated code
         /// will use to load the file from.
         /// </returns>
-        protected IEnumerable<string> GetAssetFileList()
+        protected IEnumerable<Uri> GetAssetsList()
         {
-            return _nodes.Where(n => n.UsesAssetFile).Select(n => n.LoadedImageSurfaceImageUriString).Distinct();
+            return _nodes.Where(n => n.UsesAssetFile).Select(n => n.LoadedImageSurfaceImageUri).Distinct();
         }
 
         /// <summary>
@@ -1589,7 +1589,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         bool GenerateLoadedImageSurfaceFactory(CodeBuilder builder, CodeGenInfo info, Wmd.LoadedImageSurface obj, ObjectData node)
         {
             var fieldName = node.LoadedImageSurfaceBytesFieldName;
-            var imageUri = node.LoadedImageSurfaceImageUriString;
+            var imageUri = node.LoadedImageSurfaceImageUri;
 
             WriteObjectFactoryStart(builder, node);
             WriteLoadedImageSurfaceFactory(builder, info, obj, fieldName, imageUri);
@@ -2129,7 +2129,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             // Identifies the byte array of a LoadedImageSurface.
             internal string LoadedImageSurfaceBytesFieldName => $"s_{Name}_Bytes";
 
-            internal string LoadedImageSurfaceImageUriString { get; set; }
+            internal Uri LoadedImageSurfaceImageUri { get; set; }
 
             internal void ForceInline(string replacementFactoryCall)
             {

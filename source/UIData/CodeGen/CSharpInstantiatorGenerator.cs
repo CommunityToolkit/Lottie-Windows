@@ -45,7 +45,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// Windows.UI.Composition Visual.
         /// </summary>
         /// <returns>A tuple containing the C# code and list of referenced asset files.</returns>
-        public static (string csText, IEnumerable<string> assetList) CreateFactoryCode(
+        public static (string csText, IEnumerable<Uri> assetList) CreateFactoryCode(
             string className,
             Visual rootVisual,
             float width,
@@ -63,7 +63,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             var csText = generator.GenerateCode(className, width, height);
 
-            var assetList = generator.GetAssetFileList();
+            var assetList = generator.GetAssetsList();
 
             return (csText, assetList);
         }
@@ -261,7 +261,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         }
 
         /// <inheritdoc/>
-        protected override void WriteLoadedImageSurfaceFactory(CodeBuilder builder, CodeGenInfo info, LoadedImageSurface obj, string fieldName, string imageUriString)
+        protected override void WriteLoadedImageSurfaceFactory(CodeBuilder builder, CodeGenInfo info, LoadedImageSurface obj, string fieldName, Uri imageUri)
         {
             switch (obj.Type)
             {
@@ -269,7 +269,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     builder.WriteLine($"var result = Windows.UI.Xaml.Media.LoadedImageSurface.StartLoadFromStream({fieldName}.AsBuffer().AsStream().AsRandomAccessStream());");
                     break;
                 case LoadedImageSurface.LoadedImageSurfaceType.FromUri:
-                    builder.WriteLine($"var result = Windows.UI.Xaml.Media.LoadedImageSurface.StartLoadFromUri(new Uri(\"{imageUriString}\"));");
+                    builder.WriteLine($"var result = Windows.UI.Xaml.Media.LoadedImageSurface.StartLoadFromUri(new Uri(\"{imageUri}\"));");
                     break;
             }
         }

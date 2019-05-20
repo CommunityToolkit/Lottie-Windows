@@ -340,7 +340,7 @@ sealed class LottieFileProcessor
             return false;
         }
 
-        (string csText, IEnumerable<string> assetList) = CSharpInstantiatorGenerator.CreateFactoryCode(
+        (string csText, IEnumerable<Uri> assetList) = CSharpInstantiatorGenerator.CreateFactoryCode(
                 _className,
                 _rootVisual,
                 (float)_lottieComposition.Width,
@@ -379,7 +379,7 @@ sealed class LottieFileProcessor
             return false;
         }
 
-        (string cppText, string hText, IEnumerable<string> assetList) = CxInstantiatorGenerator.CreateFactoryCode(
+        (string cppText, string hText, IEnumerable<Uri> assetList) = CxInstantiatorGenerator.CreateFactoryCode(
                 _className,
                 _rootVisual,
                 (float)_lottieComposition.Width,
@@ -698,11 +698,11 @@ sealed class LottieFileProcessor
         return true;
     }
 
-    void WriteAssetFiles(IEnumerable<string> assetList)
+    void WriteAssetFiles(IEnumerable<Uri> assetList)
     {
         foreach (var a in assetList)
         {
-            _reporter.WriteInfo($"Generated code references {a}. Make sure your app can access this file.");
+            _reporter.WriteInfo($"Generated code references {a.ToString()}. Make sure your app can access this file.");
         }
     }
 }

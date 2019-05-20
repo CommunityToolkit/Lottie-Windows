@@ -88,7 +88,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal void InvalidAssetReferenceFromLayer(string layerType, string assetRefId, string assetType, string expectedAssetType) => Report("LT0029", $"{layerType} referenced asset {assetRefId} of type {assetType} which is invalid. Expected an asset of type {expectedAssetType}.");
 
-        internal void ImageFileExpected(string filePath) => Report("LT0030", $"Image file expected at {filePath}");
+        internal void ImageFileRequired(string filePath) => Report("LT0030", $"Image file required at {filePath}");
 
         void Report(string code, string description)
         {

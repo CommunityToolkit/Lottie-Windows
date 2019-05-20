@@ -683,7 +683,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 case ImageAsset.ImageAssetType.External:
                     var externalImageAsset = (ExternalImageAsset)imageAsset;
                     surface = LoadedImageSurface.StartLoadFromUri(new Uri($"file://localhost/{externalImageAsset.Path}{externalImageAsset.FileName}"));
-                    _issues.ImageFileExpected($"{externalImageAsset.Path}{externalImageAsset.FileName}");
+                    _issues.ImageFileRequired($"{externalImageAsset.Path}{externalImageAsset.FileName}");
                     break;
                 default:
                     throw new InvalidOperationException();

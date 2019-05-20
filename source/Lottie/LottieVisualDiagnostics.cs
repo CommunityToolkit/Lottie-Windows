@@ -111,7 +111,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 return;
             }
 
-            (string cppText, string hText, IEnumerable<string> assetList) generatedCode = CxInstantiatorGenerator.CreateFactoryCode(
+            (string cppText, string hText, IEnumerable<Uri> assetList) generatedCode = CxInstantiatorGenerator.CreateFactoryCode(
                 SuggestedClassName,
                 RootVisual,
                 (float)LottieComposition.Width,
