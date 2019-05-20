@@ -35,7 +35,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData
             // Implementation coming soon.
             throw new System.NotImplementedException();
         }
-        
+
         public static LoadedImageSurfaceFromUri StartLoadFromUri(Uri uri)
         {
             return new LoadedImageSurfaceFromUri(uri);
@@ -45,6 +45,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData
         {
             FromStream,
             FromUri,
-        }        
+        }
     }
 }

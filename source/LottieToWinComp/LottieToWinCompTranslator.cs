@@ -1284,7 +1284,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 // Complain if the BlendMode is not supported.
                 if (shapeContent.BlendMode != BlendMode.Normal)
                 {
-                    _issues.BlendModeNotNormal(shapeContent.BlendMode.ToString());
+                    _issues.BlendModeNotNormal(context.Layer.Name, shapeContent.BlendMode.ToString());
                 }
 
                 switch (shapeContent.ContentType)
