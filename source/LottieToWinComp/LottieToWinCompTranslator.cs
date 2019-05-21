@@ -787,9 +787,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         sealed class ShapeContentContext
         {
-            readonly LottieToWinCompTranslator _owner;
-
             static readonly Animatable<double> s_defaultOpacityPercent = new Animatable<double>(100, null);
+
+            readonly LottieToWinCompTranslator _owner;
 
             internal SolidColorStroke Stroke { get; private set; }
 
@@ -913,12 +913,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             Animatable<double> ComposeOpacityPercents(Animatable<double> a, Animatable<double> b)
             {
-                if (a == null || a == s_defaultOpacityPercent)
+                if (a == null || ReferenceEquals(a, s_defaultOpacityPercent))
                 {
                     return b;
                 }
 
-                if (b == null || b == s_defaultOpacityPercent)
+                if (b == null || ReferenceEquals(b, s_defaultOpacityPercent))
                 {
                     return a;
                 }
@@ -2377,7 +2377,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             // If the layer has masks then the opacity is set on a Visual in the chain returned
             // for the layer from TryCreateContainerVisualTransformChain.
-            // If there is no masks then the opacity needs to be animated on the brush.
+            // If that layer has no masks, opacity is implemented via the alpha channel on the brush.
             rectangle.FillBrush = layerHasMasks
                 ? CreateColorBrush(layer.Color)
                 : CreateAnimatedColorBrush(context, layer.Color, context.TrimAnimatable(layer.Transform.OpacityPercent));
