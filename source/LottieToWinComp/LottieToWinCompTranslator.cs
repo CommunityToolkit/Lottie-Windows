@@ -175,8 +175,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         void Translate()
         {
-            var context = new TranslationContext(_lc);
-            AddTranslatedLayersToContainerVisual(_rootVisual, context, _lc.Layers, compositionDescription: "Root");
+            var context = new TranslationContext.Root(_lc);
+            AddTranslatedLayersToContainerVisual(_rootVisual, context, compositionDescription: "Root");
             if (_lc.Is3d)
             {
                 _issues.ThreeDIsNotSupported();
@@ -186,11 +186,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         void AddTranslatedLayersToContainerVisual(
             ContainerVisual container,
             TranslationContext context,
-            LayerCollection layers,
             string compositionDescription)
         {
             var translatedLayers =
-                (from layer in layers.GetLayersBottomToTop()
+                (from layer in context.Layers.GetLayersBottomToTop()
                  let translatedLayer = TranslateLayer(context, layer)
                  where translatedLayer != null
                  select (translatedLayer: translatedLayer, layer: layer)).ToArray();
@@ -266,13 +265,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
         }
 
-        void TranslateAndApplyMask(TranslationContext context, Layer layer, Visual visualForMask)
+        void TranslateAndApplyMask(TranslationContext context, Visual visualForMask)
         {
 #if !NoClipping
-            if (layer.Masks != null &&
-                layer.Masks.Any())
+            var masks = context.Layer.Masks;
+            if (masks.Any())
             {
-                var mask = layer.Masks[0];
+                var mask = masks[0];
 
                 if (mask.Inverted)
                 {
@@ -292,7 +291,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
                 // Translation currently does not support having multiple paths for masks.
                 // If possible users should combine masks when exporting to json.
-                if (layer.Masks.Length > 1)
+                if (masks.Length > 1)
                 {
                     _issues.MultipleShapeMasksIsNotSupported();
                 }
@@ -302,7 +301,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     mask.Opacity.InitialValue == 100 &&
                     !mask.Opacity.IsAnimated &&
                     mask.Mode == Mask.MaskMode.Additive &&
-                    layer.Masks.Length == 1)
+                    masks.Length == 1)
                 {
                     var geometry = context.TrimAnimatable(_lottieDataOptimizer.GetOptimized(mask.Points));
 
@@ -334,7 +333,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         ContainerVisual ApplyMaskToTreeWithShapes(
             TranslationContext context,
-            Layer layer,
             CompositionContainerShape containerShape,
             ContainerVisual contentContainerVisual,
             ContainerVisual rootContainerVisual)
@@ -373,7 +371,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             contentContainerVisual.Children.Add(shapeVisual);
 
             // Apply the mask to the content node
-            TranslateAndApplyMask(context, layer, contentContainerVisual);
+            TranslateAndApplyMask(context, contentContainerVisual);
 
             // Add a parent container visual that has no transforms so that the tree
             // structure matches what is expected. Otherwise we assert when trying to
@@ -385,7 +383,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         // Translates a Lottie layer into null a Visual or a Shape.
         // Note that ShapeVisual clips to its size.
-        CompositionObject TranslateLayer(TranslationContext context, Layer layer)
+        CompositionObject TranslateLayer(TranslationContext parentContext, Layer layer)
         {
             if (layer.Is3d)
             {
@@ -410,18 +408,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             switch (layer.Type)
             {
                 case Layer.LayerType.Image:
-                    return TranslateImageLayer(context, (ImageLayer)layer);
+                    return TranslateImageLayer(parentContext.SubContext((ImageLayer)layer));
                 case Layer.LayerType.Null:
                     // Null layers only exist to hold transforms when declared as parents of other layers.
                     return null;
                 case Layer.LayerType.PreComp:
-                    return TranslatePreCompLayerToVisual(context, (PreCompLayer)layer);
+                    return TranslatePreCompLayerToVisual(parentContext.SubContext((PreCompLayer)layer));
                 case Layer.LayerType.Shape:
-                    return TranslateShapeLayer(context, (ShapeLayer)layer);
+                    return TranslateShapeLayer(parentContext.SubContext((ShapeLayer)layer));
                 case Layer.LayerType.Solid:
-                    return TranslateSolidLayer(context, (SolidLayer)layer);
+                    return TranslateSolidLayer(parentContext.SubContext((SolidLayer)layer));
                 case Layer.LayerType.Text:
-                    return TranslateTextLayer(context, (TextLayer)layer);
+                    return TranslateTextLayer(parentContext.SubContext((TextLayer)layer));
                 default:
                     throw new InvalidOperationException();
             }
@@ -431,7 +429,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         // The top of the chain is the rootTransform, the bottom is the contentsNode.
         bool TryCreateContainerShapeTransformChain(
             TranslationContext context,
-            Layer layer,
             out CompositionContainerShape rootNode,
             out CompositionContainerShape contentsNode)
         {
@@ -470,8 +467,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             //
 
             // Convert the layer's in point and out point into absolute progress (0..1) values.
-            var inProgress = GetInPointProgress(context, layer);
-            var outProgress = GetOutPointProgress(context, layer);
+            var inProgress = GetInPointProgress(context);
+            var outProgress = GetOutPointProgress(context);
             if (inProgress > 1 || outProgress <= 0)
             {
                 // The layer is never visible. Don't create anything.
@@ -481,7 +478,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
 
             // Create the transforms chain.
-            TranslateTransformOnContainerShapeForLayer(context, layer, out var transformsRoot, out contentsNode);
+            TranslateTransformOnContainerShapeForLayer(context, context.Layer, out var transformsRoot, out contentsNode);
 
             // Implement the Visibility for the layer. Only needed if the layer becomes visible after
             // the LottieComposition's in point, or it becomes invisible before the LottieComposition's out point.
@@ -547,7 +544,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         // Returns false if the layer is never visible.
         bool TryCreateContainerVisualTransformChain(
             TranslationContext context,
-            Layer layer,
             out ContainerVisual rootNode,
             out ContainerVisual contentsNode)
         {
@@ -586,8 +582,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             //
 
             // Convert the layer's in point and out point into absolute progress (0..1) values.
-            var inProgress = GetInPointProgress(context, layer);
-            var outProgress = GetOutPointProgress(context, layer);
+            var inProgress = GetInPointProgress(context);
+            var outProgress = GetOutPointProgress(context);
             if (inProgress > 1 || outProgress <= 0)
             {
                 // The layer is never visible. Don't create anything.
@@ -597,7 +593,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
 
             // Create the transforms chain.
-            TranslateTransformOnContainerVisualForLayer(context, layer, out var transformsRoot, out contentsNode);
+            TranslateTransformOnContainerVisualForLayer(context, context.Layer, out var transformsRoot, out contentsNode);
 
             // Implement the Visibility for the layer. Only needed if the layer becomes visible after
             // the LottieComposition's in point, or it becomes invisible before the LottieComposition's out point.
@@ -652,15 +648,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return true;
         }
 
-        Visual TranslateImageLayer(TranslationContext context, ImageLayer layer)
+        Visual TranslateImageLayer(TranslationContext.For<ImageLayer> context)
         {
-            if (!TryCreateContainerVisualTransformChain(context, layer, out var containerVisualRootNode, out var containerVisualContentNode))
+            if (!TryCreateContainerVisualTransformChain(context, out var containerVisualRootNode, out var containerVisualContentNode))
             {
                 // The layer is never visible.
                 return null;
             }
 
-            var imageAsset = (ImageAsset)GetAssetById(assetId: layer.RefId, expectedAssetType: Asset.AssetType.Image, layerType: layer.Type);
+            var imageAsset = (ImageAsset)GetAssetById(assetId: context.Layer.RefId, expectedAssetType: Asset.AssetType.Image, layerType: context.Layer.Type);
             if (imageAsset == null)
             {
                 return null;
@@ -694,16 +690,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             if (_addDescriptions)
             {
-                Describe(surface, $"{layer.Name}, {imageAssetWidth}x{imageAssetHeight}");
+                Describe(surface, $"{context.Layer.Name}, {imageAssetWidth}x{imageAssetHeight}");
             }
 
             return containerVisualRootNode;
         }
 
-        Visual TranslatePreCompLayerToVisual(TranslationContext context, PreCompLayer layer)
+        Visual TranslatePreCompLayerToVisual(TranslationContext.For<PreCompLayer> context)
         {
             // Create the transform chain.
-            if (!TryCreateContainerVisualTransformChain(context, layer, out var rootNode, out var contentsNode))
+            if (!TryCreateContainerVisualTransformChain(context, out var rootNode, out var contentsNode))
             {
                 // The layer is never visible.
                 return null;
@@ -715,7 +711,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
 #if !NoClipping
             // Apply the mask to the content node
-            TranslateAndApplyMask(context, layer, contentsNode);
+            TranslateAndApplyMask(context, contentsNode);
 
             // PreComps must clip to their size.
             result.Clip = CreateInsetClip();
@@ -725,7 +721,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 #endif
 
             // TODO - the animations produced inside a PreComp need to be time-mapped.
-            var layerCollectionAsset = (LayerCollectionAsset)GetAssetById(assetId: layer.RefId, expectedAssetType: Asset.AssetType.LayerCollection, layerType: layer.Type);
+            var layerCollectionAsset = (LayerCollectionAsset)GetAssetById(assetId: context.Layer.RefId, expectedAssetType: Asset.AssetType.LayerCollection, layerType: context.Layer.Type);
             if (layerCollectionAsset == null)
             {
                 return null;
@@ -733,8 +729,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             // Push the reference layers onto the stack. These will be used to look up parent transforms for layers under this precomp.
             var referencedLayers = layerCollectionAsset.Layers;
-            var subContext = new TranslationContext(context, layer, referencedLayers);
-            AddTranslatedLayersToContainerVisual(contentsNode, subContext, referencedLayers, $"{layer.Name}:{layerCollectionAsset.Id}");
+            var subContext = context.SubContext(context.Layer, referencedLayers);
+            AddTranslatedLayersToContainerVisual(contentsNode, subContext, $"{context.Layer.Name}:{layerCollectionAsset.Id}");
 
             return result;
         }
@@ -1115,11 +1111,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         }
 
         // May return null if the layer does not produce any renderable content.
-        ShapeOrVisual? TranslateShapeLayer(TranslationContext context, ShapeLayer layer)
+        ShapeOrVisual? TranslateShapeLayer(TranslationContext.For<ShapeLayer> context)
         {
             bool layerHasMasks = false;
 #if !NoClipping
-            layerHasMasks = layer.Masks.Any();
+            layerHasMasks = context.Layer.Masks.Any();
 #endif
             ContainerVisual containerVisualRootNode = null;
             ContainerVisual containerVisualContentNode = null;
@@ -1127,7 +1123,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             CompositionContainerShape containerShapeContentNode = null;
             if (layerHasMasks)
             {
-                if (!TryCreateContainerVisualTransformChain(context, layer, out containerVisualRootNode, out containerVisualContentNode))
+                if (!TryCreateContainerVisualTransformChain(context, out containerVisualRootNode, out containerVisualContentNode))
                 {
                     // The layer is never visible.
                     return null;
@@ -1137,7 +1133,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
             else
             {
-                if (!TryCreateContainerShapeTransformChain(context, layer, out containerShapeRootNode, out containerShapeContentNode))
+                if (!TryCreateContainerShapeTransformChain(context, out containerShapeRootNode, out containerShapeContentNode))
                 {
                     // The layer is never visible.
                     return null;
@@ -1145,19 +1141,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
 
             var shapeContext = new ShapeContentContext(this);
-            shapeContext.UpdateOpacityFromTransform(layer.Transform);
+            shapeContext.UpdateOpacityFromTransform(context.Layer.Transform);
 
-            containerShapeContentNode.Shapes.Add(TranslateShapeLayerContents(context, layer, shapeContext, layer.Contents));
+            containerShapeContentNode.Shapes.Add(TranslateShapeLayerContents(context, shapeContext, context.Layer.Contents));
             return
 #if !NoClipping
-                 layerHasMasks ? ApplyMaskToTreeWithShapes(context, layer, containerShapeContentNode, containerVisualContentNode, containerVisualRootNode) :
+                 layerHasMasks ? ApplyMaskToTreeWithShapes(context, containerShapeContentNode, containerVisualContentNode, containerVisualRootNode) :
 #endif
                     (ShapeOrVisual)containerShapeRootNode;
         }
 
-        CompositionShape TranslateGroupShapeContent(TranslationContext context, Layer layer, ShapeContentContext shapeContext, ShapeGroup group)
+        CompositionShape TranslateGroupShapeContent(TranslationContext.For<ShapeLayer> context, ShapeContentContext shapeContext, ShapeGroup group)
         {
-            var result = TranslateShapeLayerContents(context, layer, shapeContext, group.Items);
+            var result = TranslateShapeLayerContents(context, shapeContext, group.Items);
 
             if (_addDescriptions)
             {
@@ -1200,8 +1196,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         }
 
         CompositionShape TranslateShapeLayerContents(
-            TranslationContext context,
-            Layer layer,
+            TranslationContext.For<ShapeLayer> context,
             ShapeContentContext shapeContext,
             in ReadOnlySpan<ShapeLayerContent> contents)
         {
@@ -1261,7 +1256,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         var generatedItems = itemsBeforeRepeater.Concat(Enumerable.Repeat(repeater.Transform, i + 1)).Concat(itemsAfterRepeater).ToArray();
 
                         // Recurse to translate the synthesized items.
-                        container.Shapes.Add(TranslateShapeLayerContents(context, layer, shapeContext, generatedItems));
+                        container.Shapes.Add(TranslateShapeLayerContents(context, shapeContext, generatedItems));
                     }
 
                     return result;
@@ -1285,7 +1280,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 // Complain if the BlendMode is not supported.
                 if (shapeContent.BlendMode != BlendMode.Normal)
                 {
-                    _issues.BlendModeNotNormal(layer.Name, shapeContent.BlendMode.ToString());
+                    _issues.BlendModeNotNormal(context.Layer.Name, shapeContent.BlendMode.ToString());
                 }
 
                 switch (shapeContent.ContentType)
@@ -1294,7 +1289,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         container.Shapes.Add(TranslateEllipseContent(context, shapeContext, (Ellipse)shapeContent));
                         break;
                     case ShapeContentType.Group:
-                        container.Shapes.Add(TranslateGroupShapeContent(context, layer, shapeContext.Clone(), (ShapeGroup)shapeContent));
+                        container.Shapes.Add(TranslateGroupShapeContent(context, shapeContext.Clone(), (ShapeGroup)shapeContent));
                         break;
                     case ShapeContentType.MergePaths:
                         var mergedPaths = TranslateMergePathsContent(context, shapeContext, stack, ((MergePaths)shapeContent).Mode);
@@ -2291,9 +2286,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 opacityPercent);
         }
 
-        ShapeOrVisual? TranslateSolidLayer(TranslationContext context, SolidLayer layer)
+        ShapeOrVisual? TranslateSolidLayer(TranslationContext.For<SolidLayer> context)
         {
-            if (layer.IsHidden || layer.Transform.OpacityPercent.AlwaysEquals(0))
+            if (context.Layer.IsHidden || context.Layer.Transform.OpacityPercent.AlwaysEquals(0))
             {
                 // The layer does not render anything. Nothing to translate. This can happen when someone
                 // creates a solid layer to act like a Null layer.
@@ -2302,7 +2297,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             bool layerHasMasks = false;
 #if !NoClipping
-            layerHasMasks = layer.Masks.Any();
+            layerHasMasks = context.Layer.Masks.Any();
 #endif
             ContainerVisual containerVisualRootNode = null;
             ContainerVisual containerVisualContentNode = null;
@@ -2310,7 +2305,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             CompositionContainerShape containerShapeContentNode = null;
             if (layerHasMasks)
             {
-                if (!TryCreateContainerVisualTransformChain(context, layer, out containerVisualRootNode, out containerVisualContentNode))
+                if (!TryCreateContainerVisualTransformChain(context, out containerVisualRootNode, out containerVisualContentNode))
                 {
                     // The layer is never visible.
                     return null;
@@ -2320,7 +2315,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
             else
             {
-                if (!TryCreateContainerShapeTransformChain(context, layer, out containerShapeRootNode, out containerShapeContentNode))
+                if (!TryCreateContainerShapeTransformChain(context, out containerShapeRootNode, out containerShapeContentNode))
                 {
                     // The layer is never visible.
                     return null;
@@ -2328,14 +2323,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
 
             var rectangleGeometry = CreateRectangleGeometry();
-            rectangleGeometry.Size = Vector2(layer.Width, layer.Height);
+            rectangleGeometry.Size = Vector2(context.Layer.Width, context.Layer.Height);
 
             var rectangle = CreateSpriteShape();
             rectangle.Geometry = rectangleGeometry;
 
             containerShapeContentNode.Shapes.Add(rectangle);
 
-            rectangle.FillBrush = CreateAnimatedColorBrush(context, layer.Color, context.TrimAnimatable(layer.Transform.OpacityPercent));
+            rectangle.FillBrush = CreateAnimatedColorBrush(context, context.Layer.Color, context.TrimAnimatable(context.Layer.Transform.OpacityPercent));
 
             if (_addDescriptions)
             {
@@ -2345,12 +2340,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             return
 #if !NoClipping
-            layerHasMasks ? ApplyMaskToTreeWithShapes(context, layer, containerShapeContentNode, containerVisualContentNode, containerVisualRootNode) :
+            layerHasMasks ? ApplyMaskToTreeWithShapes(context, containerShapeContentNode, containerVisualContentNode, containerVisualRootNode) :
 #endif
                  (ShapeOrVisual)containerShapeRootNode;
         }
 
-        Visual TranslateTextLayer(TranslationContext context, TextLayer layer)
+        Visual TranslateTextLayer(TranslationContext.For<TextLayer> context)
         {
             // Text layers are not yet suported.
             _issues.TextLayerIsNotSupported();
@@ -3053,16 +3048,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
         }
 
-        float GetInPointProgress(TranslationContext context, Layer layer)
+        float GetInPointProgress(TranslationContext context)
         {
-            var result = (layer.InPoint - context.StartTime) / context.DurationInFrames;
+            var result = (context.Layer.InPoint - context.StartTime) / context.DurationInFrames;
 
             return (float)result;
         }
 
-        float GetOutPointProgress(TranslationContext context, Layer layer)
+        float GetOutPointProgress(TranslationContext context)
         {
-            var result = (layer.OutPoint - context.StartTime) / context.DurationInFrames;
+            var result = (context.Layer.OutPoint - context.StartTime) / context.DurationInFrames;
 
             return (float)result;
         }
