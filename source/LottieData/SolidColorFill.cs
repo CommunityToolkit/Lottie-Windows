@@ -7,7 +7,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 #if PUBLIC_LottieData
     public
 #endif
-    sealed class SolidColorFill : ShapeLayerContent
+    sealed class SolidColorFill : ShapeLayerFill
     {
         public SolidColorFill(
             in ShapeLayerContentArgs args,

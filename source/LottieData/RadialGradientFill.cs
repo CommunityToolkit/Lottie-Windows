@@ -7,7 +7,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 #if PUBLIC_LottieData
     public
 #endif
-    sealed class RadialGradientFill : ShapeLayerContent
+    sealed class RadialGradientFill : ShapeLayerFill
     {
         public RadialGradientFill(
             in ShapeLayerContentArgs args,

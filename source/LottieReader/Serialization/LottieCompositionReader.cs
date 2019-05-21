@@ -1154,8 +1154,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             IgnoreFieldThatIsNotYetSupported(obj, "hd");
 
             var opacityPercent = ReadOpacityPercent(obj);
-            var startPoint = ReadAnimatableVector2(obj.GetNamedObject("s"));
-            var endPoint = ReadAnimatableVector2(obj.GetNamedObject("e"));
+            var startPoint = ReadAnimatableVector3(obj.GetNamedObject("s"));
+            var endPoint = ReadAnimatableVector3(obj.GetNamedObject("e"));
             var gradientStops = ReadAnimatableGradientStops(obj.GetNamedObject("g"));
             AssertAllFieldsRead(obj);
             return new LinearGradientFill(
@@ -1825,7 +1825,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     throw new LottieCompositionReaderException("Fewer gradient stop values than expected");
                 }
 
-                var gradientStops = new List<GradientStop>(colorStopsDataLength / 4);
+                var colorStops = new List<GradientStop>(colorStopsDataLength / 4);
+                var opacityStops = new List<GradientStop>(colorStopsDataLength / 4);
 
                 var offset = 0.0;
                 var r = 0.0;
@@ -1857,7 +1858,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                                 b /= 255;
                             }
 
-                            gradientStops.Add(GradientStop.FromColor(offset, Color.FromArgb(1, r, g, b)));
+                            colorStops.Add(GradientStop.FromColor(offset, Color.FromArgb(1, r, g, b)));
                             break;
                     }
                 }
@@ -1881,25 +1882,158 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                                 opacity /= 255;
                             }
 
-                            gradientStops.Add(GradientStop.FromOpacity(offset, opacity));
+                            opacityStops.Add(GradientStop.FromOpacity(offset, opacity));
                             break;
                     }
                 }
 
-                // Merge the stops that have the same offset, and order by offset.
-                var merged =
-                    from stop in gradientStops
-                    group stop by stop.Offset into grouped
+                // Interpolate color and opacity stops into a single sequence
+                return new Sequence<GradientStop>(StopsBuilder.Build(colorStops, opacityStops));
+            }
 
-                    // Order by offset.
-                    orderby grouped.Key
+            class StopsBuilder
+            {
+                int _alphaSetTill = -1;
+                List<GradientStop> _result;
 
-                    // Note that if there are multiple color stops with the same offset or
-                    // multiple opacity stops with the same offset, one will be chosen at
-                    // random.
-                    select grouped.Aggregate((g1, g2) => new GradientStop(g1.Offset, g1.Color ?? g2.Color, g1.Opacity ?? g2.Opacity));
+                Color InterpolateColor(Color a, Color b, double percent)
+                {
+                    return Color.FromArgb(
+                        1,
+                        a.R + (percent * (b.R - a.R)),
+                        a.G + (percent * (b.G - a.G)),
+                        a.B + (percent * (b.B - a.B)));
+                }
 
-                return new Sequence<GradientStop>(merged);
+                Color InterpolateColor(GradientStop a, GradientStop b, double time)
+                {
+                    var percent = (time > a.Offset)
+                        ? ((time - a.Offset) / (b.Offset - a.Offset))
+                        : 1;
+                    return InterpolateColor(a.Color, b.Color, percent);
+                }
+
+                StopsBuilder(IList<GradientStop> colorStops, IList<GradientStop> opacityStops)
+                {
+                    _result = new List<GradientStop>(colorStops.Count + opacityStops.Count);
+
+                    ComputeColorStops(colorStops);
+                    AddOpacityStops(opacityStops);
+                }
+
+                public static IList<GradientStop> Build(IList<GradientStop> colorStops, IList<GradientStop> opacityStops)
+                {
+                    return new StopsBuilder(colorStops, opacityStops)._result;
+                }
+
+                void ComputeColorStops(IList<GradientStop> stops)
+                {
+                    foreach (var stop in stops)
+                    {
+                        if (!PushColorStop(stop))
+                        {
+                            break;
+                        }
+                    }
+                }
+
+                void AddOpacityStops(IList<GradientStop> stops)
+                {
+                    foreach (var stop in stops)
+                    {
+                        if (!AddOpacityPoint(stop.Offset, stop.Opacity ?? 1))
+                        {
+                            break;
+                        }
+                    }
+
+                    InterpolateAlphaTill(_result.Count);
+                }
+
+                void InsertOpacityPoint(int index, double time, double opacity)
+                {
+                    var color = (index == 0)
+                        ? _result[index].Color
+                        : (index == _result.Count)
+                        ? _result[index - 1].Color
+                        : InterpolateColor(_result[index - 1], _result[index], time);
+                    color.A = opacity;
+                    _result.Insert(index, GradientStop.FromColor(time, color));
+                    InterpolateAlphaTill(index);
+                }
+
+                bool AddOpacityPoint(double time, double opacity)
+                {
+                    if (_alphaSetTill >= 0 && _result[_alphaSetTill].Offset > time)
+                    {
+                        return false;
+                    }
+
+                    for (int i = _alphaSetTill + 1; i != _result.Count; ++i)
+                    {
+                        if (float.Equals(_result[i].Offset, time))
+                        {
+                            _result[i].Color.A = opacity;
+                            InterpolateAlphaTill(i);
+                            return true;
+                        }
+                        else if (_result[i].Offset > time)
+                        {
+                            InsertOpacityPoint(i, time, opacity);
+                            return true;
+                        }
+                    }
+
+                    InsertOpacityPoint(_result.Count, time, opacity);
+                    return true;
+                }
+
+                bool PushColorStop(GradientStop stop)
+                {
+                    if (_result.Count > 0 && _result.Last().Offset > stop.Offset)
+                    {
+                        return false;
+                    }
+
+                    _result.Add(stop);
+                    return true;
+                }
+
+                void InterpolateAlphaTill(int till)
+                {
+                    var from = _alphaSetTill;
+                    if (from < 0 && till == _result.Count)
+                    {
+                        // All values are 1 already.
+                    }
+                    else if (from < 0 || till == _result.Count)
+                    {
+                        var value = (from >= 0)
+                            ? _result[from].Color.A
+                            : _result[till].Color.A;
+                        for (int i = from + 1; i != till; ++i)
+                        {
+                            _result[i].Color.A = value;
+                        }
+                    }
+                    else
+                    {
+                        var fromTime = _result[from].Offset;
+                        var fromAlpha = _result[from].Color.A;
+                        var tillTime = _result[till].Offset;
+                        var tillAlpha = _result[till].Color.A;
+                        for (int i = from + 1; i != till; ++i)
+                        {
+                            var percent = (tillTime > fromTime)
+                                ? ((_result[i].Offset - fromTime) / (tillTime - fromTime))
+                                : 1;
+                            _result[i].Color.A =
+                                fromAlpha + (percent * (tillAlpha - fromAlpha));
+                        }
+                    }
+
+                    _alphaSetTill = till;
+                }
             }
         }
 

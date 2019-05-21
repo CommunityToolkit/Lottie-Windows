@@ -28,13 +28,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
         public static Color TransparentBlack { get; } = new Color(0, 0, 0, 0);
 
-        public double A { get; }
+        public double A { get; set; }
 
-        public double R { get; }
+        public double R { get; set; }
 
-        public double G { get; }
+        public double G { get; set; }
 
-        public double B { get; }
+        public double B { get; set; }
 
         /// <inheritdoc/>
         public override bool Equals(object obj) => obj is Color && Equals((Color)obj);

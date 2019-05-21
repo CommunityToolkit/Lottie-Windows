@@ -7,13 +7,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 #if PUBLIC_LottieData
     public
 #endif
-    sealed class LinearGradientFill : ShapeLayerContent
+    sealed class LinearGradientFill : ShapeLayerFill
     {
         public LinearGradientFill(
             in ShapeLayerContentArgs args,
             Animatable<double> opacityPercent,
-            Animatable<Vector2> startPoint,
-            Animatable<Vector2> endPoint,
+            IAnimatableVector3 startPoint,
+            IAnimatableVector3 endPoint,
             Animatable<Sequence<GradientStop>> gradientStops)
             : base(in args)
         {
@@ -23,9 +23,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             GradientStops = gradientStops;
         }
 
-        public Animatable<Vector2> StartPoint { get; }
+        public IAnimatableVector3 StartPoint { get; }
 
-        public Animatable<Vector2> EndPoint { get; }
+        public IAnimatableVector3 EndPoint { get; }
 
         public Animatable<double> OpacityPercent { get; }
 

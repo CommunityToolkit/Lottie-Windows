@@ -755,7 +755,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             internal SolidColorStroke Stroke { get; private set; }
 
-            internal SolidColorFill Fill { get; private set; }
+            internal ShapeLayerFill Fill { get; private set; }
 
             internal TrimPath TrimPath { get; private set; }
 
@@ -781,21 +781,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     switch (popped.ContentType)
                     {
                         case ShapeContentType.LinearGradientFill:
-                            _owner._issues.GradientFillIsNotSupported();
-                            {
-                                // We don't yet support gradient fill, but we can at least
-                                // draw something. Use data from the first gradient stop as the fill.
-                                var lgf = (LinearGradientFill)popped;
-                                var lgfArgs = default(ShapeLayerContent.ShapeLayerContentArgs);
-                                lgfArgs.BlendMode = lgf.BlendMode;
-                                Fill = new SolidColorFill(
-                                    in lgfArgs,
-                                    SolidColorFill.PathFillType.EvenOdd,
-                                    new Animatable<Color>(GradientStop.GetFirstColor(lgf.GradientStops.InitialValue.Items), null),
-                                    lgf.OpacityPercent);
-                            }
-
+                            Fill = (LinearGradientFill)popped;
                             break;
+
                         case ShapeContentType.RadialGradientFill:
                             _owner._issues.GradientFillIsNotSupported();
                             {
@@ -819,7 +807,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                             break;
 
                         case ShapeContentType.SolidColorFill:
-                            Fill = ComposeSolidColorFill(Fill, (SolidColorFill)popped);
+                            Fill = ComposeSolidColorFill(Fill as SolidColorFill, (SolidColorFill)popped);
                             break;
 
                         case ShapeContentType.SolidColorStroke:
@@ -1393,7 +1381,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         CanvasGeometry MergeShapeLayerContent(TranslationContext context, ShapeContentContext shapeContext, Stack<ShapeLayerContent> stack, MergePaths.MergeMode mergeMode)
         {
-            var pathFillType = shapeContext.Fill == null ? SolidColorFill.PathFillType.EvenOdd : shapeContext.Fill.FillType;
+            var pathFillType = GetPathFillType(shapeContext.Fill as SolidColorFill);
             var geometries = CreateCanvasGeometries(context, shapeContext, stack, pathFillType).ToArray();
 
             switch (geometries.Length)
@@ -1942,7 +1930,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             CheckForRoundedCornersOnPath(context, shapeContext);
 
-            var fillType = GetPathFillType(shapeContext.Fill);
+            var fillType = GetPathFillType(shapeContext.Fill as SolidColorFill);
 
             // A path is represented as a SpriteShape with a CompositionPathGeometry.
             var compositionPathGeometry = CreatePathGeometry();
@@ -1985,13 +1973,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             if (pathGeometry.IsAnimated)
             {
-                ApplyPathKeyFrameAnimation(context, pathGeometry, GetPathFillType(shapeContext.Fill), compositionPathGeometry, nameof(compositionPathGeometry.Path), "Path");
+                ApplyPathKeyFrameAnimation(context, pathGeometry, GetPathFillType(shapeContext.Fill as SolidColorFill), compositionPathGeometry, nameof(compositionPathGeometry.Path), "Path");
             }
             else
             {
                 compositionPathGeometry.Path = CompositionPathFromPathGeometry(
                     pathGeometry.InitialValue,
-                    GetPathFillType(shapeContext.Fill),
+                    GetPathFillType(shapeContext.Fill as SolidColorFill),
                     optimizeLines: true);
             }
 
@@ -2268,20 +2256,28 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
         }
 
-        CompositionColorBrush TranslateShapeFill(TranslationContext context, SolidColorFill shapeFill, TrimmedAnimatable<double> opacityPercent)
+        CompositionBrush TranslateShapeFill(TranslationContext context, ShapeLayerFill shapeFill, TrimmedAnimatable<double> opacityPercent)
         {
-            if (shapeFill == null)
+            if (shapeFill is SolidColorFill solidFill)
             {
-                return null;
+                // A SolidColorFill is represented as a CompositionColorBrush.
+                return CreateAnimatedColorBrush(
+                    context,
+                    MultiplyAnimatableColorByAnimatableOpacityPercent(
+                        context.TrimAnimatable(solidFill.Color),
+                        context.TrimAnimatable(solidFill.OpacityPercent)),
+                    opacityPercent);
+            }
+            else if (shapeFill is LinearGradientFill linearFill)
+            {
+                //  A LinearGradientFill is represented as a CompositionLinearGradientBrush
+                return CreateAnimatedLinearGradientBrush(
+                    context,
+                    linearFill,
+                    opacityPercent);
             }
 
-            // A ShapeFill is represented as a CompositionColorBrush.
-            return CreateAnimatedColorBrush(
-                context,
-                MultiplyAnimatableColorByAnimatableOpacityPercent(
-                    context.TrimAnimatable(shapeFill.Color),
-                    context.TrimAnimatable(shapeFill.OpacityPercent)),
-                opacityPercent);
+            return null;
         }
 
         ShapeOrVisual? TranslateSolidLayer(TranslationContext context, SolidLayer layer)
@@ -3279,6 +3275,124 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return result;
         }
 
+        CompositionLinearGradientBrush CreateAnimatedLinearGradientBrush(TranslationContext context, in LinearGradientFill gradient, in TrimmedAnimatable<double> opacityPercent)
+        {
+            var result = CreateLinearGradientBrush();
+
+            var startPoint = context.TrimAnimatable(gradient.StartPoint);
+            if (startPoint.IsAnimated)
+            {
+                ApplyVector2KeyFrameAnimation(context, startPoint, result, nameof(result.StartPoint));
+            }
+            else
+            {
+                result.StartPoint = Vector2(startPoint.InitialValue);
+            }
+
+            var endPoint = context.TrimAnimatable(gradient.EndPoint);
+            if (endPoint.IsAnimated)
+            {
+                ApplyVector2KeyFrameAnimation(context, endPoint, result, nameof(result.EndPoint));
+            }
+            else
+            {
+                result.EndPoint = Vector2(endPoint.InitialValue);
+            }
+
+            ApplyColorGradientStops(context, gradient.GradientStops, result, opacityPercent);
+
+            return result;
+        }
+
+        void ApplyColorGradientStops(TranslationContext context, in Animatable<Sequence<GradientStop>> stops, in CompositionGradientBrush result, in TrimmedAnimatable<double> opacityPercent)
+        {
+            var gradientStops = context.TrimAnimatable(stops);
+            if (gradientStops.IsAnimated)
+            {
+                // Convert gradient animatable to single stops animatables, for both color and offset.
+                var colorFrames = new Dictionary<int, List<KeyFrame<Color>>>();
+                var offsetFrames = new Dictionary<int, List<KeyFrame<double>>>();
+
+                foreach (var frame in gradientStops.KeyFrames)
+                {
+                    for (int i = 0; i < frame.Value.Items.Length; i++)
+                    {
+                        if (colorFrames.TryGetValue(i, out var colorValue))
+                        {
+                            colorValue.Add(new KeyFrame<Color>(frame.Frame, frame.Value.Items[i].Color, frame.SpatialControlPoint1, frame.SpatialControlPoint2, frame.Easing));
+                        }
+                        else
+                        {
+                            colorFrames[i] = new List<KeyFrame<Color>> { new KeyFrame<Color>(frame.Frame, frame.Value.Items[i].Color, frame.SpatialControlPoint1, frame.SpatialControlPoint2, frame.Easing) };
+                        }
+
+                        if (offsetFrames.TryGetValue(i, out var offsetValue))
+                        {
+                            offsetValue.Add(new KeyFrame<double>(frame.Frame, frame.Value.Items[i].Offset, frame.SpatialControlPoint1, frame.SpatialControlPoint2, frame.Easing));
+                        }
+                        else
+                        {
+                            offsetFrames[i] = new List<KeyFrame<double>> { new KeyFrame<double>(frame.Frame, frame.Value.Items[i].Offset, frame.SpatialControlPoint1, frame.SpatialControlPoint2, frame.Easing) };
+                        }
+                    }
+                }
+
+                foreach (var id in colorFrames.Keys)
+                {
+                    var color = new Animatable<Color>(colorFrames[id], null);
+                    var colorTrimmed = context.TrimAnimatable(color);
+                    var multipliedColor = MultiplyAnimatableColorByAnimatableOpacityPercent(colorTrimmed, opacityPercent);
+
+                    var offset = new Animatable<double>(offsetFrames[id], null);
+                    var trimmedOffset = context.TrimAnimatable(offset);
+
+                    result.ColorStops.Add(CreateAnimatedColorGradientStop(context, trimmedOffset, multipliedColor));
+                }
+            }
+            else
+            {
+                foreach (var stop in gradientStops.InitialValue.Items)
+                {
+                    result.ColorStops.Add(CreateAnimatedColorGradientStop(context, new TrimmedAnimatable<double>(context, stop.Offset), stop.Color, opacityPercent));
+                }
+            }
+        }
+
+        CompositionColorGradientStop CreateAnimatedColorGradientStop(TranslationContext context, in TrimmedAnimatable<double> offset, in Color color, in TrimmedAnimatable<double> opacityPercent)
+        {
+            var multipliedColor = MultiplyColorByAnimatableOpacityPercent(color, opacityPercent);
+            return CreateAnimatedColorGradientStop(context, offset, multipliedColor);
+        }
+
+        CompositionColorGradientStop CreateAnimatedColorGradientStop(TranslationContext context, in TrimmedAnimatable<double> offset, in TrimmedAnimatable<Color> color)
+        {
+            var result = CreateColorGradientStop((float)offset.InitialValue, color.InitialValue);
+
+            if (offset.IsAnimated)
+            {
+                ApplyScalarKeyFrameAnimation(
+                    context,
+                    offset,
+                    result,
+                    nameof(result.Offset),
+                    "Offset",
+                    null);
+            }
+
+            if (color.IsAnimated)
+            {
+                ApplyColorKeyFrameAnimation(
+                    context,
+                    color,
+                    result,
+                    nameof(result.Color),
+                    "Color",
+                    null);
+            }
+
+            return result;
+        }
+
         // Implements IDisposable.Dispose(). Currently not needed but will be required
         // if this class needs to hold onto any IDisposable objects.
         void IDisposable.Dispose()
@@ -3313,6 +3427,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         CompositionColorBrush CreateColorBrush(Color color)
         {
             return _c.CreateColorBrush(Color(color));
+        }
+
+        CompositionColorGradientStop CreateColorGradientStop(float offset, Color color)
+        {
+            return _c.CreateColorGradientStop(offset, Color(color));
+        }
+
+        CompositionLinearGradientBrush CreateLinearGradientBrush()
+        {
+            return _c.CreateLinearGradientBrush();
         }
 
         CompositionEasingFunction CreateCompositionEasingFunction(Easing easingFunction)

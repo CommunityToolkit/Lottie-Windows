@@ -427,6 +427,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     return GetColorKeyFrameAnimation((ColorKeyFrameAnimation)obj);
                 case CompositionObjectType.CompositionColorBrush:
                     return GetCompositionColorBrush((CompositionColorBrush)obj);
+                case CompositionObjectType.CompositionColorGradientStop:
+                    return GetCompositionColorGradientStop((CompositionColorGradientStop)obj);
                 case CompositionObjectType.CompositionContainerShape:
                     return GetCompositionContainerShape((CompositionContainerShape)obj);
                 case CompositionObjectType.CompositionEffectBrush:
@@ -435,6 +437,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     return GetCompositionEllipseGeometry((CompositionEllipseGeometry)obj);
                 case CompositionObjectType.CompositionGeometricClip:
                     return GetCompositionGeometricClip((CompositionGeometricClip)obj);
+                case CompositionObjectType.CompositionLinearGradientBrush:
+                    return GetCompositionLinearGradientBrush((CompositionLinearGradientBrush)obj);
                 case CompositionObjectType.CompositionPathGeometry:
                     return GetCompositionPathGeometry((CompositionPathGeometry)obj);
                 case CompositionObjectType.CompositionPropertySet:
@@ -1269,6 +1273,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             {
                 case CompositionObjectType.CompositionColorBrush:
                     return GetCompositionColorBrush((CompositionColorBrush)obj);
+                case CompositionObjectType.CompositionLinearGradientBrush:
+                    return GetCompositionLinearGradientBrush((CompositionLinearGradientBrush)obj);
                 case CompositionObjectType.CompositionEffectBrush:
                     return GetCompositionEffectBrush((CompositionEffectBrush)obj);
                 case CompositionObjectType.CompositionSurfaceBrush:
@@ -1286,6 +1292,52 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             }
 
             result = CacheAndInitializeCompositionObject(obj, _c.CreateColorBrush(obj.Color));
+            StartAnimationsAndFreeze(obj, result);
+            return result;
+        }
+
+        CompositionLinearGradientBrush GetCompositionLinearGradientBrush(CompositionLinearGradientBrush obj)
+        {
+            if (GetExisting(obj, out CompositionLinearGradientBrush result))
+            {
+                return result;
+            }
+
+            result = CacheAndInitializeCompositionObject(obj, _c.CreateLinearGradientBrush());
+
+            if (obj.StartPoint.HasValue)
+            {
+                result.StartPoint = obj.StartPoint.Value;
+            }
+
+            if (obj.EndPoint.HasValue)
+            {
+                result.EndPoint = obj.EndPoint.Value;
+            }
+
+            InitializeCompositionGradientBrush(obj, result);
+            StartAnimationsAndFreeze(obj, result);
+            return result;
+        }
+
+        void InitializeCompositionGradientBrush<T>(T source, T target)
+            where T : CompositionGradientBrush
+        {
+            var colorStops = target.ColorStops;
+            foreach (var colorStop in source.ColorStops)
+            {
+                colorStops.Add(GetCompositionColorGradientStop(colorStop));
+            }
+        }
+
+        CompositionColorGradientStop GetCompositionColorGradientStop(CompositionColorGradientStop obj)
+        {
+            if (GetExisting(obj, out CompositionColorGradientStop result))
+            {
+                return result;
+            }
+
+            result = CacheAndInitializeCompositionObject(obj, _c.CreateColorGradientStop(obj.Offset, obj.Color));
             StartAnimationsAndFreeze(obj, result);
             return result;
         }

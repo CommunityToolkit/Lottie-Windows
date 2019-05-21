@@ -29,6 +29,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 
         public CompositionColorBrush CreateColorBrush(Wui.Color color) => new CompositionColorBrush(color);
 
+        public CompositionColorGradientStop CreateColorGradientStop(float offset, Wui.Color color) => new CompositionColorGradientStop(offset, color);
+
+        public CompositionLinearGradientBrush CreateLinearGradientBrush() => new CompositionLinearGradientBrush();
+
         public CompositionPathGeometry CreatePathGeometry() => new CompositionPathGeometry();
 
         public CompositionPathGeometry CreatePathGeometry(CompositionPath path) => new CompositionPathGeometry(path);

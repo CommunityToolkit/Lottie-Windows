@@ -112,6 +112,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 case CompositionObjectType.CompositionColorBrush:
                     VisitCompositionColorBrush((CompositionColorBrush)obj, node);
                     break;
+                case CompositionObjectType.CompositionColorGradientStop:
+                    VisitCompositionColorGradientStop((CompositionColorGradientStop)obj, node);
+                    break;
                 case CompositionObjectType.CompositionContainerShape:
                     VisitCompositionContainerShape((CompositionContainerShape)obj, node);
                     break;
@@ -126,6 +129,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                     break;
                 case CompositionObjectType.CompositionPathGeometry:
                     VisitCompositionPathGeometry((CompositionPathGeometry)obj, node);
+                    break;
+                case CompositionObjectType.CompositionLinearGradientBrush:
+                    VisitCompositionLinearGradientBrush((CompositionLinearGradientBrush)obj, node);
                     break;
                 case CompositionObjectType.CompositionPropertySet:
                     VisitCompositionPropertySet((CompositionPropertySet)obj, node);
@@ -528,6 +534,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             return true;
         }
 
+        bool VisitCompositionGradientBrush(CompositionGradientBrush obj, T node)
+        {
+            VisitCompositionBrush(obj, node);
+            foreach (var colorStop in obj.ColorStops)
+            {
+                Reference(node, colorStop);
+            }
+
+            return true;
+        }
+
+        bool VisitCompositionLinearGradientBrush(CompositionLinearGradientBrush obj, T node)
+        {
+            return VisitCompositionGradientBrush(obj, node);
+        }
+
         bool VisitCompositionBrush(CompositionBrush obj, T node)
         {
             return VisitCompositionObject(obj, node);
@@ -541,6 +563,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
         bool VisitCompositionColorBrush(CompositionColorBrush obj, T node)
         {
             return VisitCompositionBrush(obj, node);
+        }
+
+        bool VisitCompositionColorGradientStop(CompositionColorGradientStop obj, T node)
+        {
+            return VisitCompositionObject(obj, node);
         }
 
         bool VisitCompositionContainerShape(CompositionContainerShape obj, T node)

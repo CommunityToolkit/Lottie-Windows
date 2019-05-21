@@ -11,18 +11,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 #if PUBLIC_LottieData
     public
 #endif
-    readonly struct GradientStop
+    readonly struct GradientStop : IEquatable<GradientStop>
     {
         public GradientStop(double offset, Color color, double? opacity)
         {
-            if (color != null)
-            {
-                if (color.A != 1)
-                {
-                    throw new ArgumentException("Color must have an alpha of 1");
-                }
-            }
-            else if (opacity == null)
+            if (color == null || opacity == null)
             {
                 throw new ArgumentException("Color or opacity must be specified");
             }
@@ -73,5 +66,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         }
 
         static string ToHex(double value) => ((byte)(value * 255)).ToString("X2");
+
+        public bool Equals(GradientStop other)
+        {
+            return other.Color == Color && other.Offset == Offset;
+        }
     }
 }

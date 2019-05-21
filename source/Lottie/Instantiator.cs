@@ -350,6 +350,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                     return GetColorKeyFrameAnimation((Wd.ColorKeyFrameAnimation)obj);
                 case Wd.CompositionObjectType.CompositionColorBrush:
                     return GetCompositionColorBrush((Wd.CompositionColorBrush)obj);
+                case Wd.CompositionObjectType.CompositionColorGradientStop:
+                    return GetCompositionColorGradientStop((Wd.CompositionColorGradientStop)obj);
                 case Wd.CompositionObjectType.CompositionContainerShape:
                     return GetCompositionContainerShape((Wd.CompositionContainerShape)obj);
                 case Wd.CompositionObjectType.CompositionEffectBrush:
@@ -358,6 +360,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                     return GetCompositionEllipseGeometry((Wd.CompositionEllipseGeometry)obj);
                 case Wd.CompositionObjectType.CompositionGeometricClip:
                     return GetCompositionGeometricClip((Wd.CompositionGeometricClip)obj);
+                case Wd.CompositionObjectType.CompositionLinearGradientBrush:
+                    return GetCompositionLinearGradientBrush((Wd.CompositionLinearGradientBrush)obj);
                 case Wd.CompositionObjectType.CompositionPathGeometry:
                     return GetCompositionPathGeometry((Wd.CompositionPathGeometry)obj);
                 case Wd.CompositionObjectType.CompositionPropertySet:
@@ -1187,6 +1191,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             {
                 case Wd.CompositionObjectType.CompositionColorBrush:
                     return GetCompositionColorBrush((Wd.CompositionColorBrush)obj);
+                case Wd.CompositionObjectType.CompositionLinearGradientBrush:
+                    return GetCompositionLinearGradientBrush((Wd.CompositionLinearGradientBrush)obj);
                 case Wd.CompositionObjectType.CompositionEffectBrush:
                     return GetCompositionEffectBrush((Wd.CompositionEffectBrush)obj);
                 case Wd.CompositionObjectType.CompositionSurfaceBrush:
@@ -1204,6 +1210,53 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             }
 
             result = CacheAndInitializeCompositionObject(obj, _c.CreateColorBrush(Color(obj.Color)));
+            StartAnimations(obj, result);
+            return result;
+        }
+
+        Wc.CompositionLinearGradientBrush GetCompositionLinearGradientBrush(Wd.CompositionLinearGradientBrush obj)
+        {
+            if (GetExisting(obj, out Wc.CompositionLinearGradientBrush result))
+            {
+                return result;
+            }
+
+            result = CacheAndInitializeCompositionObject(obj, _c.CreateLinearGradientBrush());
+
+            result.MappingMode = Wc.CompositionMappingMode.Absolute;
+
+            if (obj.StartPoint.HasValue)
+            {
+                result.StartPoint = obj.StartPoint.Value;
+            }
+
+            if (obj.EndPoint.HasValue)
+            {
+                result.EndPoint = obj.EndPoint.Value;
+            }
+
+            InitializeCompositionGradientBrush(obj, result);
+            StartAnimations(obj, result);
+            return result;
+        }
+
+        void InitializeCompositionGradientBrush(Wd.CompositionGradientBrush source, Wc.CompositionGradientBrush target)
+        {
+            var colorStops = target.ColorStops;
+            foreach (var colorStop in source.ColorStops)
+            {
+                colorStops.Add(GetCompositionColorGradientStop(colorStop));
+            }
+        }
+
+        Wc.CompositionColorGradientStop GetCompositionColorGradientStop(Wd.CompositionColorGradientStop obj)
+        {
+            if (GetExisting(obj, out Wc.CompositionColorGradientStop result))
+            {
+                return result;
+            }
+
+            result = CacheAndInitializeCompositionObject(obj, _c.CreateColorGradientStop(obj.Offset, Color(obj.Color)));
             StartAnimations(obj, result);
             return result;
         }
