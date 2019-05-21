@@ -787,7 +787,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         sealed class ShapeContentContext
         {
-            static readonly Animatable<double> s_defaultOpacityPercent = new Animatable<double>(100, null);
+            static readonly Animatable<double> s_100Percent = new Animatable<double>(100, null);
 
             readonly LottieToWinCompTranslator _owner;
 
@@ -809,7 +809,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             internal ShapeContentContext(LottieToWinCompTranslator owner)
             {
                 _owner = owner;
-                OpacityPercent = s_defaultOpacityPercent;
+
+                // Assume opacity is 100% unless otherwise set.
+                OpacityPercent = s_100Percent;
             }
 
             internal void UpdateFromStack(Stack<ShapeLayerContent> stack)
@@ -913,12 +915,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             Animatable<double> ComposeOpacityPercents(Animatable<double> a, Animatable<double> b)
             {
-                if (a == null || ReferenceEquals(a, s_defaultOpacityPercent))
+                if (a == null || ReferenceEquals(a, s_100Percent))
                 {
                     return b;
                 }
 
-                if (b == null || ReferenceEquals(b, s_defaultOpacityPercent))
+                if (b == null || ReferenceEquals(b, s_100Percent))
                 {
                     return a;
                 }
