@@ -10,7 +10,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 {
     /// <summary>
     /// The context in which to translate a composition. This is used to ensure that
-    /// layers translated in the context of the composition or their containing
+    /// layers are translated in the context of the composition or their containing
     /// PreComp, and to carry around other context-specific state.
     /// </summary>
     abstract class TranslationContext
@@ -72,7 +72,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         }
 
         // Constructs a context for the given PreCompLayer that is a child of this context.
-        internal TranslationContext SubContext(PreCompLayer layer, LayerCollection layers)
+        internal For<PreCompLayer> SubContext(PreCompLayer layer, LayerCollection layers)
         {
             var result = new For<PreCompLayer>(this, layer);
 
@@ -82,6 +82,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             result.StartTime = StartTime - layer.StartTime;
             result.Layers = layers;
             result.DurationInFrames = DurationInFrames;
+
             return result;
         }
 
