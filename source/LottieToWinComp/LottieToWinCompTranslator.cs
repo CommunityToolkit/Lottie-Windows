@@ -582,11 +582,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             //
 
             // Get the opacity of the layer.
-            var layerOpacityPercent = layer.Transform.OpacityPercent;
+            var layerOpacityPercent = context.Layer.Transform.OpacityPercent;
 
             // Convert the layer's in point and out point into absolute progress (0..1) values.
-            var inProgress = GetInPointProgress(context, layer);
-            var outProgress = GetOutPointProgress(context, layer);
+            var inProgress = GetInPointProgress(context);
+            var outProgress = GetOutPointProgress(context);
 
             if (inProgress > 1 || outProgress <= 0 || layerOpacityPercent.AlwaysEquals(0))
             {
@@ -597,7 +597,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
 
             // Create the transforms chain.
-            TranslateTransformOnContainerVisualForLayer(context, layer, out rootNode, out contentsNode);
+            TranslateTransformOnContainerVisualForLayer(context, context.Layer, out rootNode, out contentsNode);
 
             // Implement opacity for the layer.
             if (layerOpacityPercent.IsAnimated || layerOpacityPercent.InitialValue < 100)
@@ -607,7 +607,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
                 if (_addDescriptions)
                 {
-                    Describe(opacityNode, $"Opacity for layer: {layer.Name}");
+                    Describe(opacityNode, $"Opacity for layer: {context.Layer.Name}");
                 }
 
                 opacityNode.Children.Add(rootNode);
@@ -632,7 +632,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
                 if (_addDescriptions)
                 {
-                    Describe(visibilityNode, $"Visibility for layer: {layer.Name}");
+                    Describe(visibilityNode, $"Visibility for layer: {context.Layer.Name}");
                 }
 
                 visibilityNode.Children.Add(rootNode);
@@ -1182,7 +1182,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 // Only push the opacity to the context if there are no masks. If the layer has masks
                 // the opacity is already set on one of the Visuals created by
                 // TryCreateContainerVisualTransformChain(...)
-                shapeContext.UpdateOpacityFromTransform(layer.Transform);
+                shapeContext.UpdateOpacityFromTransform(context.Layer.Transform);
             }
 
             containerShapeContentNode.Shapes.Add(TranslateShapeLayerContents(context, shapeContext, context.Layer.Contents));
@@ -2376,8 +2376,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             // for the layer from TryCreateContainerVisualTransformChain.
             // If that layer has no masks, opacity is implemented via the alpha channel on the brush.
             rectangle.FillBrush = layerHasMasks
-                ? CreateColorBrush(layer.Color)
-                : CreateAnimatedColorBrush(context, layer.Color, context.TrimAnimatable(layer.Transform.OpacityPercent));
+                ? CreateColorBrush(context.Layer.Color)
+                : CreateAnimatedColorBrush(context, context.Layer.Color, context.TrimAnimatable(context.Layer.Transform.OpacityPercent));
 
             if (_addDescriptions)
             {
