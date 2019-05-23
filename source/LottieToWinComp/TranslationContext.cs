@@ -50,16 +50,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         internal double DurationInFrames { get; private set; }
 
         // Constructs a context for the given layer that is a child of this context.
+        // If the given PreCompLayer is an asset, use this constructor.
         internal For<T> SubContext<T>(T layer)
             where T : Layer
         {
-            if (layer is PreCompLayer)
-            {
-                // PreCompLayers need to be created with a specialized overload that
-                // defines a new temporal and spatial space.
-                throw new InvalidOperationException();
-            }
-
             var result = new For<T>(this, layer);
 
             result.Width = Width;

@@ -413,7 +413,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     // Null layers only exist to hold transforms when declared as parents of other layers.
                     return null;
                 case Layer.LayerType.PreComp:
-                    return TranslatePreCompLayerToVisual(parentContext.SubContext((PreCompLayer)layer, parentContext.Layers));
+                    return TranslatePreCompLayerToVisual(parentContext.SubContext((PreCompLayer)layer));
                 case Layer.LayerType.Shape:
                     return TranslateShapeLayer(parentContext.SubContext((ShapeLayer)layer));
                 case Layer.LayerType.Solid:
