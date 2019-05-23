@@ -26,6 +26,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal double Height { get; }
 
+        internal System.Numerics.Vector2 Dimensions { get; }
+
         // The start time of the current layer, in composition time.
         internal double StartTime { get; }
 
@@ -41,6 +43,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             DurationInFrames = lottieComposition.OutPoint - lottieComposition.InPoint;
             Width = lottieComposition.Width;
             Height = lottieComposition.Height;
+            Dimensions = new System.Numerics.Vector2((float)Width, (float)Height);
         }
 
         // Constructs a context for the given layer.

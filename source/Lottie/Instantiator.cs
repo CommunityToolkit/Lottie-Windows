@@ -880,15 +880,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             }
 
             var effect = obj.GetEffect();
-
-            Wge.IGraphicsEffect graphicsEffect = null;
-
-            // Initialize the effect
             switch (effect.Type)
             {
                 case Wd.Mgce.GraphicsEffectType.CompositeEffect:
+                    // Initialize the effect
                     var compositeEffect = new Mgce.CompositeEffect();
-                    graphicsEffect = compositeEffect;
                     compositeEffect.Mode = CanvasComposite(((Wd.Mgce.CompositeEffect)obj.GetEffect()).Mode);
                     var wdCompositeEffect = (Wd.Mgce.CompositeEffect)effect;
                     foreach (var source in wdCompositeEffect.Sources)
@@ -896,22 +892,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                         compositeEffect.Sources.Add(new Wc.CompositionEffectSourceParameter(source.Name));
                     }
 
-                    break;
-                default:
-                    throw new InvalidOperationException();
-            }
+                    // Create the EffectFactory.
+                    // The IGraphicsEffect must be fully initialized and populated before calling CreateEffectFactory.
+                    var effectFactory = _c.CreateEffectFactory(compositeEffect);
 
-            // Create the EffectFactory.
-            // The IGraphicsEffect must be fully initialized and populated before calling CreateEffectFactory
-            var effectFactory = _c.CreateEffectFactory(graphicsEffect);
-
-            // Initialize the brush
-            switch (effect.Type)
-            {
-                case Wd.Mgce.GraphicsEffectType.CompositeEffect:
+                    // Initialize the brush
                     var compositeEffectBrush = effectFactory.CreateBrush();
                     result = CacheAndInitializeCompositionObject(obj, compositeEffectBrush);
-                    var wdCompositeEffect = (Wd.Mgce.CompositeEffect)effect;
                     foreach (var source in wdCompositeEffect.Sources)
                     {
                         result.SetSourceParameter(source.Name, GetCompositionBrush(obj.GetSourceParameter(source.Name)));
