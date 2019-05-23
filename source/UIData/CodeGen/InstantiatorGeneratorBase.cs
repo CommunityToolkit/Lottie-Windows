@@ -603,6 +603,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     return GenerateColorKeyFrameAnimationFactory(builder, (ColorKeyFrameAnimation)obj, node);
                 case CompositionObjectType.CompositionColorBrush:
                     return GenerateCompositionColorBrushFactory(builder, (CompositionColorBrush)obj, node);
+                case CompositionObjectType.CompositionColorGradientStop:
+                    return GenerateCompositionColorGradientStopFactory(builder, (CompositionColorGradientStop)obj, node);
                 case CompositionObjectType.CompositionContainerShape:
                     return GenerateContainerShapeFactory(builder, (CompositionContainerShape)obj, node);
                 case CompositionObjectType.CompositionEffectBrush:
@@ -611,6 +613,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     return GenerateCompositionEllipseGeometryFactory(builder, (CompositionEllipseGeometry)obj, node);
                 case CompositionObjectType.CompositionGeometricClip:
                     return GenerateCompositionGeometricClipFactory(builder, (CompositionGeometricClip)obj, node);
+                case CompositionObjectType.CompositionLinearGradientBrush:
+                    return GenerateCompositionLinearGradientBrushFactory(builder, (CompositionLinearGradientBrush)obj, node);
                 case CompositionObjectType.CompositionPathGeometry:
                     return GenerateCompositionPathGeometryFactory(builder, (CompositionPathGeometry)obj, node);
                 case CompositionObjectType.CompositionPropertySet:
@@ -1011,6 +1015,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             }
         }
 
+        void InitializeCompositionGradientBrush(CodeBuilder builder, CompositionGradientBrush obj, ObjectData node)
+        {
+            InitializeCompositionObject(builder, obj, node);
+
+            if (obj.ColorStops.Any())
+            {
+                builder.WriteLine($"{Var} colorStops = result{Deref}ColorStops;");
+                foreach (var colorStop in obj.ColorStops)
+                {
+                    builder.WriteLine($"colorStops{Deref}Add({CallFactoryFromFor(node, colorStop)});");
+                }
+            }
+
+            builder.WriteLine($"result{Deref}MappingMode = CompositionMappingMode{Deref}Absolute;");
+        }
+
         void InitializeCompositionAnimation(CodeBuilder builder, CompositionAnimation obj, ObjectData node)
         {
             InitializeCompositionAnimationWithParameters(
@@ -1258,6 +1278,46 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 WriteSimpleObjectFactory(builder, node, createCallText);
             }
 
+            return true;
+        }
+
+        bool GenerateCompositionColorGradientStopFactory(CodeBuilder builder, CompositionColorGradientStop obj, ObjectData node)
+        {
+            var createCallText = $"_c{Deref}CreateColorGradientStop({Float(obj.Offset)}, {Color(obj.Color)})";
+
+            if (obj.Animators.Count > 0)
+            {
+                WriteObjectFactoryStart(builder, node);
+                WriteCreateAssignment(builder, node, createCallText);
+                StartAnimations(builder, obj, node);
+                WriteObjectFactoryEnd(builder);
+            }
+            else
+            {
+                WriteSimpleObjectFactory(builder, node, createCallText);
+            }
+
+            return true;
+        }
+
+        bool GenerateCompositionLinearGradientBrushFactory(CodeBuilder builder, CompositionLinearGradientBrush obj, ObjectData node)
+        {
+            WriteObjectFactoryStart(builder, node);
+            WriteCreateAssignment(builder, node, $"_c{Deref}CreateLinearGradientBrush()");
+
+            if (obj.StartPoint.HasValue)
+            {
+                builder.WriteLine($"result{Deref}StartPoint = {Vector2(obj.StartPoint.Value)};");
+            }
+
+            if (obj.EndPoint != null)
+            {
+                builder.WriteLine($"result{Deref}EndPoint = {Vector2(obj.EndPoint.Value)};");
+            }
+
+            InitializeCompositionGradientBrush(builder, obj, node);
+            StartAnimations(builder, obj, node);
+            WriteObjectFactoryEnd(builder);
             return true;
         }
 
