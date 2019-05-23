@@ -751,7 +751,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 #endif
 
             // TODO - the animations produced inside a PreComp need to be time-mapped.
-            var layerCollectionAsset = (LayerCollectionAsset)GetAssetById(assetId: context.Layer.RefId, expectedAssetType: Asset.AssetType.LayerCollection, layerType: context.Layer.Type);
+            var layerCollectionAsset = (LayerCollectionAsset)GetAssetById(
+                                            assetId: context.Layer.RefId,
+                                            expectedAssetType: Asset.AssetType.LayerCollection,
+                                            layerType: context.Layer.Type);
             if (layerCollectionAsset == null)
             {
                 return null;
@@ -759,8 +762,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             // Push the reference layers onto the stack. These will be used to look up parent transforms for layers under this precomp.
             var referencedLayers = layerCollectionAsset.Layers;
-            var subContext = context.SubContext(context.Layer, referencedLayers);
-            AddTranslatedLayersToContainerVisual(contentsNode, subContext, $"{context.Layer.Name}:{layerCollectionAsset.Id}");
+            AddTranslatedLayersToContainerVisual(
+                contentsNode,
+                context.PreCompSubContext(referencedLayers),
+                $"{context.Layer.Name}:{layerCollectionAsset.Id}");
 
             return result;
         }
