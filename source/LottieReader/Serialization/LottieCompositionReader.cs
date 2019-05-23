@@ -1091,7 +1091,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             var color = ReadColor(obj);
             var opacityPercent = ReadOpacityPercent(obj);
             var isWindingFill = ReadBool(obj, "r") == true;
-            var fillType = isWindingFill ? SolidColorFill.PathFillType.Winding : SolidColorFill.PathFillType.EvenOdd;
+            var fillType = isWindingFill ? SolidColorFill.PathFillMode.Winding : SolidColorFill.PathFillMode.EvenOdd;
             AssertAllFieldsRead(obj);
             return new SolidColorFill(in shapeLayerContentArgs, fillType, color, opacityPercent);
         }

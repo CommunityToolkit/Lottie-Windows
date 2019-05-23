@@ -40,6 +40,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         public Animatable<double> OpacityPercent { get; }
 
         /// <inheritdoc/>
+        public override ShapeFillType FillType => ShapeFillType.RadialGradientFill;
+
+        /// <inheritdoc/>
         public override ShapeContentType ContentType => ShapeContentType.RadialGradientFill;
 
         /// <inheritdoc/>

@@ -49,5 +49,33 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         public override string ToString() => $"#{ToHex(A)}{ToHex(R)}{ToHex(G)}{ToHex(B)}";
 
         static string ToHex(double value) => ((byte)(value * 255)).ToString("X2");
+
+        public static bool operator ==(Color obj1, Color obj2)
+        {
+            if (ReferenceEquals(obj1, obj2))
+            {
+                return true;
+            }
+
+            if (obj1 is null)
+            {
+                return false;
+            }
+
+            if (obj2 is null)
+            {
+                return false;
+            }
+
+            return obj1.A == obj2.A
+                && obj1.R == obj2.R
+                && obj1.G == obj2.G
+                && obj1.B == obj2.B;
+        }
+
+        public static bool operator !=(Color obj1, Color obj2)
+        {
+            return !(obj1 == obj2);
+        }
     }
 }

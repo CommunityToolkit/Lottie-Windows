@@ -13,5 +13,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             : base(args)
         {
         }
+
+        /// <summary>
+        /// Gets the <see cref="ShapeFillType"/> of the <see cref="ShapeLayerFill"/> object.
+        /// </summary>
+        public abstract ShapeFillType FillType { get; }
     }
 }

@@ -32,6 +32,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         public Animatable<Sequence<GradientStop>> GradientStops { get; }
 
         /// <inheritdoc/>
+        public override ShapeFillType FillType => ShapeFillType.LinearGradientFill;
+
+        /// <inheritdoc/>
         public override ShapeContentType ContentType => ShapeContentType.LinearGradientFill;
 
         /// <inheritdoc/>

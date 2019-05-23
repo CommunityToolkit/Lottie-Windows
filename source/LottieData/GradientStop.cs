@@ -15,7 +15,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
     {
         public GradientStop(double offset, Color color, double? opacity)
         {
-            if (color == null || opacity == null)
+            if (color == null && opacity == null)
             {
                 throw new ArgumentException("Color or opacity must be specified");
             }
@@ -38,7 +38,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// set to 1.
         /// </summary>
         /// <returns>The first gradient stop in the sequence.</returns>
-        public static Color GetFirstColor(ReadOnlySpan<GradientStop> gradientStops)
+        public static Color GetFirstColor(GradientStop[] gradientStops)
         {
             foreach (var stop in gradientStops)
             {
@@ -49,6 +49,27 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             }
 
             return null;
+        }
+
+        /// <inheritdoc/>
+        public override bool Equals(object obj) => obj is GradientStop && Equals((GradientStop)obj);
+
+        /// <inheritdoc/>
+        public bool Equals(GradientStop other) => Color == other.Color && Opacity == other.Opacity && Offset == other.Offset;
+
+        /// <inheritdoc/>
+        //public override int GetHashCode() => (A * R * G * B).GetHashCode();
+        public override int GetHashCode()
+        {
+            var rgb = Color == null
+                ? 0
+                : Color.GetHashCode();
+
+            var opacity = Opacity.HasValue
+                ? Opacity.Value.GetHashCode()
+                : 0;
+
+            return rgb ^ opacity ^ Offset.GetHashCode();
         }
 
         /// <inheritdoc/>
@@ -67,9 +88,21 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
         static string ToHex(double value) => ((byte)(value * 255)).ToString("X2");
 
-        public bool Equals(GradientStop other)
+        public static bool operator ==(GradientStop obj1, GradientStop obj2)
         {
-            return other.Color == Color && other.Offset == Offset;
+            if (ReferenceEquals(obj1, obj2))
+            {
+                return true;
+            }
+
+            return obj1.Color == obj2.Color
+                && obj1.Opacity == obj2.Opacity
+                && obj1.Offset == obj2.Offset;
+        }
+
+        public static bool operator !=(GradientStop obj1, GradientStop obj2)
+        {
+            return !(obj1 == obj2);
         }
     }
 }
