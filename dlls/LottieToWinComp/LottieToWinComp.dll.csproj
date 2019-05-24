@@ -12,5 +12,7 @@
   <ItemGroup>
     <ProjectReference Include="..\LottieData\LottieData.dll.csproj" />
     <ProjectReference Include="..\WinCompData\WinCompData.dll.csproj" />
+    <ProjectReference Include="..\WinStorageStreamsData\WinStorageStreamsData.dll.csproj" />
+    <ProjectReference Include="..\WinUIXamlMediaData\WinUIXamlMediaData.dll.csproj" />
   </ItemGroup>
 </Project>

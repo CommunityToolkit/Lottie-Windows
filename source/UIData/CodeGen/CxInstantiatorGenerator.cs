@@ -2,9 +2,11 @@
 // Licensed under the MIT License.
 
 using System;
+using System.Collections.Generic;
 using System.Numerics;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
+using Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 {
@@ -17,6 +19,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         readonly string _headerFileName;
 
         CxInstantiatorGenerator(
+            string className,
             CompositionObject graphRoot,
             TimeSpan duration,
             bool setCommentProperties,
@@ -24,6 +27,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             CppStringifier stringifier,
             string headerFileName)
             : base(
+                  className: className,
                   graphRoot: graphRoot,
                   duration: duration,
                   setCommentProperties: setCommentProperties,
@@ -38,19 +42,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// Returns the Cx code for a factory that will instantiate the given <see cref="Visual"/> as a
         /// Windows.UI.Composition Visual.
         /// </summary>
-        public static void CreateFactoryCode(
+        /// <returns>A value tuple containing the cpp code, header code, and list of referenced asset files.</returns>
+        public static (string cppText, string hText, IEnumerable<Uri> assetList) CreateFactoryCode(
             string className,
             Visual rootVisual,
             float width,
             float height,
             TimeSpan duration,
             string headerFileName,
-            out string cppText,
-            out string hText,
-            // Rarely set options used mostly for testing.
-            bool disableFieldOptimization = false)
+            bool disableFieldOptimization)
         {
             var generator = new CxInstantiatorGenerator(
+                className: className,
                 graphRoot: rootVisual,
                 duration: duration,
                 disableFieldOptimization: disableFieldOptimization,
@@ -58,9 +61,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 stringifier: new CppStringifier(),
                 headerFileName: headerFileName);
 
-            cppText = generator.GenerateCode(className, width, height);
+            var cppText = generator.GenerateCode(className, width, height);
 
-            hText = GenerateHeaderText(className);
+            var hText = GenerateHeaderText(className);
+
+            var assetList = generator.GetAssetsList();
+
+            return (cppText, hText, assetList);
         }
 
         // Generates the .h file contents.
@@ -97,6 +104,10 @@ public:
         {
             builder.WriteLine("#include \"pch.h\"");
             builder.WriteLine($"#include \"{_headerFileName}\"");
+
+            // floatY, floatYxZ
+            builder.WriteLine("#include \"WindowsNumerics.h\"");
+
             if (info.UsesCanvasEffects ||
                 info.UsesCanvasGeometry)
             {
@@ -105,14 +116,16 @@ public:
                 builder.WriteLine("#include <d2d1_1.h>");
                 builder.WriteLine("#include <d2d1helper.h>");
 
-                // floatY, floatYxZ
-                builder.WriteLine("#include \"WindowsNumerics.h\"");
-
                 // Interop
                 builder.WriteLine("#include <Windows.Graphics.Interop.h>");
 
                 // ComPtr
                 builder.WriteLine("#include <wrl.h>");
+            }
+
+            if (info.UsesStreams)
+            {
+                builder.WriteLine("#include <iostream>");
             }
 
             if (info.UsesCanvasEffects ||
@@ -130,17 +143,32 @@ public:
             builder.WriteLine("using namespace Windows::UI::Composition;");
             builder.WriteLine("using namespace Windows::Graphics;");
             builder.WriteLine("using namespace Microsoft::WRL;");
+            if (info.UsesNamespaceWindowsUIXamlMedia)
+            {
+                builder.WriteLine("using namespace Windows::UI::Xaml::Media;");
+            }
+
+            if (info.UsesStreams)
+            {
+                builder.WriteLine("using namespace Platform;");
+                builder.WriteLine("using namespace Windows::Storage::Streams;");
+            }
+
             builder.WriteLine();
 
             // Put the Instantiator class in an anonymous namespace.
             builder.WriteLine("namespace");
             builder.WriteLine("{");
 
-            // Write GeoSource to allow it's use in function definitions
-            builder.WriteLine($"{_stringifier.GeoSourceClass}");
+            if (info.UsesCanvasEffects ||
+                info.UsesCanvasGeometry)
+            {
+                // Write GeoSource to allow it's use in function definitions
+                builder.WriteLine($"{_stringifier.GeoSourceClass}");
 
-            // Typedef to simplify generation
-            builder.WriteLine("typedef ComPtr<GeoSource> CanvasGeometry;");
+                // Typedef to simplify generation
+                builder.WriteLine("typedef ComPtr<GeoSource> CanvasGeometry;");
+            }
         }
 
         /// <inheritdoc/>
@@ -150,8 +178,12 @@ public:
             builder.WriteLine("ref class AnimatedVisual sealed : public Microsoft::UI::Xaml::Controls::IAnimatedVisual");
             builder.OpenScope();
 
-            // D2D factory field.
-            builder.WriteLine("ComPtr<ID2D1Factory> _d2dFactory;");
+            if (info.UsesCanvasEffects ||
+                info.UsesCanvasGeometry)
+            {
+                // D2D factory field.
+                builder.WriteLine("ComPtr<ID2D1Factory> _d2dFactory;");
+            }
         }
 
         /// <inheritdoc/>
@@ -160,23 +192,27 @@ public:
             CodeBuilder builder,
             CodeGenInfo info)
         {
-            // Utility method for D2D geometries
-            builder.WriteLine("static IGeometrySource2D^ CanvasGeometryToIGeometrySource2D(CanvasGeometry geo)");
-            builder.OpenScope();
-            builder.WriteLine("ComPtr<ABI::Windows::Graphics::IGeometrySource2D> interop = geo.Detach();");
-            builder.WriteLine("return reinterpret_cast<IGeometrySource2D^>(interop.Get());");
-            builder.CloseScope();
-            builder.WriteLine();
+            if (info.UsesCanvasEffects ||
+                info.UsesCanvasGeometry)
+            {
+                // Utility method for D2D geometries
+                builder.WriteLine("static IGeometrySource2D^ CanvasGeometryToIGeometrySource2D(CanvasGeometry geo)");
+                builder.OpenScope();
+                builder.WriteLine("ComPtr<ABI::Windows::Graphics::IGeometrySource2D> interop = geo.Detach();");
+                builder.WriteLine("return reinterpret_cast<IGeometrySource2D^>(interop.Get());");
+                builder.CloseScope();
+                builder.WriteLine();
 
-            // Utility method for fail-fasting on bad HRESULTs from d2d operations
-            builder.WriteLine("static void FFHR(HRESULT hr)");
-            builder.OpenScope();
-            builder.WriteLine("if (hr != S_OK)");
-            builder.OpenScope();
-            builder.WriteLine("RoFailFastWithErrorContext(hr);");
-            builder.CloseScope();
-            builder.CloseScope();
-            builder.WriteLine();
+                // Utility method for fail-fasting on bad HRESULTs from d2d operations
+                builder.WriteLine("static void FFHR(HRESULT hr)");
+                builder.OpenScope();
+                builder.WriteLine("if (hr != S_OK)");
+                builder.OpenScope();
+                builder.WriteLine("RoFailFastWithErrorContext(hr);");
+                builder.CloseScope();
+                builder.CloseScope();
+                builder.WriteLine();
+            }
 
             // Write the constructor for the instantiator.
             builder.UnIndent();
@@ -192,7 +228,11 @@ public:
             builder.WriteLine($", {info.ReusableExpressionAnimationFieldName}(compositor->CreateExpressionAnimation())");
             builder.UnIndent();
             builder.OpenScope();
-            builder.WriteLine($"{FailFastWrapper("D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, _d2dFactory.GetAddressOf())")};");
+            if (info.UsesCanvasEffects ||
+                info.UsesCanvasGeometry)
+            {
+                builder.WriteLine($"{FailFastWrapper("D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, _d2dFactory.GetAddressOf())")};");
+            }
 
             // Instantiate the root. This will cause the whole Visual tree to be built and animations started.
             builder.WriteLine("Root();");
@@ -374,6 +414,26 @@ public:
             builder.WriteLine("FFHR(_d2dFactory->CreateTransformedGeometry(geoA, transformMatrix, &transformed));");
             builder.WriteLine("geoA->Release();");
             builder.WriteLine($"result = {FieldAssignment(fieldName)}new GeoSource(transformed);");
+        }
+
+        /// <inheritdoc/>
+        protected override void WriteLoadedImageSurfaceFactory(CodeBuilder builder, CodeGenInfo info, LoadedImageSurface obj, string fieldName, Uri imageUri)
+        {
+            switch (obj.Type)
+            {
+                case LoadedImageSurface.LoadedImageSurfaceType.FromStream:
+                    builder.WriteLine("auto stream = ref new InMemoryRandomAccessStream();");
+                    builder.WriteLine("auto dataWriter = ref new DataWriter(stream->GetOutputStreamAt(0));");
+                    builder.WriteLine($"dataWriter->WriteBytes({fieldName});");
+                    builder.WriteLine("dataWriter->StoreAsync();");
+                    builder.WriteLine("dataWriter->FlushAsync();");
+                    builder.WriteLine("stream->Seek(0);");
+                    builder.WriteLine($"{_stringifier.Var} result = Windows::UI::Xaml::Media::LoadedImageSurface::StartLoadFromStream(stream);");
+                    break;
+                case LoadedImageSurface.LoadedImageSurfaceType.FromUri:
+                    builder.WriteLine($"{_stringifier.Var} result = Windows::UI::Xaml::Media::LoadedImageSurface::StartLoadFromUri(ref new Uri(\"{imageUri}\"));");
+                    break;
+            }
         }
 
         string CanvasFigureLoop(CanvasFigureLoop value) => _stringifier.CanvasFigureLoop(value);

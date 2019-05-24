@@ -102,6 +102,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         public override string FactoryCall(string value) => $"CanvasGeometryToIGeometrySource2D({value})";
 
+        public override string ByteArray => "Array<byte>";
+
         public string FailFastWrapper(string value) => $"FFHR({value})";
 
         /// <summary>

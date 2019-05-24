@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>39C6B7F3-5E75-4019-82AB-00FD8A0A06E2</SharedGUID>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)YamlFactory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)YamlMap.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)YamlObject.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)YamlObjectKind.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)YamlScalar.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)YamlSequence.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)YamlWriter.cs" />
+  </ItemGroup>
+</Project>

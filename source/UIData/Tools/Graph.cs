@@ -90,6 +90,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             CompositionObject,
             CompositionPath,
             CanvasGeometry,
+            LoadedImageSurface,
         }
 
         protected void InitializeNode<T>(T node, NodeType type, int position)

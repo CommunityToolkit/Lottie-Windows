@@ -4,6 +4,7 @@
 
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
@@ -232,6 +233,55 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             remainder = text.Substring(breakAt);
             return text.Substring(0, breakAt);
+        }
+
+        /// <summary>
+        /// Write bytes array as string literals.
+        /// </summary>
+        /// <param name="bytes">Bytes to be converted to string literals.</param>
+        /// <param name="maximumColumns">Width limit of the output byte line.</param>
+        internal void BytesToLiteral(byte[] bytes, int maximumColumns)
+        {
+            var bytesLines = BytesToBytesList(bytes, maximumColumns - 1 - IndentSize).ToArray();
+
+            // Write each byte line one at a time and append ',' at the end, except the last line.
+            int i;
+            for (i = 0; i < bytesLines.Length - 1; i++)
+            {
+                WriteLine($"{bytesLines[i]},");
+            }
+
+            WriteLine(bytesLines[i]);
+        }
+
+        static IEnumerable<string> BytesToBytesList(byte[] bytes, int maximumWidth)
+        {
+            const string delimeter = ", ";
+
+            IEnumerable<string> byteStrings = bytes.Select(b => b.ToString());
+
+            // Keep pulling byte strings into the current collection until the length gets too long or we run out.
+            var accumulator = new List<string>();
+            var currentWidth = 0;
+            foreach (var bs in byteStrings)
+            {
+                if (currentWidth + (delimeter.Length * accumulator.Count) + bs.Length > maximumWidth)
+                {
+                    // There is no room for the next byte string. Output what we have.
+                    yield return string.Join(delimeter, accumulator);
+                    accumulator.Clear();
+                    currentWidth = 0;
+                }
+
+                accumulator.Add(bs.ToString());
+                currentWidth += bs.Length;
+            }
+
+            // If there are any bytes left over, output them now.
+            if (accumulator.Count > 0)
+            {
+                yield return string.Join(", ", accumulator);
+            }
         }
 
         struct CodeLine
