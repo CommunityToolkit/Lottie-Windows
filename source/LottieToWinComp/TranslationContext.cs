@@ -43,7 +43,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal double Height { get; private set; }
 
-		internal System.Numerics.Vector2 Dimensions { get; }
+        internal System.Numerics.Vector2 Dimensions { get; private set; }
 
         // The start time of the current layer, in composition time.
         internal double StartTime { get; private set; }
@@ -60,6 +60,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             result.Width = Width;
             result.Height = Height;
+            result.Dimensions = new System.Numerics.Vector2((float)Width, (float)Height);
             result.StartTime = StartTime;
             result.Layers = Layers;
             result.DurationInFrames = DurationInFrames;
@@ -76,6 +77,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             // Precomps define a new temporal and spatial space.
             result.Width = layer.Width;
             result.Height = layer.Height;
+            result.Dimensions = new System.Numerics.Vector2((float)Width, (float)Height);
             result.StartTime = StartTime - layer.StartTime;
             result.Layers = layers;
             result.DurationInFrames = DurationInFrames;

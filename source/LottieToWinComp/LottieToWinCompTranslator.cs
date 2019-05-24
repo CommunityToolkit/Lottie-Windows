@@ -253,12 +253,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 #if NoClipping
                             shapeVisual.Size = Vector2(float.MaxValue);
 #else
-                            shapeVisual.Size = context.Dimensions;
+                            shapeVisual.Size = Vector2(context.Width, context.Height);
 #endif
                         }
 
                         shapeVisual.Shapes.Add((CompositionShape)item);
-
                         break;
                     case CompositionObjectType.ContainerVisual:
                     case CompositionObjectType.ShapeVisual:
@@ -372,7 +371,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         // which is the final composed masked result.
         Visual TranslateAndApplyMasksOnShapeTree(
             TranslationContext context,
-            Layer layer,
             CompositionContainerShape containerShapeToMask)
         {
             var contextSize = context.Dimensions;
@@ -381,7 +379,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             contentShapeVisual.Size = contextSize;
             contentShapeVisual.Shapes.Add(containerShapeToMask);
 
-            return TranslateAndApplyMasks(context, layer, contentShapeVisual);
+            return TranslateAndApplyMasks(context, context.Layer, contentShapeVisual);
         }
 
         // This function is used to take the paths for the masks defined on a layer
@@ -481,7 +479,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 #if AllowVisualSurface
                 // Create the same transform chain that the visualToBeMasked has so that the mask and the visualToBeMasked can be
                 // correctly overlaid.
-                if (!TryCreateContainerShapeTransformChain(context, layer, out var containerShapeMaskRootNode, out var containerShapeMaskContentNode))
+                if (!TryCreateContainerShapeTransformChain(context, out var containerShapeMaskRootNode, out var containerShapeMaskContentNode))
                 {
                     // The layer is never visible.
                     return null;
@@ -611,7 +609,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         // Translates a Lottie layer into null a Visual or a Shape.
         // Note that ShapeVisual clips to its size.
-        ShapeOrVisual? TranslateLayer(TranslationContext context, Layer layer)
+        ShapeOrVisual? TranslateLayer(TranslationContext parentContext, Layer layer)
         {
             if (layer.Is3d)
             {
@@ -994,11 +992,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             // This must be done after all children are added to the content node.
             bool layerHasMasks = false;
 #if !NoClipping
-            layerHasMasks = layer.Masks.Any();
+            layerHasMasks = context.Layer.Masks.Any();
 #endif
             if (layerHasMasks)
             {
-                var compositedVisual = TranslateAndApplyMasks(context, layer, rootNode);
+                var compositedVisual = TranslateAndApplyMasks(context, context.Layer, rootNode);
 
                 result.Children.Add(compositedVisual);
             }
@@ -1391,12 +1389,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         }
 
         // May return null if the layer does not produce any renderable content.
-        ShapeOrVisual? TranslateShapeLayer(TranslationContext context, ShapeLayer layer)
+        ShapeOrVisual? TranslateShapeLayer(TranslationContext.For<ShapeLayer> context)
         {
+            bool layerHasMasks = false;
+#if !NoClipping
+            layerHasMasks = context.Layer.Masks.Any();
+#endif
+
             CompositionContainerShape containerShapeRootNode = null;
             CompositionContainerShape containerShapeContentNode = null;
 
-            if (!TryCreateContainerShapeTransformChain(context, layer, out containerShapeRootNode, out containerShapeContentNode))
+            if (!TryCreateContainerShapeTransformChain(context, out containerShapeRootNode, out containerShapeContentNode))
             {
                 // The layer is never visible.
                 return null;
@@ -1414,12 +1417,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             containerShapeContentNode.Shapes.Add(TranslateShapeLayerContents(context, shapeContext, context.Layer.Contents));
 
-            var layerHasMasks = false;
-#if !NoClipping
-                 layerHasMasks ? ApplyMaskToTreeWithShapes(context, layer, containerShapeContentNode, containerVisualContentNode, containerVisualRootNode) :
-#endif
-
-            return layerHasMasks ? (ShapeOrVisual)TranslateAndApplyMasksOnShapeTree(context, layer, containerShapeRootNode) : containerShapeRootNode;
+            return layerHasMasks ? (ShapeOrVisual)TranslateAndApplyMasksOnShapeTree(context, containerShapeRootNode) : containerShapeRootNode;
         }
 
         CompositionShape TranslateGroupShapeContent(TranslationContext.For<ShapeLayer> context, ShapeContentContext shapeContext, ShapeGroup group)
@@ -2568,7 +2566,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             CompositionContainerShape containerShapeRootNode = null;
             CompositionContainerShape containerShapeContentNode = null;
-            if (!TryCreateContainerShapeTransformChain(context, layer, out containerShapeRootNode, out containerShapeContentNode))
+            if (!TryCreateContainerShapeTransformChain(context, out containerShapeRootNode, out containerShapeContentNode))
             {
                 // The layer is never visible.
                 return null;
@@ -2581,6 +2579,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             rectangle.Geometry = rectangleGeometry;
 
             containerShapeContentNode.Shapes.Add(rectangle);
+
+            var layerHasMasks = false;
+#if !NoClipping
+            layerHasMasks = context.Layer.Masks.Any();
+#endif
 
             // If the layer has masks then the opacity is set on a Visual in the chain returned
             // for the layer from TryCreateContainerVisualTransformChain.
@@ -2595,12 +2598,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 Describe(rectangleGeometry, "SolidLayerRectangle.RectangleGeometry");
             }
 
-            var layerHasMasks = false;
-#if !NoClipping
-            layerHasMasks = layer.Masks.Any();
-#endif
-
-            return layerHasMasks ? (ShapeOrVisual)TranslateAndApplyMasksOnShapeTree(context, layer, containerShapeRootNode) : containerShapeRootNode;
+            return layerHasMasks ? (ShapeOrVisual)TranslateAndApplyMasksOnShapeTree(context, containerShapeRootNode) : containerShapeRootNode;
         }
 
         Visual TranslateTextLayer(TranslationContext.For<TextLayer> context)
