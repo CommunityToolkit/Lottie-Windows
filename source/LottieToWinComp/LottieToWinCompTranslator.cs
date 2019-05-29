@@ -201,8 +201,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var translatedLayers =
                 (from layer in context.Layers.GetLayersBottomToTop()
                  let translatedLayer = TranslateLayer(context, layer)
-                 where translatedLayer != null
-                 select (translatedLayer: translatedLayer.Value, layer: layer)).ToArray();
+                 where translatedLayer.HasValue()
+                 select (translatedLayer: translatedLayer, layer: layer)).ToArray();
 
             // Set descriptions on each translate layer so that it's clear where the layer starts.
             if (_addDescriptions)
@@ -609,7 +609,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         // Translates a Lottie layer into null a Visual or a Shape.
         // Note that ShapeVisual clips to its size.
-        ShapeOrVisual? TranslateLayer(TranslationContext parentContext, Layer layer)
+        ShapeOrVisual TranslateLayer(TranslationContext parentContext, Layer layer)
         {
             if (layer.Is3d)
             {
@@ -628,7 +628,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             if (layer.IsHidden)
             {
-                return null;
+                return ShapeOrVisual.Null;
             }
 
             switch (layer.Type)
@@ -637,7 +637,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     return TranslateImageLayer(parentContext.SubContext((ImageLayer)layer));
                 case Layer.LayerType.Null:
                     // Null layers only exist to hold transforms when declared as parents of other layers.
-                    return null;
+                    return ShapeOrVisual.Null;
                 case Layer.LayerType.PreComp:
                     return TranslatePreCompLayerToVisual(parentContext.SubContext((PreCompLayer)layer));
                 case Layer.LayerType.Shape:
@@ -1389,7 +1389,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         }
 
         // May return null if the layer does not produce any renderable content.
-        ShapeOrVisual? TranslateShapeLayer(TranslationContext.For<ShapeLayer> context)
+        ShapeOrVisual TranslateShapeLayer(TranslationContext.For<ShapeLayer> context)
         {
             bool layerHasMasks = false;
 #if !NoClipping
@@ -1402,7 +1402,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             if (!TryCreateContainerShapeTransformChain(context, out containerShapeRootNode, out containerShapeContentNode))
             {
                 // The layer is never visible.
-                return null;
+                return ShapeOrVisual.Null;
             }
 
             var shapeContext = new ShapeContentContext(this);
@@ -2555,13 +2555,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 opacityPercent);
         }
 
-        ShapeOrVisual? TranslateSolidLayer(TranslationContext.For<SolidLayer> context)
+        ShapeOrVisual TranslateSolidLayer(TranslationContext.For<SolidLayer> context)
         {
             if (context.Layer.IsHidden || context.Layer.Transform.OpacityPercent.AlwaysEquals(0))
             {
                 // The layer does not render anything. Nothing to translate. This can happen when someone
                 // creates a solid layer to act like a Null layer.
-                return null;
+                return ShapeOrVisual.Null;
             }
 
             CompositionContainerShape containerShapeRootNode = null;
@@ -2569,7 +2569,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             if (!TryCreateContainerShapeTransformChain(context, out containerShapeRootNode, out containerShapeContentNode))
             {
                 // The layer is never visible.
-                return null;
+                return ShapeOrVisual.Null;
             }
 
             var rectangleGeometry = CreateRectangleGeometry();
@@ -3884,6 +3884,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             public static implicit operator ShapeOrVisual(Visual visual) => new ShapeOrVisual(visual);
 
             public static implicit operator CompositionObject(ShapeOrVisual shapeOrVisual) => shapeOrVisual._shapeOrVisual;
+
+            // Static instance with null as the underlying CompositionObject.
+            // This can be used to specify that a valid ShapeOrVisual was not
+            // able to be created.
+            public static ShapeOrVisual Null = new ShapeOrVisual(null);
+
+            public bool HasValue() => _shapeOrVisual != null;
         }
     }
 }
