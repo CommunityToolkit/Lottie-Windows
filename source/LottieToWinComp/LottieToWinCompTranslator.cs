@@ -912,7 +912,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 return null;
             }
 
-            var imageAsset = (ImageAsset)GetAssetById(assetId: context.Layer.RefId, expectedAssetType: Asset.AssetType.Image, layerType: context.Layer.Type);
+            var imageAsset = GetImageAsset(context, context.Layer.RefId);
             if (imageAsset == null)
             {
                 return null;
@@ -965,28 +965,26 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
 #if !NoClipping
             // PreComps must clip to their size.
-            result.Clip = CreateInsetClip();
-
-            // Size is necessary to enable clipping.
-            result.Size = Vector2(context.Width, context.Height);
+            // Create another ContainerVisual to apply clipping to.
+            var clippingNode = CreateContainerVisual();
+            contentsNode.Children.Add(clippingNode);
+            contentsNode = clippingNode;
+            contentsNode.Clip = CreateInsetClip();
+            contentsNode.Size = Vector2(context.Layer.Width, context.Layer.Height);
 #endif
 
             // TODO - the animations produced inside a PreComp need to be time-mapped.
-            var layerCollectionAsset = (LayerCollectionAsset)GetAssetById(
-                                            assetId: context.Layer.RefId,
-                                            expectedAssetType: Asset.AssetType.LayerCollection,
-                                            layerType: context.Layer.Type);
-            if (layerCollectionAsset == null)
+            var referencedLayers = GetLayerCollectionByAssetId(context, context.Layer.RefId);
+            if (referencedLayers == null)
             {
                 return null;
             }
 
             // Push the reference layers onto the stack. These will be used to look up parent transforms for layers under this precomp.
-            var referencedLayers = layerCollectionAsset.Layers;
             AddTranslatedLayersToContainerVisual(
                 contentsNode,
                 context.PreCompSubContext(referencedLayers),
-                $"{context.Layer.Name}:{layerCollectionAsset.Id}");
+                $"{context.Layer.Name}:{context.Layer.RefId}");
 
             // Add mask if the layer has masks.
             // This must be done after all children are added to the content node.
@@ -1008,7 +1006,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return result;
         }
 
-        Asset GetAssetById(string assetId, Asset.AssetType expectedAssetType, Layer.LayerType layerType)
+        LayerCollection GetLayerCollectionByAssetId(TranslationContext context, string assetId)
+            => ((LayerCollectionAsset)GetAssetById(context, assetId, Asset.AssetType.LayerCollection))?.Layers;
+
+        ImageAsset GetImageAsset(TranslationContext context, string assetId)
+            => (ImageAsset)GetAssetById(context, assetId, Asset.AssetType.Image);
+
+        Asset GetAssetById(TranslationContext context, string assetId, Asset.AssetType expectedAssetType)
         {
             var referencedAsset = _lc.Assets.GetAssetById(assetId);
             if (referencedAsset == null)
@@ -1017,7 +1021,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
             else if (referencedAsset.Type != expectedAssetType)
             {
-                _issues.InvalidAssetReferenceFromLayer(layerType.ToString(), assetId, referencedAsset.Type.ToString(), expectedAssetType.ToString());
+                _issues.InvalidAssetReferenceFromLayer(context.Layer.Type.ToString(), assetId, referencedAsset.Type.ToString(), expectedAssetType.ToString());
                 referencedAsset = null;
             }
 
