@@ -20,7 +20,7 @@
 // after RS5
 #if POST_RS5_SDK
 // For allowing of Windows.UI.Composition.VisualSurface and the
-// Lottie features that rely on it
+// Lottie features that rely on it.
 #define AllowVisualSurface
 #endif
 
@@ -201,7 +201,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var translatedLayers =
                 (from layer in context.Layers.GetLayersBottomToTop()
                  let translatedLayer = TranslateLayer(context, layer)
-                 where translatedLayer.HasValue()
+                 where translatedLayer.HasValue
                  select (translatedLayer: translatedLayer, layer: layer)).ToArray();
 
             // Set descriptions on each translate layer so that it's clear where the layer starts.
@@ -220,11 +220,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             // Go through the layers and compose matte layer and layer to be matted into
             // the resulting visuals. Any layer that is not a matte or matted layer is
             // simply returned unmodified.
-            var shapeOrVisuals = ComposeMattedLayers(context, translatedLayers);
+            var shapeOrVisuals = ComposeMattedLayers(context, translatedLayers).ToArray();
 
             // Layers are translated into either a Visual tree or a Shape tree. Convert the list of Visual and
             // Shape roots to a list of Visual roots by wrapping the Shape trees in ShapeVisuals.
-            var translatedAsVisuals = VisualsAndShapesToVisuals(context, shapeOrVisuals.ToArray());
+            var translatedAsVisuals = VisualsAndShapesToVisuals(context, shapeOrVisuals);
 
             var containerChildren = container.Children;
             foreach (var translatedVisual in translatedAsVisuals)
@@ -253,7 +253,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 #if NoClipping
                             shapeVisual.Size = Vector2(float.MaxValue);
 #else
-                            shapeVisual.Size = Vector2(context.Width, context.Height);
+                            shapeVisual.Size = context.Size;
 #endif
                         }
 
@@ -286,20 +286,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         IEnumerable<ShapeOrVisual> ComposeMattedLayers(TranslationContext context, IEnumerable<(ShapeOrVisual translatedLayer, Layer layer)> items)
         {
             // Save off the visual for the layer to be matted when we encounter it. The very next
-            // layer is the matte layer
+            // layer is the matte layer.
             Visual mattedVisual = null;
             Layer.MatteType matteType = Layer.MatteType.None;
 
-            // NOTE: we assume here that the items appear in reverse order from how they appear in the original Lottie file.
+            // NOTE: The items appear in reverse order from how they appear in the original Lottie file.
+            // This means that the layer to be matted appears right before the layer that is the matte.
             foreach (var item in items)
             {
                 var layerIsMattedLayer = false;
 #if AllowVisualSurface
-                layerIsMattedLayer = item.layer.LayerMatteType == Layer.MatteType.Add ||
-                                    item.layer.LayerMatteType == Layer.MatteType.Invert;
+                layerIsMattedLayer = item.layer.LayerMatteType != Layer.MatteType.None;
 #else
-                if (item.layer.LayerMatteType == Layer.MatteType.Add ||
-                    item.layer.LayerMatteType == Layer.MatteType.Invert)
+                if (item.layer.LayerMatteType != Layer.MatteType.None)
                 {
                     _issues.MattesAreNotSupported();
                 }
@@ -311,6 +310,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 {
                     case CompositionObjectType.CompositionContainerShape:
                     case CompositionObjectType.CompositionSpriteShape:
+                        // If the layer is a shape then we need to wrap it
+                        // in a shape visual so that it can be used for matte
+                        // composition.
                         if (layerIsMattedLayer ||
                             mattedVisual != null)
                         {
@@ -320,7 +322,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 #if NoClipping
                             shapeVisual.Size = Vector2(float.MaxValue);
 #else
-                            shapeVisual.Size = context.Dimensions;
+                            shapeVisual.Size = context.Size;
 #endif
                             shapeVisual.Shapes.Add((CompositionShape)item.translatedLayer);
 
@@ -339,8 +341,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
                 if (visual != null)
                 {
-                    // The layer to be matted is expected to come first. It is also expected
-                    // that the matte layer is the very next layer.
+                    // The layer to be matted comes first. The matte layer is the very next layer.
                     if (layerIsMattedLayer)
                     {
                         mattedVisual = visual;
@@ -355,11 +356,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     }
                     else
                     {
+                        // Return the visual that was not a matte layer or a layer to be matted.
                         yield return visual;
                     }
                 }
                 else
                 {
+                    // Return the shape which does not participate in mattes.
                     yield return item.translatedLayer;
                 }
             }
@@ -373,7 +376,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             TranslationContext context,
             CompositionContainerShape containerShapeToMask)
         {
-            var contextSize = context.Dimensions;
+            var contextSize = context.Size;
 
             var contentShapeVisual = CreateShapeVisual();
             contentShapeVisual.Size = contextSize;
@@ -398,65 +401,68 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 foreach (var mask in layer.Masks)
                 {
                     var currentMaskMode = mask.Mode;
-                    bool maskCanBeTranslated = true;
                     if (mask.Inverted)
                     {
                         _issues.MaskWithInvertIsNotSupported();
-                        maskCanBeTranslated = false;
+
+                        // Mask inverted is not supported. Skip this mask.
+                        continue;
                     }
 
                     if (mask.Opacity.IsAnimated ||
                         mask.Opacity.InitialValue != 100)
                     {
                         _issues.MaskWithAlphaIsNotSupported();
-                        maskCanBeTranslated = false;
+
+                        // Opacity on masks is not supported. Skip this mask.
+                        continue;
                     }
 
                     if (mask.Mode != Mask.MaskMode.Additive &&
                         mask.Mode != Mask.MaskMode.Subtract)
                     {
                         _issues.MaskWithUnsupportedMode(mask.Mode.ToString());
-                        maskCanBeTranslated = false;
+
+                        // Only additive and subtractive mask modes are currently supported.
+                        // Skip this mask.
+                        continue;
                     }
 
-                    if (maskCanBeTranslated)
+                    var geometry = context.TrimAnimatable(_lottieDataOptimizer.GetOptimized(mask.Points));
+
+                    var compositionPathGeometry = CreatePathGeometry();
+                    compositionPathGeometry.Path = CompositionPathFromPathGeometry(
+                        geometry.InitialValue,
+                        SolidColorFill.PathFillType.EvenOdd,
+                        optimizeLines: true);
+
+                    if (geometry.IsAnimated)
                     {
-                        var geometry = context.TrimAnimatable(_lottieDataOptimizer.GetOptimized(mask.Points));
+                        ApplyPathKeyFrameAnimation(context, geometry, SolidColorFill.PathFillType.EvenOdd, compositionPathGeometry, "Path", "Path", null);
+                    }
 
-                        var compositionPathGeometry = CreatePathGeometry();
-                        compositionPathGeometry.Path = CompositionPathFromPathGeometry(
-                            geometry.InitialValue,
-                            SolidColorFill.PathFillType.EvenOdd,
-                            optimizeLines: true);
+                    // If we do not know the mask mode yet then set it here.
+                    // We will use this mask mode value to ensure that all
+                    // masks we translate have the same mode.
+                    if (maskMode == Mask.MaskMode.None)
+                    {
+                        maskMode = currentMaskMode;
+                    }
 
-                        if (geometry.IsAnimated)
-                        {
-                            ApplyPathKeyFrameAnimation(context, geometry, SolidColorFill.PathFillType.EvenOdd, compositionPathGeometry, "Path", "Path", null);
-                        }
+                    if (mask.Mode == currentMaskMode)
+                    {
+                        var maskSpriteShape = CreateSpriteShape();
+                        maskSpriteShape.Geometry = compositionPathGeometry;
 
-                        // If we do not know the mask mode yet then set it here.
-                        // We will use this mask mode value to ensure that all
-                        // masks we translate have the same mode.
-                        if (maskMode == Mask.MaskMode.None)
-                        {
-                            maskMode = currentMaskMode;
-                        }
+                        // The mask geometry needs to be colored with something so that it can be used
+                        // as a mask.
+                        maskSpriteShape.FillBrush = CreateColorBrush(LottieData.Color.Black);
 
-                        if (mask.Mode == currentMaskMode)
-                        {
-                            var maskSpriteShape = CreateSpriteShape();
-                            maskSpriteShape.Geometry = compositionPathGeometry;
-
-                            // The mask geometry needs to be colored with something so that it can be used
-                            // as a mask.
-                            maskSpriteShape.FillBrush = CreateColorBrush(LottieData.Color.Black);
-
-                            maskContainerShape.Shapes.Add(maskSpriteShape);
-                        }
-                        else
-                        {
-                            _issues.MaskModesDoNotMatch();
-                        }
+                        maskContainerShape.Shapes.Add(maskSpriteShape);
+                    }
+                    else
+                    {
+                        _issues.MaskModesDoNotMatch();
                     }
                 }
             }
@@ -485,7 +491,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     return null;
                 }
 
-                var contextSize = context.Dimensions;
+                var contextSize = context.Size;
 
                 var maskShapeVisual = CreateShapeVisual();
                 maskShapeVisual.Size = contextSize;
@@ -529,7 +535,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         {
             // Calculate the context size which we will use as the size of the images we want to use
             // for the matte content and the content to be matted.
-            var contextSize = context.Dimensions;
+            var contextSize = context.Size;
 
             var matteLayerVisualSurface = CreateVisualSurface();
             matteLayerVisualSurface.SourceVisual = matteLayer;
@@ -3820,8 +3826,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         static Sn.Vector3 Vector3(double x, double y, double z) => new Sn.Vector3((float)x, (float)y, (float)z);
 
-        static Sn.Vector3 Vector3(float x) => new Sn.Vector3((float)x, (float)x, (float)x);
-
         static Sn.Vector3 Vector3(LottieData.Vector3 vector3) => new Sn.Vector3((float)vector3.X, (float)vector3.Y, (float)vector3.Z);
 
         static Sn.Vector3? Vector3DefaultIsZero(Sn.Vector2 vector2) =>
@@ -3894,7 +3898,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             // able to be created.
             public static ShapeOrVisual Null = new ShapeOrVisual(null);
 
-            public bool HasValue() => _shapeOrVisual != null;
+            public bool HasValue => _shapeOrVisual != null;
         }
     }
 }

@@ -813,9 +813,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 result.SourceVisual = GetVisual(obj.SourceVisual);
             }
 
-            result.SourceSize = obj.SourceSize.Value;
+            if (obj.SourceSize.HasValue)
+            {
+                result.SourceSize = obj.SourceSize.Value;
+            }
 
-            result.SourceOffset = obj.SourceOffset.Value;
+            if (obj.SourceOffset.HasValue)
+            {
+                result.SourceOffset = obj.SourceOffset.Value;
+            }
 
             StartAnimations(obj, result);
             return result;
@@ -887,7 +893,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             switch (effect.Type)
             {
                 case Wd.Mgce.GraphicsEffectType.CompositeEffect:
-                    // Initialize the effect
+                    // Initialize the effect.
                     var compositeEffect = new Mgce.CompositeEffect();
                     compositeEffect.Mode = CanvasComposite(((Wd.Mgce.CompositeEffect)obj.GetEffect()).Mode);
                     var wdCompositeEffect = (Wd.Mgce.CompositeEffect)effect;
@@ -900,7 +906,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                     // The IGraphicsEffect must be fully initialized and populated before calling CreateEffectFactory.
                     var effectFactory = _c.CreateEffectFactory(compositeEffect);
 
-                    // Initialize the brush
+                    // Initialize the brush.
                     var compositeEffectBrush = effectFactory.CreateBrush();
                     result = CacheAndInitializeCompositionObject(obj, compositeEffectBrush);
                     foreach (var source in wdCompositeEffect.Sources)

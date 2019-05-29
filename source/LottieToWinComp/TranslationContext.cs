@@ -5,6 +5,7 @@
 using System;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization;
+using Sn = System.Numerics;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 {
@@ -27,9 +28,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             Layers = lottieComposition.Layers;
             StartTime = lottieComposition.InPoint;
             DurationInFrames = lottieComposition.OutPoint - lottieComposition.InPoint;
-            Width = lottieComposition.Width;
-            Height = lottieComposition.Height;
-            Dimensions = new System.Numerics.Vector2((float)Width, (float)Height);
+            Size = new Sn.Vector2((float)lottieComposition.Width, (float)lottieComposition.Height);
         }
 
         internal TranslationContext ContainingContext { get; }
@@ -39,11 +38,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         // A set of layers that can be referenced by id.
         internal LayerCollection Layers { get; private set; }
 
-        internal double Width { get; private set; }
-
-        internal double Height { get; private set; }
-
-        internal System.Numerics.Vector2 Dimensions { get; private set; }
+        internal Sn.Vector2 Size { get; private set; }
 
         // The start time of the current layer, in composition time.
         internal double StartTime { get; private set; }
@@ -58,9 +53,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         {
             var result = new For<T>(this, layer);
 
-            result.Width = Width;
-            result.Height = Height;
-            result.Dimensions = new System.Numerics.Vector2((float)Width, (float)Height);
+            result.Size = Size;
             result.StartTime = StartTime;
             result.Layers = Layers;
             result.DurationInFrames = DurationInFrames;
@@ -75,9 +68,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var result = new For<PreCompLayer>(this, layer);
 
             // Precomps define a new temporal and spatial space.
-            result.Width = layer.Width;
-            result.Height = layer.Height;
-            result.Dimensions = new System.Numerics.Vector2((float)Width, (float)Height);
+            result.Size = new Sn.Vector2((float)layer.Width, (float)layer.Height);
             result.StartTime = StartTime - layer.StartTime;
             result.Layers = layers;
             result.DurationInFrames = DurationInFrames;
