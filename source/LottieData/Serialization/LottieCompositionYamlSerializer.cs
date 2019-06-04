@@ -438,7 +438,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         static YamlObject FromDouble(double value) => (YamlScalar)value;
 
-        static YamlObject FromColor(Color value) => (YamlScalar)value.ToString();
+        static YamlObject FromColor(Color value) => (YamlScalar)value?.ToString();
 
         static YamlObject FromVector3(Vector3 value)
         {

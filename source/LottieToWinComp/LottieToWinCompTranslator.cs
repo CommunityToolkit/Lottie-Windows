@@ -387,17 +387,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         // This function is used to take the paths for the masks defined on a layer
         // and add them as shapes on the maskContainerShape.
-        Mask.MaskMode TranslateAndAddMaskPaths(
+        bool TranslateAndAddMaskPaths(
             TranslationContext context,
             Layer layer,
-            CompositionContainerShape maskContainerShape)
+            CompositionContainerShape maskContainerShape,
+            out Mask.MaskMode maskMode)
         {
-            Mask.MaskMode maskMode = Mask.MaskMode.None;
+            maskMode = Mask.MaskMode.None;
 
             if (layer.Masks.Any())
             {
                 // Translate the mask paths
-                var compositionPathGeometryMasks = new List<(Mask mask, CompositionPathGeometry geometry)>();
                 foreach (var mask in layer.Masks)
                 {
                     var currentMaskMode = mask.Mode;
@@ -467,7 +467,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 }
             }
 
-            return maskMode;
+            return maskMode != Mask.MaskMode.None;
         }
 
         // Translate a mask into shapes for a shape visual. The mask is applied to the visual to be masked
@@ -491,21 +491,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     return null;
                 }
 
-                var contextSize = context.Size;
-
                 var maskShapeVisual = CreateShapeVisual();
-                maskShapeVisual.Size = contextSize;
+                maskShapeVisual.Size = context.Size;
                 maskShapeVisual.Shapes.Add(containerShapeMaskRootNode);
 
-                var maskMode = TranslateAndAddMaskPaths(context, layer, containerShapeMaskContentNode);
-
                 // Do not add the mask if we failed to translate and add it
-                if (maskMode != Mask.MaskMode.None)
+                if (TranslateAndAddMaskPaths(context, layer, containerShapeMaskContentNode, out var maskMode))
                 {
                     var compositedVisual = CompositeVisuals(
                                                 maskShapeVisual,
                                                 visualToBeMasked,
-                                                contextSize,
+                                                context.Size,
                                                 Sn.Vector2.Zero,
                                                 maskMode == Mask.MaskMode.Additive ? CanvasComposite.DestinationIn : CanvasComposite.DestinationOut);
 
@@ -557,13 +553,53 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         // This function combines two visual trees using a Composite Effect. The way that the trees are combined
         // is determined by the composite mode. The composition works as follows:
-        // 1) The visual trees are set as the source for CompositionVisualSurfaces. CompositionVisualSurface allows
-        // a user to use the contents of a visual tree as a surface.
-        // 2) Each CompositionVisualSurface is then hooked up to a CompositionVisualSurfaceBrush so that it can be rendered.
-        // 3) A CompositeEffect is created which will be used to do the combining of the contents of the CompositionVisualSurfaceBrushes.
-        // 4) A CompositionEffectBrush linked to the CompositeEffect is created so that the CompositeEffect can be rendered.
-        // 5) A SpriteVisual is created and the CompositionEffectBrush is assigned to it so that the CompositionEffectBrush contents are
-        // actually rendered as part of the visual tree.
+        // +--------------+
+        // | SpriteVisual | -- Has the final composited result.
+        // +--------------+
+        //     ^
+        //     |
+        // +--------------+
+        // | EffectBrush  | -- Composition effect brush allows the composite effect result to be used as a brush.
+        // +--------------+
+        //     ^
+        //     *
+        //     *
+        //     *
+        // +-----------------+
+        // | CompositeEffect | -- Composite effect does the work to combine the contents
+        // +-----------------+    of the visual surfaces.
+        //     |
+        //     |  +---------+
+        //     -> | Sources |
+        //        +---------+
+        //         ^   ^
+        //         |   |
+        //         |   |
+        //         |   +----------------------+
+        //         |   | Source Surface Brush | -- Surface brush that will paint with the output of the visual surface
+        //         |   +----------------------+    that has the source visual assigned to it.
+        //         |               |
+        //         |               |  +-----------------------+
+        //         |               -> | Source VisualSurface  | -- The visual surface captures the renderable contents of its source visual.
+        //         |                  +-----------------------+
+        //         |                               |
+        //         |                               |  +------------------------+
+        //         |                               -> | Source Contents Visual | -- The source visual.
+        //         |                                  +------------------------+
+        //         |
+        //         |
+        //         |
+        //         +--------------------------+
+        //         | Destination SurfaceBrush | -- Surface brush that will paint with the output of the visual surface
+        //         +--------------------------+    that has the destination visual assigned to it.
+        //                         |
+        //                         |  +---------------------------+
+        //                         -> | Destination VisualSurface | -- The visual surface captures the renderable contents of its source visual.
+        //                            +---------------------------+
+        //                                         |
+        //                                         |  +-----------------------------+
+        //                                         -> | Destination Contents Visual | -- The source visual.
+        //                                            +-----------------------------+
         SpriteVisual CompositeVisuals(
             Visual source,
             Visual destination,
