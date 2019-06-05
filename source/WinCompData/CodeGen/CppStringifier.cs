@@ -13,6 +13,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
     /// </summary>
     sealed class CppStringifier : InstantiatorGeneratorBase.StringifierBase
     {
+        public override string Assignment(string lhs, string rhs)
+        {
+            return $"{lhs}({rhs})";
+        }
+
         public override string CanvasFigureLoop(Mgcg.CanvasFigureLoop value)
         {
             switch (value)

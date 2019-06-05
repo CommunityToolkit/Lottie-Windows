@@ -239,6 +239,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
             public override string FactoryCall(string value) => value;
 
+            public override string Assignment(string lhs, string rhs)
+            {
+                return $"{lhs} = {rhs}";
+            }
+
             public override string CanvasFigureLoop(CanvasFigureLoop value)
             {
                 switch (value)

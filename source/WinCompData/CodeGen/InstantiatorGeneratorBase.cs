@@ -999,7 +999,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
         void InitializeKeyFrameAnimation(CodeBuilder builder, KeyFrameAnimation_ obj, ObjectData node)
         {
             InitializeCompositionAnimation(builder, obj, node);
-            builder.WriteLine($"result{Deref}Duration(TimeSpan{TimeSpan(obj.Duration)});");
+
+            //builder.WriteLine($"result{Deref}Duration(TimeSpan{TimeSpan(obj.Duration)});");
+            builder.WriteLine($"{_stringifier.Assignment($"result{Deref}Duration", $"TimeSpan{TimeSpan(obj.Duration)}")};");
         }
 
         bool GenerateColorKeyFrameAnimationFactory(CodeBuilder builder, ColorKeyFrameAnimation obj, ObjectData node)
@@ -1556,6 +1558,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
         // Provides language-specific string representations of a value.
         protected internal interface IStringifier
         {
+            string Assignment(string lhs, string rhs);
+
             string Bool(bool value);
 
             string CanvasFigureLoop(CanvasFigureLoop value);
@@ -1617,6 +1621,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
         /// </summary>
         protected internal abstract class StringifierBase : IStringifier
         {
+            /// <inheritdoc/>
+            public abstract string Assignment(string lhs, string rhs);
+
             /// <inheritdoc/>
             public abstract string Deref { get; }
 
