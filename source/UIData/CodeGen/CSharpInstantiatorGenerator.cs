@@ -3,11 +3,14 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Text;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui;
+using Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData;
 using Mgcg = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
@@ -20,12 +23,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         readonly CSharpStringifier _stringifier;
 
         CSharpInstantiatorGenerator(
+            string className,
             CompositionObject graphRoot,
             TimeSpan duration,
             bool setCommentProperties,
             bool disableFieldOptimization,
             CSharpStringifier stringifier)
             : base(
+                  className: className,
                   graphRoot: graphRoot,
                   duration: duration,
                   setCommentProperties: setCommentProperties,
@@ -39,23 +44,28 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// Returns the C# code for a factory that will instantiate the given <see cref="Visual"/> as a
         /// Windows.UI.Composition Visual.
         /// </summary>
-        /// <returns>The C# code.</returns>
-        public static string CreateFactoryCode(
+        /// <returns>A tuple containing the C# code and list of referenced asset files.</returns>
+        public static (string csText, IEnumerable<Uri> assetList) CreateFactoryCode(
             string className,
             Visual rootVisual,
             float width,
             float height,
             TimeSpan duration,
-            bool disableFieldOptimization = false)
+            bool disableFieldOptimization)
         {
             var generator = new CSharpInstantiatorGenerator(
+                                className: className,
                                 graphRoot: rootVisual,
                                 duration: duration,
                                 setCommentProperties: false,
                                 disableFieldOptimization: disableFieldOptimization,
                                 stringifier: new CSharpStringifier());
 
-            return generator.GenerateCode(className, width, height);
+            var csText = generator.GenerateCode(className, width, height);
+
+            var assetList = generator.GetAssetsList();
+
+            return (csText, assetList);
         }
 
         /// <inheritdoc/>
@@ -75,6 +85,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             if (info.UsesCanvasGeometry)
             {
                 builder.WriteLine("using Microsoft.Graphics.Canvas.Geometry;");
+            }
+
+            if (info.UsesNamespaceWindowsUIXamlMedia)
+            {
+                builder.WriteLine("using Windows.UI.Xaml.Media;");
+            }
+
+            if (info.UsesStreams)
+            {
+                builder.WriteLine("using System.IO;");
+                builder.WriteLine("using System.Runtime.InteropServices.WindowsRuntime;");
             }
 
             builder.WriteLine("using Microsoft.UI.Xaml.Controls;");
@@ -239,6 +260,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.WriteLine($"var result = {FieldAssignment(fieldName)}{CallFactoryFor(obj.SourceGeometry)}.Transform({_stringifier.Matrix3x2(obj.TransformMatrix)});");
         }
 
+        /// <inheritdoc/>
+        protected override void WriteLoadedImageSurfaceFactory(CodeBuilder builder, CodeGenInfo info, LoadedImageSurface obj, string fieldName, Uri imageUri)
+        {
+            switch (obj.Type)
+            {
+                case LoadedImageSurface.LoadedImageSurfaceType.FromStream:
+                    builder.WriteLine($"var result = Windows.UI.Xaml.Media.LoadedImageSurface.StartLoadFromStream({fieldName}.AsBuffer().AsStream().AsRandomAccessStream());");
+                    break;
+                case LoadedImageSurface.LoadedImageSurfaceType.FromUri:
+                    builder.WriteLine($"var result = Windows.UI.Xaml.Media.LoadedImageSurface.StartLoadFromUri(new Uri(\"{imageUri}\"));");
+                    break;
+            }
+        }
+
         static string FieldAssignment(string fieldName) => fieldName != null ? $"{fieldName} = " : string.Empty;
 
         string Float(float value) => _stringifier.Float(value);
@@ -331,6 +366,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             public override string Vector2(Vector2 value) => $"new Vector2({Float(value.X)}, {Float(value.Y)})";
 
             public override string Vector3(Vector3 value) => $"new Vector3({Float(value.X)}, {Float(value.Y)}, {Float(value.Z)})";
+
+            public override string ByteArray => "byte[]";
         }
     }
 }

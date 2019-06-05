@@ -46,6 +46,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     case Graph.NodeType.CanvasGeometry:
                         baseName = "Geometry";
                         break;
+                    case Graph.NodeType.LoadedImageSurface:
+                        baseName = "LoadedImageSurface";
+                        break;
                     default:
                         throw new InvalidOperationException();
                 }

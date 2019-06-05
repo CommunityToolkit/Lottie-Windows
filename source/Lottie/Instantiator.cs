@@ -17,14 +17,18 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.InteropServices.WindowsRuntime;
 using Microsoft.Graphics.Canvas.Geometry;
 using Mgc = Microsoft.Graphics.Canvas;
 using Mgce = Microsoft.Graphics.Canvas.Effects;
 using Wc = Windows.UI.Composition;
 using Wd = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Wge = Windows.Graphics.Effects;
+using Wm = Windows.UI.Xaml.Media;
+using Wmd = Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie
 {
@@ -809,9 +813,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 result.SourceVisual = GetVisual(obj.SourceVisual);
             }
 
-            result.SourceSize = obj.SourceSize.Value;
+            if (obj.SourceSize.HasValue)
+            {
+                result.SourceSize = obj.SourceSize.Value;
+            }
 
-            result.SourceOffset = obj.SourceOffset.Value;
+            if (obj.SourceOffset.HasValue)
+            {
+                result.SourceOffset = obj.SourceOffset.Value;
+            }
 
             StartAnimations(obj, result);
             return result;
@@ -879,23 +889,34 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 return result;
             }
 
-            var compositeEffect = new Mgce.CompositeEffect();
-            compositeEffect.Mode = CanvasComposite(((Wd.Mgce.CompositeEffect)obj.GetEffect()).Mode);
             var effect = obj.GetEffect();
-            var wdCompositeEffect = (Wd.Mgce.CompositeEffect)effect;
-            foreach (var source in wdCompositeEffect.Sources)
+            switch (effect.Type)
             {
-                compositeEffect.Sources.Add(new Wc.CompositionEffectSourceParameter(source.Name));
-            }
+                case Wd.Mgce.GraphicsEffectType.CompositeEffect:
+                    // Initialize the effect.
+                    var compositeEffect = new Mgce.CompositeEffect();
+                    compositeEffect.Mode = CanvasComposite(((Wd.Mgce.CompositeEffect)obj.GetEffect()).Mode);
+                    var wdCompositeEffect = (Wd.Mgce.CompositeEffect)effect;
+                    foreach (var source in wdCompositeEffect.Sources)
+                    {
+                        compositeEffect.Sources.Add(new Wc.CompositionEffectSourceParameter(source.Name));
+                    }
 
-            var effectFactory = _c.CreateEffectFactory(compositeEffect);
-            var compositeEffectBrush = effectFactory.CreateBrush();
+                    // Create the EffectFactory.
+                    // The IGraphicsEffect must be fully initialized and populated before calling CreateEffectFactory.
+                    var effectFactory = _c.CreateEffectFactory(compositeEffect);
 
-            result = CacheAndInitializeCompositionObject(obj, compositeEffectBrush);
+                    // Initialize the brush.
+                    var compositeEffectBrush = effectFactory.CreateBrush();
+                    result = CacheAndInitializeCompositionObject(obj, compositeEffectBrush);
+                    foreach (var source in wdCompositeEffect.Sources)
+                    {
+                        result.SetSourceParameter(source.Name, GetCompositionBrush(obj.GetSourceParameter(source.Name)));
+                    }
 
-            foreach (var source in wdCompositeEffect.Sources)
-            {
-                result.SetSourceParameter(source.Name, GetCompositionBrush(obj.GetSourceParameter(source.Name)));
+                    break;
+                default:
+                    throw new InvalidOperationException();
             }
 
             StartAnimations(obj, result);
@@ -1203,15 +1224,40 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
 
         Wc.ICompositionSurface GetCompositionSurface(Wd.ICompositionSurface obj)
         {
-            switch (obj.TypeName)
+            switch (obj)
             {
-                case nameof(Wd.CompositionVisualSurface):
-                    return (Wc.ICompositionSurface)GetCompositionObject((Wd.CompositionVisualSurface)obj);
-
-                case "LoadedImageSurface": // Not yet implemented.
+                case Wd.CompositionVisualSurface compositionVisualSurface:
+                    return (Wc.ICompositionSurface)GetCompositionObject(compositionVisualSurface);
+                case Wmd.LoadedImageSurface loadedImageSurface:
+                    return GetLoadedImageSurface(loadedImageSurface);
                 default:
                     throw new InvalidOperationException();
             }
+        }
+
+        Wm.LoadedImageSurface GetLoadedImageSurface(Wmd.LoadedImageSurface obj)
+        {
+            if (GetExisting(obj, out Wm.LoadedImageSurface result))
+            {
+                return result;
+            }
+
+            switch (obj.Type)
+            {
+                case Wmd.LoadedImageSurface.LoadedImageSurfaceType.FromStream:
+                    var bytes = ((Wmd.LoadedImageSurfaceFromStream)obj).Bytes;
+                    result = Wm.LoadedImageSurface.StartLoadFromStream(bytes.AsBuffer().AsStream().AsRandomAccessStream());
+                    break;
+                case Wmd.LoadedImageSurface.LoadedImageSurfaceType.FromUri:
+                    // Loading image surface from Uri is not supported yet.
+                    result = null;
+                    break;
+                default:
+                    throw new InvalidOperationException();
+            }
+
+            Cache(obj, result);
+            return result;
         }
 
         static Wc.CompositionStrokeLineJoin StrokeLineJoin(Wd.CompositionStrokeLineJoin value)

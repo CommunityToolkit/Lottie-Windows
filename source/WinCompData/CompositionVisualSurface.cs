@@ -23,7 +23,5 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 
         /// <inheritdoc/>
         public override CompositionObjectType Type => CompositionObjectType.CompositionVisualSurface;
-
-        string ICompositionSurface.TypeName => nameof(CompositionVisualSurface);
     }
 }

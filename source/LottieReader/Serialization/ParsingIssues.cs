@@ -42,7 +42,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         internal void IllustratorLayers() => Report("LP0007", "Illustrator layers");
 
-        internal void LayerEffects() => Report("LP0008", "Layer effects");
+        internal void LayerEffectsIsNotSupported(string layer) => Report("LP0008", $"{layer} has layer effects, which is not supported.");
 
         internal void Mattes() => Report("LP0009", "Mattes");
 

@@ -9,9 +9,5 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 #endif
     interface ICompositionSurface
     {
-        /// <summary>
-        /// The name of the concrete type of the implementation.
-        /// </summary>
-        string TypeName { get; }
     }
 }

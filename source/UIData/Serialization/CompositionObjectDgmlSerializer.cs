@@ -20,6 +20,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
         static readonly Category CategoryRoot = new Category("Root", Colors.MediumVioletRed);
         static readonly Category CategoryContainerVisual = new Category("ContainerVisual", Colors.DarkRed);
         static readonly Category CategoryContainerVisualAnimated = new Category("AnimatedContainerVisual", "Animated ContainerVisual", Colors.Crimson);
+        static readonly Category CategorySpriteVisual = new Category("SpriteVisual", Colors.Magenta);
         static readonly Category CategoryShapeVisual = new Category("ShapeVisual", Colors.CornflowerBlue);
         static readonly Category CategoryShapeVisualAnimated = new Category("AnimatedShapeVisual", "Animated ShapeVisual", Colors.RoyalBlue);
         static readonly Category CategoryContainerShape = new Category("ContainerShape", Colors.SeaGreen);
@@ -291,6 +292,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                         case CompositionObjectType.StepEasingFunction:
                         case CompositionObjectType.Vector2KeyFrameAnimation:
                         case CompositionObjectType.Vector3KeyFrameAnimation:
+                        case CompositionObjectType.CompositionSurfaceBrush:
                             // Do not display in the graph.
                             return;
                         case CompositionObjectType.CompositionContainerShape:
@@ -304,6 +306,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                             break;
                         case CompositionObjectType.ShapeVisual:
                             Category = IsAnimatedCompositionObject ? CategoryShapeVisualAnimated : CategoryShapeVisual;
+                            break;
+                        case CompositionObjectType.SpriteVisual:
+                            Category = CategorySpriteVisual;
                             break;
                         default:
                             throw new InvalidOperationException();
