@@ -202,7 +202,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// </summary>
         protected abstract void WriteFileStart(
             CodeBuilder builder,
-            CodeGenInfo info);
+            CodeGenInfo info,
+            IEnumerable<ObjectData> nodes);
 
         /// <summary>
         /// Writes the start of the Instantiator class.
@@ -355,7 +356,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 usesCanvasEffects: _nodes.Where(n => n.UsesCanvasEffects).Any(),
                 usesCanvasGeometry: _nodes.Where(n => n.UsesCanvasGeometry).Any(),
                 usesNamespaceWindowsUIXamlMedia: _nodes.Where(n => n.UsesNamespaceWindowsUIXamlMedia).Any(),
-                usesStreams: _nodes.Where(n => n.UsesStream).Any()
+                usesStreams: _nodes.Where(n => n.UsesStream).Any(),
+                loadedImageSurfaceCount : _nodes.Where(n => n.UsesNamespaceWindowsUIXamlMedia).Count()
                 );
 
             // Write the auto-generated warning comment.
@@ -366,7 +368,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             // Get the derived class to write the start of the file. This is everything
             // up to the start of the Instantiator class.
-            WriteFileStart(builder, info);
+            WriteFileStart(builder, info, _nodes.Where(n => n.UsesNamespaceWindowsUIXamlMedia));
 
             // Write the LoadedImageSurface byte arrays.
             WriteBytesFields(builder);
@@ -384,6 +386,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             // referenced more than once).
             WriteField(builder, Readonly(_stringifier.ReferenceTypeName("Compositor")), "_c");
             WriteField(builder, Readonly(_stringifier.ReferenceTypeName("ExpressionAnimation")), SingletonExpressionAnimationName);
+            if (info.UsesNamespaceWindowsUIXamlMedia)
+            {
+                WriteField(builder, className, _stringifier.MakeVaribaleName(className));
+            }
+
             foreach (var node in _nodes)
             {
                 if (node.RequiresStorage)
@@ -625,7 +632,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 switch (node.Type)
                 {
                     case Graph.NodeType.CompositionObject:
-                        GenerateObjectFactory(builder, (CompositionObject)node.Object, node);
+                        GenerateObjectFactory(builder, (CompositionObject)node.Object, node, info);
                         break;
                     case Graph.NodeType.CompositionPath:
                         GenerateCompositionPathFactory(builder, (CompositionPath)node.Object, node);
@@ -634,7 +641,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                         GenerateCanvasGeometryFactory(builder, (CanvasGeometry)node.Object, node);
                         return;
                     case Graph.NodeType.LoadedImageSurface:
-                        GenerateLoadedImageSurfaceFactory(builder, info, (Wmd.LoadedImageSurface)node.Object, node);
+                        //GenerateLoadedImageSurfaceFactory(builder, info, (Wmd.LoadedImageSurface)node.Object, node);
+                        // LoadedImageSurface is written out in the IDynamicAnimatedVisualSource class, so does not need to do anything here.
                         return;
                     default:
                         throw new InvalidOperationException();
@@ -676,7 +684,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             return true;
         }
 
-        bool GenerateObjectFactory(CodeBuilder builder, CompositionObject obj, ObjectData node)
+        bool GenerateObjectFactory(CodeBuilder builder, CompositionObject obj, ObjectData node, CodeGenInfo info)
         {
             // Uncomment to see the order of creation.
             //builder.WriteComment($"Traversal order: {node.Position}");
@@ -709,7 +717,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 case CompositionObjectType.CompositionSpriteShape:
                     return GenerateSpriteShapeFactory(builder, (CompositionSpriteShape)obj, node);
                 case CompositionObjectType.CompositionSurfaceBrush:
-                    return GenerateCompositionSurfaceBrushFactory(builder, (CompositionSurfaceBrush)obj, node);
+                    return GenerateCompositionSurfaceBrushFactory(builder, (CompositionSurfaceBrush)obj, node, info);
                 case CompositionObjectType.CompositionViewBox:
                     return GenerateCompositionViewBoxFactory(builder, (CompositionViewBox)obj, node);
                 case CompositionObjectType.CompositionVisualSurface:
@@ -1514,7 +1522,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             return true;
         }
 
-        bool GenerateCompositionSurfaceBrushFactory(CodeBuilder builder, CompositionSurfaceBrush obj, ObjectData node)
+        bool GenerateCompositionSurfaceBrushFactory(CodeBuilder builder, CompositionSurfaceBrush obj, ObjectData node, CodeGenInfo info)
         {
             WriteObjectFactoryStart(builder, node);
             WriteCreateAssignment(builder, node, $"_c{Deref}CreateSurfaceBrush()");
@@ -1528,7 +1536,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                         builder.WriteLine($"result{Deref}Surface = {CallFactoryFromFor(node, compositionObject)};");
                         break;
                     case Wmd.LoadedImageSurface loadedImageSurface:
-                        builder.WriteLine($"result{Deref}Surface = {CallFactoryFromFor(node, loadedImageSurface)};");
+                        //builder.WriteLine($"result{Deref}Surface = {CallFactoryFromFor(node, loadedImageSurface)};");
+                        builder.WriteLine($"result{Deref}Surface = {_stringifier.MakeVaribaleName(info.ClassName)}{_stringifier.Deref}{_stringifier.MakeVaribaleName(NodeFor(loadedImageSurface).Name)};");
                         break;
                     default:
                         throw new InvalidOperationException();
@@ -1795,7 +1804,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 bool usesCanvasEffects,
                 bool usesCanvasGeometry,
                 bool usesNamespaceWindowsUIXamlMedia,
-                bool usesStreams)
+                bool usesStreams,
+                int loadedImageSurfaceCount)
             {
                 ClassName = className;
                 ReusableExpressionAnimationFieldName = reusableExpressionAnimationFieldName;
@@ -1807,6 +1817,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 UsesCanvasGeometry = usesCanvasGeometry;
                 UsesNamespaceWindowsUIXamlMedia = usesNamespaceWindowsUIXamlMedia;
                 UsesStreams = usesStreams;
+                LoadedImageSurfaceCount = loadedImageSurfaceCount;
             }
 
             /// <summary>
@@ -1850,6 +1861,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             public bool UsesStreams { get; }
 
             /// <summary>
+            /// Gets a value indicating the number of LoadedImageSurface the composition has.
+            /// </summary>
+            public int LoadedImageSurfaceCount { get; }
+
+            /// <summary>
             /// Gets the name of the field in the instantiator class that hold the reusable ExpressionAnimation.
             /// </summary>
             public string ReusableExpressionAnimationFieldName { get; }
@@ -1887,6 +1903,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             string Int64TypeName { get; }
 
+            string Int32TypeName { get; }
+
             string Matrix3x2(Matrix3x2 value);
 
             string Matrix4x4(Matrix4x4 value);
@@ -1920,6 +1938,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             string ByteArray { get; }
 
             string Const(string value);
+
+            string MakeVaribaleName(string value);
         }
 
         /// <summary>
@@ -2016,10 +2036,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             public abstract string ByteArray { get; }
 
             public string Const(string value) => $"const {value}";
+
+            // Sets the first character to lower case.
+            public string CamelCase(string value) => $"{char.ToLowerInvariant(value[0])}{value.Substring(1)}";
+
+            // Prepends "_" to camel case of the passed in value.
+            public string MakeVaribaleName(string value) => $"_{CamelCase(value)}";
+
+            public string Int32TypeName => "int";
         }
 
         // A node in the object graph, annotated with extra stuff to assist in code generation.
-        sealed class ObjectData : Graph.Node<ObjectData>
+        protected sealed class ObjectData : Graph.Node<ObjectData>
         {
             string _overriddenFactoryCall;
             Dictionary<ObjectData, string> _callFactoryFromForCache;

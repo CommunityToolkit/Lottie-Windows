@@ -100,7 +100,8 @@ public:
         // Called by the base class to write the start of the file (i.e. everything up to the body of the Instantiator class).
         protected override void WriteFileStart(
             CodeBuilder builder,
-            CodeGenInfo info)
+            CodeGenInfo info,
+            IEnumerable<ObjectData> nodes)
         {
             builder.WriteLine("#include \"pch.h\"");
             builder.WriteLine($"#include \"{_headerFileName}\"");
@@ -268,6 +269,14 @@ public:
             builder.WriteLine();
 
             // Generate the method that creates an instance of the composition.
+            WriteTryCreateInstantiator(builder, info);
+        }
+
+        /// <summary>
+        /// Generate the method that creates an instance of the composition.
+        /// </summary>
+        void WriteTryCreateInstantiator(CodeBuilder builder, CodeGenInfo info)
+        {
             builder.WriteLine($"Microsoft::UI::Xaml::Controls::IAnimatedVisual^ AnimatedVisuals::{info.ClassName}::TryCreateAnimatedVisual(");
             builder.Indent();
             builder.WriteLine("Compositor^ compositor,");
