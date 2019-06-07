@@ -107,6 +107,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
         public override string Vector3(Vector3 value) => $"{{ {Float(value.X)}, {Float(value.Y)}, {Float(value.Z)} }}";
 
+        public override string WriteField(string typeName, string fieldName, bool initNull = false) => $"{typeName} {fieldName} {(initNull ? "NullInit(Null)" : string.Empty)} ;";
+
         public override string IListAdd => "Append";
 
         public override string FactoryCall(string value) => $"{value}.as<IGeometrySource2D>()";  //TODO refactor

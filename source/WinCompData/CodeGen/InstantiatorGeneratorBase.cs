@@ -311,7 +311,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
                 if (node.RequiresStorage)
                 {
                     // Generate a field for the storage.
-                    WriteFieldNullInit(builder, _stringifier.ReferenceTypeName(node.TypeName), node.FieldName);
+                    WriteField(builder, _stringifier.ReferenceTypeName(node.TypeName), node.FieldName, true); //JCCLEAN
                 }
             }
 
@@ -499,14 +499,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             builder.WriteLine();
         }
 
-        void WriteField(CodeBuilder builder, string typeName, string fieldName)
+        void WriteField(CodeBuilder builder, string typeName, string fieldName, bool initNull = false)
         {
-            builder.WriteLine($"{typeName} {fieldName};");
-        }
-
-        void WriteFieldNullInit(CodeBuilder builder, string typeName, string fieldName)
-        {
-            builder.WriteLine($"{typeName} {fieldName} {NullInit(Null)};");
+            builder.WriteLine(_stringifier.WriteField(typeName, fieldName, initNull));
         }
 
         // Generates code for the given node. The code is written into the CodeBuilder on the node.
@@ -1001,7 +996,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             InitializeCompositionAnimation(builder, obj, node);
 
             //builder.WriteLine($"result{Deref}Duration(TimeSpan{TimeSpan(obj.Duration)});");
-            builder.WriteLine($"{_stringifier.Assignment($"result{Deref}Duration", $"TimeSpan{TimeSpan(obj.Duration)}")};");
+            builder.WriteLine($"{_stringifier.Assignment($"result{Deref}Duration", $"TimeSpan{TimeSpan(obj.Duration)}")};"); //JCCLEAN
         }
 
         bool GenerateColorKeyFrameAnimationFactory(CodeBuilder builder, ColorKeyFrameAnimation obj, ObjectData node)
@@ -1613,6 +1608,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             string Vector2(Vector2 value);
 
             string Vector3(Vector3 value);
+
+            string WriteField(string typeName, string fieldName, bool initNull);
         }
 
         /// <summary>
@@ -1707,6 +1704,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
             /// <inheritdoc/>
             public abstract string Vector3(Vector3 value);
+
+            /// <inheritdoc/>
+            public abstract string WriteField(string typeName, string fieldName, bool initNull = false);
 
             public string Hex(int value) => $"0x{value.ToString("X2")}";
         }
