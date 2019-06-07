@@ -477,6 +477,7 @@ public:
         string CompositionEffectClass =>
 @"
 #include <vector>
+
 typedef enum CanvasComposite : int
 {
     SourceOver = 0,
@@ -493,6 +494,7 @@ typedef enum CanvasComposite : int
     BoundedCopy = 11,
     MaskInvert = 12,
 } CanvasComposite;
+
 class CompositeEffect WrlFinal :
     public ABI::Windows::Graphics::Effects::IGraphicsEffect,
     public ABI::Windows::Graphics::Effects::IGraphicsEffectSource,
@@ -500,14 +502,19 @@ class CompositeEffect WrlFinal :
 {
 public:
     CompositeEffect() = default;
+
     void SetMode(CanvasComposite mode) { m_mode = mode; }
+
     void AddSource(IGraphicsEffectSource* source)
     {
         m_sources.emplace_back(Microsoft::WRL::ComPtr<IGraphicsEffectSource>(source));
     }
+
     // IGraphicsEffect
     IFACEMETHODIMP get_Name(HSTRING* name) override { return m_name.CopyTo(name); }
+
     IFACEMETHODIMP put_Name(HSTRING name) override { return m_name.Set(name); }
+
     // IGraphicsEffectD2D1Interop
     IFACEMETHODIMP GetEffectId(GUID* id) override 
     { 
@@ -515,6 +522,7 @@ public:
         *id = { 0x48fc9f51, 0xf6ac, 0x48f1, { 0x8b, 0x58,  0x3b,  0x28,  0xac,  0x46,  0xf7,  0x6d } };
         return S_OK; 
     }
+
     IFACEMETHODIMP GetSourceCount(UINT* count) override
     {
         if (count == nullptr)
@@ -524,6 +532,7 @@ public:
         *count = m_sources.size();
         return S_OK;
     }
+
     IFACEMETHODIMP GetSource(
         UINT index, 
         IGraphicsEffectSource** source) override
@@ -537,7 +546,9 @@ public:
         (*source)->AddRef();
         return S_OK;
     }
+
     IFACEMETHODIMP GetPropertyCount(UINT * count) override { *count = 1; return S_OK; }
+
     IFACEMETHODIMP GetProperty(
         UINT index, 
         ABI::Windows::Foundation::IPropertyValue ** value) override
@@ -551,6 +562,7 @@ public:
             }
         });
     }
+
     IFACEMETHODIMP GetNamedPropertyMapping(
         LPCWSTR, 
         UINT*,
@@ -558,6 +570,7 @@ public:
     {
         return E_INVALIDARG;
     }
+
     // IUnknown
     IFACEMETHODIMP QueryInterface(
         REFIID iid,
@@ -595,10 +608,12 @@ public:
         }
         return E_NOINTERFACE;
     }
+
     IFACEMETHODIMP_(ULONG) AddRef() override
     {
         return InterlockedIncrement(&m_cRef);
     }
+
     IFACEMETHODIMP_(ULONG) Release() override
     {
         ULONG cRef = InterlockedDecrement(&m_cRef);
@@ -608,6 +623,7 @@ public:
         }
         return cRef;
     }
+
     // IInspectable
     IFACEMETHODIMP GetIids(
         ULONG * iidCount,
@@ -617,17 +633,20 @@ public:
         *iids = nullptr;
         return E_NOTIMPL;
     }
+
     IFACEMETHODIMP GetRuntimeClassName(
         HSTRING * /*runtimeName*/) override
     {
         return E_NOTIMPL;
     }
+
     IFACEMETHODIMP GetTrustLevel(
         TrustLevel* trustLvl) override
     {
         *trustLvl = BaseTrust;
         return S_OK;
     }
+
 private:
     // Invokes a functor with the pointer to the property factory
     template<typename TFunc>
@@ -638,9 +657,13 @@ private:
         HRESULT hr = ABI::Windows::Foundation::GetActivationFactory(activatableClassId.Get(), &propertyValueFactory);
         return FAILED(hr) ? hr : func(propertyValueFactory.Get());
     }
+
     ULONG m_cRef = 0;
+
     CanvasComposite m_mode = CanvasComposite::SourceOver;
+
     Microsoft::WRL::Wrappers::HString m_name;
+
     std::vector<Microsoft::WRL::ComPtr<IGraphicsEffectSource>> m_sources;
 };
 ";

@@ -374,7 +374,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 usesCanvasGeometry: _nodes.Where(n => n.UsesCanvasGeometry).Any(),
                 usesNamespaceWindowsUIXamlMedia: _nodes.Where(n => n.UsesNamespaceWindowsUIXamlMedia).Any(),
                 usesStreams: _nodes.Where(n => n.UsesStream).Any(),
-                usesCompositeEffect: _nodes.Where(n => n.UsesCompositeEffect).Any());
+                usesCompositeEffect: _nodes.Where(n => n.UsesCompositeEffect).Any()
                 );
 
             // Write the auto-generated warning comment.
