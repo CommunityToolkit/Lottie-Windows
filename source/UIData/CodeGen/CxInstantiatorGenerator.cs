@@ -191,7 +191,8 @@ public:
         // Called by the base class to write the end of the file (i.e. everything after the body of the Instantiator class).
         protected override void WriteFileEnd(
             CodeBuilder builder,
-            CodeGenInfo info)
+            CodeGenInfo info,
+            IEnumerable<ObjectData> nodes)
         {
             if (info.UsesCanvasEffects ||
                 info.UsesCanvasGeometry)

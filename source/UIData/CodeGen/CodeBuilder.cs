@@ -41,6 +41,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             }
         }
 
+        internal void WriteSummaryComment(string comment)
+        {
+            if (!string.IsNullOrWhiteSpace(comment))
+            {
+                WriteLine($"/// <summary>");
+                foreach (var line in BreakUpLine(comment))
+                {
+                    WriteLine($"/// {line}");
+                }
+
+                WriteLine($"/// </summary>");
+            }
+        }
+
         internal void WriteCodeBuilder(CodeBuilder builder)
         {
             _lines.Add(new CodeLine { Text = builder, IndentCount = _indentCount });

@@ -104,10 +104,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             // Save the nodes, ordered by the name that was just set.
             _nodes = nodes.OrderBy(node => node.Name).ToArray();
 
-            // Force storage to be allocated for nodes that have multiple references to them.
+            // Force storage to be allocated for nodes that have multiple references to them or are LoadedImageSurfaces.
             foreach (var node in _nodes)
             {
-                if (FilteredInRefs(node).Count() > 1)
+                if (FilteredInRefs(node).Count() > 1 || node.UsesNamespaceWindowsUIXamlMedia)
                 {
                     // Node is referenced more than once, so it requires storage.
                     node.RequiresStorage = true;
@@ -200,6 +200,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// <summary>
         /// Writes the start of the file, e.g. using namespace statements and includes at the top of the file.
         /// </summary>
+        /// <param name="builder">A <see cref="CodeBuilder"/> used to create the code.</param>
+        /// <param name="info">A <see cref="CodeGenInfo"/> used to get information about the code.</param>
+        /// <param name="nodes">LoadedImageSurfaces nodes in the composition, if any.</param>
         protected abstract void WriteFileStart(
             CodeBuilder builder,
             CodeGenInfo info,
@@ -217,7 +220,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// </summary>
         protected abstract void WriteFileEnd(
             CodeBuilder builder,
-            CodeGenInfo info);
+            CodeGenInfo info,
+            IEnumerable<ObjectData> nodes);
 
         /// <summary>
         /// Writes CanvasGeometery.Combination factory code.
@@ -386,10 +390,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             // referenced more than once).
             WriteField(builder, Readonly(_stringifier.ReferenceTypeName("Compositor")), "_c");
             WriteField(builder, Readonly(_stringifier.ReferenceTypeName("ExpressionAnimation")), SingletonExpressionAnimationName);
-            if (info.UsesNamespaceWindowsUIXamlMedia)
-            {
-                WriteField(builder, className, _stringifier.MakeVaribaleName(className));
-            }
 
             foreach (var node in _nodes)
             {
@@ -409,7 +409,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             }
 
             // Write the end of the Instantiator class and the end of the file.
-            WriteFileEnd(builder, info);
+            WriteFileEnd(builder, info, _nodes.Where(n => n.UsesNamespaceWindowsUIXamlMedia));
 
             return builder.ToString();
         }
@@ -1537,7 +1537,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                         break;
                     case Wmd.LoadedImageSurface loadedImageSurface:
                         //builder.WriteLine($"result{Deref}Surface = {CallFactoryFromFor(node, loadedImageSurface)};");
-                        builder.WriteLine($"result{Deref}Surface = {_stringifier.MakeVaribaleName(info.ClassName)}{_stringifier.Deref}{_stringifier.MakeVaribaleName(NodeFor(loadedImageSurface).Name)};");
+                        builder.WriteLine($"result{Deref}Surface = {_stringifier.MakeVariableName(NodeFor(loadedImageSurface).Name)};");
                         break;
                     default:
                         throw new InvalidOperationException();
@@ -1939,7 +1939,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             string Const(string value);
 
-            string MakeVaribaleName(string value);
+            string MakeVariableName(string value);
         }
 
         /// <summary>
@@ -2041,7 +2041,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             public string CamelCase(string value) => $"{char.ToLowerInvariant(value[0])}{value.Substring(1)}";
 
             // Prepends "_" to camel case of the passed in value.
-            public string MakeVaribaleName(string value) => $"_{CamelCase(value)}";
+            public string MakeVariableName(string value) => $"_{CamelCase(value)}";
 
             public string Int32TypeName => "int";
         }

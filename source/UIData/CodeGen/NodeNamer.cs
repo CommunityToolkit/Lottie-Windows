@@ -10,6 +10,7 @@ using System.Numerics;
 
 using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
+using Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 {
@@ -47,7 +48,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                         baseName = "Geometry";
                         break;
                     case Graph.NodeType.LoadedImageSurface:
-                        baseName = "LoadedImageSurface";
+                        var loadedImageSurface = (LoadedImageSurface)node.Object;
+                        switch (loadedImageSurface.Type)
+                        {
+                            case LoadedImageSurface.LoadedImageSurfaceType.FromStream:
+                                baseName = "ImageFromStream";
+                                break;
+                            case LoadedImageSurface.LoadedImageSurfaceType.FromUri:
+                                baseName = "Image";
+                                break;
+                            default:
+                                throw new InvalidOperationException();
+                        }
+
                         break;
                     default:
                         throw new InvalidOperationException();
@@ -66,23 +79,47 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             foreach (var entry in nodesByTypeName)
             {
                 var baseName = entry.Key;
-                var n = entry.Value;
-                if (n.Count == 1)
+                var nodeList = entry.Value;
+
+                if (baseName == "Image")
                 {
-                    // There's only 1 of this type of node. No suffix needed.
-                    yield return (n[0], baseName);
+                    foreach (var n in nodeList)
+                    {
+                        var loadedImageSurface = (LoadedImageSurface)n.Object;
+                        var loadedImageSurfaceFromUri = (LoadedImageSurfaceFromUri)loadedImageSurface;
+
+                        // Get the image file name only.
+                        var imageFileName = loadedImageSurfaceFromUri.Uri.Segments.Last();
+                        var imageFileNameWithoutExtension = imageFileName.Substring(0, imageFileName.LastIndexOf('.'));
+
+                        // Replace any disallowed character with underscores.
+                        var cleanedImageName = new string((from ch in imageFileNameWithoutExtension
+                                               select char.IsLetterOrDigit(ch) ? ch : '_').ToArray());
+
+                        // Remove any duplicated underscores.
+                        cleanedImageName = cleanedImageName.Replace("__", "_");
+                        yield return (n, $"{baseName}_{cleanedImageName}");
+                    }
                 }
                 else
                 {
-                    // Multiple nodes of this type. Append a counter suffix.
-
-                    // Use only as many digits as necessary to express the largest count.
-                    var digitsRequired = (int)Math.Ceiling(Math.Log10(n.Count + 1));
-                    var counterFormat = new string('0', digitsRequired);
-
-                    for (var i = 0; i < n.Count; i++)
+                    if (nodeList.Count == 1)
                     {
-                        yield return (n[i], $"{baseName}_{i.ToString(counterFormat)}");
+                        // There's only 1 of this type of node. No suffix needed.
+                        yield return (nodeList[0], baseName);
+                    }
+                    else
+                    {
+                        // Multiple nodes of this type. Append a counter suffix.
+
+                        // Use only as many digits as necessary to express the largest count.
+                        var digitsRequired = (int)Math.Ceiling(Math.Log10(nodeList.Count + 1));
+                        var counterFormat = new string('0', digitsRequired);
+
+                        for (var i = 0; i < nodeList.Count; i++)
+                        {
+                            yield return (nodeList[i], $"{baseName}_{i.ToString(counterFormat)}");
+                        }
                     }
                 }
             }

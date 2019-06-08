@@ -92,6 +92,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 builder.WriteLine("using Windows.UI.Xaml.Media;");
                 builder.WriteLine("using System.Runtime.InteropServices.WindowsRuntime;");
                 builder.WriteLine("using Windows.Foundation;");
+                builder.WriteLine("using System.ComponentModel;");
             }
 
             if (info.UsesStreams)
@@ -145,36 +146,39 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// <summary>
         /// Write a class that implements the IDynamicAnimatedVisualSource interface.
         /// </summary>
-        void WriteIDynamicAnimatedVisualSource(CodeBuilder builder, CodeGenInfo info, IEnumerable<ObjectData> nodes)
+        void WriteIDynamicAnimatedVisualSource(CodeBuilder builder, CodeGenInfo info, IEnumerable<ObjectData> loadedImageSurfacesNodes)
         {
             builder.WriteLine("namespace AnimatedVisuals");
             builder.OpenScope();
-            builder.WriteLine($"sealed class {info.ClassName} : IDynamicAnimatedVisualSource");
+            builder.WriteLine($"sealed class {info.ClassName} : IDynamicAnimatedVisualSource, INotifyPropertyChanged");
             builder.OpenScope();
 
-            // Define enum and declare variables.
-            builder.WriteLine("enum LoadState");
-            builder.OpenScope();
-            builder.WriteLine("initial = 0,");
-            builder.WriteLine("loadingSurfaces,");
-            builder.WriteLine("surfacesLoaded,");
-            builder.CloseScope();
-            builder.WriteLine($"LoadState _loadState;");
-            builder.WriteLine($"{_stringifier.Readonly(_stringifier.Int32TypeName)} c_loadedImageSurfaceCount = {info.LoadedImageSurfaceCount};");
-            builder.WriteLine($"{_stringifier.Int32TypeName} _loadCompleteEventCount = 0;");
-            builder.WriteLine($"EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource, object>> _animatedVisualInvalidatedEventTokenTable;");
-            builder.WriteLine();
+            // Declare variables.
+            builder.WriteLine($"{_stringifier.Const(_stringifier.Int32TypeName)} c_loadedImageSurfaceCount = {info.LoadedImageSurfaceCount};");
+            builder.WriteLine($"{_stringifier.Int32TypeName} _loadCompleteEventCount;");
+            builder.WriteLine("bool _waitForImageLoading;");
+            builder.WriteLine("double _percentageOfImagesLoaded;");
+            builder.WriteLine("bool _internalWaitForImageLoading;");
+            builder.WriteLine("EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource, object>> _animatedVisualInvalidatedEventTokenTable;");
+            builder.WriteLine("bool _imageLoadingStarted;");
 
             // Declare the variables to hold the surfaces.
-            foreach (var n in nodes)
+            foreach (var n in loadedImageSurfacesNodes)
             {
-                builder.WriteLine($"{_stringifier.ReferenceTypeName(n.TypeName)} {_stringifier.MakeVaribaleName(n.Name)};");
+                builder.WriteLine($"{_stringifier.ReferenceTypeName(n.TypeName)} {_stringifier.MakeVariableName(n.Name)};");
             }
 
             builder.WriteLine();
 
-            // Define property.
-            builder.WriteLine("public bool AsynchronousLoading { get; set; }");
+            // Define properties.
+            builder.WriteSummaryComment("When this property is set to true, TryCreateAnimatedVisual() will wait until all images finished loading before the AnimatedVisual is returned. Raises the INotifyPropertyChanged.PropertyChanged event when this property is changed.");
+            WriteProperty(builder, "bool", "WaitForImageLoading");
+
+            builder.WriteSummaryComment("Represents the percentage of the images that finished loading. Raises the INotifyPropertyChanged.PropertyChanged event when this property is changed.");
+            WriteProperty(builder, "double", "PercentageOfImagesLoaded");
+
+            // Implement the INotifyPropertyChanged.PropertyChanged event.
+            builder.WriteLine("public event PropertyChangedEventHandler PropertyChanged;");
             builder.WriteLine();
 
             // Implement the AnimatedVisualInvalidated event.
@@ -189,45 +193,47 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.WriteLine("return null;");
             builder.CloseScope();
             builder.WriteLine();
-            builder.WriteLine("if (AsynchronousLoading)");
+            builder.WriteLine("EnsureImageLoadingStarted();");
+            builder.WriteLine();
+            builder.WriteLine("_internalWaitForImageLoading = WaitForImageLoading;");
+            builder.WriteLine("if (_internalWaitForImageLoading)");
             builder.OpenScope();
-            builder.WriteLine("switch (_loadState)");
-            builder.OpenScope();
-            builder.WriteLine("case LoadState.initial:");
+            builder.WriteLine("return PercentageOfImagesLoaded == 100 ?");
             builder.Indent();
-            builder.WriteLine("LoadImageSurfaces();");
-            builder.WriteLine("return null;");
+            WriteAnimatedVisualCall(builder, loadedImageSurfacesNodes);
+            builder.WriteLine(": null;");
             builder.UnIndent();
-            builder.WriteLine("case LoadState.loadingSurfaces:");
-            builder.Indent();
-            builder.WriteLine("return null;");
-            builder.UnIndent();
-            builder.WriteLine("case LoadState.surfacesLoaded:");
-            builder.Indent();
-            builder.WriteLine("return new AnimatedVisual(compositor, this);");
-            builder.UnIndent();
-            builder.WriteLine("default:");
-            builder.Indent();
-            builder.WriteLine("throw new InvalidOperationException();");
-            builder.UnIndent();
-            builder.CloseScope();
             builder.CloseScope();
             builder.WriteLine("else");
             builder.OpenScope();
-            builder.WriteLine("LoadImageSurfaces();");
-            builder.WriteLine("return new AnimatedVisual(compositor, this);");
+            builder.WriteLine("return");
+            builder.Indent();
+            WriteAnimatedVisualCall(builder, loadedImageSurfacesNodes);
+            builder.WriteLine(";");
+            builder.UnIndent();
             builder.CloseScope();
             builder.CloseScope();
             builder.WriteLine();
 
             // Generate the method that load all the LoadedImageSurfaces.
-            WriteLoadImageSurfaces(builder, info, nodes);
+            WriteEnsureImageLoadingStarted(builder, info, loadedImageSurfacesNodes);
 
             // Generate the method that handle the LoadCompleted event of the LoadedImageSurface objects.
             WriteHandleLoadCompleted(builder);
 
             // Generate the method that raise the AnimatedVisualInvalidated event.
             WriteNotifyLoadedImageSurfaceCompleted(builder);
+
+            // Generate the method that raise the PropertyChanged event.
+            builder.WriteLine("void NotifyPropertyChanged(string name)");
+            builder.OpenScope();
+            builder.WriteLine("var handler = this.PropertyChanged;");
+            builder.WriteLine("if (handler != null)");
+            builder.OpenScope();
+            builder.WriteLine("handler(this, new PropertyChangedEventArgs(name));");
+            builder.CloseScope();
+            builder.CloseScope();
+            builder.WriteLine();
         }
 
         /// <inheritdoc/>
@@ -242,14 +248,39 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         // Called by the base class to write the end of the file (i.e. everything after the body of the Instantiator class).
         protected override void WriteFileEnd(
             CodeBuilder builder,
-            CodeGenInfo info)
+            CodeGenInfo info,
+            IEnumerable<ObjectData> nodes)
         {
             // Write the constructor for the instantiator.
             if (info.UsesNamespaceWindowsUIXamlMedia)
             {
-                builder.WriteLine($"internal AnimatedVisual(Compositor compositor, {info.ClassName} {_stringifier.CamelCase(info.ClassName)})");
+                builder.WriteLine($"internal AnimatedVisual(Compositor compositor,");
+                builder.Indent();
+
+                // Pass in the image surfaces to AnimatedVisual().
+                for (var i = 0; i < nodes.Count(); i++)
+                {
+                    var n = nodes.ElementAt(i);
+                    if (i < nodes.Count() - 1)
+                    {
+                        // Append "," to each parameter except the last one.
+                        builder.WriteLine($"{_stringifier.ReferenceTypeName(n.TypeName)} {_stringifier.CamelCase(n.Name)},");
+                    }
+                    else
+                    {
+                        // Close the parenthesis after the last parameter.
+                        builder.WriteLine($"{_stringifier.ReferenceTypeName(n.TypeName)} {_stringifier.CamelCase(n.Name)})");
+                    }
+                }
+
+                builder.UnIndent();
                 builder.OpenScope();
-                builder.WriteLine($"{_stringifier.MakeVaribaleName(info.ClassName)} = {_stringifier.CamelCase(info.ClassName)};");
+
+                // Initialize the private image surface variables with the input parameters of the constructor.
+                foreach (var n in nodes)
+                {
+                    builder.WriteLine($"{_stringifier.MakeVariableName(n.Name)} = {_stringifier.CamelCase(n.Name)};");
+                }
             }
             else
             {
@@ -415,25 +446,28 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.WriteLine();
         }
 
-        void WriteLoadImageSurfaces(CodeBuilder builder, CodeGenInfo info, IEnumerable<ObjectData> nodes)
+        void WriteEnsureImageLoadingStarted(CodeBuilder builder, CodeGenInfo info, IEnumerable<ObjectData> nodes)
         {
-            builder.WriteLine("void LoadImageSurfaces()");
+            builder.WriteLine("void EnsureImageLoadingStarted()");
             builder.OpenScope();
-            builder.WriteLine("_loadState = LoadState.loadingSurfaces;");
+            builder.WriteLine("if (!_imageLoadingStarted)");
+            builder.OpenScope();
             foreach (var n in nodes)
             {
                 if (n.UsesStream)
                 {
-                    builder.WriteLine($"{_stringifier.MakeVaribaleName(n.Name)} = Windows.UI.Xaml.Media.LoadedImageSurface.StartLoadFromStream({n.LoadedImageSurfaceBytesFieldName}.AsBuffer().AsStream().AsRandomAccessStream());");
+                    builder.WriteLine($"{_stringifier.MakeVariableName(n.Name)} = LoadedImageSurface.StartLoadFromStream({n.LoadedImageSurfaceBytesFieldName}.AsBuffer().AsStream().AsRandomAccessStream());");
                 }
                 else if (n.UsesAssetFile)
                 {
-                    builder.WriteLine($"{_stringifier.MakeVaribaleName(n.Name)} = Windows.UI.Xaml.Media.LoadedImageSurface.StartLoadFromUri(new Uri(\"{n.LoadedImageSurfaceImageUri}\"));");
+                    builder.WriteLine($"{_stringifier.MakeVariableName(n.Name)} = LoadedImageSurface.StartLoadFromUri(new Uri(\"{n.LoadedImageSurfaceImageUri}\"));");
                 }
 
-                builder.WriteLine($"{_stringifier.MakeVaribaleName(n.Name)}.LoadCompleted += HandleLoadCompleted;");
+                builder.WriteLine($"{_stringifier.MakeVariableName(n.Name)}.LoadCompleted += HandleLoadCompleted;");
             }
 
+            builder.WriteLine("_imageLoadingStarted = true;");
+            builder.CloseScope();
             builder.CloseScope();
             builder.WriteLine();
         }
@@ -442,14 +476,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         {
             builder.WriteLine("void HandleLoadCompleted(LoadedImageSurface sender, LoadedImageSourceLoadCompletedEventArgs e)");
             builder.OpenScope();
-            builder.WriteLine("if (AsynchronousLoading && e.Status == LoadedImageSourceLoadStatus.Success)");
+            builder.WriteLine("if (e.Status == LoadedImageSourceLoadStatus.Success)");
             builder.OpenScope();
             builder.WriteLine("_loadCompleteEventCount++;");
-            builder.WriteLine("if (_loadCompleteEventCount == c_loadedImageSurfaceCount)");
+            builder.WriteLine("PercentageOfImagesLoaded = (double) _loadCompleteEventCount / c_loadedImageSurfaceCount * 100;");
+            builder.WriteLine("if (PercentageOfImagesLoaded == 100)");
             builder.OpenScope();
-            builder.WriteLine("_loadState = LoadState.surfacesLoaded;");
             builder.WriteLine("NotifyLoadedImageSurfaceCompleted();");
             builder.CloseScope();
+            builder.WriteLine("sender.LoadCompleted -= HandleLoadCompleted;");
             builder.CloseScope();
             builder.CloseScope();
             builder.WriteLine();
@@ -459,13 +494,51 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         {
             builder.WriteLine("void NotifyLoadedImageSurfaceCompleted()");
             builder.OpenScope();
+            builder.WriteLine("if (_internalWaitForImageLoading)");
+            builder.OpenScope();
             builder.WriteLine("EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource, object>>");
             builder.Indent();
             builder.WriteLine(".GetOrCreateEventRegistrationTokenTable(ref _animatedVisualInvalidatedEventTokenTable)");
             builder.WriteLine(".InvocationList?.Invoke(this, null);");
             builder.UnIndent();
             builder.CloseScope();
+            builder.CloseScope();
             builder.WriteLine();
+        }
+
+        void WriteProperty(CodeBuilder builder, string typeName, string propertyName)
+        {
+            builder.WriteLine($"public {typeName} {propertyName}");
+            builder.OpenScope();
+            builder.WriteLine($"get {{ return {_stringifier.MakeVariableName(propertyName)}; }}");
+            builder.WriteLine("set");
+            builder.OpenScope();
+            builder.WriteLine($"{_stringifier.MakeVariableName(propertyName)} = value;");
+            builder.WriteLine($"NotifyPropertyChanged(\"{propertyName}\");");
+            builder.CloseScope();
+            builder.CloseScope();
+            builder.WriteLine();
+        }
+
+        void WriteAnimatedVisualCall(CodeBuilder builder, IEnumerable<ObjectData> nodes)
+        {
+            builder.WriteLine("new AnimatedVisual(compositor,");
+            builder.Indent();
+            for (var i = 0; i < nodes.Count(); i++)
+            {
+                if (i < nodes.Count() - 1)
+                {
+                    // Append "," to each parameter except the last one.
+                    builder.WriteLine($"{_stringifier.MakeVariableName(nodes.ElementAt(i).Name)},");
+                }
+                else
+                {
+                    // Close the parenthesis after the last parameter.
+                    builder.WriteLine($"{_stringifier.MakeVariableName(nodes.ElementAt(i).Name)})");
+                }
+            }
+
+            builder.UnIndent();
         }
 
         static string FieldAssignment(string fieldName) => fieldName != null ? $"{fieldName} = " : string.Empty;
