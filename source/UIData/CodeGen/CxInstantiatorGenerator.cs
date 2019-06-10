@@ -426,26 +426,6 @@ public:
             builder.WriteLine($"result = {FieldAssignment(fieldName)}new GeoSource(transformed);");
         }
 
-        /// <inheritdoc/>
-        protected override void WriteLoadedImageSurfaceFactory(CodeBuilder builder, CodeGenInfo info, LoadedImageSurface obj, string fieldName, Uri imageUri)
-        {
-            switch (obj.Type)
-            {
-                case LoadedImageSurface.LoadedImageSurfaceType.FromStream:
-                    builder.WriteLine("auto stream = ref new InMemoryRandomAccessStream();");
-                    builder.WriteLine("auto dataWriter = ref new DataWriter(stream->GetOutputStreamAt(0));");
-                    builder.WriteLine($"dataWriter->WriteBytes({fieldName});");
-                    builder.WriteLine("dataWriter->StoreAsync();");
-                    builder.WriteLine("dataWriter->FlushAsync();");
-                    builder.WriteLine("stream->Seek(0);");
-                    builder.WriteLine($"{_stringifier.Var} result = Windows::UI::Xaml::Media::LoadedImageSurface::StartLoadFromStream(stream);");
-                    break;
-                case LoadedImageSurface.LoadedImageSurfaceType.FromUri:
-                    builder.WriteLine($"{_stringifier.Var} result = Windows::UI::Xaml::Media::LoadedImageSurface::StartLoadFromUri(ref new Uri(\"{imageUri}\"));");
-                    break;
-            }
-        }
-
         string CanvasFigureLoop(CanvasFigureLoop value) => _stringifier.CanvasFigureLoop(value);
 
         static string FieldAssignment(string fieldName) => fieldName != null ? $"{fieldName} = " : string.Empty;

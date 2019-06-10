@@ -104,10 +104,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             // Save the nodes, ordered by the name that was just set.
             _nodes = nodes.OrderBy(node => node.Name).ToArray();
 
-            // Force storage to be allocated for nodes that have multiple references to them or are LoadedImageSurfaces.
+            // Force storage to be allocated for nodes that have multiple references to them.
             foreach (var node in _nodes)
             {
-                if (FilteredInRefs(node).Count() > 1 || node.UsesNamespaceWindowsUIXamlMedia)
+                if (FilteredInRefs(node).Count() > 1)
                 {
                     // Node is referenced more than once, so it requires storage.
                     node.RequiresStorage = true;
@@ -302,21 +302,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             string fieldName);
 
         /// <summary>
-        /// Writes LoadedImageSurface factory code.
-        /// </summary>
-        /// <param name="builder">A <see cref="CodeBuilder"/> used to create the code.</param>
-        /// <param name="info">A <see cref="CodeGenInfo"/> used to get information about the code.</param>
-        /// <param name="obj">Describes the object that should be instantiated by the factory code.</param>
-        /// <param name="fieldName">The name of the Bytes field that should be used for StartLoadFromStream().</param>
-        /// <param name="imageUri">The Uri of the image file that should be used for StartLoadedFromUri().</param>
-        protected abstract void WriteLoadedImageSurfaceFactory(
-            CodeBuilder builder,
-            CodeGenInfo info,
-            Wmd.LoadedImageSurface obj,
-            string fieldName,
-            Uri imageUri);
-
-        /// <summary>
         /// Write a Bytes field.
         /// </summary>
         /// <param name="builder">A <see cref="CodeBuilder"/> used to create the code.</param>
@@ -390,6 +375,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             // referenced more than once).
             WriteField(builder, Readonly(_stringifier.ReferenceTypeName("Compositor")), "_c");
             WriteField(builder, Readonly(_stringifier.ReferenceTypeName("ExpressionAnimation")), SingletonExpressionAnimationName);
+
+            foreach (var node in _nodes)
+            {
+                if (node.UsesNamespaceWindowsUIXamlMedia)
+                {
+                    // Generate a field for each LoadedImageSurface object.
+                    WriteField(builder, Readonly(_stringifier.ReferenceTypeName(node.TypeName)), _stringifier.MakeVariableName(node.Name));
+                }
+            }
 
             foreach (var node in _nodes)
             {
@@ -1536,7 +1530,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                         builder.WriteLine($"result{Deref}Surface = {CallFactoryFromFor(node, compositionObject)};");
                         break;
                     case Wmd.LoadedImageSurface loadedImageSurface:
-                        //builder.WriteLine($"result{Deref}Surface = {CallFactoryFromFor(node, loadedImageSurface)};");
                         builder.WriteLine($"result{Deref}Surface = {_stringifier.MakeVariableName(NodeFor(loadedImageSurface).Name)};");
                         break;
                     default:
@@ -1591,17 +1584,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             var canvasGeometry = _objectGraph[(CanvasGeometry)obj.Source];
             WriteObjectFactoryStart(builder, node);
             WriteCreateAssignment(builder, node, $"{New} CompositionPath({_stringifier.FactoryCall(canvasGeometry.FactoryCall())})");
-            WriteObjectFactoryEnd(builder);
-            return true;
-        }
-
-        bool GenerateLoadedImageSurfaceFactory(CodeBuilder builder, CodeGenInfo info, Wmd.LoadedImageSurface obj, ObjectData node)
-        {
-            var fieldName = node.LoadedImageSurfaceBytesFieldName;
-            var imageUri = node.LoadedImageSurfaceImageUri;
-
-            WriteObjectFactoryStart(builder, node);
-            WriteLoadedImageSurfaceFactory(builder, info, obj, fieldName, imageUri);
             WriteObjectFactoryEnd(builder);
             return true;
         }
