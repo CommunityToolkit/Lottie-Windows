@@ -194,7 +194,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.WriteLine();
 
             builder.WriteSummaryComment("Represents the progress of the image loading. Returns value between 0 and 1. 0 means none of the images finished loading. 1 means all images finished loading.");
-            builder.WriteLine($"public double ImageLoadingProgress;");
+            builder.WriteLine($"public double ImageLoadingProgress {{ get; private set; }}");
             builder.WriteLine();
 
             // Generate the method that creates an instance of the animated visual.
