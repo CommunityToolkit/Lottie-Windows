@@ -20,7 +20,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 #endif
     abstract class Layer : LottieObject
     {
-        readonly Mask[] _masks;
+        static readonly Mask[] s_emptyMasks = { };
+        readonly Mask[] _masks = s_emptyMasks;
 
         private protected Layer(in LayerArgs args)
             : base(args.Name)
@@ -36,8 +37,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             BlendMode = args.BlendMode;
             Is3d = args.Is3d;
             AutoOrient = args.AutoOrient;
-            _masks = args.Masks != null ? args.Masks.ToArray() : null;
             LayerMatteType = args.LayerMatteType;
+
+            if (args.Masks != null)
+            {
+                _masks = args.Masks.ToArray();
+            }
         }
 
         public bool AutoOrient { get; }

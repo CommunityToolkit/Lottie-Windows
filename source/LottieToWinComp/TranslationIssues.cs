@@ -90,6 +90,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal void ImageFileRequired(string filePath) => Report("LT0030", $"Image file required at {filePath}");
 
+        internal void MattesAreNotSupported() => Report("LT0031", "Mattes are not supported.");
+
+        internal void MaskModesDoNotMatch() => Report("LT0032", "A multiple shape mask is only supported if the shapes all have the same mode.");
+
+        internal void MasksNotSupported() => Report("LT0033", "Masks are not supported.");
+
         void Report(string code, string description)
         {
             _issues.Add((code, description));
