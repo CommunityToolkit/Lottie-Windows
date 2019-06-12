@@ -200,13 +200,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// <summary>
         /// Writes the start of the file, e.g. using namespace statements and includes at the top of the file.
         /// </summary>
-        /// <param name="builder">A <see cref="CodeBuilder"/> used to create the code.</param>
-        /// <param name="info">A <see cref="CodeGenInfo"/> used to get information about the code.</param>
-        /// <param name="nodes">LoadedImageSurfaces nodes in the composition, if any.</param>
         protected abstract void WriteFileStart(
             CodeBuilder builder,
-            CodeGenInfo info,
-            IEnumerable<ObjectData> nodes);
+            CodeGenInfo info);
 
         /// <summary>
         /// Writes the start of the Instantiator class.
@@ -220,8 +216,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// </summary>
         protected abstract void WriteFileEnd(
             CodeBuilder builder,
-            CodeGenInfo info,
-            IEnumerable<ObjectData> nodes);
+            CodeGenInfo info);
 
         /// <summary>
         /// Writes CanvasGeometery.Combination factory code.
@@ -324,6 +319,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             return _nodes.Where(n => n.UsesAssetFile).Select(n => n.LoadedImageSurfaceImageUri).Distinct();
         }
 
+        protected IEnumerable<ObjectData> GetLoadedImageSurfacesNodes()
+        {
+            return _nodes.Where(n => n.UsesNamespaceWindowsUIXamlMedia);
+        }
+
         /// <summary>
         /// Call this to generate the code. Returns a string containing the generated code.
         /// </summary>
@@ -345,8 +345,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 usesCanvasEffects: _nodes.Where(n => n.UsesCanvasEffects).Any(),
                 usesCanvasGeometry: _nodes.Where(n => n.UsesCanvasGeometry).Any(),
                 usesNamespaceWindowsUIXamlMedia: _nodes.Where(n => n.UsesNamespaceWindowsUIXamlMedia).Any(),
-                usesStreams: _nodes.Where(n => n.UsesStream).Any(),
-                loadedImageSurfaceCount : _nodes.Where(n => n.UsesNamespaceWindowsUIXamlMedia).Count()
+                usesStreams: _nodes.Where(n => n.UsesStream).Any()
                 );
 
             // Write the auto-generated warning comment.
@@ -357,7 +356,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             // Get the derived class to write the start of the file. This is everything
             // up to the start of the Instantiator class.
-            WriteFileStart(builder, info, _nodes.Where(n => n.UsesNamespaceWindowsUIXamlMedia));
+            WriteFileStart(builder, info);
 
             // Write the LoadedImageSurface byte arrays.
             WriteBytesFields(builder);
@@ -403,7 +402,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             }
 
             // Write the end of the Instantiator class and the end of the file.
-            WriteFileEnd(builder, info, _nodes.Where(n => n.UsesNamespaceWindowsUIXamlMedia));
+            WriteFileEnd(builder, info);
 
             return builder.ToString();
         }
@@ -1786,8 +1785,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 bool usesCanvasEffects,
                 bool usesCanvasGeometry,
                 bool usesNamespaceWindowsUIXamlMedia,
-                bool usesStreams,
-                int loadedImageSurfaceCount)
+                bool usesStreams)
             {
                 ClassName = className;
                 ReusableExpressionAnimationFieldName = reusableExpressionAnimationFieldName;
@@ -1799,7 +1797,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 UsesCanvasGeometry = usesCanvasGeometry;
                 UsesNamespaceWindowsUIXamlMedia = usesNamespaceWindowsUIXamlMedia;
                 UsesStreams = usesStreams;
-                LoadedImageSurfaceCount = loadedImageSurfaceCount;
             }
 
             /// <summary>
@@ -1841,11 +1838,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             /// Gets a value indicating whether the composition uses streams.
             /// </summary>
             public bool UsesStreams { get; }
-
-            /// <summary>
-            /// Gets a value indicating the number of LoadedImageSurface the composition has.
-            /// </summary>
-            public int LoadedImageSurfaceCount { get; }
 
             /// <summary>
             /// Gets the name of the field in the instantiator class that hold the reusable ExpressionAnimation.

@@ -70,7 +70,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         /// <inheritdoc/>
         // Called by the base class to write the start of the file (i.e. everything up to the body of the Instantiator class).
-        protected override void WriteFileStart(CodeBuilder builder, CodeGenInfo info, IEnumerable<ObjectData> nodes)
+        protected override void WriteFileStart(CodeBuilder builder, CodeGenInfo info)
         {
             if (info.UsesCanvas)
             {
@@ -112,7 +112,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             // Otherwise, implement the IAnimatedVisualSource interface.
             if (info.UsesNamespaceWindowsUIXamlMedia)
             {
-                WriteIDynamicAnimatedVisualSource(builder, info, nodes);
+                WriteIDynamicAnimatedVisualSource(builder, info, GetLoadedImageSurfacesNodes());
             }
             else
             {
@@ -154,7 +154,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.OpenScope();
 
             // Declare variables.
-            builder.WriteLine($"{_stringifier.Const(_stringifier.Int32TypeName)} c_loadedImageSurfaceCount = {info.LoadedImageSurfaceCount};");
+            builder.WriteLine($"{_stringifier.Const(_stringifier.Int32TypeName)} c_loadedImageSurfaceCount = {loadedImageSurfacesNodes.Distinct().Count()};");
             builder.WriteLine($"{_stringifier.Int32TypeName} _loadCompleteEventCount;");
             builder.WriteLine("bool _animatedVisualWaitOnImageLoading;");
             builder.WriteLine("bool _tryCreateAnimatedVisualCalled;");
@@ -259,8 +259,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         // Called by the base class to write the end of the file (i.e. everything after the body of the Instantiator class).
         protected override void WriteFileEnd(
             CodeBuilder builder,
-            CodeGenInfo info,
-            IEnumerable<ObjectData> nodes)
+            CodeGenInfo info)
         {
             // Write the constructor for the instantiator.
             if (info.UsesNamespaceWindowsUIXamlMedia)
@@ -269,6 +268,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 builder.Indent();
 
                 // Pass in the image surfaces to AnimatedVisual().
+                var nodes = GetLoadedImageSurfacesNodes();
                 for (var i = 0; i < nodes.Count(); i++)
                 {
                     var n = nodes.ElementAt(i);
