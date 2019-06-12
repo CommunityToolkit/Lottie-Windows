@@ -225,15 +225,56 @@ public:
             builder.UnIndent();
             builder.WriteLine("public:");
             builder.Indent();
-            builder.WriteLine("AnimatedVisual(Compositor^ compositor)");
 
-            // Initializer list.
-            builder.Indent();
-            builder.WriteLine(": _c(compositor)");
+            if (info.UsesNamespaceWindowsUIXamlMedia)
+            {
+                builder.WriteLine("AnimatedVisual(Compositor^ compositor,");
+                builder.Indent();
 
-            // Instantiate the reusable ExpressionAnimation.
-            builder.WriteLine($", {info.ReusableExpressionAnimationFieldName}(compositor->CreateExpressionAnimation())");
-            builder.UnIndent();
+                // Pass in the image surfaces to AnimatedVisual() constructor.
+                var nodes = GetLoadedImageSurfacesNodes();
+                for (var i = 0; i < nodes.Count(); i++)
+                {
+                    var n = nodes.ElementAt(i);
+                    if (i < nodes.Count() - 1)
+                    {
+                        // Append "," to each parameter except the last one.
+                        builder.WriteLine($"{_stringifier.ReferenceTypeName(n.TypeName)} {_stringifier.CamelCase(n.Name)},");
+                    }
+                    else
+                    {
+                        // Close the parenthesis after the last parameter.
+                        builder.WriteLine($"{_stringifier.ReferenceTypeName(n.TypeName)} {_stringifier.CamelCase(n.Name)})");
+                    }
+                }
+
+                // Initializer list.
+                builder.WriteLine(": _c(compositor)");
+
+                // Instantiate the reusable ExpressionAnimation.
+                builder.WriteLine($", {info.ReusableExpressionAnimationFieldName}(compositor->CreateExpressionAnimation())");
+
+                // Initialize the image surfaces.
+                foreach (var n in nodes)
+                {
+                    builder.WriteLine($", {_stringifier.MakeVariableName(n.Name)}({_stringifier.CamelCase(n.Name)})");
+                }
+
+                builder.UnIndent();
+            }
+            else
+            {
+                builder.WriteLine("AnimatedVisual(Compositor^ compositor)");
+
+                // Initializer list.
+                builder.Indent();
+                builder.WriteLine(": _c(compositor)");
+
+                // Instantiate the reusable ExpressionAnimation.
+                builder.WriteLine($", {info.ReusableExpressionAnimationFieldName}(compositor->CreateExpressionAnimation())");
+                builder.UnIndent();
+            }
+
             builder.OpenScope();
             if (info.UsesCanvasEffects ||
                 info.UsesCanvasGeometry)
@@ -275,27 +316,40 @@ public:
             builder.WriteLine();
 
             // Generate the method that creates an instance of the composition.
-            WriteTryCreateInstantiator(builder, info);
-        }
-
-        /// <summary>
-        /// Generate the method that creates an instance of the composition.
-        /// </summary>
-        void WriteTryCreateInstantiator(CodeBuilder builder, CodeGenInfo info)
-        {
             builder.WriteLine($"Microsoft::UI::Xaml::Controls::IAnimatedVisual^ AnimatedVisuals::{info.ClassName}::TryCreateAnimatedVisual(");
             builder.Indent();
             builder.WriteLine("Compositor^ compositor,");
             builder.WriteLine("Object^* diagnostics)");
             builder.UnIndent();
             builder.OpenScope();
-            builder.WriteLine("diagnostics = nullptr;");
-            builder.WriteLine("if (!IsRuntimeCompatible())");
-            builder.OpenScope();
-            builder.WriteLine("return nullptr;");
+
+            if (info.UsesNamespaceWindowsUIXamlMedia)
+            {
+                WriteTryCreateInstantiatorWithImageLoading(builder, GetLoadedImageSurfacesNodes());
+            }
+            else
+            {
+                builder.WriteLine("diagnostics = nullptr;");
+                builder.WriteLine("if (!IsRuntimeCompatible())");
+                builder.OpenScope();
+                builder.WriteLine("return nullptr;");
+                builder.CloseScope();
+                builder.WriteLine("return ref new AnimatedVisual(compositor);");
+            }
+
             builder.CloseScope();
-            builder.WriteLine("return ref new AnimatedVisual(compositor);");
-            builder.CloseScope();
+
+            if (info.UsesNamespaceWindowsUIXamlMedia)
+            {
+                // Generate the get() and set() methods of AnimatedVisualWaitOnImageLoading property.
+                WriteAnimatedVisualWaitOnImageLoadingGetSet(builder, info);
+
+                // Generate the method that load all the LoadedImageSurfaces.
+                WriteEnsureImageLoadingStarted(builder, info, GetLoadedImageSurfacesNodes());
+
+                // Generate the method that handle the LoadCompleted event of the LoadedImageSurface objects.
+                WriteHandleLoadCompleted(builder, info);
+            }
         }
 
         /// <inheritdoc/>
@@ -431,6 +485,119 @@ public:
             builder.WriteLine($"result = {FieldAssignment(fieldName)}new GeoSource(transformed);");
         }
 
+        /// <summary>
+        /// Generate the body of the TryCreateAnimatedVisual() method for the composition that contains LoadedImageSurfaces.
+        /// </summary>
+        void WriteTryCreateInstantiatorWithImageLoading(CodeBuilder builder, IEnumerable<ObjectData> loadedImageSurfacesNodes)
+        {
+            builder.WriteLine("m_tryCreateAnimatedVisualCalled = true;");
+            builder.WriteLine();
+            builder.WriteLine("diagnostics = nullptr;");
+            builder.WriteLine("if (!IsRuntimeCompatible())");
+            builder.OpenScope();
+            builder.WriteLine("return nullptr;");
+            builder.CloseScope();
+            builder.WriteLine();
+            builder.WriteLine("EnsureImageLoadingStarted();");
+            builder.WriteLine();
+            builder.WriteLine("if (m_animatedVisualWaitOnImageLoading && m_loadCompleteEventCount != c_loadedImageSurfaceCount)");
+            builder.OpenScope();
+            builder.WriteLine("return nullptr;");
+            builder.CloseScope();
+            builder.WriteLine("return ref new AnimatedVisual(compositor,");
+            builder.Indent();
+            for (var i = 0; i < loadedImageSurfacesNodes.Count(); i++)
+            {
+                if (i < loadedImageSurfacesNodes.Count() - 1)
+                {
+                    // Append "," to each parameter except the last one.
+                    builder.WriteLine($"m{_stringifier.MakeVariableName(loadedImageSurfacesNodes.ElementAt(i).Name)},");
+                }
+                else
+                {
+                    // Close the parenthesis after the last parameter.
+                    builder.WriteLine($"m{_stringifier.MakeVariableName(loadedImageSurfacesNodes.ElementAt(i).Name)})");
+                }
+            }
+
+            builder.UnIndent();
+            builder.WriteLine(";");
+        }
+
+        void WriteAnimatedVisualWaitOnImageLoadingGetSet(CodeBuilder builder, CodeGenInfo info)
+        {
+            builder.WriteLine($"bool AnimatedVisuals::{info.ClassName}::AnimatedVisualWaitOnImageLoading::get()");
+            builder.OpenScope();
+            builder.WriteLine("return m_animatedVisualWaitOnImageLoading;");
+            builder.CloseScope();
+            builder.WriteLine();
+            builder.WriteLine($"void AnimatedVisuals::{info.ClassName}::AnimatedVisualWaitOnImageLoading::set(bool animatedVisualWaitOnImageLoading)");
+            builder.OpenScope();
+            builder.WriteLine("if (!m_tryCreateAnimatedVisualCalled)");
+            builder.OpenScope();
+            builder.WriteLine("m_animatedVisualWaitOnImageLoading = animatedVisualWaitOnImageLoading;");
+            builder.WriteLine("PropertyChanged(this, ref new PropertyChangedEventArgs(\"AnimatedVisualWaitOnImageLoading\"));");
+            builder.CloseScope();
+            builder.CloseScope();
+        }
+
+        void WriteEnsureImageLoadingStarted(CodeBuilder builder, CodeGenInfo info, IEnumerable<ObjectData> nodes)
+        {
+            builder.WriteLine($"void AnimatedVisuals::{info.ClassName}::EnsureImageLoadingStarted()");
+            builder.OpenScope();
+            builder.WriteLine("if (!m_imageLoadingStarted)");
+            builder.OpenScope();
+            builder.WriteLine($"auto eventHandler = ref new TypedEventHandler<LoadedImageSurface^, LoadedImageSourceLoadCompletedEventArgs^>(this, &AnimatedVisuals::{info.ClassName}::HandleLoadCompleted);");
+            foreach (var n in nodes)
+            {
+                var obj = (LoadedImageSurface)n.Object;
+                switch (obj.Type)
+                {
+                    case LoadedImageSurface.LoadedImageSurfaceType.FromStream:
+                        var streamName = $"stream_{n.Name}";
+                        var dataWriterName = $"dataWriter_{n.Name}";
+                        builder.WriteLine($"auto {streamName} = ref new InMemoryRandomAccessStream();");
+                        builder.WriteLine($"auto {dataWriterName} = ref new DataWriter({streamName}->GetOutputStreamAt(0));");
+                        builder.WriteLine($"{dataWriterName}->WriteBytes({n.LoadedImageSurfaceBytesFieldName});");
+                        builder.WriteLine($"{dataWriterName}->StoreAsync();");
+                        builder.WriteLine($"{dataWriterName}->FlushAsync();");
+                        builder.WriteLine($"{streamName}->Seek(0);");
+                        builder.WriteLine($"m{_stringifier.MakeVariableName(n.Name)} = Windows::UI::Xaml::Media::LoadedImageSurface::StartLoadFromStream({streamName});");
+                        break;
+                    case LoadedImageSurface.LoadedImageSurfaceType.FromUri:
+                        builder.WriteLine($"m{_stringifier.MakeVariableName(n.Name)} = Windows::UI::Xaml::Media::LoadedImageSurface::StartLoadFromUri(ref new Uri(\"{n.LoadedImageSurfaceImageUri}\"));");
+                        break;
+                    default:
+                        throw new InvalidOperationException();
+                }
+
+                builder.WriteLine($"m{_stringifier.MakeVariableName(n.Name)}->LoadCompleted += eventHandler;");
+            }
+
+            builder.WriteLine("m_imageLoadingStarted = true;");
+            builder.CloseScope();
+            builder.CloseScope();
+            builder.WriteLine();
+        }
+
+        void WriteHandleLoadCompleted(CodeBuilder builder, CodeGenInfo info)
+        {
+            builder.WriteLine($"void AnimatedVisuals::{info.ClassName}::HandleLoadCompleted(LoadedImageSurface^ sender, LoadedImageSourceLoadCompletedEventArgs^ e)");
+            builder.OpenScope();
+            builder.WriteLine("if (e->Status == LoadedImageSourceLoadStatus::Success)");
+            builder.OpenScope();
+            builder.WriteLine("m_loadCompleteEventCount++;");
+            builder.WriteLine("if (m_animatedVisualWaitOnImageLoading && m_loadCompleteEventCount == c_loadedImageSurfaceCount)");
+            builder.OpenScope();
+            builder.WriteLine("RaiseAnimatedVisualInvalidatedEvent(this, nullptr);");
+            builder.CloseScope();
+            builder.WriteLine("m_imageLoadingProgress = (double) m_loadCompleteEventCount / c_loadedImageSurfaceCount;");
+            builder.WriteLine("PropertyChanged(this, ref new PropertyChangedEventArgs(\"ImageLoadingProgress\"));");
+            builder.CloseScope();
+            builder.CloseScope();
+            builder.WriteLine();
+        }
+
         string CanvasFigureLoop(CanvasFigureLoop value) => _stringifier.CanvasFigureLoop(value);
 
         static string FieldAssignment(string fieldName) => fieldName != null ? $"{fieldName} = " : string.Empty;
@@ -524,7 +691,7 @@ private:
     void HandleLoadCompleted(LoadedImageSurface^ sender, LoadedImageSourceLoadCompletedEventArgs^ e);
     void RaiseAnimatedVisualInvalidatedEvent(IDynamicAnimatedVisualSource^ sender, Platform::Object^ object)
     {{
-            m_InternalHandler::raise(sender, object);
+        m_InternalHandler::raise(sender, object);
     }}
 }};
 }}";

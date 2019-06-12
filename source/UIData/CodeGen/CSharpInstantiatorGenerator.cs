@@ -214,7 +214,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.OpenScope();
             builder.WriteLine("return null;");
             builder.CloseScope();
-            builder.WriteLine();
             builder.WriteLine("return");
             builder.Indent();
             WriteAnimatedVisualCall(builder, loadedImageSurfacesNodes);
@@ -267,7 +266,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 builder.WriteLine($"internal AnimatedVisual(Compositor compositor,");
                 builder.Indent();
 
-                // Pass in the image surfaces to AnimatedVisual().
+                // Pass in the image surfaces to AnimatedVisual() constructor.
                 var nodes = GetLoadedImageSurfacesNodes();
                 for (var i = 0; i < nodes.Count(); i++)
                 {
@@ -438,6 +437,27 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.WriteLine();
         }
 
+        void WriteAnimatedVisualCall(CodeBuilder builder, IEnumerable<ObjectData> nodes)
+        {
+            builder.WriteLine("new AnimatedVisual(compositor,");
+            builder.Indent();
+            for (var i = 0; i < nodes.Count(); i++)
+            {
+                if (i < nodes.Count() - 1)
+                {
+                    // Append "," to each parameter except the last one.
+                    builder.WriteLine($"{_stringifier.MakeVariableName(nodes.ElementAt(i).Name)},");
+                }
+                else
+                {
+                    // Close the parenthesis after the last parameter.
+                    builder.WriteLine($"{_stringifier.MakeVariableName(nodes.ElementAt(i).Name)})");
+                }
+            }
+
+            builder.UnIndent();
+        }
+
         void WriteEnsureImageLoadingStarted(CodeBuilder builder, CodeGenInfo info, IEnumerable<ObjectData> nodes)
         {
             builder.WriteLine("void EnsureImageLoadingStarted()");
@@ -447,13 +467,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.WriteLine("var eventHandler = new TypedEventHandler<LoadedImageSurface, LoadedImageSourceLoadCompletedEventArgs>(HandleLoadCompleted);");
             foreach (var n in nodes)
             {
-                if (n.UsesStream)
+                var obj = (LoadedImageSurface)n.Object;
+                switch (obj.Type)
                 {
-                    builder.WriteLine($"{_stringifier.MakeVariableName(n.Name)} = LoadedImageSurface.StartLoadFromStream({n.LoadedImageSurfaceBytesFieldName}.AsBuffer().AsStream().AsRandomAccessStream());");
-                }
-                else if (n.UsesAssetFile)
-                {
-                    builder.WriteLine($"{_stringifier.MakeVariableName(n.Name)} = LoadedImageSurface.StartLoadFromUri(new Uri(\"{n.LoadedImageSurfaceImageUri}\"));");
+                    case LoadedImageSurface.LoadedImageSurfaceType.FromStream:
+                        builder.WriteLine($"{_stringifier.MakeVariableName(n.Name)} = LoadedImageSurface.StartLoadFromStream({n.LoadedImageSurfaceBytesFieldName}.AsBuffer().AsStream().AsRandomAccessStream());");
+                        break;
+                    case LoadedImageSurface.LoadedImageSurfaceType.FromUri:
+                        builder.WriteLine($"{_stringifier.MakeVariableName(n.Name)} = LoadedImageSurface.StartLoadFromUri(new Uri(\"{n.LoadedImageSurfaceImageUri}\"));");
+                        break;
+                    default:
+                        throw new InvalidOperationException();
                 }
 
                 builder.WriteLine($"{_stringifier.MakeVariableName(n.Name)}.LoadCompleted += eventHandler;");
@@ -482,27 +506,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.CloseScope();
             builder.CloseScope();
             builder.WriteLine();
-        }
-
-        void WriteAnimatedVisualCall(CodeBuilder builder, IEnumerable<ObjectData> nodes)
-        {
-            builder.WriteLine("new AnimatedVisual(compositor,");
-            builder.Indent();
-            for (var i = 0; i < nodes.Count(); i++)
-            {
-                if (i < nodes.Count() - 1)
-                {
-                    // Append "," to each parameter except the last one.
-                    builder.WriteLine($"{_stringifier.MakeVariableName(nodes.ElementAt(i).Name)},");
-                }
-                else
-                {
-                    // Close the parenthesis after the last parameter.
-                    builder.WriteLine($"{_stringifier.MakeVariableName(nodes.ElementAt(i).Name)})");
-                }
-            }
-
-            builder.UnIndent();
         }
 
         static string FieldAssignment(string fieldName) => fieldName != null ? $"{fieldName} = " : string.Empty;
