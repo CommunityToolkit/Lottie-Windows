@@ -821,7 +821,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             var propertySet = obj.Properties;
             if (!propertySet.IsEmpty)
             {
-                builder.WriteLine($"{Var} propertySet = {localName}{Deref}{EvalProp("Properties")};");
+                builder.WriteLine($"{Var} propertySet = {localName}{Deref}{EvalProp("Properties")};"); //jcclean
                 foreach (var prop in propertySet.ScalarProperties)
                 {
                     builder.WriteLine($"propertySet{Deref}InsertScalar({String(prop.Key)}, {Float(prop.Value)});");
