@@ -845,47 +845,47 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
             if (obj.CenterPoint.HasValue)
             {
-                builder.WriteLine($"result{Deref}CenterPoint({Vector3(obj.CenterPoint.Value)});");
+                builder.WriteLine($"{_stringifier.Assignment($"result{Deref}CenterPoint", $"{Vector3(obj.CenterPoint.Value)}")};"); //jcclean
             }
 
             if (obj.Clip != null)
             {
-                builder.WriteLine($"result{Deref}Clip({CallFactoryFromFor(node, obj.Clip)});");
+                builder.WriteLine($"{_stringifier.Assignment($"result{Deref}Clip", $"{CallFactoryFromFor(node, obj.Clip)}")};"); //jcclean
             }
 
             if (obj.Offset.HasValue)
             {
-                builder.WriteLine($"result{Deref}Offset({Vector3(obj.Offset.Value)});");
+                builder.WriteLine($"{_stringifier.Assignment($"result{Deref}Offset", $"{Vector3(obj.Offset.Value)}")};"); //jcclean
             }
 
             if (obj.Opacity.HasValue)
             {
-                builder.WriteLine($"result{Deref}Opacity({Float(obj.Opacity.Value)});");
+                builder.WriteLine($"{_stringifier.Assignment($"result{Deref}Opacity", $"{Float(obj.Opacity.Value)}")};"); //jcclean
             }
 
             if (obj.RotationAngleInDegrees.HasValue)
             {
-                builder.WriteLine($"result{Deref}RotationAngleInDegrees({Float(obj.RotationAngleInDegrees.Value)});");
+                builder.WriteLine($"{_stringifier.Assignment($"result{Deref}RotationAngleInDegrees", $"{Float(obj.RotationAngleInDegrees.Value)}")};"); //jcclean
             }
 
             if (obj.RotationAxis.HasValue)
             {
-                builder.WriteLine($"result{Deref}RotationAxis({Vector3(obj.RotationAxis.Value)});");
+                builder.WriteLine($"{_stringifier.Assignment($"result{Deref}RotationAxis", $"{Vector3(obj.RotationAxis.Value)}")};"); //jcclean
             }
 
             if (obj.Scale.HasValue)
             {
-                builder.WriteLine($"result{Deref}Scale({Vector3(obj.Scale.Value)});");
+                builder.WriteLine($"{_stringifier.Assignment($"result{Deref}Scale", $"{Vector3(obj.Scale.Value)}")};"); //jcclean
             }
 
             if (obj.Size.HasValue)
             {
-                builder.WriteLine($"result{Deref}Size({Vector2(obj.Size.Value)});");
+                builder.WriteLine($"{_stringifier.Assignment($"result{Deref}Size", $"{Vector2(obj.Size.Value)}")};"); //jcclean
             }
 
             if (obj.TransformMatrix.HasValue)
             {
-                builder.WriteLine($"result{Deref}TransformMatrix({Matrix4x4(obj.TransformMatrix.Value)});");
+                builder.WriteLine($"{_stringifier.Assignment($"result{Deref}TransformMatrix", $"{Matrix4x4(obj.TransformMatrix.Value)}")};"); //jcclean
             }
         }
 
