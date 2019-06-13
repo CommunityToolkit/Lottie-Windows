@@ -622,22 +622,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
             if (obj.LeftInset != 0)
             {
-                builder.WriteLine($"result{Deref}LeftInset = {Float(obj.LeftInset)}");
+                builder.WriteLine($"{_stringifier.Assignment($"result{Deref}LeftInset", $"{Float(obj.LeftInset)}")}"); //jcclean
             }
 
             if (obj.RightInset != 0)
             {
-                builder.WriteLine($"result{Deref}RightInset = {Float(obj.RightInset)}");
+                builder.WriteLine($"{_stringifier.Assignment($"result{Deref}RightInset", $"{Float(obj.RightInset)}")}"); //jcclean
             }
 
             if (obj.TopInset != 0)
             {
-                builder.WriteLine($"result{Deref}TopInset = {Float(obj.TopInset)}");
+                builder.WriteLine($"{_stringifier.Assignment($"result{Deref}TopInset", $"{Float(obj.TopInset)}")}"); //jcclean
             }
 
             if (obj.BottomInset != 0)
             {
-                builder.WriteLine($"result{Deref}BottomInset = {Float(obj.BottomInset)}");
+                builder.WriteLine($"{_stringifier.Assignment($"result{Deref}BottomInset", $"{Float(obj.BottomInset)}")}"); //jcclean
             }
 
             StartAnimations(builder, obj, node);
@@ -653,7 +653,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
             if (obj.Geometry != null)
             {
-                builder.WriteLine($"result{Deref}Geometry({CallFactoryFromFor(node, obj.Geometry)});"); //TODO will break c# since change is in base
+                builder.WriteLine($"{_stringifier.Assignment($"result{Deref}Geometry", $"{CallFactoryFromFor(node, obj.Geometry)}")};"); //jcclean
             }
 
             StartAnimations(builder, obj, node);
