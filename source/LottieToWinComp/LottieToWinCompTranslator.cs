@@ -247,17 +247,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     case CompositionObjectType.CompositionSpriteShape:
                         if (shapeVisual == null)
                         {
-                            shapeVisual = _c.CreateShapeVisual();
-
-                            // ShapeVisual clips to its size
-#if NoClipping
-                            shapeVisual.Size = Vector2(float.MaxValue);
-#else
-                            shapeVisual.Size = context.Size;
-#endif
+                            shapeVisual = CreateShapeVisualWithChild((CompositionShape)item, context.Size);
+                        }
+                        else
+                        {
+                            shapeVisual.Shapes.Add((CompositionShape)item);
                         }
 
-                        shapeVisual.Shapes.Add((CompositionShape)item);
                         break;
                     case CompositionObjectType.ContainerVisual:
                     case CompositionObjectType.ShapeVisual:
@@ -316,17 +312,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         if (layerIsMattedLayer ||
                             mattedVisual != null)
                         {
-                            var shapeVisual = _c.CreateShapeVisual();
-
-                            // ShapeVisual clips to its size
-#if NoClipping
-                            shapeVisual.Size = Vector2(float.MaxValue);
-#else
-                            shapeVisual.Size = context.Size;
-#endif
-                            shapeVisual.Shapes.Add((CompositionShape)item.translatedLayer);
-
-                            visual = shapeVisual;
+                            visual = CreateShapeVisualWithChild((CompositionShape)item.translatedLayer, context.Size);
                         }
 
                         break;
@@ -376,12 +362,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             TranslationContext context,
             CompositionContainerShape containerShapeToMask)
         {
-            var contextSize = context.Size;
-
-            var contentShapeVisual = CreateShapeVisual();
-            contentShapeVisual.Size = contextSize;
-            contentShapeVisual.Shapes.Add(containerShapeToMask);
-
+            var contentShapeVisual = CreateShapeVisualWithChild(containerShapeToMask, context.Size);
             return TranslateAndApplyMasks(context, context.Layer, contentShapeVisual);
         }
 
@@ -491,9 +472,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     return null;
                 }
 
-                var maskShapeVisual = CreateShapeVisual();
-                maskShapeVisual.Size = context.Size;
-                maskShapeVisual.Shapes.Add(containerShapeMaskRootNode);
+                var maskShapeVisual = CreateShapeVisualWithChild(containerShapeMaskRootNode, context.Size);
 
                 // Do not add the mask if we failed to translate and add it
                 if (TranslateAndAddMaskPaths(context, layer, containerShapeMaskContentNode, out var maskMode))
@@ -3738,9 +3717,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return _c.CreateSpriteVisual();
         }
 
-        ShapeVisual CreateShapeVisual()
+        ShapeVisual CreateShapeVisualWithChild(CompositionShape child, Sn.Vector2 size)
         {
-            return _c.CreateShapeVisual();
+            var result = _c.CreateShapeVisual();
+            result.Shapes.Add(child);
+
+            // ShapeVisual clips to its size
+#if NoClipping
+            result.Size = Vector2(float.MaxValue);
+#else
+            result.Size = size;
+#endif
+            return result;
         }
 
         CompositionSpriteShape CreateSpriteShape()
