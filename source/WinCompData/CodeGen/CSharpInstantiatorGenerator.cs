@@ -316,6 +316,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             public override string Vector3(Vector3 value) => $"new Vector3({Float(value.X)}, {Float(value.Y)}, {Float(value.Z)})";
 
             public override string WriteField(string typeName, string fieldName, bool initNull = false) => $"{typeName} {fieldName};";
+
+            public override string Literal(string v) => $"\"{v}\"";
         }
     }
 }

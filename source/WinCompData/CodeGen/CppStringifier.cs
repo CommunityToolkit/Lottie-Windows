@@ -111,6 +111,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
         public override string IListAdd => "Append";
 
+        public override string Literal(string v) => $"L\"{v}\"";
+
         public override string FactoryCall(string value) => $"{value}.as<IGeometrySource2D>()";  //TODO refactor
 
         public string FailFastWrapper(string value) => $"check_hresult({value})"; //TODO: refactor if keeping cx

@@ -490,7 +490,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             // Write the RuntimeCompatibility() method.
             builder.WriteLine("static bool IsRuntimeCompatible()");
             builder.OpenScope();
-            builder.WriteLine($"if (!Windows{_stringifier.ScopeResolve}Foundation{_stringifier.ScopeResolve}Metadata{_stringifier.ScopeResolve}ApiInformation{_stringifier.ScopeResolve}IsTypePresent(L\"Windows.UI.Composition.CompositionGeometricClip\"))");
+            builder.WriteLine($"if (!Windows{_stringifier.ScopeResolve}Foundation{_stringifier.ScopeResolve}Metadata{_stringifier.ScopeResolve}ApiInformation{_stringifier.ScopeResolve}IsTypePresent({_stringifier.Literal("Windows.UI.Composition.CompositionGeometricClip")}))"); //JCCLEAN
             builder.OpenScope();
             builder.WriteLine("return false;");
             builder.CloseScope();
@@ -1610,6 +1610,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             string Vector3(Vector3 value);
 
             string WriteField(string typeName, string fieldName, bool initNull);
+
+            string Literal(string v);
         }
 
         /// <summary>
@@ -1709,6 +1711,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             public abstract string WriteField(string typeName, string fieldName, bool initNull = false);
 
             public string Hex(int value) => $"0x{value.ToString("X2")}";
+
+            public abstract string Literal(string v);
         }
 
         // A node in the object graph, annotated with extra stuff to assist in code generation.
