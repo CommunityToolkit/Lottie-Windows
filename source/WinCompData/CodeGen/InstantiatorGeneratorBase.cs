@@ -722,7 +722,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             WriteObjectFactoryStart(builder, node);
             WriteCreateAssignment(builder, node, $"_c{Deref}CreateExpressionAnimation()");
             InitializeCompositionAnimation(builder, obj, node);
-            builder.WriteLine($"result{Deref}Expression({String(obj.Expression.ToString())});");
+            builder.WriteLine($"{_stringifier.Assignment($"result{Deref}Expression", $"{String(obj.Expression.ToString())}")};"); //jcclean
             StartAnimations(builder, obj, node);
             WriteObjectFactoryEnd(builder);
             return true;
@@ -754,7 +754,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             if (!animationNode.RequiresStorage && animator.Animation is ExpressionAnimation expressionAnimation)
             {
                 builder.WriteLine($"{SingletonExpressionAnimationName}{Deref}ClearAllParameters();");
-                builder.WriteLine($"{SingletonExpressionAnimationName}{Deref}Expression({String(expressionAnimation.Expression.ToString())});");
+                builder.WriteLine($"{_stringifier.Assignment($"{SingletonExpressionAnimationName}{Deref}Expression", $"{String(expressionAnimation.Expression.ToString())}")};"); //jcclean
 
                 // If there is a Target set it. Note however that the Target isn't used for anything
                 // interesting in this scenario, and there is no way to reset the Target to an
@@ -821,7 +821,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             var propertySet = obj.Properties;
             if (!propertySet.IsEmpty)
             {
-                builder.WriteLine($"{Var} propertySet = {localName}{Deref}Properties();");
+                builder.WriteLine($"{Var} propertySet = {localName}{Deref}{EvalProp("Properties")};");
                 foreach (var prop in propertySet.ScalarProperties)
                 {
                     builder.WriteLine($"propertySet{Deref}InsertScalar({String(prop.Key)}, {Float(prop.Value)});");
@@ -1410,6 +1410,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
         string Deref => _stringifier.Deref;
 
+        string EvalProp(string propname) => _stringifier.EvalProp(propname);
+
         string New => _stringifier.New;
 
         string Null => _stringifier.Null;
@@ -1612,6 +1614,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             string WriteField(string typeName, string fieldName, bool initNull);
 
             string Literal(string v);
+
+            string EvalProp(string propname);
         }
 
         /// <summary>
@@ -1625,6 +1629,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
             /// <inheritdoc/>
             public abstract string Deref { get; }
+
+            public abstract string EvalProp(string propname);
 
             /// <inheritdoc/>
             public abstract string IListAdd { get; }

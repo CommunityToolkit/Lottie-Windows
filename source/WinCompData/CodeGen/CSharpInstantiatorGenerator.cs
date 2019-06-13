@@ -318,6 +318,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             public override string WriteField(string typeName, string fieldName, bool initNull = false) => $"{typeName} {fieldName};";
 
             public override string Literal(string v) => $"\"{v}\"";
+
+            public override string EvalProp(string propname)
+            {
+                return $"{propname}";
+            }
         }
     }
 }

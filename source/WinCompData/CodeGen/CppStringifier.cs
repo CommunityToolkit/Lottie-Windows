@@ -117,6 +117,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
         public string FailFastWrapper(string value) => $"check_hresult({value})"; //TODO: refactor if keeping cx
 
+        public override string EvalProp(string propname)
+        {
+            return $"{propname}()";
+        }
+
         /// <summary>
         /// Gets the code for a class that wraps an ID2D1Geometry in an IGeometrySource2DInterop
         /// as required by CompositionPath.
