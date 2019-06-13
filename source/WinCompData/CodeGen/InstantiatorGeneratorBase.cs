@@ -690,17 +690,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
             if (obj.IsFinalStepSingleFrame)
             {
-                builder.WriteLine($"result{Deref}IsFinalStepSingleFrame({Bool(obj.IsFinalStepSingleFrame)});");
+                builder.WriteLine($"{_stringifier.Assignment($"result{Deref}IsFinalStepSingleFrame", $"{Bool(obj.IsFinalStepSingleFrame)}")};"); //jcclean
             }
 
             if (obj.IsInitialStepSingleFrame)
             {
-                builder.WriteLine($"result{Deref}IsInitialStepSingleFrame({Bool(obj.IsInitialStepSingleFrame)});");
+                builder.WriteLine($"{_stringifier.Assignment($"result{Deref}IsInitialStepSingleFrame", $"{Bool(obj.IsInitialStepSingleFrame)}")};"); //jcclean
             }
 
             if (obj.StepCount != 1)
             {
-                builder.WriteLine($"result{Deref}StepCount = {Int(obj.StepCount)};");
+                builder.WriteLine($"{_stringifier.Assignment($"result{Deref}StepCount", $"{Int(obj.StepCount)}")};"); //jcclean
             }
 
             WriteObjectFactoryEnd(builder);
