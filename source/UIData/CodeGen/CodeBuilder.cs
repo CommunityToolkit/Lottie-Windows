@@ -246,7 +246,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             }
 
             remainder = text.Substring(breakAt);
-            return text.Substring(0, breakAt);
+            return text.Substring(0, breakAt).TrimStart();
         }
 
         /// <summary>

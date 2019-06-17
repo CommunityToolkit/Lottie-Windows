@@ -65,7 +65,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             var cppText = generator.GenerateCode(className, width, height);
 
-            var hText = GenerateHeaderText(className, generator.GetLoadedImageSurfacesNodes());
+            var hText = generator.GenerateHeaderText(className);
 
             var assetList = generator.GetAssetsList();
 
@@ -73,8 +73,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         }
 
         // Generates the .h file contents.
-        static string GenerateHeaderText(string className, IEnumerable<ObjectData> loadedImageSurfacesNodes)
+        string GenerateHeaderText(string className)
         {
+            var loadedImageSurfacesNodes = GetLoadedImageSurfacesNodes();
             if (loadedImageSurfacesNodes?.Any() == true)
             {
                 return IDynamicAnimatedVisualSourceHeaderText(className, loadedImageSurfacesNodes);
@@ -135,6 +136,11 @@ public:
                 builder.WriteLine("#include <iostream>");
             }
 
+            builder.WriteLine();
+
+            // A list to hold the namespaces that the generated code will use. The list will be ordered and written out after all namespaces are added.
+            List<string> namespaceList = new List<string>();
+
             if (info.UsesCanvasEffects ||
                 info.UsesCanvas)
             {
@@ -143,22 +149,28 @@ public:
                 throw new InvalidOperationException("Win2D dependency detected.");
             }
 
-            builder.WriteLine();
-            builder.WriteLine("using namespace Windows::Foundation;");
-            builder.WriteLine("using namespace Windows::Foundation::Numerics;");
-            builder.WriteLine("using namespace Windows::UI;");
-            builder.WriteLine("using namespace Windows::UI::Composition;");
-            builder.WriteLine("using namespace Windows::Graphics;");
-            builder.WriteLine("using namespace Microsoft::WRL;");
+            namespaceList.Add("Windows::Foundation");
+            namespaceList.Add("Windows::Foundation::Numerics");
+            namespaceList.Add("Windows::UI");
+            namespaceList.Add("Windows::UI::Composition");
+            namespaceList.Add("Windows::Graphics");
+            namespaceList.Add("Microsoft::WRL");
             if (info.UsesNamespaceWindowsUIXamlMedia)
             {
-                builder.WriteLine("using namespace Windows::UI::Xaml::Media;");
+                namespaceList.Add("Windows::UI::Xaml::Media");
             }
 
             if (info.UsesStreams)
             {
-                builder.WriteLine("using namespace Platform;");
-                builder.WriteLine("using namespace Windows::Storage::Streams;");
+                namespaceList.Add("Platform");
+                namespaceList.Add("Windows::Storage::Streams");
+            }
+
+            // Order the list alphabetically and write each namespace using out.
+            var orderList = namespaceList.OrderBy(n => n).ToArray();
+            foreach (var n in orderList)
+            {
+                builder.WriteLine($"using namespace {n.ToString()};");
             }
 
             builder.WriteLine();
@@ -226,7 +238,7 @@ public:
             builder.WriteLine("public:");
             builder.Indent();
 
-            if (info.UsesNamespaceWindowsUIXamlMedia)
+            if (info.HasLoadedImageSurface)
             {
                 builder.WriteLine("AnimatedVisual(Compositor^ compositor,");
                 builder.Indent();
@@ -323,9 +335,9 @@ public:
             builder.UnIndent();
             builder.OpenScope();
 
-            if (info.UsesNamespaceWindowsUIXamlMedia)
+            if (info.HasLoadedImageSurface)
             {
-                WriteTryCreateInstantiatorWithImageLoading(builder, GetLoadedImageSurfacesNodes());
+                WriteTryCreateInstantiatorWithImageLoading(builder, info);
             }
             else
             {
@@ -339,13 +351,13 @@ public:
 
             builder.CloseScope();
 
-            if (info.UsesNamespaceWindowsUIXamlMedia)
+            if (info.HasLoadedImageSurface)
             {
-                // Generate the get() and set() methods of AnimatedVisualWaitOnImageLoading property.
-                WriteAnimatedVisualWaitOnImageLoadingGetSet(builder, info);
+                // Generate the get() and set() methods of IsAnimatedVisualSourceDynamic property.
+                WriteIsAnimatedVisualSourceDynamicGetSet(builder, info);
 
                 // Generate the method that load all the LoadedImageSurfaces.
-                WriteEnsureImageLoadingStarted(builder, info, GetLoadedImageSurfacesNodes());
+                WriteEnsureImageLoadingStarted(builder, info);
 
                 // Generate the method that handle the LoadCompleted event of the LoadedImageSurface objects.
                 WriteHandleLoadCompleted(builder, info);
@@ -488,7 +500,7 @@ public:
         /// <summary>
         /// Generate the body of the TryCreateAnimatedVisual() method for the composition that contains LoadedImageSurfaces.
         /// </summary>
-        void WriteTryCreateInstantiatorWithImageLoading(CodeBuilder builder, IEnumerable<ObjectData> loadedImageSurfacesNodes)
+        void WriteTryCreateInstantiatorWithImageLoading(CodeBuilder builder, CodeGenInfo info)
         {
             builder.WriteLine("m_tryCreateAnimatedVisualCalled = true;");
             builder.WriteLine();
@@ -500,72 +512,77 @@ public:
             builder.WriteLine();
             builder.WriteLine("EnsureImageLoadingStarted();");
             builder.WriteLine();
-            builder.WriteLine("if (m_animatedVisualWaitOnImageLoading && m_loadCompleteEventCount != c_loadedImageSurfaceCount)");
+            builder.WriteLine("if (m_isAnimatedVisualSourceDynamic && m_loadCompleteEventCount != c_loadedImageSurfaceCount)");
             builder.OpenScope();
             builder.WriteLine("return nullptr;");
             builder.CloseScope();
             builder.WriteLine("return ref new AnimatedVisual(compositor,");
             builder.Indent();
-            for (var i = 0; i < loadedImageSurfacesNodes.Count(); i++)
+
+            var nodes = info.LoadedImageSurfaceNodes.ToArray();
+            for (var i = 0; i < nodes.Length; i++)
             {
-                if (i < loadedImageSurfacesNodes.Count() - 1)
+                var parameterString = $"m{_stringifier.MakeVariableName(nodes[i].Name)}";
+                if (i < nodes.Length - 1)
                 {
                     // Append "," to each parameter except the last one.
-                    builder.WriteLine($"m{_stringifier.MakeVariableName(loadedImageSurfacesNodes.ElementAt(i).Name)},");
+                    builder.WriteLine($"{parameterString},");
                 }
                 else
                 {
                     // Close the parenthesis after the last parameter.
-                    builder.WriteLine($"m{_stringifier.MakeVariableName(loadedImageSurfacesNodes.ElementAt(i).Name)})");
+                    builder.WriteLine($"{parameterString})");
                 }
             }
 
             builder.UnIndent();
             builder.WriteLine(";");
+            builder.WriteLine();
         }
 
-        void WriteAnimatedVisualWaitOnImageLoadingGetSet(CodeBuilder builder, CodeGenInfo info)
+        void WriteIsAnimatedVisualSourceDynamicGetSet(CodeBuilder builder, CodeGenInfo info)
         {
-            builder.WriteLine($"bool AnimatedVisuals::{info.ClassName}::AnimatedVisualWaitOnImageLoading::get()");
+            builder.WriteLine($"bool AnimatedVisuals::{info.ClassName}::IsAnimatedVisualSourceDynamic::get()");
             builder.OpenScope();
-            builder.WriteLine("return m_animatedVisualWaitOnImageLoading;");
+            builder.WriteLine("return m_isAnimatedVisualSourceDynamic;");
             builder.CloseScope();
             builder.WriteLine();
-            builder.WriteLine($"void AnimatedVisuals::{info.ClassName}::AnimatedVisualWaitOnImageLoading::set(bool animatedVisualWaitOnImageLoading)");
+            builder.WriteLine($"void AnimatedVisuals::{info.ClassName}::IsAnimatedVisualSourceDynamic::set(bool IsAnimatedVisualSourceDynamic)");
             builder.OpenScope();
-            builder.WriteLine("if (!m_tryCreateAnimatedVisualCalled)");
+            builder.WriteLine("if (!m_tryCreateAnimatedVisualCalled && m_isAnimatedVisualSourceDynamic != IsAnimatedVisualSourceDynamic)");
             builder.OpenScope();
-            builder.WriteLine("m_animatedVisualWaitOnImageLoading = animatedVisualWaitOnImageLoading;");
-            builder.WriteLine("PropertyChanged(this, ref new PropertyChangedEventArgs(\"AnimatedVisualWaitOnImageLoading\"));");
+            builder.WriteLine("m_isAnimatedVisualSourceDynamic = IsAnimatedVisualSourceDynamic;");
+            builder.WriteLine("PropertyChanged(this, ref new PropertyChangedEventArgs(\"IsAnimatedVisualSourceDynamic\"));");
             builder.CloseScope();
             builder.CloseScope();
         }
 
-        void WriteEnsureImageLoadingStarted(CodeBuilder builder, CodeGenInfo info, IEnumerable<ObjectData> nodes)
+        void WriteEnsureImageLoadingStarted(CodeBuilder builder, CodeGenInfo info)
         {
             builder.WriteLine($"void AnimatedVisuals::{info.ClassName}::EnsureImageLoadingStarted()");
             builder.OpenScope();
             builder.WriteLine("if (!m_imageLoadingStarted)");
             builder.OpenScope();
             builder.WriteLine($"auto eventHandler = ref new TypedEventHandler<LoadedImageSurface^, LoadedImageSourceLoadCompletedEventArgs^>(this, &AnimatedVisuals::{info.ClassName}::HandleLoadCompleted);");
+
+            var nodes = info.LoadedImageSurfaceNodes.ToArray();
             foreach (var n in nodes)
             {
-                var obj = (LoadedImageSurface)n.Object;
-                switch (obj.Type)
+                switch (n.LoadedImageSurfaceType)
                 {
                     case LoadedImageSurface.LoadedImageSurfaceType.FromStream:
                         var streamName = $"stream_{n.Name}";
                         var dataWriterName = $"dataWriter_{n.Name}";
                         builder.WriteLine($"auto {streamName} = ref new InMemoryRandomAccessStream();");
                         builder.WriteLine($"auto {dataWriterName} = ref new DataWriter({streamName}->GetOutputStreamAt(0));");
-                        builder.WriteLine($"{dataWriterName}->WriteBytes({n.LoadedImageSurfaceBytesFieldName});");
+                        builder.WriteLine($"{dataWriterName}->WriteBytes({n.BytesFieldName});");
                         builder.WriteLine($"{dataWriterName}->StoreAsync();");
                         builder.WriteLine($"{dataWriterName}->FlushAsync();");
                         builder.WriteLine($"{streamName}->Seek(0);");
                         builder.WriteLine($"m{_stringifier.MakeVariableName(n.Name)} = Windows::UI::Xaml::Media::LoadedImageSurface::StartLoadFromStream({streamName});");
                         break;
                     case LoadedImageSurface.LoadedImageSurfaceType.FromUri:
-                        builder.WriteLine($"m{_stringifier.MakeVariableName(n.Name)} = Windows::UI::Xaml::Media::LoadedImageSurface::StartLoadFromUri(ref new Uri(\"{n.LoadedImageSurfaceImageUri}\"));");
+                        builder.WriteLine($"m{_stringifier.MakeVariableName(n.Name)} = Windows::UI::Xaml::Media::LoadedImageSurface::StartLoadFromUri(ref new Uri(\"{n.ImageUri}\"));");
                         break;
                     default:
                         throw new InvalidOperationException();
@@ -584,15 +601,21 @@ public:
         {
             builder.WriteLine($"void AnimatedVisuals::{info.ClassName}::HandleLoadCompleted(LoadedImageSurface^ sender, LoadedImageSourceLoadCompletedEventArgs^ e)");
             builder.OpenScope();
+            builder.WriteLine("m_loadCompleteEventCount++;");
             builder.WriteLine("if (e->Status == LoadedImageSourceLoadStatus::Success)");
             builder.OpenScope();
-            builder.WriteLine("m_loadCompleteEventCount++;");
-            builder.WriteLine("if (m_animatedVisualWaitOnImageLoading && m_loadCompleteEventCount == c_loadedImageSurfaceCount)");
+            builder.WriteLine("if (m_isAnimatedVisualSourceDynamic && m_loadCompleteEventCount == c_loadedImageSurfaceCount)");
             builder.OpenScope();
             builder.WriteLine("RaiseAnimatedVisualInvalidatedEvent(this, nullptr);");
             builder.CloseScope();
-            builder.WriteLine("m_imageLoadingProgress = (double) m_loadCompleteEventCount / c_loadedImageSurfaceCount;");
-            builder.WriteLine("PropertyChanged(this, ref new PropertyChangedEventArgs(\"ImageLoadingProgress\"));");
+            builder.WriteLine("m_imageSuccessfulLoadingProgress = (double)m_loadCompleteEventCount / c_loadedImageSurfaceCount;");
+            builder.WriteLine("PropertyChanged(this, ref new PropertyChangedEventArgs(\"ImageSuccessfulLoadingProgress\"));");
+            builder.CloseScope();
+            builder.WriteLine();
+            builder.WriteLine("if (m_loadCompleteEventCount == c_loadedImageSurfaceCount)");
+            builder.OpenScope();
+            builder.WriteLine("m_imageLoadingCompleted = true;");
+            builder.WriteLine("PropertyChanged(this, ref new PropertyChangedEventArgs(\"ImageLoadingCompleted\"));");
             builder.CloseScope();
             builder.CloseScope();
             builder.WriteLine();
@@ -610,10 +633,11 @@ public:
 
         string Vector2(Vector2 value) => _stringifier.Vector2(value);
 
-        static string IDynamicAnimatedVisualSourceHeaderText(string className, IEnumerable<ObjectData> loadedImageSurfacesNodes)
+        static string IDynamicAnimatedVisualSourceHeaderText(string className, IEnumerable<LoadedImageSurfaceNodes> loadedImageSurfacesNodes)
         {
+            var nodes = loadedImageSurfacesNodes.ToArray();
             var imageVariableString = new StringBuilder();
-            foreach (var n in loadedImageSurfacesNodes)
+            foreach (var n in nodes)
             {
                 imageVariableString.AppendLine($"    {n.TypeName}^ m_{char.ToLowerInvariant(n.Name[0])}{n.Name.Substring(1)};");
             }
@@ -628,11 +652,11 @@ $@"#pragma once
 //     the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
+using namespace Microsoft::UI::Xaml::Controls;
 using namespace Platform;
 using namespace Windows::UI::Xaml;
 using namespace Windows::UI::Xaml::Data;
 using namespace Windows::UI::Xaml::Media;
-using namespace Microsoft::UI::Xaml::Controls;
 
 namespace AnimatedVisuals
 {{
@@ -658,32 +682,42 @@ public:
     virtual event PropertyChangedEventHandler^ PropertyChanged;
 
     /// <summary>
-    /// When this property is set to true, TryCreateAnimatedVisual() will wait until all
-    ///  images finished loading before the AnimatedVisual is returned. To use, set it when
-    ///  declaring the AnimatedVisualSource. Once TryCreateAnimatedVisual() is called,
-    ///  changes made to this property will be ignored.
+    /// If this property is set to true, <see cref=""TryCreateAnimatedVisual""/> will return null until all
+    /// images have loaded. When all images have loaded, <see cref=""TryCreateAnimatedVisual""/> will return
+    /// the AnimatedVisual. To use, set it when declaring the AnimatedVisualSource. Once <see cref=""TryCreateAnimatedVisual""/> 
+    /// is called, changes made to this property will be ignored.
+    /// Default value is true.
     /// </summary>
-    property bool AnimatedVisualWaitOnImageLoading
+    property bool IsAnimatedVisualSourceDynamic
     {{
         bool get();
         void set(bool value);
     }}
 
     /// <summary>
-    /// Represents the progress of the image loading. Return value between 0 and 1. 0 means
-    ///  none of the images finished loading. 1 means all images finished loading.
+    /// Returns true if all images have loaded. To see if the images succeeded to load, see <see cref=""ImageSuccessfulLoadingProgress""/>.
     /// </summary>
-    property double ImageLoadingProgress
+    property bool ImageLoadingCompleted
     {{
-        double get() {{ return m_imageLoadingProgress; }}
+        bool get() {{ return m_imageLoadingCompleted; }}
+    }}
+
+    /// <summary>
+    /// Represents the progress of successful image loading. Returns value between 0 and 1. 0
+    /// means none of the images succeeded to load. 1 means all images succeeded to load.
+    /// </summary>
+    property double ImageSuccessfulLoadingProgress
+    {{
+        double get() {{ return m_imageSuccessfulLoadingProgress; }}
     }}
 
 private:
     const int c_loadedImageSurfaceCount = {loadedImageSurfacesNodes.Distinct().Count()};
     event Windows::Foundation::TypedEventHandler<IDynamicAnimatedVisualSource^, Platform::Object^>^ m_InternalHandler;
     int m_loadCompleteEventCount;
-    bool m_animatedVisualWaitOnImageLoading;
-    double m_imageLoadingProgress;
+    bool m_isAnimatedVisualSourceDynamic = true;
+    bool m_imageLoadingCompleted;
+    double m_imageSuccessfulLoadingProgress;
     bool m_tryCreateAnimatedVisualCalled;
     bool m_imageLoadingStarted;
 {imageVariableString.ToString()}

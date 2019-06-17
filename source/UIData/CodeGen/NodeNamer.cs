@@ -36,6 +36,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             {
                 string baseName;
 
+                // Generate descriptive name for each object. The name is as specific as possible.
                 switch (node.Type)
                 {
                     case Graph.NodeType.CompositionObject:
@@ -48,19 +49,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                         baseName = "Geometry";
                         break;
                     case Graph.NodeType.LoadedImageSurface:
-                        var loadedImageSurface = (LoadedImageSurface)node.Object;
-                        switch (loadedImageSurface.Type)
-                        {
-                            case LoadedImageSurface.LoadedImageSurfaceType.FromStream:
-                                baseName = "ImageFromStream";
-                                break;
-                            case LoadedImageSurface.LoadedImageSurfaceType.FromUri:
-                                baseName = "Image";
-                                break;
-                            default:
-                                throw new InvalidOperationException();
-                        }
-
+                        baseName = DescribeLoadedImageSurface(node, (LoadedImageSurface)node.Object);
                         break;
                     default:
                         throw new InvalidOperationException();
@@ -81,45 +70,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 var baseName = entry.Key;
                 var nodeList = entry.Value;
 
-                if (baseName == "Image")
+                if (nodeList.Count == 1)
                 {
-                    foreach (var n in nodeList)
-                    {
-                        var loadedImageSurface = (LoadedImageSurface)n.Object;
-                        var loadedImageSurfaceFromUri = (LoadedImageSurfaceFromUri)loadedImageSurface;
-
-                        // Get the image file name only.
-                        var imageFileName = loadedImageSurfaceFromUri.Uri.Segments.Last();
-                        var imageFileNameWithoutExtension = imageFileName.Substring(0, imageFileName.LastIndexOf('.'));
-
-                        // Replace any disallowed character with underscores.
-                        var cleanedImageName = new string((from ch in imageFileNameWithoutExtension
-                                               select char.IsLetterOrDigit(ch) ? ch : '_').ToArray());
-
-                        // Remove any duplicated underscores.
-                        cleanedImageName = cleanedImageName.Replace("__", "_");
-                        yield return (n, $"{baseName}_{cleanedImageName}");
-                    }
+                    // There's only 1 of this type of node. No suffix needed.
+                    yield return (nodeList[0], baseName);
                 }
                 else
                 {
-                    if (nodeList.Count == 1)
-                    {
-                        // There's only 1 of this type of node. No suffix needed.
-                        yield return (nodeList[0], baseName);
-                    }
-                    else
-                    {
-                        // Multiple nodes of this type. Append a counter suffix.
+                    // Multiple nodes of this type. Append a counter suffix.
 
-                        // Use only as many digits as necessary to express the largest count.
-                        var digitsRequired = (int)Math.Ceiling(Math.Log10(nodeList.Count + 1));
-                        var counterFormat = new string('0', digitsRequired);
+                    // Use only as many digits as necessary to express the largest count.
+                    var digitsRequired = (int)Math.Ceiling(Math.Log10(nodeList.Count + 1));
+                    var counterFormat = new string('0', digitsRequired);
 
-                        for (var i = 0; i < nodeList.Count; i++)
-                        {
-                            yield return (nodeList[i], $"{baseName}_{i.ToString(counterFormat)}");
-                        }
+                    for (var i = 0; i < nodeList.Count; i++)
+                    {
+                        yield return (nodeList[i], $"{baseName}_{i.ToString(counterFormat)}");
                     }
                 }
             }
@@ -291,6 +257,38 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             if (result.StartsWith(compositionPrefix))
             {
                 result = result.Substring(compositionPrefix.Length);
+            }
+
+            return result;
+        }
+
+        static string DescribeLoadedImageSurface(TNode node, LoadedImageSurface obj)
+        {
+            string result = null;
+            var loadedImageSurface = (LoadedImageSurface)node.Object;
+
+            switch (loadedImageSurface.Type)
+            {
+                case LoadedImageSurface.LoadedImageSurfaceType.FromStream:
+                    result = "ImageFromStream";
+                    break;
+                case LoadedImageSurface.LoadedImageSurfaceType.FromUri:
+                    var loadedImageSurfaceFromUri = (LoadedImageSurfaceFromUri)loadedImageSurface;
+
+                    // Get the image file name only.
+                    var imageFileName = loadedImageSurfaceFromUri.Uri.Segments.Last();
+                    var imageFileNameWithoutExtension = imageFileName.Substring(0, imageFileName.LastIndexOf('.'));
+
+                    // Replace any disallowed character with underscores.
+                    var cleanedImageName = new string((from ch in imageFileNameWithoutExtension
+                                                        select char.IsLetterOrDigit(ch) ? ch : '_').ToArray());
+
+                    // Remove any duplicated underscores.
+                    cleanedImageName = cleanedImageName.Replace("__", "_");
+                    result = $"Image_{cleanedImageName}";
+                    break;
+                default:
+                    throw new InvalidOperationException();
             }
 
             return result;
