@@ -1136,7 +1136,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
             if (obj.Offset != null)
             {
-                //builder.WriteLine($"result{Deref}Offset = {Vector2(obj.Offset.Value)};");
                 builder.WriteLine($"{_stringifier.Assignment($"result{Deref}Offset", $"{Vector2(obj.Offset.Value)}")};"); //jcclean
             }
 
@@ -1155,7 +1154,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
             if (obj.Offset != null)
             {
-                //builder.WriteLine($"result{Deref}Offset = {Vector2(obj.Offset.Value)};");
                 builder.WriteLine($"{_stringifier.Assignment($"result{Deref}Offset", $"{Vector2(obj.Offset.Value)}")};"); //jcclean
             }
 
@@ -1173,11 +1171,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
             if (obj.Center.X != 0 || obj.Center.Y != 0)
             {
-                //builder.WriteLine($"result{Deref}Center = {Vector2(obj.Center)};");
                 builder.WriteLine($"{_stringifier.Assignment($"result{Deref}Center", $"{Vector2(obj.Center)}")};"); //jcclean
             }
 
-            builder.WriteLine($"result{Deref}Radius({Vector2(obj.Radius)});");
+            builder.WriteLine($"{_stringifier.Assignment($"result{Deref}Radius", $"{Vector2(obj.Radius)}")};"); //jcclean
             StartAnimations(builder, obj, node);
             WriteObjectFactoryEnd(builder);
             return true;
@@ -1222,7 +1219,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
             if (obj.Shapes.Any())
             {
-                builder.WriteLine($"{Var} shapes = result{Deref}Shapes();"); //TODO this change will impact c# codegen
+                builder.WriteLine($"{Var} shapes = result{Deref}{EvalProp("Shapes")};"); //jcclean
                 foreach (var shape in obj.Shapes)
                 {
                     builder.WriteComment(shape.ShortDescription);
@@ -1243,7 +1240,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
             if (obj.Shapes.Any())
             {
-                builder.WriteLine($"{Var} shapes = result{Deref}Shapes();");
+                builder.WriteLine($"{Var} shapes = result{Deref}{EvalProp("Shapes")};"); //jcclean
                 foreach (var shape in obj.Shapes)
                 {
                     builder.WriteLine($"shapes{Deref}{IListAdd}({CallFactoryFromFor(node, shape)});");
@@ -1263,37 +1260,44 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
             if (obj.FillBrush != null)
             {
-                builder.WriteLine($"result{Deref}FillBrush({CallFactoryFromFor(node, obj.FillBrush)});");
+                //builder.WriteLine($"result{Deref}FillBrush({CallFactoryFromFor(node, obj.FillBrush)});");
+                builder.WriteLine($"{_stringifier.Assignment($"result{Deref}FillBrush", $"{CallFactoryFromFor(node, obj.FillBrush)}")};"); //jcclean
             }
 
             if (obj.Geometry != null)
             {
-                builder.WriteLine($"result{Deref}Geometry({CallFactoryFromFor(node, obj.Geometry)});");
+                //builder.WriteLine($"result{Deref}Geometry({CallFactoryFromFor(node, obj.Geometry)});");
+                builder.WriteLine($"{_stringifier.Assignment($"result{Deref}Geometry", $"{CallFactoryFromFor(node, obj.Geometry)}")};"); //jcclean
             }
 
             if (obj.IsStrokeNonScaling)
             {
                 builder.WriteLine("result{Deref}IsStrokeNonScaling(true);");
+                builder.WriteLine($"{_stringifier.Assignment($"result{Deref}Geometry", $"true")};"); //jcclean
             }
 
             if (obj.StrokeBrush != null)
             {
-                builder.WriteLine($"result{Deref}StrokeBrush({CallFactoryFromFor(node, obj.StrokeBrush)});");
+                //builder.WriteLine($"result{Deref}StrokeBrush({CallFactoryFromFor(node, obj.StrokeBrush)});");
+                builder.WriteLine($"{_stringifier.Assignment($"result{Deref}StrokeBrush", $"{CallFactoryFromFor(node, obj.StrokeBrush)}")};"); //jcclean
             }
 
             if (obj.StrokeDashCap != CompositionStrokeCap.Flat)
             {
-                builder.WriteLine($"result{Deref}StrokeDashCap({StrokeCap(obj.StrokeDashCap)});");
+                //builder.WriteLine($"result{Deref}StrokeDashCap({StrokeCap(obj.StrokeDashCap)});");
+                builder.WriteLine($"{_stringifier.Assignment($"result{Deref}StrokeDashCap", $"{StrokeCap(obj.StrokeDashCap)}")};"); //jcclean
             }
 
             if (obj.StrokeDashOffset != 0)
             {
-                builder.WriteLine($"result{Deref}StrokeDashOffset({Float(obj.StrokeDashOffset)});");
+                //builder.WriteLine($"result{Deref}StrokeDashOffset({Float(obj.StrokeDashOffset)});");
+                builder.WriteLine($"{_stringifier.Assignment($"result{Deref}StrokeDashOffset", $"{Float(obj.StrokeDashOffset)}")};"); //jcclean
             }
 
             if (obj.StrokeDashArray.Count > 0)
             {
-                builder.WriteLine($"{Var} strokeDashArray(result{Deref}StrokeDashArray);");
+                //builder.WriteLine($"{Var} strokeDashArray(result{Deref}StrokeDashArray);");
+                builder.WriteLine($"{_stringifier.Assignment($"{Var} strokeDashArray", $"result{Deref}StrokeDashArray")};"); //jcclean
                 foreach (var strokeDash in obj.StrokeDashArray)
                 {
                     builder.WriteLine($"strokeDashArray{Deref}{IListAdd}({Float(strokeDash)});");
@@ -1302,27 +1306,32 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
             if (obj.StrokeEndCap != CompositionStrokeCap.Flat)
             {
-                builder.WriteLine($"result{Deref}StrokeEndCap({StrokeCap(obj.StrokeEndCap)});");
+                //builder.WriteLine($"result{Deref}StrokeEndCap({StrokeCap(obj.StrokeEndCap)});");
+                builder.WriteLine($"{_stringifier.Assignment($"result{Deref}StrokeEndCap", $"{StrokeCap(obj.StrokeEndCap)}")};"); //jcclean
             }
 
             if (obj.StrokeLineJoin != CompositionStrokeLineJoin.Miter)
             {
-                builder.WriteLine($"result{Deref}StrokeLineJoin({StrokeLineJoin(obj.StrokeLineJoin)});");
+                //builder.WriteLine($"result{Deref}StrokeLineJoin({StrokeLineJoin(obj.StrokeLineJoin)});");
+                builder.WriteLine($"{_stringifier.Assignment($"result{Deref}StrokeLineJoin", $"{StrokeLineJoin(obj.StrokeLineJoin)}")};"); //jcclean
             }
 
             if (obj.StrokeStartCap != CompositionStrokeCap.Flat)
             {
-                builder.WriteLine($"result{Deref}StrokeStartCap({StrokeCap(obj.StrokeStartCap)});");
+                //builder.WriteLine($"result{Deref}StrokeStartCap({StrokeCap(obj.StrokeStartCap)});");
+                builder.WriteLine($"{_stringifier.Assignment($"result{Deref}StrokeStartCap", $"{StrokeCap(obj.StrokeStartCap)}")};"); //jcclean
             }
 
             if (obj.StrokeMiterLimit != 1)
             {
-                builder.WriteLine($"result{Deref}StrokeMiterLimit({Float(obj.StrokeMiterLimit)});");
+                //builder.WriteLine($"result{Deref}StrokeMiterLimit({Float(obj.StrokeMiterLimit)});");
+                builder.WriteLine($"{_stringifier.Assignment($"result{Deref}StrokeMiterLimit", $"{Float(obj.StrokeMiterLimit)}")};"); //jcclean
             }
 
             if (obj.StrokeThickness != 1)
             {
-                builder.WriteLine($"result{Deref}StrokeThickness({Float(obj.StrokeThickness)});");
+                //builder.WriteLine($"result{Deref}StrokeThickness({Float(obj.StrokeThickness)});");
+                builder.WriteLine($"{_stringifier.Assignment($"result{Deref}StrokeThickness", $"{Float(obj.StrokeThickness)}")};"); //jcclean
             }
 
             StartAnimations(builder, obj, node);
