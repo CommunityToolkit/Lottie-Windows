@@ -940,7 +940,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
             if (obj.Children.Any())
             {
-                builder.WriteLine($"{Var} children = result{Deref}Children();");
+                builder.WriteLine($"{Var} children = result{Deref}{EvalProp("Children")};"); //jcclean
                 foreach (var child in obj.Children)
                 {
                     builder.WriteLine($"children{Deref}InsertAtTop({CallFactoryFromFor(node, child)});");
@@ -954,17 +954,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
             if (obj.TrimEnd != 1)
             {
-                builder.WriteLine($"result{Deref}TrimEnd = {Float(obj.TrimEnd)};");
+                builder.WriteLine($"{_stringifier.Assignment($"result{Deref}TrimEnd", $"{Float(obj.TrimEnd)}")};"); //jcclean
             }
 
             if (obj.TrimOffset != 0)
             {
-                builder.WriteLine($"result{Deref}TrimOffset = {Float(obj.TrimOffset)};");
+                builder.WriteLine($"{_stringifier.Assignment($"result{Deref}TrimOffset", $"{Float(obj.TrimOffset)}")};"); //jcclean
             }
 
             if (obj.TrimStart != 0)
             {
-                builder.WriteLine($"result{Deref}TrimStart = {Float(obj.TrimStart)};");
+                builder.WriteLine($"{_stringifier.Assignment($"result{Deref}TrimStart", $"{Float(obj.TrimStart)}")};"); //jcclean
             }
         }
 
@@ -982,7 +982,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             InitializeCompositionObject(builder, obj, node);
             if (!string.IsNullOrWhiteSpace(obj.Target))
             {
-                builder.WriteLine($"result{Deref}Target = {String(obj.Target)};");
+                builder.WriteLine($"{_stringifier.Assignment($"result{Deref}Target", $"{String(obj.Target)}")};"); //jcclean
             }
 
             foreach (var parameter in parameters)
@@ -995,7 +995,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
         {
             InitializeCompositionAnimation(builder, obj, node);
 
-            //builder.WriteLine($"result{Deref}Duration(TimeSpan{TimeSpan(obj.Duration)});");
             builder.WriteLine($"{_stringifier.Assignment($"result{Deref}Duration", $"TimeSpan{TimeSpan(obj.Duration)}")};"); //JCCLEAN
         }
 
@@ -1137,7 +1136,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
             if (obj.Offset != null)
             {
-                builder.WriteLine($"result{Deref}Offset = {Vector2(obj.Offset.Value)};");
+                //builder.WriteLine($"result{Deref}Offset = {Vector2(obj.Offset.Value)};");
+                builder.WriteLine($"{_stringifier.Assignment($"result{Deref}Offset", $"{Vector2(obj.Offset.Value)}")};"); //jcclean
             }
 
             builder.WriteLine($"result{Deref}Size = {Vector2(obj.Size)};");
@@ -1155,7 +1155,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
             if (obj.Offset != null)
             {
-                builder.WriteLine($"result{Deref}Offset = {Vector2(obj.Offset.Value)};");
+                //builder.WriteLine($"result{Deref}Offset = {Vector2(obj.Offset.Value)};");
+                builder.WriteLine($"{_stringifier.Assignment($"result{Deref}Offset", $"{Vector2(obj.Offset.Value)}")};"); //jcclean
             }
 
             builder.WriteLine($"result{Deref}Size = {Vector2(obj.Size)};");
@@ -1172,7 +1173,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
             if (obj.Center.X != 0 || obj.Center.Y != 0)
             {
-                builder.WriteLine($"result{Deref}Center = {Vector2(obj.Center)};");
+                //builder.WriteLine($"result{Deref}Center = {Vector2(obj.Center)};");
+                builder.WriteLine($"{_stringifier.Assignment($"result{Deref}Center", $"{Vector2(obj.Center)}")};"); //jcclean
             }
 
             builder.WriteLine($"result{Deref}Radius({Vector2(obj.Radius)});");
