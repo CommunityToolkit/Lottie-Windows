@@ -320,26 +320,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         }
 
         /// <summary>
-        /// Gets a list of the <see cref="LoadedImageSurfaceNodes"/> representing the LoadedImageSurface of the composition and its properties.
+        /// Gets a list of the <see cref="LoadedImageSurfaceNode"/> representing the LoadedImageSurface of the composition and its properties.
         /// </summary>
-        /// <returns>List of the <see cref="LoadedImageSurfaceNodes"/> representing the LoadedImageSurface and its properties.</returns>
-        protected IEnumerable<LoadedImageSurfaceNodes> GetLoadedImageSurfacesNodes()
+        /// <returns>List of the <see cref="LoadedImageSurfaceNode"/> representing the LoadedImageSurface and its properties.</returns>
+        protected IEnumerable<LoadedImageSurfaceNode> GetLoadedImageSurfacesNodes()
         {
-            var loadedImageSurfaces = _nodes.Where(n => n.IsLoadedImageSurface).ToArray();
-            LoadedImageSurfaceNodes[] result = new LoadedImageSurfaceNodes[loadedImageSurfaces.Length];
-
-            var i = 0;
-            foreach (var l in loadedImageSurfaces)
-            {
-                result[i].TypeName = l.TypeName;
-                result[i].Name = l.Name;
-                result[i].BytesFieldName = l.LoadedImageSurfaceBytesFieldName;
-                result[i].ImageUri = l.LoadedImageSurfaceImageUri;
-                result[i].LoadedImageSurfaceType = ((Wmd.LoadedImageSurface)l.Object).Type;
-                i++;
-            }
-
-            return result;
+            return _nodes.Where(n => n.IsLoadedImageSurface).
+                            Select(n => new LoadedImageSurfaceNode(
+                                n.TypeName,
+                                n.Name,
+                                n.FieldName,
+                                n.LoadedImageSurfaceBytesFieldName,
+                                n.LoadedImageSurfaceImageUri,
+                                ((Wmd.LoadedImageSurface)n.Object).Type)
+                            );
         }
 
         /// <summary>
@@ -400,7 +394,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 if (node.IsLoadedImageSurface)
                 {
                     // Generate a field for each LoadedImageSurface object.
-                    WriteField(builder, Readonly(_stringifier.ReferenceTypeName(node.TypeName)), _stringifier.MakeVariableName(node.Name));
+                    WriteField(builder, Readonly(_stringifier.ReferenceTypeName(node.TypeName)), node.FieldName);
                 }
             }
 
@@ -418,7 +412,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             // Write methods for each node.
             foreach (var node in _nodes)
             {
-                WriteCodeForNode(builder, node, info);
+                WriteCodeForNode(builder, info, node);
             }
 
             // Write the end of the Instantiator class and the end of the file.
@@ -637,7 +631,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         }
 
         // Generates code for the given node. The code is written into the CodeBuilder on the node.
-        void WriteCodeForNode(CodeBuilder builder, ObjectData node, CodeGenInfo info)
+        void WriteCodeForNode(CodeBuilder builder, CodeGenInfo info, ObjectData node)
         {
             // Only generate if the node is not inlined into the caller.
             if (!node.Inlined)
@@ -645,17 +639,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 switch (node.Type)
                 {
                     case Graph.NodeType.CompositionObject:
-                        GenerateObjectFactory(builder, info, (CompositionObject)node.Object, node);
+                        GenerateObjectFactory(builder, (CompositionObject)node.Object, node);
                         break;
                     case Graph.NodeType.CompositionPath:
                         GenerateCompositionPathFactory(builder, (CompositionPath)node.Object, node);
                         break;
                     case Graph.NodeType.CanvasGeometry:
                         GenerateCanvasGeometryFactory(builder, (CanvasGeometry)node.Object, node);
-                        return;
+                        break;
                     case Graph.NodeType.LoadedImageSurface:
                         // LoadedImageSurface is written out in the IDynamicAnimatedVisualSource class, so does not need to do anything here.
-                        return;
+                        break;
                     default:
                         throw new InvalidOperationException();
                 }
@@ -696,7 +690,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             return true;
         }
 
-        bool GenerateObjectFactory(CodeBuilder builder, CodeGenInfo info, CompositionObject obj, ObjectData node)
+        bool GenerateObjectFactory(CodeBuilder builder, CompositionObject obj, ObjectData node)
         {
             // Uncomment to see the order of creation.
             //builder.WriteComment($"Traversal order: {node.Position}");
@@ -729,7 +723,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 case CompositionObjectType.CompositionSpriteShape:
                     return GenerateSpriteShapeFactory(builder, (CompositionSpriteShape)obj, node);
                 case CompositionObjectType.CompositionSurfaceBrush:
-                    return GenerateCompositionSurfaceBrushFactory(builder, (CompositionSurfaceBrush)obj, node, info);
+                    return GenerateCompositionSurfaceBrushFactory(builder, (CompositionSurfaceBrush)obj, node);
                 case CompositionObjectType.CompositionViewBox:
                     return GenerateCompositionViewBoxFactory(builder, (CompositionViewBox)obj, node);
                 case CompositionObjectType.CompositionVisualSurface:
@@ -1534,7 +1528,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             return true;
         }
 
-        bool GenerateCompositionSurfaceBrushFactory(CodeBuilder builder, CompositionSurfaceBrush obj, ObjectData node, CodeGenInfo info)
+        bool GenerateCompositionSurfaceBrushFactory(CodeBuilder builder, CompositionSurfaceBrush obj, ObjectData node)
         {
             WriteObjectFactoryStart(builder, node);
             WriteCreateAssignment(builder, node, $"_c{Deref}CreateSurfaceBrush()");
@@ -1548,7 +1542,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                         builder.WriteLine($"result{Deref}Surface = {CallFactoryFromFor(node, compositionObject)};");
                         break;
                     case Wmd.LoadedImageSurface loadedImageSurface:
-                        builder.WriteLine($"result{Deref}Surface = {_stringifier.MakeVariableName(NodeFor(loadedImageSurface).Name)};");
+                        builder.WriteLine($"result{Deref}Surface = {NodeFor(loadedImageSurface).FieldName};");
                         break;
                     default:
                         throw new InvalidOperationException();
@@ -1806,7 +1800,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 bool usesNamespaceWindowsUIXamlMedia,
                 bool usesStreams,
                 bool hasLoadedImageSurface,
-                IEnumerable<LoadedImageSurfaceNodes> loadedImageSurfaceNodes)
+                IEnumerable<LoadedImageSurfaceNode> loadedImageSurfaceNodes)
             {
                 ClassName = className;
                 ReusableExpressionAnimationFieldName = reusableExpressionAnimationFieldName;
@@ -1880,7 +1874,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             /// <summary>
             /// Gets the LoadedImageSurface nodes of the composition.
             /// </summary>
-            public IEnumerable<LoadedImageSurfaceNodes> LoadedImageSurfaceNodes { get; }
+            public IEnumerable<LoadedImageSurfaceNode> LoadedImageSurfaceNodes { get; }
         }
 
         // Provides language-specific string representations of a value.
@@ -1945,8 +1939,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             string ByteArray { get; }
 
             string Const(string value);
-
-            string MakeVariableName(string value);
         }
 
         /// <summary>
@@ -2049,9 +2041,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             // Sets the first character to lower case.
             public string CamelCase(string value) => $"{char.ToLowerInvariant(value[0])}{value.Substring(1)}";
-
-            // Prepends "_" to camel case of the passed in value.
-            public string MakeVariableName(string value) => $"_{CamelCase(value)}";
         }
 
         // A node in the object graph, annotated with extra stuff to assist in code generation.
@@ -2076,7 +2065,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             public string Name { get; set; }
 
-            public string FieldName => RequiresStorage ? CamelCase(Name) : null;
+            public string FieldName => RequiresStorage || IsLoadedImageSurface ? CamelCase(Name) : null;
 
             // Returns text for obtaining the value for this node. If the node has
             // been inlined, this can generate the code into the returned string, otherwise
@@ -2204,14 +2193,32 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             static string CamelCase(string value) => $"_{char.ToLowerInvariant(value[0])}{value.Substring(1)}";
         }
 
-        // A struct for representing the LoadedImageSurface objects in the composition.
-        protected internal struct LoadedImageSurfaceNodes
+        /// <summary>
+        /// A struct for representing the LoadedImageSurface objects in the composition.
+        /// </summary>
+        protected internal readonly struct LoadedImageSurfaceNode
         {
-            public string TypeName;
-            public string Name;
-            public string BytesFieldName;
-            public Uri ImageUri;
-            public Wmd.LoadedImageSurface.LoadedImageSurfaceType LoadedImageSurfaceType;
+            public string TypeName { get; }
+
+            public string Name { get; }
+
+            public string FieldName { get; }
+
+            public string BytesFieldName { get; }
+
+            public Uri ImageUri { get; }
+
+            public Wmd.LoadedImageSurface.LoadedImageSurfaceType LoadedImageSurfaceType { get; }
+
+            public LoadedImageSurfaceNode(string typeName, string name, string fieldName, string bytesFieldName, Uri imageUri, Wmd.LoadedImageSurface.LoadedImageSurfaceType loadedImageSurfaceType)
+            {
+                TypeName = typeName;
+                Name = name;
+                FieldName = fieldName;
+                BytesFieldName = bytesFieldName;
+                ImageUri = imageUri;
+                LoadedImageSurfaceType = loadedImageSurfaceType;
+            }
         }
     }
 }

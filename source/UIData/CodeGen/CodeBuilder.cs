@@ -136,11 +136,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             }
         }
 
-        // Returns the next line from the front of the given text, ensuring it is no more
-        // than maxLineLength and a tail that contains the remainder.
+        // Returns the next line from the front of the given text, ensuring all leading and trailing whitespace
+        // characters are removed, it is no more than maxLineLength and a tail that contains the remainder.
         static string GetLine(string text, int maxLineLength, out string remainder)
         {
-            text = text.TrimEnd();
+            text = text.Trim();
 
             // Look for the next 2 places to break. If the 2nd place makes the line too long,
             // break at the 1st place, otherwise keep looking.
@@ -246,7 +246,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             }
 
             remainder = text.Substring(breakAt);
-            return text.Substring(0, breakAt).TrimStart();
+            return text.Substring(0, breakAt);
         }
 
         /// <summary>
