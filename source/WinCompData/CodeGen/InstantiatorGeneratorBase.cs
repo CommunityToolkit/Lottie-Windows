@@ -910,27 +910,27 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
             if (obj.CenterPoint.HasValue)
             {
-                builder.WriteLine($"result{Deref}CenterPoint({Vector2(obj.CenterPoint.Value)});");
+                builder.WriteLine($"{_stringifier.Assignment($"result{Deref}CenterPoint", $"{Vector2(obj.CenterPoint.Value)}")};"); //jcclean
             }
 
             if (obj.Offset != null)
             {
-                builder.WriteLine($"result{Deref}Offset({Vector2(obj.Offset.Value)});");
+                builder.WriteLine($"{_stringifier.Assignment($"result{Deref}Offset", $"{Vector2(obj.Offset.Value)}")};"); //jcclean
             }
 
             if (obj.RotationAngleInDegrees.HasValue)
             {
-                builder.WriteLine($"result{Deref}RotationAngleInDegrees({Float(obj.RotationAngleInDegrees.Value)});");
+                builder.WriteLine($"{_stringifier.Assignment($"result{Deref}RotationAngleInDegrees", $"{Float(obj.RotationAngleInDegrees.Value)}")};"); //jcclean
             }
 
             if (obj.Scale.HasValue)
             {
-                builder.WriteLine($"result{Deref}Scale({Vector2(obj.Scale.Value)});");
+                builder.WriteLine($"{_stringifier.Assignment($"result{Deref}Scale", $"{Vector2(obj.Scale.Value)}")};"); //jcclean
             }
 
             if (obj.TransformMatrix.HasValue)
             {
-                builder.WriteLine($"result{Deref}TransformMatrix({Matrix3x2(obj.TransformMatrix.Value)});");
+                builder.WriteLine($"{_stringifier.Assignment($"result{Deref}TransformMatrix", $"{Matrix3x2(obj.TransformMatrix.Value)}")};"); //jcclean
             }
         }
 
