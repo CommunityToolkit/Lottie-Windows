@@ -995,7 +995,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
         {
             InitializeCompositionAnimation(builder, obj, node);
 
-            builder.WriteLine($"{_stringifier.Assignment($"result{Deref}Duration", $"TimeSpan{TimeSpan(obj.Duration)}")};"); //JCCLEAN
+            builder.WriteLine($"{_stringifier.Assignment($"result{Deref}Duration", $"{TimeSpan(obj.Duration)}")};"); //JCCLEAN
         }
 
         bool GenerateColorKeyFrameAnimationFactory(CodeBuilder builder, ColorKeyFrameAnimation obj, ObjectData node)

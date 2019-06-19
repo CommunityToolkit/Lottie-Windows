@@ -99,7 +99,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
         public override string TimeSpan(TimeSpan value) => TimeSpan(Int64(value.Ticks));
 
-        public override string TimeSpan(string ticks) => $"{{ {ticks} }}";
+        public override string TimeSpan(string ticks) => $"TimeSpan{{ {ticks} }}";
 
         public override string Var => "auto";
 
