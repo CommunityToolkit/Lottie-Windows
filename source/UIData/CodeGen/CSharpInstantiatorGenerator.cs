@@ -231,7 +231,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.WriteLine("return");
             builder.Indent();
             WriteAnimatedVisualCall(builder, info);
-            builder.WriteLine(";");
             builder.UnIndent();
             builder.CloseScope();
             builder.WriteLine();
@@ -278,22 +277,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 builder.Indent();
 
                 // Define the image surface parameters of the AnimatedVisual() constructor.
-                var nodes = GetLoadedImageSurfacesNodes().ToArray();
-                for (var i = 0; i < nodes.Length; i++)
-                {
-                    var parameterName = $"{_stringifier.ReferenceTypeName(nodes[i].TypeName)} {_stringifier.CamelCase(nodes[i].Name)}";
-                    if (i < nodes.Length - 1)
-                    {
-                        // Append "," to each parameter except the last one.
-                        builder.WriteLine($"{parameterName},");
-                    }
-                    else
-                    {
-                        // Close the parenthesis after the last parameter.
-                        builder.WriteLine($"{parameterName})");
-                    }
-                }
-
+                builder.WriteCommaSeparatedLines(info.LoadedImageSurfaceNodes.Select(n => $"{_stringifier.ReferenceTypeName(n.TypeName)} {_stringifier.CamelCase(n.Name)}"));
+                builder.WriteLine(")");
                 builder.UnIndent();
                 builder.OpenScope();
 
@@ -301,6 +286,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 builder.WriteLine($"{info.ReusableExpressionAnimationFieldName} = compositor.CreateExpressionAnimation();");
 
                 // Initialize the private image surface variables with the input parameters of the constructor.
+                var nodes = info.LoadedImageSurfaceNodes.ToArray();
                 foreach (var n in nodes)
                 {
                     builder.WriteLine($"{n.FieldName} = {_stringifier.CamelCase(n.Name)};");
@@ -452,23 +438,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         {
             builder.WriteLine("new AnimatedVisual(compositor,");
             builder.Indent();
-
-            var nodes = info.LoadedImageSurfaceNodes.ToArray();
-            for (var i = 0; i < nodes.Length; i++)
-            {
-                var parameterName = nodes[i].FieldName;
-                if (i < nodes.Length - 1)
-                {
-                    // Append "," to each parameter except the last one.
-                    builder.WriteLine($"{parameterName},");
-                }
-                else
-                {
-                    // Close the parenthesis after the last parameter.
-                    builder.WriteLine($"{parameterName})");
-                }
-            }
-
+            builder.WriteCommaSeparatedLines(info.LoadedImageSurfaceNodes.Select(n => n.FieldName));
+            builder.WriteLine(");");
             builder.UnIndent();
         }
 

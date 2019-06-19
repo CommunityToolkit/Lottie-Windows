@@ -222,30 +222,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 builder.WriteLine("AnimatedVisual(Compositor^ compositor,");
                 builder.Indent();
 
-                // Define the image surface parameters of the AnimatedVisual() constructor.
-                var nodes = GetLoadedImageSurfacesNodes().ToArray();
-                for (var i = 0; i < nodes.Length; i++)
-                {
-                    var parameterName = $"{_stringifier.ReferenceTypeName(nodes[i].TypeName)} {_stringifier.CamelCase(nodes[i].Name)}";
-                    if (i < nodes.Length - 1)
-                    {
-                        // Append "," to each parameter except the last one.
-                        builder.WriteLine($"{parameterName},");
-                    }
-                    else
-                    {
-                        // Close the parenthesis after the last parameter.
-                        builder.WriteLine($"{parameterName})");
-                    }
-                }
+                builder.WriteCommaSeparatedLines(info.LoadedImageSurfaceNodes.Select(n => $"{_stringifier.ReferenceTypeName(n.TypeName)} {_stringifier.CamelCase(n.Name)}"));
 
                 // Initializer list.
-                builder.WriteLine(": _c(compositor)");
+                builder.WriteLine(") : _c(compositor)");
 
                 // Instantiate the reusable ExpressionAnimation.
                 builder.WriteLine($", {info.ReusableExpressionAnimationFieldName}(compositor->CreateExpressionAnimation())");
 
                 // Initialize the image surfaces.
+                var nodes = info.LoadedImageSurfaceNodes.ToArray();
                 foreach (var n in nodes)
                 {
                     builder.WriteLine($", {n.FieldName}({_stringifier.CamelCase(n.Name)})");
@@ -326,9 +312,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 builder.WriteLine("return nullptr;");
                 builder.CloseScope();
                 builder.WriteLine("return ref new AnimatedVisual(compositor);");
+                builder.CloseScope();
             }
-
-            builder.CloseScope();
 
             if (info.HasLoadedImageSurface)
             {
@@ -497,25 +482,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.CloseScope();
             builder.WriteLine("return ref new AnimatedVisual(compositor,");
             builder.Indent();
-
-            var nodes = info.LoadedImageSurfaceNodes.ToArray();
-            for (var i = 0; i < nodes.Length; i++)
-            {
-                var parameterName = MakeMemberVariableName(nodes[i].Name);
-                if (i < nodes.Length - 1)
-                {
-                    // Append "," to each parameter except the last one.
-                    builder.WriteLine($"{parameterName},");
-                }
-                else
-                {
-                    // Close the parenthesis after the last parameter.
-                    builder.WriteLine($"{parameterName})");
-                }
-            }
-
+            builder.WriteCommaSeparatedLines(info.LoadedImageSurfaceNodes.Select(n => MakeFieldName(n.Name)));
             builder.UnIndent();
-            builder.WriteLine(";");
+            builder.WriteLine(");");
+            builder.CloseScope();
             builder.WriteLine();
         }
 
@@ -547,7 +517,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             var nodes = info.LoadedImageSurfaceNodes.ToArray();
             foreach (var n in nodes)
             {
-                var imageMemberName = MakeMemberVariableName(n.Name);
+                var imageMemberName = MakeFieldName(n.Name);
                 switch (n.LoadedImageSurfaceType)
                 {
                     case LoadedImageSurface.LoadedImageSurfaceType.FromStream:
@@ -613,7 +583,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         string Vector2(Vector2 value) => _stringifier.Vector2(value);
 
-        string MakeMemberVariableName(string value) => $"m_{_stringifier.CamelCase(value)}";
+        string MakeFieldName(string value) => $"m_{_stringifier.CamelCase(value)}";
 
         static string IAnimatedVisualSourceHeaderText(string className)
         {
@@ -643,11 +613,11 @@ public:
         string IDynamicAnimatedVisualSourceHeaderText(string className, IEnumerable<LoadedImageSurfaceNode> loadedImageSurfacesNodes)
         {
             var nodes = loadedImageSurfacesNodes.ToArray();
-            var imageVariableString = new StringBuilder();
+            var imageFieldsText = new StringBuilder();
 
             foreach (var n in nodes)
             {
-                imageVariableString.AppendLine($"    {_stringifier.ReferenceTypeName(n.TypeName)} {MakeMemberVariableName(n.Name)}{{}};");
+                imageFieldsText.AppendLine($"    {_stringifier.ReferenceTypeName(n.TypeName)} {MakeFieldName(n.Name)}{{}};");
             }
 
             return
@@ -728,7 +698,7 @@ private:
     bool m_isTryCreateAnimatedVisualCalled{{}};
     bool m_isImageLoadingStarted{{}};
     event Windows::Foundation::TypedEventHandler<IDynamicAnimatedVisualSource^, Platform::Object^>^ m_InternalHandler;
-{imageVariableString.ToString()}
+{imageFieldsText.ToString()}
 
     void EnsureImageLoadingStarted();
     void HandleLoadCompleted(LoadedImageSurface^ sender, LoadedImageSourceLoadCompletedEventArgs^ e);
