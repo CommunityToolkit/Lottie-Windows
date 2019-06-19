@@ -36,8 +36,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             {
                 string baseName;
 
-                // Generate descriptive name for each object. The name is generated based on its type
-                // and properties to make it as specific as possible.
+                // Generate descriptive name for each node. The name is generated based on its type
+                // and properties to give as much information about the node as possible, so that
+                // a specific node can be identified in the composition.
                 switch (node.Type)
                 {
                     case Graph.NodeType.CompositionObject:

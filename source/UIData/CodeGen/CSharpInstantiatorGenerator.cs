@@ -281,16 +281,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 var nodes = GetLoadedImageSurfacesNodes().ToArray();
                 for (var i = 0; i < nodes.Length; i++)
                 {
-                    var parameterString = $"{_stringifier.ReferenceTypeName(nodes[i].TypeName)} {_stringifier.CamelCase(nodes[i].Name)}";
+                    var parameterName = $"{_stringifier.ReferenceTypeName(nodes[i].TypeName)} {_stringifier.CamelCase(nodes[i].Name)}";
                     if (i < nodes.Length - 1)
                     {
                         // Append "," to each parameter except the last one.
-                        builder.WriteLine($"{parameterString},");
+                        builder.WriteLine($"{parameterName},");
                     }
                     else
                     {
                         // Close the parenthesis after the last parameter.
-                        builder.WriteLine($"{parameterString})");
+                        builder.WriteLine($"{parameterName})");
                     }
                 }
 
@@ -456,16 +456,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             var nodes = info.LoadedImageSurfaceNodes.ToArray();
             for (var i = 0; i < nodes.Length; i++)
             {
-                var parameterString = $"{nodes[i].FieldName}";
+                var parameterName = nodes[i].FieldName;
                 if (i < nodes.Length - 1)
                 {
                     // Append "," to each parameter except the last one.
-                    builder.WriteLine($"{parameterString},");
+                    builder.WriteLine($"{parameterName},");
                 }
                 else
                 {
                     // Close the parenthesis after the last parameter.
-                    builder.WriteLine($"{parameterString})");
+                    builder.WriteLine($"{parameterName})");
                 }
             }
 

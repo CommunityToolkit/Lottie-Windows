@@ -104,13 +104,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             // Save the nodes, ordered by the name that was just set.
             _nodes = nodes.OrderBy(node => node.Name).ToArray();
 
-            // Force storage to be allocated for nodes that have multiple references to them.
+            // Force storage to be allocated for nodes that have multiple references to them,
+            // or is a LoadedImageSurface.
             foreach (var node in _nodes)
             {
-                if (FilteredInRefs(node).Count() > 1)
+                if (FilteredInRefs(node).Count() > 1 || node.IsLoadedImageSurface)
                 {
-                    // Node is referenced more than once, so it requires storage.
+                    // Node is referenced more than once or a LoadedImageSurface, so it requires storage.
                     node.RequiresStorage = true;
+
+                    if (node.IsLoadedImageSurface)
+                    {
+                        // Node is a LoadedImageSurface which requires read-only storage.
+                        node.RequiresReadonlyStorage = true;
+                    }
                 }
             }
 
@@ -325,15 +332,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// <returns>List of the <see cref="LoadedImageSurfaceNode"/> representing the LoadedImageSurface and its properties.</returns>
         protected IEnumerable<LoadedImageSurfaceNode> GetLoadedImageSurfacesNodes()
         {
-            return _nodes.Where(n => n.IsLoadedImageSurface).
-                            Select(n => new LoadedImageSurfaceNode(
+            return
+                from n in _nodes
+                where n.IsLoadedImageSurface
+                select new LoadedImageSurfaceNode(
                                 n.TypeName,
                                 n.Name,
                                 n.FieldName,
                                 n.LoadedImageSurfaceBytesFieldName,
                                 n.LoadedImageSurfaceImageUri,
-                                ((Wmd.LoadedImageSurface)n.Object).Type)
-                            );
+                                ((Wmd.LoadedImageSurface)n.Object).Type);
         }
 
         /// <summary>
@@ -386,25 +394,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             // Write fields for each object that needs storage (i.e. objects that are
             // referenced more than once).
+            // Write read-only fields first.
             WriteField(builder, Readonly(_stringifier.ReferenceTypeName("Compositor")), "_c");
             WriteField(builder, Readonly(_stringifier.ReferenceTypeName("ExpressionAnimation")), SingletonExpressionAnimationName);
 
-            foreach (var node in _nodes)
+            foreach (var node in _nodes.Where(n => n.RequiresReadonlyStorage))
             {
-                if (node.IsLoadedImageSurface)
-                {
-                    // Generate a field for each LoadedImageSurface object.
-                    WriteField(builder, Readonly(_stringifier.ReferenceTypeName(node.TypeName)), node.FieldName);
-                }
+                // Generate a field for the read-only storage.
+                WriteField(builder, Readonly(_stringifier.ReferenceTypeName(node.TypeName)), node.FieldName);
             }
 
-            foreach (var node in _nodes)
+            foreach (var node in _nodes.Where(n => n.RequiresStorage && !n.RequiresReadonlyStorage))
             {
-                if (node.RequiresStorage)
-                {
-                    // Generate a field for the storage.
-                    WriteField(builder, _stringifier.ReferenceTypeName(node.TypeName), node.FieldName);
-                }
+                // Generate a field for the storage.
+                WriteField(builder, _stringifier.ReferenceTypeName(node.TypeName), node.FieldName);
             }
 
             builder.WriteLine();
@@ -2065,7 +2068,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             public string Name { get; set; }
 
-            public string FieldName => RequiresStorage || IsLoadedImageSurface ? CamelCase(Name) : null;
+            public string FieldName => RequiresStorage ? CamelCase(Name) : null;
 
             // Returns text for obtaining the value for this node. If the node has
             // been inlined, this can generate the code into the returned string, otherwise
@@ -2129,6 +2132,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             // True if the object is referenced from more than one method and
             // therefore must be stored after it is created.
             internal bool RequiresStorage { get; set; }
+
+            // True if the object must be stored as read-only after it is created.
+            internal bool RequiresReadonlyStorage { get; set; }
 
             // Set to indicate that the node relies on Microsoft.Graphics.Canvas namespace
             internal bool UsesCanvas => Object is CompositionEffectBrush;

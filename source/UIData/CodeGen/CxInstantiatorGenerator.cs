@@ -226,16 +226,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 var nodes = GetLoadedImageSurfacesNodes().ToArray();
                 for (var i = 0; i < nodes.Length; i++)
                 {
-                    var parameterString = $"{_stringifier.ReferenceTypeName(nodes[i].TypeName)} {_stringifier.CamelCase(nodes[i].Name)}";
+                    var parameterName = $"{_stringifier.ReferenceTypeName(nodes[i].TypeName)} {_stringifier.CamelCase(nodes[i].Name)}";
                     if (i < nodes.Length - 1)
                     {
                         // Append "," to each parameter except the last one.
-                        builder.WriteLine($"{parameterString},");
+                        builder.WriteLine($"{parameterName},");
                     }
                     else
                     {
                         // Close the parenthesis after the last parameter.
-                        builder.WriteLine($"{parameterString})");
+                        builder.WriteLine($"{parameterName})");
                     }
                 }
 
@@ -501,16 +501,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             var nodes = info.LoadedImageSurfaceNodes.ToArray();
             for (var i = 0; i < nodes.Length; i++)
             {
-                var parameterString = $"{MakeClassMember(nodes[i].Name)}";
+                var parameterName = MakeMemberVariableName(nodes[i].Name);
                 if (i < nodes.Length - 1)
                 {
                     // Append "," to each parameter except the last one.
-                    builder.WriteLine($"{parameterString},");
+                    builder.WriteLine($"{parameterName},");
                 }
                 else
                 {
                     // Close the parenthesis after the last parameter.
-                    builder.WriteLine($"{parameterString})");
+                    builder.WriteLine($"{parameterName})");
                 }
             }
 
@@ -547,7 +547,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             var nodes = info.LoadedImageSurfaceNodes.ToArray();
             foreach (var n in nodes)
             {
-                var imageMemberName = $"{MakeClassMember(n.Name)}";
+                var imageMemberName = MakeMemberVariableName(n.Name);
                 switch (n.LoadedImageSurfaceType)
                 {
                     case LoadedImageSurface.LoadedImageSurfaceType.FromStream:
@@ -613,7 +613,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         string Vector2(Vector2 value) => _stringifier.Vector2(value);
 
-        string MakeClassMember(string value) => $"m_{_stringifier.CamelCase(value)}";
+        string MakeMemberVariableName(string value) => $"m_{_stringifier.CamelCase(value)}";
 
         static string IAnimatedVisualSourceHeaderText(string className)
         {
@@ -647,7 +647,7 @@ public:
 
             foreach (var n in nodes)
             {
-                imageVariableString.AppendLine($"    {_stringifier.ReferenceTypeName(n.TypeName)} {MakeClassMember(n.Name)}{{}};");
+                imageVariableString.AppendLine($"    {_stringifier.ReferenceTypeName(n.TypeName)} {MakeMemberVariableName(n.Name)}{{}};");
             }
 
             return
