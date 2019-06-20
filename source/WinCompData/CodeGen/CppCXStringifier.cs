@@ -9,13 +9,13 @@ using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui;
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 {
     /// <summary>
-    /// Stringifiers for C++ syntax.
+    /// Stringifiers for C++/CX syntax.
     /// </summary>
-    sealed class CppStringifier : InstantiatorGeneratorBase.StringifierBase
+    sealed class CppcxStringifier : InstantiatorGeneratorBase.StringifierBase
     {
         public override string Assignment(string lhs, string rhs)
         {
-            return $"{lhs}({rhs})";
+            return $"{lhs} = {rhs}";
         }
 
         public override string CanvasFigureLoop(Mgcg.CanvasFigureLoop value)
@@ -48,9 +48,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             }
         }
 
-        public override string Color(Color value) => $"{{ {Hex(value.A)}, {Hex(value.R)}, {Hex(value.G)}, {Hex(value.B)} }}";
+        public override string Color(Color value) => $"ColorHelper::FromArgb({Hex(value.A)}, {Hex(value.R)}, {Hex(value.G)}, {Hex(value.B)})";
 
-        public override string Deref => ".";
+        public override string Deref => "->";
 
         public override string FilledRegionDetermination(Mgcg.CanvasFilledRegionDetermination value)
         {
@@ -71,9 +71,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
         public override string ScopeResolve => "::";
 
-        public override string String(string value) => $"L\"{value}\"";
+        public override string String(string value) => $"\"{value}\"";
 
-        public override string New => string.Empty;
+        public override string New => "ref new";
 
         public override string Null => "nullptr";
 
@@ -93,9 +93,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
         public override string ReferenceTypeName(string value) =>
             value == "CanvasGeometry"
+
                 // C++ uses a typdef for CanvasGeometry that is ComPtr<GeoSource>, thus no hat pointer
                 ? "CanvasGeometry"
-                : $"{value}";
+                : $"{value}^";
 
         public override string TimeSpan(TimeSpan value) => TimeSpan(Int64(value.Ticks));
 
@@ -111,11 +112,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 
         public override string IListAdd => "Append";
 
-        public override string Literal(string v) => $"L\"{v}\"";
+        public override string Literal(string v) => $"\"{v}\"";
 
-        public override string FactoryCall(string value) => $"{value}.as<IGeometrySource2D>()";  //TODO refactor
+        public override string FactoryCall(string value) => $"CanvasGeometryToIGeometrySource2D({value})";
 
-        public string FailFastWrapper(string value) => $"check_hresult({value})"; //TODO: refactor if keeping cx
+        public string FailFastWrapper(string value) => $"FFHR({value})";
 
         public override string EvalProp(string propname)
         {
@@ -130,28 +131,71 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
         /// The implementation is very simple - just enough to satisfy CompositionPath.
         /// </summary>
         public string GeoSourceClass =>
-@"struct GeoSource : implements<GeoSource,
-	Windows::Graphics::IGeometrySource2D,
-	ABI::Windows::Graphics::IGeometrySource2DInterop>
-{
-	GeoSource(com_ptr<ID2D1Geometry> const & pGeometry) :
-		_cpGeometry(pGeometry)
-	{ }
+@"class GeoSource final :
+    public ABI::Windows::Graphics::IGeometrySource2D,
+    public ABI::Windows::Graphics::IGeometrySource2DInterop
+ {
+    ULONG _cRef;
+    ComPtr<ID2D1Geometry> _cpGeometry;
 
-	IFACEMETHODIMP GetGeometry(ID2D1Geometry** value) override
-	{
-		_cpGeometry.copy_to(value);
-		return S_OK;
-	}
+public:
+    GeoSource(ID2D1Geometry* pGeometry)
+        : _cRef(1)
+        , _cpGeometry(pGeometry)
+    { }
 
-	IFACEMETHODIMP TryGetGeometryUsingFactory(ID2D1Factory*, ID2D1Geometry** result) override
-	{
-		*result = nullptr;
-		return E_NOTIMPL;
-	}
+    IFACEMETHODIMP QueryInterface(REFIID iid, void ** ppvObject) override
+    {
+        if (iid == __uuidof(ABI::Windows::Graphics::IGeometrySource2DInterop))
+        {
+            AddRef();
+            *ppvObject = static_cast<ABI::Windows::Graphics::IGeometrySource2DInterop*>(this);
+            return S_OK;
+        }
+        return E_NOINTERFACE;
+    }
 
-private:
-	com_ptr<ID2D1Geometry> _cpGeometry;
+    IFACEMETHODIMP_(ULONG) AddRef() override
+    {
+        return InterlockedIncrement(&_cRef);
+    }
+
+IFACEMETHODIMP_(ULONG) Release() override
+    {
+        ULONG cRef = InterlockedDecrement(&_cRef);
+        if (cRef == 0)
+        {
+            delete this;
+        }
+        return cRef;
+    }
+
+    IFACEMETHODIMP GetIids(ULONG*, IID**) override
+    {
+        return E_NOTIMPL;
+    }
+
+    IFACEMETHODIMP GetRuntimeClassName(HSTRING*) override
+    {
+        return E_NOTIMPL;
+    }
+
+    IFACEMETHODIMP GetTrustLevel(TrustLevel*) override
+    {
+        return E_NOTIMPL;
+    }
+
+    IFACEMETHODIMP GetGeometry(ID2D1Geometry** value) override
+    {
+        *value = _cpGeometry.Get();
+        (*value)->AddRef();
+        return S_OK;
+    }
+
+    IFACEMETHODIMP TryGetGeometryUsingFactory(ID2D1Factory*, ID2D1Geometry**) override
+    {
+        return E_NOTIMPL;
+    }
 };
 ";
     }

@@ -12,7 +12,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
 #endif
     sealed class CxInstantiatorGenerator : InstantiatorGeneratorBase
     {
-        readonly CppStringifier _stringifier;
+        readonly CppcxStringifier _stringifier;
         readonly string _headerFileName;
 
         CxInstantiatorGenerator(
@@ -20,7 +20,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
             TimeSpan duration,
             bool setCommentProperties,
             bool disableFieldOptimization,
-            CppStringifier stringifier,
+            CppcxStringifier stringifier,
             string headerFileName)
             : base(
                   graphRoot: graphRoot,
@@ -54,7 +54,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.CodeGen
                 duration: duration,
                 disableFieldOptimization: disableFieldOptimization,
                 setCommentProperties: false,
-                stringifier: new CppStringifier(),
+                stringifier: new CppcxStringifier(),
                 headerFileName: headerFileName);
 
             cppText = generator.GenerateCode(className, width, height);

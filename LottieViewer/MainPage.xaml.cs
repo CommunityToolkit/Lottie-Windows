@@ -55,9 +55,6 @@ namespace LottieViewer
 
             // Dropdown of file types the user can save the file as
             filePicker.FileTypeChoices.Add("C#", new[] { ".cs" });
-
-            // TODO: handle Cx generation side by side with CPPWINRT
-            //filePicker.FileTypeChoices.Add("C++ CX", new[] { ".cpp" });
             filePicker.FileTypeChoices.Add("C++/WinRT", new[] { ".cpp" });
             filePicker.FileTypeChoices.Add("Lottie XML", new[] { ".xml" });
 
@@ -90,10 +87,6 @@ namespace LottieViewer
                     await FileIO.WriteTextAsync(pickedFile, diagnostics.GenerateCSharpCode());
                     break;
 
-                // TODO: handle Cx generation side by side with CPPWINRT
-                //case ".cpp":
-                //    await GenerateCxCodeAsync(diagnostics, suggestedClassName, pickedFile);
-                //    break;
                 case ".cpp":
                     await GenerateCppWinrtCodeAsync(diagnostics, suggestedClassName, pickedFile);
                     break;

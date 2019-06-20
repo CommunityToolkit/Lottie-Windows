@@ -8,6 +8,7 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)AnimationController.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\CodeBuilder.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\CppCXStringifier.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\CppStringifier.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\CSharpInstantiatorGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\CppWinrtInstantiatorGenerator.cs" />
