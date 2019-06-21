@@ -4,16 +4,18 @@
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.AbstractSyntax
 {
-    /// <summary>
-    /// A reference to something that can be called.
-    /// </summary>
-    abstract class CallTargetReference
+    sealed class LocalVariable
     {
-        protected internal CallTargetReference(TypeReference resultType)
+        public LocalVariable(TypeReference type, string name)
         {
-            ResultType = resultType;
+            Type = type;
+            Name = name;
         }
 
-        public TypeReference ResultType { get; }
+        public TypeReference Type { get; }
+
+        public string Name { get; }
+
+        public override string ToString() => Name ?? "localVar";
     }
 }

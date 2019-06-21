@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Generic;
+
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.AbstractSyntax
 {
     /// <summary>
@@ -13,17 +15,21 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.AbstractSyntax
         {
         }
 
+        public static IEnumerable<TypeReference> EmptyList { get; } = new TypeReference[0];
+
         /// <summary>
         /// A reference to a type that is not one of the built-in types.
         /// </summary>
         public sealed class ImportedTypeReference : TypeReference
         {
-            ImportedTypeReference(string fullyQualifiedName)
+            public ImportedTypeReference(string fullyQualifiedName)
             {
                 FullyQualifiedName = fullyQualifiedName;
             }
 
             public string FullyQualifiedName { get; }
+
+            public override string ToString() => FullyQualifiedName;
         }
 
         /// <summary>
@@ -31,24 +37,24 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.AbstractSyntax
         /// </summary>
         public sealed class BuiltIn : TypeReference
         {
+            readonly string _name;
+
             BuiltIn(string name)
             {
-                Name = name;
+                _name = name;
             }
 
-            public string Name { get; }
+            public static BuiltIn Boolean { get; } = new BuiltIn("bool");
 
-            public static BuiltIn Boolean { get; } = new BuiltIn("Boolean");
+            public static BuiltIn Float { get; } = new BuiltIn("float");
 
-            public static BuiltIn Float { get; } = new BuiltIn("Float");
-
-            public static BuiltIn Int32 { get; } = new BuiltIn("Int32");
+            public static BuiltIn Int32 { get; } = new BuiltIn("int");
 
             public static BuiltIn Matrix3x2 { get; } = new BuiltIn("Matrix3x2");
 
             public static BuiltIn Matrix4x4 { get; } = new BuiltIn("Matrix4x4");
 
-            public static BuiltIn String { get; } = new BuiltIn("String");
+            public static BuiltIn String { get; } = new BuiltIn("string");
 
             public static BuiltIn TimeSpan { get; } = new BuiltIn("TimeSpan");
 
@@ -57,7 +63,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.AbstractSyntax
             public static BuiltIn Vector2 { get; } = new BuiltIn("Vector2");
 
             public static BuiltIn Vector3 { get; } = new BuiltIn("Vector3");
-        }
 
+            public override string ToString() => _name;
+        }
     }
 }

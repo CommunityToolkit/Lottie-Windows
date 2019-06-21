@@ -6,6 +6,20 @@
     <SharedGUID>74601E6C-2DFE-4842-B170-047941ABFF2C</SharedGUID>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\AbstractSyntax\Builders\MethodBuilder.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\AbstractSyntax\Builders\StatementTreeBuilder.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\AbstractSyntax\CallTargetReference.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\AbstractSyntax\Experiments\Experiments.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\AbstractSyntax\LocalVariable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\AbstractSyntax\Expression.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\AbstractSyntax\ExpressionType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\AbstractSyntax\ImportedMethodCallTargetReference.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\AbstractSyntax\Literal.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\AbstractSyntax\Method.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\AbstractSyntax\Statement.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\AbstractSyntax\StatementTree.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\AbstractSyntax\TypeReference.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\AbstractSyntax\Variable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\CanonicalizedNode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\Canonicalizer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\CodeBuilder.cs" />

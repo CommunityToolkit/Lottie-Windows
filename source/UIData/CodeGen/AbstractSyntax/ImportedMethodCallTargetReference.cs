@@ -6,16 +6,27 @@ using System.Collections.Generic;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.AbstractSyntax
 {
-    /// <summary>
-    /// Defines a method.
-    /// </summary>
-    sealed class ImportedMethodCallTargetReference
+    sealed class ImportedMethodCallTargetReference : CallTargetReference
     {
-        internal ImportedMethodCallTargetReference(string fullyQualifiedName)
+        internal ImportedMethodCallTargetReference(TypeReference resultType, TypeReference receiverType, string name)
+            : this(resultType, receiverType, name, TypeReference.EmptyList)
         {
-            FullyQualifiedName = fullyQualifiedName;
         }
 
-        public string FullyQualifiedName { get; }
+        internal ImportedMethodCallTargetReference(TypeReference resultType, TypeReference receiverType, string name, IEnumerable<TypeReference> parameterTypes)
+            : base(resultType)
+        {
+            ReceiverType = receiverType;
+            Name = name;
+            ParameterTypes = parameterTypes;
+        }
+
+        public TypeReference ReceiverType { get; }
+
+        public string Name { get; }
+
+        public IEnumerable<TypeReference> ParameterTypes { get; }
+
+        public override string ToString() => Name;
     }
 }

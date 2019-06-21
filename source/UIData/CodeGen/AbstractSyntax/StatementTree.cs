@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.AbstractSyntax
 {
@@ -12,6 +13,23 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.AbstractSyntax
     /// </summary>
     class StatementTree
     {
+        static readonly StatementTree[] s_emptyList = new StatementTree[0];
+
+        protected internal StatementTree()
+            : this(s_emptyList)
+        {
+        }
+
+        internal StatementTree(IEnumerable<StatementTree> children)
+        {
+            Children = children.ToArray();
+        }
+
         public IReadOnlyList<StatementTree> Children { get; }
+
+        public override string ToString()
+        {
+            return "{" + string.Join("\r\n", Children.Select(c => c.ToString() + ";")) + "}";
+        }
     }
 }

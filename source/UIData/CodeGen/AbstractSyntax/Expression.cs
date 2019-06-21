@@ -38,25 +38,32 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.AbstractSyntax
         /// <summary>
         /// An <see cref="Expression"/> that returns the result of calling a method.
         /// </summary>
-        sealed class MethodCall : Expression
+        public sealed class MethodCall : Expression
         {
             // TODO - needs a reference to the receiver, and the arguments.
             // TODO - how to handle void methods, and methods where we ignore the result.
             // TODO - how to handle properties.
-            internal MethodCall(TypeReference resultType)
+            internal MethodCall(CallTargetReference target, Expression receiver)
             {
-                ResultType = resultType;
+                Receiver = receiver;
+                Target = target;
             }
 
-            public override TypeReference ResultType { get; }
+            public CallTargetReference Target { get; }
+
+            public Expression Receiver { get; }
+
+            public override TypeReference ResultType => Target.ResultType;
 
             internal override ExpressionType ExpressionType => ExpressionType.MethodCall;
+
+            public override string ToString() => $"{Receiver}.{Target}()";
         }
 
         /// <summary>
         /// An <see cref="Expression"/> that instantiates an object.
         /// </summary>
-        sealed class New : Expression
+        public sealed class New : Expression
         {
             internal New(TypeReference.ImportedTypeReference receiverType, IEnumerable<TypeReference> parameterTypes)
             {
@@ -69,6 +76,25 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.AbstractSyntax
             public IEnumerable<TypeReference> ParameterTypes { get; }
 
             internal override ExpressionType ExpressionType => ExpressionType.New;
+        }
+
+        /// <summary>
+        /// An <see cref="Expression"/> that references a variable.
+        /// </summary>
+        public sealed class VariableReference : Expression
+        {
+            internal VariableReference(Variable variable)
+            {
+                Variable = variable;
+            }
+
+            public Variable Variable { get; }
+
+            public override TypeReference ResultType => Variable.Type;
+
+            internal override ExpressionType ExpressionType => ExpressionType.VariableReference;
+
+            public override string ToString() => Variable.ToString();
         }
     }
 }

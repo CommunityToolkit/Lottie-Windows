@@ -11,5 +11,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.AbstractSyntax
         Literal,
         MethodCall,
         New,
+        VariableReference,
     }
 }
