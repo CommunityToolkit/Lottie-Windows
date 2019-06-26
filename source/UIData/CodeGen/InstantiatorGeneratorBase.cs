@@ -1905,7 +1905,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             public IEnumerable<LoadedImageSurfaceNode> LoadedImageSurfaceNodes { get; }
 
             /// <summary>
-            /// Gets a value indicating whether the composition depends on a composite effect used as a Windows.Graphics.Effects.IGraphicsEffect.
+            /// Gets a value indicating whether the composition depends on a composite effect.
             /// </summary>
             public bool UsesCompositeEffect { get; }
         }
@@ -2187,7 +2187,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             // Set to indicate that the node uses asset file(s).
             internal bool UsesAssetFile => Object is Wmd.LoadedImageSurface lis && lis.Type == Wmd.LoadedImageSurface.LoadedImageSurfaceType.FromUri;
 
-            // Value indicating whether the composition depends on a composite effect used as a Windows.Graphics.Effects.IGraphicsEffect.
+            // Set to indicate that the composition depends on a composite effect.
             internal bool UsesCompositeEffect => Object is CompositionEffectBrush compositeEffectBrush && compositeEffectBrush.GetEffect().Type == Mgce.GraphicsEffectType.CompositeEffect;
 
             // Identifies the byte array of a LoadedImageSurface.
