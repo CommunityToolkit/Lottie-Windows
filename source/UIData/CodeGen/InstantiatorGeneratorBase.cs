@@ -348,7 +348,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// Write the CompositeEffect factory code.
         /// </summary>
         /// <param name="builder">A <see cref="CodeBuilder"/> used to create the code.</param>
-        /// <param name="compositeEffect">Composte effect object.</param>
+        /// <param name="compositeEffect">Composite effect object.</param>
         /// <returns>string representation of the composite effect.</returns>
         protected virtual string GenerateCompositeEffectFactory(CodeBuilder builder, Mgce.CompositeEffect compositeEffect)
         {
@@ -359,7 +359,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 builder.WriteLine($"compositeEffect{Deref}Sources{Deref}{IListAdd}({New} CompositionEffectSourceParameter({String(source.Name)}));");
             }
 
-            return $"compositeEffect";
+            return "compositeEffect";
         }
 
         /// <summary>
@@ -1880,7 +1880,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             public bool UsesCanvasEffects { get; }
 
             /// <summary>
-            /// Gets a value indicating whether the composition depends the Microsoft.Graphics.Canvas.Geometry namespace.
+            /// Gets a value indicating whether the composition depends on the Microsoft.Graphics.Canvas.Geometry namespace.
             /// </summary>
             public bool UsesCanvasGeometry { get; }
 
@@ -1905,7 +1905,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             public IEnumerable<LoadedImageSurfaceNode> LoadedImageSurfaceNodes { get; }
 
             /// <summary>
-            /// Gets a value indicating whether the composition depends the composite effect used as a Windows.Graphics.Effects.IGraphicsEffect.
+            /// Gets a value indicating whether the composition depends on a composite effect used as a Windows.Graphics.Effects.IGraphicsEffect.
             /// </summary>
             public bool UsesCompositeEffect { get; }
         }
@@ -2187,8 +2187,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             // Set to indicate that the node uses asset file(s).
             internal bool UsesAssetFile => Object is Wmd.LoadedImageSurface lis && lis.Type == Wmd.LoadedImageSurface.LoadedImageSurfaceType.FromUri;
 
-            // Value indicating whether the composition depends the composite effect used as a Windows.Graphics.Effects.IGraphicsEffect.
-            internal bool UsesCompositeEffect => Object is CompositionEffectBrush && ((CompositionEffectBrush)Object).GetEffect().Type == Mgce.GraphicsEffectType.CompositeEffect;
+            // Value indicating whether the composition depends on a composite effect used as a Windows.Graphics.Effects.IGraphicsEffect.
+            internal bool UsesCompositeEffect => Object is CompositionEffectBrush compositeEffectBrush && compositeEffectBrush.GetEffect().Type == Mgce.GraphicsEffectType.CompositeEffect;
 
             // Identifies the byte array of a LoadedImageSurface.
             internal string LoadedImageSurfaceBytesFieldName => $"s_{Name}_Bytes";

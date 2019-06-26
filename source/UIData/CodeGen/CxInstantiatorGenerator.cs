@@ -172,7 +172,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             if (info.UsesCanvasEffects)
             {
                 // Write the composite effect class that will allow the use
-                // of this effect without win2d
+                // of this effect without win2d.
                 builder.WriteLine($"{CompositionEffectClass}");
             }
         }
@@ -582,17 +582,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// <inheritdoc/>
         protected override string GenerateCompositeEffectFactory(CodeBuilder builder, Mgce.CompositeEffect compositeEffect)
         {
-            builder.WriteLine($"ComPtr<CompositeEffect> compositeEffect(new CompositeEffect());");
+            builder.WriteLine("ComPtr<CompositeEffect> compositeEffect(new CompositeEffect());");
             builder.WriteLine($"compositeEffect->SetMode({CanvasCompositeMode(compositeEffect.Mode)});");
             foreach (var source in compositeEffect.Sources)
             {
                 builder.OpenScope();
                 builder.WriteLine($"auto sourceParameter = ref new CompositionEffectSourceParameter({String(source.Name)});");
-                builder.WriteLine($"compositeEffect->AddSource(reinterpret_cast<ABI::Windows::Graphics::Effects::IGraphicsEffectSource*>(sourceParameter));");
+                builder.WriteLine("compositeEffect->AddSource(reinterpret_cast<ABI::Windows::Graphics::Effects::IGraphicsEffectSource*>(sourceParameter));");
                 builder.CloseScope();
             }
 
-            return $"reinterpret_cast<Windows::Graphics::Effects::IGraphicsEffect^>(compositeEffect.Get())";
+            return "reinterpret_cast<Windows::Graphics::Effects::IGraphicsEffect^>(compositeEffect.Get())";
         }
 
         string CanvasFigureLoop(CanvasFigureLoop value) => _stringifier.CanvasFigureLoop(value);
@@ -782,6 +782,7 @@ public:
     { 
         // set CLSID_D2D1Composite value
         *id = { 0x48fc9f51, 0xf6ac, 0x48f1, { 0x8b, 0x58,  0x3b,  0x28,  0xac,  0x46,  0xf7,  0x6d } };
+
         return S_OK; 
     }
 
@@ -791,7 +792,9 @@ public:
         {
             return E_INVALIDARG;
         }
+
         *count = m_sources.size();
+
         return S_OK;
     }
 
@@ -804,8 +807,10 @@ public:
         {
             return E_INVALIDARG;
         }
+
         *source = m_sources.at(index).Get();
         (*source)->AddRef();
+
         return S_OK;
     }
 
@@ -819,8 +824,10 @@ public:
         {
             switch (index)
             {
-            case D2D1_COMPOSITE_PROP_MODE: return statics->CreateUInt32(m_mode, (IInspectable**)value);
-            default: return E_INVALIDARG;
+                case D2D1_COMPOSITE_PROP_MODE: 
+                    return statics->CreateUInt32(m_mode, (IInspectable**)value);
+                default: 
+                    return E_INVALIDARG;
             }
         });
     }
@@ -844,30 +851,35 @@ public:
             *ppvObject = (IUnknown*)(IGraphicsEffect*)this;
             return S_OK;
         }
+
         if (iid == __uuidof(IInspectable))
         {
             AddRef();
             *ppvObject = (IInspectable*)(IGraphicsEffect*)this;
             return S_OK;
         }
+
         if (iid == __uuidof(IGraphicsEffect))
         {
             AddRef();
             *ppvObject = (IGraphicsEffect*)this;
             return S_OK;
         }
+
         if (iid == __uuidof(IGraphicsEffectSource))
         {
             AddRef();
             *ppvObject = (IGraphicsEffectSource*)this;
             return S_OK;
         }
+
         if (iid == __uuidof(IGraphicsEffectD2D1Interop))
         {
             AddRef();
             *ppvObject = (IGraphicsEffectD2D1Interop*)this;
             return S_OK;
         }
+
         return E_NOINTERFACE;
     }
 
@@ -883,6 +895,7 @@ public:
         {
             delete this;
         }
+
         return cRef;
     }
 
@@ -910,7 +923,7 @@ public:
     }
 
 private:
-    // Invokes a functor with the pointer to the property factory
+    // Invokes a functor with the pointer to the property factory.
     template<typename TFunc>
     static HRESULT UsePropertyFactory(const TFunc& func)
     {
