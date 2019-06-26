@@ -72,39 +72,68 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         // Called by the base class to write the start of the file (i.e. everything up to the body of the Instantiator class).
         protected override void WriteFileStart(CodeBuilder builder, CodeGenInfo info)
         {
+            // A sorted set to hold the namespaces that the generated code will use. The set is maintained in sorted order.
+            var namepaces = new SortedSet<string>();
+
             if (info.UsesCanvas)
             {
-                builder.WriteLine("using Microsoft.Graphics.Canvas;");
+                namepaces.Add("Microsoft.Graphics.Canvas");
             }
 
             if (info.UsesCanvasEffects)
             {
-                builder.WriteLine("using Microsoft.Graphics.Canvas.Effects;");
+                namepaces.Add("Microsoft.Graphics.Canvas.Effects");
             }
 
             if (info.UsesCanvasGeometry)
             {
-                builder.WriteLine("using Microsoft.Graphics.Canvas.Geometry;");
+                namepaces.Add("Microsoft.Graphics.Canvas.Geometry");
             }
 
             if (info.UsesNamespaceWindowsUIXamlMedia)
             {
-                builder.WriteLine("using Windows.UI.Xaml.Media;");
+                namepaces.Add("Windows.UI.Xaml.Media");
+                namepaces.Add("System.Runtime.InteropServices.WindowsRuntime");
+                namepaces.Add("Windows.Foundation");
+                namepaces.Add("System.ComponentModel");
             }
 
             if (info.UsesStreams)
             {
-                builder.WriteLine("using System.IO;");
-                builder.WriteLine("using System.Runtime.InteropServices.WindowsRuntime;");
+                namepaces.Add("System.IO");
             }
 
-            builder.WriteLine("using Microsoft.UI.Xaml.Controls;");
-            builder.WriteLine("using System;");
-            builder.WriteLine("using System.Numerics;");
-            builder.WriteLine("using Windows.UI;");
-            builder.WriteLine("using Windows.UI.Composition;");
+            namepaces.Add("Microsoft.UI.Xaml.Controls");
+            namepaces.Add("System");
+            namepaces.Add("System.Numerics");
+            namepaces.Add("Windows.UI");
+            namepaces.Add("Windows.UI.Composition");
+
+            // Write out each namespace using.
+            foreach (var n in namepaces)
+            {
+                builder.WriteLine($"using {n};");
+            }
 
             builder.WriteLine();
+
+            // If the composition has LoadedImageSurface, write a class that implements the IDynamicAnimatedVisualSource interface.
+            // Otherwise, implement the IAnimatedVisualSource interface.
+            if (info.HasLoadedImageSurface)
+            {
+                WriteIDynamicAnimatedVisualSource(builder, info);
+            }
+            else
+            {
+                WriteIAnimatedVisualSource(builder, info);
+            }
+        }
+
+        /// <summary>
+        /// Write a class that implements the IAnimatedVisualSource interface.
+        /// </summary>
+        void WriteIAnimatedVisualSource(CodeBuilder builder, CodeGenInfo info)
+        {
             builder.WriteLine("namespace AnimatedVisuals");
             builder.OpenScope();
             builder.WriteLine($"sealed class {info.ClassName} : IAnimatedVisualSource");
@@ -119,6 +148,110 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.WriteLine("return null;");
             builder.CloseScope();
             builder.WriteLine("return new AnimatedVisual(compositor);");
+            builder.CloseScope();
+            builder.WriteLine();
+        }
+
+        /// <summary>
+        /// Write a class that implements the IDynamicAnimatedVisualSource interface.
+        /// </summary>
+        void WriteIDynamicAnimatedVisualSource(CodeBuilder builder, CodeGenInfo info)
+        {
+            var nodes = info.LoadedImageSurfaceNodes.ToArray();
+            builder.WriteLine("namespace AnimatedVisuals");
+            builder.OpenScope();
+            builder.WriteLine($"sealed class {info.ClassName} : IDynamicAnimatedVisualSource, INotifyPropertyChanged");
+            builder.OpenScope();
+
+            // Declare variables.
+            builder.WriteLine($"{_stringifier.Const(_stringifier.Int32TypeName)} c_loadedImageSurfaceCount = {nodes.Distinct().Count()};");
+            builder.WriteLine($"{_stringifier.Int32TypeName} _loadCompleteEventCount;");
+            builder.WriteLine("bool _isAnimatedVisualSourceDynamic = true;");
+            builder.WriteLine("bool _isTryCreateAnimatedVisualCalled;");
+            builder.WriteLine("bool _isImageLoadingStarted;");
+            builder.WriteLine("EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource, object>> _animatedVisualInvalidatedEventTokenTable;");
+
+            // Declare the variables to hold the surfaces.
+            foreach (var n in nodes)
+            {
+                builder.WriteLine($"{_stringifier.ReferenceTypeName(n.TypeName)} {n.FieldName};");
+            }
+
+            builder.WriteLine();
+
+            // Implement the INotifyPropertyChanged.PropertyChanged event.
+            builder.WriteSummaryComment("This implementation of the INotifyPropertyChanged.PropertyChanged event is specific to C# and does not work on WinRT.");
+            builder.WriteLine("public event PropertyChangedEventHandler PropertyChanged;");
+            builder.WriteLine();
+
+            // Implement the AnimatedVisualInvalidated event.
+            WriteAnimatedVisualInvalidatedEvent(builder);
+
+            // Define properties.
+            builder.WriteSummaryComment("If this property is set to true, <see cref=\"TryCreateAnimatedVisual\"/> will return null until all images have loaded. When all images have loaded, <see cref=\"TryCreateAnimatedVisual\"/> will return the AnimatedVisual. To use, set it when declaring the AnimatedVisualSource. Once <see cref=\"TryCreateAnimatedVisual\"/> is called, changes made to this property will be ignored. Default value is true.");
+            builder.WriteLine("public bool IsAnimatedVisualSourceDynamic");
+            builder.OpenScope();
+            builder.WriteLine("get { return _isAnimatedVisualSourceDynamic; }");
+            builder.WriteLine("set");
+            builder.OpenScope();
+            builder.WriteLine("if (!_isTryCreateAnimatedVisualCalled && _isAnimatedVisualSourceDynamic != value)");
+            builder.OpenScope();
+            builder.WriteLine("_isAnimatedVisualSourceDynamic = value;");
+            builder.WriteLine("NotifyPropertyChanged(nameof(IsAnimatedVisualSourceDynamic));");
+            builder.CloseScope();
+            builder.CloseScope();
+            builder.CloseScope();
+            builder.WriteLine();
+
+            builder.WriteSummaryComment("Returns true if all images have loaded. To see if the images succeeded to load, see <see cref=\"ImageSuccessfulLoadingProgress\"/>.");
+            builder.WriteLine("public bool IsImageLoadingCompleted { get; private set; }");
+            builder.WriteLine();
+
+            builder.WriteSummaryComment("Represents the progress of the image loading. Returns value between 0 and 1. 0 means none of the images finished loading. 1 means all images finished loading.");
+            builder.WriteLine("public double ImageSuccessfulLoadingProgress { get; private set; }");
+            builder.WriteLine();
+
+            // Generate the method that creates an instance of the animated visual.
+            builder.WriteLine("public IAnimatedVisual TryCreateAnimatedVisual(Compositor compositor, out object diagnostics)");
+            builder.OpenScope();
+            builder.WriteLine("_isTryCreateAnimatedVisualCalled = true;");
+            builder.WriteLine();
+            builder.WriteLine("diagnostics = null;");
+            builder.WriteLine("if (!IsRuntimeCompatible())");
+            builder.OpenScope();
+            builder.WriteLine("return null;");
+            builder.CloseScope();
+            builder.WriteLine();
+            builder.WriteLine("EnsureImageLoadingStarted();");
+            builder.WriteLine();
+            builder.WriteLine("if (_isAnimatedVisualSourceDynamic && _loadCompleteEventCount != c_loadedImageSurfaceCount)");
+            builder.OpenScope();
+            builder.WriteLine("return null;");
+            builder.CloseScope();
+            builder.WriteLine("return");
+            builder.Indent();
+            WriteAnimatedVisualCall(builder, info);
+            builder.UnIndent();
+            builder.CloseScope();
+            builder.WriteLine();
+
+            // Generate the method that load all the LoadedImageSurfaces.
+            WriteEnsureImageLoadingStarted(builder, info);
+
+            // Generate the method that handle the LoadCompleted event of the LoadedImageSurface objects.
+            WriteHandleLoadCompleted(builder);
+
+            // Generate the method that raise the PropertyChanged event.
+            builder.WriteLine("void NotifyPropertyChanged(string name)");
+            builder.OpenScope();
+            builder.WriteLine("PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));");
+            builder.CloseScope();
+            builder.WriteLine();
+
+            // Generate the method that get or create the EventRegistrationTokenTable.
+            builder.WriteLine("EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource, object>> GetAnimatedVisualInvalidatedEventRegistrationTokenTable()");
+            builder.OpenScope();
+            builder.WriteLine("return EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource, object>>.GetOrCreateEventRegistrationTokenTable(ref _animatedVisualInvalidatedEventTokenTable);");
             builder.CloseScope();
             builder.WriteLine();
         }
@@ -138,10 +271,35 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             CodeGenInfo info)
         {
             // Write the constructor for the instantiator.
-            builder.WriteLine("internal AnimatedVisual(Compositor compositor)");
-            builder.OpenScope();
-            builder.WriteLine("_c = compositor;");
-            builder.WriteLine($"{info.ReusableExpressionAnimationFieldName} = compositor.CreateExpressionAnimation();");
+            if (info.HasLoadedImageSurface)
+            {
+                builder.WriteLine($"internal AnimatedVisual(Compositor compositor,");
+                builder.Indent();
+
+                // Define the image surface parameters of the AnimatedVisual() constructor.
+                builder.WriteCommaSeparatedLines(info.LoadedImageSurfaceNodes.Select(n => $"{_stringifier.ReferenceTypeName(n.TypeName)} {_stringifier.CamelCase(n.Name)}"));
+                builder.WriteLine(")");
+                builder.UnIndent();
+                builder.OpenScope();
+
+                builder.WriteLine("_c = compositor;");
+                builder.WriteLine($"{info.ReusableExpressionAnimationFieldName} = compositor.CreateExpressionAnimation();");
+
+                // Initialize the private image surface variables with the input parameters of the constructor.
+                var nodes = info.LoadedImageSurfaceNodes.ToArray();
+                foreach (var n in nodes)
+                {
+                    builder.WriteLine($"{n.FieldName} = {_stringifier.CamelCase(n.Name)};");
+                }
+            }
+            else
+            {
+                builder.WriteLine("internal AnimatedVisual(Compositor compositor)");
+                builder.OpenScope();
+                builder.WriteLine("_c = compositor;");
+                builder.WriteLine($"{info.ReusableExpressionAnimationFieldName} = compositor.CreateExpressionAnimation();");
+            }
+
             builder.WriteLine("Root();");
             builder.CloseScope();
             builder.WriteLine();
@@ -260,18 +418,87 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.WriteLine($"var result = {FieldAssignment(fieldName)}{CallFactoryFor(obj.SourceGeometry)}.Transform({_stringifier.Matrix3x2(obj.TransformMatrix)});");
         }
 
-        /// <inheritdoc/>
-        protected override void WriteLoadedImageSurfaceFactory(CodeBuilder builder, CodeGenInfo info, LoadedImageSurface obj, string fieldName, Uri imageUri)
+        void WriteAnimatedVisualInvalidatedEvent(CodeBuilder builder)
         {
-            switch (obj.Type)
+            builder.WriteLine("public event TypedEventHandler<IDynamicAnimatedVisualSource, object> AnimatedVisualInvalidated");
+            builder.OpenScope();
+            builder.WriteLine("add");
+            builder.OpenScope();
+            builder.WriteLine("return GetAnimatedVisualInvalidatedEventRegistrationTokenTable().AddEventHandler(value);");
+            builder.CloseScope();
+            builder.WriteLine("remove");
+            builder.OpenScope();
+            builder.WriteLine("GetAnimatedVisualInvalidatedEventRegistrationTokenTable().RemoveEventHandler(value);");
+            builder.CloseScope();
+            builder.CloseScope();
+            builder.WriteLine();
+        }
+
+        void WriteAnimatedVisualCall(CodeBuilder builder, CodeGenInfo info)
+        {
+            builder.WriteLine("new AnimatedVisual(compositor,");
+            builder.Indent();
+            builder.WriteCommaSeparatedLines(info.LoadedImageSurfaceNodes.Select(n => n.FieldName));
+            builder.WriteLine(");");
+            builder.UnIndent();
+        }
+
+        void WriteEnsureImageLoadingStarted(CodeBuilder builder, CodeGenInfo info)
+        {
+            builder.WriteLine("void EnsureImageLoadingStarted()");
+            builder.OpenScope();
+            builder.WriteLine("if (!_isImageLoadingStarted)");
+            builder.OpenScope();
+            builder.WriteLine("var eventHandler = new TypedEventHandler<LoadedImageSurface, LoadedImageSourceLoadCompletedEventArgs>(HandleLoadCompleted);");
+
+            var nodes = info.LoadedImageSurfaceNodes.ToArray();
+            foreach (var n in nodes)
             {
-                case LoadedImageSurface.LoadedImageSurfaceType.FromStream:
-                    builder.WriteLine($"var result = Windows.UI.Xaml.Media.LoadedImageSurface.StartLoadFromStream({fieldName}.AsBuffer().AsStream().AsRandomAccessStream());");
-                    break;
-                case LoadedImageSurface.LoadedImageSurfaceType.FromUri:
-                    builder.WriteLine($"var result = Windows.UI.Xaml.Media.LoadedImageSurface.StartLoadFromUri(new Uri(\"{imageUri}\"));");
-                    break;
+                switch (n.LoadedImageSurfaceType)
+                {
+                    case LoadedImageSurface.LoadedImageSurfaceType.FromStream:
+                        builder.WriteLine($"{n.FieldName} = LoadedImageSurface.StartLoadFromStream({n.BytesFieldName}.AsBuffer().AsStream().AsRandomAccessStream());");
+                        break;
+                    case LoadedImageSurface.LoadedImageSurfaceType.FromUri:
+                        builder.WriteLine($"{n.FieldName} = LoadedImageSurface.StartLoadFromUri(new Uri(\"{n.ImageUri}\"));");
+                        break;
+                    default:
+                        throw new InvalidOperationException();
+                }
+
+                builder.WriteLine($"{n.FieldName}.LoadCompleted += eventHandler;");
             }
+
+            builder.WriteLine("_isImageLoadingStarted = true;");
+            builder.CloseScope();
+            builder.CloseScope();
+            builder.WriteLine();
+        }
+
+        void WriteHandleLoadCompleted(CodeBuilder builder)
+        {
+            builder.WriteLine("void HandleLoadCompleted(LoadedImageSurface sender, LoadedImageSourceLoadCompletedEventArgs e)");
+            builder.OpenScope();
+            builder.WriteLine("_loadCompleteEventCount++;");
+            builder.WriteLine("sender.LoadCompleted -= HandleLoadCompleted;");
+            builder.WriteLine();
+            builder.WriteLine("if (e.Status == LoadedImageSourceLoadStatus.Success)");
+            builder.OpenScope();
+            builder.WriteLine("if (_isAnimatedVisualSourceDynamic && _loadCompleteEventCount == c_loadedImageSurfaceCount)");
+            builder.OpenScope();
+            builder.WriteLine("_animatedVisualInvalidatedEventTokenTable?.InvocationList?.Invoke(this, null);");
+            builder.CloseScope();
+            builder.WriteLine("ImageSuccessfulLoadingProgress = (double)_loadCompleteEventCount / c_loadedImageSurfaceCount;");
+            builder.WriteLine("NotifyPropertyChanged(nameof(ImageSuccessfulLoadingProgress));");
+            builder.CloseScope();
+            builder.WriteLine();
+            builder.WriteLine("if (_loadCompleteEventCount == c_loadedImageSurfaceCount)");
+            builder.OpenScope();
+            builder.WriteLine("IsImageLoadingCompleted = true;");
+            builder.WriteLine("NotifyPropertyChanged(nameof(IsImageLoadingCompleted));");
+            builder.CloseScope();
+            builder.CloseScope();
+            builder.WriteLine();
         }
 
         static string FieldAssignment(string fieldName) => fieldName != null ? $"{fieldName} = " : string.Empty;

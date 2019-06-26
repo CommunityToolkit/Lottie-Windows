@@ -10,6 +10,7 @@ using System.Numerics;
 
 using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
+using Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 {
@@ -35,6 +36,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             {
                 string baseName;
 
+                // Generate descriptive name for each node. The name is generated based on its type
+                // and properties to give as much information about the node as possible, so that
+                // a specific node can be identified in the composition.
                 switch (node.Type)
                 {
                     case Graph.NodeType.CompositionObject:
@@ -47,7 +51,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                         baseName = "Geometry";
                         break;
                     case Graph.NodeType.LoadedImageSurface:
-                        baseName = "LoadedImageSurface";
+                        baseName = DescribeLoadedImageSurface(node, (LoadedImageSurface)node.Object);
                         break;
                     default:
                         throw new InvalidOperationException();
@@ -66,23 +70,24 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             foreach (var entry in nodesByTypeName)
             {
                 var baseName = entry.Key;
-                var n = entry.Value;
-                if (n.Count == 1)
+                var nodeList = entry.Value;
+
+                if (nodeList.Count == 1)
                 {
                     // There's only 1 of this type of node. No suffix needed.
-                    yield return (n[0], baseName);
+                    yield return (nodeList[0], baseName);
                 }
                 else
                 {
                     // Multiple nodes of this type. Append a counter suffix.
 
                     // Use only as many digits as necessary to express the largest count.
-                    var digitsRequired = (int)Math.Ceiling(Math.Log10(n.Count + 1));
+                    var digitsRequired = (int)Math.Ceiling(Math.Log10(nodeList.Count + 1));
                     var counterFormat = new string('0', digitsRequired);
 
-                    for (var i = 0; i < n.Count; i++)
+                    for (var i = 0; i < nodeList.Count; i++)
                     {
-                        yield return (n[i], $"{baseName}_{i.ToString(counterFormat)}");
+                        yield return (nodeList[i], $"{baseName}_{i.ToString(counterFormat)}");
                     }
                 }
             }
@@ -254,6 +259,38 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             if (result.StartsWith(compositionPrefix))
             {
                 result = result.Substring(compositionPrefix.Length);
+            }
+
+            return result;
+        }
+
+        static string DescribeLoadedImageSurface(TNode node, LoadedImageSurface obj)
+        {
+            string result = null;
+            var loadedImageSurface = (LoadedImageSurface)node.Object;
+
+            switch (loadedImageSurface.Type)
+            {
+                case LoadedImageSurface.LoadedImageSurfaceType.FromStream:
+                    result = "ImageFromStream";
+                    break;
+                case LoadedImageSurface.LoadedImageSurfaceType.FromUri:
+                    var loadedImageSurfaceFromUri = (LoadedImageSurfaceFromUri)loadedImageSurface;
+
+                    // Get the image file name only.
+                    var imageFileName = loadedImageSurfaceFromUri.Uri.Segments.Last();
+                    var imageFileNameWithoutExtension = imageFileName.Substring(0, imageFileName.LastIndexOf('.'));
+
+                    // Replace any disallowed character with underscores.
+                    var cleanedImageName = new string((from ch in imageFileNameWithoutExtension
+                                                        select char.IsLetterOrDigit(ch) ? ch : '_').ToArray());
+
+                    // Remove any duplicated underscores.
+                    cleanedImageName = cleanedImageName.Replace("__", "_");
+                    result = $"Image_{cleanedImageName}";
+                    break;
+                default:
+                    throw new InvalidOperationException();
             }
 
             return result;

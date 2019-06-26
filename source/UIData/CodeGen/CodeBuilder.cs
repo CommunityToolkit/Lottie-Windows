@@ -30,6 +30,23 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             _lines.Add(new CodeLine { Text = line, IndentCount = _indentCount });
         }
 
+        internal void WriteCommaSeparatedLines(IEnumerable<string> items)
+        {
+            var itemsToWrite = items.ToArray();
+            for (var i = 0; i < itemsToWrite.Length; i++)
+            {
+                if (i < itemsToWrite.Length - 1)
+                {
+                    // Append "," to each item except the last one.
+                    WriteLine($"{itemsToWrite[i]},");
+                }
+                else
+                {
+                    WriteLine($"{itemsToWrite[i]}");
+                }
+            }
+        }
+
         internal void WriteComment(string comment)
         {
             if (!string.IsNullOrWhiteSpace(comment))
@@ -38,6 +55,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 {
                     WriteLine($"// {line}");
                 }
+            }
+        }
+
+        internal void WriteSummaryComment(string comment)
+        {
+            if (!string.IsNullOrWhiteSpace(comment))
+            {
+                WriteLine($"/// <summary>");
+                foreach (var line in BreakUpLine(comment))
+                {
+                    WriteLine($"/// {line}");
+                }
+
+                WriteLine($"/// </summary>");
             }
         }
 
@@ -122,11 +153,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             }
         }
 
-        // Returns the next line from the front of the given text, ensuring it is no more
-        // than maxLineLength and a tail that contains the remainder.
+        // Returns the next line from the front of the given text, ensuring all leading and trailing whitespace
+        // characters are removed, it is no more than maxLineLength and a tail that contains the remainder.
         static string GetLine(string text, int maxLineLength, out string remainder)
         {
-            text = text.TrimEnd();
+            text = text.Trim();
 
             // Look for the next 2 places to break. If the 2nd place makes the line too long,
             // break at the 1st place, otherwise keep looking.
