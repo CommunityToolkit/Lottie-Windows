@@ -11,6 +11,7 @@ using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData;
+using Mgce = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce;
 using Mgcg = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
@@ -501,11 +502,27 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.WriteLine();
         }
 
+        /// <inheritdoc/>
+        protected override string WriteCompositeEffectFactory(CodeBuilder builder, Mgce.CompositeEffect compositeEffect)
+        {
+            var compositeEffectString = "compositeEffect";
+            builder.WriteLine($"var {compositeEffectString} = new CompositeEffect();");
+            builder.WriteLine($"{compositeEffectString}.Mode = {_stringifier.CanvasCompositeMode(compositeEffect.Mode)};");
+            foreach (var source in compositeEffect.Sources)
+            {
+                builder.WriteLine($"{compositeEffectString}.Sources.Add(new CompositionEffectSourceParameter({String(source.Name)}));");
+            }
+
+            return compositeEffectString;
+        }
+
         static string FieldAssignment(string fieldName) => fieldName != null ? $"{fieldName} = " : string.Empty;
 
         string Float(float value) => _stringifier.Float(value);
 
         string Vector2(Vector2 value) => _stringifier.Vector2(value);
+
+        string String(string value) => _stringifier.String(value);
 
         sealed class CSharpStringifier : StringifierBase
         {

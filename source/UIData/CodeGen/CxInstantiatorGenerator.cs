@@ -9,6 +9,7 @@ using System.Text;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData;
+using Mgce = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 {
@@ -116,6 +117,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 builder.WriteLine("#include <iostream>");
             }
 
+            if (info.UsesCompositeEffect)
+            {
+                // The CompsiteEffect class requires std::vector.
+                builder.WriteLine("#include <vector>");
+            }
+
             builder.WriteLine();
 
             // A sorted set to hold the namespaces that the generated code will use. The set is maintained in sorted order.
@@ -124,9 +131,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             if (info.UsesCanvasEffects ||
                 info.UsesCanvas)
             {
-                // throw an exception in this case for now. In the future the necessary
-                // C++ code gen will be added
-                throw new InvalidOperationException("Win2D dependency detected.");
+                // Interop
+                builder.WriteLine("#include <Windows.Graphics.Effects.h>");
+                builder.WriteLine("#include <Windows.Graphics.Effects.Interop.h>");
             }
 
             namespaces.Add("Windows::Foundation");
@@ -166,6 +173,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
                 // Typedef to simplify generation
                 builder.WriteLine("typedef ComPtr<GeoSource> CanvasGeometry;");
+            }
+
+            if (info.UsesCompositeEffect)
+            {
+                // Write the composite effect class that will allow the use
+                // of this effect without win2d.
+                builder.WriteLine($"{CompositionEffectClass}");
             }
         }
 
@@ -571,6 +585,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.WriteLine();
         }
 
+        /// <inheritdoc/>
+        protected override string WriteCompositeEffectFactory(CodeBuilder builder, Mgce.CompositeEffect compositeEffect)
+        {
+            builder.WriteLine("ComPtr<CompositeEffect> compositeEffect(new CompositeEffect());");
+            builder.WriteLine($"compositeEffect->SetMode({_stringifier.CanvasCompositeMode(compositeEffect.Mode)});");
+            foreach (var source in compositeEffect.Sources)
+            {
+                builder.OpenScope();
+                builder.WriteLine($"auto sourceParameter = ref new CompositionEffectSourceParameter({String(source.Name)});");
+                builder.WriteLine("compositeEffect->AddSource(reinterpret_cast<ABI::Windows::Graphics::Effects::IGraphicsEffectSource*>(sourceParameter));");
+                builder.CloseScope();
+            }
+
+            return "reinterpret_cast<Windows::Graphics::Effects::IGraphicsEffect^>(compositeEffect.Get())";
+        }
+
         string CanvasFigureLoop(CanvasFigureLoop value) => _stringifier.CanvasFigureLoop(value);
 
         static string FieldAssignment(string fieldName) => fieldName != null ? $"{fieldName} = " : string.Empty;
@@ -580,6 +610,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         string Float(float value) => _stringifier.Float(value);
 
         string FailFastWrapper(string value) => _stringifier.FailFastWrapper(value);
+
+        string String(string value) => _stringifier.String(value);
 
         string Vector2(Vector2 value) => _stringifier.Vector2(value);
 
@@ -709,5 +741,220 @@ private:
 }};
 }}";
         }
+
+        string CompositionEffectClass =>
+@"
+
+enum CanvasComposite : int
+{
+    SourceOver = 0,
+    DestinationOver = 1,
+    SourceIn = 2,
+    DestinationIn = 3,
+    SourceOut = 4,
+    DestinationOut = 5,
+    SourceAtop = 6,
+    DestinationAtop = 7,
+    Xor = 8,
+    Add = 9,
+    Copy = 10,
+    BoundedCopy = 11,
+    MaskInvert = 12,
+};
+
+// This class is a substitute for the Microsoft::Graphics::Canvas::Effects::CompositeEffect
+// class so that composite effects can be used with 
+// Windows::UI::Composition::CompositionEffectBrush without requiring Win2d. This is
+// achieved by implementing the interfaces Windows::UI::Composition requires for it
+// to consume an effect.
+class CompositeEffect final :
+    public ABI::Windows::Graphics::Effects::IGraphicsEffect,
+    public ABI::Windows::Graphics::Effects::IGraphicsEffectSource,
+    public ABI::Windows::Graphics::Effects::IGraphicsEffectD2D1Interop
+{
+public:
+    void SetMode(CanvasComposite mode) { m_mode = mode; }
+
+    void AddSource(IGraphicsEffectSource* source)
+    {
+        m_sources.emplace_back(Microsoft::WRL::ComPtr<IGraphicsEffectSource>(source));
+    }
+
+    // IGraphicsEffect
+    IFACEMETHODIMP get_Name(HSTRING* name) override { return m_name.CopyTo(name); }
+
+    IFACEMETHODIMP put_Name(HSTRING name) override { return m_name.Set(name); }
+
+    // IGraphicsEffectD2D1Interop
+    IFACEMETHODIMP GetEffectId(GUID* id) override 
+    { 
+        if (id != nullptr)
+        {
+            // set CLSID_D2D1Composite value
+            *id = { 0x48fc9f51, 0xf6ac, 0x48f1, { 0x8b, 0x58,  0x3b,  0x28,  0xac,  0x46,  0xf7,  0x6d } };
+        }
+
+        return S_OK; 
+    }
+
+    IFACEMETHODIMP GetSourceCount(UINT* count) override
+    {
+        if (count != nullptr)
+        {
+            *count = m_sources.size();
+        }
+
+        return S_OK;
+    }
+
+    IFACEMETHODIMP GetSource(
+        UINT index, 
+        IGraphicsEffectSource** source) override
+    {
+        if (index >= m_sources.size() ||
+            source == nullptr)
+        {
+            return E_INVALIDARG;
+        }
+
+        *source = m_sources.at(index).Get();
+        (*source)->AddRef();
+
+        return S_OK;
+    }
+
+    IFACEMETHODIMP GetPropertyCount(UINT * count) override { *count = 1; return S_OK; }
+
+    IFACEMETHODIMP GetProperty(
+        UINT index, 
+        ABI::Windows::Foundation::IPropertyValue ** value) override
+    {
+        Microsoft::WRL::ComPtr<ABI::Windows::Foundation::IPropertyValueStatics> propertyValueFactory;
+        Microsoft::WRL::Wrappers::HStringReference activatableClassId{ RuntimeClass_Windows_Foundation_PropertyValue };
+        HRESULT hr = ABI::Windows::Foundation::GetActivationFactory(activatableClassId.Get(), &propertyValueFactory);
+
+        if (SUCCEEDED(hr))
+        {
+            switch (index)
+            {
+                case D2D1_COMPOSITE_PROP_MODE: 
+                    return propertyValueFactory->CreateUInt32(m_mode, (IInspectable**)value);
+                default: 
+                    return E_INVALIDARG;
+            }
+        }
+
+        return hr;
+    }
+
+    IFACEMETHODIMP GetNamedPropertyMapping(
+        LPCWSTR, 
+        UINT*,
+        ABI::Windows::Graphics::Effects::GRAPHICS_EFFECT_PROPERTY_MAPPING*) override
+    {
+        return E_INVALIDARG;
+    }
+
+    // IUnknown
+    IFACEMETHODIMP QueryInterface(
+        REFIID iid,
+        void ** ppvObject) override
+    {
+        if (ppvObject != nullptr)
+        {
+            *ppvObject = nullptr;
+
+            if (iid == __uuidof(IUnknown))
+            {
+                *ppvObject = static_cast<IUnknown*>(static_cast<IGraphicsEffect*>(this));
+            }
+            else if (iid == __uuidof(IInspectable))
+            {
+                *ppvObject = static_cast<IInspectable*>(static_cast<IGraphicsEffect*>(this));
+            }
+            else if (iid == __uuidof(IGraphicsEffect))
+            {
+                *ppvObject = static_cast<IGraphicsEffect*>(this);
+            }
+            else if (iid == __uuidof(IGraphicsEffectSource))
+            {
+                *ppvObject = static_cast<IGraphicsEffectSource*>(this);
+            }
+            else if (iid == __uuidof(IGraphicsEffectD2D1Interop))
+            {
+                *ppvObject = static_cast<IGraphicsEffectD2D1Interop*>(this);
+            }
+
+            if (*ppvObject != nullptr)
+            {
+                AddRef();
+                return S_OK;
+            }
+        }
+
+        return E_NOINTERFACE;
+    }
+
+    IFACEMETHODIMP_(ULONG) AddRef() override
+    {
+        return InterlockedIncrement(&m_cRef);
+    }
+
+    IFACEMETHODIMP_(ULONG) Release() override
+    {
+        ULONG cRef = InterlockedDecrement(&m_cRef);
+        if (0 == cRef)
+        {
+            delete this;
+        }
+
+        return cRef;
+    }
+
+    // IInspectable
+    IFACEMETHODIMP GetIids(
+        ULONG * iidCount,
+        IID ** iids) override
+    {
+        if (iidCount != nullptr)
+        {
+            *iidCount = 0;
+        }
+
+        if (iids != nullptr)
+        {
+            *iids = nullptr;
+        }
+
+        return E_NOTIMPL;
+    }
+
+    IFACEMETHODIMP GetRuntimeClassName(
+        HSTRING * /*runtimeName*/) override
+    {
+        return E_NOTIMPL;
+    }
+
+    IFACEMETHODIMP GetTrustLevel(
+        TrustLevel* trustLvl) override
+    {
+        if (trustLvl != nullptr)
+        {
+            *trustLvl = BaseTrust;
+        }
+
+        return S_OK;
+    }
+
+private:
+    ULONG m_cRef = 0;
+
+    CanvasComposite m_mode{};
+
+    Microsoft::WRL::Wrappers::HString m_name{};
+
+    std::vector<Microsoft::WRL::ComPtr<IGraphicsEffectSource>> m_sources;
+};
+";
     }
 }

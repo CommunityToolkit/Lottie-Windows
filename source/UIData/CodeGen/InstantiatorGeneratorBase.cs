@@ -304,6 +304,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             string fieldName);
 
         /// <summary>
+        /// Write the CompositeEffect factory code.
+        /// </summary>
+        /// <param name="builder">A <see cref="CodeBuilder"/> used to create the code.</param>
+        /// <param name="compositeEffect">Composite effect object.</param>
+        /// <returns>String that should be used as the parameter for CreateEffectFactory.</returns>
+        protected abstract string WriteCompositeEffectFactory(
+            CodeBuilder builder,
+            Mgce.CompositeEffect compositeEffect);
+
+        /// <summary>
         /// Write a Bytes field.
         /// </summary>
         /// <param name="builder">A <see cref="CodeBuilder"/> used to create the code.</param>
@@ -367,7 +377,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 usesNamespaceWindowsUIXamlMedia: _nodes.Where(n => n.UsesNamespaceWindowsUIXamlMedia).Any(),
                 usesStreams: _nodes.Where(n => n.UsesStream).Any(),
                 hasLoadedImageSurface: _nodes.Where(n => n.IsLoadedImageSurface).Any(),
-                loadedImageSurfaceNodes: GetLoadedImageSurfacesNodes()
+                loadedImageSurfaceNodes: GetLoadedImageSurfacesNodes(),
+                usesCompositeEffect: _nodes.Where(n => n.UsesCompositeEffect).Any()
                 );
 
             // Write the auto-generated warning comment.
@@ -1427,23 +1438,28 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             var effect = obj.GetEffect();
 
+            string effectCreationString;
             switch (effect.Type)
             {
                 case Mgce.GraphicsEffectType.CompositeEffect:
-                    var compositeEffect = (Mgce.CompositeEffect)effect;
+                    effectCreationString = WriteCompositeEffectFactory(builder, (Mgce.CompositeEffect)effect);
+                    break;
+                default:
+                    // Unsupported GraphicsEffectType.
+                    throw new InvalidOperationException();
+            }
 
-                    builder.WriteLine($"{Var} compositeEffect = {New} CompositeEffect();");
-                    builder.WriteLine($"compositeEffect{Deref}Mode = {CanvasCompositeMode(compositeEffect.Mode)};");
+            builder.WriteLine($"{Var} effectFactory = _c{Deref}CreateEffectFactory({effectCreationString});");
+            WriteCreateAssignment(builder, node, $"effectFactory{Deref}CreateBrush()");
+            InitializeCompositionBrush(builder, obj, node);
 
-                    builder.WriteLine($"{Var} effectFactory = _c{Deref}CreateEffectFactory(compositeEffect);");
-                    WriteCreateAssignment(builder, node, $"effectFactory{Deref}CreateBrush()");
-                    InitializeCompositionBrush(builder, obj, node);
-
-                    foreach (var source in compositeEffect.Sources)
+            // Perform brush initialization
+            switch (effect.Type)
+            {
+                case Mgce.GraphicsEffectType.CompositeEffect:
+                    foreach (var sourceParameters in ((Mgce.CompositeEffect)effect).Sources)
                     {
-                        builder.WriteLine($"compositeEffect{Deref}Sources{Deref}{IListAdd}({New} CompositionEffectSourceParameter({String(source.Name)}));");
-
-                        builder.WriteLine($"result{Deref}SetSourceParameter({String(source.Name)}, {CallFactoryFromFor(node, obj.GetSourceParameter(source.Name))});");
+                        builder.WriteLine($"result{Deref}SetSourceParameter({String(sourceParameters.Name)}, {CallFactoryFromFor(node, obj.GetSourceParameter(sourceParameters.Name))});");
                     }
 
                     break;
@@ -1737,41 +1753,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             }
         }
 
-        string CanvasCompositeMode(CanvasComposite value)
-        {
-            switch (value)
-            {
-                case CanvasComposite.SourceOver:
-                    return $"CanvasComposite{ScopeResolve}SourceOver";
-                case CanvasComposite.DestinationOver:
-                    return $"CanvasComposite{ScopeResolve}DestinationOver";
-                case CanvasComposite.SourceIn:
-                    return $"CanvasComposite{ScopeResolve}SourceIn";
-                case CanvasComposite.DestinationIn:
-                    return $"CanvasComposite{ScopeResolve}DestinationIn";
-                case CanvasComposite.SourceOut:
-                    return $"CanvasComposite{ScopeResolve}SourceOut";
-                case CanvasComposite.DestinationOut:
-                    return $"CanvasComposite{ScopeResolve}DestinationOut";
-                case CanvasComposite.SourceAtop:
-                    return $"CanvasComposite{ScopeResolve}SourceAtop";
-                case CanvasComposite.DestinationAtop:
-                    return $"CanvasComposite{ScopeResolve}DestinationAtop";
-                case CanvasComposite.Xor:
-                    return $"CanvasComposite{ScopeResolve}Xor";
-                case CanvasComposite.Add:
-                    return $"CanvasComposite{ScopeResolve}Add";
-                case CanvasComposite.Copy:
-                    return $"CanvasComposite{ScopeResolve}Copy";
-                case CanvasComposite.BoundedCopy:
-                    return $"CanvasComposite{ScopeResolve}BoundedCopy";
-                case CanvasComposite.MaskInvert:
-                    return $"CanvasComposite{ScopeResolve}MaskInvert";
-                default:
-                    throw new InvalidOperationException();
-            }
-        }
-
         string TimeSpan(TimeSpan value) => value == _compositionDuration ? _stringifier.TimeSpan(DurationTicksFieldName) : _stringifier.TimeSpan(value);
 
         string Vector2(Vector2 value) => _stringifier.Vector2(value);
@@ -1803,6 +1784,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 bool usesNamespaceWindowsUIXamlMedia,
                 bool usesStreams,
                 bool hasLoadedImageSurface,
+                bool usesCompositeEffect,
                 IEnumerable<LoadedImageSurfaceNode> loadedImageSurfaceNodes)
             {
                 ClassName = className;
@@ -1816,6 +1798,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 UsesNamespaceWindowsUIXamlMedia = usesNamespaceWindowsUIXamlMedia;
                 UsesStreams = usesStreams;
                 HasLoadedImageSurface = hasLoadedImageSurface;
+                UsesCompositeEffect = usesCompositeEffect;
                 LoadedImageSurfaceNodes = loadedImageSurfaceNodes;
             }
 
@@ -1855,7 +1838,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             public bool UsesCanvasEffects { get; }
 
             /// <summary>
-            /// Gets a value indicating whether the composition depends the Microsoft.Graphics.Canvas.Geometry namespace.
+            /// Gets a value indicating whether the composition depends on the Microsoft.Graphics.Canvas.Geometry namespace.
             /// </summary>
             public bool UsesCanvasGeometry { get; }
 
@@ -1878,6 +1861,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             /// Gets the LoadedImageSurface nodes of the composition.
             /// </summary>
             public IEnumerable<LoadedImageSurfaceNode> LoadedImageSurfaceNodes { get; }
+
+            /// <summary>
+            /// Gets a value indicating whether the composition depends on a composite effect.
+            /// </summary>
+            public bool UsesCompositeEffect { get; }
         }
 
         // Provides language-specific string representations of a value.
@@ -1942,6 +1930,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             string ByteArray { get; }
 
             string Const(string value);
+
+            string CanvasCompositeMode(CanvasComposite value);
         }
 
         /// <summary>
@@ -2044,6 +2034,41 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             // Sets the first character to lower case.
             public string CamelCase(string value) => $"{char.ToLowerInvariant(value[0])}{value.Substring(1)}";
+
+            public string CanvasCompositeMode(CanvasComposite value)
+            {
+                switch (value)
+                {
+                    case CanvasComposite.SourceOver:
+                        return $"CanvasComposite{ScopeResolve}SourceOver";
+                    case CanvasComposite.DestinationOver:
+                        return $"CanvasComposite{ScopeResolve}DestinationOver";
+                    case CanvasComposite.SourceIn:
+                        return $"CanvasComposite{ScopeResolve}SourceIn";
+                    case CanvasComposite.DestinationIn:
+                        return $"CanvasComposite{ScopeResolve}DestinationIn";
+                    case CanvasComposite.SourceOut:
+                        return $"CanvasComposite{ScopeResolve}SourceOut";
+                    case CanvasComposite.DestinationOut:
+                        return $"CanvasComposite{ScopeResolve}DestinationOut";
+                    case CanvasComposite.SourceAtop:
+                        return $"CanvasComposite{ScopeResolve}SourceAtop";
+                    case CanvasComposite.DestinationAtop:
+                        return $"CanvasComposite{ScopeResolve}DestinationAtop";
+                    case CanvasComposite.Xor:
+                        return $"CanvasComposite{ScopeResolve}Xor";
+                    case CanvasComposite.Add:
+                        return $"CanvasComposite{ScopeResolve}Add";
+                    case CanvasComposite.Copy:
+                        return $"CanvasComposite{ScopeResolve}Copy";
+                    case CanvasComposite.BoundedCopy:
+                        return $"CanvasComposite{ScopeResolve}BoundedCopy";
+                    case CanvasComposite.MaskInvert:
+                        return $"CanvasComposite{ScopeResolve}MaskInvert";
+                    default:
+                        throw new InvalidOperationException();
+                }
+            }
         }
 
         // A node in the object graph, annotated with extra stuff to assist in code generation.
@@ -2156,6 +2181,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             // Set to indicate that the node uses asset file(s).
             internal bool UsesAssetFile => Object is Wmd.LoadedImageSurface lis && lis.Type == Wmd.LoadedImageSurface.LoadedImageSurfaceType.FromUri;
+
+            // Set to indicate that the composition depends on a composite effect.
+            internal bool UsesCompositeEffect => Object is CompositionEffectBrush compositeEffectBrush && compositeEffectBrush.GetEffect().Type == Mgce.GraphicsEffectType.CompositeEffect;
 
             // Identifies the byte array of a LoadedImageSurface.
             internal string LoadedImageSurfaceBytesFieldName => $"s_{Name}_Bytes";
