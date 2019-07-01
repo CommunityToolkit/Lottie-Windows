@@ -762,7 +762,7 @@ enum CanvasComposite : int
     MaskInvert = 12,
 };
 
-// This class is a substitue for the Microsoft::Graphics::Canvas::Effects::CompositeEffect
+// This class is a substitute for the Microsoft::Graphics::Canvas::Effects::CompositeEffect
 // class so that composite effects can be used with 
 // Windows::UI::Composition::CompositionEffectBrush without requiring Win2d. This is
 // achieved by implementing the interfaces Windows::UI::Composition requires for it
@@ -860,39 +860,36 @@ public:
         REFIID iid,
         void ** ppvObject) override
     {
-        if (iid == __uuidof(IUnknown))
+        if (ppvObject != nullptr)
         {
-            AddRef();
-            *ppvObject = (IUnknown*)(IGraphicsEffect*)this;
-            return S_OK;
-        }
+            *ppvObject = nullptr;
 
-        if (iid == __uuidof(IInspectable))
-        {
-            AddRef();
-            *ppvObject = (IInspectable*)(IGraphicsEffect*)this;
-            return S_OK;
-        }
+            if (iid == __uuidof(IUnknown))
+            {
+                *ppvObject = static_cast<IUnknown*>(static_cast<IGraphicsEffect*>(this));
+            }
+            else if (iid == __uuidof(IInspectable))
+            {
+                *ppvObject = static_cast<IInspectable*>(static_cast<IGraphicsEffect*>(this));
+            }
+            else if (iid == __uuidof(IGraphicsEffect))
+            {
+                *ppvObject = static_cast<IGraphicsEffect*>(this);
+            }
+            else if (iid == __uuidof(IGraphicsEffectSource))
+            {
+                *ppvObject = static_cast<IGraphicsEffectSource*>(this);
+            }
+            else if (iid == __uuidof(IGraphicsEffectD2D1Interop))
+            {
+                *ppvObject = static_cast<IGraphicsEffectD2D1Interop*>(this);
+            }
 
-        if (iid == __uuidof(IGraphicsEffect))
-        {
-            AddRef();
-            *ppvObject = (IGraphicsEffect*)this;
-            return S_OK;
-        }
-
-        if (iid == __uuidof(IGraphicsEffectSource))
-        {
-            AddRef();
-            *ppvObject = (IGraphicsEffectSource*)this;
-            return S_OK;
-        }
-
-        if (iid == __uuidof(IGraphicsEffectD2D1Interop))
-        {
-            AddRef();
-            *ppvObject = (IGraphicsEffectD2D1Interop*)this;
-            return S_OK;
+            if (*ppvObject != nullptr)
+            {
+                AddRef();
+                return S_OK;
+            }
         }
 
         return E_NOINTERFACE;

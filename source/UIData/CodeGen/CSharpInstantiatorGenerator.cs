@@ -505,14 +505,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// <inheritdoc/>
         protected override string WriteCompositeEffectFactory(CodeBuilder builder, Mgce.CompositeEffect compositeEffect)
         {
-            builder.WriteLine("var compositeEffect = new CompositeEffect();");
-            builder.WriteLine($"compositeEffect.Mode = {_stringifier.CanvasCompositeMode(compositeEffect.Mode)};");
+            var compositeEffectString = "compositeEffect";
+            builder.WriteLine($"var {compositeEffectString} = new CompositeEffect();");
+            builder.WriteLine($"{compositeEffectString}.Mode = {_stringifier.CanvasCompositeMode(compositeEffect.Mode)};");
             foreach (var source in compositeEffect.Sources)
             {
-                builder.WriteLine($"compositeEffect.Sources.Add(new CompositionEffectSourceParameter({String(source.Name)}));");
+                builder.WriteLine($"{compositeEffectString}.Sources.Add(new CompositionEffectSourceParameter({String(source.Name)}));");
             }
 
-            return "compositeEffect";
+            return compositeEffectString;
         }
 
         static string FieldAssignment(string fieldName) => fieldName != null ? $"{fieldName} = " : string.Empty;
