@@ -117,6 +117,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 builder.WriteLine("#include <iostream>");
             }
 
+            if (info.UsesCompositeEffect)
+            {
+                // The CompsiteEffect class requires std::vector.
+                builder.WriteLine("#include <vector>");
+            }
+
             builder.WriteLine();
 
             // A sorted set to hold the namespaces that the generated code will use. The set is maintained in sorted order.
@@ -169,7 +175,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 builder.WriteLine("typedef ComPtr<GeoSource> CanvasGeometry;");
             }
 
-            if (info.UsesCanvasEffects)
+            if (info.UsesCompositeEffect)
             {
                 // Write the composite effect class that will allow the use
                 // of this effect without win2d.
@@ -580,10 +586,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         }
 
         /// <inheritdoc/>
-        protected override string GenerateCompositeEffectFactory(CodeBuilder builder, Mgce.CompositeEffect compositeEffect)
+        protected override string WriteCompositeEffectFactory(CodeBuilder builder, Mgce.CompositeEffect compositeEffect)
         {
             builder.WriteLine("ComPtr<CompositeEffect> compositeEffect(new CompositeEffect());");
-            builder.WriteLine($"compositeEffect->SetMode({CanvasCompositeMode(compositeEffect.Mode)});");
+            builder.WriteLine($"compositeEffect->SetMode({_stringifier.CanvasCompositeMode(compositeEffect.Mode)});");
             foreach (var source in compositeEffect.Sources)
             {
                 builder.OpenScope();
@@ -738,9 +744,8 @@ private:
 
         string CompositionEffectClass =>
 @"
-#include <vector>
 
-typedef enum CanvasComposite : int
+enum CanvasComposite : int
 {
     SourceOver = 0,
     DestinationOver = 1,
@@ -755,16 +760,19 @@ typedef enum CanvasComposite : int
     Copy = 10,
     BoundedCopy = 11,
     MaskInvert = 12,
-} CanvasComposite;
+};
 
-class CompositeEffect WrlFinal :
+// This class is a substitue for the Microsoft::Graphics::Canvas::Effects::CompositeEffect
+// class so that composite effects can be used with 
+// Windows::UI::Composition::CompositionEffectBrush without requiring Win2d. This is
+// achieved by implementing the interfaces Windows::UI::Composition requires for it
+// to consume an effect.
+class CompositeEffect final :
     public ABI::Windows::Graphics::Effects::IGraphicsEffect,
     public ABI::Windows::Graphics::Effects::IGraphicsEffectSource,
     public ABI::Windows::Graphics::Effects::IGraphicsEffectD2D1Interop
 {
 public:
-    CompositeEffect() = default;
-
     void SetMode(CanvasComposite mode) { m_mode = mode; }
 
     void AddSource(IGraphicsEffectSource* source)
@@ -780,20 +788,21 @@ public:
     // IGraphicsEffectD2D1Interop
     IFACEMETHODIMP GetEffectId(GUID* id) override 
     { 
-        // set CLSID_D2D1Composite value
-        *id = { 0x48fc9f51, 0xf6ac, 0x48f1, { 0x8b, 0x58,  0x3b,  0x28,  0xac,  0x46,  0xf7,  0x6d } };
+        if (id != nullptr)
+        {
+            // set CLSID_D2D1Composite value
+            *id = { 0x48fc9f51, 0xf6ac, 0x48f1, { 0x8b, 0x58,  0x3b,  0x28,  0xac,  0x46,  0xf7,  0x6d } };
+        }
 
         return S_OK; 
     }
 
     IFACEMETHODIMP GetSourceCount(UINT* count) override
     {
-        if (count == nullptr)
+        if (count != nullptr)
         {
-            return E_INVALIDARG;
+            *count = m_sources.size();
         }
-
-        *count = m_sources.size();
 
         return S_OK;
     }
@@ -820,16 +829,22 @@ public:
         UINT index, 
         ABI::Windows::Foundation::IPropertyValue ** value) override
     {
-        return UsePropertyFactory([=](ABI::Windows::Foundation::IPropertyValueStatics* statics)
+        Microsoft::WRL::ComPtr<ABI::Windows::Foundation::IPropertyValueStatics> propertyValueFactory;
+        Microsoft::WRL::Wrappers::HStringReference activatableClassId{ RuntimeClass_Windows_Foundation_PropertyValue };
+        HRESULT hr = ABI::Windows::Foundation::GetActivationFactory(activatableClassId.Get(), &propertyValueFactory);
+
+        if (SUCCEEDED(hr))
         {
             switch (index)
             {
                 case D2D1_COMPOSITE_PROP_MODE: 
-                    return statics->CreateUInt32(m_mode, (IInspectable**)value);
+                    return propertyValueFactory->CreateUInt32(m_mode, (IInspectable**)value);
                 default: 
                     return E_INVALIDARG;
             }
-        });
+        }
+
+        return hr;
     }
 
     IFACEMETHODIMP GetNamedPropertyMapping(
@@ -904,8 +919,16 @@ public:
         ULONG * iidCount,
         IID ** iids) override
     {
-        *iidCount = 0;
-        *iids = nullptr;
+        if (iidCount != nullptr)
+        {
+            *iidCount = 0;
+        }
+
+        if (iidCount != nullptr)
+        {
+            *iids = nullptr;
+        }
+
         return E_NOTIMPL;
     }
 
@@ -918,26 +941,20 @@ public:
     IFACEMETHODIMP GetTrustLevel(
         TrustLevel* trustLvl) override
     {
-        *trustLvl = BaseTrust;
+        if (trustLvl != nullptr)
+        {
+            *trustLvl = BaseTrust;
+        }
+
         return S_OK;
     }
 
 private:
-    // Invokes a functor with the pointer to the property factory.
-    template<typename TFunc>
-    static HRESULT UsePropertyFactory(const TFunc& func)
-    {
-        Microsoft::WRL::ComPtr<ABI::Windows::Foundation::IPropertyValueStatics> propertyValueFactory;
-        Microsoft::WRL::Wrappers::HStringReference activatableClassId{ RuntimeClass_Windows_Foundation_PropertyValue };
-        HRESULT hr = ABI::Windows::Foundation::GetActivationFactory(activatableClassId.Get(), &propertyValueFactory);
-        return FAILED(hr) ? hr : func(propertyValueFactory.Get());
-    }
-
     ULONG m_cRef = 0;
 
-    CanvasComposite m_mode = CanvasComposite::SourceOver;
+    CanvasComposite m_mode{};
 
-    Microsoft::WRL::Wrappers::HString m_name;
+    Microsoft::WRL::Wrappers::HString m_name{};
 
     std::vector<Microsoft::WRL::ComPtr<IGraphicsEffectSource>> m_sources;
 };
