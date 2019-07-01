@@ -924,7 +924,7 @@ public:
             *iidCount = 0;
         }
 
-        if (iidCount != nullptr)
+        if (iids != nullptr)
         {
             *iids = nullptr;
         }
