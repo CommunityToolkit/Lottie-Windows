@@ -387,7 +387,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             for (var i = 0; i < obj.Geometries.Length; i++)
             {
                 var geometry = obj.Geometries[i];
-                builder.WriteLine($"{CallFactoryFor(geometry)}->GetGeometry(&geometries[{i}]);");
+                builder.WriteLine($"{CallFactoryFor(geometry)}.Get()->GetGeometry(&geometries[{i}]);");
             }
 
             builder.CloseScope();
