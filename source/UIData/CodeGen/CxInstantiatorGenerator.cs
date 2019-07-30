@@ -187,7 +187,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         protected override void WriteInstantiatorStart(CodeBuilder builder, CodeGenInfo info)
         {
             // Start writing the instantiator.
-            builder.WriteLine("ref class AnimatedVisual sealed : public Microsoft::UI::Xaml::Controls::IAnimatedVisual");
+            builder.WriteLine("public ref class AnimatedVisual sealed : public Microsoft::UI::Xaml::Controls::IAnimatedVisual");
             builder.OpenScope();
 
             if (info.UsesCanvasEffects ||
@@ -632,7 +632,7 @@ $@"#pragma once
 
 namespace AnimatedVisuals 
 {{
-ref class {className} sealed : public Microsoft::UI::Xaml::Controls::IAnimatedVisualSource
+public ref class {className} sealed : public Microsoft::UI::Xaml::Controls::IAnimatedVisualSource
 {{
 public:
     virtual Microsoft::UI::Xaml::Controls::IAnimatedVisual^ TryCreateAnimatedVisual(
@@ -670,7 +670,7 @@ using namespace Windows::UI::Xaml::Media;
 
 namespace AnimatedVisuals
 {{
-ref class {className} sealed : public IDynamicAnimatedVisualSource, INotifyPropertyChanged
+public ref class {className} sealed : public IDynamicAnimatedVisualSource, INotifyPropertyChanged
 {{
 public:
     virtual event Windows::Foundation::TypedEventHandler<IDynamicAnimatedVisualSource^, Platform::Object^>^ AnimatedVisualInvalidated
