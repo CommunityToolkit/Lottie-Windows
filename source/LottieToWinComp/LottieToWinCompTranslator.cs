@@ -586,10 +586,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             Sn.Vector2 offset,
             CanvasComposite compositeMode)
         {
-            // There is a bug, introudced in the first Windows Release that supported
-            // CompositionVisualSurface where if the root visual is set as a source
-            // for a visual surface then its animations do not work. To work around
-            // this bug a top level parent is added for the source and destination.
+            // The visual surface captures the contents of a visual and displays it in a brush.
+            // If the visual has an offset, it will not be captured by the visual surface.
+            // To capture any offsets we add an intermediate parent container visual so that
+            // the visual we want captured by the visual surface has a parent to use as the
+            // origin of its offsets.
             var sourceIntermediateParent = CreateContainerVisual();
             sourceIntermediateParent.Children.Add(source);
 
