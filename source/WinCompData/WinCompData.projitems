@@ -12,6 +12,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CompositionBrush.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionClip.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionColorBrush.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CompositionColorSpace.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionContainerShape.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionEasingFunction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionEffectBrush.cs" />

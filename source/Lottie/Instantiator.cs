@@ -514,6 +514,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             }
 
             result = CacheAndInitializeKeyframeAnimation(obj, _c.CreateColorKeyFrameAnimation());
+
+            if (obj.InterpolationColorSpace != default(Wd.CompositionColorSpace))
+            {
+                result.InterpolationColorSpace = (Wc.CompositionColorSpace)obj.InterpolationColorSpace;
+            }
+
             foreach (var kf in obj.KeyFrames)
             {
                 switch (kf.Type)

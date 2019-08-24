@@ -1160,6 +1160,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             WriteCreateAssignment(builder, node, $"_c{Deref}CreateColorKeyFrameAnimation()");
             InitializeKeyFrameAnimation(builder, obj, node);
 
+            if (obj.InterpolationColorSpace != CompositionColorSpace.Auto)
+            {
+                builder.WriteLine($"result{Deref}InteroplationColorSpace = {ColorSpace(obj.InterpolationColorSpace)};");
+            }
+
             foreach (var kf in obj.KeyFrames)
             {
                 switch (kf.Type)
@@ -1718,6 +1723,25 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         string Readonly(string value) => _stringifier.Readonly(value);
 
         string String(string value) => _stringifier.String(value);
+
+        string ColorSpace(CompositionColorSpace value)
+        {
+            switch (value)
+            {
+                case CompositionColorSpace.Auto:
+                    return $"CompositionColorSpace{ScopeResolve}Auto";
+                case CompositionColorSpace.Hsl:
+                    return $"CompositionColorSpace{ScopeResolve}Hsl";
+                case CompositionColorSpace.Rgb:
+                    return $"CompositionColorSpace{ScopeResolve}Rgb";
+                case CompositionColorSpace.HslLinear:
+                    return $"CompositionColorSpace{ScopeResolve}HslLinear";
+                case CompositionColorSpace.RgbLinear:
+                    return $"CompositionColorSpace{ScopeResolve}RgbLinear";
+                default:
+                    throw new InvalidOperationException();
+            }
+        }
 
         string StrokeCap(CompositionStrokeCap value)
         {

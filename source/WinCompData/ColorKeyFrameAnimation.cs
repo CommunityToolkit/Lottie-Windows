@@ -17,7 +17,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
         ColorKeyFrameAnimation(ColorKeyFrameAnimation other)
             : base(other)
         {
+            InterpolationColorSpace = other.InterpolationColorSpace;
         }
+
+        public CompositionColorSpace InterpolationColorSpace { get; set; }
 
         /// <inheritdoc/>
         public override CompositionObjectType Type => CompositionObjectType.ColorKeyFrameAnimation;

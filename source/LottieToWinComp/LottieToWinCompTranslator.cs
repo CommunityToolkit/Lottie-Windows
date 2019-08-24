@@ -3535,9 +3535,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     context,
                     color,
                     result,
-                    nameof(result.Color),
-                    "Color",
-                    null);
+                    targetPropertyName: nameof(result.Color),
+                    longDescription: "Color",
+                    shortDescription: null);
                 return result;
             }
             else
@@ -3675,7 +3675,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         ColorKeyFrameAnimation CreateColorKeyFrameAnimation()
         {
-            return _c.CreateColorKeyFrameAnimation();
+            var result = _c.CreateColorKeyFrameAnimation();
+
+            // BodyMovin always uses RGB interpolation. Composition defaults to
+            // HSL. Override the default to be compatible with BodyMovin.
+            result.InterpolationColorSpace = CompositionColorSpace.Rgb;
+            return result;
         }
 
         PathKeyFrameAnimation CreatePathKeyFrameAnimation()

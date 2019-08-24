@@ -570,6 +570,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             }
 
             result = CacheAndInitializeKeyframeAnimation(obj, _c.CreateColorKeyFrameAnimation());
+            result.InterpolationColorSpace = obj.InterpolationColorSpace;
+
             foreach (var kf in obj.KeyFrames)
             {
                 switch (kf.Type)
