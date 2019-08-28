@@ -2,7 +2,7 @@
 
 ## Prerequisites
 * [.NET Core 2.2 SDK](https://dotnet.microsoft.com/download/dotnet-core/2.2) or later
-* Windows SDK October 2018 Update (17763) or later
+* Windows SDK May 2019 Update (18362) or later
 * Visual Studio 2017 or later
 
 ## As Azure DevOps does it

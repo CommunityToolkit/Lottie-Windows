@@ -131,14 +131,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 case CompositionObjectType.CompositionLinearGradientBrush:
                     VisitCompositionLinearGradientBrush((CompositionLinearGradientBrush)obj, node);
                     break;
-                case CompositionObjectType.CompositionRadialGradientBrush:
-                    VisitCompositionRadialGradientBrush((CompositionRadialGradientBrush)obj, node);
-                    break;
                 case CompositionObjectType.CompositionPathGeometry:
                     VisitCompositionPathGeometry((CompositionPathGeometry)obj, node);
                     break;
                 case CompositionObjectType.CompositionPropertySet:
                     VisitCompositionPropertySet((CompositionPropertySet)obj, node);
+                    break;
+                case CompositionObjectType.CompositionRadialGradientBrush:
+                    VisitCompositionRadialGradientBrush((CompositionRadialGradientBrush)obj, node);
                     break;
                 case CompositionObjectType.CompositionRectangleGeometry:
                     VisitCompositionRectangleGeometry((CompositionRectangleGeometry)obj, node);

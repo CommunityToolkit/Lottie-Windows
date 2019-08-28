@@ -4,17 +4,6 @@
 
 #define ReuseExpressionAnimation
 
-// Define POST_RS5_SDK if using an SDK that is for a release
-// after RS5. This is necessary because the build system does
-// not easily support SDKs that are still prerelease.
-// Once the release that has VisualSurface is out, this #if can
-// be removed.
-#if POST_RS5_SDK
-// For allowing of Windows.UI.Composition.VisualSurface and the
-// Lottie features that rely on it.
-#define AllowVisualSurface
-#endif
-
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -869,7 +858,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             return result;
         }
 
-#if AllowVisualSurface
         Wc.CompositionVisualSurface GetCompositionVisualSurface(Wd.CompositionVisualSurface obj)
         {
             if (GetExisting(obj, out Wc.CompositionVisualSurface result))
@@ -897,12 +885,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             StartAnimations(obj, result);
             return result;
         }
-#else
-        Wc.CompositionObject GetCompositionVisualSurface(Wd.CompositionVisualSurface obj)
-        {
-            throw new InvalidOperationException();
-        }
-#endif
 
         Wc.CompositionShape GetCompositionShape(Wd.CompositionShape obj)
         {
@@ -1346,12 +1328,33 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             return result;
         }
 
-        /*
-        //Wc.CompositionRadialGradientBrush GetCompositionRadialGradientBrush(Wd.CompositionRadialGradientBrush obj)
-        //{
-        //    return null;
-        //}
-        */
+        Wc.CompositionRadialGradientBrush GetCompositionRadialGradientBrush(Wd.CompositionRadialGradientBrush obj)
+        {
+            if (GetExisting(obj, out Wc.CompositionRadialGradientBrush result))
+            {
+                return result;
+            }
+
+            result = CacheAndInitializeGradientBrush(obj, _c.CreateRadialGradientBrush());
+
+            if (obj.EllipseCenter.HasValue)
+            {
+                result.EllipseCenter = obj.EllipseCenter.Value;
+            }
+
+            if (obj.EllipseRadius.HasValue)
+            {
+                result.EllipseRadius = obj.EllipseRadius.Value;
+            }
+
+            if (obj.GradientOriginOffset.HasValue)
+            {
+                result.GradientOriginOffset = obj.GradientOriginOffset.Value;
+            }
+
+            StartAnimations(obj, result);
+            return result;
+        }
 
         Wc.ICompositionSurface GetCompositionSurface(Wd.ICompositionSurface obj)
         {
