@@ -7,25 +7,24 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 #if PUBLIC_LottieData
     public
 #endif
-    sealed class SolidColorFill : ShapeLayerContent
+    sealed class SolidColorFill : ShapeFill
     {
         public SolidColorFill(
             in ShapeLayerContentArgs args,
             PathFillType fillType,
             Animatable<Color> color,
             Animatable<double> opacityPercent)
-            : base(in args)
+            : base(in args, opacityPercent)
         {
             FillType = fillType;
             Color = color;
-            OpacityPercent = opacityPercent;
         }
 
         public Animatable<Color> Color { get; }
 
-        public Animatable<double> OpacityPercent { get; }
-
         public PathFillType FillType { get; }
+
+        public override ShapeFillKind FillKind => ShapeFillKind.SolidColor;
 
         /// <inheritdoc/>
         public override ShapeContentType ContentType => ShapeContentType.SolidColorFill;

@@ -113,6 +113,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 case CompositionObjectType.CompositionColorBrush:
                     VisitCompositionColorBrush((CompositionColorBrush)obj, node);
                     break;
+                case CompositionObjectType.CompositionColorGradientStop:
+                    VisitCompositionColorGradientStop((CompositionColorGradientStop)obj, node);
+                    break;
                 case CompositionObjectType.CompositionContainerShape:
                     VisitCompositionContainerShape((CompositionContainerShape)obj, node);
                     break;
@@ -124,6 +127,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                     break;
                 case CompositionObjectType.CompositionGeometricClip:
                     VisitCompositionGeometricClip((CompositionGeometricClip)obj, node);
+                    break;
+                case CompositionObjectType.CompositionLinearGradientBrush:
+                    VisitCompositionLinearGradientBrush((CompositionLinearGradientBrush)obj, node);
+                    break;
+                case CompositionObjectType.CompositionRadialGradientBrush:
+                    VisitCompositionRadialGradientBrush((CompositionRadialGradientBrush)obj, node);
                     break;
                 case CompositionObjectType.CompositionPathGeometry:
                     VisitCompositionPathGeometry((CompositionPathGeometry)obj, node);
@@ -518,6 +527,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             return true;
         }
 
+        bool VisitCompositionGradientBrush(CompositionGradientBrush obj, T node)
+        {
+            VisitCompositionBrush(obj, node);
+            foreach (var stop in obj.ColorStops)
+            {
+                Reference(node, stop);
+            }
+
+            return true;
+        }
+
+        bool VisitCompositionLinearGradientBrush(CompositionLinearGradientBrush obj, T node)
+        {
+            return VisitCompositionGradientBrush(obj, node);
+        }
+
         bool VisitCompositionPathGeometry(CompositionPathGeometry obj, T node)
         {
             VisitCompositionGeometry(obj, node);
@@ -527,6 +552,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             }
 
             return true;
+        }
+
+        bool VisitCompositionRadialGradientBrush(CompositionRadialGradientBrush obj, T node)
+        {
+            return VisitCompositionGradientBrush(obj, node);
         }
 
         bool VisitCompositionBrush(CompositionBrush obj, T node)
@@ -542,6 +572,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
         bool VisitCompositionColorBrush(CompositionColorBrush obj, T node)
         {
             return VisitCompositionBrush(obj, node);
+        }
+
+        bool VisitCompositionColorGradientStop(CompositionColorGradientStop obj, T node)
+        {
+            return VisitCompositionObject(obj, node);
         }
 
         bool VisitCompositionContainerShape(CompositionContainerShape obj, T node)

@@ -629,13 +629,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             foreach (var node in _nodes.Where(n => n.UsesStream))
             {
-                    WriteBytesField(builder, node.LoadedImageSurfaceBytesFieldName);
-                    builder.OpenScope();
-                    var loadedImageSurface = (Wmd.LoadedImageSurfaceFromStream)node.Object;
-                    builder.BytesToLiteral(loadedImageSurface.Bytes, maximumColumns: 100);
-                    builder.UnIndent();
-                    builder.WriteLine("};");
-                    bytesWritten = true;
+                WriteBytesField(builder, node.LoadedImageSurfaceBytesFieldName);
+                builder.OpenScope();
+                var loadedImageSurface = (Wmd.LoadedImageSurfaceFromStream)node.Object;
+                builder.BytesToLiteral(loadedImageSurface.Bytes, maximumColumns: 100);
+                builder.UnIndent();
+                builder.WriteLine("};");
+                bytesWritten = true;
             }
 
             if (bytesWritten)
@@ -717,6 +717,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     return GenerateColorKeyFrameAnimationFactory(builder, (ColorKeyFrameAnimation)obj, node);
                 case CompositionObjectType.CompositionColorBrush:
                     return GenerateCompositionColorBrushFactory(builder, (CompositionColorBrush)obj, node);
+                case CompositionObjectType.CompositionColorGradientStop:
+                    return GenerateCompositionColorGradientStopFactory(builder, (CompositionColorGradientStop)obj, node);
                 case CompositionObjectType.CompositionContainerShape:
                     return GenerateContainerShapeFactory(builder, (CompositionContainerShape)obj, node);
                 case CompositionObjectType.CompositionEffectBrush:
@@ -725,11 +727,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     return GenerateCompositionEllipseGeometryFactory(builder, (CompositionEllipseGeometry)obj, node);
                 case CompositionObjectType.CompositionGeometricClip:
                     return GenerateCompositionGeometricClipFactory(builder, (CompositionGeometricClip)obj, node);
+                case CompositionObjectType.CompositionLinearGradientBrush:
+                    return GenerateCompositionLinearGradientBrushFactory(builder, (CompositionLinearGradientBrush)obj, node);
                 case CompositionObjectType.CompositionPathGeometry:
                     return GenerateCompositionPathGeometryFactory(builder, (CompositionPathGeometry)obj, node);
                 case CompositionObjectType.CompositionPropertySet:
                     // Do not generate code for property sets. It is done inline in the CompositionObject initialization.
                     return true;
+                case CompositionObjectType.CompositionRadialGradientBrush:
+                    return GenerateCompositionRadialGradientBrushFactory(builder, (CompositionRadialGradientBrush)obj, node);
                 case CompositionObjectType.CompositionRectangleGeometry:
                     return GenerateCompositionRectangleGeometryFactory(builder, (CompositionRectangleGeometry)obj, node);
                 case CompositionObjectType.CompositionRoundedRectangleGeometry:
@@ -816,6 +822,32 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             StartAnimations(builder, obj, node);
             WriteObjectFactoryEnd(builder);
             return true;
+        }
+
+        bool GenerateCompositionLinearGradientBrushFactory(CodeBuilder builder, CompositionLinearGradientBrush obj, ObjectData node)
+        {
+            WriteObjectFactoryStart(builder, node);
+            WriteCreateAssignment(builder, node, $"_c{Deref}CreateLinearGradientBrush()");
+            InitializeCompositionGradientBrush(builder, obj, node);
+
+            if (obj.StartPoint.HasValue)
+            {
+                builder.WriteLine($"result{Deref}StartPoint = {Vector2(obj.StartPoint.Value)};");
+            }
+
+            if (obj.EndPoint.HasValue)
+            {
+                builder.WriteLine($"result{Deref}EndPoint = {Vector2(obj.EndPoint.Value)};");
+            }
+
+            StartAnimations(builder, obj, node);
+            WriteObjectFactoryEnd(builder);
+            return true;
+        }
+
+        bool GenerateCompositionRadialGradientBrushFactory(CodeBuilder builder, CompositionRadialGradientBrush obj, ObjectData node)
+        {
+            throw new NotImplementedException();
         }
 
         bool GenerateLinearEasingFunctionFactory(CodeBuilder builder, LinearEasingFunction obj, ObjectData node)
@@ -1058,6 +1090,67 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             if (obj.Scale.X != 1 || obj.Scale.Y != 1)
             {
                 builder.WriteLine($"result{Deref}Scale = {Vector2(obj.Scale)};");
+            }
+        }
+
+        void InitializeCompositionGradientBrush(CodeBuilder builder, CompositionGradientBrush obj, ObjectData node)
+        {
+            InitializeCompositionObject(builder, obj, node);
+            if (obj.AnchorPoint.HasValue)
+            {
+                builder.WriteLine($"result{Deref}AnchorPoint = {Vector2(obj.AnchorPoint.Value)};");
+            }
+
+            if (obj.CenterPoint.HasValue)
+            {
+                builder.WriteLine($"result{Deref}CenterPoint = {Vector2(obj.CenterPoint.Value)};");
+            }
+
+            if (obj.ColorStops.Count > 0)
+            {
+                builder.WriteLine("colorStops = result.ColorStops;");
+                foreach (var colorStop in obj.ColorStops)
+                {
+                    builder.WriteLine($"colorStops{Deref}{IListAdd}({CallFactoryFromFor(node, colorStop)});");
+                }
+            }
+
+            // TODO - extendmode
+            if (obj.ExtendMode.HasValue)
+            {
+                builder.WriteLine($"result{Deref}ExtendMode = TODO");
+            }
+
+            // TODO - interpolationspace
+            if (obj.InterpolationSpace.HasValue)
+            {
+                builder.WriteLine($"result{Deref}InterpolationSpace = TODO");
+            }
+
+            // TODO - mappingmode
+            if (obj.MappingMode.HasValue)
+            {
+                builder.WriteLine($"result{Deref}MapingMode = TODO");
+            }
+
+            if (obj.Offset.HasValue)
+            {
+                builder.WriteLine($"result{Deref}Offset = {Vector2(obj.Offset.Value)}");
+            }
+
+            if (obj.RotationAngleInDegrees.HasValue)
+            {
+                builder.WriteLine($"result{Deref}RotationAngleInDegrees = {Float(obj.RotationAngleInDegrees.Value)}");
+            }
+
+            if (obj.Scale.HasValue)
+            {
+                builder.WriteLine($"result{Deref}Scale = {Vector2(obj.Scale.Value)}");
+            }
+
+            if (obj.TransformMatrix.HasValue)
+            {
+                builder.WriteLine($"result{Deref}TransformMatrix = {Matrix3x2(obj.TransformMatrix.Value)}");
             }
         }
 
@@ -1371,6 +1464,29 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 InitializeCompositionBrush(builder, obj, node);
                 StartAnimations(builder, obj, node);
                 WriteObjectFactoryEnd(builder);
+            }
+            else
+            {
+                WriteSimpleObjectFactory(builder, node, createCallText);
+            }
+
+            return true;
+        }
+
+        bool GenerateCompositionColorGradientStopFactory(CodeBuilder builder, CompositionColorGradientStop obj, ObjectData node)
+        {
+            var createCallText = $"_c{Deref}CreateCompositionColorGradientStop({Float(obj.Offset)}, {Color(obj.Color)})";
+
+            // TODO - support animated gradient stops.
+            if (obj.Animators.Count > 0)
+            {
+                WriteObjectFactoryStart(builder, node);
+                WriteCreateAssignment(builder, node, createCallText);
+
+                //InitializeCompositionBrush(builder, obj, node);
+                StartAnimations(builder, obj, node);
+                WriteObjectFactoryEnd(builder);
+                throw new NotImplementedException();
             }
             else
             {

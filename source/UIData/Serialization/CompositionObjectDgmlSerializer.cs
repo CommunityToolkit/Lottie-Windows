@@ -276,10 +276,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                         case CompositionObjectType.AnimationController:
                         case CompositionObjectType.ColorKeyFrameAnimation:
                         case CompositionObjectType.CompositionColorBrush:
+                        case CompositionObjectType.CompositionColorGradientStop:
                         case CompositionObjectType.CompositionEllipseGeometry:
+                        case CompositionObjectType.CompositionLinearGradientBrush:
                         case CompositionObjectType.CompositionGeometricClip:
                         case CompositionObjectType.CompositionPathGeometry:
                         case CompositionObjectType.CompositionPropertySet:
+                        case CompositionObjectType.CompositionRadialGradientBrush:
                         case CompositionObjectType.CompositionRectangleGeometry:
                         case CompositionObjectType.CompositionRoundedRectangleGeometry:
                         case CompositionObjectType.CompositionViewBox:

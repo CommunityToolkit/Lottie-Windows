@@ -17,138 +17,115 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 #endif
     sealed class Stats
     {
-        readonly int _compositionObjectCount;
-        readonly int _compositionPathCount;
-        readonly int _canvasGeometryCount;
-        readonly int _animationControllerCount;
-        readonly int _colorKeyFrameAnimationCount;
-        readonly int _colorBrushCount;
-        readonly int _containerShapeCount;
-        readonly int _effectBrushCount;
-        readonly int _ellipseGeometryCount;
-        readonly int _geometricClipCount;
-        readonly int _pathGeometryCount;
-        readonly int _propertySetCount;
-        readonly int _rectangleGeometryCount;
-        readonly int _roundedRectangleGeometryCount;
-        readonly int _spriteShapeCount;
-        readonly int _surfaceBrushCount;
-        readonly int _viewBoxCount;
-        readonly int _visualSurfaceCount;
-        readonly int _containerVisualCount;
-        readonly int _cubicBezierEasingFunctionCount;
-        readonly int _expressionAnimationCount;
-        readonly int _insetClipCount;
-        readonly int _linearEasingFunctionCount;
-        readonly int _pathKeyFrameAnimationCount;
-        readonly int _scalarKeyFrameAnimationCount;
-        readonly int _shapeVisualCount;
-        readonly int _spriteVisualCount;
-        readonly int _stepEasingFunctionCount;
-        readonly int _vector2KeyFrameAnimationCount;
-        readonly int _vector3KeyFrameAnimationCount;
-        readonly int _propertySetPropertyCount;
-
         public Stats(CompositionObject root)
         {
             var objectGraph = Graph.FromCompositionObject(root, includeVertices: false);
 
-            _compositionPathCount = objectGraph.CompositionPathNodes.Count();
-            _canvasGeometryCount = objectGraph.CanvasGeometryNodes.Count();
+            CompositionPathCount = objectGraph.CompositionPathNodes.Count();
+            CanvasGeometryCount = objectGraph.CanvasGeometryNodes.Count();
 
             foreach (var n in objectGraph.CompositionObjectNodes)
             {
-                _compositionObjectCount++;
+                CompositionObjectCount++;
                 switch (n.Object.Type)
                 {
                     case CompositionObjectType.AnimationController:
-                        _animationControllerCount++;
+                        AnimationControllerCount++;
                         break;
                     case CompositionObjectType.ColorKeyFrameAnimation:
-                        _colorKeyFrameAnimationCount++;
+                        ColorKeyFrameAnimationCount++;
                         break;
                     case CompositionObjectType.CompositionColorBrush:
-                        _colorBrushCount++;
+                        ColorBrushCount++;
+                        break;
+                    case CompositionObjectType.CompositionColorGradientStop:
+                        ColorGradientStopCount++;
                         break;
                     case CompositionObjectType.CompositionContainerShape:
-                        _containerShapeCount++;
+                        ContainerShapeCount++;
                         break;
                     case CompositionObjectType.CompositionEffectBrush:
-                        _effectBrushCount++;
+                        EffectBrushCount++;
                         break;
                     case CompositionObjectType.CompositionEllipseGeometry:
-                        _ellipseGeometryCount++;
+                        EllipseGeometryCount++;
                         break;
                     case CompositionObjectType.CompositionGeometricClip:
-                        _geometricClipCount++;
+                        GeometricClipCount++;
+                        break;
+                    case CompositionObjectType.CompositionLinearGradientBrush:
+                        LinearGradientBrushCount++;
                         break;
                     case CompositionObjectType.CompositionPathGeometry:
-                        _pathGeometryCount++;
+                        PathGeometryCount++;
                         break;
                     case CompositionObjectType.CompositionPropertySet:
                         {
                             var propertyCount = ((CompositionPropertySet)n.Object).PropertyNames.Count();
                             if (propertyCount > 0)
                             {
-                                _propertySetCount++;
-                                _propertySetPropertyCount += propertyCount;
+                                PropertySetCount++;
+                                PropertySetPropertyCount += propertyCount;
                             }
                         }
 
                         break;
+                    case CompositionObjectType.CompositionRadialGradientBrush:
+                        RadialGradientBrushCount++;
+                        break;
                     case CompositionObjectType.CompositionRectangleGeometry:
-                        _rectangleGeometryCount++;
+                        RectangleGeometryCount++;
                         break;
                     case CompositionObjectType.CompositionRoundedRectangleGeometry:
-                        _roundedRectangleGeometryCount++;
+                        RoundedRectangleGeometryCount++;
                         break;
                     case CompositionObjectType.CompositionSpriteShape:
-                        _spriteShapeCount++;
+                        SpriteShapeCount++;
                         break;
                     case CompositionObjectType.CompositionSurfaceBrush:
-                        _surfaceBrushCount++;
+                        SurfaceBrushCount++;
                         break;
                     case CompositionObjectType.CompositionViewBox:
-                        _viewBoxCount++;
+                        ViewBoxCount++;
                         break;
                     case CompositionObjectType.CompositionVisualSurface:
-                        _visualSurfaceCount++;
+                        VisualSurfaceCount++;
                         break;
                     case CompositionObjectType.ContainerVisual:
-                        _containerVisualCount++;
+                        ContainerVisualCount++;
                         break;
                     case CompositionObjectType.CubicBezierEasingFunction:
-                        _cubicBezierEasingFunctionCount++;
+                        CubicBezierEasingFunctionCount++;
                         break;
                     case CompositionObjectType.ExpressionAnimation:
-                        _expressionAnimationCount++;
+                        ExpressionAnimationCount++;
                         break;
                     case CompositionObjectType.InsetClip:
-                        _insetClipCount++;
+                        InsetClipCount++;
                         break;
                     case CompositionObjectType.LinearEasingFunction:
-                        _linearEasingFunctionCount++;
+                        LinearEasingFunctionCount++;
                         break;
                     case CompositionObjectType.PathKeyFrameAnimation:
-                        _pathKeyFrameAnimationCount++;
+                        PathKeyFrameAnimationCount++;
                         break;
                     case CompositionObjectType.ScalarKeyFrameAnimation:
-                        _scalarKeyFrameAnimationCount++;
+                        ScalarKeyFrameAnimationCount++;
                         break;
                     case CompositionObjectType.ShapeVisual:
-                        _shapeVisualCount++;
+                        ShapeVisualCount++;
                         break;
                     case CompositionObjectType.SpriteVisual:
-                        _spriteVisualCount++;
+                        SpriteVisualCount++;
                         break;
                     case CompositionObjectType.StepEasingFunction:
-                        _stepEasingFunctionCount++;
+                        StepEasingFunctionCount++;
                         break;
                     case CompositionObjectType.Vector2KeyFrameAnimation:
-                        _vector2KeyFrameAnimationCount++;
+                        Vector2KeyFrameAnimationCount++;
                         break;
                     case CompositionObjectType.Vector3KeyFrameAnimation:
-                        _vector3KeyFrameAnimationCount++;
+                        Vector3KeyFrameAnimationCount++;
                         break;
                     default:
                         throw new InvalidOperationException();
@@ -156,66 +133,72 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             }
         }
 
-        public int CompositionObjectCount => _compositionObjectCount;
+        public int CompositionObjectCount { get; }
 
-        public int CompositionPathCount => _compositionPathCount;
+        public int CompositionPathCount { get; }
 
-        public int CanvasGeometryCount => _canvasGeometryCount;
+        public int CanvasGeometryCount { get; }
 
-        public int AnimationControllerCount => _animationControllerCount;
+        public int AnimationControllerCount { get; }
 
-        public int ColorKeyFrameAnimationCount => _colorKeyFrameAnimationCount;
+        public int ColorKeyFrameAnimationCount { get; }
 
-        public int ColorBrushCount => _colorBrushCount;
+        public int ColorBrushCount { get; }
 
-        public int ContainerShapeCount => _containerShapeCount;
+        public int ColorGradientStopCount { get; }
 
-        public int EffectBrushCount => _effectBrushCount;
+        public int ContainerShapeCount { get; }
 
-        public int EllipseGeometryCount => _ellipseGeometryCount;
+        public int EffectBrushCount { get; }
 
-        public int GeometricClipCount => _geometricClipCount;
+        public int EllipseGeometryCount { get; }
 
-        public int PathGeometryCount => _pathGeometryCount;
+        public int GeometricClipCount { get; }
 
-        public int PropertySetPropertyCount => _propertySetPropertyCount;
+        public int LinearGradientBrushCount { get; }
 
-        public int PropertySetCount => _propertySetCount;
+        public int PathGeometryCount { get; }
 
-        public int RectangleGeometryCount => _rectangleGeometryCount;
+        public int PropertySetPropertyCount { get; }
 
-        public int RoundedRectangleGeometryCount => _roundedRectangleGeometryCount;
+        public int PropertySetCount { get; }
 
-        public int SpriteShapeCount => _spriteShapeCount;
+        public int RadialGradientBrushCount { get; }
 
-        public int SurfaceBrushCount => _surfaceBrushCount;
+        public int RectangleGeometryCount { get; }
 
-        public int ViewBoxCount => _viewBoxCount;
+        public int RoundedRectangleGeometryCount { get; }
 
-        public int VisualSurfaceCount => _visualSurfaceCount;
+        public int SpriteShapeCount { get; }
 
-        public int ContainerVisualCount => _containerVisualCount;
+        public int SurfaceBrushCount { get; }
 
-        public int CubicBezierEasingFunctionCount => _cubicBezierEasingFunctionCount;
+        public int ViewBoxCount { get; }
 
-        public int ExpressionAnimationCount => _expressionAnimationCount;
+        public int VisualSurfaceCount { get; }
 
-        public int InsetClipCount => _insetClipCount;
+        public int ContainerVisualCount { get; }
 
-        public int LinearEasingFunctionCount => _linearEasingFunctionCount;
+        public int CubicBezierEasingFunctionCount { get; }
 
-        public int PathKeyFrameAnimationCount => _pathKeyFrameAnimationCount;
+        public int ExpressionAnimationCount { get; }
 
-        public int ScalarKeyFrameAnimationCount => _scalarKeyFrameAnimationCount;
+        public int InsetClipCount { get; }
 
-        public int ShapeVisualCount => _shapeVisualCount;
+        public int LinearEasingFunctionCount { get; }
 
-        public int SpriteVisualCount => _spriteVisualCount;
+        public int PathKeyFrameAnimationCount { get; }
 
-        public int StepEasingFunctionCount => _stepEasingFunctionCount;
+        public int ScalarKeyFrameAnimationCount { get; }
 
-        public int Vector2KeyFrameAnimationCount => _vector2KeyFrameAnimationCount;
+        public int ShapeVisualCount { get; }
 
-        public int Vector3KeyFrameAnimationCount => _vector3KeyFrameAnimationCount;
+        public int SpriteVisualCount { get; }
+
+        public int StepEasingFunctionCount { get; }
+
+        public int Vector2KeyFrameAnimationCount { get; }
+
+        public int Vector3KeyFrameAnimationCount { get; }
     }
 }
