@@ -16,14 +16,6 @@
 // property without going through a controller. Enable this to prevent flashes.
 #define ControllersSynchronizationWorkaround
 
-// define POST_RS5_SDK if using an SDK that is for a release
-// after RS5
-#if POST_RS5_SDK
-// For allowing of Windows.UI.Composition.VisualSurface and the
-// Lottie features that rely on it.
-#define AllowVisualSurface
-#endif
-
 //#define LinearEasingOnSpatialBeziers
 // Use Win2D to create paths from geometry combines when merging shape layers.
 //#define PreCombineGeometries
@@ -282,14 +274,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             foreach (var item in items)
             {
                 var layerIsMattedLayer = false;
-#if AllowVisualSurface
                 layerIsMattedLayer = item.layer.LayerMatteType != Layer.MatteType.None;
-#else
-                if (item.layer.LayerMatteType != Layer.MatteType.None)
-                {
-                    _issues.MattesAreNotSupported();
-                }
-#endif
 
                 Visual visual = null;
 
@@ -454,7 +439,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         {
             if (layer.Masks.Any())
             {
-#if AllowVisualSurface
                 // Create the same transform chain that the visualToBeMasked has so that the mask and the visualToBeMasked can be
                 // correctly overlaid.
                 if (!TryCreateContainerShapeTransformChain(context, out var containerShapeMaskRootNode, out var containerShapeMaskContentNode))
@@ -479,9 +463,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     layerRootContainerVisual.Children.Add(compositedVisual);
                     return layerRootContainerVisual;
                 }
-#else
-                _issues.MasksNotSupported();
-#endif
             }
 
             // Currently no callers do anything useful if this function fails to apply the mask.
