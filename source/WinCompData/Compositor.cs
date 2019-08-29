@@ -2,7 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Numerics;
+using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions;
+using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 {
@@ -11,60 +12,66 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 #endif
     sealed class Compositor
     {
-        public CompositionGeometricClip CreateCompositionGeometricClip() => new CompositionGeometricClip();
+        public CompositionColorBrush CreateColorBrush(Wui.Color color) => new CompositionColorBrush(color);
 
-        public ContainerVisual CreateContainerVisual() => new ContainerVisual();
+        public CompositionColorGradientStop CreateColorGradientStop(float offset, Wui.Color color) => new CompositionColorGradientStop(offset, color);
 
-        public ShapeVisual CreateShapeVisual() => new ShapeVisual();
-
-        public CompositionViewBox CreateViewBox() => new CompositionViewBox();
-
-        public ExpressionAnimation CreateExpressionAnimation(WinCompData.Expressions.Expression expression) => new ExpressionAnimation(expression);
-
-        public InsetClip CreateInsetClip() => new InsetClip();
-
-        public CompositionSpriteShape CreateSpriteShape() => new CompositionSpriteShape();
+        public ColorKeyFrameAnimation CreateColorKeyFrameAnimation() => new ColorKeyFrameAnimation();
 
         public CompositionContainerShape CreateContainerShape() => new CompositionContainerShape();
 
-        public CompositionColorBrush CreateColorBrush(Wui.Color color) => new CompositionColorBrush(color);
+        public ContainerVisual CreateContainerVisual() => new ContainerVisual();
+
+        public CubicBezierEasingFunction CreateCubicBezierEasingFunction(System.Numerics.Vector2 controlPoint1, System.Numerics.Vector2 controlPoint2) => new CubicBezierEasingFunction(controlPoint1, controlPoint2);
+
+        public CompositionEffectFactory CreateEffectFactory(GraphicsEffectBase graphicsEffect) => new CompositionEffectFactory(graphicsEffect);
+
+        public CompositionEllipseGeometry CreateEllipseGeometry() => new CompositionEllipseGeometry();
+
+        public ExpressionAnimation CreateExpressionAnimation(Expression expression) => new ExpressionAnimation(expression);
+
+        public CompositionGeometricClip CreateGeometricClip() => new CompositionGeometricClip();
+
+        public InsetClip CreateInsetClip() => new InsetClip();
+
+        public LinearEasingFunction CreateLinearEasingFunction() => new LinearEasingFunction();
+
+        public CompositionLinearGradientBrush CreateLinearGradientBrush() => new CompositionLinearGradientBrush();
 
         public CompositionPathGeometry CreatePathGeometry() => new CompositionPathGeometry();
 
         public CompositionPathGeometry CreatePathGeometry(CompositionPath path) => new CompositionPathGeometry(path);
 
-        public CompositionPropertySet CreatePropertySet() => new CompositionPropertySet(null);
-
-        public CompositionEllipseGeometry CreateEllipseGeometry() => new CompositionEllipseGeometry();
-
-        public CubicBezierEasingFunction CreateCubicBezierEasingFunction(Vector2 controlPoint1, Vector2 controlPoint2) => new CubicBezierEasingFunction(controlPoint1, controlPoint2);
-
-        public StepEasingFunction CreateStepEasingFunction(int steps) => new StepEasingFunction(steps);
-
-        public StepEasingFunction CreateStepEasingFunction() => new StepEasingFunction(1);
-
-        public ScalarKeyFrameAnimation CreateScalarKeyFrameAnimation() => new ScalarKeyFrameAnimation();
-
-        public ColorKeyFrameAnimation CreateColorKeyFrameAnimation() => new ColorKeyFrameAnimation();
-
         public PathKeyFrameAnimation CreatePathKeyFrameAnimation() => new PathKeyFrameAnimation();
 
-        public Vector2KeyFrameAnimation CreateVector2KeyFrameAnimation() => new Vector2KeyFrameAnimation();
+        public CompositionPropertySet CreatePropertySet() => new CompositionPropertySet(null);
 
-        public Vector3KeyFrameAnimation CreateVector3KeyFrameAnimation() => new Vector3KeyFrameAnimation();
-
-        public LinearEasingFunction CreateLinearEasingFunction() => new LinearEasingFunction();
+        public CompositionRadialGradientBrush CreateRadialGradientBrush() => new CompositionRadialGradientBrush();
 
         public CompositionRectangleGeometry CreateRectangleGeometry() => new CompositionRectangleGeometry();
 
         public CompositionRoundedRectangleGeometry CreateRoundedRectangleGeometry() => new CompositionRoundedRectangleGeometry();
 
+        public ScalarKeyFrameAnimation CreateScalarKeyFrameAnimation() => new ScalarKeyFrameAnimation();
+
+        public ShapeVisual CreateShapeVisual() => new ShapeVisual();
+
+        public CompositionSpriteShape CreateSpriteShape() => new CompositionSpriteShape();
+
         public SpriteVisual CreateSpriteVisual() => new SpriteVisual();
 
-        public CompositionVisualSurface CreateVisualSurface() => new CompositionVisualSurface();
+        public StepEasingFunction CreateStepEasingFunction() => new StepEasingFunction(1);
+
+        public StepEasingFunction CreateStepEasingFunction(int stepCount) => new StepEasingFunction(stepCount);
 
         public CompositionSurfaceBrush CreateSurfaceBrush(ICompositionSurface surface) => new CompositionSurfaceBrush(surface);
 
-        public CompositionEffectFactory CreateEffectFactory(Mgce.GraphicsEffectBase effect) => new CompositionEffectFactory(effect);
+        public Vector2KeyFrameAnimation CreateVector2KeyFrameAnimation() => new Vector2KeyFrameAnimation();
+
+        public Vector3KeyFrameAnimation CreateVector3KeyFrameAnimation() => new Vector3KeyFrameAnimation();
+
+        public CompositionViewBox CreateViewBox() => new CompositionViewBox();
+
+        public CompositionVisualSurface CreateVisualSurface() => new CompositionVisualSurface();
     }
 }

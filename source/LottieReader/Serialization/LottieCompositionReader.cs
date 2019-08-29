@@ -1154,8 +1154,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             IgnoreFieldThatIsNotYetSupported(obj, "hd");
 
             var opacityPercent = ReadOpacityPercent(obj);
-            var startPoint = ReadAnimatableVector2(obj.GetNamedObject("s"));
-            var endPoint = ReadAnimatableVector2(obj.GetNamedObject("e"));
+            var startPoint = ReadAnimatableVector3(obj.GetNamedObject("s"));
+            var endPoint = ReadAnimatableVector3(obj.GetNamedObject("e"));
             var gradientStops = ReadAnimatableGradientStops(obj.GetNamedObject("g"));
             AssertAllFieldsRead(obj);
             return new LinearGradientFill(

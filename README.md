@@ -12,7 +12,7 @@ Lottie-Windows consists of 3 related products:
 * **[Lottie Viewer](/LottieViewer)** application for previewing JSON and also generating code 
 
 ## <a name="supported"></a> Supported SDKs
-* October 2018 Update (17763)
+* May 2019 Update (18362)
 
 ## <a name="documentation"></a> Getting Started
 * [Documentation and Tutorials](https://aka.ms/lottiedocs)

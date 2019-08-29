@@ -565,6 +565,7 @@ sealed class LottieFileProcessor
         // improved things (where it did).
         WriteStatsLine("CanvasGeometry", s => s.CanvasGeometryCount);
         WriteStatsLine("ColorBrush", s => s.ColorBrushCount);
+        WriteStatsLine("ColorGradientStop", s => s.ColorGradientStopCount);
         WriteStatsLine("ColorKeyFrameAnimation", s => s.ColorKeyFrameAnimationCount);
         WriteStatsLine("CompositionPath", s => s.CompositionPathCount);
         WriteStatsLine("ContainerShape", s => s.ContainerShapeCount);
@@ -576,10 +577,12 @@ sealed class LottieFileProcessor
         WriteStatsLine("GeometricClip", s => s.GeometricClipCount);
         WriteStatsLine("InsetClip", s => s.InsetClipCount);
         WriteStatsLine("LinearEasingFunction", s => s.LinearEasingFunctionCount);
+        WriteStatsLine("LinearGradientBrush", s => s.LinearGradientBrushCount);
         WriteStatsLine("PathGeometry", s => s.PathGeometryCount);
         WriteStatsLine("PathKeyFrameAnimation", s => s.PathKeyFrameAnimationCount);
         WriteStatsLine("Property value", s => s.PropertySetPropertyCount);
         WriteStatsLine("PropertySet", s => s.PropertySetCount);
+        WriteStatsLine("RadialGradientBrush", s => s.RadialGradientBrushCount);
         WriteStatsLine("RectangleGeometry", s => s.RectangleGeometryCount);
         WriteStatsLine("RoundedRectangleGeometry", s => s.RoundedRectangleGeometryCount);
         WriteStatsLine("ScalarKeyFrameAnimation", s => s.ScalarKeyFrameAnimationCount);

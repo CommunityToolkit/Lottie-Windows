@@ -7,7 +7,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 #if PUBLIC_LottieData
     public
 #endif
-    sealed class RadialGradientFill : ShapeLayerContent
+    sealed class RadialGradientFill : ShapeFill
     {
         public RadialGradientFill(
             in ShapeLayerContentArgs args,
@@ -17,9 +17,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             Animatable<Sequence<GradientStop>> gradientStops,
             Animatable<double> highlightLength,
             Animatable<double> highlightDegrees)
-            : base(in args)
+            : base(in args, opacityPercent)
         {
-            OpacityPercent = opacityPercent;
             StartPoint = startPoint;
             EndPoint = endPoint;
             GradientStops = gradientStops;
@@ -37,7 +36,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
         public Animatable<double> HighlightDegrees { get; }
 
-        public Animatable<double> OpacityPercent { get; }
+        /// <inheritdoc/>
+        public override ShapeFillKind FillKind => ShapeFillKind.RadialGradient;
 
         /// <inheritdoc/>
         public override ShapeContentType ContentType => ShapeContentType.RadialGradientFill;

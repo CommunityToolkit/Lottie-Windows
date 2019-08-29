@@ -12,6 +12,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CompositionBrush.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionClip.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionColorBrush.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CompositionColorGradientStop.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionColorSpace.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionContainerShape.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionEasingFunction.cs" />
@@ -21,11 +22,16 @@
     <Compile Include="$(MSBuildThisFileDirectory)CompositionEllipseGeometry.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionGeometricClip.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionGeometry.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CompositionGradientBrush.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CompositionGradientExtendMode.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CompositionLinearGradientBrush.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CompositionMappingMode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionObject.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionObjectType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionPath.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionPathGeometry.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionPropertySet.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CompositionRadialGradientBrush.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionRectangleGeometry.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionRoundedRectangleGeometry.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionShape.cs" />

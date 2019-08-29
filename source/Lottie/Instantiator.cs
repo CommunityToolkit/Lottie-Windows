@@ -4,17 +4,6 @@
 
 #define ReuseExpressionAnimation
 
-// Define POST_RS5_SDK if using an SDK that is for a release
-// after RS5. This is necessary because the build system does
-// not easily support SDKs that are still prerelease.
-// Once the release that has VisualSurface is out, this #if can
-// be removed.
-#if POST_RS5_SDK
-// For allowing of Windows.UI.Composition.VisualSurface and the
-// Lottie features that rely on it.
-#define AllowVisualSurface
-#endif
-
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -94,6 +83,65 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             if (source.CenterPoint.HasValue)
             {
                 target.CenterPoint = source.CenterPoint.Value;
+            }
+
+            if (source.Offset.HasValue)
+            {
+                target.Offset = source.Offset.Value;
+            }
+
+            if (source.RotationAngleInDegrees.HasValue)
+            {
+                target.RotationAngleInDegrees = source.RotationAngleInDegrees.Value;
+            }
+
+            if (source.Scale.HasValue)
+            {
+                target.Scale = source.Scale.Value;
+            }
+
+            if (source.TransformMatrix.HasValue)
+            {
+                target.TransformMatrix = source.TransformMatrix.Value;
+            }
+
+            return target;
+        }
+
+        T CacheAndInitializeGradientBrush<T>(Wd.CompositionGradientBrush source, T target)
+            where T : Wc.CompositionGradientBrush
+        {
+            CacheAndInitializeCompositionObject(source, target);
+
+            if (source.AnchorPoint.HasValue)
+            {
+                target.AnchorPoint = source.AnchorPoint.Value;
+            }
+
+            if (source.CenterPoint.HasValue)
+            {
+                target.CenterPoint = source.CenterPoint.Value;
+            }
+
+            var stops = target.ColorStops;
+            foreach (var stop in source.ColorStops)
+            {
+                target.ColorStops.Add(GetCompositionColorGradientStop(stop));
+            }
+
+            if (source.ExtendMode.HasValue)
+            {
+                target.ExtendMode = ExtendMode(source.ExtendMode.Value);
+            }
+
+            if (source.InterpolationSpace.HasValue)
+            {
+                target.InterpolationSpace = ColorSpace(source.InterpolationSpace.Value);
+            }
+
+            if (source.MappingMode.HasValue)
+            {
+                target.MappingMode = MappingMode(source.MappingMode.Value);
             }
 
             if (source.Offset.HasValue)
@@ -350,6 +398,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                     return GetColorKeyFrameAnimation((Wd.ColorKeyFrameAnimation)obj);
                 case Wd.CompositionObjectType.CompositionColorBrush:
                     return GetCompositionColorBrush((Wd.CompositionColorBrush)obj);
+                case Wd.CompositionObjectType.CompositionColorGradientStop:
+                    return GetCompositionColorGradientStop((Wd.CompositionColorGradientStop)obj);
                 case Wd.CompositionObjectType.CompositionContainerShape:
                     return GetCompositionContainerShape((Wd.CompositionContainerShape)obj);
                 case Wd.CompositionObjectType.CompositionEffectBrush:
@@ -358,10 +408,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                     return GetCompositionEllipseGeometry((Wd.CompositionEllipseGeometry)obj);
                 case Wd.CompositionObjectType.CompositionGeometricClip:
                     return GetCompositionGeometricClip((Wd.CompositionGeometricClip)obj);
+                case Wd.CompositionObjectType.CompositionLinearGradientBrush:
+                    return GetCompositionLinearGradientBrush((Wd.CompositionLinearGradientBrush)obj);
                 case Wd.CompositionObjectType.CompositionPathGeometry:
                     return GetCompositionPathGeometry((Wd.CompositionPathGeometry)obj);
                 case Wd.CompositionObjectType.CompositionPropertySet:
                     return GetCompositionPropertySet((Wd.CompositionPropertySet)obj);
+                /*case Wd.CompositionObjectType.CompositionRadialGradientBrush:
+                    return GetCompositionRadialGradientBrush((Wd.CompositionRadialGradientBrush)obj);*/
                 case Wd.CompositionObjectType.CompositionRectangleGeometry:
                     return GetCompositionRectangleGeometry((Wd.CompositionRectangleGeometry)obj);
                 case Wd.CompositionObjectType.CompositionRoundedRectangleGeometry:
@@ -804,7 +858,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             return result;
         }
 
-#if AllowVisualSurface
         Wc.CompositionVisualSurface GetCompositionVisualSurface(Wd.CompositionVisualSurface obj)
         {
             if (GetExisting(obj, out Wc.CompositionVisualSurface result))
@@ -832,12 +885,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             StartAnimations(obj, result);
             return result;
         }
-#else
-        Wc.CompositionObject GetCompositionVisualSurface(Wd.CompositionVisualSurface obj)
-        {
-            throw new InvalidOperationException();
-        }
-#endif
 
         Wc.CompositionShape GetCompositionShape(Wd.CompositionShape obj)
         {
@@ -993,6 +1040,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             {
                 result.FillBrush = GetCompositionBrush(obj.FillBrush);
             }
+
+            StartAnimations(obj, result);
+            return result;
+        }
+
+        Wc.CompositionColorGradientStop GetCompositionColorGradientStop(Wd.CompositionColorGradientStop obj)
+        {
+            if (GetExisting(obj, out Wc.CompositionColorGradientStop result))
+            {
+                return result;
+            }
+
+            result = CacheAndInitializeCompositionObject(obj, _c.CreateColorGradientStop(obj.Offset, Color(obj.Color)));
 
             StartAnimations(obj, result);
             return result;
@@ -1211,6 +1271,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                     return GetCompositionEffectBrush((Wd.CompositionEffectBrush)obj);
                 case Wd.CompositionObjectType.CompositionSurfaceBrush:
                     return GetCompositionSurfaceBrush((Wd.CompositionSurfaceBrush)obj);
+                case Wd.CompositionObjectType.CompositionLinearGradientBrush:
+                case Wd.CompositionObjectType.CompositionRadialGradientBrush:
+                    return GetCompositionGradientBrush((Wd.CompositionGradientBrush)obj);
                 default:
                     throw new InvalidOperationException();
             }
@@ -1224,6 +1287,71 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             }
 
             result = CacheAndInitializeCompositionObject(obj, _c.CreateColorBrush(Color(obj.Color)));
+            StartAnimations(obj, result);
+            return result;
+        }
+
+        Wc.CompositionGradientBrush GetCompositionGradientBrush(Wd.CompositionGradientBrush obj)
+        {
+            switch (obj.Type)
+            {
+                case Wd.CompositionObjectType.CompositionLinearGradientBrush:
+                    return GetCompositionLinearGradientBrush((Wd.CompositionLinearGradientBrush)obj);
+                case Wd.CompositionObjectType.CompositionRadialGradientBrush:
+                // TODO - handle versioning - RadialGradientBrush was not added until 1903
+                //         return GetCompositionRadialGradientBrush((Wd.CompositionRadialGradientBrush)obj);
+                default:
+                    throw new InvalidOperationException();
+            }
+        }
+
+        Wc.CompositionLinearGradientBrush GetCompositionLinearGradientBrush(Wd.CompositionLinearGradientBrush obj)
+        {
+            if (GetExisting(obj, out Wc.CompositionLinearGradientBrush result))
+            {
+                return result;
+            }
+
+            result = CacheAndInitializeGradientBrush(obj, _c.CreateLinearGradientBrush());
+
+            if (obj.StartPoint.HasValue)
+            {
+                result.StartPoint = obj.StartPoint.Value;
+            }
+
+            if (obj.EndPoint.HasValue)
+            {
+                result.EndPoint = obj.EndPoint.Value;
+            }
+
+            StartAnimations(obj, result);
+            return result;
+        }
+
+        Wc.CompositionRadialGradientBrush GetCompositionRadialGradientBrush(Wd.CompositionRadialGradientBrush obj)
+        {
+            if (GetExisting(obj, out Wc.CompositionRadialGradientBrush result))
+            {
+                return result;
+            }
+
+            result = CacheAndInitializeGradientBrush(obj, _c.CreateRadialGradientBrush());
+
+            if (obj.EllipseCenter.HasValue)
+            {
+                result.EllipseCenter = obj.EllipseCenter.Value;
+            }
+
+            if (obj.EllipseRadius.HasValue)
+            {
+                result.EllipseRadius = obj.EllipseRadius.Value;
+            }
+
+            if (obj.GradientOriginOffset.HasValue)
+            {
+                result.GradientOriginOffset = obj.GradientOriginOffset.Value;
+            }
+
             StartAnimations(obj, result);
             return result;
         }
@@ -1377,6 +1505,53 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                     return CanvasGeometryCombine.Intersect;
                 case Wd.Mgcg.CanvasGeometryCombine.Xor:
                     return CanvasGeometryCombine.Xor;
+                default:
+                    throw new InvalidOperationException();
+            }
+        }
+
+        static Wc.CompositionGradientExtendMode ExtendMode(Wd.CompositionGradientExtendMode value)
+        {
+            switch (value)
+            {
+                case Wd.CompositionGradientExtendMode.Clamp:
+                    return Wc.CompositionGradientExtendMode.Clamp;
+                case Wd.CompositionGradientExtendMode.Wrap:
+                    return Wc.CompositionGradientExtendMode.Wrap;
+                case Wd.CompositionGradientExtendMode.Mirror:
+                    return Wc.CompositionGradientExtendMode.Mirror;
+                default:
+                    throw new InvalidOperationException();
+            }
+        }
+
+        static Wc.CompositionColorSpace ColorSpace(Wd.CompositionColorSpace value)
+        {
+            switch (value)
+            {
+                case Wd.CompositionColorSpace.Auto:
+                    return Wc.CompositionColorSpace.Auto;
+                case Wd.CompositionColorSpace.Hsl:
+                    return Wc.CompositionColorSpace.Hsl;
+                case Wd.CompositionColorSpace.Rgb:
+                    return Wc.CompositionColorSpace.Rgb;
+                case Wd.CompositionColorSpace.HslLinear:
+                    return Wc.CompositionColorSpace.HslLinear;
+                case Wd.CompositionColorSpace.RgbLinear:
+                    return Wc.CompositionColorSpace.RgbLinear;
+                default:
+                    throw new InvalidOperationException();
+            }
+        }
+
+        static Wc.CompositionMappingMode MappingMode(Wd.CompositionMappingMode value)
+        {
+            switch (value)
+            {
+                case Wd.CompositionMappingMode.Absolute:
+                    return Wc.CompositionMappingMode.Absolute;
+                case Wd.CompositionMappingMode.Relative:
+                    return Wc.CompositionMappingMode.Relative;
                 default:
                     throw new InvalidOperationException();
             }
