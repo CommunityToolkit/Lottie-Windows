@@ -139,7 +139,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 target.InterpolationSpace = ColorSpace(source.InterpolationSpace.Value);
             }
 
-            if (source.MappingMode.HasValue)
+            // Default mapping mode is Relative.
+            if (source.MappingMode.HasValue && source.MappingMode.Value != Wd.CompositionMappingMode.Relative)
             {
                 target.MappingMode = MappingMode(source.MappingMode.Value);
             }

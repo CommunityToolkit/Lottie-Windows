@@ -189,19 +189,28 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                         // Brush is animated. Give it a name based on the colors in the animation.
                         var colorAnimation = (ColorKeyFrameAnimation)brush.Animators.Where(a => a.Animation is ColorKeyFrameAnimation).First().Animation;
                         var description = DescribeAnimationRange(colorAnimation);
-                        if (description != null)
-                        {
-                            result = $"AnimatedColorBrush_{description}";
-                        }
-                        else
-                        {
-                            result = "AnimatedColorBrush";
-                        }
+                        result = "AnimatedColorBrush" + (description != null ? $"_{description}" : string.Empty);
                     }
                     else
                     {
                         // Brush is not animated. Give it a name based on the color.
                         result = $"ColorBrush_{brush.Color.Name}";
+                    }
+
+                    break;
+                case CompositionObjectType.CompositionColorGradientStop:
+                    var stop = (CompositionColorGradientStop)obj;
+                    if (stop.Animators.Count > 0)
+                    {
+                        // Brush is animated. Give it a name based on the colors in the animation.
+                        var colorAnimation = (ColorKeyFrameAnimation)stop.Animators.Where(a => a.Animation is ColorKeyFrameAnimation).First().Animation;
+                        var description = DescribeAnimationRange(colorAnimation);
+                        result = "AnimatedGradientStop" + (description != null ? $"_{description}" : string.Empty);
+                    }
+                    else
+                    {
+                        // Brush is not animated. Give it a name based on the color.
+                        result = $"GradientStop_{stop.Color.Name}";
                     }
 
                     break;

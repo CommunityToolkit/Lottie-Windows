@@ -1127,10 +1127,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 builder.WriteLine($"result{Deref}InterpolationSpace = TODO");
             }
 
-            // TODO - mappingmode
-            if (obj.MappingMode.HasValue)
+            // Default MappingMode is Relative
+            if (obj.MappingMode.HasValue && obj.MappingMode.Value != WinCompData.CompositionMappingMode.Relative)
             {
-                builder.WriteLine($"result{Deref}MapingMode = TODO");
+                builder.WriteLine($"result{Deref}MapingMode = {CompositionMappingMode(obj.MappingMode.Value)};");
             }
 
             if (obj.Offset.HasValue)
@@ -1888,6 +1888,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     return $"CompositionStrokeLineJoin{ScopeResolve}Round";
                 case CompositionStrokeLineJoin.MiterOrBevel:
                     return $"CompositionStrokeLineJoin{ScopeResolve}MiterOrBevel";
+                default:
+                    throw new InvalidOperationException();
+            }
+        }
+
+        string CompositionMappingMode(CompositionMappingMode value)
+        {
+            switch (value)
+            {
+                case WinCompData.CompositionMappingMode.Absolute:
+                    return $"CompositionMappingMode{ScopeResolve}Absolute";
+                case WinCompData.CompositionMappingMode.Relative:
+                    return $"CompositionMappingMode{ScopeResolve}Relative";
                 default:
                     throw new InvalidOperationException();
             }

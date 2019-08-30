@@ -27,6 +27,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 
         public CompositionColorSpace? InterpolationSpace { get; set; }
 
+        // Default is Relative
         public CompositionMappingMode? MappingMode { get; set; }
 
         public Vector2? Offset { get; set; }

@@ -12,17 +12,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         public SolidColorFill(
             in ShapeLayerContentArgs args,
             PathFillType fillType,
-            Animatable<Color> color,
-            Animatable<double> opacityPercent)
-            : base(in args, opacityPercent)
+            Animatable<double> opacityPercent,
+            Animatable<Color> color)
+            : base(in args, fillType, opacityPercent)
         {
-            FillType = fillType;
             Color = color;
         }
 
         public Animatable<Color> Color { get; }
-
-        public PathFillType FillType { get; }
 
         public override ShapeFillKind FillKind => ShapeFillKind.SolidColor;
 
@@ -31,12 +28,5 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
         /// <inheritdoc/>
         public override LottieObjectType ObjectType => LottieObjectType.SolidColorFill;
-
-        public enum PathFillType
-        {
-            EvenOdd,
-            InverseWinding,
-            Winding,
-        }
     }
 }
