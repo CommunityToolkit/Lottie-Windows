@@ -1088,12 +1088,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             IgnoreFieldThatIsNotYetSupported(obj, "cl");
             IgnoreFieldThatIsNotYetSupported(obj, "hd");
 
-            var color = ReadColor(obj);
+            var fillType = ReadFillType(obj);
             var opacityPercent = ReadOpacityPercent(obj);
-            var isWindingFill = ReadBool(obj, "r") == true;
-            var fillType = isWindingFill ? SolidColorFill.PathFillType.Winding : SolidColorFill.PathFillType.EvenOdd;
+            var color = ReadColor(obj);
+
             AssertAllFieldsRead(obj);
-            return new SolidColorFill(in shapeLayerContentArgs, fillType, color, opacityPercent);
+            return new SolidColorFill(in shapeLayerContentArgs, fillType, opacityPercent, color);
         }
 
         // gf
@@ -1114,9 +1114,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         {
             // Not clear whether we need to read these fields.
             IgnoreFieldThatIsNotYetSupported(obj, "hd");
-            IgnoreFieldThatIsNotYetSupported(obj, "r");
             IgnoreFieldThatIsNotYetSupported(obj, "1");
 
+            var fillType = ReadFillType(obj);
             var opacityPercent = ReadOpacityPercent(obj);
             var startPoint = ReadAnimatableVector3(obj.GetNamedObject("s"));
             var endPoint = ReadAnimatableVector3(obj.GetNamedObject("e"));
@@ -1139,6 +1139,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             AssertAllFieldsRead(obj);
             return new RadialGradientFill(
                 in shapeLayerContentArgs,
+                fillType: fillType,
                 opacityPercent: opacityPercent,
                 startPoint: startPoint,
                 endPoint: endPoint,
@@ -1150,16 +1151,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         LinearGradientFill ReadLinearGradientFill(JObject obj, in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
         {
             // Not clear whether we need to read these fields.
-            IgnoreFieldThatIsNotYetSupported(obj, "r");
             IgnoreFieldThatIsNotYetSupported(obj, "hd");
 
+            var fillType = ReadFillType(obj);
             var opacityPercent = ReadOpacityPercent(obj);
             var startPoint = ReadAnimatableVector3(obj.GetNamedObject("s"));
             var endPoint = ReadAnimatableVector3(obj.GetNamedObject("e"));
             var gradientStops = ReadAnimatableGradientStops(obj.GetNamedObject("g"));
+
             AssertAllFieldsRead(obj);
             return new LinearGradientFill(
                 in shapeLayerContentArgs,
+                fillType: fillType,
                 opacityPercent: opacityPercent,
                 startPoint: startPoint,
                 endPoint: endPoint,
@@ -1334,6 +1337,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             return new RoundedCorner(
                 in shapeLayerContentArgs,
                 radius);
+        }
+
+        ShapeFill.PathFillType ReadFillType(JObject obj)
+        {
+            var isWindingFill = ReadBool(obj, "r") == true;
+            return isWindingFill ? ShapeFill.PathFillType.Winding : ShapeFill.PathFillType.EvenOdd;
         }
 
         Animatable<double> ReadOpacityPercent(JObject obj)

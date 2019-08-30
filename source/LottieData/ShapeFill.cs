@@ -10,21 +10,33 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
     abstract class ShapeFill : ShapeLayerContent
     {
         public ShapeFill(
-            in ShapeLayerContentArgs args, Animatable<double> opacityPercent)
+            in ShapeLayerContentArgs args,
+            PathFillType fillType,
+            Animatable<double> opacityPercent)
             : base(in args)
         {
             OpacityPercent = opacityPercent;
+            FillType = fillType;
         }
 
         public Animatable<double> OpacityPercent { get; }
 
         public abstract ShapeFillKind FillKind { get; }
 
+        public PathFillType FillType { get; }
+
         public enum ShapeFillKind
         {
             SolidColor,
             LinearGradient,
             RadialGradient,
+        }
+
+        public enum PathFillType
+        {
+            EvenOdd,
+            InverseWinding,
+            Winding,
         }
     }
 }
