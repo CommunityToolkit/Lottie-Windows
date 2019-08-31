@@ -1890,7 +1890,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                                 opacity /= 255;
                             }
 
-                            gradientStops.Add(GradientStop.FromOpacity(offset, opacity));
+                            gradientStops.Add(GradientStop.FromOpacityPercent(offset, opacity * 100));
                             break;
                     }
                 }
@@ -1906,7 +1906,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     // Note that if there are multiple color stops with the same offset or
                     // multiple opacity stops with the same offset, one will be chosen at
                     // random.
-                    select grouped.Aggregate((g1, g2) => new GradientStop(g1.Offset, g1.Color ?? g2.Color, g1.Opacity ?? g2.Opacity));
+                    select grouped.Aggregate((g1, g2) => new GradientStop(g1.Offset, g1.Color ?? g2.Color, g1.OpacityPercent ?? g2.OpacityPercent));
 
                 return new Sequence<GradientStop>(merged);
             }

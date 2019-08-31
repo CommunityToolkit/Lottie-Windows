@@ -13,7 +13,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 #endif
     readonly struct GradientStop
     {
-        public GradientStop(double offset, Color color, double? opacity)
+        public GradientStop(double offset, Color color, double? opacityPercent)
         {
             if (color != null)
             {
@@ -22,23 +22,23 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
                     throw new ArgumentException("Color must have an alpha of 1");
                 }
             }
-            else if (opacity == null)
+            else if (opacityPercent == null)
             {
                 throw new ArgumentException("Color or opacity must be specified");
             }
 
             Offset = offset;
             Color = color;
-            Opacity = opacity;
+            OpacityPercent = opacityPercent;
         }
 
         public static GradientStop FromColor(double offset, Color color) => new GradientStop(offset, color, null);
 
-        public static GradientStop FromOpacity(double offset, double opacity) => new GradientStop(offset, null, opacity);
+        public static GradientStop FromOpacityPercent(double offset, double opacityPercent) => new GradientStop(offset, null, opacityPercent);
 
         public readonly Color Color;
         public readonly double Offset;
-        public readonly double? Opacity;
+        public readonly double? OpacityPercent;
 
         /// <summary>
         /// Returns the first gradient stop in a sequence that is a color. Opacity will always be
@@ -65,8 +65,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
                 ? "??????"
                 : $"{ToHex(Color.R)}{ToHex(Color.G)}{ToHex(Color.B)}";
 
-            var opacity = Opacity.HasValue
-                ? ToHex(Opacity.Value)
+            var opacity = OpacityPercent.HasValue
+                ? ToHex(OpacityPercent.Value / 100)
                 : "??";
 
             return $"#{opacity}{rgb}@{Offset}";

@@ -187,7 +187,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         protected override void WriteInstantiatorStart(CodeBuilder builder, CodeGenInfo info)
         {
             // Start writing the instantiator.
-            builder.WriteLine("public ref class AnimatedVisual sealed : public Microsoft::UI::Xaml::Controls::IAnimatedVisual");
+            builder.WriteLine("ref class AnimatedVisual sealed : public Microsoft::UI::Xaml::Controls::IAnimatedVisual");
             builder.OpenScope();
 
             if (info.UsesCanvasEffects ||
@@ -278,6 +278,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.CloseScope();
 
             // Write the destructor. This is how CX implements IClosable/IDisposable.
+            builder.WriteLine();
             builder.WriteLine("virtual ~AnimatedVisual() { }");
 
             // Write the members on IAnimatedVisual.

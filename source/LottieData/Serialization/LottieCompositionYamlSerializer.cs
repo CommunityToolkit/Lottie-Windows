@@ -479,7 +479,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             {
                 { "Color", FromColor(value.Color) },
                 { "Offset", value.Offset },
-                { "Opacity", value.Opacity },
+                { "OpacityPercent", value.OpacityPercent },
             };
             return result;
         }
