@@ -15,6 +15,10 @@ using Wg = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wg;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 {
+    /// <summary>
+    /// Discovers objects that are shareable and updates a graph so that references to
+    /// equivalent shareable objects refer to the same object.
+    /// </summary>
     static class Canonicalizer
     {
         internal static void Canonicalize<T>(ObjectGraph<T> graph, bool ignoreCommentProperties)
@@ -44,6 +48,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             // Find the nodes that are equivalent and point them all to a single canonical representation.
             void Canonicalize()
             {
+                CanonicalizeColorGradientStops();
                 CanonicalizeInsetClips();
                 CanonicalizeEllipseGeometries();
                 CanonicalizeRectangleGeometries();
@@ -112,9 +117,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             IEnumerable<(TNode Node, TC Object)> GetCompositionObjects<TC>(CompositionObjectType type)
                 where TC : CompositionObject
-                {
-                    return _graph.CompositionObjectNodes.Where(n => n.Object.Type == type).Select(n => (n.Node, (TC)n.Object));
-                }
+            {
+                return _graph.CompositionObjectNodes.Where(n => n.Object.Type == type).Select(n => (n.Node, (TC)n.Object));
+            }
 
             IEnumerable<(TNode Node, TC Object)> GetCanonicalizableCompositionObjects<TC>(CompositionObjectType type)
                 where TC : CompositionObject
@@ -315,6 +320,35 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                         obj.Color.G,
                         obj.Color.B,
                         canonicalAnimator,
+                    } into grouped
+                    select grouped;
+
+                CanonicalizeGrouping(grouping);
+            }
+
+            void CanonicalizeColorGradientStops()
+            {
+                // Canonicalize color gradient stops that have no animations.
+                var nodes = GetCompositionObjects<CompositionColorGradientStop>(CompositionObjectType.CompositionColorGradientStop);
+
+                var items =
+                    from item in nodes
+                    let obj = item.Object
+                    where (_ignoreCommentProperties || obj.Comment == null)
+                       && obj.Properties.IsEmpty
+                    select (item.Node, obj);
+
+                var grouping =
+                    from item in items
+                    let obj = item.obj
+                    where !obj.Animators.Any()
+                    group item.Node by new
+                    {
+                        obj.Color.A,
+                        obj.Color.R,
+                        obj.Color.G,
+                        obj.Color.B,
+                        obj.Offset,
                     } into grouped
                     select grouped;
 
