@@ -1120,7 +1120,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             var opacityPercent = ReadOpacityPercent(obj);
             var startPoint = ReadAnimatableVector3(obj.GetNamedObject("s"));
             var endPoint = ReadAnimatableVector3(obj.GetNamedObject("e"));
-            var gradientStops = ReadAnimatableGradientStops(obj.GetNamedObject("g"));
+            ReadAnimatableGradientStops(obj.GetNamedObject("g"), out var colorStops, out var opacityPercentStops);
 
             Animatable<double> highlightLength = null;
             var highlightLengthObject = obj.GetNamedObject("h");
@@ -1143,7 +1143,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 opacityPercent: opacityPercent,
                 startPoint: startPoint,
                 endPoint: endPoint,
-                gradientStops: gradientStops,
+                colorStops: colorStops,
+                opacityPercentStops: opacityPercentStops,
                 highlightLength: null,
                 highlightDegrees: null);
         }
@@ -1157,7 +1158,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             var opacityPercent = ReadOpacityPercent(obj);
             var startPoint = ReadAnimatableVector3(obj.GetNamedObject("s"));
             var endPoint = ReadAnimatableVector3(obj.GetNamedObject("e"));
-            var gradientStops = ReadAnimatableGradientStops(obj.GetNamedObject("g"));
+            ReadAnimatableGradientStops(obj.GetNamedObject("g"), out var colorStops, out var opacityPercentStops);
 
             AssertAllFieldsRead(obj);
             return new LinearGradientFill(
@@ -1166,7 +1167,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 opacityPercent: opacityPercent,
                 startPoint: startPoint,
                 endPoint: endPoint,
-                gradientStops: gradientStops);
+                colorStops: colorStops,
+                opacityPercentStops: opacityPercentStops);
         }
 
         Ellipse ReadEllipse(JObject obj, in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
@@ -1552,20 +1554,42 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 : new Animatable<PathGeometry>(initialValue, propertyIndex);
         }
 
-        Animatable<Sequence<GradientStop>> ReadAnimatableGradientStops(JObject obj)
+        void ReadAnimatableGradientStops(
+            JObject obj,
+            out Animatable<Sequence<ColorGradientStop>> colorStops,
+            out Animatable<Sequence<OpacityGradientStop>> opacityPercentStops)
         {
             var numberOfColorStops = ReadInt(obj, "p");
 
-            var animatableGradientStopsParser = new AnimatableGradientStopsParser(numberOfColorStops);
-            animatableGradientStopsParser.ParseJson(
+            var animatableColorStopsParser = new AnimatableColorStopsParser(numberOfColorStops);
+            animatableColorStopsParser.ParseJson(
                 this,
-                obj.GetNamedObject("k"), out IEnumerable<KeyFrame<Sequence<GradientStop>>> keyFrames,
-                out Sequence<GradientStop> initialValue);
+                obj.GetNamedObject("k"),
+                out var colorKeyFrames,
+                out var colorInitialValue);
 
             var propertyIndex = ReadInt(obj, "ix");
-            return keyFrames.Any()
-                ? new Animatable<Sequence<GradientStop>>(keyFrames, propertyIndex)
-                : new Animatable<Sequence<GradientStop>>(initialValue, propertyIndex);
+            colorStops = colorKeyFrames.Any()
+                ? new Animatable<Sequence<ColorGradientStop>>(colorKeyFrames, propertyIndex)
+                : new Animatable<Sequence<ColorGradientStop>>(colorInitialValue, propertyIndex);
+
+            if (numberOfColorStops.HasValue)
+            {
+                var animatableOpacityPercentStopsParser = new AnimatableOpacityPercentStopsParser(numberOfColorStops.Value);
+                animatableOpacityPercentStopsParser.ParseJson(
+                    this,
+                    obj.GetNamedObject("k"),
+                    out var opacityKeyFrames,
+                    out var opacityInitialValue);
+
+                opacityPercentStops = opacityKeyFrames.Any()
+                    ? new Animatable<Sequence<OpacityGradientStop>>(opacityKeyFrames, propertyIndex)
+                    : new Animatable<Sequence<OpacityGradientStop>>(opacityInitialValue, propertyIndex);
+            }
+            else
+            {
+                opacityPercentStops = new Animatable<Sequence<OpacityGradientStop>>(Sequence<OpacityGradientStop>.Empty, propertyIndex);
+            }
         }
 
         Animatable<double> ReadAnimatableFloat(JObject obj)
@@ -1808,18 +1832,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             }
         }
 
-        sealed class AnimatableGradientStopsParser : AnimatableParser<Sequence<GradientStop>>
+        sealed class AnimatableColorStopsParser : AnimatableParser<Sequence<ColorGradientStop>>
         {
             // The number of color stops. The opacity stops follow this number
             // of color stops. If not specified, all of the values are color stops.
             readonly int? _colorStopCount;
 
-            internal AnimatableGradientStopsParser(int? colorStopCount)
+            internal AnimatableColorStopsParser(int? colorStopCount)
             {
                 _colorStopCount = colorStopCount;
             }
 
-            protected override Sequence<GradientStop> ReadValue(JToken obj)
+            protected override Sequence<ColorGradientStop> ReadValue(JToken obj)
             {
                 var gradientStopsData = obj.AsArray().Select(v => (double)v).ToArray();
 
@@ -1834,11 +1858,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     throw new LottieCompositionReaderException("Fewer gradient stop values than expected");
                 }
 
-                var gradientStops = new List<GradientStop>(colorStopsDataLength / 4);
+                var colorStopsCount = colorStopsDataLength / 4;
+                var colorStops = new ColorGradientStop[colorStopsCount];
 
                 var offset = 0.0;
-                var r = 0.0;
-                var g = 0.0;
+                var red = 0.0;
+                var green = 0.0;
                 int i;
                 for (i = 0; i < colorStopsDataLength; i++)
                 {
@@ -1849,30 +1874,48 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                             offset = value;
                             break;
                         case 1:
-                            r = value;
+                            red = value;
                             break;
                         case 2:
-                            g = value;
+                            green = value;
                             break;
                         case 3:
-                            var b = value;
+                            var blue = value;
 
                             // Some versions of Lottie use floats, some use bytes. Assume bytes if any values are > 1.
-                            if (r > 1 || g > 1 || b > 1)
+                            if (red > 1 || green > 1 || blue > 1)
                             {
                                 // Convert byte to float.
-                                r /= 255;
-                                g /= 255;
-                                b /= 255;
+                                red /= 255;
+                                green /= 255;
+                                blue /= 255;
                             }
 
-                            gradientStops.Add(GradientStop.FromColor(offset, Color.FromArgb(1, r, g, b)));
+                            colorStops[i / 4] = new ColorGradientStop(offset, Color.FromArgb(1, red, green, blue));
                             break;
                     }
                 }
 
-                // The rest of the array contains the opacity stops.
-                for (; i < gradientStopsData.Length; i++)
+                return new Sequence<ColorGradientStop>(colorStops);
+            }
+        }
+
+        sealed class AnimatableOpacityPercentStopsParser : AnimatableParser<Sequence<OpacityGradientStop>>
+        {
+            // The number of color stops. The opacity stops follow this number of color stops.
+            readonly int _colorStopCount;
+
+            internal AnimatableOpacityPercentStopsParser(int colorStopCount)
+            {
+                _colorStopCount = colorStopCount;
+            }
+
+            protected override Sequence<OpacityGradientStop> ReadValue(JToken obj)
+            {
+                var gradientStopsData = obj.AsArray().Skip(_colorStopCount * 4).Select(v => (double)v).ToArray();
+                var gradientStops = new OpacityGradientStop[gradientStopsData.Length / 2];
+                var offset = 0.0;
+                for (int i = 0; i < gradientStopsData.Length; i++)
                 {
                     var value = gradientStopsData[i];
                     switch (i % 2)
@@ -1890,25 +1933,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                                 opacity /= 255;
                             }
 
-                            gradientStops.Add(GradientStop.FromOpacityPercent(offset, opacity * 100));
+                            gradientStops[i / 2] = new OpacityGradientStop(offset, opacityPercent: opacity * 100);
                             break;
                     }
                 }
 
-                // Merge the stops that have the same offset, and order by offset.
-                var merged =
-                    from stop in gradientStops
-                    group stop by stop.Offset into grouped
-
-                    // Order by offset.
-                    orderby grouped.Key
-
-                    // Note that if there are multiple color stops with the same offset or
-                    // multiple opacity stops with the same offset, one will be chosen at
-                    // random.
-                    select grouped.Aggregate((g1, g2) => new GradientStop(g1.Offset, g1.Color ?? g2.Color, g1.OpacityPercent ?? g2.OpacityPercent));
-
-                return new Sequence<GradientStop>(merged);
+                return new Sequence<OpacityGradientStop>(gradientStops);
             }
         }
 

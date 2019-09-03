@@ -31,6 +31,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// </summary>
         public ReadOnlySpan<T> Items => _items;
 
+        /// <summary>
+        /// And empty sequence.
+        /// </summary>
+        public static Sequence<T> Empty { get; } = new Sequence<T>(new T[0]);
+
         /// <inheritdoc/>
         public bool Equals(Sequence<T> other) =>
             other != null &&
