@@ -2625,13 +2625,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
                 var gradientStopKeyFrames = stops.KeyFrames.ToArray();
 
-                // Create the Composition stops and animated them.
+                // Create the Composition stops and animate them.
                 for (var i = 0; i < stopsCount; i++)
                 {
                     var gradientStop = _c.CreateColorGradientStop();
                     colorStops.Add(gradientStop);
 
-                    var colorKeyFrames = ExtractKeyFramesFromGradientStopKeyFrames(gradientStopKeyFrames, i, gs => MultiplyColorByOpacityPercent(MultiplyColorByOpacityPercent(gs.Color, gs.OpacityPercent), opacityPercentValue)).ToArray();
+                    var colorKeyFrames = ExtractKeyFramesFromGradientStopKeyFrames(
+                        gradientStopKeyFrames,
+                        i,
+                        gs => MultiplyColorByOpacityPercents(gs.Color, opacityPercentValue, gs.OpacityPercent)).ToArray();
 
                     if (colorKeyFrames.Any(ckf => ckf.Value == null))
                     {
@@ -2659,10 +2662,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 foreach (var stop in stops.InitialValue.Items)
                 {
                     var offset = stop.Offset;
-                    var color = MultiplyColorByOpacityPercent(MultiplyColorByOpacityPercent(stop.Color, stop.OpacityPercent), opacityPercentValue);
+                    var color = MultiplyColorByOpacityPercents(stop.Color, opacityPercentValue, stop.OpacityPercent);
                     if (color == null)
                     {
-                        // We currently do not support gradients that contain separate opacity stops.
+                        // We currently do not support gradients that are opacity only.
                         _issues.GradientFillIsNotSupported();
                         return null;
                     }
@@ -2674,7 +2677,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return result;
         }
 
-        static IEnumerable<KeyFrame<T>> ExtractKeyFramesFromGradientStopKeyFrames<T>(KeyFrame<Sequence<GradientStop>>[] stops, int stopIndex, Func<GradientStop, T> selector)
+        static IEnumerable<KeyFrame<T>> ExtractKeyFramesFromGradientStopKeyFrames<T>(
+            KeyFrame<Sequence<GradientStop>>[] stops,
+            int stopIndex,
+            Func<GradientStop, T> selector)
             where T : IEquatable<T>
         {
             for (var i = 0; i < stops.Length; i++)
@@ -3624,6 +3630,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         static Color MultiplyColorByOpacityPercent(Color color, double? opacityPercent)
             => opacityPercent.HasValue ? MultiplyColorByOpacityPercent(color, opacityPercent.Value) : color;
+
+        static Color MultiplyColorByOpacityPercents(Color color, double opacityPercent1, double? opacityPercent2)
+            => MultiplyColorByOpacityPercent(MultiplyColorByOpacityPercent(color, opacityPercent1), opacityPercent2);
 
         CompositionColorBrush CreateAnimatedColorBrush(TranslationContext context, Color color, in TrimmedAnimatable<double> opacityPercent)
         {
