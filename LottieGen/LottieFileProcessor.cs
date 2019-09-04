@@ -174,7 +174,7 @@ sealed class LottieFileProcessor
                     break;
 
                 case Lang.Stats:
-                    codeGenSucceeded &= TryGenerateStats(outputFileBase);
+                    codeGenSucceeded &= TryGenerateStats();
                     break;
 
                 default:
@@ -187,9 +187,9 @@ sealed class LottieFileProcessor
     }
 
     /// <summary>
-    /// Generates csv files describing the Lottie and its translation.
+    /// Generates data describing the Lottie and its translation.
     /// </summary>
-    bool TryGenerateStats(string outputFilePathBase)
+    bool TryGenerateStats()
     {
         if (!TryEnsureTranslated())
         {
@@ -199,73 +199,42 @@ sealed class LottieFileProcessor
         var issues = _readerIssues.Concat(_translationIssues);
         var translationStats = _afterOptimizationStats ?? _beforeOptimizationStats;
 
-        // Assume success.
-        var success = true;
-
-        // Create an id for this file, based on the path.
-        // The key is used so that other tables (e.g. the errors table) can reference the entry
-        // for this file.
-        var key = GenerateHashFromString(_file).Substring(0, 8);
-
-        // Create the main table. Other tables will reference rows in this table.
-        // Note that the main table has only one row. Typical usage will be to
-        // generate tables for many Lottie files then combine them in a script.
-        var sb = new StringBuilder();
-        sb.AppendLine(
-            "Key,Path,FileName,LottieVersion,DurationSeconds,ErrorCount,PrecompLayerCount,ShapeLayerCount," +
-            "SolidLayerCount,ImageLayerCount,TextLayerCount,MaskCount,ContainerShapeCount,ContainerVisualCount," +
-            "ExpressionAnimationCount,PropertySetPropertyCount,SpriteShapeCount");
-        sb.Append($"\"{key}\"");
-        AppendColumnValue(_file);
-        AppendColumnValue(System.IO.Path.GetFileName(_file));
-        AppendColumnValue(_lottieStats.Version);
-        AppendColumnValue(_lottieStats.Duration.TotalSeconds);
-        AppendColumnValue(issues.Count());
-        AppendColumnValue(_lottieStats.PreCompLayerCount);
-        AppendColumnValue(_lottieStats.ShapeLayerCount);
-        AppendColumnValue(_lottieStats.SolidLayerCount);
-        AppendColumnValue(_lottieStats.ImageLayerCount);
-        AppendColumnValue(_lottieStats.TextLayerCount);
-        AppendColumnValue(_lottieStats.MaskCount);
-        AppendColumnValue(translationStats.ContainerShapeCount);
-        AppendColumnValue(translationStats.ContainerVisualCount);
-        AppendColumnValue(translationStats.ExpressionAnimationCount);
-        AppendColumnValue(translationStats.PropertySetPropertyCount);
-        AppendColumnValue(translationStats.SpriteShapeCount);
-        sb.AppendLine();
-
-        WriteCsvFile("basicInfo", sb.ToString());
-
-        // Create the error table.
-        sb.Clear();
-        sb.AppendLine("Key,ErrorCode,Description");
-        foreach ((var code, var description) in issues)
-        {
-            sb.Append($"\"{key}\"");
-            AppendColumnValue(code);
-            AppendColumnValue(description);
-            sb.AppendLine();
-        }
-
-        WriteCsvFile("errors", sb.ToString());
-
-        void AppendColumnValue(object columnValue)
-        {
-            sb.Append($",\"{columnValue}\"");
-        }
-
-        void WriteCsvFile(string fileDifferentiator, string text)
-        {
-            var filePath = $"{outputFilePathBase}.{fileDifferentiator}.csv";
-
-            success &= TryWriteTextFile(filePath, text);
-            if (success)
+        // Write the main table.
+        _reporter.WriteDataRow(
+            "Info",
+            new[]
             {
-                _reporter.WriteInfo($"Stats data written to {filePath}");
-            }
+                    ("Path", _file),
+                    ("LottieVersion", _lottieStats.Version.ToString()),
+                    ("DurationSeconds", _lottieStats.Duration.TotalSeconds.ToString()),
+                    ("ErrorCount", issues.Count().ToString()),
+                    ("PrecompLayerCount", _lottieStats.PreCompLayerCount.ToString()),
+                    ("ShapeLayerCount", _lottieStats.ShapeLayerCount.ToString()),
+                    ("SolidLayerCount", _lottieStats.SolidLayerCount.ToString()),
+                    ("ImageLayerCount", _lottieStats.ImageLayerCount.ToString()),
+                    ("TextLayerCount", _lottieStats.TextLayerCount.ToString()),
+                    ("MaskCount", _lottieStats.MaskCount.ToString()),
+                    ("ContainerShapeCount", translationStats.ContainerShapeCount.ToString()),
+                    ("ContainerVisualCount", translationStats.ContainerVisualCount.ToString()),
+                    ("ExpressionAnimationCount", translationStats.ExpressionAnimationCount.ToString()),
+                    ("PropertySetPropertyCount", translationStats.PropertySetPropertyCount.ToString()),
+                    ("SpriteShapeCount", translationStats.SpriteShapeCount.ToString()),
+            });
+
+        // Write the error table.
+        foreach (var (code, description) in issues)
+        {
+            _reporter.WriteDataRow(
+                "Errors",
+                new[]
+                {
+                    ("Path", _file),
+                    ("ErrorCode", code),
+                    ("Description", description),
+                });
         }
 
-        return success;
+        return true;
     }
 
     bool TryGenerateLottieXml(
