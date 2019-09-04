@@ -6,6 +6,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+/// <summary>
+/// Stores data as rows of columns. Columns are created automatically when adding data.
+/// Column names are case insensitive.
+/// </summary>
 sealed class DataTable
 {
     static readonly IEqualityComparer<string> s_columnNameComparer = StringComparer.OrdinalIgnoreCase;

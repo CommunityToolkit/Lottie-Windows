@@ -132,8 +132,8 @@ sealed class Program
 
         if (_options.Languages.Contains(Lang.Stats))
         {
-            // Write the stats. Stats for all the files are combined, so they are collected by the Reporter
-            // then written to files here after of the LottieFileProcessors have finished.
+            // Write the stats. Stats are collected by the Reporter from each LottieFileProcessor
+            // then written to files here after all of the LottieFileProcessors have finished.
             foreach (var (dataTableName, columnNames, rows) in _reporter.GetDataTables())
             {
                 var tsvFilePath = System.IO.Path.Combine(outputFolder, $"LottieGen_{dataTableName}.tsv");

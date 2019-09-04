@@ -9,6 +9,10 @@ using System.Linq;
 
 sealed class Reporter
 {
+    // Lock to protect method and object that do not support multi-threaded access. Note that the
+    // TextWriter objects do not need locking (they are assumed to be threadsafe).
+    readonly object _lock = new object();
+
     readonly Dictionary<string, DataTable> _dataTables =
         new Dictionary<string, DataTable>(StringComparer.OrdinalIgnoreCase);
 
@@ -42,9 +46,9 @@ sealed class Reporter
 
     // Writes a row of data that can be retrieved later. Typically this is used to create CSV or TSV files
     // containing information about the result of processing some Lottie files.
-    internal void WriteDataRow(string databaseName, IReadOnlyList<(string columnName, string value)> row)
+    internal void WriteDataTableRow(string databaseName, IReadOnlyList<(string columnName, string value)> row)
     {
-        lock (_dataTables)
+        lock (_lock)
         {
             if (!_dataTables.TryGetValue(databaseName, out var database))
             {
@@ -56,13 +60,16 @@ sealed class Reporter
         }
     }
 
-    // Returns the data for each dat table that was written.
+    // Returns the data for each data table that was written.
     internal IEnumerable<(string dataTableName, string[] columnNames, string[][] rows)> GetDataTables()
     {
-        foreach (var (dataTableName, dataTable) in _dataTables.OrderBy(dt => dt.Key))
+        lock (_lock)
         {
-            var (columNames, rows) = dataTable.GetData();
-            yield return (dataTableName, columNames, rows);
+            foreach (var (dataTableName, dataTable) in _dataTables.OrderBy(dt => dt.Key))
+            {
+                var (columNames, rows) = dataTable.GetData();
+                yield return (dataTableName, columNames, rows);
+            }
         }
     }
 }

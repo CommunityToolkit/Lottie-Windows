@@ -177,7 +177,7 @@ sealed class LottieFileProcessor
         var translationStats = _afterOptimizationStats ?? _beforeOptimizationStats;
 
         // Write the profiler table.
-        _reporter.WriteDataRow(
+        _reporter.WriteDataTableRow(
             "Timing",
             new[]
             {
@@ -195,7 +195,7 @@ sealed class LottieFileProcessor
             });
 
         // Write the Lottie stats table.
-        _reporter.WriteDataRow(
+        _reporter.WriteDataTableRow(
             "Lottie",
             new[]
             {
@@ -220,7 +220,7 @@ sealed class LottieFileProcessor
             });
 
         // Write the WinComp stats table.
-        _reporter.WriteDataRow(
+        _reporter.WriteDataTableRow(
             "WinComp",
             new[]
             {
@@ -262,7 +262,7 @@ sealed class LottieFileProcessor
         // Write the WinComp optimization stats table.
         if (_afterOptimizationStats != null)
         {
-            _reporter.WriteDataRow(
+            _reporter.WriteDataTableRow(
                 "WinCompOptimization",
                 new[]
                 {
@@ -305,7 +305,7 @@ sealed class LottieFileProcessor
         // Write the error table.
         foreach (var (code, description) in issues)
         {
-            _reporter.WriteDataRow(
+            _reporter.WriteDataTableRow(
                 "Errors",
                 new[]
                 {
