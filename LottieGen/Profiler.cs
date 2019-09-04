@@ -4,8 +4,6 @@
 
 using System;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 
 // Measures time spent in each phase.
 sealed class Profiler
@@ -19,6 +17,16 @@ sealed class Profiler
     TimeSpan _optimizationTime;
     TimeSpan _codegenTime;
     TimeSpan _serializationTime;
+
+    internal TimeSpan ParseTime => _parseTime;
+
+    internal TimeSpan TranslateTime => _translateTime;
+
+    internal TimeSpan OptimizationTime => _optimizationTime;
+
+    internal TimeSpan CodegenTime => _codegenTime;
+
+    internal TimeSpan SerializationTime => _serializationTime;
 
     internal void OnUnmeasuredFinished() => OnPhaseFinished(ref _unmeasuredTime);
 
@@ -36,34 +44,5 @@ sealed class Profiler
     {
         counter = _sw.Elapsed;
         _sw.Restart();
-    }
-
-    // True if there is at least one time value.
-    internal bool HasAnyResults
-        => new[]
-        {
-                _parseTime,
-                _translateTime,
-                _optimizationTime,
-                _codegenTime,
-                _serializationTime,
-        }.Any(ts => ts > TimeSpan.Zero);
-
-    internal void WriteReport(TextWriter writer)
-    {
-        WriteReportForPhase(writer, "parse", _parseTime);
-        WriteReportForPhase(writer, "translate", _translateTime);
-        WriteReportForPhase(writer, "optimization", _optimizationTime);
-        WriteReportForPhase(writer, "codegen", _codegenTime);
-        WriteReportForPhase(writer, "serialization", _serializationTime);
-    }
-
-    void WriteReportForPhase(TextWriter writer, string phaseName, TimeSpan value)
-    {
-        // Ignore phases that didn't occur.
-        if (value > TimeSpan.Zero)
-        {
-            writer.WriteLine($"{value} spent in {phaseName}.");
-        }
     }
 }

@@ -136,7 +136,7 @@ sealed class Program
             // then written to files here after of the LottieFileProcessors have finished.
             foreach (var (dataTableName, columnNames, rows) in _reporter.GetDataTables())
             {
-                var tsvFilePath = System.IO.Path.Combine(outputFolder, $"Stats_{dataTableName}.tsv");
+                var tsvFilePath = System.IO.Path.Combine(outputFolder, $"LottieGen_{dataTableName}.tsv");
                 _reporter.WriteInfo($"Writing stats to {tsvFilePath}");
                 using (var tsvFile = File.CreateText(tsvFilePath))
                 {
@@ -215,7 +215,6 @@ OVERVIEW:
          -Strict       Fails on any parsing or translation issue. If not specified, 
                        a best effort will be made to create valid output, and any 
                        issues will be reported to STDOUT.
-         -Verbose      Outputs extra info to STDOUT.
 
 EXAMPLES:
 

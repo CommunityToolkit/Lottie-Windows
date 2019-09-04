@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 sealed class Reporter
 {
@@ -58,7 +59,7 @@ sealed class Reporter
     // Returns the data for each dat table that was written.
     internal IEnumerable<(string dataTableName, string[] columnNames, string[][] rows)> GetDataTables()
     {
-        foreach (var (dataTableName, dataTable) in _dataTables)
+        foreach (var (dataTableName, dataTable) in _dataTables.OrderBy(dt => dt.Key))
         {
             var (columNames, rows) = dataTable.GetData();
             yield return (dataTableName, columNames, rows);
