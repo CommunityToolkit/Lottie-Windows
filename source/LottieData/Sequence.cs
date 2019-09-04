@@ -34,7 +34,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// <summary>
         /// And empty sequence.
         /// </summary>
-        public static Sequence<T> Empty { get; } = new Sequence<T>(new T[0]);
+        public static Sequence<T> Empty { get; } = new Sequence<T>(EmptyArray<T>.Singleton);
 
         /// <inheritdoc/>
         public bool Equals(Sequence<T> other) =>

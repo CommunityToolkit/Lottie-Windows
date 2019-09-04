@@ -19,7 +19,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
     class Animatable<T> : IAnimatableValue<T>
         where T : IEquatable<T>
     {
-        internal static readonly KeyFrame<T>[] EmptyKeyFrames = new KeyFrame<T>[0];
         readonly KeyFrame<T>[] _keyFrames;
 
         /// <summary>
@@ -29,7 +28,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         public Animatable(T value, int? propertyIndex)
         {
             Debug.Assert(value != null, "Precondition");
-            _keyFrames = EmptyKeyFrames;
+            _keyFrames = EmptyArray<KeyFrame<T>>.Singleton;
             InitialValue = value;
             PropertyIndex = propertyIndex;
         }
@@ -49,7 +48,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             {
                 // There's only one key frame so the value never changes. We have
                 // saved the value in InitialValue. Might as well ditch the key frames.
-                _keyFrames = EmptyKeyFrames;
+                _keyFrames = EmptyArray<KeyFrame<T>>.Singleton;
             }
 
             PropertyIndex = propertyIndex;
@@ -63,7 +62,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// </summary>
         public Animatable(T initialValue, in ReadOnlySpan<KeyFrame<T>> keyFrames, int? propertyIndex)
         {
-            _keyFrames = keyFrames.Length > 1 ? keyFrames.ToArray() : EmptyKeyFrames;
+            _keyFrames = keyFrames.Length > 1 ? keyFrames.ToArray() : EmptyArray<KeyFrame<T>>.Singleton;
             InitialValue = initialValue;
             PropertyIndex = propertyIndex;
 

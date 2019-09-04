@@ -13,17 +13,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 #endif
     sealed class ShapeLayer : Layer
     {
-        readonly ShapeLayerContent[] _shapes;
+        readonly ShapeLayerContent[] _contents;
 
         public ShapeLayer(
             in LayerArgs args,
-            IEnumerable<ShapeLayerContent> shapes)
+            IEnumerable<ShapeLayerContent> contents)
          : base(in args)
         {
-            _shapes = shapes.ToArray();
+            _contents = contents.ToArray();
         }
 
-        public ReadOnlySpan<ShapeLayerContent> Contents => _shapes;
+        public ReadOnlySpan<ShapeLayerContent> Contents => _contents;
 
         /// <inheritdoc/>
         public override LayerType Type => LayerType.Shape;

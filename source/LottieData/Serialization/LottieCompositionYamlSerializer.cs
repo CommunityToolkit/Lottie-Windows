@@ -337,7 +337,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         YamlObject FromShapeGroup(ShapeGroup content, YamlMap superclassContent)
         {
             var result = superclassContent;
-            result.Add("Items", FromSpan(content.Items, FromShapeLayerContent));
+            result.Add("Items", FromSpan(content.Contents, FromShapeLayerContent));
             return result;
         }
 
