@@ -44,6 +44,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// </summary>
         internal bool IsAnimated => KeyFrames.Length > 1;
 
+        /// <summary>
+        /// Returns <c>true</c> if this value is always equal to the given value.
+        /// </summary>
+        /// <returns><c>true</c> if this value is always equal to the given value.</returns>
+        internal bool AlwaysEquals(T value) => !IsAnimated && value.Equals(InitialValue);
+
         internal TranslationContext Context { get; }
     }
 }

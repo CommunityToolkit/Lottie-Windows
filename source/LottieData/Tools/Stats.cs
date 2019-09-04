@@ -15,35 +15,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Tools
 #endif
     sealed class Stats
     {
-        readonly Version _version;
-        readonly string _name;
-        readonly double _width;
-        readonly double _height;
-        readonly TimeSpan _duration;
-        readonly int _preCompLayerCount;
-        readonly int _solidLayerCount;
-        readonly int _imageLayerCount;
-        readonly int _maskCount;
-        readonly int _nullLayerCount;
-        readonly int _shapeLayerCount;
-        readonly int _textLayerCount;
-        readonly int _maskAdditiveCount;
-        readonly int _maskDarkenCount;
-        readonly int _maskDifferenceCount;
-        readonly int _maskIntersectCount;
-        readonly int _maskLightenCount;
-        readonly int _maskSubtractiveCount;
-
         // Creates a string that describes the Lottie.
         public Stats(LottieComposition lottieComposition)
         {
             if (lottieComposition == null) { return; }
 
-            _name = lottieComposition.Name;
-            _version = lottieComposition.Version;
-            _width = lottieComposition.Width;
-            _height = lottieComposition.Height;
-            _duration = lottieComposition.Duration;
+            Name = lottieComposition.Name;
+            Version = lottieComposition.Version;
+            Width = lottieComposition.Width;
+            Height = lottieComposition.Height;
+            Duration = lottieComposition.Duration;
 
             // Get the layers stored in assets.
             var layersInAssets =
@@ -58,22 +39,23 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Tools
                 switch (layer.Type)
                 {
                     case Layer.LayerType.PreComp:
-                        _preCompLayerCount++;
+                        PreCompLayerCount++;
                         break;
                     case Layer.LayerType.Solid:
-                        _solidLayerCount++;
+                        SolidLayerCount++;
                         break;
                     case Layer.LayerType.Image:
-                        _imageLayerCount++;
+                        ImageLayerCount++;
                         break;
                     case Layer.LayerType.Null:
-                        _nullLayerCount++;
+                        NullLayerCount++;
                         break;
                     case Layer.LayerType.Shape:
-                        _shapeLayerCount++;
+                        ShapeLayerCount++;
+                        VisitShapeLayer((ShapeLayer)layer);
                         break;
                     case Layer.LayerType.Text:
-                        _textLayerCount++;
+                        TextLayerCount++;
                         break;
                     default:
                         throw new InvalidOperationException();
@@ -81,68 +63,138 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Tools
 
                 foreach (var mask in layer.Masks)
                 {
-                    _maskCount++;
+                    MaskCount++;
                     switch (mask.Mode)
                     {
                         case Mask.MaskMode.Additive:
-                            _maskAdditiveCount++;
+                            MaskAdditiveCount++;
                             break;
                         case Mask.MaskMode.Darken:
-                            _maskDarkenCount++;
+                            MaskDarkenCount++;
                             break;
                         case Mask.MaskMode.Difference:
-                            _maskDifferenceCount++;
+                            MaskDifferenceCount++;
                             break;
                         case Mask.MaskMode.Intersect:
-                            _maskIntersectCount++;
+                            MaskIntersectCount++;
                             break;
                         case Mask.MaskMode.Lighten:
-                            _maskLightenCount++;
+                            MaskLightenCount++;
                             break;
                         case Mask.MaskMode.Subtract:
-                            _maskSubtractiveCount++;
+                            MaskSubtractCount++;
                             break;
                     }
                 }
 
-                _maskCount += layer.Masks.Length;
+                MaskCount += layer.Masks.Length;
             }
         }
 
-        public int PreCompLayerCount => _preCompLayerCount;
+        public int PreCompLayerCount { get; }
 
-        public int SolidLayerCount => _solidLayerCount;
+        public int SolidLayerCount { get; }
 
-        public int ImageLayerCount => _imageLayerCount;
+        public int ImageLayerCount { get; }
 
-        public int MaskCount => _maskCount;
+        public int LinearGradientFillCount { get; private set; }
 
-        public int MaskAdditiveCount => _maskAdditiveCount;
+        public int LinearGradientStrokeCount { get; private set; }
 
-        public int MaskDarkenCount => _maskDarkenCount;
+        public int MaskCount { get; }
 
-        public int MaskDifferenceCount => _maskDifferenceCount;
+        public int MaskAdditiveCount { get; }
 
-        public int MaskIntersectCount => _maskIntersectCount;
+        public int MaskDarkenCount { get; }
 
-        public int MaskLightenCount => _maskLightenCount;
+        public int MaskDifferenceCount { get; }
 
-        public int MaskSubtractCount => _maskSubtractiveCount;
+        public int MaskIntersectCount { get; }
 
-        public int NullLayerCount => _nullLayerCount;
+        public int MaskLightenCount { get; }
 
-        public int ShapeLayerCount => _shapeLayerCount;
+        public int MaskSubtractCount { get; }
 
-        public int TextLayerCount => _textLayerCount;
+        public int NullLayerCount { get; }
 
-        public double Width => _width;
+        public int RadialGradientFillCount { get; private set; }
 
-        public double Height => _height;
+        public int RadialGradientStrokeCount { get; private set; }
 
-        public TimeSpan Duration => _duration;
+        public int ShapeLayerCount { get; }
 
-        public string Name => _name;
+        public int TextLayerCount { get; }
 
-        public Version Version => _version;
+        public double Width { get; }
+
+        public double Height { get; }
+
+        public TimeSpan Duration { get; }
+
+        public string Name { get; }
+
+        public Version Version { get; }
+
+        void VisitShapeLayer(ShapeLayer shapeLayer)
+        {
+            foreach (var content in shapeLayer.Contents)
+            {
+                VisitShapeLayerContent(content);
+            }
+        }
+
+        void VisitShapeGroup(ShapeGroup shapeGroup)
+        {
+            foreach (var content in shapeGroup.Items)
+            {
+                VisitShapeLayerContent(content);
+            }
+        }
+
+        void VisitShapeLayerContent(ShapeLayerContent content)
+        {
+            switch (content.ContentType)
+            {
+                case ShapeContentType.Ellipse:
+                    break;
+                case ShapeContentType.Group:
+                    VisitShapeGroup((ShapeGroup)content);
+                    break;
+                case ShapeContentType.LinearGradientFill:
+                    LinearGradientFillCount++;
+                    break;
+                case ShapeContentType.LinearGradientStroke:
+                    LinearGradientStrokeCount++;
+                    break;
+                case ShapeContentType.MergePaths:
+                    break;
+                case ShapeContentType.Path:
+                    break;
+                case ShapeContentType.Polystar:
+                    break;
+                case ShapeContentType.RadialGradientFill:
+                    RadialGradientFillCount++;
+                    break;
+                case ShapeContentType.RadialGradientStroke:
+                    RadialGradientStrokeCount++;
+                    break;
+                case ShapeContentType.Rectangle:
+                    break;
+                case ShapeContentType.Repeater:
+                    break;
+                case ShapeContentType.RoundedCorner:
+                    break;
+                case ShapeContentType.SolidColorFill:
+                    break;
+                case ShapeContentType.SolidColorStroke:
+                    break;
+                case ShapeContentType.Transform:
+                    break;
+                case ShapeContentType.TrimPath:
+                    break;
+                default:
+                    throw new InvalidOperationException();
+            }
+        }
     }
 }

@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -128,6 +129,43 @@ sealed class Program
             }
         });
 #endif
+
+        if (_options.Languages.Contains(Lang.Stats))
+        {
+            // Write the stats. Stats are collected by the Reporter from each LottieFileProcessor
+            // then written to files here after all of the LottieFileProcessors have finished.
+            foreach (var (dataTableName, columnNames, rows) in _reporter.GetDataTables())
+            {
+                var tsvFilePath = System.IO.Path.Combine(outputFolder, $"LottieGen_{dataTableName}.tsv");
+                _reporter.WriteInfo($"Writing stats to {tsvFilePath}");
+                using (var tsvFile = File.CreateText(tsvFilePath))
+                {
+                    tsvFile.WriteLine(string.Join("\t", columnNames));
+
+                    // Sort the rows. This is necessary in order to ensure deterministic output
+                    // when multiple LottieFileProcessors are run in parallel.
+                    Array.Sort(rows, (a, b) =>
+                    {
+                        for (var i = 0; i < a.Length; i++)
+                        {
+                            var result = StringComparer.Ordinal.Compare(a[i], b[i]);
+                            if (result != 0)
+                            {
+                                return result;
+                            }
+                        }
+
+                        return 0;
+                    });
+
+                    foreach (var row in rows)
+                    {
+                        tsvFile.WriteLine(string.Join("\t", row));
+                    }
+                }
+            }
+        }
+
         return succeeded ? RunResult.Success : RunResult.Failure;
     }
 
@@ -177,7 +215,6 @@ OVERVIEW:
          -Strict       Fails on any parsing or translation issue. If not specified, 
                        a best effort will be made to create valid output, and any 
                        issues will be reported to STDOUT.
-         -Verbose      Outputs extra info to STDOUT.
 
 EXAMPLES:
 

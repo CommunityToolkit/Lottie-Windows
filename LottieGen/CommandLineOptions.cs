@@ -47,8 +47,6 @@ sealed class CommandLineOptions
 
     internal bool DisableCodeGenOptimizer { get; private set; }
 
-    internal bool Verbose { get; private set; }
-
     enum Keyword
     {
         None,
@@ -61,7 +59,6 @@ sealed class CommandLineOptions
         Strict,
         DisableTranslationOptimizer,
         DisableCodeGenOptimizer,
-        Verbose,
     }
 
     // Returns the parsed command line. If ErrorDescription is non-null, then the parse failed.
@@ -117,8 +114,7 @@ sealed class CommandLineOptions
             .AddPrefixedKeyword("outputfolder", Keyword.OutputFolder)
             .AddPrefixedKeyword("strict", Keyword.Strict)
             .AddPrefixedKeyword("disablecodegenoptimizer", Keyword.DisableCodeGenOptimizer)
-            .AddPrefixedKeyword("disabletranslationoptimizer", Keyword.DisableTranslationOptimizer)
-            .AddPrefixedKeyword("verbose", Keyword.Verbose);
+            .AddPrefixedKeyword("disabletranslationoptimizer", Keyword.DisableTranslationOptimizer);
 
         // The last keyword recognized. This defines what the following parameter value is for,
         // or None if not expecting a parameter value.
@@ -151,9 +147,6 @@ sealed class CommandLineOptions
                             break;
                         case Keyword.DisableTranslationOptimizer:
                             DisableTranslationOptimizer = true;
-                            break;
-                        case Keyword.Verbose:
-                            Verbose = true;
                             break;
 
                         // The following keywords require a parameter as the next token.

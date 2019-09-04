@@ -105,29 +105,6 @@ sealed class LottieFileProcessor
 
         var codeGenResult = TryGenerateCode();
 
-        // Output extra information if the user specified verbose output.
-        if (_options.Verbose)
-        {
-            if (_profiler.HasAnyResults)
-            {
-                _reporter.WriteInfoNewLine();
-                _reporter.WriteInfo(" === Timings ===");
-                _profiler.WriteReport(_reporter.InfoStream);
-            }
-
-            if (_lottieStats != null)
-            {
-                _reporter.WriteInfoNewLine();
-                WriteLottieStatsReport(_reporter.InfoStream, _lottieStats);
-            }
-
-            if (_beforeOptimizationStats != null && _afterOptimizationStats != null)
-            {
-                _reporter.WriteInfoNewLine();
-                WriteCodeGenStatsReport(_reporter.InfoStream, _beforeOptimizationStats, _afterOptimizationStats);
-            }
-        }
-
         // Any error that was reported is treated as a failure.
         codeGenResult &= !_reportedErrors;
 
@@ -174,7 +151,7 @@ sealed class LottieFileProcessor
                     break;
 
                 case Lang.Stats:
-                    codeGenSucceeded &= TryGenerateStats(outputFileBase);
+                    codeGenSucceeded &= TryGenerateStats();
                     break;
 
                 default:
@@ -187,9 +164,9 @@ sealed class LottieFileProcessor
     }
 
     /// <summary>
-    /// Generates csv files describing the Lottie and its translation.
+    /// Generates data describing the Lottie and its translation.
     /// </summary>
-    bool TryGenerateStats(string outputFilePathBase)
+    bool TryGenerateStats()
     {
         if (!TryEnsureTranslated())
         {
@@ -199,73 +176,146 @@ sealed class LottieFileProcessor
         var issues = _readerIssues.Concat(_translationIssues);
         var translationStats = _afterOptimizationStats ?? _beforeOptimizationStats;
 
-        // Assume success.
-        var success = true;
-
-        // Create an id for this file, based on the path.
-        // The key is used so that other tables (e.g. the errors table) can reference the entry
-        // for this file.
-        var key = GenerateHashFromString(_file).Substring(0, 8);
-
-        // Create the main table. Other tables will reference rows in this table.
-        // Note that the main table has only one row. Typical usage will be to
-        // generate tables for many Lottie files then combine them in a script.
-        var sb = new StringBuilder();
-        sb.AppendLine(
-            "Key,Path,FileName,LottieVersion,DurationSeconds,ErrorCount,PrecompLayerCount,ShapeLayerCount," +
-            "SolidLayerCount,ImageLayerCount,TextLayerCount,MaskCount,ContainerShapeCount,ContainerVisualCount," +
-            "ExpressionAnimationCount,PropertySetPropertyCount,SpriteShapeCount");
-        sb.Append($"\"{key}\"");
-        AppendColumnValue(_file);
-        AppendColumnValue(System.IO.Path.GetFileName(_file));
-        AppendColumnValue(_lottieStats.Version);
-        AppendColumnValue(_lottieStats.Duration.TotalSeconds);
-        AppendColumnValue(issues.Count());
-        AppendColumnValue(_lottieStats.PreCompLayerCount);
-        AppendColumnValue(_lottieStats.ShapeLayerCount);
-        AppendColumnValue(_lottieStats.SolidLayerCount);
-        AppendColumnValue(_lottieStats.ImageLayerCount);
-        AppendColumnValue(_lottieStats.TextLayerCount);
-        AppendColumnValue(_lottieStats.MaskCount);
-        AppendColumnValue(translationStats.ContainerShapeCount);
-        AppendColumnValue(translationStats.ContainerVisualCount);
-        AppendColumnValue(translationStats.ExpressionAnimationCount);
-        AppendColumnValue(translationStats.PropertySetPropertyCount);
-        AppendColumnValue(translationStats.SpriteShapeCount);
-        sb.AppendLine();
-
-        WriteCsvFile("basicInfo", sb.ToString());
-
-        // Create the error table.
-        sb.Clear();
-        sb.AppendLine("Key,ErrorCode,Description");
-        foreach ((var code, var description) in issues)
-        {
-            sb.Append($"\"{key}\"");
-            AppendColumnValue(code);
-            AppendColumnValue(description);
-            sb.AppendLine();
-        }
-
-        WriteCsvFile("errors", sb.ToString());
-
-        void AppendColumnValue(object columnValue)
-        {
-            sb.Append($",\"{columnValue}\"");
-        }
-
-        void WriteCsvFile(string fileDifferentiator, string text)
-        {
-            var filePath = $"{outputFilePathBase}.{fileDifferentiator}.csv";
-
-            success &= TryWriteTextFile(filePath, text);
-            if (success)
+        // Write the profiler table.
+        _reporter.WriteDataTableRow(
+            "Timing",
+            new[]
             {
-                _reporter.WriteInfo($"Stats data written to {filePath}");
-            }
+                ("Path", _file),
+                ("TotalSeconds", (_profiler.ParseTime +
+                                  _profiler.TranslateTime +
+                                  _profiler.OptimizationTime +
+                                  _profiler.CodegenTime +
+                                  _profiler.SerializationTime).TotalSeconds.ToString()),
+                ("ParseSeconds", _profiler.ParseTime.TotalSeconds.ToString()),
+                ("TranslateSeconds", _profiler.TranslateTime.TotalSeconds.ToString()),
+                ("OptimizationSeconds", _profiler.OptimizationTime.TotalSeconds.ToString()),
+                ("CodegenSeconds", _profiler.CodegenTime.TotalSeconds.ToString()),
+                ("SerializationSeconds", _profiler.SerializationTime.TotalSeconds.ToString()),
+            });
+
+        // Write the Lottie stats table.
+        _reporter.WriteDataTableRow(
+            "Lottie",
+            new[]
+            {
+                    ("Path", _file),
+                    ("Name", _lottieStats.Name),
+                    ("BodyMovinVersion", _lottieStats.Version.ToString()),
+                    ("DurationSeconds", _lottieStats.Duration.TotalSeconds.ToString()),
+                    ("Width", _lottieStats.Width.ToString()),
+                    ("Height", _lottieStats.Height.ToString()),
+                    ("Error", issues.Count().ToString()),
+                    ("ImageLayer", _lottieStats.ImageLayerCount.ToString()),
+                    ("NullLayer", _lottieStats.NullLayerCount.ToString()),
+                    ("PrecompLayer", _lottieStats.PreCompLayerCount.ToString()),
+                    ("ShapeLayer", _lottieStats.ShapeLayerCount.ToString()),
+                    ("SolidLayer", _lottieStats.SolidLayerCount.ToString()),
+                    ("TextLayer", _lottieStats.TextLayerCount.ToString()),
+                    ("Mask", _lottieStats.MaskCount.ToString()),
+                    ("LinearGradientFill", _lottieStats.LinearGradientFillCount.ToString()),
+                    ("LinearGradientStroke", _lottieStats.LinearGradientStrokeCount.ToString()),
+                    ("RadialGradientFill", _lottieStats.RadialGradientFillCount.ToString()),
+                    ("RadialGradientStroke", _lottieStats.RadialGradientStrokeCount.ToString()),
+            });
+
+        // Write the WinComp stats table.
+        _reporter.WriteDataTableRow(
+            "WinComp",
+            new[]
+            {
+                    ("Path", _file),
+                    ("CanvasGeometry", translationStats.CanvasGeometryCount.ToString()),
+                    ("ColorBrush", translationStats.ColorBrushCount.ToString()),
+                    ("ColorGradientStop", translationStats.ColorGradientStopCount.ToString()),
+                    ("ColorKeyFrameAnimation", translationStats.ColorKeyFrameAnimationCount.ToString()),
+                    ("CompositionPath", translationStats.CompositionPathCount.ToString()),
+                    ("ContainerShape", translationStats.ContainerShapeCount.ToString()),
+                    ("ContainerVisual", translationStats.ContainerVisualCount.ToString()),
+                    ("CubicBezierEasingFunction", translationStats.CubicBezierEasingFunctionCount.ToString()),
+                    ("EffectBrush", translationStats.EffectBrushCount.ToString()),
+                    ("EllipseGeometry", translationStats.EllipseGeometryCount.ToString()),
+                    ("ExpressionAnimation", translationStats.ExpressionAnimationCount.ToString()),
+                    ("GeometricClip", translationStats.GeometricClipCount.ToString()),
+                    ("InsetClip", translationStats.InsetClipCount.ToString()),
+                    ("LinearEasingFunction", translationStats.LinearEasingFunctionCount.ToString()),
+                    ("LinearGradientBrush", translationStats.LinearGradientBrushCount.ToString()),
+                    ("PathGeometry", translationStats.PathGeometryCount.ToString()),
+                    ("PathKeyFrameAnimation", translationStats.PathKeyFrameAnimationCount.ToString()),
+                    ("Property value", translationStats.PropertySetPropertyCount.ToString()),
+                    ("PropertySet", translationStats.PropertySetCount.ToString()),
+                    ("RadialGradientBrush", translationStats.RadialGradientBrushCount.ToString()),
+                    ("RectangleGeometry", translationStats.RectangleGeometryCount.ToString()),
+                    ("RoundedRectangleGeometry", translationStats.RoundedRectangleGeometryCount.ToString()),
+                    ("ScalarKeyFrameAnimation", translationStats.ScalarKeyFrameAnimationCount.ToString()),
+                    ("ShapeVisual", translationStats.ShapeVisualCount.ToString()),
+                    ("SpriteShape", translationStats.SpriteShapeCount.ToString()),
+                    ("SpriteVisualCount", translationStats.SpriteVisualCount.ToString()),
+                    ("StepEasingFunction", translationStats.StepEasingFunctionCount.ToString()),
+                    ("SurfaceBrushCount", translationStats.SurfaceBrushCount.ToString()),
+                    ("Vector2KeyFrameAnimation", translationStats.Vector2KeyFrameAnimationCount.ToString()),
+                    ("Vector3KeyFrameAnimation", translationStats.Vector3KeyFrameAnimationCount.ToString()),
+                    ("ViewBox", translationStats.ViewBoxCount.ToString()),
+                    ("VisualSurfaceCount", translationStats.VisualSurfaceCount.ToString()),
+            });
+
+        // Write the WinComp optimization stats table.
+        if (_afterOptimizationStats != null)
+        {
+            _reporter.WriteDataTableRow(
+                "WinCompOptimization",
+                new[]
+                {
+                    ("Path", _file),
+                    ("CanvasGeometry", (_afterOptimizationStats.CanvasGeometryCount - _beforeOptimizationStats.CanvasGeometryCount).ToString()),
+                    ("ColorBrush", (_afterOptimizationStats.ColorBrushCount - _beforeOptimizationStats.ColorBrushCount).ToString()),
+                    ("ColorGradientStop", (_afterOptimizationStats.ColorGradientStopCount - _beforeOptimizationStats.ColorGradientStopCount).ToString()),
+                    ("ColorKeyFrameAnimation", (_afterOptimizationStats.ColorKeyFrameAnimationCount - _beforeOptimizationStats.ColorKeyFrameAnimationCount).ToString()),
+                    ("CompositionPath", (_afterOptimizationStats.CompositionPathCount - _beforeOptimizationStats.CompositionPathCount).ToString()),
+                    ("ContainerShape", (_afterOptimizationStats.ContainerShapeCount - _beforeOptimizationStats.ContainerShapeCount).ToString()),
+                    ("ContainerVisual", (_afterOptimizationStats.ContainerVisualCount - _beforeOptimizationStats.ContainerVisualCount).ToString()),
+                    ("CubicBezierEasingFunction", (_afterOptimizationStats.CubicBezierEasingFunctionCount - _beforeOptimizationStats.CubicBezierEasingFunctionCount).ToString()),
+                    ("EffectBrush", (_afterOptimizationStats.EffectBrushCount - _beforeOptimizationStats.EffectBrushCount).ToString()),
+                    ("EllipseGeometry", (_afterOptimizationStats.EllipseGeometryCount - _beforeOptimizationStats.EllipseGeometryCount).ToString()),
+                    ("ExpressionAnimation", (_afterOptimizationStats.ExpressionAnimationCount - _beforeOptimizationStats.ExpressionAnimationCount).ToString()),
+                    ("GeometricClip", (_afterOptimizationStats.GeometricClipCount - _beforeOptimizationStats.GeometricClipCount).ToString()),
+                    ("InsetClip", (_afterOptimizationStats.InsetClipCount - _beforeOptimizationStats.InsetClipCount).ToString()),
+                    ("LinearEasingFunction", (_afterOptimizationStats.LinearEasingFunctionCount - _beforeOptimizationStats.LinearEasingFunctionCount).ToString()),
+                    ("LinearGradientBrush", (_afterOptimizationStats.LinearGradientBrushCount - _beforeOptimizationStats.LinearGradientBrushCount).ToString()),
+                    ("PathGeometry", (_afterOptimizationStats.PathGeometryCount - _beforeOptimizationStats.PathGeometryCount).ToString()),
+                    ("PathKeyFrameAnimation", (_afterOptimizationStats.PathKeyFrameAnimationCount - _beforeOptimizationStats.PathKeyFrameAnimationCount).ToString()),
+                    ("Property value", (_afterOptimizationStats.PropertySetPropertyCount - _beforeOptimizationStats.PropertySetPropertyCount).ToString()),
+                    ("PropertySet", (_afterOptimizationStats.PropertySetCount - _beforeOptimizationStats.PropertySetCount).ToString()),
+                    ("RadialGradientBrush", (_afterOptimizationStats.RadialGradientBrushCount - _beforeOptimizationStats.RadialGradientBrushCount).ToString()),
+                    ("RectangleGeometry", (_afterOptimizationStats.RectangleGeometryCount - _beforeOptimizationStats.RectangleGeometryCount).ToString()),
+                    ("RoundedRectangleGeometry", (_afterOptimizationStats.RoundedRectangleGeometryCount - _beforeOptimizationStats.RoundedRectangleGeometryCount).ToString()),
+                    ("ScalarKeyFrameAnimation", (_afterOptimizationStats.ScalarKeyFrameAnimationCount - _beforeOptimizationStats.ScalarKeyFrameAnimationCount).ToString()),
+                    ("ShapeVisual", (_afterOptimizationStats.ShapeVisualCount - _beforeOptimizationStats.ShapeVisualCount).ToString()),
+                    ("SpriteShape", (_afterOptimizationStats.SpriteShapeCount - _beforeOptimizationStats.SpriteShapeCount).ToString()),
+                    ("SpriteVisualCount", (_afterOptimizationStats.SpriteVisualCount - _beforeOptimizationStats.SpriteVisualCount).ToString()),
+                    ("StepEasingFunction", (_afterOptimizationStats.StepEasingFunctionCount - _beforeOptimizationStats.StepEasingFunctionCount).ToString()),
+                    ("SurfaceBrushCount", (_afterOptimizationStats.SurfaceBrushCount - _beforeOptimizationStats.SurfaceBrushCount).ToString()),
+                    ("Vector2KeyFrameAnimation", (_afterOptimizationStats.Vector2KeyFrameAnimationCount - _beforeOptimizationStats.Vector2KeyFrameAnimationCount).ToString()),
+                    ("Vector3KeyFrameAnimation", (_afterOptimizationStats.Vector3KeyFrameAnimationCount - _beforeOptimizationStats.Vector3KeyFrameAnimationCount).ToString()),
+                    ("ViewBox", (_afterOptimizationStats.ViewBoxCount - _beforeOptimizationStats.ViewBoxCount).ToString()),
+                    ("VisualSurfaceCount", (_afterOptimizationStats.VisualSurfaceCount - _beforeOptimizationStats.VisualSurfaceCount).ToString()),
+                });
         }
 
-        return success;
+        // Write the error table.
+        foreach (var (code, description) in issues)
+        {
+            _reporter.WriteDataTableRow(
+                "Errors",
+                new[]
+                {
+                    ("Path", _file),
+                    ("ErrorCode", code),
+                    ("Description", description),
+                });
+        }
+
+        return true;
     }
 
     bool TryGenerateLottieXml(
@@ -538,122 +588,6 @@ sealed class LottieFileProcessor
 
             // Return just the first 8 characters of the base64 encoded hash.
             return hashedString.Substring(0, 8);
-        }
-    }
-
-    static void WriteCodeGenStatsReport(
-        TextWriter writer,
-        Stats beforeOptimization,
-        Stats afterOptimization)
-    {
-        if (beforeOptimization == null)
-        {
-            return;
-        }
-
-        writer.WriteLine(" === Translation output stats ===");
-
-        writer.WriteLine("                      Type   Count  Optimized away");
-
-        if (afterOptimization == null)
-        {
-            // No optimization was performed. Just report on the before stats.
-            afterOptimization = beforeOptimization;
-        }
-
-        // Report on the after stats and indicate how much optimization
-        // improved things (where it did).
-        WriteStatsLine("CanvasGeometry", s => s.CanvasGeometryCount);
-        WriteStatsLine("ColorBrush", s => s.ColorBrushCount);
-        WriteStatsLine("ColorGradientStop", s => s.ColorGradientStopCount);
-        WriteStatsLine("ColorKeyFrameAnimation", s => s.ColorKeyFrameAnimationCount);
-        WriteStatsLine("CompositionPath", s => s.CompositionPathCount);
-        WriteStatsLine("ContainerShape", s => s.ContainerShapeCount);
-        WriteStatsLine("ContainerVisual", s => s.ContainerVisualCount);
-        WriteStatsLine("CubicBezierEasingFunction", s => s.CubicBezierEasingFunctionCount);
-        WriteStatsLine("EffectBrush", s => s.EffectBrushCount);
-        WriteStatsLine("EllipseGeometry", s => s.EllipseGeometryCount);
-        WriteStatsLine("ExpressionAnimation", s => s.ExpressionAnimationCount);
-        WriteStatsLine("GeometricClip", s => s.GeometricClipCount);
-        WriteStatsLine("InsetClip", s => s.InsetClipCount);
-        WriteStatsLine("LinearEasingFunction", s => s.LinearEasingFunctionCount);
-        WriteStatsLine("LinearGradientBrush", s => s.LinearGradientBrushCount);
-        WriteStatsLine("PathGeometry", s => s.PathGeometryCount);
-        WriteStatsLine("PathKeyFrameAnimation", s => s.PathKeyFrameAnimationCount);
-        WriteStatsLine("Property value", s => s.PropertySetPropertyCount);
-        WriteStatsLine("PropertySet", s => s.PropertySetCount);
-        WriteStatsLine("RadialGradientBrush", s => s.RadialGradientBrushCount);
-        WriteStatsLine("RectangleGeometry", s => s.RectangleGeometryCount);
-        WriteStatsLine("RoundedRectangleGeometry", s => s.RoundedRectangleGeometryCount);
-        WriteStatsLine("ScalarKeyFrameAnimation", s => s.ScalarKeyFrameAnimationCount);
-        WriteStatsLine("ShapeVisual", s => s.ShapeVisualCount);
-        WriteStatsLine("SpriteShape", s => s.SpriteShapeCount);
-        WriteStatsLine("SpriteVisualCount", s => s.SpriteVisualCount);
-        WriteStatsLine("StepEasingFunction", s => s.StepEasingFunctionCount);
-        WriteStatsLine("SurfaceBrushCount", s => s.SurfaceBrushCount);
-        WriteStatsLine("Vector2KeyFrameAnimation", s => s.Vector2KeyFrameAnimationCount);
-        WriteStatsLine("Vector3KeyFrameAnimation", s => s.Vector3KeyFrameAnimationCount);
-        WriteStatsLine("ViewBox", s => s.ViewBoxCount);
-        WriteStatsLine("VisualSurfaceCount", s => s.VisualSurfaceCount);
-
-        void WriteStatsLine(string name, Func<Stats, int> selector)
-        {
-            var before = selector(beforeOptimization);
-            var after = selector(afterOptimization);
-
-            if (after > 0 || before > 0)
-            {
-                const int nameWidth = 26;
-                if (before != after)
-                {
-                    writer.WriteLine($"{name,nameWidth}  {after,6:n0} {before - after,6:n0}");
-                }
-                else
-                {
-                    writer.WriteLine($"{name,nameWidth}  {after,6:n0}");
-                }
-            }
-        }
-    }
-
-    static void WriteLottieStatsReport(
-        TextWriter writer,
-        Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Tools.Stats stats)
-    {
-        writer.WriteLine(" === Lottie info ===");
-        WriteStatsStringLine("BodyMovin Version", stats.Version.ToString());
-        WriteStatsStringLine("Name", stats.Name);
-        WriteStatsStringLine("Size", $"{stats.Width} x {stats.Height}");
-        WriteStatsStringLine("Duration", $"{stats.Duration.TotalSeconds.ToString("#,##0.0##")} seconds");
-        WriteStatsIntLine("Images", stats.ImageLayerCount);
-        WriteStatsIntLine("PreComps", stats.PreCompLayerCount);
-        WriteStatsIntLine("Shapes", stats.ShapeLayerCount);
-        WriteStatsIntLine("Solids", stats.SolidLayerCount);
-        WriteStatsIntLine("Nulls", stats.NullLayerCount);
-        WriteStatsIntLine("Texts", stats.TextLayerCount);
-        WriteStatsIntLine("Masks", stats.MaskCount);
-        WriteStatsIntLine("MaskAdditive", stats.MaskAdditiveCount);
-        WriteStatsIntLine("MaskDarken", stats.MaskDarkenCount);
-        WriteStatsIntLine("MaskDifference", stats.MaskDifferenceCount);
-        WriteStatsIntLine("MaskIntersect", stats.MaskIntersectCount);
-        WriteStatsIntLine("MaskLighten", stats.MaskLightenCount);
-        WriteStatsIntLine("MaskSubtract", stats.MaskSubtractCount);
-
-        const int nameWidth = 19;
-        void WriteStatsIntLine(string name, int value)
-        {
-            if (value > 0)
-            {
-                writer.WriteLine($"{name,nameWidth}  {value,6:n0}");
-            }
-        }
-
-        void WriteStatsStringLine(string name, string value)
-        {
-            if (!string.IsNullOrWhiteSpace(value))
-            {
-                writer.WriteLine($"{name,nameWidth}  {value}");
-            }
         }
     }
 

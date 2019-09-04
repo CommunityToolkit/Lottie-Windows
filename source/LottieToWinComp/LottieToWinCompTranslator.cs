@@ -802,7 +802,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             //
 
             // Get the opacity of the layer.
-            var layerOpacityPercent = context.Layer.Transform.OpacityPercent;
+            var layerOpacityPercent = context.TrimAnimatable(context.Layer.Transform.OpacityPercent);
 
             // Convert the layer's in point and out point into absolute progress (0..1) values.
             var inProgress = GetInPointProgress(context);
@@ -835,7 +835,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
                 if (layerOpacityPercent.IsAnimated)
                 {
-                    ApplyPercentKeyFrameAnimation(context, context.TrimAnimatable(layerOpacityPercent), opacityNode, "Opacity", "Layer opacity animation");
+                    ApplyPercentKeyFrameAnimation(context, layerOpacityPercent, opacityNode, "Opacity", "Layer opacity animation");
                 }
                 else
                 {
@@ -2553,7 +2553,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 case ShapeFill.ShapeFillKind.LinearGradient:
                     return TranslateLinearGradientFill(context, (LinearGradientFill)shapeFill, opacityPercent);
                 case ShapeFill.ShapeFillKind.RadialGradient:
-                    /*return TranslateRadialGradientFill(context, (RadialGradientFill)shapeFill, opacityPercent);*/
+                /*return TranslateRadialGradientFill(context, (RadialGradientFill)shapeFill, opacityPercent);*/
                 default:
                     throw new InvalidOperationException();
             }
@@ -2599,7 +2599,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             {
                 var offset = stop.Offset;
                 var color = stop.Opacity.HasValue ? MultiplyColorByOpacityPercent(stop.Color, stop.Opacity.Value) : stop.Color;
-                colorStops.Add(_c.CreateColorGradientStop(Float(offset), color));
+                if (color != null)
+                {
+                    colorStops.Add(_c.CreateColorGradientStop(Float(offset), color));
+                }
             }
 
             return result;
@@ -3534,8 +3537,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         }
 
         static Color MultiplyColorByOpacityPercent(Color color, double opacityPercent)
-            => opacityPercent == 100 ? color
-            : LottieData.Color.FromArgb(color.A * opacityPercent / 100, color.R, color.G, color.B);
+            => color == null
+                ? null
+                : (opacityPercent == 100 ? color
+                    : LottieData.Color.FromArgb(color.A * opacityPercent / 100, color.R, color.G, color.B));
 
         CompositionColorBrush CreateAnimatedColorBrush(TranslationContext context, Color color, in TrimmedAnimatable<double> opacityPercent)
         {
