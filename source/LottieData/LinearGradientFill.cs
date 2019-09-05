@@ -15,19 +15,23 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             Animatable<double> opacityPercent,
             IAnimatableVector3 startPoint,
             IAnimatableVector3 endPoint,
-            Animatable<Sequence<GradientStop>> gradientStops)
+            Animatable<Sequence<ColorGradientStop>> colorStops,
+            Animatable<Sequence<OpacityGradientStop>> opacityPercentStops)
             : base(in args, fillType, opacityPercent)
         {
             StartPoint = startPoint;
             EndPoint = endPoint;
-            GradientStops = gradientStops;
+            ColorStops = colorStops;
+            OpacityPercentStops = opacityPercentStops;
         }
 
         public IAnimatableVector3 StartPoint { get; }
 
         public IAnimatableVector3 EndPoint { get; }
 
-        public Animatable<Sequence<GradientStop>> GradientStops { get; }
+        public Animatable<Sequence<ColorGradientStop>> ColorStops { get; }
+
+        public Animatable<Sequence<OpacityGradientStop>> OpacityPercentStops { get; }
 
         /// <inheritdoc/>
         public override ShapeFillKind FillKind => ShapeFillKind.LinearGradient;

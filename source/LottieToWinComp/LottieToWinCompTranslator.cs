@@ -1070,7 +1070,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                                     in rgfArgs,
                                     ShapeFill.PathFillType.EvenOdd,
                                     rgf.OpacityPercent,
-                                    new Animatable<Color>(GradientStop.GetFirstColor(rgf.GradientStops.InitialValue.Items), null));
+                                    new Animatable<Color>(rgf.ColorStops.InitialValue.Items[0].Color, null));
                             }
 
                             break;
@@ -1422,7 +1422,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         CompositionShape TranslateGroupShapeContent(TranslationContext.For<ShapeLayer> context, ShapeContentContext shapeContext, ShapeGroup group)
         {
-            var result = TranslateShapeLayerContents(context, shapeContext, group.Items);
+            var result = TranslateShapeLayerContents(context, shapeContext, group.Contents);
 
             if (_addDescriptions)
             {
@@ -1775,7 +1775,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         {
                             // Convert all the shapes in the group to a list of geometries
                             var group = (ShapeGroup)shapeContent;
-                            var groupedGeometries = CreateCanvasGeometries(context, shapeContext.Clone(), new Stack<ShapeLayerContent>(group.Items.ToArray()), pathFillType).ToArray();
+                            var groupedGeometries = CreateCanvasGeometries(context, shapeContext.Clone(), new Stack<ShapeLayerContent>(group.Contents.ToArray()), pathFillType).ToArray();
                             foreach (var geometry in groupedGeometries)
                             {
                                 yield return geometry;
@@ -2571,41 +2571,119 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         CompositionLinearGradientBrush TranslateLinearGradientFill(TranslationContext context, LinearGradientFill shapeFill, TrimmedAnimatable<double> opacityPercent)
         {
-            var stops = context.TrimAnimatable(shapeFill.GradientStops);
+            var colorStops = context.TrimAnimatable(shapeFill.ColorStops);
+            var opacityPercentStops = context.TrimAnimatable(shapeFill.OpacityPercentStops);
 
-            if (stops.InitialValue.Items.IsEmpty)
+            if (colorStops.InitialValue.Items.IsEmpty)
             {
-                // If there are no stops then we can't create a brush.
+                // If there are no color stops then we can't create a brush.
                 return null;
             }
 
-            // TODO - support animated start and end points, and color stops.
-            if (shapeFill.StartPoint.IsAnimated || shapeFill.EndPoint.IsAnimated || stops.IsAnimated)
+            if (opacityPercent.IsAnimated)
             {
+                // We don't yet support animated opacity with LinearGradientFill.
                 _issues.GradientFillIsNotSupported();
-                return null;
             }
+
+            if (!opacityPercentStops.InitialValue.Items.IsEmpty)
+            {
+                // We don't yet support opacity stops.
+                _issues.GradientFillIsNotSupported();
+            }
+
+            var opacityPercentValue = opacityPercent.InitialValue;
 
             var result = _c.CreateLinearGradientBrush();
 
             // BodyMovin specifies start and end points in absolute values.
             result.MappingMode = CompositionMappingMode.Absolute;
 
-            result.StartPoint = Vector2(context.TrimAnimatable(shapeFill.StartPoint).InitialValue);
-            result.EndPoint = Vector2(context.TrimAnimatable(shapeFill.EndPoint).InitialValue);
+            var startPoint = context.TrimAnimatable(shapeFill.StartPoint);
+            var endPoint = context.TrimAnimatable(shapeFill.EndPoint);
 
-            var colorStops = result.ColorStops;
-            foreach (var stop in stops.InitialValue.Items)
+            if (startPoint.IsAnimated)
             {
-                var offset = stop.Offset;
-                var color = stop.Opacity.HasValue ? MultiplyColorByOpacityPercent(stop.Color, stop.Opacity.Value) : stop.Color;
-                if (color != null)
+                ApplyVector2KeyFrameAnimation(context, startPoint, result, nameof(result.StartPoint));
+            }
+            else
+            {
+                result.StartPoint = Vector2(startPoint.InitialValue);
+            }
+
+            if (endPoint.IsAnimated)
+            {
+                ApplyVector2KeyFrameAnimation(context, endPoint, result, nameof(result.EndPoint));
+            }
+            else
+            {
+                result.EndPoint = Vector2(endPoint.InitialValue);
+            }
+
+            var brushStops = result.ColorStops;
+
+            if (colorStops.IsAnimated)
+            {
+                // Lottie represents animation of stops as a sequence of lists of stops.
+                // WinComp uses a single list of stops where each stop is animated.
+                var stopsCount = colorStops.InitialValue.Items.Length;
+                var keyframesCount = colorStops.KeyFrames.Length;
+
+                var colorStopKeyFrames = colorStops.KeyFrames.ToArray();
+
+                // Create the Composition stops and animate them.
+                for (var i = 0; i < stopsCount; i++)
                 {
-                    colorStops.Add(_c.CreateColorGradientStop(Float(offset), color));
+                    var gradientStop = _c.CreateColorGradientStop();
+                    brushStops.Add(gradientStop);
+
+                    // Extract the key frames for this stop.
+                    var colorKeyFrames = ExtractKeyFramesFromGradientStopKeyFrames(
+                        colorStopKeyFrames,
+                        i,
+                        gs => MultiplyColorByOpacityPercent(gs.Color, opacityPercentValue)).ToArray();
+
+                    ApplyColorKeyFrameAnimation(
+                        context,
+                        new TrimmedAnimatable<Color>(context, colorKeyFrames[0].Value, colorKeyFrames),
+                        gradientStop,
+                        nameof(gradientStop.Color));
+
+                    var offsetKeyFrames = ExtractKeyFramesFromGradientStopKeyFrames(colorStopKeyFrames, i, gs => gs.Offset).ToArray();
+                    ApplyScalarKeyFrameAnimation(
+                        context,
+                        new TrimmedAnimatable<double>(context, offsetKeyFrames[0].Value, offsetKeyFrames),
+                        gradientStop,
+                        nameof(gradientStop.Offset));
+                }
+            }
+            else
+            {
+                foreach (var stop in colorStops.InitialValue.Items)
+                {
+                    var offset = stop.Offset;
+                    var color = MultiplyColorByOpacityPercent(stop.Color, opacityPercentValue);
+                    brushStops.Add(_c.CreateColorGradientStop(Float(offset), color));
                 }
             }
 
             return result;
+        }
+
+        static IEnumerable<KeyFrame<TKeyFrame>> ExtractKeyFramesFromGradientStopKeyFrames<TStop, TKeyFrame>(
+            KeyFrame<Sequence<TStop>>[] stops,
+            int stopIndex,
+            Func<TStop, TKeyFrame> selector)
+            where TKeyFrame : IEquatable<TKeyFrame>
+        {
+            for (var i = 0; i < stops.Length; i++)
+            {
+                var kf = stops[i];
+                var value = kf.Value.Items[stopIndex];
+                var selected = selector(value);
+
+                yield return new KeyFrame<TKeyFrame>(kf.Frame, selected, kf.SpatialControlPoint1, kf.SpatialControlPoint2, kf.Easing);
+            }
         }
 
         ShapeOrVisual TranslateSolidLayer(TranslationContext.For<SolidLayer> context)
@@ -3539,7 +3617,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         static Color MultiplyColorByOpacityPercent(Color color, double opacityPercent)
             => color == null
                 ? null
-                : (opacityPercent == 100 ? color
+                : (opacityPercent == 100
+                    ? color
                     : LottieData.Color.FromArgb(color.A * opacityPercent / 100, color.R, color.G, color.B));
 
         CompositionColorBrush CreateAnimatedColorBrush(TranslationContext context, Color color, in TrimmedAnimatable<double> opacityPercent)

@@ -13,17 +13,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 #endif
     sealed class ShapeGroup : ShapeLayerContent
     {
-        readonly ShapeLayerContent[] _items;
+        readonly ShapeLayerContent[] _contents;
 
         public ShapeGroup(
             in ShapeLayerContentArgs args,
-            IEnumerable<ShapeLayerContent> items)
+            IEnumerable<ShapeLayerContent> contents)
             : base(in args)
         {
-            _items = items.ToArray();
+            _contents = contents.ToArray();
         }
 
-        public ReadOnlySpan<ShapeLayerContent> Items => _items;
+        public ReadOnlySpan<ShapeLayerContent> Contents => _contents;
 
         /// <inheritdoc/>
         public override ShapeContentType ContentType => ShapeContentType.Group;

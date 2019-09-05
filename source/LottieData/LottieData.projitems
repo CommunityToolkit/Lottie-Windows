@@ -6,7 +6,6 @@
     <SharedGUID>b3db16ee-a821-4474-a188-e64926529bbd</SharedGUID>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)ShapeFill.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Animatable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\ExtensionMethods.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\AnimatableVector3.cs" />
@@ -17,13 +16,14 @@
     <Compile Include="$(MSBuildThisFileDirectory)\BlendMode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Char.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Color.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\ColorGradientStop.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\CubicBezierEasing.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Easing.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Ellipse.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\EmbeddedImageAsset.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\EmptyArray.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\ExternalImageAsset.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Font.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)\GradientStop.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\HoldEasing.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\IAnimatableValue.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\IAnimatableVector3.cs" />
@@ -44,6 +44,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)\Mask.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\MergePaths.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\NullLayer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\OpacityGradientStop.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Optimization\Optimizer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Path.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Polystar.cs" />
@@ -58,9 +59,11 @@
     <Compile Include="$(MSBuildThisFileDirectory)\Serialization\LottieCompositionXmlSerializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Serialization\LottieCompositionYamlSerializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\ShapeContentType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\ShapeFill.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\ShapeGroup.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\ShapeLayer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\ShapeLayerContent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\ShapeStroke.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\SolidColorFill.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\SolidColorStroke.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\SolidLayer.cs" />

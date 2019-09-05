@@ -9,7 +9,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 #if PUBLIC_LottieData
     public
 #endif
-    sealed class RadialGradientStroke : ShapeLayerContent
+    sealed class RadialGradientStroke : ShapeStroke
     {
         public RadialGradientStroke(
             in ShapeLayerContentArgs args,
@@ -17,17 +17,26 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             Animatable<double> strokeWidth,
             LineCapType capType,
             LineJoinType joinType,
-            double miterLimit)
-            : base(in args)
+            double miterLimit,
+            IAnimatableVector3 startPoint,
+            IAnimatableVector3 endPoint,
+            Animatable<Sequence<ColorGradientStop>> colorStops,
+            Animatable<Sequence<OpacityGradientStop>> opacityPercentStops,
+            Animatable<double> highlightLength,
+            Animatable<double> highlightDegrees)
+            : base(in args, opacityPercent)
         {
-            OpacityPercent = opacityPercent;
             StrokeWidth = strokeWidth;
             CapType = capType;
             JoinType = joinType;
             MiterLimit = miterLimit;
+            StartPoint = startPoint;
+            EndPoint = endPoint;
+            ColorStops = colorStops;
+            OpacityPercentStops = opacityPercentStops;
+            HighlightLength = highlightLength;
+            HighlightDegrees = highlightDegrees;
         }
-
-        public Animatable<double> OpacityPercent { get; }
 
         public Animatable<double> StrokeWidth { get; }
 
@@ -37,10 +46,24 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
         public double MiterLimit { get; }
 
+        public IAnimatableVector3 StartPoint { get; }
+
+        public IAnimatableVector3 EndPoint { get; }
+
+        public Animatable<Sequence<ColorGradientStop>> ColorStops { get; }
+
+        public Animatable<Sequence<OpacityGradientStop>> OpacityPercentStops { get; }
+
+        public Animatable<double> HighlightLength { get; }
+
+        public Animatable<double> HighlightDegrees { get; }
+
         /// <inheritdoc/>
         public override ShapeContentType ContentType => ShapeContentType.RadialGradientStroke;
 
         /// <inheritdoc/>
         public override LottieObjectType ObjectType => LottieObjectType.RadialGradientStroke;
+
+        public override ShapeStrokeKind StrokeKind => ShapeStrokeKind.RadialGradient;
     }
 }

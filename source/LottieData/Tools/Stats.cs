@@ -145,7 +145,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Tools
 
         void VisitShapeGroup(ShapeGroup shapeGroup)
         {
-            foreach (var content in shapeGroup.Items)
+            foreach (var content in shapeGroup.Contents)
             {
                 VisitShapeLayerContent(content);
             }

@@ -570,27 +570,6 @@ sealed class LottieFileProcessor
         return $"{originatingFile}: {errorOrWarning} {issue.Code}: {issue.Description}";
     }
 
-    static string GenerateHashFromString(string input)
-    {
-        using (var hasher = SHA256.Create())
-        using (var stream = new MemoryStream())
-        using (var writer = new StreamWriter(stream))
-        {
-            // Write into the stream so that hasher can consume the input.
-            writer.Write(input);
-
-            // Generate the hash. This returns a 32 byte (256 bit) value.
-            var hash = hasher.ComputeHash(stream);
-
-            // Encode the hash as base 64 so that it is all readable characters.
-            // This will return a string that is 44 characters long.
-            var hashedString = Convert.ToBase64String(hash);
-
-            // Return just the first 8 characters of the base64 encoded hash.
-            return hashedString.Substring(0, 8);
-        }
-    }
-
     bool TryEnsureTranslated()
     {
         if (_isTranslatedSuccessfully.HasValue)

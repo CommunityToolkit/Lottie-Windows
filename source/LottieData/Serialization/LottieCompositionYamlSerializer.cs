@@ -337,7 +337,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         YamlObject FromShapeGroup(ShapeGroup content, YamlMap superclassContent)
         {
             var result = superclassContent;
-            result.Add("Items", FromSpan(content.Items, FromShapeLayerContent));
+            result.Add("Items", FromSpan(content.Contents, FromShapeLayerContent));
             return result;
         }
 
@@ -374,7 +374,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         {
             var result = superclassContent;
             result.Add("OpacityPercent", FromAnimatable(content.OpacityPercent));
-            result.Add("GradientStops", FromAnimatable(content.GradientStops, p => FromSequence(p, FromGradientStop)));
+            result.Add("ColorStops", FromAnimatable(content.ColorStops, p => FromSequence(p, FromColorStop)));
+            result.Add("OpacityPercentStops", FromAnimatable(content.OpacityPercentStops, p => FromSequence(p, FromOpacityPercentStop)));
             return result;
         }
 
@@ -382,7 +383,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         {
             var result = superclassContent;
             result.Add("OpacityPercent", FromAnimatable(content.OpacityPercent));
-            result.Add("GradientStops", FromAnimatable(content.GradientStops, p => FromSequence(p, FromGradientStop)));
+            result.Add("ColorStops", FromAnimatable(content.ColorStops, p => FromSequence(p, FromColorStop)));
+            result.Add("OpacityPercentStops", FromAnimatable(content.OpacityPercentStops, p => FromSequence(p, FromOpacityPercentStop)));
             return result;
         }
 
@@ -473,13 +475,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             return result;
         }
 
-        static YamlObject FromGradientStop(GradientStop value)
+        static YamlObject FromColorStop(ColorGradientStop value)
         {
             var result = new YamlMap
             {
                 { "Color", FromColor(value.Color) },
+                { "Offset", value.Offset},
+            };
+            return result;
+        }
+
+        static YamlObject FromOpacityPercentStop(OpacityGradientStop value)
+        {
+            var result = new YamlMap
+            {
+                { "OpacityPercent", value.OpacityPercent },
                 { "Offset", value.Offset },
-                { "Opacity", value.Opacity },
             };
             return result;
         }

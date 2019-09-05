@@ -405,9 +405,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     yield return item;
                 }
 
-                for (var i = 0; i < content.Items.Length; i++)
+                for (var i = 0; i < content.Contents.Length; i++)
                 {
-                    yield return FromShapeLayerContent(content.Items[i]);
+                    yield return FromShapeLayerContent(content.Contents[i]);
                 }
             }
         }
@@ -477,7 +477,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     yield return item;
                 }
 
-                yield return FromAnimatable("GradientStop", content.GradientStops);
+                yield return FromAnimatable("ColorStops", content.ColorStops);
+                yield return FromAnimatable("OpacityPercentStops", content.OpacityPercentStops);
             }
         }
 

@@ -1108,29 +1108,27 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             if (obj.ColorStops.Count > 0)
             {
-                builder.WriteLine("colorStops = result.ColorStops;");
+                builder.WriteLine($"{Var} colorStops = result{Deref}ColorStops;");
                 foreach (var colorStop in obj.ColorStops)
                 {
                     builder.WriteLine($"colorStops{Deref}{IListAdd}({CallFactoryFromFor(node, colorStop)});");
                 }
             }
 
-            // TODO - extendmode
             if (obj.ExtendMode.HasValue)
             {
-                builder.WriteLine($"result{Deref}ExtendMode = TODO");
+                builder.WriteLine($"result{Deref}ExtendMode = {ExtendMode(obj.ExtendMode.Value)};");
             }
 
-            // TODO - interpolationspace
             if (obj.InterpolationSpace.HasValue)
             {
-                builder.WriteLine($"result{Deref}InterpolationSpace = TODO");
+                builder.WriteLine($"result{Deref}InterpolationSpace = {ColorSpace(obj.InterpolationSpace.Value)};");
             }
 
             // Default MappingMode is Relative
             if (obj.MappingMode.HasValue && obj.MappingMode.Value != WinCompData.CompositionMappingMode.Relative)
             {
-                builder.WriteLine($"result{Deref}MapingMode = {CompositionMappingMode(obj.MappingMode.Value)};");
+                builder.WriteLine($"result{Deref}MappingMode = {MappingMode(obj.MappingMode.Value)};");
             }
 
             if (obj.Offset.HasValue)
@@ -1255,7 +1253,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             if (obj.InterpolationColorSpace != CompositionColorSpace.Auto)
             {
-                builder.WriteLine($"result{Deref}InteroplationColorSpace = {ColorSpace(obj.InterpolationColorSpace)};");
+                builder.WriteLine($"result{Deref}InterpolationColorSpace = {ColorSpace(obj.InterpolationColorSpace)};");
             }
 
             foreach (var kf in obj.KeyFrames)
@@ -1475,22 +1473,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         bool GenerateCompositionColorGradientStopFactory(CodeBuilder builder, CompositionColorGradientStop obj, ObjectData node)
         {
-            var createCallText = $"_c{Deref}CreateCompositionColorGradientStop({Float(obj.Offset)}, {Color(obj.Color)})";
-
-            // TODO - support animated gradient stops.
             if (obj.Animators.Count > 0)
             {
                 WriteObjectFactoryStart(builder, node);
-                WriteCreateAssignment(builder, node, createCallText);
-
-                //InitializeCompositionBrush(builder, obj, node);
+                WriteCreateAssignment(builder, node, $"_c{Deref}CreateColorGradientStop()");
+                InitializeCompositionObject(builder, obj, node);
                 StartAnimations(builder, obj, node);
                 WriteObjectFactoryEnd(builder);
-                throw new NotImplementedException();
             }
             else
             {
-                WriteSimpleObjectFactory(builder, node, createCallText);
+                WriteSimpleObjectFactory(builder, node, $"_c{Deref}CreateColorGradientStop({Float(obj.Offset)}, {Color(obj.Color)})");
             }
 
             return true;
@@ -1502,7 +1495,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             WriteCreateAssignment(builder, node, $"_c{Deref}CreateShapeVisual()");
             InitializeContainerVisual(builder, obj, node);
 
-            if (obj.Shapes.Any())
+            if (obj.Shapes.Count > 0)
             {
                 builder.WriteLine($"{Var} shapes = result{Deref}Shapes;");
                 foreach (var shape in obj.Shapes)
@@ -1539,7 +1532,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             WriteCreateAssignment(builder, node, $"_c{Deref}CreateContainerShape()");
             InitializeCompositionShape(builder, obj, node);
 
-            if (obj.Shapes.Any())
+            if (obj.Shapes.Count > 0)
             {
                 builder.WriteLine($"{Var} shapes = result{Deref}Shapes;");
                 foreach (var shape in obj.Shapes)
@@ -1842,18 +1835,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         string ColorSpace(CompositionColorSpace value)
         {
+            const string typeName = nameof(CompositionColorSpace);
             switch (value)
             {
                 case CompositionColorSpace.Auto:
-                    return $"CompositionColorSpace{ScopeResolve}Auto";
+                    return $"{typeName}{ScopeResolve}Auto";
                 case CompositionColorSpace.Hsl:
-                    return $"CompositionColorSpace{ScopeResolve}Hsl";
+                    return $"{typeName}{ScopeResolve}Hsl";
                 case CompositionColorSpace.Rgb:
-                    return $"CompositionColorSpace{ScopeResolve}Rgb";
+                    return $"{typeName}{ScopeResolve}Rgb";
                 case CompositionColorSpace.HslLinear:
-                    return $"CompositionColorSpace{ScopeResolve}HslLinear";
+                    return $"{typeName}{ScopeResolve}HslLinear";
                 case CompositionColorSpace.RgbLinear:
-                    return $"CompositionColorSpace{ScopeResolve}RgbLinear";
+                    return $"{typeName}{ScopeResolve}RgbLinear";
                 default:
                     throw new InvalidOperationException();
             }
@@ -1861,16 +1855,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         string StrokeCap(CompositionStrokeCap value)
         {
+            const string typeName = nameof(CompositionStrokeCap);
             switch (value)
             {
                 case CompositionStrokeCap.Flat:
-                    return $"CompositionStrokeCap{ScopeResolve}Flat";
+                    return $"{typeName}{ScopeResolve}Flat";
                 case CompositionStrokeCap.Square:
-                    return $"CompositionStrokeCap{ScopeResolve}Square";
+                    return $"{typeName}{ScopeResolve}Square";
                 case CompositionStrokeCap.Round:
-                    return $"CompositionStrokeCap{ScopeResolve}Round";
+                    return $"{typeName}{ScopeResolve}Round";
                 case CompositionStrokeCap.Triangle:
-                    return $"CompositionStrokeCap{ScopeResolve}Triangle";
+                    return $"{typeName}{ScopeResolve}Triangle";
                 default:
                     throw new InvalidOperationException();
             }
@@ -1878,29 +1873,47 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         string StrokeLineJoin(CompositionStrokeLineJoin value)
         {
+            const string typeName = nameof(CompositionStrokeLineJoin);
             switch (value)
             {
                 case CompositionStrokeLineJoin.Miter:
-                    return $"CompositionStrokeLineJoin{ScopeResolve}Miter";
+                    return $"{typeName}{ScopeResolve}Miter";
                 case CompositionStrokeLineJoin.Bevel:
-                    return $"CompositionStrokeLineJoin{ScopeResolve}Bevel";
+                    return $"{typeName}{ScopeResolve}Bevel";
                 case CompositionStrokeLineJoin.Round:
-                    return $"CompositionStrokeLineJoin{ScopeResolve}Round";
+                    return $"{typeName}{ScopeResolve}Round";
                 case CompositionStrokeLineJoin.MiterOrBevel:
-                    return $"CompositionStrokeLineJoin{ScopeResolve}MiterOrBevel";
+                    return $"{typeName}{ScopeResolve}MiterOrBevel";
                 default:
                     throw new InvalidOperationException();
             }
         }
 
-        string CompositionMappingMode(CompositionMappingMode value)
+        string ExtendMode(CompositionGradientExtendMode value)
         {
+            const string typeName = nameof(CompositionGradientExtendMode);
             switch (value)
             {
-                case WinCompData.CompositionMappingMode.Absolute:
-                    return $"CompositionMappingMode{ScopeResolve}Absolute";
-                case WinCompData.CompositionMappingMode.Relative:
-                    return $"CompositionMappingMode{ScopeResolve}Relative";
+                case CompositionGradientExtendMode.Clamp:
+                    return $"{typeName}{ScopeResolve}Clamp";
+                case CompositionGradientExtendMode.Wrap:
+                    return $"{typeName}{ScopeResolve}Wrap";
+                case CompositionGradientExtendMode.Mirror:
+                    return $"{typeName}{ScopeResolve}Mirror";
+                default:
+                    throw new InvalidOperationException();
+            }
+        }
+
+        string MappingMode(CompositionMappingMode value)
+        {
+            const string typeName = nameof(CompositionMappingMode);
+            switch (value)
+            {
+                case CompositionMappingMode.Absolute:
+                    return $"{typeName}{ScopeResolve}Absolute";
+                case CompositionMappingMode.Relative:
+                    return $"{typeName}{ScopeResolve}Relative";
                 default:
                     throw new InvalidOperationException();
             }
@@ -2190,34 +2203,35 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             public string CanvasCompositeMode(CanvasComposite value)
             {
+                var typeName = nameof(CanvasComposite);
                 switch (value)
                 {
                     case CanvasComposite.SourceOver:
-                        return $"CanvasComposite{ScopeResolve}SourceOver";
+                        return $"{typeName}{ScopeResolve}SourceOver";
                     case CanvasComposite.DestinationOver:
-                        return $"CanvasComposite{ScopeResolve}DestinationOver";
+                        return $"{typeName}{ScopeResolve}DestinationOver";
                     case CanvasComposite.SourceIn:
-                        return $"CanvasComposite{ScopeResolve}SourceIn";
+                        return $"{typeName}{ScopeResolve}SourceIn";
                     case CanvasComposite.DestinationIn:
-                        return $"CanvasComposite{ScopeResolve}DestinationIn";
+                        return $"{typeName}{ScopeResolve}DestinationIn";
                     case CanvasComposite.SourceOut:
-                        return $"CanvasComposite{ScopeResolve}SourceOut";
+                        return $"{typeName}{ScopeResolve}SourceOut";
                     case CanvasComposite.DestinationOut:
-                        return $"CanvasComposite{ScopeResolve}DestinationOut";
+                        return $"{typeName}{ScopeResolve}DestinationOut";
                     case CanvasComposite.SourceAtop:
-                        return $"CanvasComposite{ScopeResolve}SourceAtop";
+                        return $"{typeName}{ScopeResolve}SourceAtop";
                     case CanvasComposite.DestinationAtop:
-                        return $"CanvasComposite{ScopeResolve}DestinationAtop";
+                        return $"{typeName}{ScopeResolve}DestinationAtop";
                     case CanvasComposite.Xor:
-                        return $"CanvasComposite{ScopeResolve}Xor";
+                        return $"{typeName}{ScopeResolve}Xor";
                     case CanvasComposite.Add:
-                        return $"CanvasComposite{ScopeResolve}Add";
+                        return $"{typeName}{ScopeResolve}Add";
                     case CanvasComposite.Copy:
-                        return $"CanvasComposite{ScopeResolve}Copy";
+                        return $"{typeName}{ScopeResolve}Copy";
                     case CanvasComposite.BoundedCopy:
-                        return $"CanvasComposite{ScopeResolve}BoundedCopy";
+                        return $"{typeName}{ScopeResolve}BoundedCopy";
                     case CanvasComposite.MaskInvert:
-                        return $"CanvasComposite{ScopeResolve}MaskInvert";
+                        return $"{typeName}{ScopeResolve}MaskInvert";
                     default:
                         throw new InvalidOperationException();
                 }
