@@ -14,12 +14,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
     sealed class AssetCollection : IEnumerable<Asset>
     {
         readonly Asset[] _assets;
-        readonly Dictionary<string, Asset> _assetsById;
+        readonly Dictionary<string, Asset> _assetsById = new Dictionary<string, Asset>();
 
         public AssetCollection(IEnumerable<Asset> assets)
         {
             _assets = assets.ToArray();
-            _assetsById = _assets.ToDictionary(asset => asset.Id);
+
+            foreach (var asset in _assets)
+            {
+                // Ignore assets that have the same ID as an asset already added.
+                // Assets should have unique IDs, however it is easy to be resilient to
+                // this case.
+                if (!_assetsById.ContainsKey(asset.Id))
+                {
+                    _assetsById.Add(asset.Id, asset);
+                }
+            }
         }
 
         /// <summary>

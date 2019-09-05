@@ -362,8 +362,38 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                 outFrame = i;
             }
 
-            return keyFrames.Slice(inFrame, 1 + outFrame - inFrame);
+            var trimmedLength = 1 + outFrame - inFrame;
+
+            // Check for any key frames with 0 length.
+            for (var i = inFrame; i < inFrame + trimmedLength - 1; i++)
+            {
+                if (keyFrames[i].Frame == keyFrames[i + 1].Frame)
+                {
+                    // Rare case - found a 0 length key frame. Create a new list of key frames
+                    // with the 0 length key frames removed.
+                    return RemoveRedundantKeyFrames<T>(keyFrames.Slice(inFrame, trimmedLength).ToArray()).ToArray();
+                }
+            }
+
+            return keyFrames.Slice(inFrame, trimmedLength);
 #endif // DisableKeyFrameTrimming
+        }
+
+        // Returns the given key frames with any 0-length key frames removed.
+        static IEnumerable<KeyFrame<T>> RemoveRedundantKeyFrames<T>(KeyFrame<T>[] keyFrames)
+            where T : IEquatable<T>
+        {
+            for (var i = 0; i < keyFrames.Length - 1; i++)
+            {
+                // Only include the key frame if it has a frame value that is different
+                // from the next key frame's frame.
+                if (keyFrames[i].Frame != keyFrames[i + 1].Frame)
+                {
+                    yield return keyFrames[i];
+                }
+            }
+
+            yield return keyFrames[keyFrames.Length - 1];
         }
 
         sealed class AnimatableComparer<T>

@@ -111,23 +111,31 @@ sealed class Program
         // Assume success.
         var succeeded = true;
 
+        try
+        {
 #if DO_NOT_PROCESS_IN_PARALLEL
-        foreach (var (file, relativePath) in matchingInputFiles)
-        {
-            if (!LottieFileProcessor.ProcessFile(_options, _reporter, file, System.IO.Path.Combine(outputFolder, relativePath)))
+            foreach (var (file, relativePath) in matchingInputFiles)
             {
-                succeeded = false;
+                if (!LottieFileProcessor.ProcessFile(_options, _reporter, file, System.IO.Path.Combine(outputFolder, relativePath)))
+                {
+                    succeeded = false;
+                }
             }
-        }
 #else
-        Parallel.ForEach(matchingInputFiles, ((string path, string relativePath) inputFile) =>
-        {
-            if (!LottieFileProcessor.ProcessFile(_options, _reporter, inputFile.path, System.IO.Path.Combine(outputFolder, inputFile.relativePath)))
+            Parallel.ForEach(matchingInputFiles, ((string path, string relativePath) inputFile) =>
             {
-                succeeded = false;
-            }
-        });
+                if (!LottieFileProcessor.ProcessFile(_options, _reporter, inputFile.path, System.IO.Path.Combine(outputFolder, inputFile.relativePath)))
+                {
+                    succeeded = false;
+                }
+            });
 #endif
+        }
+        catch (Exception e)
+        {
+            _reporter.WriteError(e.ToString());
+            return RunResult.Failure;
+        }
 
         if (_options.Languages.Contains(Lang.Stats))
         {
