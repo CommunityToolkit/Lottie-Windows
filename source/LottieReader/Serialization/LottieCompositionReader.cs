@@ -1716,7 +1716,25 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 for (; i < count; i++)
                 {
                     // Note: indexing a JsonArray is faster than enumerating.
-                    var number = (double)colorArray[i];
+                    var jsonValue = colorArray[i];
+
+                    switch (jsonValue.Type)
+                    {
+                        case JTokenType.Float:
+                        case JTokenType.Integer:
+                            break;
+                        default:
+                            if (_ignoreAlpha && i == 3)
+                            {
+                                // The alpha channel wasn't an expected type, but we are ignoring alpha
+                                // so ignore the error.
+                                goto AllColorChannelsRead;
+                            }
+
+                            throw new LottieCompositionReaderException($"Expected float but found {jsonValue.Type}.");
+                    }
+
+                    var number = (double)jsonValue;
                     switch (i)
                     {
                         case 0:
@@ -1735,6 +1753,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                             throw new LottieCompositionReaderException("Too many values for Color.");
                     }
                 }
+
+                AllColorChannelsRead:
 
                 // If ignoring alpha, allow 3 or 4 channels. BodyMovin generates 4 channels
                 // however seeing as the alpha is ignored, 3 channels is enough.
