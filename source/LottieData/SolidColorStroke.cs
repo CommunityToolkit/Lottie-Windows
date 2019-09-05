@@ -11,7 +11,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 #if PUBLIC_LottieData
     public
 #endif
-    sealed class SolidColorStroke : ShapeLayerContent
+    sealed class SolidColorStroke : ShapeStroke
     {
         readonly double[] _dashPattern;
 
@@ -25,12 +25,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             LineCapType capType,
             LineJoinType joinType,
             double miterLimit)
-            : base(in args)
+            : base(in args, opacityPercent)
         {
             DashOffset = dashOffset;
             _dashPattern = dashPattern.ToArray();
             Color = color;
-            OpacityPercent = opacityPercent;
             Thickness = thickness;
             CapType = capType;
             JoinType = joinType;
@@ -38,8 +37,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         }
 
         public Animatable<Color> Color { get; }
-
-        public Animatable<double> OpacityPercent { get; }
 
         public Animatable<double> Thickness { get; }
 
@@ -58,6 +55,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
         /// <inheritdoc/>
         public override LottieObjectType ObjectType => LottieObjectType.SolidColorStroke;
+
+        public override ShapeStrokeKind StrokeKind => ShapeStrokeKind.SolidColor;
 
         public enum LineCapType
         {

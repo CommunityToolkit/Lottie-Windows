@@ -1022,13 +1022,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
             // Not clear whether we need to read these fields.
             IgnoreFieldThatIsNotYetSupported(obj, "hd");
-            IgnoreFieldThatIsNotYetSupported(obj, "g");
             IgnoreFieldThatIsNotYetSupported(obj, "t");
-
-            // highlightLength - ReadAnimatableFloat(obj.GetNamedObject("h")) - but is optional
-            IgnoreFieldThatIsNotYetSupported(obj, "h");
-
-            // highlightAngle - ReadAnimatableFloat(obj.GetNamedObject("a")) - but is optional
             IgnoreFieldThatIsNotYetSupported(obj, "1");
 
             var opacityPercent = ReadOpacityPercent(obj);
@@ -1038,6 +1032,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             var miterLimit = obj.GetNamedNumber("ml", 4); // Default miter limit in AfterEffects is 4
             var startPoint = ReadAnimatableVector3(obj.GetNamedObject("s"));
             var endPoint = ReadAnimatableVector3(obj.GetNamedObject("e"));
+            ReadAnimatableGradientStops(obj.GetNamedObject("g"), out var colorStops, out var opacityPercentStops);
 
             AssertAllFieldsRead(obj);
             return new LinearGradientStroke(
@@ -1046,7 +1041,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 strokeWidth,
                 capType,
                 joinType,
-                miterLimit);
+                miterLimit,
+                startPoint,
+                endPoint,
+                colorStops,
+                opacityPercentStops);
         }
 
         RadialGradientStroke ReadRadialGradientStroke(JObject obj, in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
@@ -1056,11 +1055,23 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             // Not clear whether we need to read these fields.
             IgnoreFieldThatIsNotYetSupported(obj, "t");
 
-            // highlightLength - ReadAnimatableFloat(obj.GetNamedObject("h")) - but is optional
             IgnoreFieldThatIsNotYetSupported(obj, "h");
 
-            // highlightAngle - ReadAnimatableFloat(obj.GetNamedObject("a")) - but is optional
             IgnoreFieldThatIsNotYetSupported(obj, "1");
+
+            Animatable<double> highlightLength = null;
+            var highlightLengthObject = obj.GetNamedObject("h");
+            if (highlightLengthObject != null)
+            {
+                highlightLength = ReadAnimatableFloat(highlightLengthObject);
+            }
+
+            Animatable<double> highlightDegrees = null;
+            var highlightAngleObject = obj.GetNamedObject("a");
+            if (highlightAngleObject != null)
+            {
+                highlightDegrees = ReadAnimatableFloat(highlightAngleObject);
+            }
 
             var opacityPercent = ReadOpacityPercent(obj);
             var strokeWidth = ReadAnimatableFloat(obj.GetNamedObject("w"));
@@ -1069,6 +1080,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             var miterLimit = obj.GetNamedNumber("ml", 4); // Default miter limit in AfterEffects is 4
             var startPoint = ReadAnimatableVector3(obj.GetNamedObject("s"));
             var endPoint = ReadAnimatableVector3(obj.GetNamedObject("e"));
+            ReadAnimatableGradientStops(obj.GetNamedObject("g"), out var colorStops, out var opacityPercentStops);
 
             AssertAllFieldsRead(obj);
             return new RadialGradientStroke(
@@ -1077,7 +1089,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 strokeWidth,
                 capType,
                 joinType,
-                miterLimit);
+                miterLimit,
+                startPoint,
+                endPoint,
+                colorStops,
+                opacityPercentStops,
+                highlightLength,
+                highlightDegrees);
         }
 
         // "fl"

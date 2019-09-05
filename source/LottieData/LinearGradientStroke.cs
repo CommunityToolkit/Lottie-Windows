@@ -9,7 +9,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 #if PUBLIC_LottieData
     public
 #endif
-    sealed class LinearGradientStroke : ShapeLayerContent
+    sealed class LinearGradientStroke : ShapeStroke
     {
         public LinearGradientStroke(
             in ShapeLayerContentArgs args,
@@ -17,17 +17,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             Animatable<double> strokeWidth,
             LineCapType capType,
             LineJoinType joinType,
-            double miterLimit)
-            : base(in args)
+            double miterLimit,
+            IAnimatableVector3 startPoint,
+            IAnimatableVector3 endPoint,
+            Animatable<Sequence<ColorGradientStop>> colorStops,
+            Animatable<Sequence<OpacityGradientStop>> opacityPercentStops)
+            : base(in args, opacityPercent)
         {
-            OpacityPercent = opacityPercent;
             StrokeWidth = strokeWidth;
             CapType = capType;
             JoinType = joinType;
             MiterLimit = miterLimit;
+            StartPoint = startPoint;
+            EndPoint = endPoint;
+            ColorStops = colorStops;
+            OpacityPercentStops = opacityPercentStops;
         }
-
-        public Animatable<double> OpacityPercent { get; }
 
         public Animatable<double> StrokeWidth { get; }
 
@@ -37,10 +42,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
         public double MiterLimit { get; }
 
+        public IAnimatableVector3 StartPoint { get; }
+
+        public IAnimatableVector3 EndPoint { get; }
+
+        public Animatable<Sequence<ColorGradientStop>> ColorStops { get; }
+
+        public Animatable<Sequence<OpacityGradientStop>> OpacityPercentStops { get; }
+
         /// <inheritdoc/>
         public override ShapeContentType ContentType => ShapeContentType.LinearGradientStroke;
 
         /// <inheritdoc/>
         public override LottieObjectType ObjectType => LottieObjectType.LinearGradientStroke;
+
+        public override ShapeStrokeKind StrokeKind => ShapeStrokeKind.LinearGradient;
     }
 }
