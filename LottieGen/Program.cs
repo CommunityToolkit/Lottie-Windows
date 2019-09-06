@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -207,11 +206,6 @@ OVERVIEW:
        [Other options]
 
          -Help         Print this help message and exit.
-         -ClassName    Uses the given class name for the generated code. If not 
-                       specified the name is synthesized from the name of the Lottie 
-                       file. The class name will be sanitized as necessary to be valid
-                       for the language and will also be used as the base name of 
-                       the output file(s).
          -DisableTranslationOptimizer  
                        Disables optimization of the translation from Lottie to
                        Windows code. Mainly used to detect bugs in the optimizer.
@@ -233,8 +227,8 @@ EXAMPLES:
 
 
        Keywords can be abbreviated and are case insensitive.
-       Generate Grotz.cs in the C:\temp directory from the Lottie file Bar.json:
+       Generate Bar.cs in the C:\temp directory from the Lottie file Bar.json:
 
-         {0} -i Bar.json -L cs -ClassName Grotz -o C:\temp",
+         {0} -i Bar.json -L cs -o C:\temp",
 System.IO.Path.GetFileNameWithoutExtension(Assembly.GetEntryAssembly().ManifestModule.Name));
 }
