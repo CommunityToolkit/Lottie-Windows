@@ -35,8 +35,6 @@ sealed class CommandLineOptions
 
     internal IEnumerable<Lang> Languages { get; private set; }
 
-    internal string ClassName { get; private set; }
-
     internal string OutputFolder { get; private set; }
 
     internal bool StrictMode { get; private set; }
@@ -54,7 +52,6 @@ sealed class CommandLineOptions
         Help,
         InputFile,
         Language,
-        ClassName,
         OutputFolder,
         Strict,
         DisableTranslationOptimizer,
@@ -110,7 +107,6 @@ sealed class CommandLineOptions
             .AddPrefixedKeyword("help", Keyword.Help)
             .AddPrefixedKeyword("inputfile", Keyword.InputFile)
             .AddPrefixedKeyword("language", Keyword.Language)
-            .AddPrefixedKeyword("classname", Keyword.ClassName)
             .AddPrefixedKeyword("outputfolder", Keyword.OutputFolder)
             .AddPrefixedKeyword("strict", Keyword.Strict)
             .AddPrefixedKeyword("disablecodegenoptimizer", Keyword.DisableCodeGenOptimizer)
@@ -152,7 +148,6 @@ sealed class CommandLineOptions
                         // The following keywords require a parameter as the next token.
                         case Keyword.InputFile:
                         case Keyword.Language:
-                        case Keyword.ClassName:
                         case Keyword.OutputFolder:
                             previousKeyword = keyword;
                             break;
@@ -174,15 +169,6 @@ sealed class CommandLineOptions
                     break;
                 case Keyword.Language:
                     _languageStrings.Add(arg);
-                    break;
-                case Keyword.ClassName:
-                    if (ClassName != null)
-                    {
-                        ErrorDescription = "class name specified more than once";
-                        return;
-                    }
-
-                    ClassName = arg;
                     break;
                 case Keyword.OutputFolder:
                     if (OutputFolder != null)

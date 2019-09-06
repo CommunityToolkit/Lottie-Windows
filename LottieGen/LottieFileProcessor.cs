@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization;
@@ -46,7 +45,6 @@ sealed class LottieFileProcessor
 
         // Get an appropriate name for a generated class.
         _className =
-            InstantiatorGeneratorBase.TrySynthesizeClassName(_options.ClassName) ??
             InstantiatorGeneratorBase.TrySynthesizeClassName(System.IO.Path.GetFileNameWithoutExtension(_file)) ??
             InstantiatorGeneratorBase.TrySynthesizeClassName("Lottie");  // If all else fails, just call it Lottie.
     }
