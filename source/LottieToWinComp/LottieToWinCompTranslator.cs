@@ -1406,15 +1406,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
 
             var shapeContext = new ShapeContentContext(this);
-
-            if (!layerHasMasks)
-            {
-                // Only push the opacity to the context if there are no masks. If the layer has masks
-                // the opacity is already set on one of the Visuals created by
-                // TryCreateContainerVisualTransformChain(...)
-                shapeContext.UpdateOpacityFromTransform(context.Layer.Transform);
-            }
-
+            shapeContext.UpdateOpacityFromTransform(context.Layer.Transform);
             containerShapeContentNode.Shapes.Add(TranslateShapeLayerContents(context, shapeContext, context.Layer.Contents));
 
             return layerHasMasks ? (ShapeOrVisual)TranslateAndApplyMasksOnShapeTree(context, containerShapeRootNode) : containerShapeRootNode;
