@@ -1063,8 +1063,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                             _owner._issues.GradientStrokeIsNotSupported();
                             break;
 
-                        case ShapeContentType.RadialGradientFill:
                         case ShapeContentType.LinearGradientFill:
+                        case ShapeContentType.RadialGradientFill:
                         case ShapeContentType.SolidColorFill:
                             Fill = ComposeFills(Fill, (ShapeFill)popped);
                             break;
@@ -2545,7 +2545,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 opacityPercent);
         }
 
-        CompositionLinearGradientBrush TranslateLinearGradientFill(TranslationContext context, LinearGradientFill shapeFill, TrimmedAnimatable<double> opacityPercent)
+        CompositionLinearGradientBrush TranslateLinearGradientFill(
+            TranslationContext context,
+            LinearGradientFill shapeFill,
+            TrimmedAnimatable<double> opacityPercent)
         {
             var colorStops = context.TrimAnimatable(shapeFill.ColorStops);
             var opacityPercentStops = context.TrimAnimatable(shapeFill.OpacityPercentStops);
@@ -2646,7 +2649,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return result;
         }
 
-        CompositionRadialGradientBrush TranslateRadialGradientFill(TranslationContext context, RadialGradientFill shapeFill, TrimmedAnimatable<double> opacityPercent)
+        CompositionRadialGradientBrush TranslateRadialGradientFill(
+            TranslationContext context,
+            RadialGradientFill shapeFill,
+            TrimmedAnimatable<double> opacityPercent)
         {
             var colorStops = context.TrimAnimatable(shapeFill.ColorStops);
             var opacityPercentStops = context.TrimAnimatable(shapeFill.OpacityPercentStops);
