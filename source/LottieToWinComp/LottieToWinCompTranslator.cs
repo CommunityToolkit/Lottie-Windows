@@ -1058,28 +1058,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     var popped = stack.Peek();
                     switch (popped.ContentType)
                     {
-                        case ShapeContentType.RadialGradientFill:
-                            _owner._issues.GradientFillIsNotSupported();
-                            {
-                                // We don't yet support gradient fill, but we can at least
-                                // draw something. Use data from the first gradient stop as the fill.
-                                var rgf = (RadialGradientFill)popped;
-                                var rgfArgs = default(ShapeLayerContent.ShapeLayerContentArgs);
-                                rgfArgs.BlendMode = rgf.BlendMode;
-                                Fill = new SolidColorFill(
-                                    in rgfArgs,
-                                    ShapeFill.PathFillType.EvenOdd,
-                                    rgf.OpacityPercent,
-                                    new Animatable<Color>(rgf.ColorStops.InitialValue.Items[0].Color, null));
-                            }
-
-                            break;
-
                         case ShapeContentType.LinearGradientStroke:
                         case ShapeContentType.RadialGradientStroke:
                             _owner._issues.GradientStrokeIsNotSupported();
                             break;
 
+                        case ShapeContentType.RadialGradientFill:
                         case ShapeContentType.LinearGradientFill:
                         case ShapeContentType.SolidColorFill:
                             Fill = ComposeFills(Fill, (ShapeFill)popped);
@@ -2545,7 +2529,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 case ShapeFill.ShapeFillKind.LinearGradient:
                     return TranslateLinearGradientFill(context, (LinearGradientFill)shapeFill, opacityPercent);
                 case ShapeFill.ShapeFillKind.RadialGradient:
-                /*return TranslateRadialGradientFill(context, (RadialGradientFill)shapeFill, opacityPercent);*/
+                    return TranslateRadialGradientFill(context, (RadialGradientFill)shapeFill, opacityPercent);
                 default:
                     throw new InvalidOperationException();
             }
@@ -2610,6 +2594,113 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             else
             {
                 result.EndPoint = Vector2(endPoint.InitialValue);
+            }
+
+            var brushStops = result.ColorStops;
+
+            if (colorStops.IsAnimated)
+            {
+                // Lottie represents animation of stops as a sequence of lists of stops.
+                // WinComp uses a single list of stops where each stop is animated.
+                var stopsCount = colorStops.InitialValue.Items.Length;
+                var keyframesCount = colorStops.KeyFrames.Length;
+
+                var colorStopKeyFrames = colorStops.KeyFrames.ToArray();
+
+                // Create the Composition stops and animate them.
+                for (var i = 0; i < stopsCount; i++)
+                {
+                    var gradientStop = _c.CreateColorGradientStop();
+                    brushStops.Add(gradientStop);
+
+                    // Extract the key frames for this stop.
+                    var colorKeyFrames = ExtractKeyFramesFromGradientStopKeyFrames(
+                        colorStopKeyFrames,
+                        i,
+                        gs => MultiplyColorByOpacityPercent(gs.Color, opacityPercentValue)).ToArray();
+
+                    ApplyColorKeyFrameAnimation(
+                        context,
+                        new TrimmedAnimatable<Color>(context, colorKeyFrames[0].Value, colorKeyFrames),
+                        gradientStop,
+                        nameof(gradientStop.Color));
+
+                    var offsetKeyFrames = ExtractKeyFramesFromGradientStopKeyFrames(colorStopKeyFrames, i, gs => gs.Offset).ToArray();
+                    ApplyScalarKeyFrameAnimation(
+                        context,
+                        new TrimmedAnimatable<double>(context, offsetKeyFrames[0].Value, offsetKeyFrames),
+                        gradientStop,
+                        nameof(gradientStop.Offset));
+                }
+            }
+            else
+            {
+                foreach (var stop in colorStops.InitialValue.Items)
+                {
+                    var offset = stop.Offset;
+                    var color = MultiplyColorByOpacityPercent(stop.Color, opacityPercentValue);
+                    brushStops.Add(_c.CreateColorGradientStop(Float(offset), color));
+                }
+            }
+
+            return result;
+        }
+
+        CompositionRadialGradientBrush TranslateRadialGradientFill(TranslationContext context, RadialGradientFill shapeFill, TrimmedAnimatable<double> opacityPercent)
+        {
+            var colorStops = context.TrimAnimatable(shapeFill.ColorStops);
+            var opacityPercentStops = context.TrimAnimatable(shapeFill.OpacityPercentStops);
+
+            if (colorStops.InitialValue.Items.IsEmpty)
+            {
+                // If there are no color stops then we can't create a brush.
+                return null;
+            }
+
+            if (opacityPercent.IsAnimated)
+            {
+                // We don't yet support animated opacity with RadialGradientFill.
+                _issues.GradientFillIsNotSupported();
+            }
+
+            if (!opacityPercentStops.InitialValue.Items.IsEmpty)
+            {
+                // We don't yet support opacity stops.
+                _issues.GradientFillIsNotSupported();
+            }
+
+            var opacityPercentValue = opacityPercent.InitialValue;
+
+            var result = _c.CreateRadialGradientBrush();
+
+            // BodyMovin specifies start and end points in absolute values.
+            result.MappingMode = CompositionMappingMode.Absolute;
+
+            var startPoint = context.TrimAnimatable(shapeFill.StartPoint);
+            var endPoint = context.TrimAnimatable(shapeFill.EndPoint);
+
+            if (startPoint.IsAnimated)
+            {
+                ApplyVector2KeyFrameAnimation(context, startPoint, result, nameof(result.EllipseCenter));
+            }
+            else
+            {
+                result.EllipseCenter = Vector2(startPoint.InitialValue);
+            }
+
+            if (endPoint.IsAnimated)
+            {
+                // We don't yet support animated EndPoint.
+                _issues.GradientFillIsNotSupported();
+            }
+
+            result.EllipseRadius = new Sn.Vector2(Sn.Vector2.Distance(Vector2(startPoint.InitialValue), Vector2(endPoint.InitialValue)));
+
+            if (shapeFill.HighlightLength != null &&
+                (shapeFill.HighlightLength.InitialValue != 0 || shapeFill.HighlightLength.IsAnimated))
+            {
+                // We don't yet support animated HighlightLength.
+                _issues.GradientFillIsNotSupported();
             }
 
             var brushStops = result.ColorStops;

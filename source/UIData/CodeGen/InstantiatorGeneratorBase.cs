@@ -847,7 +847,28 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         bool GenerateCompositionRadialGradientBrushFactory(CodeBuilder builder, CompositionRadialGradientBrush obj, ObjectData node)
         {
-            throw new NotImplementedException();
+            WriteObjectFactoryStart(builder, node);
+            WriteCreateAssignment(builder, node, $"_c{Deref}CreateRadialGradientBrush()");
+            InitializeCompositionGradientBrush(builder, obj, node);
+
+            if (obj.EllipseCenter.HasValue)
+            {
+                builder.WriteLine($"result{Deref}EllipseCenter = {Vector2(obj.EllipseCenter.Value)};");
+            }
+
+            if (obj.EllipseRadius.HasValue)
+            {
+                builder.WriteLine($"result{Deref}EllipseRadius = {Vector2(obj.EllipseRadius.Value)};");
+            }
+
+            if (obj.GradientOriginOffset.HasValue)
+            {
+                builder.WriteLine($"result{Deref}GradientOriginOffset = {Vector2(obj.GradientOriginOffset.Value)};");
+            }
+
+            StartAnimations(builder, obj, node);
+            WriteObjectFactoryEnd(builder);
+            return true;
         }
 
         bool GenerateLinearEasingFunctionFactory(CodeBuilder builder, LinearEasingFunction obj, ObjectData node)

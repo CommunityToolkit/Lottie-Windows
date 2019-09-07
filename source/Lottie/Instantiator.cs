@@ -415,8 +415,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                     return GetCompositionPathGeometry((Wd.CompositionPathGeometry)obj);
                 case Wd.CompositionObjectType.CompositionPropertySet:
                     return GetCompositionPropertySet((Wd.CompositionPropertySet)obj);
-                /*case Wd.CompositionObjectType.CompositionRadialGradientBrush:
-                    return GetCompositionRadialGradientBrush((Wd.CompositionRadialGradientBrush)obj);*/
+                case Wd.CompositionObjectType.CompositionRadialGradientBrush:
+                    return GetCompositionRadialGradientBrush((Wd.CompositionRadialGradientBrush)obj);
                 case Wd.CompositionObjectType.CompositionRectangleGeometry:
                     return GetCompositionRectangleGeometry((Wd.CompositionRectangleGeometry)obj);
                 case Wd.CompositionObjectType.CompositionRoundedRectangleGeometry:
@@ -1299,8 +1299,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 case Wd.CompositionObjectType.CompositionLinearGradientBrush:
                     return GetCompositionLinearGradientBrush((Wd.CompositionLinearGradientBrush)obj);
                 case Wd.CompositionObjectType.CompositionRadialGradientBrush:
-                // TODO - handle versioning - RadialGradientBrush was not added until 1903
-                //         return GetCompositionRadialGradientBrush((Wd.CompositionRadialGradientBrush)obj);
+                    return GetCompositionRadialGradientBrush((Wd.CompositionRadialGradientBrush)obj);
                 default:
                     throw new InvalidOperationException();
             }
