@@ -15,10 +15,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
         {
         }
 
+        // Default is 0.5, 0.5
         public Vector2? EllipseCenter { get; set; }
 
+        // Default is 0.5, 0.5
         public Vector2? EllipseRadius { get; set; }
 
+        // Default is 0, 0
         public Vector2? GradientOriginOffset { get; set; }
 
         /// <inheritdoc/>
