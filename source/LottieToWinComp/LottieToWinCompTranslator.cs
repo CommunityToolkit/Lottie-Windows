@@ -2562,13 +2562,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             if (opacityPercent.IsAnimated)
             {
                 // We don't yet support animated opacity with LinearGradientFill.
-                _issues.GradientFillIsNotSupported();
+                _issues.GradientFillIsNotSupported("Linear", "animated opacity");
             }
 
             if (!opacityPercentStops.InitialValue.Items.IsEmpty)
             {
                 // We don't yet support opacity stops.
-                _issues.GradientFillIsNotSupported();
+                _issues.GradientFillIsNotSupported("Linear", "opacity stops");
             }
 
             var opacityPercentValue = opacityPercent.InitialValue;
@@ -2666,13 +2666,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             if (opacityPercent.IsAnimated)
             {
                 // We don't yet support animated opacity with RadialGradientFill.
-                _issues.GradientFillIsNotSupported();
+                _issues.GradientFillIsNotSupported("Radial", "animated opacity");
             }
 
             if (!opacityPercentStops.InitialValue.Items.IsEmpty)
             {
                 // We don't yet support opacity stops.
-                _issues.GradientFillIsNotSupported();
+                _issues.GradientFillIsNotSupported("Radial", "opacity stops");
             }
 
             var opacityPercentValue = opacityPercent.InitialValue;
@@ -2697,7 +2697,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             if (endPoint.IsAnimated)
             {
                 // We don't yet support animated EndPoint.
-                _issues.GradientFillIsNotSupported();
+                _issues.GradientFillIsNotSupported("Radial", "animated end point");
             }
 
             result.EllipseRadius = new Sn.Vector2(Sn.Vector2.Distance(Vector2(startPoint.InitialValue), Vector2(endPoint.InitialValue)));
@@ -2706,7 +2706,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 (shapeFill.HighlightLength.InitialValue != 0 || shapeFill.HighlightLength.IsAnimated))
             {
                 // We don't yet support animated HighlightLength.
-                _issues.GradientFillIsNotSupported();
+                _issues.GradientFillIsNotSupported("Radial", "animated highlight length");
             }
 
             var brushStops = result.ColorStops;
