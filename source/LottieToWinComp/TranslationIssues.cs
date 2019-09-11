@@ -42,7 +42,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal void CombiningAnimatedShapesIsNotSupported() => Report("LT0005", "Combining animated shapes is not supported");
 
-        internal void GradientFillIsNotSupported() => Report("LT0006", "Gradient fill is not supported");
+        internal void GradientFillIsNotSupported(string linearOrRadial, string combination) => Report("LT0006", $"{linearOrRadial} gradient fill with {combination} is not supported");
 
         internal void GradientStrokeIsNotSupported() => Report("LT0007", "Gradient stroke is not supported");
 
