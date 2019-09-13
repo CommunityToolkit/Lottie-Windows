@@ -482,7 +482,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         }
 
         // Enumerates the segments of Masks with the same MaskMode.
-        IEnumerable<(int index, int count)> EnumerateMaskListSegments(Mask[] masks)
+        static IEnumerable<(int index, int count)> EnumerateMaskListSegments(Mask[] masks)
         {
             int i;
 
