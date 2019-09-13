@@ -390,7 +390,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 yield return new XAttribute(nameof(mask.Inverted), mask.Inverted);
                 yield return new XAttribute(nameof(mask.Name), mask.Name);
                 yield return FromAnimatable(nameof(mask.Points), mask.Points);
-                yield return FromAnimatable(nameof(mask.Opacity), mask.Opacity);
+                yield return FromAnimatable(nameof(mask.OpacityPercent), mask.OpacityPercent);
                 yield return new XAttribute(nameof(mask.Mode), mask.Mode);
             }
         }

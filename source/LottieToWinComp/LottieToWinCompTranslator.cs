@@ -339,92 +339,77 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             CompositionContainerShape containerShapeToMask)
         {
             var contentShapeVisual = _c.CreateShapeVisualWithChild(containerShapeToMask, context.Size);
-            return TranslateAndApplyMasks(context, context.Layer, contentShapeVisual);
+            return TranslateAndApplyMasksForLayer(context, context.Layer, contentShapeVisual);
         }
 
-        // This function is used to take the paths for the masks defined on a layer
-        // and add them as shapes on the maskContainerShape.
-        bool TranslateAndAddMaskPaths(
+        // Takes the paths for the given masks and adds them as shapes on the maskContainerShape.
+        // Requires at least one Mask.
+        void TranslateAndAddMaskPaths(
             TranslationContext context,
-            Layer layer,
-            CompositionContainerShape maskContainerShape,
-            out Mask.MaskMode maskMode)
+            ReadOnlySpan<Mask> masks,
+            CompositionContainerShape resultContainer)
         {
-            maskMode = Mask.MaskMode.None;
+            Debug.Assert(masks.Length > 0, "Precondition");
 
-            if (layer.Masks.Any())
+            var maskMode = masks[0].Mode;
+
+            // Translate the mask paths
+            foreach (var mask in masks)
             {
-                // Translate the mask paths
-                foreach (var mask in layer.Masks)
+                if (mask.Inverted)
                 {
-                    var currentMaskMode = mask.Mode;
-                    if (mask.Inverted)
-                    {
-                        _issues.MaskWithInvertIsNotSupported();
+                    _issues.MaskWithInvertIsNotSupported();
 
-                        // Mask inverted is not supported. Skip this mask.
-                        continue;
-                    }
-
-                    if (mask.Opacity.IsAnimated ||
-                        mask.Opacity.InitialValue != 100)
-                    {
-                        _issues.MaskWithAlphaIsNotSupported();
-
-                        // Opacity on masks is not supported. Skip this mask.
-                        continue;
-                    }
-
-                    if (mask.Mode != Mask.MaskMode.Additive &&
-                        mask.Mode != Mask.MaskMode.Subtract)
-                    {
-                        _issues.MaskWithUnsupportedMode(mask.Mode.ToString());
-
-                        // Only additive and subtractive mask modes are currently supported.
-                        // Skip this mask.
-                        continue;
-                    }
-
-                    var geometry = context.TrimAnimatable(_lottieDataOptimizer.GetOptimized(mask.Points));
-
-                    var compositionPathGeometry = _c.CreatePathGeometry();
-                    compositionPathGeometry.Path = CompositionPathFromPathGeometry(
-                        geometry.InitialValue,
-                        ShapeFill.PathFillType.EvenOdd,
-                        optimizeLines: true);
-
-                    if (geometry.IsAnimated)
-                    {
-                        ApplyPathKeyFrameAnimation(context, geometry, ShapeFill.PathFillType.EvenOdd, compositionPathGeometry, "Path", "Path", null);
-                    }
-
-                    // If we do not know the mask mode yet then set it here.
-                    // We will use this mask mode value to ensure that all
-                    // masks we translate have the same mode.
-                    if (maskMode == Mask.MaskMode.None)
-                    {
-                        maskMode = currentMaskMode;
-                    }
-
-                    if (mask.Mode == currentMaskMode)
-                    {
-                        var maskSpriteShape = _c.CreateSpriteShape();
-                        maskSpriteShape.Geometry = compositionPathGeometry;
-
-                        // The mask geometry needs to be colored with something so that it can be used
-                        // as a mask.
-                        maskSpriteShape.FillBrush = _c.CreateNonAnimatedColorBrush(LottieData.Color.Black);
-
-                        maskContainerShape.Shapes.Add(maskSpriteShape);
-                    }
-                    else
-                    {
-                        _issues.MaskModesDoNotMatch();
-                    }
+                    // Mask inverted is not yet supported. Skip this mask.
+                    continue;
                 }
-            }
 
-            return maskMode != Mask.MaskMode.None;
+                if (mask.OpacityPercent.IsAnimated ||
+                    mask.OpacityPercent.InitialValue != 100)
+                {
+                    _issues.MaskWithAlphaIsNotSupported();
+
+                    // Opacity on masks is not supported. Skip this mask.
+                    continue;
+                }
+
+                switch (mask.Mode)
+                {
+                    case Mask.MaskMode.None:
+                        // Ignore None masks. They are just a way to disable a Mask in After Effects.
+                        continue;
+                    default:
+                        if (mask.Mode != maskMode)
+                        {
+                            // Every mask must have the same mode.
+                            throw new InvalidOperationException();
+                        }
+
+                        break;
+                }
+
+                var geometry = context.TrimAnimatable(_lottieDataOptimizer.GetOptimized(mask.Points));
+
+                var compositionPathGeometry = _c.CreatePathGeometry();
+                compositionPathGeometry.Path = CompositionPathFromPathGeometry(
+                    geometry.InitialValue,
+                    ShapeFill.PathFillType.EvenOdd,
+                    optimizeLines: true);
+
+                if (geometry.IsAnimated)
+                {
+                    ApplyPathKeyFrameAnimation(context, geometry, ShapeFill.PathFillType.EvenOdd, compositionPathGeometry, "Path", "Path", null);
+                }
+
+                var maskSpriteShape = _c.CreateSpriteShape();
+                maskSpriteShape.Geometry = compositionPathGeometry;
+
+                // The mask geometry needs to be colored with something so that it can be used
+                // as a mask.
+                maskSpriteShape.FillBrush = _c.CreateNonAnimatedColorBrush(LottieData.Color.Black);
+
+                resultContainer.Shapes.Add(maskSpriteShape);
+            }
         }
 
         // Translate a mask into shapes for a shape visual. The mask is applied to the visual to be masked
@@ -432,42 +417,143 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         // use it as a brush. The final masked result is achieved by taking the visual to be masked, putting
         // it into a VisualSurface, then taking the mask and putting that in a VisualSurface and then combining
         // the result with a composite effect.
-        Visual TranslateAndApplyMasks(
+        Visual TranslateAndApplyMasksForLayer(
             TranslationContext context,
             Layer layer,
-            Visual visualToBeMasked)
+            Visual visualToMask)
         {
-            if (layer.Masks.Any())
+            var result = visualToMask;
+
+            if (layer.Masks.Length > 0)
             {
-                // Create the same transform chain that the visualToBeMasked has so that the mask and the visualToBeMasked can be
-                // correctly overlaid.
-                if (!TryCreateContainerShapeTransformChain(context, out var containerShapeMaskRootNode, out var containerShapeMaskContentNode))
+                if (layer.Masks.Length == 1)
                 {
-                    // The layer is never visible.
-                    return null;
+                    // Common case for masks: exactly one mask.
+                    var masks = layer.Masks.Slice(0, 1);
+
+                    switch (masks[0].Mode)
+                    {
+                        // If there's only 1 mask, Difference and Intersect act the same as Add.
+                        case Mask.MaskMode.Add:
+                        case Mask.MaskMode.Difference:
+                        case Mask.MaskMode.Intersect:
+                        case Mask.MaskMode.None:
+                            // Composite using the mask.
+                            result = TranslateAndApplyMasks(context, masks, result, CanvasComposite.DestinationIn);
+                            break;
+
+                        case Mask.MaskMode.Subtract:
+                            // Composite using the mask.
+                            result = TranslateAndApplyMasks(context, masks, result, CanvasComposite.DestinationOut);
+                            break;
+
+                        default:
+                            _issues.MaskWithUnsupportedMode(masks[0].Mode.ToString());
+                            break;
+                    }
                 }
-
-                var maskShapeVisual = _c.CreateShapeVisualWithChild(containerShapeMaskRootNode, context.Size);
-
-                // Do not add the mask if we failed to translate and add it
-                if (TranslateAndAddMaskPaths(context, layer, containerShapeMaskContentNode, out var maskMode))
+                else
                 {
-                    var compositedVisual = CompositeVisuals(
-                                                maskShapeVisual,
-                                                visualToBeMasked,
-                                                context.Size,
-                                                Sn.Vector2.Zero,
-                                                maskMode == Mask.MaskMode.Additive ? CanvasComposite.DestinationIn : CanvasComposite.DestinationOut);
-
-                    var layerRootContainerVisual = _c.CreateContainerVisual();
-                    layerRootContainerVisual.Children.Add(compositedVisual);
-                    return layerRootContainerVisual;
+                    // Uncommon case: multiple masks. Get the contiguous segments of masks that have the same mode.
+                    foreach (var maskSegmentWithSameMode in EnumerateMaskListSegments(layer.Masks.ToArray()))
+                    {
+                        // Every mask in the segment has the same mode or None. The first mask is never None.
+                        var masks = layer.Masks.Slice(maskSegmentWithSameMode.index, maskSegmentWithSameMode.count);
+                        switch (masks[0].Mode)
+                        {
+                            case Mask.MaskMode.Add:
+                                // Composite using the mask, and apply to what has been already masked.
+                                result = TranslateAndApplyMasks(context, masks, result, CanvasComposite.DestinationIn);
+                                break;
+                            case Mask.MaskMode.Subtract:
+                                // Composite using the mask, and apply to what has been already masked.
+                                result = TranslateAndApplyMasks(context, masks, result, CanvasComposite.DestinationOut);
+                                break;
+                            default:
+                                // Only Add, Subtract, and None modes are currently supported.
+                                _issues.MaskWithUnsupportedMode(masks[0].Mode.ToString());
+                                break;
+                        }
+                    }
                 }
             }
 
-            // Currently no callers do anything useful if this function fails to apply the mask.
-            // In the event of failure, return the visual that was supposed to be masked.
-            return visualToBeMasked;
+            return result;
+        }
+
+        // Enumerates the segments of Masks with the same MaskMode.
+        IEnumerable<(int index, int count)> EnumerateMaskListSegments(Mask[] masks)
+        {
+            int i;
+
+            // Find the first non-None mask.
+            for (i = 0; i < masks.Length && masks[i].Mode == Mask.MaskMode.None; i++)
+            {
+                continue;
+            }
+
+            if (i == masks.Length)
+            {
+                // There were only None masks in the list.
+                yield break;
+            }
+
+            var currentMode = masks[i].Mode;
+            var segmentIndex = i;
+
+            for (; i < masks.Length; i++)
+            {
+                var mode = masks[i].Mode;
+                if (mode != currentMode && mode != Mask.MaskMode.None)
+                {
+                    // Switching to a new mask mode. Output the segment for the previous mode.
+                    yield return (segmentIndex, i - segmentIndex);
+
+                    currentMode = mode;
+                    segmentIndex = i;
+                }
+            }
+
+            // Output the last segment it it's not empty.
+            if (segmentIndex < i)
+            {
+                yield return (segmentIndex, i - segmentIndex);
+            }
+        }
+
+        // Translates a list of masks to a Visual which can be used to mask another Visual.
+        Visual TranslateMasks(TranslationContext context, ReadOnlySpan<Mask> masks)
+        {
+            Debug.Assert(!masks.IsEmpty, "Precondition");
+
+            // Duplicate the transform chain used on the Layer being masked so
+            // that the mask correctly overlays the Layer.
+            if (!TryCreateContainerShapeTransformChain(
+                context,
+                out var containerShapeMaskRootNode,
+                out var containerShapeMaskContentNode))
+            {
+                // The layer is never visible. This should have been discovered already.
+                throw new InvalidOperationException();
+            }
+
+            // Create the mask tree from the masks.
+            TranslateAndAddMaskPaths(context, masks, containerShapeMaskContentNode);
+            return _c.CreateShapeVisualWithChild(containerShapeMaskRootNode, context.Size);
+        }
+
+        Visual TranslateAndApplyMasks(TranslationContext context, ReadOnlySpan<Mask> masks, Visual visualToMask, CanvasComposite compositeMode)
+        {
+            Debug.Assert(!masks.IsEmpty, "Precondition");
+
+            var maskShapeVisual = TranslateMasks(context, masks);
+
+            return CompositeVisuals(
+                                source: maskShapeVisual,
+                                destination: visualToMask,
+                                size: context.Size,
+                                offset: Sn.Vector2.Zero,
+                                compositeMode: compositeMode);
         }
 
         // Translate a matte layer and the layer to be matted into the composited resulting brush.
@@ -502,8 +588,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         invert ? CanvasComposite.DestinationOut : CanvasComposite.DestinationIn);
         }
 
-        // This function combines two visual trees using a Composite Effect. The way that the trees are combined
-        // is determined by the composite mode. The composition works as follows:
+        // Combines two visual trees using a CompositeEffect. This is used for Masks and Mattes.
+        // The way that the trees are combined is determined by the composite mode. The composition works as follows:
         // +--------------+
         // | SpriteVisual | -- Has the final composited result.
         // +--------------+
@@ -988,7 +1074,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 #endif
             if (layerHasMasks)
             {
-                var compositedVisual = TranslateAndApplyMasks(context, context.Layer, rootNode);
+                var compositedVisual = TranslateAndApplyMasksForLayer(context, context.Layer, rootNode);
 
                 result.Children.Add(compositedVisual);
             }

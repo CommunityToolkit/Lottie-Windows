@@ -66,8 +66,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Tools
                     MaskCount++;
                     switch (mask.Mode)
                     {
-                        case Mask.MaskMode.Additive:
-                            MaskAdditiveCount++;
+                        case Mask.MaskMode.Add:
+                            MaskAddCount++;
                             break;
                         case Mask.MaskMode.Darken:
                             MaskDarkenCount++;
@@ -103,7 +103,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Tools
 
         public int MaskCount { get; }
 
-        public int MaskAdditiveCount { get; }
+        public int MaskAddCount { get; }
 
         public int MaskDarkenCount { get; }
 
