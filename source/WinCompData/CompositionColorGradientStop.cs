@@ -4,6 +4,7 @@
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 {
+    [MetaData.UapVersion(5)]
 #if PUBLIC_WinCompData
     public
 #endif

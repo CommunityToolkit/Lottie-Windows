@@ -7,6 +7,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
     /// <summary>
     /// Data representation of Windows.UI.Composition.CompositionPath.
     /// </summary>
+    [MetaData.UapVersion(6)]
 #if PUBLIC_WinCompData
     public
 #endif
