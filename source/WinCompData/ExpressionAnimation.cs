@@ -6,6 +6,7 @@ using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 {
+    [MetaData.UapVersion(2)]
 #if PUBLIC_WinCompData
     public
 #endif
