@@ -454,24 +454,30 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 }
                 else
                 {
-                    // Uncommon case: multiple masks. Get the contiguous segments of masks that have the same mode.
+                    // Uncommon case for masks: multiple masks.
+                    // Get the contiguous segments of masks that have the same mode, create a shape tree for each
+                    // segment, and composite the shape trees.
+                    // The goal here is to use the smallest possible number of composites.
+                    // 1) Get the masks that have the same mode and are next to each other in the list of masks.
+                    // 2) Translate the masks to a ShapeVisual.
+                    // 3) Composite each ShapeVisual with the previous ShapeVisual.
                     foreach (var maskSegmentWithSameMode in EnumerateMaskListSegments(layer.Masks.ToArray()))
                     {
                         // Every mask in the segment has the same mode or None. The first mask is never None.
-                        var masks = layer.Masks.Slice(maskSegmentWithSameMode.index, maskSegmentWithSameMode.count);
-                        switch (masks[0].Mode)
+                        var masksWithSameMode = layer.Masks.Slice(maskSegmentWithSameMode.index, maskSegmentWithSameMode.count);
+                        switch (masksWithSameMode[0].Mode)
                         {
                             case Mask.MaskMode.Add:
                                 // Composite using the mask, and apply to what has been already masked.
-                                result = TranslateAndApplyMasks(context, masks, result, CanvasComposite.DestinationIn);
+                                result = TranslateAndApplyMasks(context, masksWithSameMode, result, CanvasComposite.DestinationIn);
                                 break;
                             case Mask.MaskMode.Subtract:
                                 // Composite using the mask, and apply to what has been already masked.
-                                result = TranslateAndApplyMasks(context, masks, result, CanvasComposite.DestinationOut);
+                                result = TranslateAndApplyMasks(context, masksWithSameMode, result, CanvasComposite.DestinationOut);
                                 break;
                             default:
                                 // Only Add, Subtract, and None modes are currently supported.
-                                _issues.MaskWithUnsupportedMode(masks[0].Mode.ToString());
+                                _issues.MaskWithUnsupportedMode(masksWithSameMode[0].Mode.ToString());
                                 break;
                         }
                     }
@@ -514,7 +520,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 }
             }
 
-            // Output the last segment it it's not empty.
+            // Output the last segment it's not empty.
             if (segmentIndex < i)
             {
                 yield return (segmentIndex, i - segmentIndex);
