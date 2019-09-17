@@ -7,6 +7,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
     /// <summary>
     /// Specifies the color space for interpolating color values in <see cref="ColorKeyFrameAnimation"/>.
     /// </summary>
+    [MetaData.UapVersion(2)]
 #if PUBLIC_WinCompData
     public
 #endif
