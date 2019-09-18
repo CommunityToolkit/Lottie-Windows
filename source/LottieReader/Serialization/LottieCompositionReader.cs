@@ -789,13 +789,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 var inverted = obj.GetNamedBoolean("inv");
                 var name = ReadName(obj);
                 var animatedGeometry = ReadAnimatableGeometry(obj.GetNamedObject("pt"));
-                var opacity = ReadAnimatableFloat(obj.GetNamedObject("o"));
+                var opacityPercent = ReadAnimatableFloat(obj.GetNamedObject("o"));
                 var mode = Mask.MaskMode.None;
                 var maskMode = obj.GetNamedString("mode");
                 switch (maskMode)
                 {
                     case "a":
-                        mode = Mask.MaskMode.Additive;
+                        mode = Mask.MaskMode.Add;
                         break;
                     case "d":
                         mode = Mask.MaskMode.Darken;
@@ -824,7 +824,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     inverted,
                     name,
                     animatedGeometry,
-                    opacity,
+                    opacityPercent,
                     mode
                 );
             }

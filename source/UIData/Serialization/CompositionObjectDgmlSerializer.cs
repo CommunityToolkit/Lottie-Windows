@@ -277,6 +277,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                         case CompositionObjectType.ColorKeyFrameAnimation:
                         case CompositionObjectType.CompositionColorBrush:
                         case CompositionObjectType.CompositionColorGradientStop:
+                        case CompositionObjectType.CompositionEffectBrush:
                         case CompositionObjectType.CompositionEllipseGeometry:
                         case CompositionObjectType.CompositionLinearGradientBrush:
                         case CompositionObjectType.CompositionGeometricClip:
@@ -285,7 +286,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                         case CompositionObjectType.CompositionRadialGradientBrush:
                         case CompositionObjectType.CompositionRectangleGeometry:
                         case CompositionObjectType.CompositionRoundedRectangleGeometry:
+                        case CompositionObjectType.CompositionSurfaceBrush:
                         case CompositionObjectType.CompositionViewBox:
+                        case CompositionObjectType.CompositionVisualSurface:
                         case CompositionObjectType.CubicBezierEasingFunction:
                         case CompositionObjectType.ExpressionAnimation:
                         case CompositionObjectType.InsetClip:
@@ -295,7 +298,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                         case CompositionObjectType.StepEasingFunction:
                         case CompositionObjectType.Vector2KeyFrameAnimation:
                         case CompositionObjectType.Vector3KeyFrameAnimation:
-                        case CompositionObjectType.CompositionSurfaceBrush:
                             // Do not display in the graph.
                             return;
                         case CompositionObjectType.CompositionContainerShape:

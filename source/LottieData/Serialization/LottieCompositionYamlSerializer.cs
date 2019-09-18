@@ -328,7 +328,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 { "Name", mask.Name },
                 { "Inverted", mask.Inverted },
                 { "Mode", Scalar(mask.Mode) },
-                { "Opacity", FromAnimatable(mask.Opacity) },
+                { "OpacityPercent", FromAnimatable(mask.OpacityPercent) },
                 { "Points", FromAnimatable(mask.Points, p => FromSequence(p, FromBezierSegment)) },
             };
             return result;
@@ -524,6 +524,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         YamlObject FromPath(Path content, YamlMap superclassContent)
         {
             var result = superclassContent;
+            result.Add("Direction", content.Direction);
+            result.Add("Data", FromAnimatable(content.Data, p => FromSequence(p, FromBezierSegment)));
             return result;
         }
 

@@ -65,11 +65,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
                 case CompositionObjectType.CompositionEllipseGeometry:
                     yield return FromCompositionEllipseGeometry((CompositionEllipseGeometry)obj);
                     break;
+                case CompositionObjectType.CompositionEffectBrush:
+                    yield return FromCompositionEffectBrush((CompositionEffectBrush)obj);
+                    break;
+                case CompositionObjectType.CompositionLinearGradientBrush:
+                    yield return FromCompositionLinearGradientBrush((CompositionLinearGradientBrush)obj);
+                    break;
                 case CompositionObjectType.CompositionPathGeometry:
                     yield return FromCompositionPathGeometry((CompositionPathGeometry)obj);
                     break;
                 case CompositionObjectType.CompositionPropertySet:
                     yield return FromCompositionPropertySet((CompositionPropertySet)obj);
+                    break;
+                case CompositionObjectType.CompositionRadialGradientBrush:
+                    yield return FromCompositionRadialGradientBrush((CompositionRadialGradientBrush)obj);
                     break;
                 case CompositionObjectType.CompositionRectangleGeometry:
                     yield return FromCompositionRectangleGeometry((CompositionRectangleGeometry)obj);
@@ -187,6 +196,30 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
             }
         }
 
+        XElement FromCompositionEffectBrush(CompositionEffectBrush obj)
+        {
+            return new XElement(GetCompositionObjectName(obj), GetContents());
+            IEnumerable<XObject> GetContents()
+            {
+                foreach (var item in GetCompositionObjectContents(obj))
+                {
+                    yield return item;
+                }
+            }
+        }
+
+        XElement FromCompositionLinearGradientBrush(CompositionLinearGradientBrush obj)
+        {
+            return new XElement(GetCompositionObjectName(obj), GetContents());
+            IEnumerable<XObject> GetContents()
+            {
+                foreach (var item in GetCompositionObjectContents(obj))
+                {
+                    yield return item;
+                }
+            }
+        }
+
         XElement FromCompositionPropertySet(CompositionPropertySet obj)
         {
             return new XElement("CompositionPropertySet", GetContents());
@@ -221,6 +254,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
                 if (obj.Path != null)
                 {
                     yield return FromCompositionPath(obj.Path);
+                }
+            }
+        }
+
+        XElement FromCompositionRadialGradientBrush(CompositionRadialGradientBrush obj)
+        {
+            return new XElement(GetCompositionObjectName(obj), GetContents());
+            IEnumerable<XObject> GetContents()
+            {
+                foreach (var item in GetCompositionObjectContents(obj))
+                {
+                    yield return item;
                 }
             }
         }
