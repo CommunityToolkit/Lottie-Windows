@@ -179,10 +179,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal ExpressionAnimation CreateExpressionAnimation(Expr expression) => _compositor.CreateExpressionAnimation(expression);
 
-        internal CompositionVisualSurface CreateVisualSurface()
-        {
-            return _compositor.CreateVisualSurface();
-        }
+        internal CompositionVisualSurface CreateVisualSurface() =>  _compositor.CreateVisualSurface();
 
         internal CompositionSurfaceBrush CreateSurfaceBrush(ICompositionSurface surface) => _compositor.CreateSurfaceBrush(surface);
 
