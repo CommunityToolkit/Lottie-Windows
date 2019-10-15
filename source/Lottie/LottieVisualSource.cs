@@ -567,18 +567,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
 
             internal void SetRootVisual(WinCompData.Visual rootVisual)
             {
-                // Ensure the visual is compatible with the current OS.
-                // If it's not compatible, do not save the visual.
-                var versionCompatiblity = ApiCompatibility.Analyze(rootVisual);
-                if (IsRuntimeCompatible(versionCompatiblity))
-                {
-                    if (_diagnostics != null)
-                    {
-                        _diagnostics.IsCompatibleWithCurrentOS = true;
-                    }
-
-                    _wincompDataRootVisual = rootVisual;
-                }
+                _wincompDataRootVisual = rootVisual;
             }
 
             internal bool CanInstantiate => _wincompDataRootVisual != null;
@@ -634,11 +623,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         /// Gets the highest UAP version of the current process.
         /// </summary>
         /// <returns>The highest UAP version of the current process.</returns>
-        static int GetCurrentUapVersion()
+        static uint GetCurrentUapVersion()
         {
             // Start testing on version 2. We know that at least version 1 is supported because
             // we are running in UAP code.
-            var versionToTest = 2;
+            var versionToTest = 2u;
 
             // Keep querying until IsApiContractPresent fails to find the version.
             while (ApiInformation.IsApiContractPresent("Windows.Foundation.UniversalApiContract", (ushort)versionToTest))
