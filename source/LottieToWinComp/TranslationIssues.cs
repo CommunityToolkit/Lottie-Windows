@@ -96,6 +96,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal void MasksNotSupported() => Report("LT0033", "Masks are not supported.");
 
+        internal void UapVersionNotSupported(string versionDependentFeature, string optimalUapVersion) => Report("LT0034", $"{versionDependentFeature} requires a UAP version of at least {optimalUapVersion}.");
+
         void Report(string code, string description)
         {
             _issues.Add((code, description));

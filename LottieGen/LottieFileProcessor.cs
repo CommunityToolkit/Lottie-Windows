@@ -30,8 +30,8 @@ sealed class LottieFileProcessor
     bool? _isTranslatedSuccessfully;
     LottieComposition _lottieComposition;
     Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Tools.Stats _lottieStats;
-    (string Code, string Description)[] _readerIssues;
-    (string Code, string Description)[] _translationIssues;
+    IReadOnlyList<(string Code, string Description)> _readerIssues;
+    IReadOnlyList<(string Code, string Description)> _translationIssues;
     Stats _beforeOptimizationStats;
     Stats _afterOptimizationStats;
     Visual _rootVisual;
@@ -575,14 +575,27 @@ sealed class LottieFileProcessor
             return _isTranslatedSuccessfully.Value;
         }
 
-        var translateSucceeded = LottieToWinCompTranslator.TryTranslateLottieComposition(
+        // If no UAP version is specified, use 7 as that is the lowest version that the translator supports.
+        // TODO - until we have version adaptive code, specify 8 so the output isn't different from
+        // what previous versions of the tool were outputing.
+        const uint defaultUapVersion = 8;
+
+        // TODO - to support version-adaptive code, translate for the TargetUapVersion, then generate
+        //        again to cover all versions down to the MinimumUapVersion, and combine into a single
+        //        codegen result.
+        var translationResult = LottieToWinCompTranslator.TryTranslateLottieComposition(
                _lottieComposition,
+               targetUapVersion: /*_options.TargetUapVersion ??*/ defaultUapVersion,
                strictTranslation: false,
-               addCodegenDescriptions: true,
-               out _rootVisual,
-               out _translationIssues);
+               addCodegenDescriptions: true);
 
         _profiler.OnTranslateFinished();
+
+        _rootVisual = translationResult.RootVisual;
+
+        _isTranslatedSuccessfully = _rootVisual != null;
+
+        _translationIssues = translationResult.TranslationIssues;
 
         foreach (var issue in _translationIssues)
         {
@@ -592,24 +605,20 @@ sealed class LottieFileProcessor
         _beforeOptimizationStats = new Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools.Stats(_rootVisual);
         _profiler.OnUnmeasuredFinished();
 
-        if (!translateSucceeded)
+        if (_isTranslatedSuccessfully.Value)
         {
-            _isTranslatedSuccessfully = false;
-            return false;
+            // Optimize the code unless told not to.
+            if (!_options.DisableTranslationOptimizer)
+            {
+                _rootVisual = Optimizer.Optimize(_rootVisual, ignoreCommentProperties: true);
+                _profiler.OnOptimizationFinished();
+
+                _afterOptimizationStats = new Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools.Stats(_rootVisual);
+                _profiler.OnUnmeasuredFinished();
+            }
         }
 
-        // Optimize the code unless told not to.
-        if (!_options.DisableTranslationOptimizer)
-        {
-            _rootVisual = Optimizer.Optimize(_rootVisual, ignoreCommentProperties: true);
-            _profiler.OnOptimizationFinished();
-
-            _afterOptimizationStats = new Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools.Stats(_rootVisual);
-            _profiler.OnUnmeasuredFinished();
-        }
-
-        _isTranslatedSuccessfully = true;
-        return true;
+        return _isTranslatedSuccessfully.Value;
     }
 
     void WriteAssetFiles(IEnumerable<Uri> assetList)

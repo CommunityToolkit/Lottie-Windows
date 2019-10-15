@@ -87,7 +87,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         public static LottieComposition ReadLottieCompositionFromJsonStream(
             Stream stream,
             Options options,
-            out (string Code, string Description)[] issues)
+            out IReadOnlyList<(string Code, string Description)> issues)
         {
             JsonReader jsonReader;
             try
@@ -115,7 +115,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         static LottieComposition ReadLottieCompositionFromJson(
             JsonReader jsonReader,
             Options options,
-            out (string Code, string Description)[] issues)
+            out IReadOnlyList<(string Code, string Description)> issues)
         {
             var reader = new LottieCompositionReader(options);
             LottieComposition result = null;

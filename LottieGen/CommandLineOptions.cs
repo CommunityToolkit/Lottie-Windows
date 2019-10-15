@@ -45,6 +45,10 @@ sealed class CommandLineOptions
 
     internal bool DisableCodeGenOptimizer { get; private set; }
 
+    internal uint? MinimumUapVersion { get; private set; }
+
+    internal uint? TargetUapVersion { get; private set; }
+
     enum Keyword
     {
         None,
@@ -56,6 +60,8 @@ sealed class CommandLineOptions
         Strict,
         DisableTranslationOptimizer,
         DisableCodeGenOptimizer,
+        MinimumUapVersion,
+        TargetUapVersion,
     }
 
     // Returns the parsed command line. If ErrorDescription is non-null, then the parse failed.
@@ -110,7 +116,9 @@ sealed class CommandLineOptions
             .AddPrefixedKeyword("outputfolder", Keyword.OutputFolder)
             .AddPrefixedKeyword("strict", Keyword.Strict)
             .AddPrefixedKeyword("disablecodegenoptimizer", Keyword.DisableCodeGenOptimizer)
-            .AddPrefixedKeyword("disabletranslationoptimizer", Keyword.DisableTranslationOptimizer);
+            .AddPrefixedKeyword("disabletranslationoptimizer", Keyword.DisableTranslationOptimizer)
+            .AddPrefixedKeyword("minimumuapversion", Keyword.MinimumUapVersion)
+            .AddPrefixedKeyword("targetuapversion", Keyword.TargetUapVersion);
 
         // The last keyword recognized. This defines what the following parameter value is for,
         // or None if not expecting a parameter value.
@@ -149,6 +157,8 @@ sealed class CommandLineOptions
                         case Keyword.InputFile:
                         case Keyword.Language:
                         case Keyword.OutputFolder:
+                        case Keyword.MinimumUapVersion:
+                        case Keyword.TargetUapVersion:
                             previousKeyword = keyword;
                             break;
                         default:
@@ -160,7 +170,7 @@ sealed class CommandLineOptions
                 case Keyword.InputFile:
                     if (InputFile != null)
                     {
-                        ErrorDescription = "input specified more than once";
+                        ErrorDescription = ArgumentSpecifiedMoreThanOnce("input");
                         return;
                     }
 
@@ -173,11 +183,47 @@ sealed class CommandLineOptions
                 case Keyword.OutputFolder:
                     if (OutputFolder != null)
                     {
-                        ErrorDescription = "output folder specified more than once";
+                        ErrorDescription = ArgumentSpecifiedMoreThanOnce("output folder");
                         return;
                     }
 
                     OutputFolder = arg;
+                    break;
+                case Keyword.MinimumUapVersion:
+                    if (MinimumUapVersion != null)
+                    {
+                        ErrorDescription = ArgumentSpecifiedMoreThanOnce("minimum UAP version");
+                        return;
+                    }
+
+                    {
+                        if (!uint.TryParse(arg, out var version))
+                        {
+                            ErrorDescription = "minimum UAP version must be an positive integer";
+                            return;
+                        }
+
+                        MinimumUapVersion = version;
+                    }
+
+                    break;
+                case Keyword.TargetUapVersion:
+                    if (TargetUapVersion != null)
+                    {
+                        ErrorDescription = ArgumentSpecifiedMoreThanOnce("target UAP version");
+                        return;
+                    }
+
+                    {
+                        if (!uint.TryParse(arg, out var version))
+                        {
+                            ErrorDescription = "target UAP version must be an positive integer";
+                            return;
+                        }
+
+                        TargetUapVersion = version;
+                    }
+
                     break;
                 default:
                     // Should never get here.
@@ -191,4 +237,6 @@ sealed class CommandLineOptions
             ErrorDescription = "Missing value";
         }
     }
+
+    static string ArgumentSpecifiedMoreThanOnce(string argument) => $"{argument} specified more than once";
 }

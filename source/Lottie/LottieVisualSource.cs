@@ -394,29 +394,30 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                     duration: lottieComposition.Duration);
 
                 // Translating large Lotties can take significant time. Do it on another thread.
-                bool translateSucceeded = false;
                 WinCompData.Visual wincompDataRootVisual = null;
                 var optimizationEnabled = _owner.Options.HasFlag(LottieVisualOptions.Optimize);
 
+                TranslationResult translationResult;
                 await CheckedAwaitAsync(Task.Run(() =>
                 {
-                    translateSucceeded = LottieToWinCompTranslator.TryTranslateLottieComposition(
-                        lottieComposition,
-                        false, // strictTranslation
-                        true,  // Add descriptions for codegen comments
-                        out wincompDataRootVisual,
-                        out var translationIssues);
+                    translationResult = LottieToWinCompTranslator.TryTranslateLottieComposition(
+                        lottieComposition: lottieComposition,
+                        targetUapVersion: GetCurrentUapVersion(),
+                        strictTranslation: false,
+                        addCodegenDescriptions: true);
+
+                    wincompDataRootVisual = translationResult.RootVisual;
 
                     if (diagnostics != null)
                     {
-                        diagnostics.TranslationIssues = ToIssues(translationIssues);
+                        diagnostics.TranslationIssues = ToIssues(translationResult.TranslationIssues);
                         diagnostics.TranslationTime = sw.Elapsed;
                         sw.Restart();
                     }
 
                     // Optimize the resulting translation. This will usually significantly reduce the size of
                     // the Composition code, however it might slow down loading too much on complex Lotties.
-                    if (translateSucceeded && optimizationEnabled)
+                    if (wincompDataRootVisual != null && optimizationEnabled)
                     {
                         // Optimize.
                         wincompDataRootVisual = UIData.CodeGen.Optimizer.Optimize(wincompDataRootVisual, ignoreCommentProperties: true);
@@ -429,7 +430,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                     }
                 }));
 
-                if (!translateSucceeded)
+                if (wincompDataRootVisual == null)
                 {
                     // Failed.
                     return result;
@@ -630,23 +631,24 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         }
 
         /// <summary>
-        /// Returns true if the given compatibility describes compatibility with the current operating system.
+        /// Gets the highest UAP version of the current process.
         /// </summary>
-        static bool IsRuntimeCompatible(ApiCompatibility compatibility)
+        /// <returns>The highest UAP version of the current process.</returns>
+        static int GetCurrentUapVersion()
         {
-            if (compatibility.RequiresCompositionGeometricClip &&
-                !ApiInformation.IsTypePresent("Windows.UI.Composition.CompositionGeometricClip"))
+            // Start testing on version 2. We know that at least version 1 is supported because
+            // we are running in UAP code.
+            var versionToTest = 2;
+
+            // Keep querying until IsApiContractPresent fails to find the version.
+            while (ApiInformation.IsApiContractPresent("Windows.Foundation.UniversalApiContract", (ushort)versionToTest))
             {
-                return false;
+                // Keep looking ...
+                versionToTest++;
             }
 
-            if (compatibility.RequiresCompositionVisualSurface &&
-                !ApiInformation.IsTypePresent("Windows.UI.Composition.CompositionVisualSurface"))
-            {
-                return false;
-            }
-
-            return true;
+            // Query failed on versionToTest. Return the previous version.
+            return versionToTest - 1;
         }
 
         sealed class Comp : IAnimatedVisual, IDisposable
