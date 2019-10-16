@@ -200,7 +200,7 @@ sealed class CommandLineOptions
                     {
                         if (!uint.TryParse(arg, out var version))
                         {
-                            ErrorDescription = "Minimum UAP version must be an positive integer";
+                            ErrorDescription = ArgumentMustBeAPositiveInteger("Minimum UAP version");
                             return;
                         }
 
@@ -218,7 +218,7 @@ sealed class CommandLineOptions
                     {
                         if (!uint.TryParse(arg, out var version))
                         {
-                            ErrorDescription = "Target UAP version must be an positive integer.";
+                            ErrorDescription = ArgumentMustBeAPositiveInteger("Target UAP version");
                             return;
                         }
 
@@ -240,4 +240,6 @@ sealed class CommandLineOptions
     }
 
     static string ArgumentSpecifiedMoreThanOnce(string argument) => $"{argument} specified more than once.";
+
+    static string ArgumentMustBeAPositiveInteger(string argument) => $"{argument} must be a positive integer.";
 }
