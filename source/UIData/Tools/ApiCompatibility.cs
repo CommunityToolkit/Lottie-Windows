@@ -14,12 +14,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 #endif
     sealed class ApiCompatibility
     {
-        ApiCompatibility(int requiredUapVersion)
+        ApiCompatibility(uint requiredUapVersion)
         {
             RequiredUapVersion = requiredUapVersion;
         }
 
-        public int RequiredUapVersion { get; }
+        public uint RequiredUapVersion { get; }
 
         // TODO - This is only needed for staging - will be replaced completely by RequiredUapVersion shortly.
         public bool RequiresCompositionVisualSurface => RequiredUapVersion > 7;
@@ -32,9 +32,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
         {
             var objectGraph = ObjectGraph<Graph.Node>.FromCompositionObject(graphRoot, includeVertices: false);
 
-            // Always require at least version 7 for Shapes (which were introduced in 6 but became
-            // stable in 7).
-            var requiredVersion = 7;
+            // Default to 7 (1809 10.0.17763.0) because that is the version in which Shapes became usable enough for Lottie.
+            var requiredVersion = 7u;
 
             foreach (var node in objectGraph.CompositionObjectNodes)
             {

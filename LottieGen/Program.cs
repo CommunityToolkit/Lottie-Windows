@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
+using Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp;
 
 sealed class Program
 {
@@ -67,10 +68,10 @@ sealed class Program
             _reporter.ErrorStream.WriteLine(_options.ErrorDescription);
             return RunResult.InvalidUsage;
         }
-        else if (_options.MinimumUapVersion.HasValue && _options.MinimumUapVersion < 7)
+        else if (_options.MinimumUapVersion.HasValue && _options.MinimumUapVersion < LottieToWinCompTranslator.MinimumTargetUapVersion)
         {
             // Unacceptable version.
-            _reporter.WriteError("Minimum UAP version must be 7 or above.");
+            _reporter.WriteError($"Invalid minimum UAP version \"{_options.MinimumUapVersion}\". Must be 7 or above.");
             return RunResult.InvalidUsage;
         }
         else if (_options.TargetUapVersion.HasValue)
@@ -78,14 +79,14 @@ sealed class Program
             if (_options.TargetUapVersion < 7)
             {
                 // Unacceptable version.
-                _reporter.WriteError("Target UAP version must be 7 or above.");
+                _reporter.WriteError($"Invalid target UAP version \"{_options.TargetUapVersion}\". Must be 7 or above.");
                 return RunResult.InvalidUsage;
             }
 
-            if (_options.MinimumUapVersion.HasValue && _options.TargetUapVersion.Value < _options.MinimumUapVersion.Value)
+            if (_options.MinimumUapVersion.HasValue && _options.TargetUapVersion < _options.MinimumUapVersion)
             {
                 // Unacceptable version.
-                _reporter.WriteError("Target UAP version must be greater than the minimum UAP version.");
+                _reporter.WriteError($"Invalid target UAP version \"{_options.TargetUapVersion}\". Must be greater than the minimum UAP version specified ({_options.MinimumUapVersion}).");
                 return RunResult.InvalidUsage;
             }
         }

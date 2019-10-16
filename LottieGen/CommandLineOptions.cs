@@ -29,6 +29,7 @@ sealed class CommandLineOptions
     readonly List<string> _languageStrings = new List<string>();
 
     // The parse error, or null if the parse succeeded.
+    // The error should be a sentence (starts with a capital letter, and ends with a period).
     internal string ErrorDescription { get; private set; }
 
     internal string InputFile { get; private set; }
@@ -135,10 +136,10 @@ sealed class CommandLineOptions
                     switch (keyword)
                     {
                         case Keyword.Ambiguous:
-                            ErrorDescription = $"Ambiguous: {arg}";
+                            ErrorDescription = $"Ambiguous: \"{arg}\".";
                             return;
                         case Keyword.None:
-                            ErrorDescription = $"Unexpected: {arg}";
+                            ErrorDescription = $"Unexpected: \"{arg}\".";
                             return;
                         case Keyword.Help:
                             HelpRequested = true;
@@ -170,7 +171,7 @@ sealed class CommandLineOptions
                 case Keyword.InputFile:
                     if (InputFile != null)
                     {
-                        ErrorDescription = ArgumentSpecifiedMoreThanOnce("input");
+                        ErrorDescription = ArgumentSpecifiedMoreThanOnce("Input");
                         return;
                     }
 
@@ -183,7 +184,7 @@ sealed class CommandLineOptions
                 case Keyword.OutputFolder:
                     if (OutputFolder != null)
                     {
-                        ErrorDescription = ArgumentSpecifiedMoreThanOnce("output folder");
+                        ErrorDescription = ArgumentSpecifiedMoreThanOnce("Output folder");
                         return;
                     }
 
@@ -192,14 +193,14 @@ sealed class CommandLineOptions
                 case Keyword.MinimumUapVersion:
                     if (MinimumUapVersion != null)
                     {
-                        ErrorDescription = ArgumentSpecifiedMoreThanOnce("minimum UAP version");
+                        ErrorDescription = ArgumentSpecifiedMoreThanOnce("Minimum UAP version");
                         return;
                     }
 
                     {
                         if (!uint.TryParse(arg, out var version))
                         {
-                            ErrorDescription = "minimum UAP version must be an positive integer";
+                            ErrorDescription = "Minimum UAP version must be an positive integer";
                             return;
                         }
 
@@ -210,14 +211,14 @@ sealed class CommandLineOptions
                 case Keyword.TargetUapVersion:
                     if (TargetUapVersion != null)
                     {
-                        ErrorDescription = ArgumentSpecifiedMoreThanOnce("target UAP version");
+                        ErrorDescription = ArgumentSpecifiedMoreThanOnce("Target UAP version");
                         return;
                     }
 
                     {
                         if (!uint.TryParse(arg, out var version))
                         {
-                            ErrorDescription = "target UAP version must be an positive integer";
+                            ErrorDescription = "Target UAP version must be an positive integer.";
                             return;
                         }
 
@@ -234,9 +235,9 @@ sealed class CommandLineOptions
         // All tokens consumed. Ensure we are not waiting for the final parameter value.
         if (previousKeyword != Keyword.None)
         {
-            ErrorDescription = "Missing value";
+            ErrorDescription = "Missing value.";
         }
     }
 
-    static string ArgumentSpecifiedMoreThanOnce(string argument) => $"{argument} specified more than once";
+    static string ArgumentSpecifiedMoreThanOnce(string argument) => $"{argument} specified more than once.";
 }

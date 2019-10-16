@@ -88,8 +88,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         readonly uint _targetUapVersion;
 
         // The UAP version required by codepaths in the translation result.
-        // Defaults to 7 (1809 10.0.17763.0) because that is the version in which Shapes became usable enough for Lottie.
-        uint _minimumRequiredUapVersion = 7;
+        uint _minimumRequiredUapVersion = MinimumTargetUapVersion;
+
+        /// <summary>
+        /// The lowest UAP version for which the translator can produce code. Code from the translator
+        /// will never be compatible with UAP versions less than this.
+        /// </summary>
+        // 7 (1809 10.0.17763.0) because that is the version in which Shapes became usable enough for Lottie.
+        public static uint MinimumTargetUapVersion { get; } = 7;
 
         /// <summary>
         /// Gets the name of the property on the resulting <see cref="Visual"/> that controls the progress
