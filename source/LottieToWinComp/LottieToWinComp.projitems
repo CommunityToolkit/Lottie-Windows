@@ -13,6 +13,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)LottieToWinCompTranslator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TranslationContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TranslationIssues.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TranslationResult.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TrimmedAnimatable.cs" />
   </ItemGroup>
 </Project>

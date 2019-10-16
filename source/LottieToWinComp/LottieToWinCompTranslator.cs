@@ -83,6 +83,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         // Paths are shareable.
         readonly Dictionary<(Sequence<BezierSegment>, ShapeFill.PathFillType, bool), CompositionPath> _compositionPaths = new Dictionary<(Sequence<BezierSegment>, ShapeFill.PathFillType, bool), CompositionPath>();
 
+        // The UAP version that the output will run on. No UAP features introduced after this version
+        // will be used during translation.
+        readonly uint _targetUapVersion;
+
+        // The UAP version required by codepaths in the translation result.
+        uint _minimumRequiredUapVersion = MinimumTargetUapVersion;
+
+        /// <summary>
+        /// The lowest UAP version for which the translator can produce code. Code from the translator
+        /// will never be compatible with UAP versions less than this.
+        /// </summary>
+        // 7 (1809 10.0.17763.0) because that is the version in which Shapes became usable enough for Lottie.
+        public static uint MinimumTargetUapVersion { get; } = 7;
+
         /// <summary>
         /// Gets the name of the property on the resulting <see cref="Visual"/> that controls the progress
         /// of the animation. Setting this property (directly or with an animation)
@@ -94,12 +108,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             LottieData.LottieComposition lottieComposition,
             Compositor compositor,
             bool strictTranslation,
-            bool addDescriptions)
+            bool addDescriptions,
+            uint targetUapVersion)
         {
             _lc = lottieComposition;
             _c = new CompositionObjectFactory(compositor);
             _issues = new TranslationIssues(strictTranslation);
             _addDescriptions = addDescriptions;
+            _targetUapVersion = targetUapVersion;
 
             // Create the root.
             _rootVisual = _c.CreateContainerVisual();
@@ -115,55 +131,45 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// <summary>
         /// Attempts to translates the given <see cref="LottieData.LottieComposition"/>.
         /// </summary>
-        /// <param name="lottieComposition">The <see cref="LottieData.LottieComposition"/> to translate.</param>
-        /// <param name="strictTranslation">If true, throw an exception if translation issues are found.</param>
-        /// <param name="visual">The <see cref="Visual"/> that contains the translated Lottie.</param>
-        /// <param name="translationIssues">A list of issues that were encountered during the translation.</param>
-        /// <returns><c>true</c> if the <see cref="LottieComposition"/> was translated.</returns>
-        public static bool TryTranslateLottieComposition(
-            LottieComposition lottieComposition,
-            bool strictTranslation,
-            out Visual visual,
-            out (string Code, string Description)[] translationIssues) =>
-            TryTranslateLottieComposition(
-                lottieComposition,
-                strictTranslation,
-                true,   // add descriptions for codegen comments
-                out visual,
-                out translationIssues);
-
-        /// <summary>
-        /// Attempts to translates the given <see cref="LottieData.LottieComposition"/>.
-        /// </summary>
         /// <param name="lottieComposition">The <see cref="LottieComposition"/> to translate.</param>
+        /// <param name="targetUapVersion">The version of UAP that the translator will ensure compatibility with. Must be >= 7.</param>
         /// <param name="strictTranslation">If true, throw an exception if translation issues are found.</param>
         /// <param name="addCodegenDescriptions">Add descriptions to objects for comments on generated code.</param>
-        /// <param name="visual">The <see cref="Visual"/> that contains the translated Lottie.</param>
-        /// <param name="translationIssues">A list of issues that were encountered during the translation.</param>
-        /// <returns><c>true</c> if the <see cref="LottieComposition"/> was translated.</returns>
-        public static bool TryTranslateLottieComposition(
+        /// <returns>The result of the translation.</returns>
+        public static TranslationResult TryTranslateLottieComposition(
             LottieComposition lottieComposition,
+            uint targetUapVersion,
             bool strictTranslation,
-            bool addCodegenDescriptions,
-            out Visual visual,
-            out (string Code, string Description)[] translationIssues)
+            bool addCodegenDescriptions = true)
         {
             // Set up the translator.
             using (var translator = new LottieToWinCompTranslator(
                 lottieComposition,
                 new Compositor(),
                 strictTranslation,
-                addCodegenDescriptions))
+                addCodegenDescriptions,
+                targetUapVersion))
             {
-                // Translate the Lottie content to a CompositionShapeVisual tree.
+                // Translate the Lottie content to a Composition graph.
                 translator.Translate();
 
-                // Set the out parameters.
-                visual = translator._rootVisual;
-                translationIssues = translator._issues.GetIssues();
-            }
+                var rootVisual = translator._rootVisual;
 
-            return true;
+                var resultRequiredUapVersion = translator._minimumRequiredUapVersion;
+
+                // See if the version is compatible with what the caller requested.
+                if (targetUapVersion < resultRequiredUapVersion)
+                {
+                    // We couldn't translate it and meet the requirement for the requested minimum version.
+                    // TODO - this will never be true once we start translating to version-compensated code.
+                    rootVisual = null;
+                }
+
+                return new TranslationResult(
+                    rootVisual: rootVisual,
+                    translationIssues: translator._issues.GetIssues(),
+                    minimumRequiredUapVersion: targetUapVersion);
+            }
         }
 
         void Translate()
@@ -575,6 +581,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             // Calculate the context size which we will use as the size of the images we want to use
             // for the matte content and the content to be matted.
             var contextSize = context.Size;
+
+            // TODO - this will never be true once we start translating to version-compensated code. Instead
+            // we will generate something that doesn't require the feature.
+            ReportUapVersionCompromiseIssue(8, "CompositionVisualSurface");
 
             var matteLayerVisualSurface = _c.CreateVisualSurface();
             matteLayerVisualSurface.SourceVisual = matteLayer;
@@ -2769,6 +2779,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             var opacityPercentValue = opacityPercent.InitialValue;
 
+            // TODO - this will never be true once we start translating to version-compensated code. Instead
+            // we will generate something that doesn't require the feature.
+            ReportUapVersionCompromiseIssue(8, "CompositionRadialGradientBrush");
+
             var result = _c.CreateRadialGradientBrush();
 
             // BodyMovin specifies start and end points in absolute values.
@@ -3952,6 +3966,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         {
             Debug.Assert(min <= max, "Precondition");
             return Math.Min(Math.Max(min, value), max);
+        }
+
+        // Call here to report that a feature is being translated sub-optimally because
+        // the target UAP version lacks a feature that is available in a later version.
+        void ReportUapVersionCompromiseIssue(uint version, string versionDependentFeatureName)
+        {
+            // TODO - this will never be true once we start translating to version-compensated code.
+            //        Instead we will output a message explaining that we have compromised to a version limitation
+            //        because of the given feature.
+            if (_targetUapVersion < version)
+            {
+                _minimumRequiredUapVersion = Math.Max(_minimumRequiredUapVersion, version);
+                _issues.UapVersionNotSupported(versionDependentFeatureName, version.ToString());
+            }
         }
 
         // A pair of doubles used as a key in a dictionary.

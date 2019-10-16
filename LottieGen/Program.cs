@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
+using Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp;
 
 sealed class Program
 {
@@ -66,6 +67,28 @@ sealed class Program
             _reporter.WriteError("Invalid arguments.");
             _reporter.ErrorStream.WriteLine(_options.ErrorDescription);
             return RunResult.InvalidUsage;
+        }
+        else if (_options.MinimumUapVersion.HasValue && _options.MinimumUapVersion < LottieToWinCompTranslator.MinimumTargetUapVersion)
+        {
+            // Unacceptable version.
+            _reporter.WriteError($"Invalid minimum UAP version \"{_options.MinimumUapVersion}\". Must be 7 or above.");
+            return RunResult.InvalidUsage;
+        }
+        else if (_options.TargetUapVersion.HasValue)
+        {
+            if (_options.TargetUapVersion < 7)
+            {
+                // Unacceptable version.
+                _reporter.WriteError($"Invalid target UAP version \"{_options.TargetUapVersion}\". Must be 7 or above.");
+                return RunResult.InvalidUsage;
+            }
+
+            if (_options.MinimumUapVersion.HasValue && _options.TargetUapVersion < _options.MinimumUapVersion)
+            {
+                // Unacceptable version.
+                _reporter.WriteError($"Invalid target UAP version \"{_options.TargetUapVersion}\". Must be greater than the minimum UAP version specified ({_options.MinimumUapVersion}).");
+                return RunResult.InvalidUsage;
+            }
         }
         else if (_options.HelpRequested)
         {
@@ -217,6 +240,18 @@ OVERVIEW:
          -Strict       Fails on any parsing or translation issue. If not specified, 
                        a best effort will be made to create valid output, and any 
                        issues will be reported to STDOUT.
+         -MinimumUapVersion
+                       The lowest UAP version on which the result must run. Defaults 
+                       to 7. Must be 7 or higher. Code will be generated that will
+                       run down to this version. If less than TargetUapVersion,
+                       extra code will be generated if necessary to support the
+                       lower versions.
+         -TargetUapVersion
+                       The target UAP version on which the result will run. Must be 7
+                       or higher and >= MinimumUapVersion. Code will be generated
+                       that may take advantage of features in this version in order
+                       to produce a better result. If not specified, defaults to 
+                       the latest UAP version.
 
 EXAMPLES:
 

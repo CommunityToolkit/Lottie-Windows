@@ -68,6 +68,65 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "WinStorageStreamsData", "so
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WinStorageStreamsData.dll", "dlls\WinStorageStreamsData\WinStorageStreamsData.dll.csproj", "{1BBCFEED-5929-4FF7-8885-B94EAF65567C}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Issues", "Issues", "{07D6DFEE-E76C-4EAC-B361-99D5EDA7BCE1}"
+	ProjectSection(SolutionItems) = preProject
+		source\Issues\GenerateIssuesClasses.cmd = source\Issues\GenerateIssuesClasses.cmd
+		source\Issues\IssuesClassGenerator.t4 = source\Issues\IssuesClassGenerator.t4
+		source\Issues\LP0001.md = source\Issues\LP0001.md
+		source\Issues\LP0002.md = source\Issues\LP0002.md
+		source\Issues\LP0005.md = source\Issues\LP0005.md
+		source\Issues\LP0006.md = source\Issues\LP0006.md
+		source\Issues\LP0007.md = source\Issues\LP0007.md
+		source\Issues\LP0008.md = source\Issues\LP0008.md
+		source\Issues\LP0009.md = source\Issues\LP0009.md
+		source\Issues\LP0011.md = source\Issues\LP0011.md
+		source\Issues\LP0012.md = source\Issues\LP0012.md
+		source\Issues\LP0013.md = source\Issues\LP0013.md
+		source\Issues\LP0014.md = source\Issues\LP0014.md
+		source\Issues\LP0015.md = source\Issues\LP0015.md
+		source\Issues\LP0016.md = source\Issues\LP0016.md
+		source\Issues\LP0017.md = source\Issues\LP0017.md
+		source\Issues\LT0001.md = source\Issues\LT0001.md
+		source\Issues\LT0002.md = source\Issues\LT0002.md
+		source\Issues\LT0003.md = source\Issues\LT0003.md
+		source\Issues\LT0004.md = source\Issues\LT0004.md
+		source\Issues\LT0005.md = source\Issues\LT0005.md
+		source\Issues\LT0006.md = source\Issues\LT0006.md
+		source\Issues\LT0007.md = source\Issues\LT0007.md
+		source\Issues\LT0009.md = source\Issues\LT0009.md
+		source\Issues\LT0010.md = source\Issues\LT0010.md
+		source\Issues\LT0011.md = source\Issues\LT0011.md
+		source\Issues\LT0012.md = source\Issues\LT0012.md
+		source\Issues\LT0013.md = source\Issues\LT0013.md
+		source\Issues\LT0014.md = source\Issues\LT0014.md
+		source\Issues\LT0015.md = source\Issues\LT0015.md
+		source\Issues\LT0016.md = source\Issues\LT0016.md
+		source\Issues\LT0017.md = source\Issues\LT0017.md
+		source\Issues\LT0018.md = source\Issues\LT0018.md
+		source\Issues\LT0019.md = source\Issues\LT0019.md
+		source\Issues\LT0020.md = source\Issues\LT0020.md
+		source\Issues\LT0021.md = source\Issues\LT0021.md
+		source\Issues\LT0022.md = source\Issues\LT0022.md
+		source\Issues\LT0023.md = source\Issues\LT0023.md
+		source\Issues\LT0024.md = source\Issues\LT0024.md
+		source\Issues\LT0025.md = source\Issues\LT0025.md
+		source\Issues\LT0026.md = source\Issues\LT0026.md
+		source\Issues\LT0027.md = source\Issues\LT0027.md
+		source\Issues\LT0028.md = source\Issues\LT0028.md
+		source\Issues\LT0029.md = source\Issues\LT0029.md
+		source\Issues\LT0030.md = source\Issues\LT0030.md
+		source\Issues\LT0031.md = source\Issues\LT0031.md
+		source\Issues\LT0032.md = source\Issues\LT0032.md
+		source\Issues\LT0033.md = source\Issues\LT0033.md
+		source\Issues\LT0034.md = source\Issues\LT0034.md
+		source\Issues\LV0001.md = source\Issues\LV0001.md
+		source\Issues\LV0002.md = source\Issues\LV0002.md
+		source\Issues\LV0003.md = source\Issues\LV0003.md
+		source\Issues\ParsingIssues.tt = source\Issues\ParsingIssues.tt
+		source\Issues\TranslationIssues.tt = source\Issues\TranslationIssues.tt
+		source\Issues\ValidationIssues.tt = source\Issues\ValidationIssues.tt
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		source\LottieToWinComp\LottieToWinComp.projitems*{0340244a-683c-405e-838b-f93872779532}*SharedItemsImports = 13
@@ -269,6 +328,7 @@ Global
 		{CB587630-3CFD-4BB3-867C-3F5B1FFBC738} = {C75BD686-21A6-4EB3-8D4B-D5A01C019C52}
 		{2202E218-DD9F-496A-AEF4-3F07F0EA5B9D} = {AB232F35-AAF7-4AE2-B1D2-45DD9BC2F7D7}
 		{1BBCFEED-5929-4FF7-8885-B94EAF65567C} = {C75BD686-21A6-4EB3-8D4B-D5A01C019C52}
+		{07D6DFEE-E76C-4EAC-B361-99D5EDA7BCE1} = {AB232F35-AAF7-4AE2-B1D2-45DD9BC2F7D7}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {51B9BB4C-5196-41CF-950C-12B04AD8A61C}

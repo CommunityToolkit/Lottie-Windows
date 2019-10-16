@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.MetaData
 {
@@ -10,6 +11,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.MetaData
     /// Indicates that a class or member was introduced at a particular version of
     /// the Windows.Foundation.UniversalApiContract contract.
     /// </summary>
+    [Conditional("DEBUG")]
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Enum | AttributeTargets.Method | AttributeTargets.Property)]
     sealed class UapVersionAttribute : Attribute
     {
@@ -30,6 +32,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.MetaData
             //  6 = 1803 / 10.0.17134 / RS4  / April 2018 Update
             //  7 = 1809 / 10.0.17763 / RS5  / October 2018 Update
             //  8 = 1903 / 10.0.18362 / 19H1 / May 2019 Update
+            //  9 = 1909 / 10.0.????? / 19H2 / ?????
         }
     }
 }
