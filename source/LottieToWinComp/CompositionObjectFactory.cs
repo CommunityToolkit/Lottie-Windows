@@ -150,10 +150,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal InsetClip CreateInsetClip() => _compositor.CreateInsetClip();
 
-        internal CompositionGeometricClip CreateGeometricClip()
-        {
-            return _compositor.CreateGeometricClip();
-        }
+        internal CompositionGeometricClip CreateGeometricClip() => _compositor.CreateGeometricClip();
 
         internal CompositionContainerShape CreateContainerShape() => _compositor.CreateContainerShape();
 
