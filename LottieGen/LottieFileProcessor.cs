@@ -580,7 +580,7 @@ sealed class LottieFileProcessor
         {
             if (uapVersionRange.End.HasValue)
             {
-                if (uapVersionRange.End.Value == uapVersionRange.Start.Value)
+                if (uapVersionRange.End == uapVersionRange.Start)
                 {
                     return $" Affects only UAP version {uapVersionRange.Start}.";
                 }

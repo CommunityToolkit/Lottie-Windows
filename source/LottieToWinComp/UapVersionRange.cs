@@ -7,9 +7,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
     /// <summary>
     /// Describes a range of UAP versions. A <see cref="Start"/> value of <c>null</c>
     /// indicates all versions less than or equal to the <see cref="End"/> value.
-    /// An <see cref="End"/> value of <c>null</c> indicates that it affects all versions greater
+    /// An <see cref="End"/> value of <c>null</c> indicates all versions greater
     /// than or equal to the <see cref="Start"/> value. Both values being <c>null</c>
-    /// indicates all version.
+    /// indicates all versions.
     /// </summary>
 
 #if PUBLIC
@@ -25,7 +25,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         /// <summary>
         /// The end of the range, or <c>null</c> to indicate all values
-        /// greater than or equal to <see cref="End"/>.
+        /// greater than or equal to <see cref="Start"/>.
         /// </summary>
         public uint? End { get; internal set; }
 
@@ -35,7 +35,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             {
                 if (End.HasValue)
                 {
-                    if (End.Value == Start.Value)
+                    if (End == Start)
                     {
                         return $"version {Start}";
                     }

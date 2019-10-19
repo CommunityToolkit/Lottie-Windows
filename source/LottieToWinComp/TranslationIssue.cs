@@ -4,6 +4,13 @@
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 {
+    /// <summary>
+    /// Describes an issue discovered during translation of a Lottie composition.
+    /// The <see cref="Code"/> is an alphanumeric code that identifies the type
+    /// of issue and can be usd to help search online for more information.
+    /// The <see cref="Description"/> gives more detail about the particular
+    /// instance of the issue.
+    /// </summary>
 #if PUBLIC
     public
 #endif
