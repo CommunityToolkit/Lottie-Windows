@@ -32,11 +32,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
         internal (string Code, string Description)[] GetIssues() => _issues.ToArray();
 
-        internal void LayerHasInPointAfterOutPoint(string layerName) => Report("LV0001", $"Layer {layerName} has in-point after out-point");
+        internal void LayerHasInPointAfterOutPoint(string layerName) => Report("LV0001", $"Layer {layerName} has in-point after out-point.");
 
-        internal void LayerInCycle(string layerName) => Report("LV0002", $"Layer {layerName} is in a cycle");
+        internal void LayerInCycle(string layerName) => Report("LV0002", $"Layer {layerName} is in a cycle.");
 
-        internal void InvalidLayerParent(string layerParent) => Report("LV0003", $"Invalid layer parent: {layerParent}");
+        internal void InvalidLayerParent(string layerParent) => Report("LV0003", $"Invalid layer parent: {layerParent}.");
 
         void Report(string code, string description)
         {

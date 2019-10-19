@@ -23,6 +23,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
     {
         readonly Compositor _compositor;
 
+        // The UAP version of the Compositor.
+        readonly uint _uapVersion;
+
         // Holds CubicBezierEasingFunctions for reuse when they have the same parameters.
         readonly Dictionary<CubicBezierEasing, CubicBezierEasingFunction> _cubicBezierEasingFunctions = new Dictionary<CubicBezierEasing, CubicBezierEasingFunction>();
 
@@ -38,9 +41,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         // Holds a StepEasingFunction that can be reused in multiple animations.
         readonly StepEasingFunction _jumpStepEasingFunction;
 
-        internal CompositionObjectFactory(Compositor compositor)
+        internal CompositionObjectFactory(Compositor compositor, uint uapVersion)
         {
             _compositor = compositor;
+            _uapVersion = uapVersion;
 
             // Initialize singletons.
             _linearEasingFunction = _compositor.CreateLinearEasingFunction();
@@ -48,6 +52,30 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             _holdStepEasingFunction.IsFinalStepSingleFrame = true;
             _jumpStepEasingFunction = _compositor.CreateStepEasingFunction(1);
             _jumpStepEasingFunction.IsInitialStepSingleFrame = true;
+        }
+
+        // The UAP version required for the objects that have been produced by the factory so far.
+        // Defaults to 7 because that is the first version in which Shapes became usable.
+        internal uint HighestUapVersionUsed { get; private set; } = 7;
+
+        // Checks whether the given API is available for the UAP version of the compositor.
+        // Only responds to features above version 7.
+        internal bool IsUapApiAvailable(string apiName) => GetUapVersionForApi(apiName) <= _uapVersion;
+
+        // Returns the UAP version required for the given API.
+        // Only responds to features above version 7.
+        internal uint GetUapVersionForApi(string apiName)
+        {
+            switch (apiName)
+            {
+                // Classes introduced in version 8.
+                case nameof(CompositionRadialGradientBrush):
+                case nameof(CompositionVisualSurface):
+                    return 8;
+
+                default:
+                    throw new InvalidOperationException();
+            }
         }
 
         internal CompositionEllipseGeometry CreateEllipseGeometry() => _compositor.CreateEllipseGeometry();
@@ -85,7 +113,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal CompositionLinearGradientBrush CreateLinearGradientBrush() => _compositor.CreateLinearGradientBrush();
 
-        internal CompositionRadialGradientBrush CreateRadialGradientBrush() => _compositor.CreateRadialGradientBrush();
+        internal CompositionRadialGradientBrush CreateRadialGradientBrush()
+        {
+            ConsumeVersionFeature(8);
+            return _compositor.CreateRadialGradientBrush();
+        }
 
         internal CompositionEasingFunction CreateCompositionEasingFunction(Easing easingFunction)
         {
@@ -176,11 +208,24 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal ExpressionAnimation CreateExpressionAnimation(Expr expression) => _compositor.CreateExpressionAnimation(expression);
 
-        internal CompositionVisualSurface CreateVisualSurface() => _compositor.CreateVisualSurface();
+        internal CompositionVisualSurface CreateVisualSurface()
+        {
+            ConsumeVersionFeature(8);
+            return _compositor.CreateVisualSurface();
+        }
 
         internal CompositionSurfaceBrush CreateSurfaceBrush(ICompositionSurface surface) => _compositor.CreateSurfaceBrush(surface);
 
         internal CompositionEffectFactory CreateEffectFactory(GraphicsEffectBase effect) => _compositor.CreateEffectFactory(effect);
+
+        void ConsumeVersionFeature(uint uapVersion)
+        {
+            Debug.Assert(
+                _uapVersion >= uapVersion,
+                $"UAP version {uapVersion} features are not available.");
+
+            HighestUapVersionUsed = Math.Max(HighestUapVersionUsed, uapVersion);
+        }
 
         static float Clamp(float value, float min, float max)
         {

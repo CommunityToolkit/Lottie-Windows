@@ -286,6 +286,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         static Issue[] ToIssues(IEnumerable<(string Code, string Description)> issues)
             => issues.Select(issue => new Issue { Code = issue.Code, Description = issue.Description }).ToArray();
 
+        static Issue[] ToIssues(IEnumerable<TranslationIssue> issues)
+            => issues.Select(issue => new Issue { Code = issue.Code, Description = issue.Description }).ToArray();
+
         // Handles loading a composition from a Lottie file.
         sealed class Loader
         {

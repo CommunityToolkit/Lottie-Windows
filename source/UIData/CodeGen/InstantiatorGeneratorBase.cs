@@ -597,31 +597,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         void WriteIsRuntimeCompatibleMethod(CodeBuilder builder)
         {
-            // TODO: New version - will replace the version below shortly.
-            //// Write the RuntimeCompatibility() method.
-            //builder.WriteLine("static bool IsRuntimeCompatible()");
-            //builder.OpenScope();
-            //builder.WriteLine($"return Windows{_stringifier.ScopeResolve}Foundation{_stringifier.ScopeResolve}Metadata{_stringifier.ScopeResolve}ApiInformation{_stringifier.ScopeResolve}IsApiContractPresent(\"Windows.Foundation.UniversalApiContract\", {_apiCompatibility.RequiredUapVersion});");
-            //builder.CloseScope();
-            //builder.WriteLine();
-
             // Write the RuntimeCompatibility() method.
             builder.WriteLine("static bool IsRuntimeCompatible()");
             builder.OpenScope();
-            builder.WriteLine($"if (!Windows{_stringifier.ScopeResolve}Foundation{_stringifier.ScopeResolve}Metadata{_stringifier.ScopeResolve}ApiInformation{_stringifier.ScopeResolve}IsTypePresent(\"Windows.UI.Composition.CompositionGeometricClip\"))");
-            builder.OpenScope();
-            builder.WriteLine("return false;");
-            builder.CloseScope();
-
-            if (_apiCompatibility.RequiresCompositionVisualSurface)
-            {
-                builder.WriteLine($"if (!Windows{_stringifier.ScopeResolve}Foundation{_stringifier.ScopeResolve}Metadata{_stringifier.ScopeResolve}ApiInformation{_stringifier.ScopeResolve}IsTypePresent(\"Windows.UI.Composition.CompositionVisualSurface\"))");
-                builder.OpenScope();
-                builder.WriteLine("return false;");
-                builder.CloseScope();
-            }
-
-            builder.WriteLine("return true;");
+            builder.WriteLine($"return Windows{_stringifier.ScopeResolve}Foundation{_stringifier.ScopeResolve}Metadata{_stringifier.ScopeResolve}ApiInformation{_stringifier.ScopeResolve}IsApiContractPresent(\"Windows.Foundation.UniversalApiContract\", {_apiCompatibility.RequiredUapVersion});");
             builder.CloseScope();
             builder.WriteLine();
         }
