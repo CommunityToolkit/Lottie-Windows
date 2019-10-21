@@ -626,12 +626,15 @@ sealed class LottieFileProcessor
             return _isTranslatedSuccessfully.Value;
         }
 
-        (_translationResults, _translationIssues) = LottieToMultiVersionWinCompTranslator.TryTranslateLottieComposition(
+        var translationResult = LottieToMultiVersionWinCompTranslator.TryTranslateLottieComposition(
             lottieComposition: _lottieComposition,
             targetUapVersion: _options.TargetUapVersion ?? uint.MaxValue,
             minimumUapVersion: _minimumUapVersion,
             strictTranslation: false,
             addCodegenDescriptions: true);
+
+        _translationResults = translationResult.TranslationResults;
+        _translationIssues = translationResult.Issues;
 
         _profiler.OnTranslateFinished();
 
