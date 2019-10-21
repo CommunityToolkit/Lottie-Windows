@@ -21,9 +21,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
         public uint RequiredUapVersion { get; }
 
-        // TODO - This is only needed for staging - will be replaced completely by RequiredUapVersion shortly.
-        public bool RequiresCompositionVisualSurface => RequiredUapVersion > 7;
-
         /// <summary>
         /// Analyzes the given tree and returns information about its compatibility with a runtime.
         /// </summary>

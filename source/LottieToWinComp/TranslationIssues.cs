@@ -32,63 +32,63 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal (string Code, string Description)[] GetIssues() => _issues.ToArray();
 
-        internal void AnimatedRectangleWithTrimPathIsNotSupported() => Report("LT0001", "Rectangle with animated size and TrimPath is not supported");
+        internal void AnimatedRectangleWithTrimPathIsNotSupported() => Report("LT0001", "Rectangle with animated size and TrimPath is not supported.");
 
-        internal void AnimatedTrimOffsetWithStaticTrimOffsetIsNotSupported() => Report("LT0002", "Animated trim offset with static trim offset is not supported");
+        internal void AnimatedTrimOffsetWithStaticTrimOffsetIsNotSupported() => Report("LT0002", "Animated trim offset with static trim offset is not supported.");
 
-        internal void AnimationMultiplicationIsNotSupported() => Report("LT0003", "Multiplication of two or more animated values is not supported");
+        internal void AnimationMultiplicationIsNotSupported() => Report("LT0003", "Multiplication of two or more animated values is not supported.");
 
         internal void BlendModeNotNormal(string layer, string blendMode) => Report("LT0004", $"{layer} has {blendMode} as blend mode. Only Normal is supported.");
 
-        internal void CombiningAnimatedShapesIsNotSupported() => Report("LT0005", "Combining animated shapes is not supported");
+        internal void CombiningAnimatedShapesIsNotSupported() => Report("LT0005", "Combining animated shapes is not supported.");
 
-        internal void GradientFillIsNotSupported(string linearOrRadial, string combination) => Report("LT0006", $"{linearOrRadial} gradient fill with {combination} is not supported");
+        internal void GradientFillIsNotSupported(string linearOrRadial, string combination) => Report("LT0006", $"{linearOrRadial} gradient fill with {combination} is not supported.");
 
-        internal void GradientStrokeIsNotSupported() => Report("LT0007", "Gradient stroke is not supported");
+        internal void GradientStrokeIsNotSupported() => Report("LT0007", "Gradient stroke is not supported.");
 
-        internal void ImageLayerIsNotSupported() => Report("LT0009", "Image layers are not supported");
+        internal void ImageLayerIsNotSupported() => Report("LT0009", "Image layers are not supported.");
 
-        internal void MergingALargeNumberOfShapesIsNotSupported() => Report("LT0010", "Merging a large number of shape is not supported");
+        internal void MergingALargeNumberOfShapesIsNotSupported() => Report("LT0010", "Merging a large number of shape is not supported.");
 
-        internal void MultipleAnimatedRoundedCornersIsNotSupported() => Report("LT0011", "Multiple animated rounded corners is not supported");
+        internal void MultipleAnimatedRoundedCornersIsNotSupported() => Report("LT0011", "Multiple animated rounded corners is not supported.");
 
-        internal void MultipleFillsIsNotSupported() => Report("LT0012", "Multiple fills is not supported");
+        internal void MultipleFillsIsNotSupported() => Report("LT0012", "Multiple fills is not supported.");
 
-        internal void MultipleStrokesIsNotSupported() => Report("LT0013", "Multiple strokes is not supported");
+        internal void MultipleStrokesIsNotSupported() => Report("LT0013", "Multiple strokes is not supported.");
 
-        internal void MultipleTrimPathsIsNotSupported() => Report("LT0014", "Multiple trim paths is not supported");
+        internal void MultipleTrimPathsIsNotSupported() => Report("LT0014", "Multiple trim paths is not supported.");
 
-        internal void OpacityAndColorAnimatedTogetherIsNotSupported() => Report("LT0015", "Opacity and color animated at the same time is not supported");
+        internal void OpacityAndColorAnimatedTogetherIsNotSupported() => Report("LT0015", "Opacity and color animated at the same time is not supported.");
 
-        internal void PathWithRoundedCornersIsNotSupported() => Report("LT0016", "Path with rounded corners is not supported");
+        internal void PathWithRoundedCornersIsNotSupported() => Report("LT0016", "Path with rounded corners is not supported.");
 
-        internal void PolystarIsNotSupported() => Report("LT0017", "Polystar is not supported");
+        internal void PolystarIsNotSupported() => Report("LT0017", "Polystar is not supported.");
 
-        internal void RepeaterIsNotSupported() => Report("LT0018", "Repeater is not supported");
+        internal void RepeaterIsNotSupported() => Report("LT0018", "Repeater is not supported.");
 
-        internal void TextLayerIsNotSupported() => Report("LT0019", "Text layer is not supported");
+        internal void TextLayerIsNotSupported() => Report("LT0019", "Text layer is not supported.");
 
-        internal void ThreeDIsNotSupported() => Report("LT0020", "3d composition is not supported");
+        internal void ThreeDIsNotSupported() => Report("LT0020", "3d composition is not supported.");
 
-        internal void ThreeDLayerIsNotSupported() => Report("LT0021", "3d layer is not supported");
+        internal void ThreeDLayerIsNotSupported() => Report("LT0021", "3d layer is not supported.");
 
-        internal void TimeStretchIsNotSupported() => Report("LT0022", "Time stretch is not supported");
+        internal void TimeStretchIsNotSupported() => Report("LT0022", "Time stretch is not supported.");
 
-        internal void MaskWithInvertIsNotSupported() => Report("LT0023", "Mask with invert is not supported");
+        internal void MaskWithInvertIsNotSupported() => Report("LT0023", "Mask with invert is not supported.");
 
-        internal void MaskWithUnsupportedMode(string mode) => Report("LT0024", $"Mask mode: {mode} is not supported");
+        internal void MaskWithUnsupportedMode(string mode) => Report("LT0024", $"Mask mode: {mode} is not supported.");
 
-        internal void MaskWithAlphaIsNotSupported() => Report("LT0025", "Mask with alpha value other than 1 is not supported");
+        internal void MaskWithAlphaIsNotSupported() => Report("LT0025", "Mask with alpha value other than 1 is not supported.");
 
-        internal void MultipleShapeMasksIsNotSupported() => Report("LT0026", "Mask with multiple shapes is not supported");
+        internal void MultipleShapeMasksIsNotSupported() => Report("LT0026", "Mask with multiple shapes is not supported.");
 
-        internal void CombiningMultipleShapesIsNotSupported() => Report("LT0027", "Combining multiple shapes is not supported");
+        internal void CombiningMultipleShapesIsNotSupported() => Report("LT0027", "Combining multiple shapes is not supported.");
 
-        internal void ReferencedAssetDoesNotExist(string RefId) => Report("LT0028", $"Referenced asset {RefId} does not exist");
+        internal void ReferencedAssetDoesNotExist(string RefId) => Report("LT0028", $"Referenced asset {RefId} does not exist.");
 
         internal void InvalidAssetReferenceFromLayer(string layerType, string assetRefId, string assetType, string expectedAssetType) => Report("LT0029", $"{layerType} referenced asset {assetRefId} of type {assetType} which is invalid. Expected an asset of type {expectedAssetType}.");
 
-        internal void ImageFileRequired(string filePath) => Report("LT0030", $"Image file required at {filePath}");
+        internal void ImageFileRequired(string filePath) => Report("LT0030", $"Image file required at {filePath}.");
 
         internal void MattesAreNotSupported() => Report("LT0031", "Mattes are not supported.");
 

@@ -25,16 +25,17 @@ sealed class LottieFileProcessor
     readonly Reporter _reporter;
     readonly string _file;
     readonly string _outputFolder;
+    readonly uint _minimumUapVersion;
     readonly string _className;
     bool _reportedErrors;
     bool? _isTranslatedSuccessfully;
     LottieComposition _lottieComposition;
     Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Tools.Stats _lottieStats;
     IReadOnlyList<(string Code, string Description)> _readerIssues;
-    IReadOnlyList<(string Code, string Description)> _translationIssues;
     Stats _beforeOptimizationStats;
     Stats _afterOptimizationStats;
-    Visual _rootVisual;
+    IReadOnlyList<TranslationResult> _translationResults;
+    IReadOnlyList<(TranslationIssue issue, UapVersionRange versionRange)> _translationIssues;
 
     LottieFileProcessor(CommandLineOptions options, Reporter reporter, string file, string outputFolder)
     {
@@ -42,6 +43,11 @@ sealed class LottieFileProcessor
         _reporter = reporter;
         _file = file;
         _outputFolder = outputFolder;
+
+        // If no minimum UAP version is specified, use 7 as that is the lowest version that the translator supports.
+        const uint defaultUapVersion = 7;
+
+        _minimumUapVersion = _options.MinimumUapVersion ?? defaultUapVersion;
 
         // Get an appropriate name for a generated class.
         _className =
@@ -171,9 +177,6 @@ sealed class LottieFileProcessor
             return false;
         }
 
-        var issues = _readerIssues.Concat(_translationIssues);
-        var translationStats = _afterOptimizationStats ?? _beforeOptimizationStats;
-
         // Write the profiler table.
         _reporter.WriteDataTableRow(
             "Timing",
@@ -203,7 +206,7 @@ sealed class LottieFileProcessor
                     ("DurationSeconds", _lottieStats.Duration.TotalSeconds.ToString()),
                     ("Width", _lottieStats.Width.ToString()),
                     ("Height", _lottieStats.Height.ToString()),
-                    ("Error", issues.Count().ToString()),
+                    ("Error", _readerIssues.Count().ToString()),
                     ("ImageLayer", _lottieStats.ImageLayerCount.ToString()),
                     ("NullLayer", _lottieStats.NullLayerCount.ToString()),
                     ("PrecompLayer", _lottieStats.PreCompLayerCount.ToString()),
@@ -216,6 +219,8 @@ sealed class LottieFileProcessor
                     ("RadialGradientFill", _lottieStats.RadialGradientFillCount.ToString()),
                     ("RadialGradientStroke", _lottieStats.RadialGradientStrokeCount.ToString()),
             });
+
+        var translationStats = _afterOptimizationStats ?? _beforeOptimizationStats;
 
         // Write the WinComp stats table.
         _reporter.WriteDataTableRow(
@@ -301,6 +306,8 @@ sealed class LottieFileProcessor
         }
 
         // Write the error table.
+        var issues = _readerIssues.Concat(_translationIssues.Select(i => (Code: i.issue.Code, Description: i.issue.Description)));
+
         foreach (var (code, description) in issues)
         {
             _reporter.WriteDataTableRow(
@@ -350,9 +357,10 @@ sealed class LottieFileProcessor
             return false;
         }
 
+        // NOTE: this only writes the latest version of a multi-version translation.
         var result = TryWriteTextFile(
             outputFilePath,
-            CompositionObjectXmlSerializer.ToXml(_rootVisual).ToString());
+            CompositionObjectXmlSerializer.ToXml(_translationResults[0].RootVisual).ToString());
 
         if (result)
         {
@@ -369,9 +377,10 @@ sealed class LottieFileProcessor
             return false;
         }
 
+        // NOTE: this only writes the latest version of a multi-version translation.
         var result = TryWriteTextFile(
             outputFilePath,
-            CompositionObjectDgmlSerializer.ToXml(_rootVisual).ToString());
+            CompositionObjectDgmlSerializer.ToXml(_translationResults[0].RootVisual).ToString());
 
         if (result)
         {
@@ -388,9 +397,10 @@ sealed class LottieFileProcessor
             return false;
         }
 
+        // TODO - generate multi-version code.
         (string csText, IEnumerable<Uri> assetList) = CSharpInstantiatorGenerator.CreateFactoryCode(
                 _className,
-                _rootVisual,
+                _translationResults[0].RootVisual,
                 (float)_lottieComposition.Width,
                 (float)_lottieComposition.Height,
                 _lottieComposition.Duration,
@@ -427,9 +437,10 @@ sealed class LottieFileProcessor
             return false;
         }
 
+        // TODO - generate multi-version code.
         (string cppText, string hText, IEnumerable<Uri> assetList) = CxInstantiatorGenerator.CreateFactoryCode(
                 _className,
-                _rootVisual,
+                _translationResults[0].RootVisual,
                 (float)_lottieComposition.Width,
                 (float)_lottieComposition.Height,
                 _lottieComposition.Duration,
@@ -553,6 +564,46 @@ sealed class LottieFileProcessor
         }
     }
 
+    string IssueToString(string originatingFile, TranslationIssue issue, UapVersionRange uapVersionRange)
+        => IssueToString(
+            originatingFile,
+            (Code: issue.Code, Description: $"{issue.Description}{CreateUapVersionRangeQualifier(uapVersionRange)}"));
+
+    // Creates a string that can be appended to an issue description to explain that the issue
+    // is only for some versions of UAP.
+    string CreateUapVersionRangeQualifier(UapVersionRange uapVersionRange)
+    {
+        // Ensure ranges are expressed consistently.
+        uapVersionRange.NormalizeForMinimumVersion(_minimumUapVersion);
+
+        if (uapVersionRange.Start.HasValue)
+        {
+            if (uapVersionRange.End.HasValue)
+            {
+                if (uapVersionRange.End == uapVersionRange.Start)
+                {
+                    return $" Affects only UAP version {uapVersionRange.Start}.";
+                }
+                else
+                {
+                    return $" Affects UAP versions from {uapVersionRange.Start} up to and including {uapVersionRange.End}.";
+                }
+            }
+            else
+            {
+                return $" Affects UAP versions from {uapVersionRange.Start} and later.";
+            }
+        }
+        else if (uapVersionRange.End.HasValue)
+        {
+            return $" Affects UAP versions up to and including {uapVersionRange.End}.";
+        }
+        else
+        {
+            return string.Empty;
+        }
+    }
+
     // Outputs an error message describing the error with the file path, error code, and description.
     // The format is designed to be suitable for parsing by VS.
     static string ErrorToString(string originatingFile, (string Code, string Description) issue)
@@ -575,34 +626,28 @@ sealed class LottieFileProcessor
             return _isTranslatedSuccessfully.Value;
         }
 
-        // If no UAP version is specified, use 7 as that is the lowest version that the translator supports.
-        // TODO - until we have version adaptive code, specify 8 so the output isn't different from
-        // what previous versions of the tool were outputing.
-        const uint defaultUapVersion = 8;
+        var translationResult = LottieToMultiVersionWinCompTranslator.TryTranslateLottieComposition(
+            lottieComposition: _lottieComposition,
+            targetUapVersion: _options.TargetUapVersion ?? uint.MaxValue,
+            minimumUapVersion: _minimumUapVersion,
+            strictTranslation: false,
+            addCodegenDescriptions: true);
 
-        // TODO - to support version-adaptive code, translate for the TargetUapVersion, then generate
-        //        again to cover all versions down to the MinimumUapVersion, and combine into a single
-        //        codegen result.
-        var translationResult = LottieToWinCompTranslator.TryTranslateLottieComposition(
-               _lottieComposition,
-               targetUapVersion: /*_options.TargetUapVersion ??*/ defaultUapVersion,
-               strictTranslation: false,
-               addCodegenDescriptions: true);
+        _translationResults = translationResult.TranslationResults;
+        _translationIssues = translationResult.Issues;
 
         _profiler.OnTranslateFinished();
 
-        _rootVisual = translationResult.RootVisual;
+        // Translation succeeded if all version produced root Visuals
+        _isTranslatedSuccessfully = !_translationResults.Any(tr => tr.RootVisual == null);
 
-        _isTranslatedSuccessfully = _rootVisual != null;
-
-        _translationIssues = translationResult.TranslationIssues;
-
-        foreach (var issue in _translationIssues)
+        foreach (var (issue, uapVersionRange) in _translationIssues)
         {
-            _reporter.WriteInfo(IssueToString(_file, issue));
+            _reporter.WriteInfo(IssueToString(_file, issue, uapVersionRange));
         }
 
-        _beforeOptimizationStats = new Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools.Stats(_rootVisual);
+        // NOTE: this is only reporting on the latest version in a multi-version translation.
+        _beforeOptimizationStats = new Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools.Stats(_translationResults[0].RootVisual);
         _profiler.OnUnmeasuredFinished();
 
         if (_isTranslatedSuccessfully.Value)
@@ -610,10 +655,11 @@ sealed class LottieFileProcessor
             // Optimize the code unless told not to.
             if (!_options.DisableTranslationOptimizer)
             {
-                _rootVisual = Optimizer.Optimize(_rootVisual, ignoreCommentProperties: true);
+                _translationResults = _translationResults.Select(tr => tr.WithDifferentRoot(Optimizer.Optimize(tr.RootVisual, ignoreCommentProperties: true))).ToArray();
                 _profiler.OnOptimizationFinished();
 
-                _afterOptimizationStats = new Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools.Stats(_rootVisual);
+                // NOTE: this is only reporting on the latest version in a multi-version translation.
+                _afterOptimizationStats = new Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools.Stats(_translationResults[0].RootVisual);
                 _profiler.OnUnmeasuredFinished();
             }
         }

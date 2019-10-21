@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
@@ -19,7 +18,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
     {
         internal TranslationResult(
             Visual rootVisual,
-            IEnumerable<(string code, string description)> translationIssues,
+            IEnumerable<TranslationIssue> translationIssues,
             uint minimumRequiredUapVersion)
         {
             RootVisual = rootVisual;
@@ -35,11 +34,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// <summary>
         /// The list of issues discovered during translation.
         /// </summary>
-        public IReadOnlyList<(string code, string description)> TranslationIssues { get; }
+        public IReadOnlyList<TranslationIssue> TranslationIssues { get; }
 
         /// <summary>
         /// The minimum version of UAP required to instantiate the result of the translation.
         /// </summary>
         public uint MinimumRequiredUapVersion { get; }
+
+        internal TranslationResult WithDifferentRoot(Visual rootVisual)
+            => new TranslationResult(rootVisual, TranslationIssues, MinimumRequiredUapVersion);
     }
 }

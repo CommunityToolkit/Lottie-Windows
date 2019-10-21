@@ -83,13 +83,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         // Paths are shareable.
         readonly Dictionary<(Sequence<BezierSegment>, ShapeFill.PathFillType, bool), CompositionPath> _compositionPaths = new Dictionary<(Sequence<BezierSegment>, ShapeFill.PathFillType, bool), CompositionPath>();
 
-        // The UAP version that the output will run on. No UAP features introduced after this version
-        // will be used during translation.
-        readonly uint _targetUapVersion;
-
-        // The UAP version required by codepaths in the translation result.
-        uint _minimumRequiredUapVersion = MinimumTargetUapVersion;
-
         /// <summary>
         /// The lowest UAP version for which the translator can produce code. Code from the translator
         /// will never be compatible with UAP versions less than this.
@@ -112,10 +105,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             uint targetUapVersion)
         {
             _lc = lottieComposition;
-            _c = new CompositionObjectFactory(compositor);
+            _c = new CompositionObjectFactory(compositor, targetUapVersion);
             _issues = new TranslationIssues(strictTranslation);
             _addDescriptions = addDescriptions;
-            _targetUapVersion = targetUapVersion;
 
             // Create the root.
             _rootVisual = _c.CreateContainerVisual();
@@ -155,20 +147,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
                 var rootVisual = translator._rootVisual;
 
-                var resultRequiredUapVersion = translator._minimumRequiredUapVersion;
+                var resultRequiredUapVersion = translator._c.HighestUapVersionUsed;
 
                 // See if the version is compatible with what the caller requested.
                 if (targetUapVersion < resultRequiredUapVersion)
                 {
                     // We couldn't translate it and meet the requirement for the requested minimum version.
-                    // TODO - this will never be true once we start translating to version-compensated code.
                     rootVisual = null;
                 }
 
                 return new TranslationResult(
                     rootVisual: rootVisual,
-                    translationIssues: translator._issues.GetIssues(),
-                    minimumRequiredUapVersion: targetUapVersion);
+                    translationIssues: translator._issues.GetIssues().Select(i =>
+                        new TranslationIssue(code: i.Code, description: i.Description)),
+                    minimumRequiredUapVersion: resultRequiredUapVersion);
             }
         }
 
@@ -558,14 +550,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         {
             Debug.Assert(!masks.IsEmpty, "Precondition");
 
-            var maskShapeVisual = TranslateMasks(context, masks);
+            if (IsUapApiAvailable(nameof(CompositionVisualSurface), versionDependentFeatureDescription: "Mask"))
+            {
+                var maskShapeVisual = TranslateMasks(context, masks);
 
-            return CompositeVisuals(
-                                source: maskShapeVisual,
-                                destination: visualToMask,
-                                size: context.Size,
-                                offset: Sn.Vector2.Zero,
-                                compositeMode: compositeMode);
+                return CompositeVisuals(
+                                    source: maskShapeVisual,
+                                    destination: visualToMask,
+                                    size: context.Size,
+                                    offset: Sn.Vector2.Zero,
+                                    compositeMode: compositeMode);
+            }
+            else
+            {
+                // We can't mask, so just return the unmasked visual as a compromise.
+                return visualToMask;
+            }
         }
 
         // Translate a matte layer and the layer to be matted into the composited resulting brush.
@@ -582,26 +582,30 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             // for the matte content and the content to be matted.
             var contextSize = context.Size;
 
-            // TODO - this will never be true once we start translating to version-compensated code. Instead
-            // we will generate something that doesn't require the feature.
-            ReportUapVersionCompromiseIssue(8, "CompositionVisualSurface");
+            if (IsUapApiAvailable(nameof(CompositionVisualSurface), versionDependentFeatureDescription: "Matte"))
+            {
+                var matteLayerVisualSurface = _c.CreateVisualSurface();
+                matteLayerVisualSurface.SourceVisual = matteLayer;
+                matteLayerVisualSurface.SourceSize = contextSize;
+                var matteSurfaceBrush = _c.CreateSurfaceBrush(matteLayerVisualSurface);
 
-            var matteLayerVisualSurface = _c.CreateVisualSurface();
-            matteLayerVisualSurface.SourceVisual = matteLayer;
-            matteLayerVisualSurface.SourceSize = contextSize;
-            var matteSurfaceBrush = _c.CreateSurfaceBrush(matteLayerVisualSurface);
+                var mattedLayerVisualSurface = _c.CreateVisualSurface();
+                mattedLayerVisualSurface.SourceVisual = mattedLayer;
+                mattedLayerVisualSurface.SourceSize = contextSize;
+                var mattedSurfaceBrush = _c.CreateSurfaceBrush(mattedLayerVisualSurface);
 
-            var mattedLayerVisualSurface = _c.CreateVisualSurface();
-            mattedLayerVisualSurface.SourceVisual = mattedLayer;
-            mattedLayerVisualSurface.SourceSize = contextSize;
-            var mattedSurfaceBrush = _c.CreateSurfaceBrush(mattedLayerVisualSurface);
-
-            return CompositeVisuals(
-                        matteLayer,
-                        mattedLayer,
-                        contextSize,
-                        Sn.Vector2.Zero,
-                        invert ? CanvasComposite.DestinationOut : CanvasComposite.DestinationIn);
+                return CompositeVisuals(
+                            matteLayer,
+                            mattedLayer,
+                            contextSize,
+                            Sn.Vector2.Zero,
+                            invert ? CanvasComposite.DestinationOut : CanvasComposite.DestinationIn);
+            }
+            else
+            {
+                // We can't translate the matteing. Just return the layer that needed to be matted as a compromise.
+                return mattedLayer;
+            }
         }
 
         // Combines two visual trees using a CompositeEffect. This is used for Masks and Mattes.
@@ -2675,6 +2679,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             var opacityPercentValue = opacityPercent.InitialValue;
 
+            return TranslateLinearGradientFill(context, shapeFill, colorStops, opacityPercentValue);
+        }
+
+        CompositionLinearGradientBrush TranslateLinearGradientFill(
+            TranslationContext context,
+            LinearGradientFill shapeFill,
+            TrimmedAnimatable<Sequence<ColorGradientStop>> colorStops,
+            double opacityPercentValue)
+        {
             var result = _c.CreateLinearGradientBrush();
 
             // BodyMovin specifies start and end points in absolute values.
@@ -2751,7 +2764,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return result;
         }
 
-        CompositionRadialGradientBrush TranslateRadialGradientFill(
+        CompositionBrush TranslateRadialGradientFill(
             TranslationContext context,
             RadialGradientFill shapeFill,
             TrimmedAnimatable<double> opacityPercent)
@@ -2779,10 +2792,38 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             var opacityPercentValue = opacityPercent.InitialValue;
 
-            // TODO - this will never be true once we start translating to version-compensated code. Instead
-            // we will generate something that doesn't require the feature.
-            ReportUapVersionCompromiseIssue(8, "CompositionRadialGradientBrush");
+            if (IsUapApiAvailable(nameof(CompositionRadialGradientBrush), versionDependentFeatureDescription: "Radial gradient fill"))
+            {
+                return TranslateRadialGradientFillToCompositionRadialGradientBrush(context, shapeFill, colorStops, opacityPercentValue);
+            }
+            else
+            {
+                // Radial gradient is not available. Convert the RadialGradientFill to a LinearGradientFill as a compromise.
+                var fillArgs = new ShapeLayerContent.ShapeLayerContentArgs()
+                {
+                    BlendMode = shapeFill.BlendMode,
+                    MatchName = shapeFill.MatchName,
+                    Name = shapeFill.Name,
+                };
+                var linearFill = new LinearGradientFill(
+                    in fillArgs,
+                    shapeFill.FillType,
+                    shapeFill.OpacityPercent,
+                    shapeFill.StartPoint,
+                    shapeFill.EndPoint,
+                    shapeFill.ColorStops,
+                    shapeFill.OpacityPercentStops);
 
+                return TranslateLinearGradientFill(context, linearFill, opacityPercent);
+            }
+        }
+
+        CompositionRadialGradientBrush TranslateRadialGradientFillToCompositionRadialGradientBrush(
+            TranslationContext context,
+            RadialGradientFill shapeFill,
+            TrimmedAnimatable<Sequence<ColorGradientStop>> colorStops,
+            double opacityPercentValue)
+        {
             var result = _c.CreateRadialGradientBrush();
 
             // BodyMovin specifies start and end points in absolute values.
@@ -3968,18 +4009,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return Math.Min(Math.Max(min, value), max);
         }
 
-        // Call here to report that a feature is being translated sub-optimally because
-        // the target UAP version lacks a feature that is available in a later version.
-        void ReportUapVersionCompromiseIssue(uint version, string versionDependentFeatureName)
+        // Checks whether the given API is available for the current translation.
+        bool IsUapApiAvailable(string apiName, string versionDependentFeatureDescription)
         {
-            // TODO - this will never be true once we start translating to version-compensated code.
-            //        Instead we will output a message explaining that we have compromised to a version limitation
-            //        because of the given feature.
-            if (_targetUapVersion < version)
+            if (!_c.IsUapApiAvailable(apiName))
             {
-                _minimumRequiredUapVersion = Math.Max(_minimumRequiredUapVersion, version);
-                _issues.UapVersionNotSupported(versionDependentFeatureName, version.ToString());
+                _issues.UapVersionNotSupported(versionDependentFeatureDescription, _c.GetUapVersionForApi(apiName).ToString());
+                return false;
             }
+
+            return true;
         }
 
         // A pair of doubles used as a key in a dictionary.
