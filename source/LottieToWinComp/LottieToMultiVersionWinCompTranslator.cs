@@ -14,20 +14,23 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 #endif
     sealed class LottieToMultiVersionWinCompTranslator
     {
-        // We will never produce code that is compatible with code before version 7.
+        // Lowest version of UAP we will produce code for. Version 7 is required for
+        // Shapes to work completely (they were added in 6 but had some issues until 7).
         const uint LowestValidUapVersion = 7;
 
         /// <summary>
-        /// Attempts to translates the given <see cref="LottieData.LottieComposition"/> for a range of UAP versions,
+        /// Attempts to translate the given <see cref="LottieData.LottieComposition"/> for a range of UAP versions,
         /// producing one or more translations.
         /// </summary>
         /// <param name="lottieComposition">The <see cref="LottieComposition"/> to translate.</param>
-        /// <param name="targetUapVersion">The version of UAP that the translator will ensure compatibility with. Must be >= 7.</param>
-        /// <param name="minimumUapVersion">The lowest version of UAP on which the result must run. Must be >= 7 and &lt;= targetUapVersion.</param>
+        /// <param name="targetUapVersion">The version of UAP that the translator will ensure compatibility with.
+        /// Must be >= 7.</param>
+        /// <param name="minimumUapVersion">The lowest version of UAP on which the result must run.
+        /// Must be >= 7 and &lt;= targetUapVersion.</param>
         /// <param name="strictTranslation">If true, throw an exception if translation issues are found.</param>
         /// <param name="addCodegenDescriptions">Add descriptions to objects for comments on generated code.</param>
         /// <returns>The results of the translation and the issues.</returns>
-        public static (IReadOnlyList<TranslationResult> translationResults, IReadOnlyList<(TranslationIssue, UapVersionRange)> issues) TryTranslateLottieComposition(
+        public static MultiVersionTranslationResult TryTranslateLottieComposition(
             LottieComposition lottieComposition,
             uint targetUapVersion,
             uint minimumUapVersion,
@@ -81,15 +84,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 }
             }
 
-            var versionDependentIssues =
-                (from pair in dict
-                 let issue = pair.Key
-                 orderby issue.Code, issue.Description
-                 select (issue, pair.Value)).ToArray();
-
-            var translationResults = translations.Select(t => t.translationResult).ToArray();
-
-            return (translationResults, versionDependentIssues);
+            return new MultiVersionTranslationResult(
+                translationResults: translations.Select(t => t.translationResult),
+                issues: from pair in dict
+                        let issue = pair.Key
+                        orderby issue.Code, issue.Description
+                        select (issue, pair.Value));
         }
 
         static IEnumerable<(TranslationResult translationResult, UapVersionRange versionRange)> Translate(

@@ -2798,9 +2798,21 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
             else
             {
-                // Radial gradient are not available. Convert the RadialGradientFill to a LinearGradientFill as a compromise.
-                var fillArgs = new ShapeLayerContent.ShapeLayerContentArgs() { BlendMode = shapeFill.BlendMode, MatchName = shapeFill.MatchName, Name = shapeFill.Name };
-                var linearFill = new LinearGradientFill(in fillArgs, shapeFill.FillType, shapeFill.OpacityPercent, shapeFill.StartPoint, shapeFill.EndPoint, shapeFill.ColorStops, shapeFill.OpacityPercentStops);
+                // Radial gradient is not available. Convert the RadialGradientFill to a LinearGradientFill as a compromise.
+                var fillArgs = new ShapeLayerContent.ShapeLayerContentArgs()
+                {
+                    BlendMode = shapeFill.BlendMode,
+                    MatchName = shapeFill.MatchName,
+                    Name = shapeFill.Name,
+                };
+                var linearFill = new LinearGradientFill(
+                    in fillArgs,
+                    shapeFill.FillType,
+                    shapeFill.OpacityPercent,
+                    shapeFill.StartPoint,
+                    shapeFill.EndPoint,
+                    shapeFill.ColorStops,
+                    shapeFill.OpacityPercentStops);
 
                 return TranslateLinearGradientFill(context, linearFill, opacityPercent);
             }
