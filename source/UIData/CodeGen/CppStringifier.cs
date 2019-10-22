@@ -12,7 +12,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
     /// <summary>
     /// Stringifiers for C++ syntax.
     /// </summary>
-    sealed class CppStringifier : InstantiatorGeneratorBase.StringifierBase
+    sealed class CppStringifier : Stringifier
     {
         public override string CanvasFigureLoop(Mgcg.CanvasFigureLoop value)
         {

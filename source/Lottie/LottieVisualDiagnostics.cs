@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen;
+using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie
 {
@@ -91,7 +92,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
 
             return CSharpInstantiatorGenerator.CreateFactoryCode(
                 SuggestedClassName,
-                RootVisual,
+                new (CompositionObject, uint)[] { (RootVisual, RequiredUapVersion) },
                 (float)LottieComposition.Width,
                 (float)LottieComposition.Height,
                 LottieComposition.Duration,
@@ -100,7 +101,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
 
         public void GenerateCxCode(string headerFileName, out string cppText, out string hText)
         {
-            if (LottieComposition == null) {
+            if (LottieComposition == null)
+            {
                 cppText = null;
                 hText = null;
                 return;
@@ -108,7 +110,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
 
             (string cppText, string hText, IEnumerable<Uri> assetList) generatedCode = CxInstantiatorGenerator.CreateFactoryCode(
                 SuggestedClassName,
-                RootVisual,
+                new (CompositionObject, uint)[] { (RootVisual, RequiredUapVersion) },
                 (float)LottieComposition.Width,
                 (float)LottieComposition.Height,
                 LottieComposition.Duration,
@@ -124,8 +126,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         // Holds the parsed LottieComposition. Only used if one of the codegen or XML options was selected.
         internal LottieComposition LottieComposition { get; set; }
 
-        // Holds the translated Visual. Only used if one of the codgen or XML options was selected.
+        // Holds the translated Visual. Only used if one of the codegen or XML options was selected.
         internal WinCompData.Visual RootVisual { get; set; }
+
+        // The UAP version required by the translated code. Only used if one of the codegen or
+        // XML options was selected.
+        internal uint RequiredUapVersion { get; set; }
 
         internal LottieVisualDiagnostics Clone() =>
             new LottieVisualDiagnostics

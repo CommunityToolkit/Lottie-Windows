@@ -18,12 +18,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 #endif
     sealed class CxInstantiatorGenerator : InstantiatorGeneratorBase
     {
-        readonly CppStringifier _stringifier;
+        readonly CppStringifier _s;
         readonly string _headerFileName;
 
         CxInstantiatorGenerator(
             string className,
-            CompositionObject graphRoot,
+            Vector2 size,
+            IReadOnlyList<(CompositionObject graphRoot, uint requiredUapVersion)> graphs,
             TimeSpan duration,
             bool setCommentProperties,
             bool disableFieldOptimization,
@@ -31,13 +32,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             string headerFileName)
             : base(
                   className: className,
-                  graphRoot: graphRoot,
+                  compositionDeclaredSize: size,
+                  graphs: graphs,
                   duration: duration,
                   setCommentProperties: setCommentProperties,
                   disableFieldOptimization: false,
                   stringifier: stringifier)
         {
-            _stringifier = stringifier;
+            _s = stringifier;
             _headerFileName = headerFileName;
         }
 
@@ -48,7 +50,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// <returns>A value tuple containing the cpp code, header code, and list of referenced asset files.</returns>
         public static (string cppText, string hText, IEnumerable<Uri> assetList) CreateFactoryCode(
             string className,
-            Visual rootVisual,
+            IReadOnlyList<(CompositionObject graphRoot, uint requiredUapVersion)> graphs,
             float width,
             float height,
             TimeSpan duration,
@@ -57,14 +59,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         {
             var generator = new CxInstantiatorGenerator(
                 className: className,
-                graphRoot: rootVisual,
+                size: new Vector2(width, height),
+                graphs: graphs,
                 duration: duration,
                 disableFieldOptimization: disableFieldOptimization,
                 setCommentProperties: false,
                 stringifier: new CppStringifier(),
                 headerFileName: headerFileName);
 
-            var cppText = generator.GenerateCode(className, width, height);
+            var cppText = generator.GenerateCode();
 
             var hText = generator.GenerateHeaderText(className);
 
@@ -76,20 +79,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         // Generates the .h file contents.
         string GenerateHeaderText(string className)
         {
-            var loadedImageSurfacesNodes = GetLoadedImageSurfacesNodes();
+            var loadedImageSurfacesInfo = GetLoadedImageSurfacesInfo();
 
             // Returns the header text that implements IAnimatedVisualSource if loadedImageSurfacesNodes is null or empty.
             // Otherwise, return the header text that implements IDynamicAnimatedVisualSource.
-            return loadedImageSurfacesNodes == null || !loadedImageSurfacesNodes.Any()
+            return !loadedImageSurfacesInfo.Any()
                 ? IAnimatedVisualSourceHeaderText(className)
-                : IDynamicAnimatedVisualSourceHeaderText(className, loadedImageSurfacesNodes);
+                : IDynamicAnimatedVisualSourceHeaderText(className, loadedImageSurfacesInfo);
         }
 
         /// <inheritdoc/>
         // Called by the base class to write the start of the file (i.e. everything up to the body of the Instantiator class).
         protected override void WriteFileStart(
             CodeBuilder builder,
-            CodeGenInfo info)
+            AnimatedVisualSourceInfo info)
         {
             builder.WriteLine("#include \"pch.h\"");
             builder.WriteLine($"#include \"{_headerFileName}\"");
@@ -169,7 +172,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 info.UsesCanvasGeometry)
             {
                 // Write GeoSource to allow it's use in function definitions
-                builder.WriteLine($"{_stringifier.GeoSourceClass}");
+                builder.WriteLine($"{_s.GeoSourceClass}");
 
                 // Typedef to simplify generation
                 builder.WriteLine("typedef ComPtr<GeoSource> CanvasGeometry;");
@@ -184,14 +187,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         }
 
         /// <inheritdoc/>
-        protected override void WriteInstantiatorStart(CodeBuilder builder, CodeGenInfo info)
+        protected override void WriteAnimatedVisualStart(CodeBuilder builder, AnimatedVisualInfo info)
         {
             // Start writing the instantiator.
-            builder.WriteLine("ref class AnimatedVisual sealed : public Microsoft::UI::Xaml::Controls::IAnimatedVisual");
+            builder.WriteLine($"ref class {info.ClassName} sealed : public Microsoft::UI::Xaml::Controls::IAnimatedVisual");
             builder.OpenScope();
 
-            if (info.UsesCanvasEffects ||
-                info.UsesCanvasGeometry)
+            if (info.AnimatedVisualSourceInfo.UsesCanvasEffects ||
+                info.AnimatedVisualSourceInfo.UsesCanvasGeometry)
             {
                 // D2D factory field.
                 builder.WriteLine("ComPtr<ID2D1Factory> _d2dFactory;");
@@ -199,13 +202,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         }
 
         /// <inheritdoc/>
-        // Called by the base class to write the end of the file (i.e. everything after the body of the Instantiator class).
-        protected override void WriteFileEnd(
+        // Called by the base class to write the end of the AnimatedVisual class.
+        protected override void WriteAnimatedVisualEnd(
             CodeBuilder builder,
-            CodeGenInfo info)
+            AnimatedVisualInfo info)
         {
-            if (info.UsesCanvasEffects ||
-                info.UsesCanvasGeometry)
+            if (info.AnimatedVisualSourceInfo.UsesCanvasEffects ||
+                info.AnimatedVisualSourceInfo.UsesCanvasGeometry)
             {
                 // Utility method for D2D geometries
                 builder.WriteLine("static IGeometrySource2D^ CanvasGeometryToIGeometrySource2D(CanvasGeometry geo)");
@@ -226,49 +229,49 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 builder.WriteLine();
             }
 
-            // Write the constructor for the instantiator.
+            // Write the constructor for the AnimatedVisual class.
             builder.UnIndent();
             builder.WriteLine("public:");
             builder.Indent();
 
-            if (info.HasLoadedImageSurface)
+            if (info.AnimatedVisualSourceInfo.HasLoadedImageSurface)
             {
-                builder.WriteLine("AnimatedVisual(Compositor^ compositor,");
+                builder.WriteLine($"{info.ClassName}(Compositor^ compositor,");
                 builder.Indent();
 
-                builder.WriteCommaSeparatedLines(info.LoadedImageSurfaceNodes.Select(n => $"{_stringifier.ReferenceTypeName(n.TypeName)} {_stringifier.CamelCase(n.Name)}"));
+                builder.WriteCommaSeparatedLines(info.AnimatedVisualSourceInfo.LoadedImageSurfaceNodes.Select(n => $"{_s.ReferenceTypeName(n.TypeName)} {_s.CamelCase(n.Name)}"));
 
                 // Initializer list.
                 builder.WriteLine(") : _c(compositor)");
 
                 // Instantiate the reusable ExpressionAnimation.
-                builder.WriteLine($", {info.ReusableExpressionAnimationFieldName}(compositor->CreateExpressionAnimation())");
+                builder.WriteLine($", {info.AnimatedVisualSourceInfo.ReusableExpressionAnimationFieldName}(compositor->CreateExpressionAnimation())");
 
                 // Initialize the image surfaces.
-                var nodes = info.LoadedImageSurfaceNodes.ToArray();
+                var nodes = info.AnimatedVisualSourceInfo.LoadedImageSurfaceNodes.ToArray();
                 foreach (var n in nodes)
                 {
-                    builder.WriteLine($", {n.FieldName}({_stringifier.CamelCase(n.Name)})");
+                    builder.WriteLine($", {n.FieldName}({_s.CamelCase(n.Name)})");
                 }
 
                 builder.UnIndent();
             }
             else
             {
-                builder.WriteLine("AnimatedVisual(Compositor^ compositor)");
+                builder.WriteLine($"{info.ClassName}(Compositor^ compositor)");
 
                 // Initializer list.
                 builder.Indent();
                 builder.WriteLine(": _c(compositor)");
 
                 // Instantiate the reusable ExpressionAnimation.
-                builder.WriteLine($", {info.ReusableExpressionAnimationFieldName}(compositor->CreateExpressionAnimation())");
+                builder.WriteLine($", {info.AnimatedVisualSourceInfo.ReusableExpressionAnimationFieldName}(compositor->CreateExpressionAnimation())");
                 builder.UnIndent();
             }
 
             builder.OpenScope();
-            if (info.UsesCanvasEffects ||
-                info.UsesCanvasGeometry)
+            if (info.AnimatedVisualSourceInfo.UsesCanvasEffects ||
+                info.AnimatedVisualSourceInfo.UsesCanvasGeometry)
             {
                 builder.WriteLine($"{FailFastWrapper("D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, _d2dFactory.GetAddressOf())")};");
             }
@@ -279,7 +282,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             // Write the destructor. This is how CX implements IClosable/IDisposable.
             builder.WriteLine();
-            builder.WriteLine("virtual ~AnimatedVisual() { }");
+            builder.WriteLine($"virtual ~{info.ClassName}() {{ }}");
 
             // Write the members on IAnimatedVisual.
             builder.WriteLine();
@@ -295,19 +298,26 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.WriteLine();
             builder.WriteLine("property float2 Size");
             builder.OpenScope();
-            builder.WriteLine($"virtual float2 get() {{ return {Vector2(info.CompositionDeclaredSize)}; }}");
+            builder.WriteLine($"virtual float2 get() {{ return {Vector2(info.AnimatedVisualSourceInfo.CompositionDeclaredSize)}; }}");
             builder.CloseScope();
             builder.WriteLine();
 
             // Close the scope for the instantiator class.
             builder.UnIndent();
             builder.WriteLine("};");
+        }
 
+        /// <inheritdoc/>
+        // Called by the base class to write the end of the file (i.e. everything after the body of the AnimatedVisual class).
+        protected override void WriteFileEnd(
+            CodeBuilder builder,
+            AnimatedVisualSourceInfo info)
+        {
             // Close the anonymous namespace.
             builder.WriteLine("} // end namespace");
             builder.WriteLine();
 
-            // Generate the method that creates an instance of the composition.
+            // Generate the method that creates an instance of the composition on the IAnimatedVisualSource
             builder.WriteLine($"Microsoft::UI::Xaml::Controls::IAnimatedVisual^ AnimatedVisuals::{info.ClassName}::TryCreateAnimatedVisual(");
             builder.Indent();
             builder.WriteLine("Compositor^ compositor,");
@@ -357,8 +367,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.WriteLine($"FFHR(geoA->CombineWithGeometry(");
             builder.Indent();
             builder.WriteLine($"geoB,");
-            builder.WriteLine($"{_stringifier.CanvasGeometryCombine(obj.CombineMode)},");
-            builder.WriteLine($"{_stringifier.Matrix3x2(obj.Matrix)},");
+            builder.WriteLine($"{_s.CanvasGeometryCombine(obj.CombineMode)},");
+            builder.WriteLine($"{_s.Matrix3x2(obj.Matrix)},");
             builder.WriteLine($"sink.Get()));");
             builder.UnIndent();
             builder.WriteLine("geoA->Release();");
@@ -468,7 +478,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.WriteLine($"{typeName} result;");
             builder.WriteLine("ID2D1Geometry *geoA = nullptr;");
             builder.WriteLine("ID2D1TransformedGeometry *transformed;");
-            builder.WriteLine($"D2D1_MATRIX_3X2_F transformMatrix{_stringifier.Matrix3x2(obj.TransformMatrix)};");
+            builder.WriteLine($"D2D1_MATRIX_3X2_F transformMatrix{_s.Matrix3x2(obj.TransformMatrix)};");
             builder.WriteLine();
             builder.WriteLine($"{CallFactoryFor(obj.SourceGeometry)}->GetGeometry(&geoA);");
             builder.WriteLine("FFHR(_d2dFactory->CreateTransformedGeometry(geoA, transformMatrix, &transformed));");
@@ -479,7 +489,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// <summary>
         /// Generate the body of the TryCreateAnimatedVisual() method for the composition that contains LoadedImageSurfaces.
         /// </summary>
-        void WriteTryCreateInstantiatorWithImageLoading(CodeBuilder builder, CodeGenInfo info)
+        void WriteTryCreateInstantiatorWithImageLoading(CodeBuilder builder, AnimatedVisualSourceInfo info)
         {
             builder.WriteLine("m_isTryCreateAnimatedVisualCalled = true;");
             builder.WriteLine();
@@ -504,7 +514,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.WriteLine();
         }
 
-        void WriteIsAnimatedVisualSourceDynamicGetSet(CodeBuilder builder, CodeGenInfo info)
+        void WriteIsAnimatedVisualSourceDynamicGetSet(CodeBuilder builder, AnimatedVisualSourceInfo info)
         {
             builder.WriteLine($"bool AnimatedVisuals::{info.ClassName}::IsAnimatedVisualSourceDynamic::get()");
             builder.OpenScope();
@@ -521,7 +531,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.CloseScope();
         }
 
-        void WriteEnsureImageLoadingStarted(CodeBuilder builder, CodeGenInfo info)
+        void WriteEnsureImageLoadingStarted(CodeBuilder builder, AnimatedVisualSourceInfo info)
         {
             builder.WriteLine($"void AnimatedVisuals::{info.ClassName}::EnsureImageLoadingStarted()");
             builder.OpenScope();
@@ -562,7 +572,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.WriteLine();
         }
 
-        void WriteHandleLoadCompleted(CodeBuilder builder, CodeGenInfo info)
+        void WriteHandleLoadCompleted(CodeBuilder builder, AnimatedVisualSourceInfo info)
         {
             builder.WriteLine($"void AnimatedVisuals::{info.ClassName}::HandleLoadCompleted(LoadedImageSurface^ sender, LoadedImageSourceLoadCompletedEventArgs^ e)");
             builder.OpenScope();
@@ -590,7 +600,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         protected override string WriteCompositeEffectFactory(CodeBuilder builder, Mgce.CompositeEffect compositeEffect)
         {
             builder.WriteLine("ComPtr<CompositeEffect> compositeEffect(new CompositeEffect());");
-            builder.WriteLine($"compositeEffect->SetMode({_stringifier.CanvasCompositeMode(compositeEffect.Mode)});");
+            builder.WriteLine($"compositeEffect->SetMode({_s.CanvasCompositeMode(compositeEffect.Mode)});");
             foreach (var source in compositeEffect.Sources)
             {
                 builder.OpenScope();
@@ -602,34 +612,28 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             return "reinterpret_cast<Windows::Graphics::Effects::IGraphicsEffect^>(compositeEffect.Get())";
         }
 
-        string CanvasFigureLoop(CanvasFigureLoop value) => _stringifier.CanvasFigureLoop(value);
+        string CanvasFigureLoop(CanvasFigureLoop value) => _s.CanvasFigureLoop(value);
 
         static string FieldAssignment(string fieldName) => fieldName != null ? $"{fieldName} = " : string.Empty;
 
-        string FilledRegionDetermination(CanvasFilledRegionDetermination value) => _stringifier.FilledRegionDetermination(value);
+        string FilledRegionDetermination(CanvasFilledRegionDetermination value) => _s.FilledRegionDetermination(value);
 
-        string Float(float value) => _stringifier.Float(value);
+        string Float(float value) => _s.Float(value);
 
-        string FailFastWrapper(string value) => _stringifier.FailFastWrapper(value);
+        string FailFastWrapper(string value) => _s.FailFastWrapper(value);
 
-        string String(string value) => _stringifier.String(value);
+        string String(string value) => _s.String(value);
 
-        string Vector2(Vector2 value) => _stringifier.Vector2(value);
+        string Vector2(Vector2 value) => _s.Vector2(value);
 
-        string MakeFieldName(string value) => $"m_{_stringifier.CamelCase(value)}";
+        string MakeFieldName(string value) => $"m_{_s.CamelCase(value)}";
+
+        static string CommonHeaderText => "#pragma once\r\n" + string.Join("\r\n", AutoGeneratedHeaderText);
 
         static string IAnimatedVisualSourceHeaderText(string className)
         {
             return
-$@"#pragma once
-//------------------------------------------------------------------------------
-// <auto-generated>
-//     This code was generated by a tool.
-//
-//     Changes to this file may cause incorrect behavior and will be lost if
-//     the code is regenerated.
-// </auto-generated>
-//------------------------------------------------------------------------------
+$@"{CommonHeaderText}
 
 namespace AnimatedVisuals 
 {{
@@ -643,26 +647,18 @@ public:
 }}";
         }
 
-        string IDynamicAnimatedVisualSourceHeaderText(string className, IEnumerable<LoadedImageSurfaceNode> loadedImageSurfacesNodes)
+        string IDynamicAnimatedVisualSourceHeaderText(string className, IEnumerable<LoadedImageSurfaceInfo> loadedImageSurfaceInfo)
         {
-            var nodes = loadedImageSurfacesNodes.ToArray();
+            var nodes = loadedImageSurfaceInfo.ToArray();
             var imageFieldsText = new StringBuilder();
 
             foreach (var n in nodes)
             {
-                imageFieldsText.AppendLine($"    {_stringifier.ReferenceTypeName(n.TypeName)} {MakeFieldName(n.Name)}{{}};");
+                imageFieldsText.AppendLine($"    {_s.ReferenceTypeName(n.TypeName)} {MakeFieldName(n.Name)}{{}};");
             }
 
             return
-$@"#pragma once
-//------------------------------------------------------------------------------
-// <auto-generated>
-//     This code was generated by a tool.
-//
-//     Changes to this file may cause incorrect behavior and will be lost if
-//     the code is regenerated.
-// </auto-generated>
-//------------------------------------------------------------------------------
+$@"{CommonHeaderText}
 using namespace Microsoft::UI::Xaml::Controls;
 using namespace Platform;
 using namespace Windows::UI::Xaml;
@@ -723,7 +719,7 @@ public:
     }}
 
 private:
-    const int c_loadedImageSurfaceCount = {loadedImageSurfacesNodes.Distinct().Count()};
+    const int c_loadedImageSurfaceCount = {loadedImageSurfaceInfo.Distinct().Count()};
     double m_imageSuccessfulLoadingProgress{{}};
     int m_loadCompleteEventCount{{}};
     bool m_isAnimatedVisualSourceDynamic{{ true }};

@@ -6,13 +6,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using System.Text;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData;
 using Mgce = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce;
-using Mgcg = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 {
@@ -21,24 +18,26 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 #endif
     sealed class CSharpInstantiatorGenerator : InstantiatorGeneratorBase
     {
-        readonly CSharpStringifier _stringifier;
+        readonly Stringifier _s;
 
         CSharpInstantiatorGenerator(
             string className,
-            CompositionObject graphRoot,
+            Vector2 size,
+            IReadOnlyList<(CompositionObject graphRoot, uint requiredUapVersion)> graphs,
             TimeSpan duration,
             bool setCommentProperties,
             bool disableFieldOptimization,
-            CSharpStringifier stringifier)
+            Stringifier stringifier)
             : base(
                   className: className,
-                  graphRoot: graphRoot,
+                  compositionDeclaredSize: size,
+                  graphs: graphs,
                   duration: duration,
                   setCommentProperties: setCommentProperties,
                   disableFieldOptimization: disableFieldOptimization,
                   stringifier: stringifier)
         {
-            _stringifier = stringifier;
+            _s = stringifier;
         }
 
         /// <summary>
@@ -48,7 +47,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// <returns>A tuple containing the C# code and list of referenced asset files.</returns>
         public static (string csText, IEnumerable<Uri> assetList) CreateFactoryCode(
             string className,
-            Visual rootVisual,
+            IReadOnlyList<(CompositionObject graphRoot, uint requiredUapVersion)> graphs,
             float width,
             float height,
             TimeSpan duration,
@@ -56,13 +55,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         {
             var generator = new CSharpInstantiatorGenerator(
                                 className: className,
-                                graphRoot: rootVisual,
+                                size: new Vector2(width, height),
+                                graphs: graphs,
                                 duration: duration,
                                 setCommentProperties: false,
                                 disableFieldOptimization: disableFieldOptimization,
-                                stringifier: new CSharpStringifier());
+                                stringifier: new Stringifier());
 
-            var csText = generator.GenerateCode(className, width, height);
+            var csText = generator.GenerateCode();
 
             var assetList = generator.GetAssetsList();
 
@@ -71,7 +71,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         /// <inheritdoc/>
         // Called by the base class to write the start of the file (i.e. everything up to the body of the Instantiator class).
-        protected override void WriteFileStart(CodeBuilder builder, CodeGenInfo info)
+        protected override void WriteFileStart(CodeBuilder builder, AnimatedVisualSourceInfo info)
         {
             // A sorted set to hold the namespaces that the generated code will use. The set is maintained in sorted order.
             var namepaces = new SortedSet<string>();
@@ -133,7 +133,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// <summary>
         /// Write a class that implements the IAnimatedVisualSource interface.
         /// </summary>
-        void WriteIAnimatedVisualSource(CodeBuilder builder, CodeGenInfo info)
+        void WriteIAnimatedVisualSource(CodeBuilder builder, AnimatedVisualSourceInfo info)
         {
             builder.WriteLine("namespace AnimatedVisuals");
             builder.OpenScope();
@@ -156,7 +156,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// <summary>
         /// Write a class that implements the IDynamicAnimatedVisualSource interface.
         /// </summary>
-        void WriteIDynamicAnimatedVisualSource(CodeBuilder builder, CodeGenInfo info)
+        void WriteIDynamicAnimatedVisualSource(CodeBuilder builder, AnimatedVisualSourceInfo info)
         {
             var nodes = info.LoadedImageSurfaceNodes.ToArray();
             builder.WriteLine("namespace AnimatedVisuals");
@@ -165,8 +165,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.OpenScope();
 
             // Declare variables.
-            builder.WriteLine($"{_stringifier.Const(_stringifier.Int32TypeName)} c_loadedImageSurfaceCount = {nodes.Distinct().Count()};");
-            builder.WriteLine($"{_stringifier.Int32TypeName} _loadCompleteEventCount;");
+            builder.WriteLine($"{_s.Const(_s.Int32TypeName)} c_loadedImageSurfaceCount = {nodes.Distinct().Count()};");
+            builder.WriteLine($"{_s.Int32TypeName} _loadCompleteEventCount;");
             builder.WriteLine("bool _isAnimatedVisualSourceDynamic = true;");
             builder.WriteLine("bool _isTryCreateAnimatedVisualCalled;");
             builder.WriteLine("bool _isImageLoadingStarted;");
@@ -175,7 +175,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             // Declare the variables to hold the surfaces.
             foreach (var n in nodes)
             {
-                builder.WriteLine($"{_stringifier.ReferenceTypeName(n.TypeName)} {n.FieldName};");
+                builder.WriteLine($"{_s.ReferenceTypeName(n.TypeName)} {n.FieldName};");
             }
 
             builder.WriteLine();
@@ -258,39 +258,39 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         }
 
         /// <inheritdoc/>
-        protected override void WriteInstantiatorStart(CodeBuilder builder, CodeGenInfo info)
+        protected override void WriteAnimatedVisualStart(CodeBuilder builder, AnimatedVisualInfo info)
         {
             // Start the instantiator class.
-            builder.WriteLine("sealed class AnimatedVisual : IAnimatedVisual");
+            builder.WriteLine($"sealed class {info.ClassName} : IAnimatedVisual");
             builder.OpenScope();
         }
 
         /// <inheritdoc/>
-        // Called by the base class to write the end of the file (i.e. everything after the body of the Instantiator class).
-        protected override void WriteFileEnd(
+        // Called by the base class to write the end of the AnimatedVisual class.
+        protected override void WriteAnimatedVisualEnd(
             CodeBuilder builder,
-            CodeGenInfo info)
+            AnimatedVisualInfo info)
         {
-            // Write the constructor for the instantiator.
-            if (info.HasLoadedImageSurface)
+            // Write the constructor for the AnimatedVisual class.
+            if (info.AnimatedVisualSourceInfo.HasLoadedImageSurface)
             {
-                builder.WriteLine($"internal AnimatedVisual(Compositor compositor,");
+                builder.WriteLine($"internal {info.ClassName}(Compositor compositor,");
                 builder.Indent();
 
                 // Define the image surface parameters of the AnimatedVisual() constructor.
-                builder.WriteCommaSeparatedLines(info.LoadedImageSurfaceNodes.Select(n => $"{_stringifier.ReferenceTypeName(n.TypeName)} {_stringifier.CamelCase(n.Name)}"));
+                builder.WriteCommaSeparatedLines(info.AnimatedVisualSourceInfo.LoadedImageSurfaceNodes.Select(n => $"{_s.ReferenceTypeName(n.TypeName)} {_s.CamelCase(n.Name)}"));
                 builder.WriteLine(")");
                 builder.UnIndent();
                 builder.OpenScope();
 
                 builder.WriteLine("_c = compositor;");
-                builder.WriteLine($"{info.ReusableExpressionAnimationFieldName} = compositor.CreateExpressionAnimation();");
+                builder.WriteLine($"{info.AnimatedVisualSourceInfo.ReusableExpressionAnimationFieldName} = compositor.CreateExpressionAnimation();");
 
                 // Initialize the private image surface variables with the input parameters of the constructor.
-                var nodes = info.LoadedImageSurfaceNodes.ToArray();
+                var nodes = info.AnimatedVisualSourceInfo.LoadedImageSurfaceNodes.ToArray();
                 foreach (var n in nodes)
                 {
-                    builder.WriteLine($"{n.FieldName} = {_stringifier.CamelCase(n.Name)};");
+                    builder.WriteLine($"{n.FieldName} = {_s.CamelCase(n.Name)};");
                 }
             }
             else
@@ -298,7 +298,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 builder.WriteLine("internal AnimatedVisual(Compositor compositor)");
                 builder.OpenScope();
                 builder.WriteLine("_c = compositor;");
-                builder.WriteLine($"{info.ReusableExpressionAnimationFieldName} = compositor.CreateExpressionAnimation();");
+                builder.WriteLine($"{info.AnimatedVisualSourceInfo.ReusableExpressionAnimationFieldName} = compositor.CreateExpressionAnimation();");
             }
 
             builder.WriteLine("Root();");
@@ -307,14 +307,21 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             // Write the IAnimatedVisual implementation.
             builder.WriteLine("Visual IAnimatedVisual.RootVisual => _root;");
-            builder.WriteLine($"TimeSpan IAnimatedVisual.Duration => TimeSpan.FromTicks({info.DurationTicksFieldName});");
-            builder.WriteLine($"Vector2 IAnimatedVisual.Size => {Vector2(info.CompositionDeclaredSize)};");
+            builder.WriteLine($"TimeSpan IAnimatedVisual.Duration => TimeSpan.FromTicks({info.AnimatedVisualSourceInfo.DurationTicksFieldName});");
+            builder.WriteLine($"Vector2 IAnimatedVisual.Size => {Vector2(info.AnimatedVisualSourceInfo.CompositionDeclaredSize)};");
             builder.WriteLine("void IDisposable.Dispose() => _root?.Dispose();");
 
             // Close the scope for the instantiator class.
             builder.CloseScope();
+        }
 
-            // Close the scope for the class.
+        /// <inheritdoc/>
+        // Called by the base class to write the end of the file (i.e. everything after the body of the AnimatedVisual class).
+        protected override void WriteFileEnd(
+            CodeBuilder builder,
+            AnimatedVisualSourceInfo info)
+        {
+            // Close the scope for the IAnimatedVisualSource class.
             builder.CloseScope();
 
             // Close the scope for the namespace
@@ -333,10 +340,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             }
             else
             {
-                builder.WriteLine($"{_stringifier.Matrix3x2(obj.Matrix)},");
+                builder.WriteLine($"{_s.Matrix3x2(obj.Matrix)},");
             }
 
-            builder.WriteLine($"{_stringifier.CanvasGeometryCombine(obj.CombineMode)});");
+            builder.WriteLine($"{_s.CanvasGeometryCombine(obj.CombineMode)});");
             builder.UnIndent();
         }
 
@@ -357,7 +364,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.Indent();
             builder.WriteLine($"null,");
             builder.WriteLine($"new CanvasGeometry[] {{ {string.Join(", ", obj.Geometries.Select(g => CallFactoryFor(g)) ) } }},");
-            builder.WriteLine($"{_stringifier.FilledRegionDetermination(obj.FilledRegionDetermination)});");
+            builder.WriteLine($"{_s.FilledRegionDetermination(obj.FilledRegionDetermination)});");
             builder.UnIndent();
         }
 
@@ -369,7 +376,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.OpenScope();
             if (obj.FilledRegionDetermination != CanvasFilledRegionDetermination.Alternate)
             {
-                builder.WriteLine($"builder.SetFilledRegionDetermination({_stringifier.FilledRegionDetermination(obj.FilledRegionDetermination)});");
+                builder.WriteLine($"builder.SetFilledRegionDetermination({_s.FilledRegionDetermination(obj.FilledRegionDetermination)});");
             }
 
             foreach (var command in obj.Commands)
@@ -380,7 +387,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                         builder.WriteLine($"builder.BeginFigure({Vector2(((CanvasPathBuilder.Command.BeginFigure)command).StartPoint)});");
                         break;
                     case CanvasPathBuilder.CommandType.EndFigure:
-                        builder.WriteLine($"builder.EndFigure({_stringifier.CanvasFigureLoop(((CanvasPathBuilder.Command.EndFigure)command).FigureLoop)});");
+                        builder.WriteLine($"builder.EndFigure({_s.CanvasFigureLoop(((CanvasPathBuilder.Command.EndFigure)command).FigureLoop)});");
                         break;
                     case CanvasPathBuilder.CommandType.AddLine:
                         builder.WriteLine($"builder.AddLine({Vector2(((CanvasPathBuilder.Command.AddLine)command).EndPoint)});");
@@ -416,7 +423,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// <inheritdoc/>
         protected override void WriteCanvasGeometryTransformedGeometryFactory(CodeBuilder builder, CanvasGeometry.TransformedGeometry obj, string typeName, string fieldName)
         {
-            builder.WriteLine($"var result = {FieldAssignment(fieldName)}{CallFactoryFor(obj.SourceGeometry)}.Transform({_stringifier.Matrix3x2(obj.TransformMatrix)});");
+            builder.WriteLine($"var result = {FieldAssignment(fieldName)}{CallFactoryFor(obj.SourceGeometry)}.Transform({_s.Matrix3x2(obj.TransformMatrix)});");
         }
 
         void WriteAnimatedVisualInvalidatedEvent(CodeBuilder builder)
@@ -435,7 +442,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.WriteLine();
         }
 
-        void WriteAnimatedVisualCall(CodeBuilder builder, CodeGenInfo info)
+        void WriteAnimatedVisualCall(CodeBuilder builder, AnimatedVisualSourceInfo info)
         {
             builder.WriteLine("new AnimatedVisual(compositor,");
             builder.Indent();
@@ -444,7 +451,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.UnIndent();
         }
 
-        void WriteEnsureImageLoadingStarted(CodeBuilder builder, CodeGenInfo info)
+        void WriteEnsureImageLoadingStarted(CodeBuilder builder, AnimatedVisualSourceInfo info)
         {
             builder.WriteLine("void EnsureImageLoadingStarted()");
             builder.OpenScope();
@@ -507,7 +514,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         {
             var compositeEffectString = "compositeEffect";
             builder.WriteLine($"var {compositeEffectString} = new CompositeEffect();");
-            builder.WriteLine($"{compositeEffectString}.Mode = {_stringifier.CanvasCompositeMode(compositeEffect.Mode)};");
+            builder.WriteLine($"{compositeEffectString}.Mode = {_s.CanvasCompositeMode(compositeEffect.Mode)};");
             foreach (var source in compositeEffect.Sources)
             {
                 builder.WriteLine($"{compositeEffectString}.Sources.Add(new CompositionEffectSourceParameter({String(source.Name)}));");
@@ -518,100 +525,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         static string FieldAssignment(string fieldName) => fieldName != null ? $"{fieldName} = " : string.Empty;
 
-        string Float(float value) => _stringifier.Float(value);
+        string Float(float value) => _s.Float(value);
 
-        string Vector2(Vector2 value) => _stringifier.Vector2(value);
+        string Vector2(Vector2 value) => _s.Vector2(value);
 
-        string String(string value) => _stringifier.String(value);
-
-        sealed class CSharpStringifier : StringifierBase
-        {
-            public override string Deref => ".";
-
-            public override string ScopeResolve => ".";
-
-            public override string Var => "var";
-
-            public override string New => "new";
-
-            public override string Null => "null";
-
-            public override string IListAdd => "Add";
-
-            public override string FactoryCall(string value) => value;
-
-            public override string CanvasFigureLoop(CanvasFigureLoop value)
-            {
-                switch (value)
-                {
-                    case Mgcg.CanvasFigureLoop.Open:
-                        return "CanvasFigureLoop.Open";
-                    case Mgcg.CanvasFigureLoop.Closed:
-                        return "CanvasFigureLoop.Closed";
-                    default:
-                        throw new InvalidOperationException();
-                }
-            }
-
-            public override string CanvasGeometryCombine(CanvasGeometryCombine value)
-            {
-                switch (value)
-                {
-                    case Mgcg.CanvasGeometryCombine.Union:
-                        return "CanvasGeometryCombine.Union";
-                    case Mgcg.CanvasGeometryCombine.Exclude:
-                        return "CanvasGeometryCombine.Exclude";
-                    case Mgcg.CanvasGeometryCombine.Intersect:
-                        return "CanvasGeometryCombine.Intersect";
-                    case Mgcg.CanvasGeometryCombine.Xor:
-                        return "CanvasGeometryCombine.Xor";
-                    default:
-                        throw new InvalidOperationException();
-                }
-            }
-
-            public override string Color(Color value) => $"Color.FromArgb({Hex(value.A)}, {Hex(value.R)}, {Hex(value.G)}, {Hex(value.B)})";
-
-            public override string FilledRegionDetermination(CanvasFilledRegionDetermination value)
-            {
-                switch (value)
-                {
-                    case CanvasFilledRegionDetermination.Alternate:
-                        return "CanvasFilledRegionDetermination.Alternate";
-                    case CanvasFilledRegionDetermination.Winding:
-                        return "CanvasFilledRegionDetermination.Winding";
-                    default:
-                        throw new InvalidOperationException();
-                }
-            }
-
-            public override string Int64(long value) => value.ToString();
-
-            public override string Matrix3x2(Matrix3x2 value)
-            {
-                return $"new Matrix3x2({Float(value.M11)}, {Float(value.M12)}, {Float(value.M21)}, {Float(value.M22)}, {Float(value.M31)}, {Float(value.M32)})";
-            }
-
-            public override string Matrix4x4(Matrix4x4 value)
-            {
-                return $"new Matrix4x4({Float(value.M11)}, {Float(value.M12)}, {Float(value.M13)}, {Float(value.M14)}, {Float(value.M21)}, {Float(value.M22)}, {Float(value.M23)}, {Float(value.M24)}, {Float(value.M31)}, {Float(value.M32)}, {Float(value.M33)}, {Float(value.M34)}, {Float(value.M41)}, {Float(value.M42)}, {Float(value.M43)}, {Float(value.M44)})";
-            }
-
-            public override string Readonly(string value) => $"readonly {value}";
-
-            public override string Int64TypeName => "long";
-
-            public override string ReferenceTypeName(string value) => value;
-
-            public override string TimeSpan(TimeSpan value) => TimeSpan(Int64(value.Ticks));
-
-            public override string TimeSpan(string ticks) => $"TimeSpan.FromTicks({ticks})";
-
-            public override string Vector2(Vector2 value) => $"new Vector2({Float(value.X)}, {Float(value.Y)})";
-
-            public override string Vector3(Vector3 value) => $"new Vector3({Float(value.X)}, {Float(value.Y)}, {Float(value.Z)})";
-
-            public override string ByteArray => "byte[]";
-        }
+        string String(string value) => _s.String(value);
     }
 }
