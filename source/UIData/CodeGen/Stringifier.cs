@@ -17,6 +17,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
     /// Converts various language keywords and values to strings. The strings returned
     /// from here are useful for C# and may need to be overridden for other languages.
     /// </summary>
+#if PUBLIC_UIData
+    public
+#endif
     class Stringifier
     {
         public virtual string Deref => ".";
@@ -90,110 +93,110 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         public virtual string CanvasGeometryCombine(CanvasGeometryCombine value)
         {
             var typeName = nameof(CanvasGeometryCombine);
-            return value switch
+            switch (value)
             {
-                Mgcg.CanvasGeometryCombine.Union => $"{typeName}{ScopeResolve}Union",
-                Mgcg.CanvasGeometryCombine.Exclude => $"{typeName}{ScopeResolve}Exclude",
-                Mgcg.CanvasGeometryCombine.Intersect => $"{typeName}{ScopeResolve}Intersect",
-                Mgcg.CanvasGeometryCombine.Xor => $"{typeName}{ScopeResolve}Xor",
-                _ => throw new InvalidOperationException(),
-            };
+                case Mgcg.CanvasGeometryCombine.Union: return $"{typeName}{ScopeResolve}Union";
+                case Mgcg.CanvasGeometryCombine.Exclude: return $"{typeName}{ScopeResolve}Exclude";
+                case Mgcg.CanvasGeometryCombine.Intersect: return $"{typeName}{ScopeResolve}Intersect";
+                case Mgcg.CanvasGeometryCombine.Xor: return $"{typeName}{ScopeResolve}Xor";
+                default: throw new InvalidOperationException();
+            }
         }
 
         public virtual string FilledRegionDetermination(CanvasFilledRegionDetermination value)
         {
             var typeName = nameof(CanvasFilledRegionDetermination);
-            return value switch
+            switch (value)
             {
-                CanvasFilledRegionDetermination.Alternate => $"{typeName}{ScopeResolve}Alternate",
-                CanvasFilledRegionDetermination.Winding => $"{typeName}{ScopeResolve}Winding",
-                _ => throw new InvalidOperationException(),
-            };
+                case CanvasFilledRegionDetermination.Alternate: return $"{typeName}{ScopeResolve}Alternate";
+                case CanvasFilledRegionDetermination.Winding: return $"{typeName}{ScopeResolve}Winding";
+                default: throw new InvalidOperationException();
+            }
         }
 
         public string CanvasCompositeMode(CanvasComposite value)
         {
             var typeName = nameof(CanvasComposite);
-            return value switch
+            switch (value)
             {
-                CanvasComposite.SourceOver => $"{typeName}{ScopeResolve}SourceOver",
-                CanvasComposite.DestinationOver => $"{typeName}{ScopeResolve}DestinationOver",
-                CanvasComposite.SourceIn => $"{typeName}{ScopeResolve}SourceIn",
-                CanvasComposite.DestinationIn => $"{typeName}{ScopeResolve}DestinationIn",
-                CanvasComposite.SourceOut => $"{typeName}{ScopeResolve}SourceOut",
-                CanvasComposite.DestinationOut => $"{typeName}{ScopeResolve}DestinationOut",
-                CanvasComposite.SourceAtop => $"{typeName}{ScopeResolve}SourceAtop",
-                CanvasComposite.DestinationAtop => $"{typeName}{ScopeResolve}DestinationAtop",
-                CanvasComposite.Xor => $"{typeName}{ScopeResolve}Xor",
-                CanvasComposite.Add => $"{typeName}{ScopeResolve}Add",
-                CanvasComposite.Copy => $"{typeName}{ScopeResolve}Copy",
-                CanvasComposite.BoundedCopy => $"{typeName}{ScopeResolve}BoundedCopy",
-                CanvasComposite.MaskInvert => $"{typeName}{ScopeResolve}MaskInvert",
-                _ => throw new InvalidOperationException(),
-            };
+                case CanvasComposite.SourceOver: return $"{typeName}{ScopeResolve}SourceOver";
+                case CanvasComposite.DestinationOver: return $"{typeName}{ScopeResolve}DestinationOver";
+                case CanvasComposite.SourceIn: return $"{typeName}{ScopeResolve}SourceIn";
+                case CanvasComposite.DestinationIn: return $"{typeName}{ScopeResolve}DestinationIn";
+                case CanvasComposite.SourceOut: return $"{typeName}{ScopeResolve}SourceOut";
+                case CanvasComposite.DestinationOut: return $"{typeName}{ScopeResolve}DestinationOut";
+                case CanvasComposite.SourceAtop: return $"{typeName}{ScopeResolve}SourceAtop";
+                case CanvasComposite.DestinationAtop: return $"{typeName}{ScopeResolve}DestinationAtop";
+                case CanvasComposite.Xor: return $"{typeName}{ScopeResolve}Xor";
+                case CanvasComposite.Add: return $"{typeName}{ScopeResolve}Add";
+                case CanvasComposite.Copy: return $"{typeName}{ScopeResolve}Copy";
+                case CanvasComposite.BoundedCopy: return $"{typeName}{ScopeResolve}BoundedCopy";
+                case CanvasComposite.MaskInvert: return $"{typeName}{ScopeResolve}MaskInvert";
+                default: throw new InvalidOperationException();
+            }
         }
 
         public string ColorSpace(CompositionColorSpace value)
         {
             const string typeName = nameof(CompositionColorSpace);
-            return value switch
+            switch (value)
             {
-                CompositionColorSpace.Auto => $"{typeName}{ScopeResolve}Auto",
-                CompositionColorSpace.Hsl => $"{typeName}{ScopeResolve}Hsl",
-                CompositionColorSpace.Rgb => $"{typeName}{ScopeResolve}Rgb",
-                CompositionColorSpace.HslLinear => $"{typeName}{ScopeResolve}HslLinear",
-                CompositionColorSpace.RgbLinear => $"{typeName}{ScopeResolve}RgbLinear",
-                _ => throw new InvalidOperationException(),
-            };
+                case CompositionColorSpace.Auto: return $"{typeName}{ScopeResolve}Auto";
+                case CompositionColorSpace.Hsl: return $"{typeName}{ScopeResolve}Hsl";
+                case CompositionColorSpace.Rgb: return $"{typeName}{ScopeResolve}Rgb";
+                case CompositionColorSpace.HslLinear: return $"{typeName}{ScopeResolve}HslLinear";
+                case CompositionColorSpace.RgbLinear: return $"{typeName}{ScopeResolve}RgbLinear";
+                default: throw new InvalidOperationException();
+            }
         }
 
         public string ExtendMode(CompositionGradientExtendMode value)
         {
             const string typeName = nameof(CompositionGradientExtendMode);
-            return value switch
+            switch (value)
             {
-                CompositionGradientExtendMode.Clamp => $"{typeName}{ScopeResolve}Clamp",
-                CompositionGradientExtendMode.Wrap => $"{typeName}{ScopeResolve}Wrap",
-                CompositionGradientExtendMode.Mirror => $"{typeName}{ScopeResolve}Mirror",
-                _ => throw new InvalidOperationException(),
-            };
+                case CompositionGradientExtendMode.Clamp: return $"{typeName}{ScopeResolve}Clamp";
+                case CompositionGradientExtendMode.Wrap: return $"{typeName}{ScopeResolve}Wrap";
+                case CompositionGradientExtendMode.Mirror: return $"{typeName}{ScopeResolve}Mirror";
+                default: throw new InvalidOperationException();
+            }
         }
 
         public string MappingMode(CompositionMappingMode value)
         {
             const string typeName = nameof(CompositionMappingMode);
-            return value switch
+            switch (value)
             {
-                CompositionMappingMode.Absolute => $"{typeName}{ScopeResolve}Absolute",
-                CompositionMappingMode.Relative => $"{typeName}{ScopeResolve}Relative",
-                _ => throw new InvalidOperationException(),
-            };
+                case CompositionMappingMode.Absolute: return $"{typeName}{ScopeResolve}Absolute";
+                case CompositionMappingMode.Relative: return $"{typeName}{ScopeResolve}Relative";
+                default: throw new InvalidOperationException();
+            }
         }
 
         public string StrokeCap(CompositionStrokeCap value)
         {
             const string typeName = nameof(CompositionStrokeCap);
-            return value switch
+            switch (value)
             {
-                CompositionStrokeCap.Flat => $"{typeName}{ScopeResolve}Flat",
-                CompositionStrokeCap.Square => $"{typeName}{ScopeResolve}Square",
-                CompositionStrokeCap.Round => $"{typeName}{ScopeResolve}Round",
-                CompositionStrokeCap.Triangle => $"{typeName}{ScopeResolve}Triangle",
-                _ => throw new InvalidOperationException(),
-            };
+                case CompositionStrokeCap.Flat: return $"{typeName}{ScopeResolve}Flat";
+                case CompositionStrokeCap.Square: return $"{typeName}{ScopeResolve}Square";
+                case CompositionStrokeCap.Round: return $"{typeName}{ScopeResolve}Round";
+                case CompositionStrokeCap.Triangle: return $"{typeName}{ScopeResolve}Triangle";
+                default: throw new InvalidOperationException();
+            }
         }
 
         public string StrokeLineJoin(CompositionStrokeLineJoin value)
         {
             const string typeName = nameof(CompositionStrokeLineJoin);
-            return value switch
+            switch (value)
             {
-                CompositionStrokeLineJoin.Miter => $"{typeName}{ScopeResolve}Miter",
-                CompositionStrokeLineJoin.Bevel => $"{typeName}{ScopeResolve}Bevel",
-                CompositionStrokeLineJoin.Round => $"{typeName}{ScopeResolve}Round",
-                CompositionStrokeLineJoin.MiterOrBevel => $"{typeName}{ScopeResolve}MiterOrBevel",
-                _ => throw new InvalidOperationException(),
-            };
+                case CompositionStrokeLineJoin.Miter: return $"{typeName}{ScopeResolve}Miter";
+                case CompositionStrokeLineJoin.Bevel: return $"{typeName}{ScopeResolve}Bevel";
+                case CompositionStrokeLineJoin.Round: return $"{typeName}{ScopeResolve}Round";
+                case CompositionStrokeLineJoin.MiterOrBevel: return $"{typeName}{ScopeResolve}MiterOrBevel";
+                default: throw new InvalidOperationException();
+            }
         }
 
         public virtual string Hex(int value) => $"0x{value.ToString("X2")}";
