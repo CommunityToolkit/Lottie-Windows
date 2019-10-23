@@ -82,12 +82,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         public virtual string CanvasFigureLoop(CanvasFigureLoop value)
         {
             var typeName = nameof(CanvasFigureLoop);
-            return value switch
+            switch (value)
             {
-                Mgcg.CanvasFigureLoop.Open => $"{typeName}{ScopeResolve}Open",
-                Mgcg.CanvasFigureLoop.Closed => $"{typeName}{ScopeResolve}Closed",
-                _ => throw new InvalidOperationException(),
-            };
+                case Mgcg.CanvasFigureLoop.Open: return $"{typeName}{ScopeResolve}Open";
+                case Mgcg.CanvasFigureLoop.Closed: return $"{typeName}{ScopeResolve}Closed";
+                default: throw new InvalidOperationException();
+            }
         }
 
         public virtual string CanvasGeometryCombine(CanvasGeometryCombine value)
