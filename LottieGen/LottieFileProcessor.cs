@@ -397,10 +397,9 @@ sealed class LottieFileProcessor
             return false;
         }
 
-        // TODO - generate multi-version code.
         (string csText, IEnumerable<Uri> assetList) = CSharpInstantiatorGenerator.CreateFactoryCode(
                 _className,
-                _translationResults[0].RootVisual,
+                _translationResults.Select(tr => ((CompositionObject)tr.RootVisual, tr.MinimumRequiredUapVersion)).ToArray(),
                 (float)_lottieComposition.Width,
                 (float)_lottieComposition.Height,
                 _lottieComposition.Duration,
@@ -437,10 +436,9 @@ sealed class LottieFileProcessor
             return false;
         }
 
-        // TODO - generate multi-version code.
         (string cppText, string hText, IEnumerable<Uri> assetList) = CxInstantiatorGenerator.CreateFactoryCode(
                 _className,
-                _translationResults[0].RootVisual,
+                _translationResults.Select(tr => ((CompositionObject)tr.RootVisual, tr.MinimumRequiredUapVersion)).ToArray(),
                 (float)_lottieComposition.Width,
                 (float)_lottieComposition.Height,
                 _lottieComposition.Duration,

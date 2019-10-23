@@ -6,6 +6,8 @@
     <SharedGUID>74601E6C-2DFE-4842-B170-047941ABFF2C</SharedGUID>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\AnimatedVisualInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\AnimatedVisualSourceInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\CanonicalizedNode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\Canonicalizer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\CodeBuilder.cs" />
@@ -15,9 +17,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\InstantiatorGeneratorBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\NodeNamer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\Optimizer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\Stringifier.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\TreeReducer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\CompositionObjectDgmlSerializer.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Tools\ApiCompatibility.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tools\Graph.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tools\ObjectGraph.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tools\Stats.cs" />
