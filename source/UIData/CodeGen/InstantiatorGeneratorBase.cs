@@ -91,7 +91,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                  group n by key into g
                  select new SharedNodeGroup(g)).ToArray();
 
-            // Generate names for each of the canonical nodes (i.e. the first node in each group)
+            // Generate names for each of the canonical nodes (i.e. the first node in each group).
             foreach ((var n, var name) in NodeNamer<ObjectData>.GenerateNodeNames(sharedNodeGroups.Select(g => g.CanonicalNode)))
             {
                 n.Name = name;
@@ -2091,7 +2091,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 }
             }
 
-            // The name that is giving to the node by the NodeNamer. This name is used to generate factory method
+            // The name that is given to the node by the NodeNamer. This name is used to generate factory method
             // names and field names.
             public string Name { get; set; }
 
@@ -2175,7 +2175,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             // Set to indicate that the node is a LoadedImageSurface.
             internal bool IsLoadedImageSurface => Object is Wmd.LoadedImageSurface;
 
-            // True if the node describes and object that can be shared between
+            // True if the node describes an object that can be shared between
             // multiple IAnimatedVisual classes, and thus will be associated with the
             // IAnimatedVisualSource implementation rather than the IAnimatedVisual implementation.
             internal bool IsShareableNode => IsLoadedImageSurface;
