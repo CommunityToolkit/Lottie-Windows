@@ -48,6 +48,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         readonly bool _disableFieldOptimization;
         readonly Stringifier _stringifier;
         readonly IReadOnlyList<AnimatedVisualGenerator> _animatedVisualGenerators;
+        readonly LoadedImageSurfaceInfo[] _loadedImageSurfaceInfos;
+        readonly Dictionary<ObjectData, LoadedImageSurfaceInfo> _loadedImageSurfaceInfosByNode;
         AnimatedVisualGenerator _currentAnimatedVisualGenerator;
 
         protected InstantiatorGeneratorBase(
@@ -67,6 +69,69 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             _stringifier = stringifier;
 
             _animatedVisualGenerators = graphs.Select(g => new AnimatedVisualGenerator(this, className, g.graphRoot, g.requiredUapVersion)).ToArray();
+
+            // Deal with the nodes that are shared between multiple AnimatedVisual classes.
+            // The nodes need naming, and some other adjustments.
+            var shareableNodes = _animatedVisualGenerators.SelectMany(a => a.GetShareableNodes()).ToArray();
+
+            // Ensure that we only have to deal with LoadedImageSurface nodes as they are the only
+            // nodes that we currently need to share. This can be removed if we need to share
+            // other types of nodes later. Asserting that we only have LoadedImageSurface nodes
+            // here makes the code following this simpler.
+            if (shareableNodes.Where(n => !n.IsLoadedImageSurface).Any())
+            {
+                throw new InvalidOperationException();
+            }
+
+            var sharedNodeGroups =
+                (from n in shareableNodes
+                 let obj = (Wmd.LoadedImageSurface)n.Object
+                 let key = obj.Type == Wmd.LoadedImageSurface.LoadedImageSurfaceType.FromUri
+                             ? (object)((Wmd.LoadedImageSurfaceFromUri)obj).Uri
+                             : ((Wmd.LoadedImageSurfaceFromStream)obj).Bytes
+                 group n by key into g
+                 select new SharedNodeGroup(g)).ToArray();
+
+            // Generate names for each of the canonical nodes (i.e. the first node in each group)
+            foreach ((var n, var name) in NodeNamer<ObjectData>.GenerateNodeNames(sharedNodeGroups.Select(g => g.CanonicalNode)))
+            {
+                n.Name = name;
+            }
+
+            // Apply the name from the canonical node to the other nodes in its group so they will be
+            // treated during generation as if they are the same object.
+            foreach (var sharedNodeGroup in sharedNodeGroups)
+            {
+                var canonicalNode = sharedNodeGroup.CanonicalNode;
+                if (canonicalNode.UsesAssetFile)
+                {
+                    // Set the Uri of the image file for LoadedImageSurfaceFromUri to $"ms-appx:///Assets/<className>/<filePath>/<fileName>.
+                    var loadedImageSurfaceObj = (Wmd.LoadedImageSurfaceFromUri)canonicalNode.Object;
+                    var imageUri = loadedImageSurfaceObj.Uri;
+
+                    if (imageUri.IsFile)
+                    {
+                        canonicalNode.LoadedImageSurfaceImageUri = new Uri($"ms-appx:///Assets/{className}{imageUri.AbsolutePath}");
+                    }
+                }
+
+                // Propagate the name and Uri to the other nodes in the group.
+                foreach (var n in sharedNodeGroup.Rest)
+                {
+                    n.Name = canonicalNode.Name;
+                    n.LoadedImageSurfaceImageUri = canonicalNode.LoadedImageSurfaceImageUri;
+                }
+            }
+
+            var sharedLoadedImageSurfaceInfos = (from g in sharedNodeGroups
+                                                 let loadedImageSurfaceNode = LoadedImageSurfaceInfoFromObjectData(g.CanonicalNode)
+                                                 from node in g.All
+                                                 orderby node.Name
+                                                 select (node, loadedImageSurfaceNode)).ToArray();
+
+            _loadedImageSurfaceInfos = sharedLoadedImageSurfaceInfos.Select(n => n.loadedImageSurfaceNode).Distinct().ToArray();
+
+            _loadedImageSurfaceInfosByNode = sharedLoadedImageSurfaceInfos.ToDictionary(n => n.node, n => n.loadedImageSurfaceNode);
         }
 
         /// <summary>
@@ -226,13 +291,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// An item in the returned list has format "ms-appx:///Assets/subFolder/fileName", which the generated code
         /// will use to load the file from.
         /// </returns>
-        protected IReadOnlyList<Uri> GetAssetsList() => _animatedVisualGenerators.SelectMany(f => f.GetAssetsList()).Distinct().OrderBy(u => u.AbsoluteUri).ToArray();
+        protected IReadOnlyList<Uri> GetAssetsList() => _loadedImageSurfaceInfos.Where(n => n.ImageUri != null).Select(n => n.ImageUri).ToArray();
 
         /// <summary>
         /// Gets a list of the <see cref="LoadedImageSurfaceInfo"/> representing the LoadedImageSurface of the composition and its properties.
         /// </summary>
         /// <returns>List of the <see cref="LoadedImageSurfaceInfo"/> representing the LoadedImageSurface and its properties.</returns>
-        protected IReadOnlyList<LoadedImageSurfaceInfo> GetLoadedImageSurfacesInfo() => _animatedVisualGenerators.SelectMany(f => f.GetLoadedImageSurfacesInfo()).Distinct().OrderBy(i => i.FieldName).ToArray();
+        protected IReadOnlyList<LoadedImageSurfaceInfo> GetLoadedImageSurfaceInfos() => _loadedImageSurfaceInfos;
 
         /// <summary>
         /// Call this to generate the code. Returns a string containing the generated code.
@@ -253,8 +318,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 usesCanvasGeometry: _animatedVisualGenerators.Any(f => f.UsesCanvasGeometry),
                 usesNamespaceWindowsUIXamlMedia: _animatedVisualGenerators.Any(f => f.UsesNamespaceWindowsUIXamlMedia),
                 usesStreams: _animatedVisualGenerators.Any(f => f.UsesStreams),
-                hasLoadedImageSurface: _animatedVisualGenerators.Any(f => f.HasLoadedImageSurface),
-                loadedImageSurfaceNodes: GetLoadedImageSurfacesInfo(),
+                loadedImageSurfaceNodes: GetLoadedImageSurfaceInfos(),
                 usesCompositeEffect: _animatedVisualGenerators.Any(f => f.UsesCompositeEffect)
                 );
 
@@ -271,7 +335,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             {
                 bool bytesWritten = false;
 
-                foreach (var loadedImageSurface in GetLoadedImageSurfacesInfo())
+                foreach (var loadedImageSurface in GetLoadedImageSurfaceInfos())
                 {
                     if (loadedImageSurface.Bytes != null)
                     {
@@ -296,6 +360,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.WriteLine("static bool IsRuntimeCompatible()");
             builder.OpenScope();
 #if false
+            // TODO This is the implementation for the new UAP contract way of checking versions. It will replace the IsRuntimeCompatible method shortly.
             //builder.WriteLine($"return Windows{ScopeResolve}Foundation{ScopeResolve}Metadata{ScopeResolve}ApiInformation{ScopeResolve}IsApiContractPresent(\"Windows.Foundation.UniversalApiContract\", {requiredUapVersion});");
             //builder.CloseScope();
 #endif
@@ -421,26 +486,30 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         string ScopeResolve => _stringifier.ScopeResolve;
 
+        static LoadedImageSurfaceInfo LoadedImageSurfaceInfoFromObjectData(ObjectData node)
+        {
+            if (!node.IsLoadedImageSurface)
+            {
+                throw new InvalidOperationException();
+            }
+
+            var bytes = (node.Object as Wmd.LoadedImageSurfaceFromStream)?.Bytes;
+            return new LoadedImageSurfaceInfo(
+                                node.TypeName,
+                                node.Name,
+                                node.FieldName,
+                                node.LoadedImageSurfaceBytesFieldName,
+                                node.LoadedImageSurfaceImageUri,
+                                ((Wmd.LoadedImageSurface)node.Object).Type,
+                                bytes: bytes);
+        }
+
         /// <summary>
         /// Describes LoadedImageSurface objects in the composition.
         /// </summary>
-        protected internal readonly struct LoadedImageSurfaceInfo
+        protected internal class LoadedImageSurfaceInfo
         {
-            public string TypeName { get; }
-
-            public string Name { get; }
-
-            public string FieldName { get; }
-
-            public string BytesFieldName { get; }
-
-            public Uri ImageUri { get; }
-
-            public Wmd.LoadedImageSurface.LoadedImageSurfaceType LoadedImageSurfaceType { get; }
-
-            public byte[] Bytes { get; }
-
-            public LoadedImageSurfaceInfo(
+            internal LoadedImageSurfaceInfo(
                 string typeName,
                 string name,
                 string fieldName,
@@ -457,6 +526,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 LoadedImageSurfaceType = loadedImageSurfaceType;
                 Bytes = bytes;
             }
+
+            public string TypeName { get; }
+
+            public string Name { get; }
+
+            public string FieldName { get; }
+
+            public string BytesFieldName { get; }
+
+            public Uri ImageUri { get; }
+
+            public Wmd.LoadedImageSurface.LoadedImageSurfaceType LoadedImageSurfaceType { get; }
+
+            public byte[] Bytes { get; }
         }
 
         /// <summary>
@@ -508,8 +591,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                           ((CompositionObject)node.Object).Type == CompositionObjectType.CompositionPropertySet)
                      select node).Distinct().ToArray();
 
-                // Give names to each node.
-                foreach ((var n, var name) in NodeNamer<ObjectData>.GenerateNodeNames(nodes))
+                // Give names to each node, except the nodes that may be shared by multiple IAnimatedVisuals.
+                foreach ((var n, var name) in NodeNamer<ObjectData>.GenerateNodeNames(nodes.Where(n => !n.IsShareableNode)))
                 {
                     n.Name = name;
                 }
@@ -527,7 +610,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 {
                     if (FilteredInRefs(node).Count() > 1 || node.IsLoadedImageSurface)
                     {
-                        // Node is referenced more than once or a LoadedImageSurface, so it requires storage.
+                        // Node is referenced more than once or is a LoadedImageSurface, so it requires storage.
                         node.RequiresStorage = true;
 
                         if (node.IsLoadedImageSurface)
@@ -556,36 +639,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 {
                     _rootNode.RequiresStorage = true;
                 }
-
-                // Set the Uri of the image file for LoadedImageSurfaceFromUri to $"ms-appx:///Assets/<className>/<filePath>/<fileName>.
-                foreach (var node in _nodes.Where(n => n.UsesAssetFile))
-                {
-                    var loadedImageSurfaceObj = (Wmd.LoadedImageSurfaceFromUri)node.Object;
-                    var imageUri = loadedImageSurfaceObj.Uri;
-
-                    if (imageUri.IsFile)
-                    {
-                        node.LoadedImageSurfaceImageUri = new Uri($"ms-appx:///Assets/{className}{imageUri.AbsolutePath}");
-                    }
-                }
             }
+
+            // Returns the nodes that can be shared between multiple IAnimatedVisuals.
+            internal IEnumerable<ObjectData> GetShareableNodes() => _nodes.Where(n => n.IsShareableNode);
 
             internal uint RequiredUapVersion => _requiredUapVersion;
 
-            internal IEnumerable<LoadedImageSurfaceInfo> GetLoadedImageSurfacesInfo()
+            /// <summary>
+            /// Gets a list of the <see cref="LoadedImageSurfaceInfo"/> representing the LoadedImageSurface of the AnimatedVisual and its properties.
+            /// </summary>
+            internal IEnumerable<LoadedImageSurfaceInfo> GetLoadedImageSurfaceInfos()
             {
                 return
-                    from n in _nodes
+                    (from n in _nodes
                     where n.IsLoadedImageSurface
-                    let bytes = (n.Object as Wmd.LoadedImageSurfaceFromStream)?.Bytes
-                    select new LoadedImageSurfaceInfo(
-                                    n.TypeName,
-                                    n.Name,
-                                    n.FieldName,
-                                    n.LoadedImageSurfaceBytesFieldName,
-                                    n.LoadedImageSurfaceImageUri,
-                                    ((Wmd.LoadedImageSurface)n.Object).Type,
-                                    bytes: bytes);
+                    select _owner._loadedImageSurfaceInfosByNode[n]).OrderBy(n => n.Name);
             }
 
             // Returns the node for the given object.
@@ -596,8 +665,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             ObjectData NodeFor(Wg.IGeometrySource2D obj) => _objectGraph[obj];
 
             ObjectData NodeFor(Wmd.LoadedImageSurface obj) => _objectGraph[obj];
-
-            internal IEnumerable<Uri> GetAssetsList() => _nodes.Where(n => n.UsesAssetFile).Select(n => n.LoadedImageSurfaceImageUri).Distinct();
 
             internal bool UsesCanvas => _nodes.Where(n => n.UsesCanvas).Any();
 
@@ -621,8 +688,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             string Null => _stringifier.Null;
 
-            string ScopeResolve => _stringifier.ScopeResolve;
-
             string Var => _stringifier.Var;
 
             string Bool(bool value) => _stringifier.Bool(value);
@@ -631,17 +696,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             string IListAdd => _stringifier.IListAdd;
 
-            string CanvasFigureLoop(CanvasFigureLoop value) => _stringifier.CanvasFigureLoop(value);
-
-            string CanvasGeometryCombine(CanvasGeometryCombine value) => _stringifier.CanvasGeometryCombine(value);
-
-            string FilledRegionDetermination(CanvasFilledRegionDetermination value) => _stringifier.FilledRegionDetermination(value);
-
             string Float(float value) => _stringifier.Float(value);
 
             string Int(int value) => _stringifier.Int32(value);
-
-            string Int64(long value) => _stringifier.Int64(value);
 
             string Matrix3x2(Matrix3x2 value) => _stringifier.Matrix3x2(value);
 
@@ -803,7 +860,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 _owner._currentAnimatedVisualGenerator = this;
                 var animatedVisualInfo = new AnimatedVisualInfo(
                     animatedVisualSourceInfo,
-                    className: "AnimatedVisual");
+                    className: "AnimatedVisual",
+                    loadedImageSurfaceNodes: GetLoadedImageSurfaceInfos().ToArray());
 
                 // Write the body of the AnimatedVisual class.
                 _owner.WriteAnimatedVisualStart(builder, animatedVisualInfo);
@@ -835,13 +893,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             void WriteFields(CodeBuilder builder)
             {
-                foreach (var node in _nodes.Where(n => n.RequiresReadonlyStorage))
+                foreach (var node in _nodes.Where(n => n.RequiresReadonlyStorage).OrderBy(n => n.Name))
                 {
                     // Generate a field for the read-only storage.
                     WriteField(builder, Readonly(_stringifier.ReferenceTypeName(node.TypeName)), node.FieldName);
                 }
 
-                foreach (var node in _nodes.Where(n => n.RequiresStorage && !n.RequiresReadonlyStorage))
+                foreach (var node in _nodes.Where(n => n.RequiresStorage && !n.RequiresReadonlyStorage).OrderBy(n => n.Name))
                 {
                     // Generate a field for the storage.
                     WriteField(builder, _stringifier.ReferenceTypeName(node.TypeName), node.FieldName);
@@ -1986,6 +2044,34 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             }
         }
 
+        // Aggregates ObjectData nodes that are shared between different IAnimatedVisual instances,
+        // for example, LoadedImageSurface objects. Such nodes describe factories that are
+        // scoped to the IAnimatedVisualSource implementation rather than the IAnimatedVisual implementation.
+        sealed class SharedNodeGroup
+        {
+            readonly ObjectData[] _items;
+
+            internal SharedNodeGroup(IEnumerable<ObjectData> items)
+            {
+                _items = items.ToArray();
+            }
+
+            /// <summary>
+            /// An <see cref="ObjectData"/> object that will be treated as the canonical object.
+            /// </summary>
+            internal ObjectData CanonicalNode => _items[0];
+
+            /// <summary>
+            /// The <see cref="ObjectData"/> objects except the <see cref="CanonicalNode"/> object.
+            /// </summary>
+            internal IEnumerable<ObjectData> Rest => _items.Skip(1);
+
+            /// <summary>
+            ///  All of the <see cref="ObjectData"/> objects that are sharing this group.
+            /// </summary>
+            internal IReadOnlyList<ObjectData> All => _items;
+        }
+
         // A node in the object graph, annotated with extra stuff to assist in code generation.
         sealed class ObjectData : Graph.Node<ObjectData>
         {
@@ -2006,6 +2092,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 }
             }
 
+            // The name that is giving to the node by the NodeNamer. This name is used to generate factory method
+            // names and field names.
             public string Name { get; set; }
 
             public string FieldName => RequiresStorage ? CamelCase(Name) : null;
@@ -2087,6 +2175,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             // Set to indicate that the node is a LoadedImageSurface.
             internal bool IsLoadedImageSurface => Object is Wmd.LoadedImageSurface;
+
+            // True if the node describes and object that can be shared between
+            // multiple IAnimatedVisual classes, and thus will be associated with the
+            // IAnimatedVisualSource implementation rather than the IAnimatedVisual implementation.
+            internal bool IsShareableNode => IsLoadedImageSurface;
 
             // Set to indicate that the node uses the Windows.UI.Xaml.Media namespace.
             internal bool UsesNamespaceWindowsUIXamlMedia => IsLoadedImageSurface;

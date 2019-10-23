@@ -79,7 +79,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         // Generates the .h file contents.
         string GenerateHeaderText(string className)
         {
-            var loadedImageSurfacesInfo = GetLoadedImageSurfacesInfo();
+            var loadedImageSurfacesInfo = GetLoadedImageSurfaceInfos();
 
             // Returns the header text that implements IAnimatedVisualSource if loadedImageSurfacesNodes is null or empty.
             // Otherwise, return the header text that implements IDynamicAnimatedVisualSource.
@@ -239,7 +239,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 builder.WriteLine($"{info.ClassName}(Compositor^ compositor,");
                 builder.Indent();
 
-                builder.WriteCommaSeparatedLines(info.AnimatedVisualSourceInfo.LoadedImageSurfaceNodes.Select(n => $"{_s.ReferenceTypeName(n.TypeName)} {_s.CamelCase(n.Name)}"));
+                builder.WriteCommaSeparatedLines(info.LoadedImageSurfaceNodes.Select(n => $"{_s.ReferenceTypeName(n.TypeName)} {_s.CamelCase(n.Name)}"));
 
                 // Initializer list.
                 builder.WriteLine(") : _c(compositor)");
@@ -248,7 +248,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 builder.WriteLine($", {info.AnimatedVisualSourceInfo.ReusableExpressionAnimationFieldName}(compositor->CreateExpressionAnimation())");
 
                 // Initialize the image surfaces.
-                var nodes = info.AnimatedVisualSourceInfo.LoadedImageSurfaceNodes.ToArray();
+                var nodes = info.LoadedImageSurfaceNodes;
                 foreach (var n in nodes)
                 {
                     builder.WriteLine($", {n.FieldName}({_s.CamelCase(n.Name)})");

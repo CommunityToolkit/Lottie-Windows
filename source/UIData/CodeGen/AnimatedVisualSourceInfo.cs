@@ -23,9 +23,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             bool usesCanvasGeometry,
             bool usesNamespaceWindowsUIXamlMedia,
             bool usesStreams,
-            bool hasLoadedImageSurface,
             bool usesCompositeEffect,
-            IEnumerable<LoadedImageSurfaceInfo> loadedImageSurfaceNodes)
+            IReadOnlyList<LoadedImageSurfaceInfo> loadedImageSurfaceNodes)
         {
             ClassName = className;
             ReusableExpressionAnimationFieldName = reusableExpressionAnimationFieldName;
@@ -36,7 +35,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             UsesCanvasGeometry = usesCanvasGeometry;
             UsesNamespaceWindowsUIXamlMedia = usesNamespaceWindowsUIXamlMedia;
             UsesStreams = usesStreams;
-            HasLoadedImageSurface = hasLoadedImageSurface;
             UsesCompositeEffect = usesCompositeEffect;
             LoadedImageSurfaceNodes = loadedImageSurfaceNodes;
         }
@@ -47,7 +45,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         public string ClassName { get; }
 
         /// <summary>
-        /// Gets the name of the field in the instantiator class that hold the reusable ExpressionAnimation.
+        /// Gets the name of the field in the instantiator class that holds the reusable ExpressionAnimation.
         /// </summary>
         public string ReusableExpressionAnimationFieldName { get; }
 
@@ -89,12 +87,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// <summary>
         /// Gets a value indicating whether the composition has LoadedImageSurface.
         /// </summary>
-        public bool HasLoadedImageSurface { get; }
+        public bool HasLoadedImageSurface => LoadedImageSurfaceNodes.Count > 0;
 
         /// <summary>
         /// Gets the LoadedImageSurface nodes of the composition.
         /// </summary>
-        internal IEnumerable<LoadedImageSurfaceInfo> LoadedImageSurfaceNodes { get; }
+        internal IReadOnlyList<LoadedImageSurfaceInfo> LoadedImageSurfaceNodes { get; }
 
         /// <summary>
         /// Gets a value indicating whether the composition depends on a composite effect.

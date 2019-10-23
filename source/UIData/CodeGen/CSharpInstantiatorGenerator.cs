@@ -158,22 +158,21 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// </summary>
         void WriteIDynamicAnimatedVisualSource(CodeBuilder builder, AnimatedVisualSourceInfo info)
         {
-            var nodes = info.LoadedImageSurfaceNodes.ToArray();
             builder.WriteLine("namespace AnimatedVisuals");
             builder.OpenScope();
             builder.WriteLine($"sealed class {info.ClassName} : IDynamicAnimatedVisualSource, INotifyPropertyChanged");
             builder.OpenScope();
 
             // Declare variables.
-            builder.WriteLine($"{_s.Const(_s.Int32TypeName)} c_loadedImageSurfaceCount = {nodes.Distinct().Count()};");
+            builder.WriteLine($"{_s.Const(_s.Int32TypeName)} c_loadedImageSurfaceCount = {info.LoadedImageSurfaceNodes.Count};");
             builder.WriteLine($"{_s.Int32TypeName} _loadCompleteEventCount;");
             builder.WriteLine("bool _isAnimatedVisualSourceDynamic = true;");
             builder.WriteLine("bool _isTryCreateAnimatedVisualCalled;");
             builder.WriteLine("bool _isImageLoadingStarted;");
             builder.WriteLine("EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource, object>> _animatedVisualInvalidatedEventTokenTable;");
 
-            // Declare the variables to hold the surfaces.
-            foreach (var n in nodes)
+            // Declare the variables to hold the LoadedImageSurfaces.
+            foreach (var n in info.LoadedImageSurfaceNodes)
             {
                 builder.WriteLine($"{_s.ReferenceTypeName(n.TypeName)} {n.FieldName};");
             }
@@ -231,7 +230,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.CloseScope();
             builder.WriteLine("return");
             builder.Indent();
-            WriteAnimatedVisualCall(builder, info);
+            builder.WriteLine("new AnimatedVisual(compositor,");
+            builder.Indent();
+            builder.WriteCommaSeparatedLines(info.LoadedImageSurfaceNodes.Select(n => n.FieldName));
+            builder.WriteLine(");");
+            builder.UnIndent();
             builder.UnIndent();
             builder.CloseScope();
             builder.WriteLine();
@@ -272,13 +275,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             AnimatedVisualInfo info)
         {
             // Write the constructor for the AnimatedVisual class.
-            if (info.AnimatedVisualSourceInfo.HasLoadedImageSurface)
+            if (info.HasLoadedImageSurface)
             {
                 builder.WriteLine($"internal {info.ClassName}(Compositor compositor,");
                 builder.Indent();
 
                 // Define the image surface parameters of the AnimatedVisual() constructor.
-                builder.WriteCommaSeparatedLines(info.AnimatedVisualSourceInfo.LoadedImageSurfaceNodes.Select(n => $"{_s.ReferenceTypeName(n.TypeName)} {_s.CamelCase(n.Name)}"));
+                builder.WriteCommaSeparatedLines(info.LoadedImageSurfaceNodes.Select(n => $"{_s.ReferenceTypeName(n.TypeName)} {_s.CamelCase(n.Name)}"));
                 builder.WriteLine(")");
                 builder.UnIndent();
                 builder.OpenScope();
@@ -287,8 +290,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 builder.WriteLine($"{info.AnimatedVisualSourceInfo.ReusableExpressionAnimationFieldName} = compositor.CreateExpressionAnimation();");
 
                 // Initialize the private image surface variables with the input parameters of the constructor.
-                var nodes = info.AnimatedVisualSourceInfo.LoadedImageSurfaceNodes.ToArray();
-                foreach (var n in nodes)
+                var loadedImageSurfaceNodes = info.LoadedImageSurfaceNodes;
+                foreach (var n in loadedImageSurfaceNodes)
                 {
                     builder.WriteLine($"{n.FieldName} = {_s.CamelCase(n.Name)};");
                 }
@@ -442,15 +445,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.WriteLine();
         }
 
-        void WriteAnimatedVisualCall(CodeBuilder builder, AnimatedVisualSourceInfo info)
-        {
-            builder.WriteLine("new AnimatedVisual(compositor,");
-            builder.Indent();
-            builder.WriteCommaSeparatedLines(info.LoadedImageSurfaceNodes.Select(n => n.FieldName));
-            builder.WriteLine(");");
-            builder.UnIndent();
-        }
-
         void WriteEnsureImageLoadingStarted(CodeBuilder builder, AnimatedVisualSourceInfo info)
         {
             builder.WriteLine("void EnsureImageLoadingStarted()");
@@ -459,8 +453,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.OpenScope();
             builder.WriteLine("var eventHandler = new TypedEventHandler<LoadedImageSurface, LoadedImageSourceLoadCompletedEventArgs>(HandleLoadCompleted);");
 
-            var nodes = info.LoadedImageSurfaceNodes.ToArray();
-            foreach (var n in nodes)
+            foreach (var n in info.LoadedImageSurfaceNodes)
             {
                 switch (n.LoadedImageSurfaceType)
                 {
