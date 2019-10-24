@@ -6,6 +6,7 @@
     <SharedGUID>74601E6C-2DFE-4842-B170-047941ABFF2C</SharedGUID>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\AlphanumericStringComparer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\AnimatedVisualInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\AnimatedVisualSourceInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\CanonicalizedNode.cs" />

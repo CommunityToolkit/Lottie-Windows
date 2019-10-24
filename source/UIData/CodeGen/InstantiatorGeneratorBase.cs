@@ -124,11 +124,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             var sharedLoadedImageSurfaceInfos = (from g in sharedNodeGroups
                                                  let loadedImageSurfaceNode = LoadedImageSurfaceInfoFromObjectData(g.CanonicalNode)
-                                                 from node in g.All
-                                                 orderby node.Name
+                                                 from node in OrderByName(g.All)
                                                  select (node, loadedImageSurfaceNode)).ToArray();
 
-            _loadedImageSurfaceInfos = sharedLoadedImageSurfaceInfos.Select(n => n.loadedImageSurfaceNode).Distinct().ToArray();
+            _loadedImageSurfaceInfos = sharedLoadedImageSurfaceInfos.
+                                            Select(n => n.loadedImageSurfaceNode).
+                                            Distinct().
+                                            OrderBy(lisi => lisi.Name, AlphanumericStringComparer.Instance).
+                                            ToArray();
 
             _loadedImageSurfaceInfosByNode = sharedLoadedImageSurfaceInfos.ToDictionary(n => n.node, n => n.loadedImageSurfaceNode);
         }
@@ -503,6 +506,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                                 bytes: bytes);
         }
 
+        // Orders nodes by their name using alpha-numeric ordering (which is the most natural ordering for code
+        // names that contain embedded numbers).
+        static IEnumerable<ObjectData> OrderByName(IEnumerable<ObjectData> nodes) =>
+            nodes.OrderBy(n => n.Name, AlphanumericStringComparer.Instance);
+
         /// <summary>
         /// Describes LoadedImageSurface objects in the composition.
         /// </summary>
@@ -601,7 +609,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 _rootNode.Name = "Root";
 
                 // Save the nodes, ordered by the name that was just set.
-                _nodes = nodes.OrderBy(node => node.Name).ToArray();
+                _nodes = OrderByName(nodes).ToArray();
 
                 // Force storage to be allocated for nodes that have multiple references to them,
                 // or is a LoadedImageSurface.
@@ -652,8 +660,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             {
                 return
                     (from n in _nodes
-                    where n.IsLoadedImageSurface
-                    select _owner._loadedImageSurfaceInfosByNode[n]).OrderBy(n => n.Name);
+                     where n.IsLoadedImageSurface
+                     select _owner._loadedImageSurfaceInfosByNode[n]).OrderBy(n => n.Name, AlphanumericStringComparer.Instance);
             }
 
             // Returns the node for the given object.
@@ -892,13 +900,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             void WriteFields(CodeBuilder builder)
             {
-                foreach (var node in _nodes.Where(n => n.RequiresReadonlyStorage).OrderBy(n => n.Name))
+                foreach (var node in OrderByName(_nodes.Where(n => n.RequiresReadonlyStorage)))
                 {
                     // Generate a field for the read-only storage.
                     WriteField(builder, Readonly(_stringifier.ReferenceTypeName(node.TypeName)), node.FieldName);
                 }
 
-                foreach (var node in _nodes.Where(n => n.RequiresStorage && !n.RequiresReadonlyStorage).OrderBy(n => n.Name))
+                foreach (var node in OrderByName(_nodes.Where(n => n.RequiresStorage && !n.RequiresReadonlyStorage)))
                 {
                     // Generate a field for the storage.
                     WriteField(builder, _stringifier.ReferenceTypeName(node.TypeName), node.FieldName);
