@@ -10,7 +10,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 {
     // Defines a case-sensitive alphabetical order for strings, but treats numeric parts
     // of each string as numbers. This is useful for ordering strings that include numeric
-    // qualifiers, e.g. myfile_01, myfile_11.
+    // qualifiers, e.g. myfile_3, myfile_11.
     sealed class AlphanumericStringComparer : IComparer<string>
     {
         static readonly Regex s_upperHexRecognizer = new Regex(@"[0-9A-F]+");
@@ -39,9 +39,21 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 return 1;
             }
 
+            // Does an ordinary comparison of the strings for ordering (stepping through each string until a difference
+            // is found) unless a number is found in both strings at the same position. The numbers are parsed and their
+            // values are used to determine the ordering. If the numbers are equal then it keeps comparing the characters
+            // after the numbers.
+            //
+            // In order to recognize hex numbers embedded in strings without accidentally treating ordinary characters
+            // in the string as hex, we require that hex values have a consistent case (i.e. all upper case or all lower
+            // case). Even if the characters aren't actually hex values this usually results in the correct character ordering.
+            //
+            // Note that the recognition of numbers embedded in strings is a heuristic that can't always work perfectly,
+            // however in the cases it's intended for (programming language names that follow typical patterns that
+            // developers like to use) it seems better than any other ordering at yielding results that humans would expect.
             var xLength = x.Length;
             var yLength = y.Length;
-            for (int xi = 0, yi = 0; xi < x.Length && yi < y.Length; xi++, yi++)
+            for (int xi = 0, yi = 0; xi < xLength && yi < yLength; xi++, yi++)
             {
                 var chX = x[xi];
                 var chY = y[yi];
