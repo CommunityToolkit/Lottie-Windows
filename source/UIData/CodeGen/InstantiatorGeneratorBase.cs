@@ -642,10 +642,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 // Ensure the root object has storage if it is referenced by anything else in the graph.
                 // This is necessary because the root node is referenced from the instantiator entrypoint
                 // but that isn't counted in the InReference.
-                if (_rootNode.InReferences.Any())
-                {
-                    _rootNode.RequiresStorage = true;
-                }
+                // Because the root object is exposed via IAnimatedVisual::RootVisual this means that
+                // there must always be storage for the root object.
+                _rootNode.RequiresStorage = true;
             }
 
             // Returns the nodes that can be shared between multiple IAnimatedVisuals.
