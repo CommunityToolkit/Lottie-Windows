@@ -11,34 +11,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
     /// <summary>
     /// Holds information about code being generated for an IAnimatedVisualSource.
     /// </summary>
-    public sealed class AnimatedVisualSourceInfo
+#if PUBLIC_UIData
+    public
+#endif
+    interface IAnimatedVisualSourceInfo
     {
-        internal AnimatedVisualSourceInfo(
-            string className,
-            string reusableExpressionAnimationFieldName,
-            string durationTicksFieldName,
-            Vector2 compositionDeclaredSize,
-            bool usesCanvas,
-            bool usesCanvasEffects,
-            bool usesCanvasGeometry,
-            bool usesNamespaceWindowsUIXamlMedia,
-            bool usesStreams,
-            bool usesCompositeEffect,
-            IReadOnlyList<LoadedImageSurfaceInfo> loadedImageSurfaceNodes)
-        {
-            ClassName = className;
-            ReusableExpressionAnimationFieldName = reusableExpressionAnimationFieldName;
-            DurationTicksFieldName = durationTicksFieldName;
-            CompositionDeclaredSize = compositionDeclaredSize;
-            UsesCanvas = usesCanvas;
-            UsesCanvasEffects = usesCanvasEffects;
-            UsesCanvasGeometry = usesCanvasGeometry;
-            UsesNamespaceWindowsUIXamlMedia = usesNamespaceWindowsUIXamlMedia;
-            UsesStreams = usesStreams;
-            UsesCompositeEffect = usesCompositeEffect;
-            LoadedImageSurfaceNodes = loadedImageSurfaceNodes;
-        }
-
         /// <summary>
         /// Gets the name of the IAnimatedVisualSource class that will be exposed to users.
         /// </summary>
@@ -87,16 +64,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// <summary>
         /// Gets a value indicating whether the composition has LoadedImageSurface.
         /// </summary>
-        public bool HasLoadedImageSurface => LoadedImageSurfaceNodes.Count > 0;
+        public bool HasLoadedImageSurface { get; }
 
         /// <summary>
-        /// Gets the LoadedImageSurface nodes of the composition.
+        /// Gets the <see cref="IAnimatedVisualInfo"/> objects that describe each IAnimatedVisual
+        /// class that can be returned from the generated code.
         /// </summary>
-        internal IReadOnlyList<LoadedImageSurfaceInfo> LoadedImageSurfaceNodes { get; }
+        internal IReadOnlyList<IAnimatedVisualInfo> AnimatedVisualInfos { get; }
 
         /// <summary>
         /// Gets a value indicating whether the composition depends on a composite effect.
         /// </summary>
         public bool UsesCompositeEffect { get; }
+
+        /// <summary>
+        /// Gets the <see cref="LoadedImageSurface"/> nodes of the composition.
+        /// </summary>
+        internal IReadOnlyList<LoadedImageSurfaceInfo> LoadedImageSurfaceNodes { get; }
     }
 }

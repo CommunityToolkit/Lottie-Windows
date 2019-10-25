@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Collections;
 using System.Collections.Generic;
 using static Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.InstantiatorGeneratorBase;
 
@@ -11,23 +10,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
     /// <summary>
     /// Holds information about code being generated for an IAnimatedVisual.
     /// </summary>
-    public sealed class AnimatedVisualInfo
+#if PUBLIC_UIData
+    public
+#endif
+    interface IAnimatedVisualInfo
     {
-        internal AnimatedVisualInfo(
-            AnimatedVisualSourceInfo animatedVisualSourceInfo,
-            string className,
-            IReadOnlyList<LoadedImageSurfaceInfo> loadedImageSurfaceNodes)
-        {
-            AnimatedVisualSourceInfo = animatedVisualSourceInfo;
-            ClassName = className;
-            LoadedImageSurfaceNodes = loadedImageSurfaceNodes;
-        }
-
         /// <summary>
-        /// The <see cref="AnimatedVisualSourceInfo"/> describing the IAnimatedVisualSource that
+        /// The <see cref="IAnimatedVisualSourceInfo"/> describing the IAnimatedVisualSource that
         /// will source the IAnimatedVisual described by this object.
         /// </summary>
-        public AnimatedVisualSourceInfo AnimatedVisualSourceInfo { get; }
+        public IAnimatedVisualSourceInfo AnimatedVisualSourceInfo { get; }
 
         /// <summary>
         /// Gets the name of the IAnimatedVisual class that will be exposed to users.
@@ -37,7 +29,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// <summary>
         /// Gets a value indicating whether the AnimatedVisual has LoadedImageSurface.
         /// </summary>
-        public bool HasLoadedImageSurface => LoadedImageSurfaceNodes.Count > 0;
+        public bool HasLoadedImageSurface { get; }
+
+        /// <summary>
+        /// The UAP version required by the IAnimatedVisual.
+        /// </summary>
+        public uint RequiredUapVersion { get; }
 
         /// <summary>
         /// Gets the LoadedImageSurface nodes of the AnimatedVisual.

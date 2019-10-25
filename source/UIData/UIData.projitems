@@ -7,14 +7,14 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\AlphanumericStringComparer.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\AnimatedVisualInfo.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\AnimatedVisualSourceInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\CanonicalizedNode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\Canonicalizer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\CodeBuilder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\CppStringifier.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\CSharpInstantiatorGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\CxInstantiatorGenerator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\IAnimatedVisualInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\IAnimatedVisualSourceInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\InstantiatorGeneratorBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\NodeNamer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\Optimizer.cs" />
