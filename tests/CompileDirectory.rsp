@@ -139,11 +139,12 @@
 /reference:"C:\Program Files (x86)\Windows Kits\10\References\10.0.18362.0\Windows.Foundation.FoundationContract\3.0.0.0\Windows.Foundation.FoundationContract.winmd"
 /reference:"C:\Program Files (x86)\Windows Kits\10\References\10.0.18362.0\Windows.Foundation.UniversalApiContract\8.0.0.0\Windows.Foundation.UniversalApiContract.winmd"
 /reference:"C:\Program Files (x86)\Windows Kits\10\UnionMetadata\10.0.18362.0\Facade\Windows.winmd"
- /filealign:512
- /ruleset:"C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\Team Tools\Static Analysis Tools\\Rule Sets\MinimumRecommendedRules.ruleset"
+/ruleset:"C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\Team Tools\Static Analysis Tools\\Rule Sets\MinimumRecommendedRules.ruleset"
 /subsystemversion:6.02
 /target:library
 /utf8output
 /langversion:7.3
 Mocks.cs
+# WinUI local copy. Needed because we can't mock IDynamicAnimatedVisualSource in C#.
+/reference:"C:\Users\simeonc\.nuget\packages\microsoft.ui.xaml\2.2.190917002\lib\uap10.0\Microsoft.UI.Xaml.winmd"
 

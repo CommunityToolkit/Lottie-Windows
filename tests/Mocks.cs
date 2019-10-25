@@ -2,29 +2,15 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-// This file contains mocks of WinUI and Win2D for use when testing
-// that LottieGen's output is compilable.
+// This file contains mocks of Win2D for use when testing that LottieGen's output is compilable.
 using System;
 using System.Collections.Generic;
 using System.Numerics;
+using Windows.Foundation;
+using Windows.Foundation.Metadata;
 using Windows.Graphics;
 using Windows.Graphics.Effects;
 using Windows.UI.Composition;
-
-namespace Microsoft.UI.Xaml.Controls
-{
-    interface IAnimatedVisual : IDisposable
-    {
-        Visual RootVisual { get; }
-        TimeSpan Duration { get; }
-        Vector2 Size { get; }
-    }
-
-    interface IAnimatedVisualSource
-    {
-        IAnimatedVisual TryCreateAnimatedVisual(Compositor compositor, out object diagnostics);
-    }
-}
 
 namespace Microsoft.Graphics.Canvas
 {
@@ -64,10 +50,12 @@ namespace Microsoft.Graphics.Canvas.Geometry
         Intersect,
         Xor,
         Exclude,
+        Union,
     }
 
     class CanvasGeometry : IGeometrySource2D
     {
+        public static CanvasGeometry CreateEllipse(object arg0, float arg1, float arg2, float arg3, float arg4) => null;
         public static CanvasGeometry CreateGroup(object arg0, CanvasGeometry[] arg1) => null;
         public static CanvasGeometry CreateGroup(object arg0, CanvasGeometry[] arg1, CanvasFilledRegionDetermination arg3) => null;
         public static CanvasGeometry CreatePath(CanvasPathBuilder builder) => null;
