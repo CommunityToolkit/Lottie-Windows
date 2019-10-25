@@ -339,7 +339,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             }
             else
             {
-                builder.WriteLine("internal AnimatedVisual(Compositor compositor)");
+                builder.WriteLine($"internal {info.ClassName}(Compositor compositor)");
                 builder.OpenScope();
                 builder.WriteLine("_c = compositor;");
                 builder.WriteLine($"{info.AnimatedVisualSourceInfo.ReusableExpressionAnimationFieldName} = compositor.CreateExpressionAnimation();");
@@ -358,7 +358,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             // Write the IsRuntimeCompatible static method.
             builder.WriteLine("internal static bool IsRuntimeCompatible()");
             builder.OpenScope();
-            builder.WriteLine($"return Windows.Foundation.Metadata.ApiInformation.IsApiContractPresent(\"Windows.Foundation.UniversalApiContract\", {info.RequiredUapVersion}))");
+            builder.WriteLine($"return Windows.Foundation.Metadata.ApiInformation.IsApiContractPresent(\"Windows.Foundation.UniversalApiContract\", {info.RequiredUapVersion});");
             builder.CloseScope();
 
             // Close the scope for the instantiator class.

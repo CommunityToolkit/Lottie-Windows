@@ -308,7 +308,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             // Write the IsRuntimeCompatible static method.
             builder.WriteLine("static bool IsRuntimeCompatible()");
             builder.OpenScope();
-            builder.WriteLine($"return Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent(\"Windows.Foundation.UniversalApiContract\", {info.RequiredUapVersion}))");
+            builder.WriteLine($"return Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent(\"Windows.Foundation.UniversalApiContract\", {info.RequiredUapVersion});");
             builder.CloseScope();
 
             // Close the scope for the instantiator class.
