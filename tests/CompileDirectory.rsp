@@ -145,6 +145,4 @@
 /utf8output
 /langversion:7.3
 Mocks.cs
-# WinUI local copy. Needed because we can't mock IDynamicAnimatedVisualSource in C#.
-/reference:"C:\Users\simeonc\.nuget\packages\microsoft.ui.xaml\2.2.190917002\lib\uap10.0\Microsoft.UI.Xaml.winmd"
 
