@@ -155,9 +155,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 builder.OpenScope();
                 builder.WriteLine($"return new {current.ClassName}(compositor);");
                 builder.CloseScope();
+                builder.WriteLine();
             }
 
-            builder.WriteLine();
             builder.WriteLine("return null;");
             builder.CloseScope();
             builder.WriteLine();
@@ -354,6 +354,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.WriteLine($"TimeSpan IAnimatedVisual.Duration => TimeSpan.FromTicks({info.AnimatedVisualSourceInfo.DurationTicksFieldName});");
             builder.WriteLine($"Vector2 IAnimatedVisual.Size => {Vector2(info.AnimatedVisualSourceInfo.CompositionDeclaredSize)};");
             builder.WriteLine("void IDisposable.Dispose() => _root?.Dispose();");
+            builder.WriteLine();
 
             // Write the IsRuntimeCompatible static method.
             builder.WriteLine("internal static bool IsRuntimeCompatible()");
