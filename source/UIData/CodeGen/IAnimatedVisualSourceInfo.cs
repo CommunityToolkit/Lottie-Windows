@@ -4,7 +4,6 @@
 
 using System.Collections.Generic;
 using System.Numerics;
-using static Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.InstantiatorGeneratorBase;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 {
@@ -19,67 +18,67 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// <summary>
         /// Gets the name of the IAnimatedVisualSource class that will be exposed to users.
         /// </summary>
-        public string ClassName { get; }
+        string ClassName { get; }
 
         /// <summary>
         /// Gets the name of the field in the instantiator class that holds the reusable ExpressionAnimation.
         /// </summary>
-        public string ReusableExpressionAnimationFieldName { get; }
+        string ReusableExpressionAnimationFieldName { get; }
 
         /// <summary>
         /// Gets the constant holding the duration of the composition in ticks.
         /// </summary>
-        public string DurationTicksFieldName { get; }
+        string DurationTicksFieldName { get; }
 
         /// <summary>
         /// Gets the declared size of the composition.
         /// </summary>
-        public Vector2 CompositionDeclaredSize { get; }
+        Vector2 CompositionDeclaredSize { get; }
 
         /// <summary>
         /// Gets a value indicating whether the composition depends on the Microsoft.Graphics.Canvas namespace.
         /// </summary>
-        public bool UsesCanvas { get; }
+        bool UsesCanvas { get; }
 
         /// <summary>
         /// Gets a value indicating whether the composition depends on the Microsoft.Graphics.Canvas.Effects namespace.
         /// </summary>
-        public bool UsesCanvasEffects { get; }
+        bool UsesCanvasEffects { get; }
 
         /// <summary>
         /// Gets a value indicating whether the composition depends on the Microsoft.Graphics.Canvas.Geometry namespace.
         /// </summary>
-        public bool UsesCanvasGeometry { get; }
+        bool UsesCanvasGeometry { get; }
 
         /// <summary>
         /// Gets a value indicating whether the composition uses the Windows.UI.Xaml.Media namespace.
         /// </summary>
-        public bool UsesNamespaceWindowsUIXamlMedia { get; }
+        bool UsesNamespaceWindowsUIXamlMedia { get; }
 
         /// <summary>
         /// Gets a value indicating whether the composition uses streams.
         /// </summary>
-        public bool UsesStreams { get; }
+        bool UsesStreams { get; }
 
         /// <summary>
         /// Gets a value indicating whether the composition has LoadedImageSurface.
         /// </summary>
-        public bool HasLoadedImageSurface { get; }
+        bool HasLoadedImageSurface { get; }
 
         /// <summary>
         /// Gets the <see cref="IAnimatedVisualInfo"/> objects that describe each IAnimatedVisual
         /// class that can be returned from the generated code.
         /// </summary>
-        internal IReadOnlyList<IAnimatedVisualInfo> AnimatedVisualInfos { get; }
+        IReadOnlyList<IAnimatedVisualInfo> AnimatedVisualInfos { get; }
 
         /// <summary>
         /// Gets a value indicating whether the composition depends on a composite effect.
         /// </summary>
-        public bool UsesCompositeEffect { get; }
+        bool UsesCompositeEffect { get; }
 
         /// <summary>
-        /// Gets the <see cref="LoadedImageSurface"/> nodes of the composition.
+        /// Gets the XAML LoadedImageSurface nodes of the composition.
         /// </summary>
-        internal IReadOnlyList<LoadedImageSurfaceInfo> LoadedImageSurfaceNodes { get; }
+        IReadOnlyList<LoadedImageSurfaceInfo> LoadedImageSurfaceNodes { get; }
     }
 }

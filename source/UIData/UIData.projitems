@@ -16,6 +16,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\IAnimatedVisualInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\IAnimatedVisualSourceInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\InstantiatorGeneratorBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\LoadedImageSurfaceInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\NodeNamer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\Optimizer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\Stringifier.cs" />

@@ -467,7 +467,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.WriteLine($"{Float(obj.W)},");
             builder.WriteLine($"{Float(obj.H)},");
             builder.WriteLine($"{Float(obj.RadiusX)},");
-            builder.WriteLine($"{Float(obj.RadiusY)};");
+            builder.WriteLine($"{Float(obj.RadiusY)});");
             builder.UnIndent();
         }
 
