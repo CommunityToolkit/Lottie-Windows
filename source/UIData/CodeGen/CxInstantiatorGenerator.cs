@@ -101,7 +101,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             // floatY, floatYxZ
             builder.WriteLine("#include \"WindowsNumerics.h\"");
 
-            if (info.UsesCanvasEffects ||
+            if (info.UsesCanvas ||
+                info.UsesCanvasEffects ||
                 info.UsesCanvasGeometry)
             {
                 // D2D
@@ -145,7 +146,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             namespaces.Add("Windows::UI");
             namespaces.Add("Windows::UI::Composition");
             namespaces.Add("Windows::Graphics");
-            namespaces.Add("Microsoft::WRL");
+
+            if (info.UsesCanvas ||
+                info.UsesCanvasEffects ||
+                info.UsesCanvasGeometry)
+            {
+                namespaces.Add("Microsoft::WRL");
+            }
+
             if (info.UsesNamespaceWindowsUIXamlMedia)
             {
                 namespaces.Add("Windows::UI::Xaml::Media");
@@ -351,7 +359,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     var current = animatedVisualInfos[i];
                     builder.WriteLine($"if ({current.ClassName}::IsRuntimeCompatible())");
                     builder.OpenScope();
-                    builder.WriteLine("return ref new {current.ClassName}(compositor);");
+                    builder.WriteLine($"return ref new {current.ClassName}(compositor);");
                     builder.CloseScope();
                 }
 
