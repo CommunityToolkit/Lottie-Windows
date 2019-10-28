@@ -18,8 +18,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 
         public Visual SourceVisual { get; set; }
 
+        // Defaults to 0,0.
         public Vector2? SourceSize { get; set; }
 
+        // Defaults to 0,0.
         public Vector2? SourceOffset { get; set; }
 
         /// <inheritdoc/>
