@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
+//using System.Numerics.Vectors;
 using Windows.Foundation;
 using Windows.Foundation.Metadata;
 using Windows.Graphics;
@@ -61,6 +62,7 @@ namespace Microsoft.Graphics.Canvas.Geometry
         public static CanvasGeometry CreatePath(CanvasPathBuilder builder) => null;
         public CanvasGeometry CombineWith(CanvasGeometry arg) => null;
         public CanvasGeometry CombineWith(CanvasGeometry otherGeometry, Matrix3x2 otherGeometryTransform, CanvasGeometryCombine combine) => null;
+        public CanvasGeometry Transform(Matrix3x2 transform) => null;
     }
 
     class CanvasPathBuilder : IDisposable
