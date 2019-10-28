@@ -6,7 +6,6 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
-//using System.Numerics.Vectors;
 using Windows.Foundation;
 using Windows.Foundation.Metadata;
 using Windows.Graphics;

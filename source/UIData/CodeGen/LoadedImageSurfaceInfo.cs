@@ -16,13 +16,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
     sealed class LoadedImageSurfaceInfo
     {
         internal LoadedImageSurfaceInfo(
-    string typeName,
-    string name,
-    string fieldName,
-    string bytesFieldName,
-    Uri imageUri,
-    Wmd.LoadedImageSurface.LoadedImageSurfaceType loadedImageSurfaceType,
-    byte[] bytes)
+            string typeName,
+            string name,
+            string fieldName,
+            string bytesFieldName,
+            Uri imageUri,
+            Wmd.LoadedImageSurface.LoadedImageSurfaceType loadedImageSurfaceType,
+            byte[] bytes)
         {
             TypeName = typeName;
             Name = name;
