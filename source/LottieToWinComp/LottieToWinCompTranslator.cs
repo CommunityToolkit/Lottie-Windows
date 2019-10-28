@@ -677,14 +677,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             var sourceVisualSurface = _c.CreateVisualSurface();
             sourceVisualSurface.SourceVisual = sourceIntermediateParent;
-            sourceVisualSurface.SourceSize = size;
-            sourceVisualSurface.SourceOffset = offset;
+            sourceVisualSurface.SourceSize = Vector2DefaultIsZero(size);
+            sourceVisualSurface.SourceOffset = Vector2DefaultIsZero(offset);
             var sourceVisualSurfaceBrush = _c.CreateSurfaceBrush(sourceVisualSurface);
 
             var destinationVisualSurface = _c.CreateVisualSurface();
             destinationVisualSurface.SourceVisual = destinationIntermediateParent;
-            destinationVisualSurface.SourceSize = size;
-            destinationVisualSurface.SourceOffset = offset;
+            destinationVisualSurface.SourceSize = Vector2DefaultIsZero(size);
+            destinationVisualSurface.SourceOffset = Vector2DefaultIsZero(offset);
             var destinationVisualSurfaceBrush = _c.CreateSurfaceBrush(destinationVisualSurface);
 
             var compositeEffect = new CompositeEffect();
