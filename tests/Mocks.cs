@@ -60,7 +60,7 @@ namespace Microsoft.Graphics.Canvas.Geometry
         public static CanvasGeometry CreateGroup(object arg0, CanvasGeometry[] arg1) => null;
         public static CanvasGeometry CreateGroup(object arg0, CanvasGeometry[] arg1, CanvasFilledRegionDetermination arg3) => null;
         public static CanvasGeometry CreatePath(CanvasPathBuilder builder) => null;
-        public static CanvasGeometry CreateRoundedRectangle(object arg0, float arg1, float arg2, float arg3, float arg4, float arg5, float arg6);
+        public static CanvasGeometry CreateRoundedRectangle(object arg0, float arg1, float arg2, float arg3, float arg4, float arg5, float arg6) => null;
         public CanvasGeometry CombineWith(CanvasGeometry arg) => null;
         public CanvasGeometry CombineWith(CanvasGeometry otherGeometry, Matrix3x2 otherGeometryTransform, CanvasGeometryCombine combine) => null;
         public CanvasGeometry Transform(Matrix3x2 transform) => null;
