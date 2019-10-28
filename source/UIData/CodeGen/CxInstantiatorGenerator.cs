@@ -93,7 +93,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         // Called by the base class to write the start of the file (i.e. everything up to the body of the Instantiator class).
         protected override void WriteFileStart(
             CodeBuilder builder,
-            AnimatedVisualSourceInfo info)
+            IAnimatedVisualSourceInfo info)
         {
             builder.WriteLine("#include \"pch.h\"");
             builder.WriteLine($"#include \"{_headerFileName}\"");
@@ -188,7 +188,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         }
 
         /// <inheritdoc/>
-        protected override void WriteAnimatedVisualStart(CodeBuilder builder, AnimatedVisualInfo info)
+        protected override void WriteAnimatedVisualStart(
+            CodeBuilder builder,
+            IAnimatedVisualInfo info)
         {
             // Start writing the instantiator.
             builder.WriteLine($"ref class {info.ClassName} sealed : public Microsoft::UI::Xaml::Controls::IAnimatedVisual");
@@ -206,7 +208,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         // Called by the base class to write the end of the AnimatedVisual class.
         protected override void WriteAnimatedVisualEnd(
             CodeBuilder builder,
-            AnimatedVisualInfo info)
+            IAnimatedVisualInfo info)
         {
             if (info.AnimatedVisualSourceInfo.UsesCanvasEffects ||
                 info.AnimatedVisualSourceInfo.UsesCanvasGeometry)
@@ -237,9 +239,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             if (info.AnimatedVisualSourceInfo.HasLoadedImageSurface)
             {
-                builder.WriteLine($"{info.ClassName}(Compositor^ compositor,");
+                builder.WriteLine($"{info.ClassName}(");
                 builder.Indent();
-
+                builder.WriteLine("Compositor^ compositor,");
                 builder.WriteCommaSeparatedLines(info.LoadedImageSurfaceNodes.Select(n => $"{_s.ReferenceTypeName(n.TypeName)} {_s.CamelCase(n.Name)}"));
 
                 // Initializer list.
@@ -289,7 +291,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.WriteLine();
             builder.WriteLine("property TimeSpan Duration");
             builder.OpenScope();
-            builder.WriteLine("virtual TimeSpan get() { return { c_durationTicks }; }");
+            builder.WriteLine($"virtual TimeSpan get() {{ return {{ {info.AnimatedVisualSourceInfo.DurationTicksFieldName} }}; }}");
             builder.CloseScope();
             builder.WriteLine();
             builder.WriteLine("property Visual^ RootVisual");
@@ -303,6 +305,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.CloseScope();
             builder.WriteLine();
 
+            // Write the IsRuntimeCompatible static method.
+            builder.WriteLine("static bool IsRuntimeCompatible()");
+            builder.OpenScope();
+            builder.WriteLine($"return Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent(\"Windows.Foundation.UniversalApiContract\", {info.RequiredUapVersion});");
+            builder.CloseScope();
+
             // Close the scope for the instantiator class.
             builder.UnIndent();
             builder.WriteLine("};");
@@ -312,7 +320,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         // Called by the base class to write the end of the file (i.e. everything after the body of the AnimatedVisual class).
         protected override void WriteFileEnd(
             CodeBuilder builder,
-            AnimatedVisualSourceInfo info)
+            IAnimatedVisualSourceInfo info)
         {
             // Close the anonymous namespace.
             builder.WriteLine("} // end namespace");
@@ -333,11 +341,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             else
             {
                 builder.WriteLine("diagnostics = nullptr;");
-                builder.WriteLine("if (!IsRuntimeCompatible())");
-                builder.OpenScope();
+
+                // Check whether the runtime will support the lowest UAP version required.
+                var animatedVisualInfos = info.AnimatedVisualInfos.OrderByDescending(avi => avi.RequiredUapVersion).ToArray();
+
+                // Check the runtime version and instantiate the highest compatible IAnimatedVisual class.
+                for (var i = 0; i < animatedVisualInfos.Length; i++)
+                {
+                    var current = animatedVisualInfos[i];
+                    builder.WriteLine($"if ({current.ClassName}::IsRuntimeCompatible())");
+                    builder.OpenScope();
+                    builder.WriteLine("return ref new {current.ClassName}(compositor);");
+                    builder.CloseScope();
+                }
+
+                builder.WriteLine();
                 builder.WriteLine("return nullptr;");
-                builder.CloseScope();
-                builder.WriteLine("return ref new AnimatedVisual(compositor);");
                 builder.CloseScope();
             }
 
@@ -490,12 +509,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// <summary>
         /// Generate the body of the TryCreateAnimatedVisual() method for the composition that contains LoadedImageSurfaces.
         /// </summary>
-        void WriteTryCreateInstantiatorWithImageLoading(CodeBuilder builder, AnimatedVisualSourceInfo info)
+        void WriteTryCreateInstantiatorWithImageLoading(CodeBuilder builder, IAnimatedVisualSourceInfo info)
         {
             builder.WriteLine("m_isTryCreateAnimatedVisualCalled = true;");
-            builder.WriteLine();
             builder.WriteLine("diagnostics = nullptr;");
-            builder.WriteLine("if (!IsRuntimeCompatible())");
+            builder.WriteLine();
+
+            // Check whether the runtime will support the lowest UAP version required.
+            var animatedVisualInfos = info.AnimatedVisualInfos.OrderByDescending(avi => avi.RequiredUapVersion).ToArray();
+            builder.WriteLine($"if (!{animatedVisualInfos[animatedVisualInfos.Length - 1].ClassName}::IsRuntimeCompatible())");
             builder.OpenScope();
             builder.WriteLine("return nullptr;");
             builder.CloseScope();
@@ -506,16 +528,40 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.OpenScope();
             builder.WriteLine("return nullptr;");
             builder.CloseScope();
-            builder.WriteLine("return ref new AnimatedVisual(compositor,");
-            builder.Indent();
-            builder.WriteCommaSeparatedLines(info.LoadedImageSurfaceNodes.Select(n => MakeFieldName(n.Name)));
-            builder.UnIndent();
-            builder.WriteLine(");");
+
+            // Check the runtime version and instantiate the highest compatible IAnimatedVisual class.
+            for (var i = 0; i < animatedVisualInfos.Length; i++)
+            {
+                var current = animatedVisualInfos[i];
+                var versionTestRequired = i < animatedVisualInfos.Length - 1;
+
+                builder.WriteLine();
+                if (versionTestRequired)
+                {
+                    builder.WriteLine($"if ({current.ClassName}::IsRuntimeCompatible())");
+                    builder.OpenScope();
+                }
+
+                builder.WriteLine("return");
+                builder.Indent();
+                builder.WriteLine($"ref new {current.ClassName}(");
+                builder.Indent();
+                builder.WriteLine("compositor,");
+                builder.WriteCommaSeparatedLines(info.LoadedImageSurfaceNodes.Select(n => n.FieldName));
+                builder.WriteLine(");");
+                builder.UnIndent();
+                builder.UnIndent();
+                if (versionTestRequired)
+                {
+                    builder.CloseScope();
+                }
+            }
+
             builder.CloseScope();
             builder.WriteLine();
         }
 
-        void WriteIsAnimatedVisualSourceDynamicGetSet(CodeBuilder builder, AnimatedVisualSourceInfo info)
+        void WriteIsAnimatedVisualSourceDynamicGetSet(CodeBuilder builder, IAnimatedVisualSourceInfo info)
         {
             builder.WriteLine($"bool AnimatedVisuals::{info.ClassName}::IsAnimatedVisualSourceDynamic::get()");
             builder.OpenScope();
@@ -532,7 +578,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.CloseScope();
         }
 
-        void WriteEnsureImageLoadingStarted(CodeBuilder builder, AnimatedVisualSourceInfo info)
+        void WriteEnsureImageLoadingStarted(CodeBuilder builder, IAnimatedVisualSourceInfo info)
         {
             builder.WriteLine($"void AnimatedVisuals::{info.ClassName}::EnsureImageLoadingStarted()");
             builder.OpenScope();
@@ -573,7 +619,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.WriteLine();
         }
 
-        void WriteHandleLoadCompleted(CodeBuilder builder, AnimatedVisualSourceInfo info)
+        void WriteHandleLoadCompleted(CodeBuilder builder, IAnimatedVisualSourceInfo info)
         {
             builder.WriteLine($"void AnimatedVisuals::{info.ClassName}::HandleLoadCompleted(LoadedImageSurface^ sender, LoadedImageSourceLoadCompletedEventArgs^ e)");
             builder.OpenScope();
