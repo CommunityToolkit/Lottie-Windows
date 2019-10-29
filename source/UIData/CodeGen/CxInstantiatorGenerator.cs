@@ -70,7 +70,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             var cppText = generator.GenerateCode();
 
-            var hText = generator.GenerateHeaderText(className);
+            var hText = generator.GenerateHeaderText(className, generator);
 
             var assetList = generator.GetAssetsList();
 
@@ -78,9 +78,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         }
 
         // Generates the .h file contents.
-        string GenerateHeaderText(string className)
+        string GenerateHeaderText(string className, IAnimatedVisualSourceInfo info)
         {
-            var loadedImageSurfacesInfo = GetLoadedImageSurfaceInfos();
+            var loadedImageSurfacesInfo = info.LoadedImageSurfaceNodes;
 
             // Returns the header text that implements IAnimatedVisualSource if loadedImageSurfacesNodes is null or empty.
             // Otherwise, return the header text that implements IDynamicAnimatedVisualSource.
@@ -128,11 +128,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 builder.WriteLine("#include <vector>");
             }
 
-            builder.WriteLine();
-
-            // A sorted set to hold the namespaces that the generated code will use. The set is maintained in sorted order.
-            var namespaces = new SortedSet<string>();
-
             if (info.UsesCanvasEffects ||
                 info.UsesCanvas)
             {
@@ -140,6 +135,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 builder.WriteLine("#include <Windows.Graphics.Effects.h>");
                 builder.WriteLine("#include <Windows.Graphics.Effects.Interop.h>");
             }
+
+            builder.WriteLine();
+
+            // A sorted set to hold the namespaces that the generated code will use. The set is maintained in sorted order.
+            var namespaces = new SortedSet<string>();
 
             namespaces.Add("Windows::Foundation");
             namespaces.Add("Windows::Foundation::Numerics");
@@ -245,12 +245,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.WriteLine("public:");
             builder.Indent();
 
-            if (info.AnimatedVisualSourceInfo.HasLoadedImageSurface)
+            if (info.LoadedImageSurfaceNodes.Count > 0)
             {
                 builder.WriteLine($"{info.ClassName}(");
                 builder.Indent();
-                builder.WriteLine("Compositor^ compositor,");
-                builder.WriteCommaSeparatedLines(info.LoadedImageSurfaceNodes.Select(n => $"{_s.ReferenceTypeName(n.TypeName)} {_s.CamelCase(n.Name)}"));
+                builder.WriteCommaSeparatedLines("Compositor^ compositor", info.LoadedImageSurfaceNodes.Select(n => $"{_s.ReferenceTypeName(n.TypeName)} {_s.CamelCase(n.Name)}"));
 
                 // Initializer list.
                 builder.WriteLine(") : _c(compositor)");
@@ -342,42 +341,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.UnIndent();
             builder.OpenScope();
 
-            if (info.HasLoadedImageSurface)
+            if (info.LoadedImageSurfaceNodes.Count > 0)
             {
-                WriteTryCreateInstantiatorWithImageLoading(builder, info);
+                WriteIDynamicAnimatedVisualSource(builder, info);
             }
             else
             {
-                builder.WriteLine("diagnostics = nullptr;");
-
-                // Check whether the runtime will support the lowest UAP version required.
-                var animatedVisualInfos = info.AnimatedVisualInfos.OrderByDescending(avi => avi.RequiredUapVersion).ToArray();
-
-                // Check the runtime version and instantiate the highest compatible IAnimatedVisual class.
-                for (var i = 0; i < animatedVisualInfos.Length; i++)
-                {
-                    var current = animatedVisualInfos[i];
-                    builder.WriteLine($"if ({current.ClassName}::IsRuntimeCompatible())");
-                    builder.OpenScope();
-                    builder.WriteLine($"return ref new {current.ClassName}(compositor);");
-                    builder.CloseScope();
-                }
-
-                builder.WriteLine();
-                builder.WriteLine("return nullptr;");
-                builder.CloseScope();
-            }
-
-            if (info.HasLoadedImageSurface)
-            {
-                // Generate the get() and set() methods of IsAnimatedVisualSourceDynamic property.
-                WriteIsAnimatedVisualSourceDynamicGetSet(builder, info);
-
-                // Generate the method that load all the LoadedImageSurfaces.
-                WriteEnsureImageLoadingStarted(builder, info);
-
-                // Generate the method that handle the LoadCompleted event of the LoadedImageSurface objects.
-                WriteHandleLoadCompleted(builder, info);
+                WriteIAnimatedVisualSource(builder, info);
             }
         }
 
@@ -514,10 +484,51 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.WriteLine($"result = {FieldAssignment(fieldName)}new GeoSource(transformed);");
         }
 
+        /// <inheritdoc/>
+        protected override string WriteCompositeEffectFactory(CodeBuilder builder, Mgce.CompositeEffect compositeEffect)
+        {
+            builder.WriteLine("ComPtr<CompositeEffect> compositeEffect(new CompositeEffect());");
+            builder.WriteLine($"compositeEffect->SetMode({_s.CanvasCompositeMode(compositeEffect.Mode)});");
+            foreach (var source in compositeEffect.Sources)
+            {
+                builder.OpenScope();
+                builder.WriteLine($"auto sourceParameter = ref new CompositionEffectSourceParameter({String(source.Name)});");
+                builder.WriteLine("compositeEffect->AddSource(reinterpret_cast<ABI::Windows::Graphics::Effects::IGraphicsEffectSource*>(sourceParameter));");
+                builder.CloseScope();
+            }
+
+            return "reinterpret_cast<Windows::Graphics::Effects::IGraphicsEffect^>(compositeEffect.Get())";
+        }
+
+        /// <summary>
+        /// Generate the body of the TryCreateAnimatedVisual() method for the composition that do not contain LoadedImageSurfaces.
+        /// </summary>
+        void WriteIAnimatedVisualSource(CodeBuilder builder, IAnimatedVisualSourceInfo info)
+        {
+            builder.WriteLine("diagnostics = nullptr;");
+
+            // Check whether the runtime will support the lowest UAP version required.
+            var animatedVisualInfos = info.AnimatedVisualInfos.OrderByDescending(avi => avi.RequiredUapVersion).ToArray();
+
+            // Check the runtime version and instantiate the highest compatible IAnimatedVisual class.
+            for (var i = 0; i < animatedVisualInfos.Length; i++)
+            {
+                var current = animatedVisualInfos[i];
+                builder.WriteLine($"if ({current.ClassName}::IsRuntimeCompatible())");
+                builder.OpenScope();
+                WriteInstantiateAndReturnAnimatedVisual(builder, current);
+                builder.CloseScope();
+            }
+
+            builder.WriteLine();
+            builder.WriteLine("return nullptr;");
+            builder.CloseScope();
+        }
+
         /// <summary>
         /// Generate the body of the TryCreateAnimatedVisual() method for the composition that contains LoadedImageSurfaces.
         /// </summary>
-        void WriteTryCreateInstantiatorWithImageLoading(CodeBuilder builder, IAnimatedVisualSourceInfo info)
+        void WriteIDynamicAnimatedVisualSource(CodeBuilder builder, IAnimatedVisualSourceInfo info)
         {
             builder.WriteLine("m_isTryCreateAnimatedVisualCalled = true;");
             builder.WriteLine("diagnostics = nullptr;");
@@ -550,15 +561,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     builder.OpenScope();
                 }
 
-                builder.WriteLine("return");
-                builder.Indent();
-                builder.WriteLine($"ref new {current.ClassName}(");
-                builder.Indent();
-                builder.WriteLine("compositor,");
-                builder.WriteCommaSeparatedLines(info.LoadedImageSurfaceNodes.Select(n => n.FieldName));
-                builder.WriteLine(");");
-                builder.UnIndent();
-                builder.UnIndent();
+                WriteInstantiateAndReturnAnimatedVisual(builder, current);
+
                 if (versionTestRequired)
                 {
                     builder.CloseScope();
@@ -567,6 +571,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             builder.CloseScope();
             builder.WriteLine();
+
+            // Generate the get() and set() methods of IsAnimatedVisualSourceDynamic property.
+            WriteIsAnimatedVisualSourceDynamicGetSet(builder, info);
+
+            // Generate the method that load all the LoadedImageSurfaces.
+            WriteEnsureImageLoadingStarted(builder, info);
+
+            // Generate the method that handle the LoadCompleted event of the LoadedImageSurface objects.
+            WriteHandleLoadCompleted(builder, info);
         }
 
         void WriteIsAnimatedVisualSourceDynamicGetSet(CodeBuilder builder, IAnimatedVisualSourceInfo info)
@@ -584,6 +597,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.WriteLine("PropertyChanged(this, ref new PropertyChangedEventArgs(\"IsAnimatedVisualSourceDynamic\"));");
             builder.CloseScope();
             builder.CloseScope();
+            builder.WriteLine();
         }
 
         void WriteEnsureImageLoadingStarted(CodeBuilder builder, IAnimatedVisualSourceInfo info)
@@ -594,8 +608,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.OpenScope();
             builder.WriteLine($"auto eventHandler = ref new TypedEventHandler<LoadedImageSurface^, LoadedImageSourceLoadCompletedEventArgs^>(this, &AnimatedVisuals::{info.ClassName}::HandleLoadCompleted);");
 
-            var nodes = info.LoadedImageSurfaceNodes.ToArray();
-            foreach (var n in nodes)
+            foreach (var n in info.LoadedImageSurfaceNodes)
             {
                 var imageMemberName = MakeFieldName(n.Name);
                 switch (n.LoadedImageSurfaceType)
@@ -651,20 +664,23 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.WriteLine();
         }
 
-        /// <inheritdoc/>
-        protected override string WriteCompositeEffectFactory(CodeBuilder builder, Mgce.CompositeEffect compositeEffect)
+        void WriteInstantiateAndReturnAnimatedVisual(CodeBuilder builder, IAnimatedVisualInfo info)
         {
-            builder.WriteLine("ComPtr<CompositeEffect> compositeEffect(new CompositeEffect());");
-            builder.WriteLine($"compositeEffect->SetMode({_s.CanvasCompositeMode(compositeEffect.Mode)});");
-            foreach (var source in compositeEffect.Sources)
+            if (info.LoadedImageSurfaceNodes.Count > 0)
             {
-                builder.OpenScope();
-                builder.WriteLine($"auto sourceParameter = ref new CompositionEffectSourceParameter({String(source.Name)});");
-                builder.WriteLine("compositeEffect->AddSource(reinterpret_cast<ABI::Windows::Graphics::Effects::IGraphicsEffectSource*>(sourceParameter));");
-                builder.CloseScope();
+                builder.WriteLine("return");
+                builder.Indent();
+                builder.WriteLine($"ref new {info.ClassName}(");
+                builder.Indent();
+                builder.WriteCommaSeparatedLines("compositor", info.LoadedImageSurfaceNodes.Select(n => MakeFieldName(n.Name)));
+                builder.WriteLine(");");
+                builder.UnIndent();
+                builder.UnIndent();
             }
-
-            return "reinterpret_cast<Windows::Graphics::Effects::IGraphicsEffect^>(compositeEffect.Get())";
+            else
+            {
+                builder.WriteLine($"return ref new {info.ClassName}(compositor);");
+            }
         }
 
         string CanvasFigureLoop(CanvasFigureLoop value) => _s.CanvasFigureLoop(value);

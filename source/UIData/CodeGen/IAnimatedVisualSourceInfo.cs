@@ -61,11 +61,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         bool UsesStreams { get; }
 
         /// <summary>
-        /// Gets a value indicating whether the composition has LoadedImageSurface.
-        /// </summary>
-        bool HasLoadedImageSurface { get; }
-
-        /// <summary>
         /// Gets the <see cref="IAnimatedVisualInfo"/> objects that describe each IAnimatedVisual
         /// class that can be returned from the generated code.
         /// </summary>

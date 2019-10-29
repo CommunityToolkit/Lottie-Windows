@@ -296,12 +296,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         protected IReadOnlyList<Uri> GetAssetsList() => _loadedImageSurfaceInfos.Where(n => n.ImageUri != null).Select(n => n.ImageUri).ToArray();
 
         /// <summary>
-        /// Gets a list of the <see cref="LoadedImageSurfaceInfo"/> representing the LoadedImageSurface of the composition and its properties.
-        /// </summary>
-        /// <returns>List of the <see cref="LoadedImageSurfaceInfo"/> representing the LoadedImageSurface and its properties.</returns>
-        protected IReadOnlyList<LoadedImageSurfaceInfo> GetLoadedImageSurfaceInfos() => _loadedImageSurfaceInfos;
-
-        /// <summary>
         /// Call this to generate the code. Returns a string containing the generated code.
         /// </summary>
         /// <returns>The code.</returns>
@@ -322,7 +316,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             {
                 bool bytesWritten = false;
 
-                foreach (var loadedImageSurface in GetLoadedImageSurfaceInfos())
+                foreach (var loadedImageSurface in _loadedImageSurfaceInfos)
                 {
                     if (loadedImageSurface.Bytes != null)
                     {
@@ -472,9 +466,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         bool IAnimatedVisualSourceInfo.UsesCompositeEffect => _animatedVisualGenerators.Any(f => f.UsesCompositeEffect);
 
-        bool IAnimatedVisualSourceInfo.HasLoadedImageSurface => GetLoadedImageSurfaceInfos().Any();
-
-        IReadOnlyList<LoadedImageSurfaceInfo> IAnimatedVisualSourceInfo.LoadedImageSurfaceNodes => GetLoadedImageSurfaceInfos();
+        IReadOnlyList<LoadedImageSurfaceInfo> IAnimatedVisualSourceInfo.LoadedImageSurfaceNodes => _loadedImageSurfaceInfos;
 
         static LoadedImageSurfaceInfo LoadedImageSurfaceInfoFromObjectData(ObjectData node)
         {
@@ -2003,8 +1995,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             IAnimatedVisualSourceInfo IAnimatedVisualInfo.AnimatedVisualSourceInfo => _owner;
 
             string IAnimatedVisualInfo.ClassName => $"AnimatedVisual_UAPv{_requiredUapVersion}";
-
-            bool IAnimatedVisualInfo.HasLoadedImageSurface => GetLoadedImageSurfaceInfos().Any();
 
             IReadOnlyList<LoadedImageSurfaceInfo> IAnimatedVisualInfo.LoadedImageSurfaceNodes => GetLoadedImageSurfaceInfos().ToArray();
 

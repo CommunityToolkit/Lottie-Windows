@@ -26,11 +26,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         string ClassName { get; }
 
         /// <summary>
-        /// Gets a value indicating whether the AnimatedVisual has LoadedImageSurface.
-        /// </summary>
-        bool HasLoadedImageSurface { get; }
-
-        /// <summary>
         /// The UAP version required by the IAnimatedVisual.
         /// </summary>
         uint RequiredUapVersion { get; }
