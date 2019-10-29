@@ -120,7 +120,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             // If the composition has LoadedImageSurface, write a class that implements the IDynamicAnimatedVisualSource interface.
             // Otherwise, implement the IAnimatedVisualSource interface.
-            if (info.HasLoadedImageSurface)
+            if (info.LoadedImageSurfaceNodes.Count > 0)
             {
                 WriteIDynamicAnimatedVisualSource(builder, info);
             }
@@ -153,7 +153,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 var current = animatedVisualInfos[i];
                 builder.WriteLine($"if ({current.ClassName}.IsRuntimeCompatible())");
                 builder.OpenScope();
-                builder.WriteLine($"return new {current.ClassName}(compositor);");
+                WriteInstantiateAndReturnAnimatedVisual(builder, current);
                 builder.CloseScope();
                 builder.WriteLine();
             }
@@ -260,15 +260,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     builder.OpenScope();
                 }
 
-                builder.WriteLine("return");
-                builder.Indent();
-                builder.WriteLine($"new {current.ClassName}(");
-                builder.Indent();
-                builder.WriteLine("compositor,");
-                builder.WriteCommaSeparatedLines(info.LoadedImageSurfaceNodes.Select(n => n.FieldName));
-                builder.WriteLine(");");
-                builder.UnIndent();
-                builder.UnIndent();
+                WriteInstantiateAndReturnAnimatedVisual(builder, current);
+
                 if (versionTestRequired)
                 {
                     builder.CloseScope();
@@ -314,15 +307,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             IAnimatedVisualInfo info)
         {
             // Write the constructor for the AnimatedVisual class.
-            if (info.HasLoadedImageSurface)
+            if (info.LoadedImageSurfaceNodes.Count > 0)
             {
                 builder.WriteLine($"internal {info.ClassName}(");
                 builder.Indent();
 
-                builder.WriteLine("Compositor compositor,");
-
                 // Define the image surface parameters of the AnimatedVisual() constructor.
-                builder.WriteCommaSeparatedLines(info.LoadedImageSurfaceNodes.Select(n => $"{_s.ReferenceTypeName(n.TypeName)} {_s.CamelCase(n.Name)}"));
+                builder.WriteCommaSeparatedLines("Compositor compositor", info.LoadedImageSurfaceNodes.Select(n => $"{_s.ReferenceTypeName(n.TypeName)} {_s.CamelCase(n.Name)}"));
                 builder.WriteLine(")");
                 builder.UnIndent();
                 builder.OpenScope();
@@ -477,6 +468,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.WriteLine($"var result = {FieldAssignment(fieldName)}{CallFactoryFor(obj.SourceGeometry)}.Transform({_s.Matrix3x2(obj.TransformMatrix)});");
         }
 
+        /// <inheritdoc/>
+        protected override string WriteCompositeEffectFactory(CodeBuilder builder, Mgce.CompositeEffect compositeEffect)
+        {
+            var compositeEffectString = "compositeEffect";
+            builder.WriteLine($"var {compositeEffectString} = new CompositeEffect();");
+            builder.WriteLine($"{compositeEffectString}.Mode = {_s.CanvasCompositeMode(compositeEffect.Mode)};");
+            foreach (var source in compositeEffect.Sources)
+            {
+                builder.WriteLine($"{compositeEffectString}.Sources.Add(new CompositionEffectSourceParameter({String(source.Name)}));");
+            }
+
+            return compositeEffectString;
+        }
+
         void WriteAnimatedVisualInvalidatedEvent(CodeBuilder builder)
         {
             builder.WriteLine("public event TypedEventHandler<IDynamicAnimatedVisualSource, object> AnimatedVisualInvalidated");
@@ -550,18 +555,23 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.WriteLine();
         }
 
-        /// <inheritdoc/>
-        protected override string WriteCompositeEffectFactory(CodeBuilder builder, Mgce.CompositeEffect compositeEffect)
+        void WriteInstantiateAndReturnAnimatedVisual(CodeBuilder builder, IAnimatedVisualInfo info)
         {
-            var compositeEffectString = "compositeEffect";
-            builder.WriteLine($"var {compositeEffectString} = new CompositeEffect();");
-            builder.WriteLine($"{compositeEffectString}.Mode = {_s.CanvasCompositeMode(compositeEffect.Mode)};");
-            foreach (var source in compositeEffect.Sources)
+            if (info.LoadedImageSurfaceNodes.Count > 0)
             {
-                builder.WriteLine($"{compositeEffectString}.Sources.Add(new CompositionEffectSourceParameter({String(source.Name)}));");
+                builder.WriteLine("return");
+                builder.Indent();
+                builder.WriteLine($"new {info.ClassName}(");
+                builder.Indent();
+                builder.WriteCommaSeparatedLines("compositor", info.LoadedImageSurfaceNodes.Select(n => n.FieldName));
+                builder.WriteLine(");");
+                builder.UnIndent();
+                builder.UnIndent();
             }
-
-            return compositeEffectString;
+            else
+            {
+                builder.WriteLine($"return new {info.ClassName}(compositor);");
+            }
         }
 
         static string FieldAssignment(string fieldName) => fieldName != null ? $"{fieldName} = " : string.Empty;

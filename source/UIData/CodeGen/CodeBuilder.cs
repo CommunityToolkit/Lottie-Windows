@@ -30,6 +30,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             _lines.Add(new CodeLine { Text = line, IndentCount = _indentCount });
         }
 
+        internal void WriteCommaSeparatedLines(string initialItem, IEnumerable<string> remainingItems)
+        {
+            WriteLine($"{initialItem},");
+            WriteCommaSeparatedLines(remainingItems);
+        }
+
         internal void WriteCommaSeparatedLines(IEnumerable<string> items)
         {
             var itemsToWrite = items.ToArray();
