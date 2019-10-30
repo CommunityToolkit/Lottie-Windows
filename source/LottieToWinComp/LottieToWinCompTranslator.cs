@@ -671,8 +671,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             // origin of its offsets.
             var sourceIntermediateParent = _c.CreateContainerVisual();
 
-            // Because this the root of a tree, the BorderMode is not inherited and
-            // will default to Hard. We want it to be Soft in order to enable anti-aliasing.
+            // Because this is the root of a tree, the inherited BorderMode is Hard.
+            // We want it to be Soft in order to enable anti-aliasing.
             // Note that the border mode for trees that are attached to the desktop do not
             // need to have their BorderMode set as they inherit Soft from the desktop.
             sourceIntermediateParent.BorderMode = CompositionBorderMode.Soft;
@@ -680,8 +680,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             var destinationIntermediateParent = _c.CreateContainerVisual();
 
-            // Because this the root of a tree, the BorderMode is not inherited and
-            // will default to Hard. We want it to be Soft in order to enable anti-aliasing.
+            // Because this is the root of a tree, the inherited BorderMode is Hard.
+            // We want it to be Soft in order to enable anti-aliasing.
             // Note that the border mode for trees that are attached to the desktop do not
             // need to have their BorderMode set as they inherit Soft from the desktop.
             destinationIntermediateParent.BorderMode = CompositionBorderMode.Soft;
