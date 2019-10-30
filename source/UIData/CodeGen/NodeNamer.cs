@@ -72,23 +72,21 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 var baseName = entry.Key;
                 var nodeList = entry.Value;
 
-                if (nodeList.Count == 1)
-                {
-                    // There's only 1 of this type of node. No suffix needed.
-                    yield return (nodeList[0], baseName);
-                }
-                else
-                {
-                    // Multiple nodes of this type. Append a counter suffix.
+                // Append a counter suffix.
+                // NOTE: For C# there is no need for a suffix if there is only one node with this name,
+                //       however this can break C++ which cannot distinguish between a method name and
+                //       a type name. For example, if a single CompositionPath node produced a method
+                //       called CompositionPath() and then a call was made to "new CompositionPath(...)"
+                //       the C++ compiler will complain that CompositionPath is not a type.
+                //       So to ensure we don't hit that case, always append a counter suffix.
 
-                    // Use only as many digits as necessary to express the largest count.
-                    var digitsRequired = (int)Math.Ceiling(Math.Log10(nodeList.Count + 1));
-                    var counterFormat = new string('0', digitsRequired);
+                // Use only as many digits as necessary to express the largest count.
+                var digitsRequired = (int)Math.Ceiling(Math.Log10(nodeList.Count + 1));
+                var counterFormat = new string('0', digitsRequired);
 
-                    for (var i = 0; i < nodeList.Count; i++)
-                    {
-                        yield return (nodeList[i], $"{baseName}_{i.ToString(counterFormat)}");
-                    }
+                for (var i = 0; i < nodeList.Count; i++)
+                {
+                    yield return (nodeList[i], $"{baseName}_{i.ToString(counterFormat)}");
                 }
             }
         }
