@@ -173,11 +173,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             where T : Visual
         {
             CacheAndInitializeCompositionObject(source, target);
+
             if (source.Clip != null)
             {
                 target.Clip = GetCompositionClip(source.Clip);
             }
 
+            target.BorderMode = source.BorderMode;
             target.CenterPoint = source.CenterPoint;
             target.Offset = source.Offset;
             target.Opacity = source.Opacity;

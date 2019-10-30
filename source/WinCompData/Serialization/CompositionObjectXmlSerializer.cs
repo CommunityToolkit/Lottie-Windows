@@ -572,6 +572,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
 
             yield return FromVector2DefaultZero(nameof(obj.Size), obj.Size);
 
+            if (obj.BorderMode.HasValue)
+            {
+                yield return new XAttribute(nameof(obj.BorderMode), obj.BorderMode.Value);
+            }
+
             foreach (var item in FromAnimatableVector3("Offset", obj.Animators, obj.Offset))
             {
                 yield return item;
