@@ -665,6 +665,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             string Vector3(Vector3 value) => _stringifier.Vector3(value);
 
+            string BorderMode(CompositionBorderMode value) => _stringifier.BorderMode(value);
+
             string ColorSpace(CompositionColorSpace value) => _stringifier.ColorSpace(value);
 
             string ExtendMode(CompositionGradientExtendMode value) => _stringifier.ExtendMode(value);
@@ -1263,6 +1265,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             void InitializeVisual(CodeBuilder builder, Visual obj, ObjectData node)
             {
                 InitializeCompositionObject(builder, obj, node);
+
+                if (obj.BorderMode.HasValue)
+                {
+                    builder.WriteLine($"result{Deref}BorderMode = {BorderMode(obj.BorderMode.Value)};");
+                }
 
                 if (obj.CenterPoint.HasValue)
                 {

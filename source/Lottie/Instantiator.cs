@@ -15,7 +15,6 @@ using Mgc = Microsoft.Graphics.Canvas;
 using Mgce = Microsoft.Graphics.Canvas.Effects;
 using Wc = Windows.UI.Composition;
 using Wd = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
-using Wge = Windows.Graphics.Effects;
 using Wm = Windows.UI.Xaml.Media;
 using Wmd = Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData;
 
@@ -173,14 +172,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         {
             CacheAndInitializeCompositionObject(source, target);
 
-            if (source.Clip != null)
+            if (source.BorderMode.HasValue)
             {
-                target.Clip = GetCompositionClip(source.Clip);
+                target.BorderMode = BorderMode(source.BorderMode.Value);
             }
 
             if (source.CenterPoint.HasValue)
             {
                 target.CenterPoint = source.CenterPoint.Value;
+            }
+
+            if (source.Clip != null)
+            {
+                target.Clip = GetCompositionClip(source.Clip);
             }
 
             if (source.Offset.HasValue)
@@ -1392,6 +1396,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
 
             Cache(obj, result);
             return result;
+        }
+
+        static Wc.CompositionBorderMode BorderMode(Wd.CompositionBorderMode value)
+        {
+            switch (value)
+            {
+                case Wd.CompositionBorderMode.Hard: return Wc.CompositionBorderMode.Hard;
+                case Wd.CompositionBorderMode.Inherit: return Wc.CompositionBorderMode.Inherit;
+                case Wd.CompositionBorderMode.Soft: return Wc.CompositionBorderMode.Soft;
+                default: throw new InvalidOperationException();
+            }
         }
 
         static Wc.CompositionStrokeLineJoin StrokeLineJoin(Wd.CompositionStrokeLineJoin value)

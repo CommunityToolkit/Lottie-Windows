@@ -79,6 +79,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         public virtual string ByteArray => "byte[]";
 
+        public string BorderMode(CompositionBorderMode value)
+        {
+            var typeName = nameof(CompositionBorderMode);
+            switch (value)
+            {
+                case CompositionBorderMode.Hard: return $"{typeName}{ScopeResolve}{nameof(CompositionBorderMode.Hard)}";
+                case CompositionBorderMode.Soft: return $"{typeName}{ScopeResolve}{nameof(CompositionBorderMode.Soft)}";
+                case CompositionBorderMode.Inherit: return $"{typeName}{ScopeResolve}{nameof(CompositionBorderMode.Inherit)}";
+                default: throw new InvalidOperationException();
+            }
+        }
+
         public virtual string CanvasFigureLoop(CanvasFigureLoop value)
         {
             var typeName = nameof(CanvasFigureLoop);

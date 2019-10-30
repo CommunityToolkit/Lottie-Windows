@@ -9,6 +9,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)AnimationController.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ColorKeyFrameAnimation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionAnimation.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CompositionBorderMode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionBrush.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionClip.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionColorBrush.cs" />

@@ -16,6 +16,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
         {
         }
 
+        // Defaults to Inherit. For trees rooted are set to Soft.
+        // Non-rooted trees are set to Hard unless overridden.
+        public CompositionBorderMode? BorderMode { get; set; }
+
         public Vector3? CenterPoint { get; set; }
 
         public CompositionClip Clip { get; set; }
