@@ -2,13 +2,19 @@
 
 Lottie-Windows aligns its major version with the Windows Community Toolkit.
 
+## 6.0.0
+
+Support for more Adobe After Effects features.
+
+Various bug fixes.
+
 ## 5.1.1
 
 Support for Bodymovin v5.5.0 with changes to the JSON schema.
 
 ## 5.1.0 — Initial Release
 
-The following Adobe AfterEffects features are supported:
+The following Adobe After Effects features are supported:
 
 **Layer types**
 * Precomp
