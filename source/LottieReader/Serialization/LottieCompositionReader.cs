@@ -964,7 +964,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             var strokeWidth = ReadAnimatableFloat(obj.GetNamedObject("w"));
             var capType = LcToLineCapType(obj.GetNamedNumber("lc"));
             var joinType = LjToLineJoinType(obj.GetNamedNumber("lj"));
-            var miterLimit = obj.GetNamedNumber("ml", 4); // Default miter limit in AfterEffects is 4
+            var miterLimit = obj.GetNamedNumber("ml", 4); // Default miter limit in After Effects is 4
 
             // Get dash pattern to be set as StrokeDashArray
             Animatable<double> offset = null;
@@ -1018,8 +1018,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         LinearGradientStroke ReadLinearGradientStroke(JObject obj, in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
         {
-            _issues.GradientStrokes();
-
             // Not clear whether we need to read these fields.
             IgnoreFieldThatIsNotYetSupported(obj, "hd");
             IgnoreFieldThatIsNotYetSupported(obj, "t");
@@ -1029,7 +1027,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             var strokeWidth = ReadAnimatableFloat(obj.GetNamedObject("w"));
             var capType = LcToLineCapType(obj.GetNamedNumber("lc"));
             var joinType = LjToLineJoinType(obj.GetNamedNumber("lj"));
-            var miterLimit = obj.GetNamedNumber("ml", 4); // Default miter limit in AfterEffects is 4
+            var miterLimit = obj.GetNamedNumber("ml", 4); // Default miter limit in After Effects is 4
             var startPoint = ReadAnimatableVector3(obj.GetNamedObject("s"));
             var endPoint = ReadAnimatableVector3(obj.GetNamedObject("e"));
             ReadAnimatableGradientStops(obj.GetNamedObject("g"), out var colorStops, out var opacityPercentStops);
@@ -1050,8 +1048,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         RadialGradientStroke ReadRadialGradientStroke(JObject obj, in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
         {
-            _issues.GradientStrokes();
-
             // Not clear whether we need to read these fields.
             IgnoreFieldThatIsNotYetSupported(obj, "t");
 
@@ -1077,7 +1073,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             var strokeWidth = ReadAnimatableFloat(obj.GetNamedObject("w"));
             var capType = LcToLineCapType(obj.GetNamedNumber("lc"));
             var joinType = LjToLineJoinType(obj.GetNamedNumber("lj"));
-            var miterLimit = obj.GetNamedNumber("ml", 4); // Default miter limit in AfterEffects is 4
+            var miterLimit = obj.GetNamedNumber("ml", 4); // Default miter limit in After Effects is 4
             var startPoint = ReadAnimatableVector3(obj.GetNamedObject("s"));
             var endPoint = ReadAnimatableVector3(obj.GetNamedObject("e"));
             ReadAnimatableGradientStops(obj.GetNamedObject("g"), out var colorStops, out var opacityPercentStops);

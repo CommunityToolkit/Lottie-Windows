@@ -424,7 +424,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
                 yield return FromAnimatable(nameof(content.Color), content.Color);
                 yield return FromAnimatable(nameof(content.OpacityPercent), content.OpacityPercent);
-                yield return FromAnimatable(nameof(content.Thickness), content.Thickness);
+                yield return FromAnimatable(nameof(content.StrokeWidth), content.StrokeWidth);
             }
         }
 

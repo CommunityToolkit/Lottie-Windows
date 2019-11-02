@@ -44,7 +44,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal void GradientFillIsNotSupported(string linearOrRadial, string combination) => Report("LT0006", $"{linearOrRadial} gradient fill with {combination} is not supported.");
 
-        internal void GradientStrokeIsNotSupported() => Report("LT0007", "Gradient stroke is not supported.");
+        internal void GradientStrokeIsNotSupported(string linearOrRadial, string combination) => Report("LT0007", $"{linearOrRadial} gradient stroke with {combination} is not supported.");
 
         internal void ImageLayerIsNotSupported() => Report("LT0009", "Image layers are not supported.");
 

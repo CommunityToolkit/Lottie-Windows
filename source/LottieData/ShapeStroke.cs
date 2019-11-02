@@ -11,15 +11,45 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
     {
         public ShapeStroke(
             in ShapeLayerContentArgs args,
-            Animatable<double> opacityPercent)
+            Animatable<double> opacityPercent,
+            Animatable<double> strokeWidth,
+            LineCapType capType,
+            LineJoinType joinType,
+            double miterLimit)
             : base(in args)
         {
             OpacityPercent = opacityPercent;
+            StrokeWidth = strokeWidth;
+            CapType = capType;
+            JoinType = joinType;
+            MiterLimit = miterLimit;
         }
 
         public Animatable<double> OpacityPercent { get; }
 
+        public Animatable<double> StrokeWidth { get; }
+
+        public LineCapType CapType { get; }
+
+        public LineJoinType JoinType { get; }
+
+        public double MiterLimit { get; }
+
         public abstract ShapeStrokeKind StrokeKind { get; }
+
+        public enum LineCapType
+        {
+            Butt,
+            Round,
+            Projected,
+        }
+
+        public enum LineJoinType
+        {
+            Miter,
+            Round,
+            Bevel,
+        }
 
         public enum ShapeStrokeKind
         {

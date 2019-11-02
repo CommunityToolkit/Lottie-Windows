@@ -1146,7 +1146,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             readonly LottieToWinCompTranslator _owner;
 
-            internal SolidColorStroke Stroke { get; private set; }
+            internal ShapeStroke Stroke { get; private set; }
 
             internal ShapeFill Fill { get; private set; }
 
@@ -1176,19 +1176,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     var popped = stack.Peek();
                     switch (popped.ContentType)
                     {
-                        case ShapeContentType.LinearGradientStroke:
-                        case ShapeContentType.RadialGradientStroke:
-                            _owner._issues.GradientStrokeIsNotSupported();
-                            break;
-
                         case ShapeContentType.LinearGradientFill:
                         case ShapeContentType.RadialGradientFill:
                         case ShapeContentType.SolidColorFill:
                             Fill = ComposeFills(Fill, (ShapeFill)popped);
                             break;
 
+                        case ShapeContentType.LinearGradientStroke:
+                        case ShapeContentType.RadialGradientStroke:
                         case ShapeContentType.SolidColorStroke:
-                            Stroke = ComposeStrokes(Stroke, (SolidColorStroke)popped);
+                            Stroke = ComposeStrokes(Stroke, (ShapeStroke)popped);
                             break;
 
                         case ShapeContentType.RoundedCorner:
@@ -1389,7 +1386,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 return b;
             }
 
-            SolidColorStroke ComposeStrokes(SolidColorStroke a, SolidColorStroke b)
+            ShapeStroke ComposeStrokes(ShapeStroke a, ShapeStroke b)
             {
                 if (a == null)
                 {
@@ -1400,11 +1397,69 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     return a;
                 }
 
-                if (!a.Thickness.IsAnimated && !b.Thickness.IsAnimated &&
+                if (a.StrokeKind != b.StrokeKind)
+                {
+                    _owner._issues.MultipleStrokesIsNotSupported();
+                }
+
+                switch (a.StrokeKind)
+                {
+                    case ShapeStroke.ShapeStrokeKind.SolidColor:
+                        return ComposeSolidColorStrokes((SolidColorStroke)a, (SolidColorStroke)b);
+                    case ShapeStroke.ShapeStrokeKind.LinearGradient:
+                        return ComposeLinearGradientStrokes((LinearGradientStroke)a, (LinearGradientStroke)b);
+                    case ShapeStroke.ShapeStrokeKind.RadialGradient:
+                        return ComposeRadialGradientStrokes((RadialGradientStroke)a, (RadialGradientStroke)b);
+                    default:
+                        throw new InvalidOperationException();
+                }
+            }
+
+            LinearGradientStroke ComposeLinearGradientStrokes(LinearGradientStroke a, LinearGradientStroke b)
+            {
+                Debug.Assert(a != null && b != null, "Precondition");
+
+                if (!a.StrokeWidth.IsAnimated && !b.StrokeWidth.IsAnimated &&
+                    a.OpacityPercent.AlwaysEquals(100) && b.OpacityPercent.AlwaysEquals(100))
+                {
+                    if (a.StrokeWidth.InitialValue >= b.StrokeWidth.InitialValue)
+                    {
+                        // a occludes b, so b can be ignored.
+                        return a;
+                    }
+                }
+
+                _owner._issues.MultipleStrokesIsNotSupported();
+                return a;
+            }
+
+            RadialGradientStroke ComposeRadialGradientStrokes(RadialGradientStroke a, RadialGradientStroke b)
+            {
+                Debug.Assert(a != null && b != null, "Precondition");
+
+                if (!a.StrokeWidth.IsAnimated && !b.StrokeWidth.IsAnimated &&
+                    a.OpacityPercent.AlwaysEquals(100) && b.OpacityPercent.AlwaysEquals(100))
+                {
+                    if (a.StrokeWidth.InitialValue >= b.StrokeWidth.InitialValue)
+                    {
+                        // a occludes b, so b can be ignored.
+                        return a;
+                    }
+                }
+
+                _owner._issues.MultipleStrokesIsNotSupported();
+                return a;
+            }
+
+            SolidColorStroke ComposeSolidColorStrokes(SolidColorStroke a, SolidColorStroke b)
+            {
+                Debug.Assert(a != null && b != null, "Precondition");
+
+                if (!a.StrokeWidth.IsAnimated && !b.StrokeWidth.IsAnimated &&
                     !a.DashPattern.Any() && !b.DashPattern.Any() &&
                     a.OpacityPercent.AlwaysEquals(100) && b.OpacityPercent.AlwaysEquals(100))
                 {
-                    if (a.Thickness.InitialValue >= b.Thickness.InitialValue)
+                    if (a.StrokeWidth.InitialValue >= b.StrokeWidth.InitialValue)
                     {
                         // a occludes b, so b can be ignored.
                         return a;
@@ -2581,39 +2636,73 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         void TranslateAndApplyStroke(
             TranslationContext context,
-            SolidColorStroke shapeStroke,
+            ShapeStroke shapeStroke,
             CompositionSpriteShape sprite,
             TrimmedAnimatable<double> contextOpacityPercent)
         {
-            if (shapeStroke == null || shapeStroke.Thickness.AlwaysEquals(0))
+            if (shapeStroke == null)
             {
                 return;
             }
 
-            // A ShapeStroke is represented as a CompositionColorBrush and Stroke properties on the relevant SpriteShape.
-            // Map ShapeStroke's color to SpriteShape.StrokeBrush
-            sprite.StrokeBrush = CreateAnimatedColorBrush(
+            if (shapeStroke.StrokeWidth.AlwaysEquals(0))
+            {
+                return;
+            }
+
+            switch (shapeStroke.StrokeKind)
+            {
+                case ShapeStroke.ShapeStrokeKind.SolidColor:
+                    TranslateAndApplySolidColorStroke(context, (SolidColorStroke)shapeStroke, sprite, contextOpacityPercent);
+                    break;
+                case ShapeStroke.ShapeStrokeKind.LinearGradient:
+                    TranslateAndApplyLinearGradientStroke(context, (LinearGradientStroke)shapeStroke, sprite, contextOpacityPercent);
+                    break;
+                case ShapeStroke.ShapeStrokeKind.RadialGradient:
+                    TranslateAndApplyRadialGradientStroke(context, (RadialGradientStroke)shapeStroke, sprite, contextOpacityPercent);
+                    break;
+                default:
+                    throw new InvalidOperationException();
+            }
+        }
+
+        void TranslateAndApplyLinearGradientStroke(
+            TranslationContext context,
+            LinearGradientStroke shapeStroke,
+            CompositionSpriteShape sprite,
+            TrimmedAnimatable<double> contextOpacityPercent)
+        {
+            ApplyCommonStrokeProperties(
                 context,
-                MultiplyAnimatableColorByAnimatableOpacityPercent(
-                    context.TrimAnimatable(shapeStroke.Color),
-                    context.TrimAnimatable(shapeStroke.OpacityPercent)),
-                contextOpacityPercent);
+                shapeStroke,
+                TranslateLinearGradientStroke(context, shapeStroke, contextOpacityPercent),
+                sprite);
+        }
 
-            var strokeThickness = context.TrimAnimatable(shapeStroke.Thickness);
-            if (strokeThickness.IsAnimated)
-            {
-                ApplyScalarKeyFrameAnimation(context, strokeThickness, sprite, nameof(sprite.StrokeThickness));
-            }
-            else
-            {
-                sprite.StrokeThickness = (float)strokeThickness.InitialValue;
-            }
+        void TranslateAndApplyRadialGradientStroke(
+            TranslationContext context,
+            RadialGradientStroke shapeStroke,
+            CompositionSpriteShape sprite,
+            TrimmedAnimatable<double> contextOpacityPercent)
+        {
+            ApplyCommonStrokeProperties(
+                context,
+                shapeStroke,
+                TranslateRadialGradientStroke(context, shapeStroke, contextOpacityPercent),
+                sprite);
+        }
 
-            sprite.StrokeStartCap = sprite.StrokeEndCap = sprite.StrokeDashCap = StrokeCap(shapeStroke.CapType);
-
-            sprite.StrokeLineJoin = StrokeLineJoin(shapeStroke.JoinType);
-
-            sprite.StrokeMiterLimit = (float)shapeStroke.MiterLimit;
+        void TranslateAndApplySolidColorStroke(
+            TranslationContext context,
+            SolidColorStroke shapeStroke,
+            CompositionSpriteShape sprite,
+            TrimmedAnimatable<double> contextOpacityPercent)
+        {
+            ApplyCommonStrokeProperties(
+                context,
+                shapeStroke,
+                TranslateSolidColor(context, shapeStroke.Color, shapeStroke.OpacityPercent, contextOpacityPercent),
+                sprite);
 
             // NOTE: DashPattern animation (animating dash sizes) are not supported on CompositionSpriteShape.
             foreach (var dash in shapeStroke.DashPattern)
@@ -2631,6 +2720,32 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             {
                 sprite.StrokeDashOffset = (float)strokeDashOffset.InitialValue;
             }
+        }
+
+        // Applies the properties that are common to all Lottie ShapeStrokes to a CompositionSpriteShape.
+        void ApplyCommonStrokeProperties(
+            TranslationContext context,
+            ShapeStroke shapeStroke,
+            CompositionBrush brush,
+            CompositionSpriteShape sprite)
+        {
+            var strokeThickness = context.TrimAnimatable(shapeStroke.StrokeWidth);
+            if (strokeThickness.IsAnimated)
+            {
+                ApplyScalarKeyFrameAnimation(context, strokeThickness, sprite, nameof(sprite.StrokeThickness));
+            }
+            else
+            {
+                sprite.StrokeThickness = (float)strokeThickness.InitialValue;
+            }
+
+            sprite.StrokeStartCap = sprite.StrokeEndCap = sprite.StrokeDashCap = StrokeCap(shapeStroke.CapType);
+
+            sprite.StrokeLineJoin = StrokeLineJoin(shapeStroke.JoinType);
+
+            sprite.StrokeMiterLimit = (float)shapeStroke.MiterLimit;
+
+            sprite.StrokeBrush = brush;
         }
 
         CompositionBrush TranslateShapeFill(TranslationContext context, ShapeFill shapeFill, TrimmedAnimatable<double> opacityPercent)
@@ -2653,29 +2768,25 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
         }
 
-        CompositionColorBrush TranslateSolidColorFill(TranslationContext context, SolidColorFill shapeFill, TrimmedAnimatable<double> opacityPercent)
+        CompositionColorBrush TranslateSolidColor(TranslationContext context, Animatable<Color> color, Animatable<double> opacityPercentA, TrimmedAnimatable<double> opacityPercentB)
         {
             return CreateAnimatedColorBrush(
                 context,
                 MultiplyAnimatableColorByAnimatableOpacityPercent(
-                    context.TrimAnimatable(shapeFill.Color),
-                    context.TrimAnimatable(shapeFill.OpacityPercent)),
-                opacityPercent);
+                    context.TrimAnimatable(color),
+                    context.TrimAnimatable(opacityPercentA)),
+                opacityPercentB);
         }
+
+        CompositionColorBrush TranslateSolidColorFill(TranslationContext context, SolidColorFill shapeFill, TrimmedAnimatable<double> opacityPercent)
+            => TranslateSolidColor(context, shapeFill.Color, shapeFill.OpacityPercent, opacityPercent);
 
         CompositionLinearGradientBrush TranslateLinearGradientFill(
             TranslationContext context,
             LinearGradientFill shapeFill,
             TrimmedAnimatable<double> opacityPercent)
         {
-            var colorStops = context.TrimAnimatable(shapeFill.ColorStops);
             var opacityPercentStops = context.TrimAnimatable(shapeFill.OpacityPercentStops);
-
-            if (colorStops.InitialValue.Items.IsEmpty)
-            {
-                // If there are no color stops then we can't create a brush.
-                return null;
-            }
 
             if (opacityPercent.IsAnimated)
             {
@@ -2689,15 +2800,90 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 _issues.GradientFillIsNotSupported("Linear", "opacity stops");
             }
 
-            var opacityPercentValue = opacityPercent.InitialValue;
-
-            return TranslateLinearGradientFill(context, shapeFill, colorStops, opacityPercentValue);
+            return TranslateLinearGradient(
+                context,
+                shapeFill,
+                opacityPercent.InitialValue);
         }
 
-        CompositionLinearGradientBrush TranslateLinearGradientFill(
+        CompositionGradientBrush TranslateLinearGradientStroke(
             TranslationContext context,
-            LinearGradientFill shapeFill,
-            TrimmedAnimatable<Sequence<ColorGradientStop>> colorStops,
+            LinearGradientStroke shapeStroke,
+            TrimmedAnimatable<double> contextOpacityPercent)
+        {
+            var opacityPercentStops = context.TrimAnimatable(shapeStroke.OpacityPercentStops);
+
+            if (contextOpacityPercent.IsAnimated)
+            {
+                // We don't yet support animated opacity with LinearGradientFill.
+                _issues.GradientStrokeIsNotSupported("Linear", "animated opacity");
+            }
+
+            if (!opacityPercentStops.InitialValue.Items.IsEmpty)
+            {
+                // We don't yet support opacity stops.
+                _issues.GradientStrokeIsNotSupported("Linear", "opacity stops");
+            }
+
+            return TranslateLinearGradient(
+                context,
+                shapeStroke,
+                contextOpacityPercent.InitialValue);
+        }
+
+        CompositionBrush TranslateRadialGradientFill(
+            TranslationContext context,
+            RadialGradientFill shapeFill,
+            TrimmedAnimatable<double> opacityPercent)
+        {
+            var opacityPercentStops = context.TrimAnimatable(shapeFill.OpacityPercentStops);
+
+            if (opacityPercent.IsAnimated)
+            {
+                // We don't yet support animated opacity with RadialGradientFill.
+                _issues.GradientFillIsNotSupported("Radial", "animated opacity");
+            }
+
+            if (!opacityPercentStops.InitialValue.Items.IsEmpty)
+            {
+                // We don't yet support opacity stops.
+                _issues.GradientFillIsNotSupported("Radial", "opacity stops");
+            }
+
+            return TranslateRadialGradient(
+                context,
+                shapeFill,
+                opacityPercent.InitialValue);
+        }
+
+        CompositionGradientBrush TranslateRadialGradientStroke(
+            TranslationContext context,
+            RadialGradientStroke shapeStroke,
+            TrimmedAnimatable<double> contextOpacityPercent)
+        {
+            var opacityPercentStops = context.TrimAnimatable(shapeStroke.OpacityPercentStops);
+
+            if (contextOpacityPercent.IsAnimated)
+            {
+                // We don't yet support animated opacity with RadialGradientStroke.
+                _issues.GradientStrokeIsNotSupported("Radial", "animated opacity");
+            }
+
+            if (!opacityPercentStops.InitialValue.Items.IsEmpty)
+            {
+                // We don't yet support opacity stops.
+                _issues.GradientStrokeIsNotSupported("Radial", "opacity stops");
+            }
+
+            return TranslateRadialGradient(
+                context,
+                shapeStroke,
+                contextOpacityPercent.InitialValue);
+        }
+
+        CompositionLinearGradientBrush TranslateLinearGradient(
+            TranslationContext context,
+            IGradient linearGradient,
             double opacityPercentValue)
         {
             var result = _c.CreateLinearGradientBrush();
@@ -2705,8 +2891,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             // BodyMovin specifies start and end points in absolute values.
             result.MappingMode = CompositionMappingMode.Absolute;
 
-            var startPoint = context.TrimAnimatable(shapeFill.StartPoint);
-            var endPoint = context.TrimAnimatable(shapeFill.EndPoint);
+            var startPoint = context.TrimAnimatable(linearGradient.StartPoint);
+            var endPoint = context.TrimAnimatable(linearGradient.EndPoint);
 
             if (startPoint.IsAnimated)
             {
@@ -2727,6 +2913,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
 
             var brushStops = result.ColorStops;
+
+            var colorStops = context.TrimAnimatable(linearGradient.ColorStops);
+
+            if (colorStops.InitialValue.Items.IsEmpty)
+            {
+                // If there are no color stops then we can't create a brush.
+                return null;
+            }
 
             if (colorStops.IsAnimated)
             {
@@ -2776,73 +2970,23 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return result;
         }
 
-        CompositionBrush TranslateRadialGradientFill(
+        CompositionGradientBrush TranslateRadialGradient(
             TranslationContext context,
-            RadialGradientFill shapeFill,
-            TrimmedAnimatable<double> opacityPercent)
-        {
-            var colorStops = context.TrimAnimatable(shapeFill.ColorStops);
-            var opacityPercentStops = context.TrimAnimatable(shapeFill.OpacityPercentStops);
-
-            if (colorStops.InitialValue.Items.IsEmpty)
-            {
-                // If there are no color stops then we can't create a brush.
-                return null;
-            }
-
-            if (opacityPercent.IsAnimated)
-            {
-                // We don't yet support animated opacity with RadialGradientFill.
-                _issues.GradientFillIsNotSupported("Radial", "animated opacity");
-            }
-
-            if (!opacityPercentStops.InitialValue.Items.IsEmpty)
-            {
-                // We don't yet support opacity stops.
-                _issues.GradientFillIsNotSupported("Radial", "opacity stops");
-            }
-
-            var opacityPercentValue = opacityPercent.InitialValue;
-
-            if (IsUapApiAvailable(nameof(CompositionRadialGradientBrush), versionDependentFeatureDescription: "Radial gradient fill"))
-            {
-                return TranslateRadialGradientFillToCompositionRadialGradientBrush(context, shapeFill, colorStops, opacityPercentValue);
-            }
-            else
-            {
-                // Radial gradient is not available. Convert the RadialGradientFill to a LinearGradientFill as a compromise.
-                var fillArgs = new ShapeLayerContent.ShapeLayerContentArgs()
-                {
-                    BlendMode = shapeFill.BlendMode,
-                    MatchName = shapeFill.MatchName,
-                    Name = shapeFill.Name,
-                };
-                var linearFill = new LinearGradientFill(
-                    in fillArgs,
-                    shapeFill.FillType,
-                    shapeFill.OpacityPercent,
-                    shapeFill.StartPoint,
-                    shapeFill.EndPoint,
-                    shapeFill.ColorStops,
-                    shapeFill.OpacityPercentStops);
-
-                return TranslateLinearGradientFill(context, linearFill, opacityPercent);
-            }
-        }
-
-        CompositionRadialGradientBrush TranslateRadialGradientFillToCompositionRadialGradientBrush(
-            TranslationContext context,
-            RadialGradientFill shapeFill,
-            TrimmedAnimatable<Sequence<ColorGradientStop>> colorStops,
+            IRadialGradient gradient,
             double opacityPercentValue)
         {
+            if (!IsUapApiAvailable(nameof(CompositionRadialGradientBrush), versionDependentFeatureDescription: "Radial gradient fill"))
+            {
+                return TranslateLinearGradient(context, gradient, opacityPercentValue);
+            }
+
             var result = _c.CreateRadialGradientBrush();
 
             // BodyMovin specifies start and end points in absolute values.
             result.MappingMode = CompositionMappingMode.Absolute;
 
-            var startPoint = context.TrimAnimatable(shapeFill.StartPoint);
-            var endPoint = context.TrimAnimatable(shapeFill.EndPoint);
+            var startPoint = context.TrimAnimatable(gradient.StartPoint);
+            var endPoint = context.TrimAnimatable(gradient.EndPoint);
 
             if (startPoint.IsAnimated)
             {
@@ -2861,14 +3005,21 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             result.EllipseRadius = new Sn.Vector2(Sn.Vector2.Distance(Vector2(startPoint.InitialValue), Vector2(endPoint.InitialValue)));
 
-            if (shapeFill.HighlightLength != null &&
-                (shapeFill.HighlightLength.InitialValue != 0 || shapeFill.HighlightLength.IsAnimated))
+            if (gradient.HighlightLength != null &&
+                (gradient.HighlightLength.InitialValue != 0 || gradient.HighlightLength.IsAnimated))
             {
                 // We don't yet support animated HighlightLength.
                 _issues.GradientFillIsNotSupported("Radial", "animated highlight length");
             }
 
             var brushStops = result.ColorStops;
+            var colorStops = context.TrimAnimatable(gradient.ColorStops);
+
+            if (colorStops.InitialValue.Items.IsEmpty)
+            {
+                // If there are no color stops then we can't create a brush.
+                return null;
+            }
 
             if (colorStops.IsAnimated)
             {

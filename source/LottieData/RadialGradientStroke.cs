@@ -2,14 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using static Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.SolidColorStroke;
-
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 {
 #if PUBLIC_LottieData
     public
 #endif
-    sealed class RadialGradientStroke : ShapeStroke
+    sealed class RadialGradientStroke : ShapeStroke, IRadialGradient
     {
         public RadialGradientStroke(
             in ShapeLayerContentArgs args,
@@ -24,12 +22,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             Animatable<Sequence<OpacityGradientStop>> opacityPercentStops,
             Animatable<double> highlightLength,
             Animatable<double> highlightDegrees)
-            : base(in args, opacityPercent)
+            : base(in args, opacityPercent, strokeWidth, capType, joinType, miterLimit)
         {
-            StrokeWidth = strokeWidth;
-            CapType = capType;
-            JoinType = joinType;
-            MiterLimit = miterLimit;
             StartPoint = startPoint;
             EndPoint = endPoint;
             ColorStops = colorStops;
@@ -37,14 +31,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             HighlightLength = highlightLength;
             HighlightDegrees = highlightDegrees;
         }
-
-        public Animatable<double> StrokeWidth { get; }
-
-        public LineCapType CapType { get; }
-
-        public LineJoinType JoinType { get; }
-
-        public double MiterLimit { get; }
 
         public IAnimatableVector3 StartPoint { get; }
 

@@ -21,34 +21,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             IEnumerable<double> dashPattern,
             Animatable<Color> color,
             Animatable<double> opacityPercent,
-            Animatable<double> thickness,
+            Animatable<double> strokeWidth,
             LineCapType capType,
             LineJoinType joinType,
             double miterLimit)
-            : base(in args, opacityPercent)
+            : base(in args, opacityPercent, strokeWidth, capType, joinType, miterLimit)
         {
             DashOffset = dashOffset;
             _dashPattern = dashPattern.ToArray();
             Color = color;
-            Thickness = thickness;
-            CapType = capType;
-            JoinType = joinType;
-            MiterLimit = miterLimit;
         }
 
         public Animatable<Color> Color { get; }
 
-        public Animatable<double> Thickness { get; }
-
         public ReadOnlySpan<double> DashPattern => _dashPattern;
 
         public Animatable<double> DashOffset { get; }
-
-        public LineCapType CapType { get; }
-
-        public LineJoinType JoinType { get; }
-
-        public double MiterLimit { get; }
 
         /// <inheritdoc/>
         public override ShapeContentType ContentType => ShapeContentType.SolidColorStroke;
@@ -57,19 +45,5 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         public override LottieObjectType ObjectType => LottieObjectType.SolidColorStroke;
 
         public override ShapeStrokeKind StrokeKind => ShapeStrokeKind.SolidColor;
-
-        public enum LineCapType
-        {
-            Butt,
-            Round,
-            Projected,
-        }
-
-        public enum LineJoinType
-        {
-            Miter,
-            Round,
-            Bevel,
-        }
     }
 }
