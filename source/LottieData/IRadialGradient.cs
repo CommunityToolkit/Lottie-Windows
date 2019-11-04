@@ -9,8 +9,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 #endif
     interface IRadialGradient : IGradient
     {
-        public Animatable<double> HighlightLength { get; }
+        Animatable<double> HighlightLength { get; }
 
-        public Animatable<double> HighlightDegrees { get; }
+        Animatable<double> HighlightDegrees { get; }
     }
 }
