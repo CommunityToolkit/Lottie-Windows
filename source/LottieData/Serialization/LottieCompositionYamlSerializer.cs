@@ -346,7 +346,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             var result = superclassContent;
             result.Add("Color", FromAnimatable(content.Color, FromColor));
             result.Add("OpacityPercent", FromAnimatable(content.OpacityPercent));
-            result.Add("Thickness", FromAnimatable(content.Thickness));
+            result.Add("Thickness", FromAnimatable(content.StrokeWidth));
             return result;
         }
 

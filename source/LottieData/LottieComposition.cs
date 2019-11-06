@@ -17,11 +17,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// Initializes a new instance of the <see cref="LottieComposition"/> class.
         /// </summary>
         /// <param name="name">The name of the composition.</param>
-        /// <param name="width">Width of animation canvas as specified in AfterEffects.</param>
-        /// <param name="height">Height of animation canvas as specified in AfterEffects.</param>
-        /// <param name="inPoint">Frame at which animation begins as specified in AfterEffects.</param>
-        /// <param name="outPoint">Frame at which animation ends as specified in AfterEffects.</param>
-        /// <param name="framesPerSecond">FrameRate (frames per second) at which animation data was generated in AfterEffects.</param>
+        /// <param name="width">Width of animation canvas as specified in After Effects.</param>
+        /// <param name="height">Height of animation canvas as specified in After Effects.</param>
+        /// <param name="inPoint">Frame at which animation begins as specified in After Effects.</param>
+        /// <param name="outPoint">Frame at which animation ends as specified in After Effects.</param>
+        /// <param name="framesPerSecond">FrameRate (frames per second) at which animation data was generated in After Effects.</param>
         /// <param name="is3d">True if the composition is 3d.</param>
         /// <param name="version">The version of the schema of the composition.</param>
         /// <param name="assets">Assets that are part of the composition.</param>
