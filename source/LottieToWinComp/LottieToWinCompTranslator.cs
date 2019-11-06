@@ -2977,6 +2977,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         {
             if (!IsUapApiAvailable(nameof(CompositionRadialGradientBrush), versionDependentFeatureDescription: "Radial gradient fill"))
             {
+                // CompositionRadialGradientBrush didn't exist until UAP v8. If the target OS doesn't support
+                // UAP v8 then fall back to linear gradients as a compromise.
                 return TranslateLinearGradient(context, gradient, opacityPercentValue);
             }
 
