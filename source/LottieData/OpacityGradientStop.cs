@@ -7,16 +7,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 #if PUBLIC_LottieData
     public
 #endif
-    readonly struct OpacityGradientStop
+    sealed class OpacityGradientStop : GradientStop
     {
         public OpacityGradientStop(double offset, double opacityPercent)
+            : base(offset)
         {
-            Offset = offset;
             OpacityPercent = opacityPercent;
         }
 
-        public readonly double Offset;
-        public readonly double OpacityPercent;
+        public double OpacityPercent { get; }
+
+        /// <inheritdoc/>
+        public override GradientStopKind Kind => GradientStopKind.Opacity;
 
         /// <inheritdoc/>
         public override string ToString() => $"{OpacityPercent}%@{Offset}";

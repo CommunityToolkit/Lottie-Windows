@@ -33,6 +33,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             return false;
         }
 
+        public static double Max(this ReadOnlySpan<double> source)
+        {
+            var result = double.MinValue;
+            for (var i = 0; i < source.Length; i++)
+            {
+                if (source[i] > result)
+                {
+                    result = source[i];
+                }
+            }
+
+            return result;
+        }
+
         public static TResult[] SelectToArray<TSource, TResult>(this ReadOnlySpan<TSource> source, Func<TSource, TResult> selector)
         {
             var result = new TResult[source.Length];

@@ -2786,24 +2786,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             LinearGradientFill shapeFill,
             TrimmedAnimatable<double> opacityPercent)
         {
-            var opacityPercentStops = context.TrimAnimatable(shapeFill.OpacityPercentStops);
-
             if (opacityPercent.IsAnimated)
             {
                 // We don't yet support animated opacity with LinearGradientFill.
                 _issues.GradientFillIsNotSupported("Linear", "animated opacity");
             }
 
-            if (!opacityPercentStops.InitialValue.Items.IsEmpty)
-            {
-                // We don't yet support opacity stops.
-                _issues.GradientFillIsNotSupported("Linear", "opacity stops");
-            }
-
             return TranslateLinearGradient(
                 context,
                 shapeFill,
-                opacityPercent.InitialValue);
+                Max(in opacityPercent));
         }
 
         CompositionGradientBrush TranslateLinearGradientStroke(
@@ -2811,24 +2803,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             LinearGradientStroke shapeStroke,
             TrimmedAnimatable<double> contextOpacityPercent)
         {
-            var opacityPercentStops = context.TrimAnimatable(shapeStroke.OpacityPercentStops);
-
             if (contextOpacityPercent.IsAnimated)
             {
                 // We don't yet support animated opacity with LinearGradientFill.
                 _issues.GradientStrokeIsNotSupported("Linear", "animated opacity");
             }
 
-            if (!opacityPercentStops.InitialValue.Items.IsEmpty)
-            {
-                // We don't yet support opacity stops.
-                _issues.GradientStrokeIsNotSupported("Linear", "opacity stops");
-            }
-
             return TranslateLinearGradient(
                 context,
                 shapeStroke,
-                contextOpacityPercent.InitialValue);
+                Max(contextOpacityPercent));
         }
 
         CompositionBrush TranslateRadialGradientFill(
@@ -2836,24 +2820,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             RadialGradientFill shapeFill,
             TrimmedAnimatable<double> opacityPercent)
         {
-            var opacityPercentStops = context.TrimAnimatable(shapeFill.OpacityPercentStops);
-
             if (opacityPercent.IsAnimated)
             {
                 // We don't yet support animated opacity with RadialGradientFill.
                 _issues.GradientFillIsNotSupported("Radial", "animated opacity");
             }
 
-            if (!opacityPercentStops.InitialValue.Items.IsEmpty)
-            {
-                // We don't yet support opacity stops.
-                _issues.GradientFillIsNotSupported("Radial", "opacity stops");
-            }
-
             return TranslateRadialGradient(
                 context,
                 shapeFill,
-                opacityPercent.InitialValue);
+                Max(opacityPercent));
         }
 
         CompositionGradientBrush TranslateRadialGradientStroke(
@@ -2861,24 +2837,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             RadialGradientStroke shapeStroke,
             TrimmedAnimatable<double> contextOpacityPercent)
         {
-            var opacityPercentStops = context.TrimAnimatable(shapeStroke.OpacityPercentStops);
-
             if (contextOpacityPercent.IsAnimated)
             {
                 // We don't yet support animated opacity with RadialGradientStroke.
                 _issues.GradientStrokeIsNotSupported("Radial", "animated opacity");
             }
 
-            if (!opacityPercentStops.InitialValue.Items.IsEmpty)
-            {
-                // We don't yet support opacity stops.
-                _issues.GradientStrokeIsNotSupported("Radial", "opacity stops");
-            }
-
             return TranslateRadialGradient(
                 context,
                 shapeStroke,
-                contextOpacityPercent.InitialValue);
+                Max(contextOpacityPercent));
         }
 
         CompositionLinearGradientBrush TranslateLinearGradient(
@@ -2913,23 +2881,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
 
             var brushStops = result.ColorStops;
+            var gradientStops = context.TrimAnimatable(linearGradient.GradientStops);
 
-            var colorStops = context.TrimAnimatable(linearGradient.ColorStops);
-
-            if (colorStops.InitialValue.Items.IsEmpty)
+            if (gradientStops.InitialValue.Items.IsEmpty)
             {
-                // If there are no color stops then we can't create a brush.
+                // If there are no gradient stops then we can't create a brush.
                 return null;
             }
 
-            if (colorStops.IsAnimated)
+            if (gradientStops.IsAnimated)
             {
                 // Lottie represents animation of stops as a sequence of lists of stops.
                 // WinComp uses a single list of stops where each stop is animated.
-                var stopsCount = colorStops.InitialValue.Items.Length;
-                var keyframesCount = colorStops.KeyFrames.Length;
 
-                var colorStopKeyFrames = colorStops.KeyFrames.ToArray();
+                // Lottie represents stops as either color or opacity stops. Convert them all to color stops.
+                var colorStopKeyFrames = gradientStops.KeyFrames.SelectToArray(kf => GradientStopOptimizer.Optimize(kf));
+                var stopsCount = gradientStops.InitialValue.Items.Length;
 
                 // Create the Composition stops and animate them.
                 for (var i = 0; i < stopsCount; i++)
@@ -2937,8 +2904,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     var gradientStop = _c.CreateColorGradientStop();
                     brushStops.Add(gradientStop);
 
-                    // Extract the key frames for this stop.
-                    var colorKeyFrames = ExtractKeyFramesFromGradientStopKeyFrames(
+                    // Extract the color key frames for this stop.
+                    var colorKeyFrames = ExtractKeyFramesFromColorStopKeyFrames(
                         colorStopKeyFrames,
                         i,
                         gs => MultiplyColorByOpacityPercent(gs.Color, opacityPercentValue)).ToArray();
@@ -2949,7 +2916,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         gradientStop,
                         nameof(gradientStop.Color));
 
-                    var offsetKeyFrames = ExtractKeyFramesFromGradientStopKeyFrames(colorStopKeyFrames, i, gs => gs.Offset).ToArray();
+                    // Extract the offset key frames for this stop.
+                    var offsetKeyFrames = ExtractKeyFramesFromColorStopKeyFrames(
+                        colorStopKeyFrames,
+                        i,
+                        gs => gs.Offset).ToArray();
                     ApplyScalarKeyFrameAnimation(
                         context,
                         new TrimmedAnimatable<double>(context, offsetKeyFrames[0].Value, offsetKeyFrames),
@@ -2959,7 +2930,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
             else
             {
-                foreach (var stop in colorStops.InitialValue.Items)
+                // Distinct() here eliminates any redundant stops. It is safe to eliminate them
+                // in the non-animated case. If there are key frames then it's potentially dangerous
+                // as every key frame needs to have the same number of stops, and Distinct() might
+                // eliminate different stops from each KeyFrame.
+                foreach (var stop in GradientStopOptimizer.Optimize(gradientStops.InitialValue.Items.ToArray()).Distinct())
                 {
                     var offset = stop.Offset;
                     var color = MultiplyColorByOpacityPercent(stop.Color, opacityPercentValue);
@@ -3015,22 +2990,23 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
 
             var brushStops = result.ColorStops;
-            var colorStops = context.TrimAnimatable(gradient.ColorStops);
+            var gradientStops = context.TrimAnimatable(gradient.GradientStops);
 
-            if (colorStops.InitialValue.Items.IsEmpty)
+            if (gradientStops.InitialValue.Items.IsEmpty)
             {
-                // If there are no color stops then we can't create a brush.
+                // If there are no gradient stops then we can't create a brush.
                 return null;
             }
 
-            if (colorStops.IsAnimated)
+            if (gradientStops.IsAnimated)
             {
                 // Lottie represents animation of stops as a sequence of lists of stops.
                 // WinComp uses a single list of stops where each stop is animated.
-                var stopsCount = colorStops.InitialValue.Items.Length;
-                var keyframesCount = colorStops.KeyFrames.Length;
 
-                var colorStopKeyFrames = colorStops.KeyFrames.ToArray();
+                // Lottie reprsents stops as either color or opacity stops. Convert them all to color stops.
+                var colorStopKeyFrames = gradientStops.KeyFrames.SelectToArray(kf => GradientStopOptimizer.Optimize(kf));
+                var stopsCount = gradientStops.InitialValue.Items.Length;
+                var keyframesCount = gradientStops.KeyFrames.Length;
 
                 // Create the Composition stops and animate them.
                 for (var i = 0; i < stopsCount; i++)
@@ -3038,8 +3014,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     var gradientStop = _c.CreateColorGradientStop();
                     brushStops.Add(gradientStop);
 
-                    // Extract the key frames for this stop.
-                    var colorKeyFrames = ExtractKeyFramesFromGradientStopKeyFrames(
+                    // Extract the color key frames for this stop.
+                    var colorKeyFrames = ExtractKeyFramesFromColorStopKeyFrames(
                         colorStopKeyFrames,
                         i,
                         gs => MultiplyColorByOpacityPercent(gs.Color, opacityPercentValue)).ToArray();
@@ -3050,7 +3026,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         gradientStop,
                         nameof(gradientStop.Color));
 
-                    var offsetKeyFrames = ExtractKeyFramesFromGradientStopKeyFrames(colorStopKeyFrames, i, gs => gs.Offset).ToArray();
+                    // Extrac the offset key frames for this stop.
+                    var offsetKeyFrames = ExtractKeyFramesFromColorStopKeyFrames(colorStopKeyFrames, i, gs => gs.Offset).ToArray();
                     ApplyScalarKeyFrameAnimation(
                         context,
                         new TrimmedAnimatable<double>(context, offsetKeyFrames[0].Value, offsetKeyFrames),
@@ -3060,7 +3037,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
             else
             {
-                foreach (var stop in colorStops.InitialValue.Items)
+                // Distinct() here eliminates any redundant stops. It is safe to eliminate them
+                // in the non-animated case. If there are key frames then it's potentially dangerous
+                // as every key frame needs to have the same number of stops, and Distinct() might
+                // eliminate different stops from each KeyFrame.
+                foreach (var stop in GradientStopOptimizer.Optimize(gradientStops.InitialValue.Items.ToArray()).Distinct())
                 {
                     var offset = stop.Offset;
                     var color = MultiplyColorByOpacityPercent(stop.Color, opacityPercentValue);
@@ -3071,10 +3052,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return result;
         }
 
-        static IEnumerable<KeyFrame<TKeyFrame>> ExtractKeyFramesFromGradientStopKeyFrames<TStop, TKeyFrame>(
-            KeyFrame<Sequence<TStop>>[] stops,
+        static IEnumerable<KeyFrame<TKeyFrame>> ExtractKeyFramesFromColorStopKeyFrames<TKeyFrame>(
+            KeyFrame<Sequence<ColorGradientStop>>[] stops,
             int stopIndex,
-            Func<TStop, TKeyFrame> selector)
+            Func<ColorGradientStop, TKeyFrame> selector)
             where TKeyFrame : IEquatable<TKeyFrame>
         {
             for (var i = 0; i < stops.Length; i++)
@@ -4016,11 +3997,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         }
 
         static Color MultiplyColorByOpacityPercent(Color color, double opacityPercent)
-            => color == null
-                ? null
-                : (opacityPercent == 100
-                    ? color
-                    : LottieData.Color.FromArgb(color.A * opacityPercent / 100, color.R, color.G, color.B));
+            => color?.MultipliedByOpacity(opacityPercent / 100);
 
         CompositionColorBrush CreateAnimatedColorBrush(TranslationContext context, Color color, in TrimmedAnimatable<double> opacityPercent)
         {
@@ -4060,6 +4037,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         void IDisposable.Dispose()
         {
         }
+
+        static double Max(in TrimmedAnimatable<double> animatable)
+            => animatable.IsAnimated
+                ? animatable.KeyFrames.Max(kf => kf.Value)
+                : animatable.InitialValue;
 
         static CompositionStrokeCap StrokeCap(SolidColorStroke.LineCapType lineCapType)
         {

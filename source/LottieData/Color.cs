@@ -20,21 +20,38 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         }
 
         public static Color FromArgb(double a, double r, double g, double b)
-        {
-            return new Color(a, r, g, b);
-        }
+            => new Color(a, r, g, b);
 
         public static Color Black { get; } = new Color(1, 0, 0, 0);
 
         public static Color TransparentBlack { get; } = new Color(0, 0, 0, 0);
 
+        /// <summary>
+        /// The alpha value of this <see cref="Color"/>.
+        /// </summary>
         public double A { get; }
 
+        /// <summary>
+        /// The red value of this <see cref="Color"/>.
+        /// </summary>
         public double R { get; }
 
+        /// <summary>
+        /// The green value of this <see cref="Color"/>.
+        /// </summary>
         public double G { get; }
 
+        /// <summary>
+        /// The blue value of this <see cref="Color"/>.
+        /// </summary>
         public double B { get; }
+
+        /// <summary>
+        /// Return the color with the given opacity multiplied into the alpha channel.
+        /// </summary>
+        /// <returns>The color with the given opacity multiplied into the alpha channel.</returns>
+        public Color MultipliedByOpacity(double opacity)
+            => opacity == 1 ? this : new Color(opacity * A, R, G, B);
 
         /// <inheritdoc/>
         public override bool Equals(object obj) => obj is Color && Equals((Color)obj);

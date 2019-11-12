@@ -9,31 +9,36 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 #if PUBLIC_LottieData
     public
 #endif
-    readonly struct ColorGradientStop
+    sealed class ColorGradientStop : GradientStop, IEquatable<ColorGradientStop>
     {
         public ColorGradientStop(double offset, Color color)
+            : base(offset)
         {
             if (color == null)
             {
                 throw new ArgumentException("Color must be specified");
             }
 
-            if (color.A != 1)
-            {
-                throw new ArgumentException("Color must have an alpha of 1");
-            }
-
-            Offset = offset;
             Color = color;
         }
 
-        public readonly Color Color;
-        public readonly double Offset;
+        public Color Color { get; }
+
+        /// <inheritdoc/>
+        public override GradientStopKind Kind => GradientStopKind.Color;
 
         /// <inheritdoc/>
         public override string ToString()
             => $"#{ToHex(Color.R)}{ToHex(Color.G)}{ToHex(Color.B)}@{Offset}";
 
         static string ToHex(double value) => ((byte)(value * 255)).ToString("X2");
+
+        public bool Equals(ColorGradientStop other)
+            => other != null && other.Offset == Offset && other.Color.Equals(Color);
+
+        public override bool Equals(object obj)
+            => Equals(obj as ColorGradientStop);
+
+        public override int GetHashCode() => Color.GetHashCode() ^ Offset.GetHashCode();
     }
 }

@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -15,7 +16,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 #if PUBLIC_LottieData
     public
 #endif
-    sealed class Sequence<T> : IEquatable<Sequence<T>>
+    sealed class Sequence<T> : IEquatable<Sequence<T>>, IEnumerable<T>
     {
         static readonly string ItemTypeName = typeof(T).Name;
         readonly T[] _items;
@@ -68,5 +69,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
         /// <inheritdoc/>
         public override string ToString() => $"{ItemTypeName}s: {string.Join(", ", _items)}";
+
+        IEnumerator<T> IEnumerable<T>.GetEnumerator() => ((IEnumerable<T>)_items).GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable<T>)_items).GetEnumerator();
     }
 }
