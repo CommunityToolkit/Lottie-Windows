@@ -1592,9 +1592,26 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     out var opacityKeyFrames,
                     out var opacityInitialValue);
 
-                gradientStops = opacityKeyFrames.Any()
-                    ? new Animatable<Sequence<GradientStop>>(ConcatGradientStopKeyFrames(colorKeyFrames, opacityKeyFrames), propertyIndex)
-                    : new Animatable<Sequence<GradientStop>>(new Sequence<GradientStop>(colorInitialValue.Concat(opacityInitialValue)), propertyIndex);
+                if (opacityKeyFrames.Any())
+                {
+                    // There are opacity key frames. The number of color key frames should be the same
+                    // (this is asserted in ConcatGradientStopKeyFrames).
+                    gradientStops =
+                        new Animatable<Sequence<GradientStop>>(ConcatGradientStopKeyFrames(colorKeyFrames, opacityKeyFrames), propertyIndex);
+                }
+                else
+                {
+                    // There is only an initial opacity value (i.e. no key frames).
+                    // There should be no key frames for color either.
+                    if (colorKeyFrames.Any())
+                    {
+                        throw new LottieCompositionReaderException(
+                            "Numbers of key frames in opacity gradient stops and color gradient stops are unequal.");
+                    }
+
+                    gradientStops =
+                        new Animatable<Sequence<GradientStop>>(new Sequence<GradientStop>(colorInitialValue.Concat(opacityInitialValue)), propertyIndex);
+                }
             }
             else
             {
@@ -1603,13 +1620,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     ? new Animatable<Sequence<GradientStop>>(colorKeyFrames, propertyIndex)
                     : new Animatable<Sequence<GradientStop>>(colorInitialValue, propertyIndex);
             }
-
-            // TODO: if there are opacity key frames, there will be the same number of color keyframes. assert it.
-            // TODO: combine opacity and color into the same sequence for each keyframe. Maybe ordered by offset.
         }
-
-        static Sequence<GradientStop> ConcatGradientStops(Sequence<ColorGradientStop> a, Sequence<OpacityGradientStop> b)
-            => new Sequence<GradientStop>(a.Cast<GradientStop>().Concat(b));
 
         static IEnumerable<KeyFrame<Sequence<GradientStop>>> ConcatGradientStopKeyFrames(
             IEnumerable<KeyFrame<Sequence<GradientStop>>> a,
@@ -1619,7 +1630,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             var bArray = b.ToArray();
             if (aArray.Length != bArray.Length)
             {
-                // TODO - throw an exception - this should never happen in valid Lottie files.
+                throw new LottieCompositionReaderException(
+                    "Numbers of key frames in opacity gradient stops and color gradient stops are unequal.");
             }
 
             for (var i = 0; i < aArray.Length; i++)
@@ -1627,7 +1639,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 var aKeyFrame = aArray[i];
                 var bKeyFrame = bArray[i];
 
-                // TODO - check that the frame, control points, and easing are identical between each frame.
+                if (aKeyFrame.Frame != bKeyFrame.Frame ||
+                    aKeyFrame.SpatialControlPoint1 != bKeyFrame.SpatialControlPoint1 ||
+                    aKeyFrame.SpatialControlPoint2 != bKeyFrame.SpatialControlPoint2 ||
+                    aKeyFrame.Easing != bKeyFrame.Easing)
+                {
+                    throw new LottieCompositionReaderException(
+                        "Opacity gradient stop key frame does not match color gradient stop key frame.");
+                }
+
                 yield return new KeyFrame<Sequence<GradientStop>>(
                     aKeyFrame.Frame,
                     new Sequence<GradientStop>(aKeyFrame.Value.Concat(bKeyFrame.Value)),

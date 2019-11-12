@@ -3026,7 +3026,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         gradientStop,
                         nameof(gradientStop.Color));
 
-                    // Extrac the offset key frames for this stop.
+                    // Extract the offset key frames for this stop.
                     var offsetKeyFrames = ExtractKeyFramesFromColorStopKeyFrames(colorStopKeyFrames, i, gs => gs.Offset).ToArray();
                     ApplyScalarKeyFrameAnimation(
                         context,
