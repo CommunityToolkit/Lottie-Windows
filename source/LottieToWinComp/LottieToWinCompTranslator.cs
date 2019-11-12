@@ -2795,7 +2795,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return TranslateLinearGradient(
                 context,
                 shapeFill,
-                Max(in opacityPercent));
+                MaxOpacityPercent(in opacityPercent));
         }
 
         CompositionGradientBrush TranslateLinearGradientStroke(
@@ -2812,7 +2812,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return TranslateLinearGradient(
                 context,
                 shapeStroke,
-                Max(contextOpacityPercent));
+                MaxOpacityPercent(in contextOpacityPercent));
         }
 
         CompositionBrush TranslateRadialGradientFill(
@@ -2829,7 +2829,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return TranslateRadialGradient(
                 context,
                 shapeFill,
-                Max(opacityPercent));
+                MaxOpacityPercent(in opacityPercent));
         }
 
         CompositionGradientBrush TranslateRadialGradientStroke(
@@ -2846,7 +2846,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return TranslateRadialGradient(
                 context,
                 shapeStroke,
-                Max(contextOpacityPercent));
+                MaxOpacityPercent(in contextOpacityPercent));
         }
 
         CompositionLinearGradientBrush TranslateLinearGradient(
@@ -3937,27 +3937,29 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         {
             if (color.IsAnimated)
             {
+                var opacityPercentInitialValue = opacityPercent.InitialValue;
+
                 if (opacityPercent.IsAnimated)
                 {
                     // TOOD: multiply animations to produce a new set of key frames for the opacity-multiplied color.
                     _issues.OpacityAndColorAnimatedTogetherIsNotSupported();
-                    return color;
+
+                    // Multiply the color values by the maximum opacity. This is a heuristic
+                    // that can give a better result than just returning the color.
+                    opacityPercentInitialValue = MaxOpacityPercent(in opacityPercent);
                 }
-                else
-                {
-                    // Multiply the color animation by the single opacity value.
-                    var opacityPercentInitialValue = opacityPercent.InitialValue;
-                    return new TrimmedAnimatable<Color>(
-                        color.Context,
-                        initialValue: MultiplyColorByOpacityPercent(color.InitialValue, opacityPercent.InitialValue),
-                        keyFrames: color.KeyFrames.SelectToSpan(kf =>
-                            new KeyFrame<Color>(
-                                kf.Frame,
-                                MultiplyColorByOpacityPercent(kf.Value, opacityPercentInitialValue),
-                                kf.SpatialControlPoint1,
-                                kf.SpatialControlPoint2,
-                                kf.Easing)));
-                }
+
+                // Multiply the color animation by the single opacity value.
+                return new TrimmedAnimatable<Color>(
+                    color.Context,
+                    initialValue: MultiplyColorByOpacityPercent(color.InitialValue, opacityPercent.InitialValue),
+                    keyFrames: color.KeyFrames.SelectToSpan(kf =>
+                        new KeyFrame<Color>(
+                            kf.Frame,
+                            MultiplyColorByOpacityPercent(kf.Value, opacityPercentInitialValue),
+                            kf.SpatialControlPoint1,
+                            kf.SpatialControlPoint2,
+                            kf.Easing)));
             }
             else if (opacityPercent.IsAnimated)
             {
@@ -4038,7 +4040,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         {
         }
 
-        static double Max(in TrimmedAnimatable<double> animatable)
+        // Returns the maximum opacity value from the given TrimmedAnimatable.
+        // This works for any double value, but we call it MaxOpacityPercent because that
+        // is where it is useful, and the name makes the intention clearer.
+        static double MaxOpacityPercent(in TrimmedAnimatable<double> animatable)
             => animatable.IsAnimated
                 ? animatable.KeyFrames.Max(kf => kf.Value)
                 : animatable.InitialValue;
