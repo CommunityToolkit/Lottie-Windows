@@ -3003,7 +3003,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 // Lottie represents animation of stops as a sequence of lists of stops.
                 // WinComp uses a single list of stops where each stop is animated.
 
-                // Lottie reprsents stops as either color or opacity stops. Convert them all to color stops.
+                // Lottie represents stops as either color or opacity stops. Convert them all to color stops.
                 var colorStopKeyFrames = gradientStops.KeyFrames.SelectToArray(kf => GradientStopOptimizer.Optimize(kf));
                 var stopsCount = gradientStops.InitialValue.Items.Length;
                 var keyframesCount = gradientStops.KeyFrames.Length;

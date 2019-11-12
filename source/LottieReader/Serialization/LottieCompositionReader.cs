@@ -1596,8 +1596,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 {
                     // There are opacity key frames. The number of color key frames should be the same
                     // (this is asserted in ConcatGradientStopKeyFrames).
-                    gradientStops =
-                        new Animatable<Sequence<GradientStop>>(ConcatGradientStopKeyFrames(colorKeyFrames, opacityKeyFrames), propertyIndex);
+                    gradientStops = new Animatable<Sequence<GradientStop>>(
+                                            ConcatGradientStopKeyFrames(colorKeyFrames, opacityKeyFrames),
+                                            propertyIndex);
                 }
                 else
                 {
@@ -1609,8 +1610,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                             "Numbers of key frames in opacity gradient stops and color gradient stops are unequal.");
                     }
 
-                    gradientStops =
-                        new Animatable<Sequence<GradientStop>>(new Sequence<GradientStop>(colorInitialValue.Concat(opacityInitialValue)), propertyIndex);
+                    gradientStops = new Animatable<Sequence<GradientStop>>(
+                                            new Sequence<GradientStop>(colorInitialValue.Concat(opacityInitialValue)),
+                                            propertyIndex);
                 }
             }
             else
