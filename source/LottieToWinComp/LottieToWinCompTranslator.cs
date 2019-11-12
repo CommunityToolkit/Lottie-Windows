@@ -2921,6 +2921,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         colorStopKeyFrames,
                         i,
                         gs => gs.Offset).ToArray();
+
                     ApplyScalarKeyFrameAnimation(
                         context,
                         new TrimmedAnimatable<double>(context, offsetKeyFrames[0].Value, offsetKeyFrames),
