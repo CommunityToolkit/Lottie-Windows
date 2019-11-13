@@ -27,7 +27,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// Does not handle NaN or Infinity.
         /// </summary>
         /// <returns>The largest value which is less than <paramref name="value"/>.</returns>
-        internal static float Decremented(float value)
+        internal static float PreviousSmallerThan(float value)
         {
             var temp = new Float32(value);
 
@@ -41,7 +41,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// Does not handle NaN or Infinity.
         /// </summary>
         /// <returns>The smallest value which is larger than <paramref name="value"/>.</returns>
-        internal static float Incremented(float value)
+        internal static float NextLargerThan(float value)
         {
             var temp = new Float32(value);
 
