@@ -21,6 +21,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
     /// </summary>
     static class Canonicalizer
     {
+        // Generates a sequence of ints from 0..int.MaxValue. Used to attach indexes
+        // to sequences using Zip.
+        static readonly IEnumerable<int> PositiveInts = Enumerable.Range(0, int.MaxValue);
+
         internal static void Canonicalize<T>(ObjectGraph<T> graph, bool ignoreCommentProperties)
             where T : CanonicalizedNode<T>, new()
         {
@@ -313,14 +317,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     where animators.Length == 0 || (animators.Length == 1 && animators[0].AnimatedProperty == "Color")
                     let animator = animators.FirstOrDefault()
                     let canonicalAnimator = animator == null ? null : CanonicalObject<ColorKeyFrameAnimation>(animator.Animation)
-                    group item.Node by new
-                    {
-                        obj.Color.A,
-                        obj.Color.R,
-                        obj.Color.G,
-                        obj.Color.B,
-                        canonicalAnimator,
-                    } into grouped
+                    group item.Node by (obj.Color, canonicalAnimator) into grouped
                     select grouped;
 
                 CanonicalizeGrouping(grouping);
@@ -328,28 +325,41 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             void CanonicalizeColorGradientStops()
             {
-                // Canonicalize color gradient stops that have no animations.
-                var nodes = GetCompositionObjects<CompositionColorGradientStop>(CompositionObjectType.CompositionColorGradientStop);
+                // CompositionColorGradientStopCollections do not support having the same
+                // CompositionColorGradientStop appearing more than once in the same collection, so
+                // we have to special-case canonicalization for CompositionColorGradientStop so that
+                // they are shared between collections, but not within a collection.
 
+                // Get the gradient brushes.
+                var gradientBrushes = GetCompositionObjects<CompositionGradientBrush>(CompositionObjectType.CompositionLinearGradientBrush).Concat(
+                    GetCompositionObjects<CompositionGradientBrush>(CompositionObjectType.CompositionRadialGradientBrush));
+
+                // For each CompositionGradientBrush, get the non-animated stops, and give each an index
+                // indicating whether it is the 1st, 2nd, 3rd, etc stop with that color and offset
+                // in collection.
+                var nonAnimatedStopsWithIndex =
+                    from b in gradientBrushes
+                    let nonAnimatedStops = from s in b.Object.ColorStops
+                                           group s by (s.Color, s.Offset) into g
+                                           from s2 in g.Zip(PositiveInts, (x, y) => (Stop: x, Index: y))
+                                           select s2
+                    from s in nonAnimatedStops
+                    select s;
+
+                // Group by stops that have the same color and index.
                 var items =
-                    from item in nodes
-                    let obj = item.Object
+                    from s in nonAnimatedStopsWithIndex
+                    let obj = s.Stop
                     where (_ignoreCommentProperties || obj.Comment == null)
                        && obj.Properties.IsEmpty
-                    select (item.Node, obj);
+                    select (Node: NodeFor(obj), ObjectWithIndex: (Object: obj, Index: s.Index));
 
                 var grouping =
                     from item in items
-                    let obj = item.obj
+                    let obj = item.ObjectWithIndex.Object
                     where !obj.Animators.Any()
-                    group item.Node by new
-                    {
-                        obj.Color.A,
-                        obj.Color.R,
-                        obj.Color.G,
-                        obj.Color.B,
-                        obj.Offset,
-                    } into grouped
+                    group item.Node by (obj.Color, obj.Offset, item.ObjectWithIndex.Index)
+                    into grouped
                     select grouped;
 
                 CanonicalizeGrouping(grouping);
@@ -384,14 +394,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 var grouping =
                     from item in items
                     let obj = item.Object
-                    group item.Node by new
-                    {
+                    group item.Node by (
                         obj.Center,
                         obj.Radius,
                         obj.TrimStart,
                         obj.TrimEnd,
-                        obj.TrimOffset,
-                    } into grouped
+                        obj.TrimOffset)
+                    into grouped
                     select grouped;
 
                 CanonicalizeGrouping(grouping);
@@ -404,14 +413,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 var grouping =
                     from item in items
                     let obj = item.Object
-                    group item.Node by new
-                    {
+                    group item.Node by (
                         obj.Offset,
                         obj.Size,
                         obj.TrimStart,
                         obj.TrimEnd,
-                        obj.TrimOffset,
-                    }
+                        obj.TrimOffset)
                     into grouped
                     select grouped;
 
@@ -425,15 +432,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 var grouping =
                     from item in items
                     let obj = item.Object
-                    group item.Node by new
-                    {
+                    group item.Node by (
                         obj.Offset,
                         obj.Size,
                         obj.CornerRadius,
                         obj.TrimStart,
                         obj.TrimEnd,
-                        obj.TrimOffset,
-                    }
+                        obj.TrimOffset)
                     into grouped
                     select grouped;
 
@@ -448,13 +453,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     from item in items
                     let obj = item.Object
                     let path = CanonicalObject<CompositionPath>(obj.Path)
-                    group item.Node by new
-                    {
+                    group item.Node by (
                         path,
                         obj.TrimStart,
                         obj.TrimEnd,
-                        obj.TrimOffset,
-                    } into grouped
+                        obj.TrimOffset)
+                    into grouped
                     select grouped;
 
                 CanonicalizeGrouping(grouping);
@@ -491,16 +495,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 var grouping =
                     from item in items
                     let obj = item.Object
-                    group item.Node by
-                    new
-                    {
+                    group item.Node by (
                         obj.BottomInset,
                         obj.LeftInset,
                         obj.RightInset,
                         obj.TopInset,
                         obj.CenterPoint,
-                        obj.Scale,
-                    }
+                        obj.Scale)
                     into grouped
                     select grouped;
 
@@ -514,12 +515,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 var grouping =
                     from item in items
                     let obj = item.Object
-                    group item.Node by
-                    new
-                    {
-                        obj.ControlPoint1,
-                        obj.ControlPoint2,
-                    }
+                    group item.Node by (obj.ControlPoint1, obj.ControlPoint2)
                     into grouped
                     select grouped;
 
@@ -546,15 +542,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 var grouping =
                     from item in items
                     let obj = item.Object
-                    group item.Node by
-                    new
-                    {
+                    group item.Node by (
                         obj.FinalStep,
                         obj.InitialStep,
                         obj.IsFinalStepSingleFrame,
                         obj.IsInitialStepSingleFrame,
-                        obj.StepCount,
-                    }
+                        obj.StepCount)
                     into grouped
                     select grouped;
 

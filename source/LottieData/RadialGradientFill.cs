@@ -15,16 +15,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             Animatable<double> opacityPercent,
             IAnimatableVector3 startPoint,
             IAnimatableVector3 endPoint,
-            Animatable<Sequence<ColorGradientStop>> colorStops,
-            Animatable<Sequence<OpacityGradientStop>> opacityPercentStops,
+            Animatable<Sequence<GradientStop>> gradientStops,
             Animatable<double> highlightLength,
             Animatable<double> highlightDegrees)
             : base(in args, fillType, opacityPercent)
         {
             StartPoint = startPoint;
             EndPoint = endPoint;
-            ColorStops = colorStops;
-            OpacityPercentStops = opacityPercentStops;
+            GradientStops = gradientStops;
             HighlightLength = highlightLength;
             HighlightDegrees = highlightDegrees;
         }
@@ -33,9 +31,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
         public IAnimatableVector3 EndPoint { get; }
 
-        public Animatable<Sequence<ColorGradientStop>> ColorStops { get; }
-
-        public Animatable<Sequence<OpacityGradientStop>> OpacityPercentStops { get; }
+        public Animatable<Sequence<GradientStop>> GradientStops { get; }
 
         public Animatable<double> HighlightLength { get; }
 

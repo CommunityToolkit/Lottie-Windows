@@ -6,8 +6,6 @@
     <SharedGUID>b3db16ee-a821-4474-a188-e64926529bbd</SharedGUID>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)IGradient.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)IRadialGradient.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Animatable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\ExtensionMethods.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\AnimatableVector3.cs" />
@@ -26,11 +24,14 @@
     <Compile Include="$(MSBuildThisFileDirectory)\EmptyArray.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\ExternalImageAsset.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Font.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\GradientStop.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\HoldEasing.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\IAnimatableValue.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\IAnimatableVector3.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\IGradient.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\ImageAsset.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\ImageLayer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\IRadialGradient.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\KeyFrame.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Layer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\LayerCollection.cs" />
@@ -47,6 +48,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)\MergePaths.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\NullLayer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\OpacityGradientStop.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Optimization\GradientStopOptimizer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Optimization\Optimizer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Path.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Polystar.cs" />

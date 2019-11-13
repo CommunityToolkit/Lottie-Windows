@@ -374,8 +374,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         {
             var result = superclassContent;
             result.Add("OpacityPercent", FromAnimatable(content.OpacityPercent));
-            result.Add("ColorStops", FromAnimatable(content.ColorStops, p => FromSequence(p, FromColorStop)));
-            result.Add("OpacityPercentStops", FromAnimatable(content.OpacityPercentStops, p => FromSequence(p, FromOpacityPercentStop)));
+            result.Add("GradientStops", FromAnimatable(content.GradientStops, p => FromSequence(p, FromGradientStop)));
             return result;
         }
 
@@ -383,8 +382,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         {
             var result = superclassContent;
             result.Add("OpacityPercent", FromAnimatable(content.OpacityPercent));
-            result.Add("ColorStops", FromAnimatable(content.ColorStops, p => FromSequence(p, FromColorStop)));
-            result.Add("OpacityPercentStops", FromAnimatable(content.OpacityPercentStops, p => FromSequence(p, FromOpacityPercentStop)));
+            result.Add("GradientStops", FromAnimatable(content.GradientStops, p => FromSequence(p, FromGradientStop)));
             return result;
         }
 
@@ -475,7 +473,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             return result;
         }
 
-        static YamlObject FromColorStop(ColorGradientStop value)
+        static YamlObject FromGradientStop(GradientStop value)
+        {
+            switch (value.Kind)
+            {
+                case GradientStop.GradientStopKind.Color:
+                    return FromColorGradientStop((ColorGradientStop)value);
+                case GradientStop.GradientStopKind.Opacity:
+                    return FromOpacityGradientStop((OpacityGradientStop)value);
+                default:
+                    throw new InvalidOperationException();
+            }
+        }
+
+        static YamlObject FromColorGradientStop(ColorGradientStop value)
         {
             var result = new YamlMap
             {
@@ -485,7 +496,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             return result;
         }
 
-        static YamlObject FromOpacityPercentStop(OpacityGradientStop value)
+        static YamlObject FromOpacityGradientStop(OpacityGradientStop value)
         {
             var result = new YamlMap
             {

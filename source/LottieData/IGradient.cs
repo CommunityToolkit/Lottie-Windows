@@ -13,8 +13,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
         IAnimatableVector3 EndPoint { get; }
 
-        Animatable<Sequence<ColorGradientStop>> ColorStops { get; }
-
-        Animatable<Sequence<OpacityGradientStop>> OpacityPercentStops { get; }
+        Animatable<Sequence<GradientStop>> GradientStops { get; }
     }
 }

@@ -1030,7 +1030,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             var miterLimit = obj.GetNamedNumber("ml", 4); // Default miter limit in After Effects is 4
             var startPoint = ReadAnimatableVector3(obj.GetNamedObject("s"));
             var endPoint = ReadAnimatableVector3(obj.GetNamedObject("e"));
-            ReadAnimatableGradientStops(obj.GetNamedObject("g"), out var colorStops, out var opacityPercentStops);
+            ReadAnimatableGradientStops(obj.GetNamedObject("g"), out var gradientStops);
 
             AssertAllFieldsRead(obj);
             return new LinearGradientStroke(
@@ -1042,8 +1042,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 miterLimit,
                 startPoint,
                 endPoint,
-                colorStops,
-                opacityPercentStops);
+                gradientStops);
         }
 
         RadialGradientStroke ReadRadialGradientStroke(JObject obj, in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
@@ -1076,22 +1075,21 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             var miterLimit = obj.GetNamedNumber("ml", 4); // Default miter limit in After Effects is 4
             var startPoint = ReadAnimatableVector3(obj.GetNamedObject("s"));
             var endPoint = ReadAnimatableVector3(obj.GetNamedObject("e"));
-            ReadAnimatableGradientStops(obj.GetNamedObject("g"), out var colorStops, out var opacityPercentStops);
+            ReadAnimatableGradientStops(obj.GetNamedObject("g"), out var gradientStops);
 
             AssertAllFieldsRead(obj);
             return new RadialGradientStroke(
                 in shapeLayerContentArgs,
-                opacityPercent,
-                strokeWidth,
-                capType,
-                joinType,
-                miterLimit,
-                startPoint,
-                endPoint,
-                colorStops,
-                opacityPercentStops,
-                highlightLength,
-                highlightDegrees);
+                opacityPercent: opacityPercent,
+                strokeWidth: strokeWidth,
+                capType: capType,
+                joinType: joinType,
+                miterLimit: miterLimit,
+                startPoint: startPoint,
+                endPoint: endPoint,
+                gradientStops: gradientStops,
+                highlightLength: highlightLength,
+                highlightDegrees: highlightDegrees);
         }
 
         // "fl"
@@ -1134,7 +1132,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             var opacityPercent = ReadOpacityPercent(obj);
             var startPoint = ReadAnimatableVector3(obj.GetNamedObject("s"));
             var endPoint = ReadAnimatableVector3(obj.GetNamedObject("e"));
-            ReadAnimatableGradientStops(obj.GetNamedObject("g"), out var colorStops, out var opacityPercentStops);
+            ReadAnimatableGradientStops(obj.GetNamedObject("g"), out var gradientStops);
 
             Animatable<double> highlightLength = null;
             var highlightLengthObject = obj.GetNamedObject("h");
@@ -1157,8 +1155,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 opacityPercent: opacityPercent,
                 startPoint: startPoint,
                 endPoint: endPoint,
-                colorStops: colorStops,
-                opacityPercentStops: opacityPercentStops,
+                gradientStops: gradientStops,
                 highlightLength: null,
                 highlightDegrees: null);
         }
@@ -1172,7 +1169,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             var opacityPercent = ReadOpacityPercent(obj);
             var startPoint = ReadAnimatableVector3(obj.GetNamedObject("s"));
             var endPoint = ReadAnimatableVector3(obj.GetNamedObject("e"));
-            ReadAnimatableGradientStops(obj.GetNamedObject("g"), out var colorStops, out var opacityPercentStops);
+            ReadAnimatableGradientStops(obj.GetNamedObject("g"), out var gradientStops);
 
             AssertAllFieldsRead(obj);
             return new LinearGradientFill(
@@ -1181,8 +1178,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 opacityPercent: opacityPercent,
                 startPoint: startPoint,
                 endPoint: endPoint,
-                colorStops: colorStops,
-                opacityPercentStops: opacityPercentStops);
+                gradientStops: gradientStops);
         }
 
         Ellipse ReadEllipse(JObject obj, in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
@@ -1570,9 +1566,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         void ReadAnimatableGradientStops(
             JObject obj,
-            out Animatable<Sequence<ColorGradientStop>> colorStops,
-            out Animatable<Sequence<OpacityGradientStop>> opacityPercentStops)
+            out Animatable<Sequence<GradientStop>> gradientStops)
         {
+            // Get the number of color stops. This is optional unless there are opacity stops.
+            // If this value doesn't exist, all the stops are color stops. If the value exists
+            // then this is the number of color stops, and the remaining stops are opacity stops.
             var numberOfColorStops = ReadInt(obj, "p");
 
             var animatableColorStopsParser = new AnimatableColorStopsParser(numberOfColorStops);
@@ -1583,12 +1581,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 out var colorInitialValue);
 
             var propertyIndex = ReadInt(obj, "ix");
-            colorStops = colorKeyFrames.Any()
-                ? new Animatable<Sequence<ColorGradientStop>>(colorKeyFrames, propertyIndex)
-                : new Animatable<Sequence<ColorGradientStop>>(colorInitialValue, propertyIndex);
 
             if (numberOfColorStops.HasValue)
             {
+                // There may be opacity stops. Read them.
                 var animatableOpacityPercentStopsParser = new AnimatableOpacityPercentStopsParser(numberOfColorStops.Value);
                 animatableOpacityPercentStopsParser.ParseJson(
                     this,
@@ -1596,13 +1592,70 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     out var opacityKeyFrames,
                     out var opacityInitialValue);
 
-                opacityPercentStops = opacityKeyFrames.Any()
-                    ? new Animatable<Sequence<OpacityGradientStop>>(opacityKeyFrames, propertyIndex)
-                    : new Animatable<Sequence<OpacityGradientStop>>(opacityInitialValue, propertyIndex);
+                if (opacityKeyFrames.Any())
+                {
+                    // There are opacity key frames. The number of color key frames should be the same
+                    // (this is asserted in ConcatGradientStopKeyFrames).
+                    gradientStops = new Animatable<Sequence<GradientStop>>(
+                                            ConcatGradientStopKeyFrames(colorKeyFrames, opacityKeyFrames),
+                                            propertyIndex);
+                }
+                else
+                {
+                    // There is only an initial opacity value (i.e. no key frames).
+                    // There should be no key frames for color either.
+                    if (colorKeyFrames.Any())
+                    {
+                        throw new LottieCompositionReaderException(
+                            "Numbers of key frames in opacity gradient stops and color gradient stops are unequal.");
+                    }
+
+                    gradientStops = new Animatable<Sequence<GradientStop>>(
+                                            new Sequence<GradientStop>(colorInitialValue.Concat(opacityInitialValue)),
+                                            propertyIndex);
+                }
             }
             else
             {
-                opacityPercentStops = new Animatable<Sequence<OpacityGradientStop>>(Sequence<OpacityGradientStop>.Empty, propertyIndex);
+                // There are only color stops.
+                gradientStops = colorKeyFrames.Any()
+                    ? new Animatable<Sequence<GradientStop>>(colorKeyFrames, propertyIndex)
+                    : new Animatable<Sequence<GradientStop>>(colorInitialValue, propertyIndex);
+            }
+        }
+
+        static IEnumerable<KeyFrame<Sequence<GradientStop>>> ConcatGradientStopKeyFrames(
+            IEnumerable<KeyFrame<Sequence<GradientStop>>> a,
+            IEnumerable<KeyFrame<Sequence<GradientStop>>> b)
+        {
+            var aArray = a.ToArray();
+            var bArray = b.ToArray();
+            if (aArray.Length != bArray.Length)
+            {
+                throw new LottieCompositionReaderException(
+                    "Numbers of key frames in opacity gradient stops and color gradient stops are unequal.");
+            }
+
+            for (var i = 0; i < aArray.Length; i++)
+            {
+                var aKeyFrame = aArray[i];
+                var bKeyFrame = bArray[i];
+
+                if (aKeyFrame.Frame != bKeyFrame.Frame ||
+                    aKeyFrame.SpatialControlPoint1 != bKeyFrame.SpatialControlPoint1 ||
+                    aKeyFrame.SpatialControlPoint2 != bKeyFrame.SpatialControlPoint2 ||
+                    aKeyFrame.Easing != bKeyFrame.Easing)
+                {
+                    throw new LottieCompositionReaderException(
+                        "Opacity gradient stop key frame does not match color gradient stop key frame.");
+                }
+
+                yield return new KeyFrame<Sequence<GradientStop>>(
+                    aKeyFrame.Frame,
+                    new Sequence<GradientStop>(aKeyFrame.Value.Concat(bKeyFrame.Value)),
+                    aKeyFrame.SpatialControlPoint1,
+                    aKeyFrame.SpatialControlPoint2,
+                    aKeyFrame.Easing);
             }
         }
 
@@ -1750,7 +1803,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     }
                 }
 
-                AllColorChannelsRead:
+            AllColorChannelsRead:
 
                 // If ignoring alpha, allow 3 or 4 channels. BodyMovin generates 4 channels
                 // however seeing as the alpha is ignored, 3 channels is enough.
@@ -1866,7 +1919,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             }
         }
 
-        sealed class AnimatableColorStopsParser : AnimatableParser<Sequence<ColorGradientStop>>
+        sealed class AnimatableColorStopsParser : AnimatableParser<Sequence<GradientStop>>
         {
             // The number of color stops. The opacity stops follow this number
             // of color stops. If not specified, all of the values are color stops.
@@ -1877,7 +1930,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 _colorStopCount = colorStopCount;
             }
 
-            protected override Sequence<ColorGradientStop> ReadValue(JToken obj)
+            protected override Sequence<GradientStop> ReadValue(JToken obj)
             {
                 var gradientStopsData = obj.AsArray().Select(v => (double)v).ToArray();
 
@@ -1930,11 +1983,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     }
                 }
 
-                return new Sequence<ColorGradientStop>(colorStops);
+                return new Sequence<GradientStop>(colorStops);
             }
         }
 
-        sealed class AnimatableOpacityPercentStopsParser : AnimatableParser<Sequence<OpacityGradientStop>>
+        sealed class AnimatableOpacityPercentStopsParser : AnimatableParser<Sequence<GradientStop>>
         {
             // The number of color stops. The opacity stops follow this number of color stops.
             readonly int _colorStopCount;
@@ -1944,7 +1997,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 _colorStopCount = colorStopCount;
             }
 
-            protected override Sequence<OpacityGradientStop> ReadValue(JToken obj)
+            protected override Sequence<GradientStop> ReadValue(JToken obj)
             {
                 var gradientStopsData = obj.AsArray().Skip(_colorStopCount * 4).Select(v => (double)v).ToArray();
                 var gradientStops = new OpacityGradientStop[gradientStopsData.Length / 2];
@@ -1972,7 +2025,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     }
                 }
 
-                return new Sequence<OpacityGradientStop>(gradientStops);
+                return new Sequence<GradientStop>(gradientStops);
             }
         }
 
