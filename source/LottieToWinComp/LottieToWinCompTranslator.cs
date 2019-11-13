@@ -1400,6 +1400,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 if (a.StrokeKind != b.StrokeKind)
                 {
                     _owner._issues.MultipleStrokesIsNotSupported();
+                    return b;
                 }
 
                 switch (a.StrokeKind)
