@@ -467,6 +467,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     return GetVector2KeyFrameAnimation((Vector2KeyFrameAnimation)obj);
                 case CompositionObjectType.Vector3KeyFrameAnimation:
                     return GetVector3KeyFrameAnimation((Vector3KeyFrameAnimation)obj);
+                case CompositionObjectType.Vector4KeyFrameAnimation:
+                    return GetVector4KeyFrameAnimation((Vector4KeyFrameAnimation)obj);
                 default:
                     throw new InvalidOperationException();
             }
@@ -537,6 +539,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     return GetVector2KeyFrameAnimation((Vector2KeyFrameAnimation)obj);
                 case CompositionObjectType.Vector3KeyFrameAnimation:
                     return GetVector3KeyFrameAnimation((Vector3KeyFrameAnimation)obj);
+                case CompositionObjectType.Vector4KeyFrameAnimation:
+                    return GetVector4KeyFrameAnimation((Vector4KeyFrameAnimation)obj);
                 default:
                     throw new InvalidOperationException();
             }
@@ -661,6 +665,35 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                         break;
                     case KeyFrameAnimation<Vector3>.KeyFrameType.Value:
                         var valueKeyFrame = (KeyFrameAnimation<Vector3>.ValueKeyFrame)kf;
+                        result.InsertKeyFrame(kf.Progress, valueKeyFrame.Value, GetCompositionEasingFunction(kf.Easing));
+                        break;
+                    default:
+                        throw new InvalidCastException();
+                }
+            }
+
+            StartAnimationsAndFreeze(obj, result);
+            return result;
+        }
+
+        Vector4KeyFrameAnimation GetVector4KeyFrameAnimation(Vector4KeyFrameAnimation obj)
+        {
+            if (GetExisting(obj, out Vector4KeyFrameAnimation result))
+            {
+                return result;
+            }
+
+            result = CacheAndInitializeKeyframeAnimation(obj, _c.CreateVector4KeyFrameAnimation());
+            foreach (var kf in obj.KeyFrames)
+            {
+                switch (kf.Type)
+                {
+                    case KeyFrameAnimation<Vector4>.KeyFrameType.Expression:
+                        var expressionKeyFrame = (KeyFrameAnimation<Vector4>.ExpressionKeyFrame)kf;
+                        result.InsertExpressionKeyFrame(kf.Progress, expressionKeyFrame.Expression, GetCompositionEasingFunction(kf.Easing));
+                        break;
+                    case KeyFrameAnimation<Vector4>.KeyFrameType.Value:
+                        var valueKeyFrame = (KeyFrameAnimation<Vector4>.ValueKeyFrame)kf;
                         result.InsertKeyFrame(kf.Progress, valueKeyFrame.Value, GetCompositionEasingFunction(kf.Easing));
                         break;
                     default:

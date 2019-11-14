@@ -298,6 +298,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                         case CompositionObjectType.StepEasingFunction:
                         case CompositionObjectType.Vector2KeyFrameAnimation:
                         case CompositionObjectType.Vector3KeyFrameAnimation:
+                        case CompositionObjectType.Vector4KeyFrameAnimation:
                             // Do not display in the graph.
                             return;
                         case CompositionObjectType.CompositionContainerShape:

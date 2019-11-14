@@ -125,6 +125,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
                 case CompositionObjectType.Vector2KeyFrameAnimation:
                     yield return FromVector2KeyFrameAnimation((Vector2KeyFrameAnimation)obj);
                     break;
+                case CompositionObjectType.Vector3KeyFrameAnimation:
+                    yield return FromVector3KeyFrameAnimation((Vector3KeyFrameAnimation)obj);
+                    break;
+                case CompositionObjectType.Vector4KeyFrameAnimation:
+                    yield return FromVector4KeyFrameAnimation((Vector4KeyFrameAnimation)obj);
+                    break;
                 case CompositionObjectType.SpriteVisual:
                     yield return FromSpriteVisual((SpriteVisual)obj);
                     break;
@@ -506,6 +512,30 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
             }
         }
 
+        XElement FromVector3KeyFrameAnimation(Vector3KeyFrameAnimation obj)
+        {
+            return new XElement(GetCompositionObjectName(obj), GetContents());
+            IEnumerable<XObject> GetContents()
+            {
+                foreach (var item in GetCompositionObjectContents(obj))
+                {
+                    yield return item;
+                }
+            }
+        }
+
+        XElement FromVector4KeyFrameAnimation(Vector4KeyFrameAnimation obj)
+        {
+            return new XElement(GetCompositionObjectName(obj), GetContents());
+            IEnumerable<XObject> GetContents()
+            {
+                foreach (var item in GetCompositionObjectContents(obj))
+                {
+                    yield return item;
+                }
+            }
+        }
+
         XElement FromAnimationController(AnimationController obj)
         {
             return new XElement(GetCompositionObjectName(obj), GetContents());
@@ -703,6 +733,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
                 case CompositionObjectType.ScalarKeyFrameAnimation:
                 case CompositionObjectType.Vector2KeyFrameAnimation:
                 case CompositionObjectType.Vector3KeyFrameAnimation:
+                case CompositionObjectType.Vector4KeyFrameAnimation:
                     return FromKeyFrameAnimation(name, (KeyFrameAnimation<T>)animation, initialValue);
                 default:
                     throw new InvalidOperationException();

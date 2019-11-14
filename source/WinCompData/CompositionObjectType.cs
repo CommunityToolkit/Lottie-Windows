@@ -40,5 +40,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
         StepEasingFunction,
         Vector2KeyFrameAnimation,
         Vector3KeyFrameAnimation,
+        Vector4KeyFrameAnimation,
     }
 }

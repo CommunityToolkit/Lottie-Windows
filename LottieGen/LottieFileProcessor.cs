@@ -258,6 +258,7 @@ sealed class LottieFileProcessor
                     ("SurfaceBrushCount", translationStats.SurfaceBrushCount.ToString()),
                     ("Vector2KeyFrameAnimation", translationStats.Vector2KeyFrameAnimationCount.ToString()),
                     ("Vector3KeyFrameAnimation", translationStats.Vector3KeyFrameAnimationCount.ToString()),
+                    ("Vector4KeyFrameAnimation", translationStats.Vector4KeyFrameAnimationCount.ToString()),
                     ("ViewBox", translationStats.ViewBoxCount.ToString()),
                     ("VisualSurfaceCount", translationStats.VisualSurfaceCount.ToString()),
             });
@@ -300,6 +301,7 @@ sealed class LottieFileProcessor
                     ("SurfaceBrushCount", (_afterOptimizationStats.SurfaceBrushCount - _beforeOptimizationStats.SurfaceBrushCount).ToString()),
                     ("Vector2KeyFrameAnimation", (_afterOptimizationStats.Vector2KeyFrameAnimationCount - _beforeOptimizationStats.Vector2KeyFrameAnimationCount).ToString()),
                     ("Vector3KeyFrameAnimation", (_afterOptimizationStats.Vector3KeyFrameAnimationCount - _beforeOptimizationStats.Vector3KeyFrameAnimationCount).ToString()),
+                    ("Vector4KeyFrameAnimation", (_afterOptimizationStats.Vector4KeyFrameAnimationCount - _beforeOptimizationStats.Vector4KeyFrameAnimationCount).ToString()),
                     ("ViewBox", (_afterOptimizationStats.ViewBoxCount - _beforeOptimizationStats.ViewBoxCount).ToString()),
                     ("VisualSurfaceCount", (_afterOptimizationStats.VisualSurfaceCount - _beforeOptimizationStats.VisualSurfaceCount).ToString()),
                 });
