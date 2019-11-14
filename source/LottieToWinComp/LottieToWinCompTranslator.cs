@@ -60,10 +60,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 #endif
     sealed class LottieToWinCompTranslator : IDisposable
     {
-        // Very small animation progress increment used to place keyframes as close as possible
-        // to each other.
-        const float KeyFrameProgressEpsilon = 0.0000001F;
-
         // The name used to bind to the property set that contains the Progress property.
         const string RootName = "_";
         readonly LottieComposition _lc;
@@ -3671,7 +3667,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             // Insert the keyframes with the progress adjusted so the first keyframe is at 0 and the remaining
             // progress values are scaled appropriately.
             var previousValue = firstKeyFrame.Value;
-            var previousProgress = 0.0 - KeyFrameProgressEpsilon;
+            var previousProgress = Float32.PreviousSmallerThan(0);
             var rootReferenceRequired = false;
             var previousKeyFrameWasExpression = false;
             string progressMappingProperty = null;
@@ -3736,7 +3732,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         {
                             // Ensure the previous expression doesn't continue being evaluated during the current keyframe.
                             // This is necessary because the expression is only defined from the previous progress to the current progress.
-                            insertKeyFrame(compositionAnimation, (float)previousProgress + KeyFrameProgressEpsilon, previousValue, _c.CreateStepThenHoldEasingFunction());
+                            insertKeyFrame(compositionAnimation, Float32.NextLargerThan(previousProgress), previousValue, _c.CreateStepThenHoldEasingFunction());
                         }
 
                         // The easing for a keyframe at 0 is unimportant, so always use Hold.
@@ -3753,16 +3749,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         // so that there is room to add a key frame just after this to hold
                         // the final value. This is necessary so that the expression we're about
                         // to add won't get evaluated during the following segment.
-                        if (adjustedProgress > 0)
+                        if ((float)adjustedProgress > 0)
                         {
-                            adjustedProgress -= KeyFrameProgressEpsilon;
+                            Float32.PreviousSmallerThan((float)adjustedProgress);
                         }
 
 #if !LinearEasingOnSpatialBeziers
                         // Add an animation to map from progress to t over the range of this key frame.
                         if (previousProgress > 0)
                         {
-                            progressMappingAnimation.InsertKeyFrame((float)previousProgress + KeyFrameProgressEpsilon, 0, _c.CreateStepThenHoldEasingFunction());
+                            progressMappingAnimation.InsertKeyFrame(Float32.NextLargerThan(previousProgress), 0, _c.CreateStepThenHoldEasingFunction());
                         }
 
                         progressMappingAnimation.InsertKeyFrame((float)adjustedProgress, 1, _c.CreateCompositionEasingFunction(keyFrame.Easing));
@@ -3784,7 +3780,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     if (previousKeyFrameWasExpression)
                     {
                         // Ensure the previous expression doesn't continue being evaluated during the current keyframe.
-                        insertKeyFrame(compositionAnimation, (float)previousProgress + KeyFrameProgressEpsilon, previousValue, _c.CreateStepThenHoldEasingFunction());
+                        insertKeyFrame(compositionAnimation, Float32.NextLargerThan(previousProgress), previousValue, _c.CreateStepThenHoldEasingFunction());
                     }
 
                     insertKeyFrame(compositionAnimation, (float)adjustedProgress, keyFrame.Value, _c.CreateCompositionEasingFunction(keyFrame.Easing));
@@ -3792,14 +3788,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 }
 
                 previousValue = keyFrame.Value;
-                previousProgress = adjustedProgress;
+                previousProgress = (float)adjustedProgress;
             }
 
             if (previousKeyFrameWasExpression && previousProgress < 1)
             {
                 // Add a keyframe to hold the final value. Otherwise the expression on the last keyframe
                 // will get evaluated outside the bounds of its keyframe.
-                insertKeyFrame(compositionAnimation, (float)previousProgress + KeyFrameProgressEpsilon, (T)(object)previousValue, _c.CreateStepThenHoldEasingFunction());
+                insertKeyFrame(compositionAnimation, Float32.NextLargerThan(previousProgress), (T)(object)previousValue, _c.CreateStepThenHoldEasingFunction());
             }
 
             // Add a reference to the root Visual if needed (i.e. if an expression keyframe was added).
