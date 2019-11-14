@@ -20,7 +20,7 @@ The following Adobe After Effects are also supported:
 **Track mattes**
 * Alpha matte
 
-Lottie-Windows is version adaptive when its features require different UAP versions.
+Lottie-Windows is version-adaptive when animation features require different UAP versions.
 
 
 ## 5.1.1
