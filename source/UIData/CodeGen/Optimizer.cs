@@ -208,7 +208,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             return target;
         }
 
-        T CacheAndInitializeKeyframeAnimation<T>(KeyFrameAnimation_ source, T target)
+        T CacheAndInitializeKeyFrameAnimation<T>(KeyFrameAnimation_ source, T target)
             where T : KeyFrameAnimation_
         {
             CacheAndInitializeAnimation(source, target);
@@ -565,7 +565,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 return result;
             }
 
-            result = CacheAndInitializeKeyframeAnimation(obj, _c.CreateColorKeyFrameAnimation());
+            result = CacheAndInitializeKeyFrameAnimation(obj, _c.CreateColorKeyFrameAnimation());
             result.InterpolationColorSpace = obj.InterpolationColorSpace;
 
             foreach (var kf in obj.KeyFrames)
@@ -596,7 +596,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 return result;
             }
 
-            result = CacheAndInitializeKeyframeAnimation(obj, _c.CreateScalarKeyFrameAnimation());
+            result = CacheAndInitializeKeyFrameAnimation(obj, _c.CreateScalarKeyFrameAnimation());
             foreach (var kf in obj.KeyFrames)
             {
                 switch (kf.Type)
@@ -625,7 +625,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 return result;
             }
 
-            result = CacheAndInitializeKeyframeAnimation(obj, _c.CreateVector2KeyFrameAnimation());
+            result = CacheAndInitializeKeyFrameAnimation(obj, _c.CreateVector2KeyFrameAnimation());
             foreach (var kf in obj.KeyFrames)
             {
                 switch (kf.Type)
@@ -654,7 +654,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 return result;
             }
 
-            result = CacheAndInitializeKeyframeAnimation(obj, _c.CreateVector3KeyFrameAnimation());
+            result = CacheAndInitializeKeyFrameAnimation(obj, _c.CreateVector3KeyFrameAnimation());
             foreach (var kf in obj.KeyFrames)
             {
                 switch (kf.Type)
@@ -683,7 +683,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 return result;
             }
 
-            result = CacheAndInitializeKeyframeAnimation(obj, _c.CreateVector4KeyFrameAnimation());
+            result = CacheAndInitializeKeyFrameAnimation(obj, _c.CreateVector4KeyFrameAnimation());
             foreach (var kf in obj.KeyFrames)
             {
                 switch (kf.Type)
@@ -712,7 +712,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 return result;
             }
 
-            result = CacheAndInitializeKeyframeAnimation(obj, _c.CreatePathKeyFrameAnimation());
+            result = CacheAndInitializeKeyFrameAnimation(obj, _c.CreatePathKeyFrameAnimation());
             foreach (var kf in obj.KeyFrames)
             {
                 result.InsertKeyFrame(kf.Progress, GetCompositionPath(((PathKeyFrameAnimation.ValueKeyFrame)kf).Value), GetCompositionEasingFunction(kf.Easing));
