@@ -4,9 +4,23 @@ Lottie-Windows aligns its major version with the Windows Community Toolkit.
 
 ## 6.0.0
 
-Support for more Adobe After Effects features.
+Support for ARM64.
 
-Various bug fixes.
+The following Adobe After Effects are also supported:
+
+**Layer types**
+* Image (codegen only)
+
+**Fill**
+* Linear and Radial Gradient
+
+**Mask**
+* Subtract
+
+**Track mattes**
+* Alpha matte
+
+Lottie-Windows is version-adaptive when animation features require different UAP versions.
 
 ## 5.1.1
 
