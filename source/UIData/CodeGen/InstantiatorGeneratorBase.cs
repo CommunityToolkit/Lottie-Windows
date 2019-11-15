@@ -665,6 +665,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             string Vector3(Vector3 value) => _stringifier.Vector3(value);
 
+            string Vector4(Vector4 value) => _stringifier.Vector4(value);
+
             string BorderMode(CompositionBorderMode value) => _stringifier.BorderMode(value);
 
             string ColorSpace(CompositionColorSpace value) => _stringifier.ColorSpace(value);
@@ -985,6 +987,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                         return GenerateVector2KeyFrameAnimationFactory(builder, (Vector2KeyFrameAnimation)obj, node);
                     case CompositionObjectType.Vector3KeyFrameAnimation:
                         return GenerateVector3KeyFrameAnimationFactory(builder, (Vector3KeyFrameAnimation)obj, node);
+                    case CompositionObjectType.Vector4KeyFrameAnimation:
+                        return GenerateVector4KeyFrameAnimationFactory(builder, (Vector4KeyFrameAnimation)obj, node);
                     default:
                         throw new InvalidOperationException();
                 }
@@ -1563,6 +1567,34 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                         case KeyFrameAnimation<Vector3>.KeyFrameType.Value:
                             var valueKeyFrame = (KeyFrameAnimation<Vector3>.ValueKeyFrame)kf;
                             builder.WriteLine($"result{Deref}InsertKeyFrame({Float(kf.Progress)}, {Vector3(valueKeyFrame.Value)}, {CallFactoryFromFor(node, kf.Easing)});");
+                            break;
+                        default:
+                            throw new InvalidOperationException();
+                    }
+                }
+
+                StartAnimations(builder, obj, node);
+                WriteObjectFactoryEnd(builder);
+                return true;
+            }
+
+            bool GenerateVector4KeyFrameAnimationFactory(CodeBuilder builder, Vector4KeyFrameAnimation obj, ObjectData node)
+            {
+                WriteObjectFactoryStart(builder, node);
+                WriteCreateAssignment(builder, node, $"_c{Deref}CreateVector4KeyFrameAnimation()");
+                InitializeKeyFrameAnimation(builder, obj, node);
+
+                foreach (var kf in obj.KeyFrames)
+                {
+                    switch (kf.Type)
+                    {
+                        case KeyFrameAnimation<Vector4>.KeyFrameType.Expression:
+                            var expressionKeyFrame = (KeyFrameAnimation<Vector4>.ExpressionKeyFrame)kf;
+                            builder.WriteLine($"result{Deref}InsertExpressionKeyFrame({Float(kf.Progress)}, {String(expressionKeyFrame.Expression)}, {CallFactoryFromFor(node, kf.Easing)});");
+                            break;
+                        case KeyFrameAnimation<Vector4>.KeyFrameType.Value:
+                            var valueKeyFrame = (KeyFrameAnimation<Vector4>.ValueKeyFrame)kf;
+                            builder.WriteLine($"result{Deref}InsertKeyFrame({Float(kf.Progress)}, {Vector4(valueKeyFrame.Value)}, {CallFactoryFromFor(node, kf.Easing)});");
                             break;
                         default:
                             throw new InvalidOperationException();

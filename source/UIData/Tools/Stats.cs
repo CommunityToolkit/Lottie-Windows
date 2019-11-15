@@ -127,6 +127,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                     case CompositionObjectType.Vector3KeyFrameAnimation:
                         Vector3KeyFrameAnimationCount++;
                         break;
+                    case CompositionObjectType.Vector4KeyFrameAnimation:
+                        Vector4KeyFrameAnimationCount++;
+                        break;
                     default:
                         throw new InvalidOperationException();
                 }
@@ -200,5 +203,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
         public int Vector2KeyFrameAnimationCount { get; }
 
         public int Vector3KeyFrameAnimationCount { get; }
+
+        public int Vector4KeyFrameAnimationCount { get; }
     }
 }

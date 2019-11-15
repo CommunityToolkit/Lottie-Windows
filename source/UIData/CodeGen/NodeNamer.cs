@@ -178,6 +178,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     }
 
                     break;
+                case CompositionObjectType.Vector3KeyFrameAnimation:
+                    {
+                        var animatedPropertyName = SanitizePropertyName(TryGetAnimatedPropertyName(node));
+                        result = $"{animatedPropertyName}Vector3Animation";
+                    }
+
+                    break;
+                case CompositionObjectType.Vector4KeyFrameAnimation:
+                    {
+                        var animatedPropertyName = SanitizePropertyName(TryGetAnimatedPropertyName(node));
+                        result = $"{animatedPropertyName}Vector4Animation";
+                    }
+
+                    break;
                 case CompositionObjectType.CompositionColorBrush:
                     // Color brushes that are not animated get names describing their color.
                     // Optimization ensures there will only be one brush for any one non-animated color.

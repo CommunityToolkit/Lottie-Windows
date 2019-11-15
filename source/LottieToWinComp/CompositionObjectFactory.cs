@@ -180,6 +180,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal Vector3KeyFrameAnimation CreateVector3KeyFrameAnimation() => _compositor.CreateVector3KeyFrameAnimation();
 
+        internal Vector4KeyFrameAnimation CreateVector4KeyFrameAnimation() => _compositor.CreateVector4KeyFrameAnimation();
+
         internal InsetClip CreateInsetClip() => _compositor.CreateInsetClip();
 
         internal CompositionGeometricClip CreateGeometricClip() => _compositor.CreateGeometricClip();

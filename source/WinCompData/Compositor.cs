@@ -71,6 +71,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 
         public Vector3KeyFrameAnimation CreateVector3KeyFrameAnimation() => new Vector3KeyFrameAnimation();
 
+        public Vector4KeyFrameAnimation CreateVector4KeyFrameAnimation() => new Vector4KeyFrameAnimation();
+
         public CompositionViewBox CreateViewBox() => new CompositionViewBox();
 
         public CompositionVisualSurface CreateVisualSurface() => new CompositionVisualSurface();
