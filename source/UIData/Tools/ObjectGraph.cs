@@ -194,6 +194,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 case CompositionObjectType.Vector3KeyFrameAnimation:
                     VisitVector3KeyFrameAnimation((Vector3KeyFrameAnimation)obj, node);
                     break;
+                case CompositionObjectType.Vector4KeyFrameAnimation:
+                    VisitVector4KeyFrameAnimation((Vector4KeyFrameAnimation)obj, node);
+                    break;
                 default:
                     throw new InvalidOperationException();
             }
@@ -649,6 +652,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
         }
 
         bool VisitVector3KeyFrameAnimation(Vector3KeyFrameAnimation obj, T node)
+        {
+            return VisitKeyFrameAnimation(obj, node);
+        }
+
+        bool VisitVector4KeyFrameAnimation(Vector4KeyFrameAnimation obj, T node)
         {
             return VisitKeyFrameAnimation(obj, node);
         }
