@@ -77,6 +77,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 CanonicalizeKeyFrameAnimations<KeyFrameAnimation<float>, float>(CompositionObjectType.ScalarKeyFrameAnimation);
                 CanonicalizeKeyFrameAnimations<KeyFrameAnimation<Vector2>, Vector2>(CompositionObjectType.Vector2KeyFrameAnimation);
                 CanonicalizeKeyFrameAnimations<KeyFrameAnimation<Vector3>, Vector3>(CompositionObjectType.Vector3KeyFrameAnimation);
+                CanonicalizeKeyFrameAnimations<KeyFrameAnimation<Vector4>, Vector4>(CompositionObjectType.Vector4KeyFrameAnimation);
 
                 // ColorKeyFrameAnimations must be canonicalized before color brushes are canonicalized.
                 CanonicalizeColorBrushes();

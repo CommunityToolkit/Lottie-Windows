@@ -96,6 +96,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Tools\ListOfNeverNull.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Vector2KeyFrameAnimation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Vector3KeyFrameAnimation.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Vector4KeyFrameAnimation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Visual.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Wg\IGeometrySource2D.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Wui\Color.cs" />

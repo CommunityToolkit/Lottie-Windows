@@ -75,6 +75,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         public virtual string Vector3(Vector3 value) => $"new Vector3({Float(value.X)}, {Float(value.Y)}, {Float(value.Z)})";
 
+        public virtual string Vector4(Vector4 value) => $"new Vector4({Float(value.X)}, {Float(value.Y)}, {Float(value.Z)}, {Float(value.W)})";
+
         public string Static => "static";
 
         public virtual string ByteArray => "byte[]";

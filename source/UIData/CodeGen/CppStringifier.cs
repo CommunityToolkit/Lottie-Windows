@@ -98,6 +98,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         public override string Vector3(Vector3 value) => $"{{ {Float(value.X)}, {Float(value.Y)}, {Float(value.Z)} }}";
 
+        public override string Vector4(Vector4 value) => $"{{ {Float(value.X)}, {Float(value.Y)}, {Float(value.Z)}, {Float(value.W)} }}";
+
         public override string IListAdd => "Append";
 
         public override string FactoryCall(string value) => $"CanvasGeometryToIGeometrySource2D({value})";
