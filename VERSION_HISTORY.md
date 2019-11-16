@@ -22,7 +22,6 @@ The following Adobe After Effects are also supported:
 
 Lottie-Windows is version-adaptive when animation features require different UAP versions.
 
-
 ## 5.1.1
 
 Support for Bodymovin v5.5.0 with changes to the JSON schema.
