@@ -76,7 +76,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                     nextColorStop = null;
 
                     // If there's an opacity stop at the same offset, it will be the next stop in the list.
-                    if (i + 1 < orderedStops.Length && orderedStops[i + 1].Offset == currentStop.Offset)
+                    if (i + 1 < orderedStops.Length && orderedStops[i + 1].Offset == currentStop.Offset && orderedStops[i + 1].Kind == GradientStop.GradientStopKind.Opacity)
                     {
                         opacityPercent = ((OpacityGradientStop)orderedStops[i + 1]).OpacityPercent;
                     }
@@ -121,7 +121,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                     nextOpacityStop = null;
 
                     // If there's a color stop at the same offset, it will be the previous stop in the list.
-                    if (i > 0 && orderedStops[i - 1].Offset == currentStop.Offset)
+                    if (i > 0 && orderedStops[i - 1].Offset == currentStop.Offset && orderedStops[i - 1].Kind == GradientStop.GradientStopKind.Color)
                     {
                         color = ((ColorGradientStop)orderedStops[i - 1]).Color;
                     }

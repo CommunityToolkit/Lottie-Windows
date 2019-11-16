@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Toolkit.Uwp.UI.Lottie.GenericData;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 {
@@ -42,7 +43,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             IEnumerable<Char> chars,
             IEnumerable<Font> fonts,
             LayerCollection layers,
-            IEnumerable<Marker> markers)
+            IEnumerable<Marker> markers,
+            GenericDataObject extraData)
             : base(name)
         {
             Is3d = is3d;
@@ -56,6 +58,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             Layers = layers;
             Assets = assets;
             Chars = chars.ToArray();
+            ExtraData = extraData;
             Fonts = fonts.ToArray();
             Markers = markers.ToArray();
         }
@@ -79,6 +82,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         public double OutPoint { get; }
 
         public IEnumerable<Char> Chars { get; }
+
+        public GenericDataObject ExtraData { get; }
 
         public IEnumerable<Font> Fonts { get; }
 

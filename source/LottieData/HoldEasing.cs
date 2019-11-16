@@ -35,6 +35,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         // All HoldEasings are equivalent.
         public bool Equals(HoldEasing other) => other != null;
 
+        public static bool operator ==(HoldEasing a, HoldEasing b) => a is HoldEasing && b is HoldEasing;
+
+        public static bool operator !=(HoldEasing a, HoldEasing b) => !(a == b);
+
         /// <inheritdoc/>
         public override string ToString() => nameof(HoldEasing);
     }

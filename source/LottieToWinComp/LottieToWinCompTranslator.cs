@@ -33,6 +33,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Xml.Serialization;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
@@ -803,7 +804,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             // Convert the layer's in point and out point into absolute progress (0..1) values.
             var inProgress = GetInPointProgress(context);
             var outProgress = GetOutPointProgress(context);
-            if (inProgress > 1 || outProgress <= 0)
+            if (inProgress > 1 || outProgress <= 0 || inProgress >= outProgress)
             {
                 // The layer is never visible. Don't create anything.
                 rootNode = null;
@@ -922,7 +923,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var inProgress = GetInPointProgress(context);
             var outProgress = GetOutPointProgress(context);
 
-            if (inProgress > 1 || outProgress <= 0 || layerOpacityPercent.AlwaysEquals(0))
+            if (inProgress > 1 || outProgress <= 0 || inProgress >= outProgress || layerOpacityPercent.AlwaysEquals(0))
             {
                 // The layer is never visible. Don't create anything.
                 rootNode = null;

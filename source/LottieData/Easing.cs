@@ -25,7 +25,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
                 return true;
             }
 
-            if (other == null)
+            if (other is null)
             {
                 return false;
             }
@@ -44,11 +44,21 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
                 case EasingType.CubicBezier:
                     var xCb = (CubicBezierEasing)this;
                     var yCb = (CubicBezierEasing)other;
-                    return xCb.ControlPoint1.Equals(yCb.ControlPoint1);
+                    return xCb.Equals(yCb);
                 default:
                     throw new InvalidOperationException();
             }
         }
+
+        public static bool operator ==(Easing a, Easing b) => a is Easing && a.Equals(b);
+
+        public static bool operator !=(Easing a, Easing b) => !(a == b);
+
+        /// <inheritdoc/>
+        public override abstract bool Equals(object obj);
+
+        /// <inheritdoc/>
+        public override abstract int GetHashCode();
 
         public enum EasingType
         {
