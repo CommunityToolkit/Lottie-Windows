@@ -30,6 +30,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// <param name="fonts">Font definitions that are part of the composition.</param>
         /// <param name="layers">The layers in the composition.</param>
         /// <param name="markers">Markers that define named portions of the composition.</param>
+        /// <param name="extraData">Extra data that is related to the composition but is not part of the BodyMovin schema.</param>
         public LottieComposition(
             string name,
             double width,

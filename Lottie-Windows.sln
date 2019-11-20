@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27004.2002
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29509.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Lottie", "source\Lottie\Lottie.shproj", "{8EF7BD77-28E9-4998-8DBB-8036F988FE65}"
 EndProject
@@ -127,6 +127,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Issues", "Issues", "{07D6DF
 		source\Issues\ValidationIssues.tt = source\Issues\ValidationIssues.tt
 	EndProjectSection
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "GenericData", "source\GenericData\GenericData.shproj", "{77BCD724-8555-463B-985F-F8E8110164C4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GenericData.dll", "dlls\GenericData\GenericData.dll.csproj", "{A687177E-31FF-4F05-89C6-03657C96A166}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		source\LottieToWinComp\LottieToWinComp.projitems*{0340244a-683c-405e-838b-f93872779532}*SharedItemsImports = 13
@@ -134,6 +138,7 @@ Global
 		source\WinUIXamlMediaData\WinUIXamlMediaData.projitems*{30059ca7-0745-4eec-8d11-b14850a70c98}*SharedItemsImports = 13
 		source\YamlData\YamlData.projitems*{39c6b7f3-5e75-4019-82ab-00fd8a0a06e2}*SharedItemsImports = 13
 		source\LottieReader\LottieReader.projitems*{4e7d8957-3f5f-46e1-99a8-2012b806c9b0}*SharedItemsImports = 13
+		source\GenericData\GenericData.projitems*{5120efd7-a556-46bf-8d56-f65f1ef9a305}*SharedItemsImports = 4
 		source\LottieData\LottieData.projitems*{5120efd7-a556-46bf-8d56-f65f1ef9a305}*SharedItemsImports = 4
 		source\LottieReader\LottieReader.projitems*{5120efd7-a556-46bf-8d56-f65f1ef9a305}*SharedItemsImports = 4
 		source\LottieToWinComp\LottieToWinComp.projitems*{5120efd7-a556-46bf-8d56-f65f1ef9a305}*SharedItemsImports = 4
@@ -144,6 +149,7 @@ Global
 		source\WinUIXamlMediaData\WinUIXamlMediaData.projitems*{5120efd7-a556-46bf-8d56-f65f1ef9a305}*SharedItemsImports = 4
 		source\YamlData\YamlData.projitems*{5120efd7-a556-46bf-8d56-f65f1ef9a305}*SharedItemsImports = 4
 		source\UIData\UIData.projitems*{74601e6c-2dfe-4842-b170-047941abff2c}*SharedItemsImports = 13
+		source\GenericData\GenericData.projitems*{77bcd724-8555-463b-985f-f8e8110164c4}*SharedItemsImports = 13
 		source\Lottie\Lottie.projitems*{8ef7bd77-28e9-4998-8dbb-8036f988fe65}*SharedItemsImports = 13
 		source\LottieData\LottieData.projitems*{b3db16ee-a821-4474-a188-e64926529bbd}*SharedItemsImports = 13
 		source\WinCompData\WinCompData.projitems*{d02870de-7ded-4916-85d4-3175ceedef74}*SharedItemsImports = 13
@@ -338,6 +344,26 @@ Global
 		{1BBCFEED-5929-4FF7-8885-B94EAF65567C}.Release|ARM64.ActiveCfg = Release|Any CPU
 		{1BBCFEED-5929-4FF7-8885-B94EAF65567C}.Release|x64.ActiveCfg = Release|Any CPU
 		{1BBCFEED-5929-4FF7-8885-B94EAF65567C}.Release|x86.ActiveCfg = Release|Any CPU
+		{A687177E-31FF-4F05-89C6-03657C96A166}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A687177E-31FF-4F05-89C6-03657C96A166}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A687177E-31FF-4F05-89C6-03657C96A166}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{A687177E-31FF-4F05-89C6-03657C96A166}.Debug|ARM.Build.0 = Debug|Any CPU
+		{A687177E-31FF-4F05-89C6-03657C96A166}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{A687177E-31FF-4F05-89C6-03657C96A166}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{A687177E-31FF-4F05-89C6-03657C96A166}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A687177E-31FF-4F05-89C6-03657C96A166}.Debug|x64.Build.0 = Debug|Any CPU
+		{A687177E-31FF-4F05-89C6-03657C96A166}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A687177E-31FF-4F05-89C6-03657C96A166}.Debug|x86.Build.0 = Debug|Any CPU
+		{A687177E-31FF-4F05-89C6-03657C96A166}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A687177E-31FF-4F05-89C6-03657C96A166}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A687177E-31FF-4F05-89C6-03657C96A166}.Release|ARM.ActiveCfg = Release|Any CPU
+		{A687177E-31FF-4F05-89C6-03657C96A166}.Release|ARM.Build.0 = Release|Any CPU
+		{A687177E-31FF-4F05-89C6-03657C96A166}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{A687177E-31FF-4F05-89C6-03657C96A166}.Release|ARM64.Build.0 = Release|Any CPU
+		{A687177E-31FF-4F05-89C6-03657C96A166}.Release|x64.ActiveCfg = Release|Any CPU
+		{A687177E-31FF-4F05-89C6-03657C96A166}.Release|x64.Build.0 = Release|Any CPU
+		{A687177E-31FF-4F05-89C6-03657C96A166}.Release|x86.ActiveCfg = Release|Any CPU
+		{A687177E-31FF-4F05-89C6-03657C96A166}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -363,6 +389,8 @@ Global
 		{2202E218-DD9F-496A-AEF4-3F07F0EA5B9D} = {AB232F35-AAF7-4AE2-B1D2-45DD9BC2F7D7}
 		{1BBCFEED-5929-4FF7-8885-B94EAF65567C} = {C75BD686-21A6-4EB3-8D4B-D5A01C019C52}
 		{07D6DFEE-E76C-4EAC-B361-99D5EDA7BCE1} = {AB232F35-AAF7-4AE2-B1D2-45DD9BC2F7D7}
+		{77BCD724-8555-463B-985F-F8E8110164C4} = {AB232F35-AAF7-4AE2-B1D2-45DD9BC2F7D7}
+		{A687177E-31FF-4F05-89C6-03657C96A166} = {C75BD686-21A6-4EB3-8D4B-D5A01C019C52}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {51B9BB4C-5196-41CF-950C-12B04AD8A61C}
