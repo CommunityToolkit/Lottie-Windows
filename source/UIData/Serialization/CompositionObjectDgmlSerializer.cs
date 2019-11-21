@@ -18,15 +18,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
     {
         // The categories of each node in the DGML graph. The category determines the appearance in the graph.
         static readonly Category CategoryRoot = new Category("Root", Colors.MediumVioletRed);
-        static readonly Category CategoryContainerVisual = new Category("ContainerVisual", Colors.DarkRed);
-        static readonly Category CategoryContainerVisualAnimated = new Category("AnimatedContainerVisual", "Animated ContainerVisual", Colors.Crimson);
-        static readonly Category CategorySpriteVisual = new Category("SpriteVisual", Colors.Magenta);
-        static readonly Category CategoryShapeVisual = new Category("ShapeVisual", Colors.CornflowerBlue);
-        static readonly Category CategoryShapeVisualAnimated = new Category("AnimatedShapeVisual", "Animated ShapeVisual", Colors.RoyalBlue);
         static readonly Category CategoryContainerShape = new Category("ContainerShape", Colors.SeaGreen);
         static readonly Category CategoryContainerShapeAnimated = new Category("AnimatedContainerShape", "Animated ContainerShape", Colors.Teal);
-        static readonly Category CategoryShape = new Category("Shape", Colors.Yellow);
-        static readonly Category CategoryShapeAnimated = new Category("AnimatedShape", "Animated Shape", Colors.Wheat);
+        static readonly Category CategoryContainerVisual = new Category("ContainerVisual", Colors.DarkRed);
+        static readonly Category CategoryContainerVisualAnimated = new Category("AnimatedContainerVisual", "Animated ContainerVisual", Colors.Crimson);
+        static readonly Category CategoryEffectBrush = new Category("EffectBrush", Colors.LightGray);
         static readonly Category CategoryEllipse = new Category("Ellipse", Colors.DarkGoldenrod);
         static readonly Category CategoryEllipseAnimated = new Category("AnimatedEllipse", "Animated Ellipse", Colors.Goldenrod);
         static readonly Category CategoryPath = new Category("Path", Colors.DarkOrange);
@@ -34,7 +30,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
         static readonly Category CategoryRectangle = new Category("Rectangle", Colors.SandyBrown);
         static readonly Category CategoryRectangleAnimated = new Category("AnimatedRectangle", "Animated Rectangle", Colors.Yellow);
         static readonly Category CategoryRoundedRectangle = new Category("RoundedRectangle", Colors.Plum);
-        static readonly Category CategoryAnimatedAnimatedRoundedRectangle = new Category("AnimatedRoundedRectangle", "Animated RoundedRectangle", Colors.Purple);
+        static readonly Category CategoryRoundedRectangleAnimated = new Category("AnimatedRoundedRectangle", "Animated RoundedRectangle", Colors.Purple);
+        static readonly Category CategoryShape = new Category("Shape", Colors.Yellow);
+        static readonly Category CategoryShapeAnimated = new Category("AnimatedShape", "Animated Shape", Colors.Wheat);
+        static readonly Category CategoryShapeVisual = new Category("ShapeVisual", Colors.CornflowerBlue);
+        static readonly Category CategoryShapeVisualAnimated = new Category("AnimatedShapeVisual", "Animated ShapeVisual", Colors.RoyalBlue);
+        static readonly Category CategorySpriteVisual = new Category("SpriteVisual", Colors.Magenta);
+        static readonly Category CategorySurfaceBrush = new Category("SurfaceBrush", Colors.LightBlue);
+        static readonly Category CategoryVisualSurface = new Category("VisualSurface", Colors.LightGreen);
 
         static readonly XNamespace ns = "http://schemas.microsoft.com/vs/2009/dgml";
         ObjectGraph<ObjectData> _objectGraph;
@@ -277,7 +280,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                         case CompositionObjectType.ColorKeyFrameAnimation:
                         case CompositionObjectType.CompositionColorBrush:
                         case CompositionObjectType.CompositionColorGradientStop:
-                        case CompositionObjectType.CompositionEffectBrush:
                         case CompositionObjectType.CompositionEllipseGeometry:
                         case CompositionObjectType.CompositionLinearGradientBrush:
                         case CompositionObjectType.CompositionGeometricClip:
@@ -286,9 +288,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                         case CompositionObjectType.CompositionRadialGradientBrush:
                         case CompositionObjectType.CompositionRectangleGeometry:
                         case CompositionObjectType.CompositionRoundedRectangleGeometry:
-                        case CompositionObjectType.CompositionSurfaceBrush:
                         case CompositionObjectType.CompositionViewBox:
-                        case CompositionObjectType.CompositionVisualSurface:
                         case CompositionObjectType.CubicBezierEasingFunction:
                         case CompositionObjectType.ExpressionAnimation:
                         case CompositionObjectType.InsetClip:
@@ -301,6 +301,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                         case CompositionObjectType.Vector4KeyFrameAnimation:
                             // Do not display in the graph.
                             return;
+                        case CompositionObjectType.CompositionEffectBrush:
+                            Category = CategoryEffectBrush;
+                            break;
+                        case CompositionObjectType.CompositionSurfaceBrush:
+                            Category = CategorySurfaceBrush;
+                            break;
+                        case CompositionObjectType.CompositionVisualSurface:
+                            Category = CategoryVisualSurface;
+                            break;
                         case CompositionObjectType.CompositionContainerShape:
                             Category = IsAnimatedCompositionObject ? CategoryContainerShapeAnimated : CategoryContainerShape;
                             break;
@@ -380,7 +389,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                     case CompositionObjectType.CompositionRectangleGeometry:
                         return isGeometryAnimated ? CategoryRectangleAnimated : CategoryRectangle;
                     case CompositionObjectType.CompositionRoundedRectangleGeometry:
-                        return isGeometryAnimated ? CategoryAnimatedAnimatedRoundedRectangle : CategoryRoundedRectangle;
+                        return isGeometryAnimated ? CategoryRoundedRectangleAnimated : CategoryRoundedRectangle;
                     default:
                         throw new InvalidOperationException();
                 }
