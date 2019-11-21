@@ -869,7 +869,7 @@ public:
     {
         if (count != nullptr)
         {
-            *count = m_sources.size();
+            *count = (UINT)m_sources.size();
         }
 
         return S_OK;
