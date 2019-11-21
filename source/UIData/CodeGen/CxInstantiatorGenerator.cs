@@ -111,7 +111,25 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 builder.WriteLine("#include <d2d1helper.h>");
 
                 // Interop
+                // BUILD_WINDOWS is defined if the code is being built as part of a Microsoft internal
+                // Windows build. In that case the types in the Windows.Graphics.Interop.h file will
+                // be in the Windows::Graphics::Effects namespace.
+                //
+                // Otherwise, the code is being built normally and the types will be in the
+                // ABI::Windows::Graphics::Effects namespace.
+                //
+                // To work around this inconsistency, when BUILD_WINDOWS is defined, we wrap the include
+                // of Windows.Grapics.Interop.h in the ABI namespace so that the types in that file
+                // will always be in the ABI::Windows::Graphics::Effects namespace. And in our
+                // generated code we always refer to the types in that file using the ABI:: prefix.
+                builder.WriteLine("#ifdef BUILD_WINDOWS");
+                builder.WriteLine("namespace ABI");
+                builder.WriteLine("{");
                 builder.WriteLine("#include <Windows.Graphics.Interop.h>");
+                builder.WriteLine("}");
+                builder.WriteLine("#else");
+                builder.WriteLine("#include <Windows.Graphics.Interop.h>");
+                builder.WriteLine("#endif");
 
                 // ComPtr
                 builder.WriteLine("#include <wrl.h>");
@@ -869,7 +887,7 @@ public:
     {
         if (count != nullptr)
         {
-            *count = m_sources.size();
+            *count = static_cast<UINT>(m_sources.size());
         }
 
         return S_OK;
