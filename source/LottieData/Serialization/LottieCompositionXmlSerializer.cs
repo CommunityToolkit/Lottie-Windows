@@ -82,7 +82,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     return FromTrimPath((TrimPath)obj);
             }
 
-            throw new InvalidOperationException();
+            throw Unreachable;
         }
 
         XElement FromLottieComposition(LottieComposition lottieComposition)
@@ -130,7 +130,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 case Asset.AssetType.Image:
                     return FromImageAsset((ImageAsset)asset);
                 default:
-                    throw new InvalidOperationException();
+                    throw Unreachable;
             }
         }
 
@@ -151,7 +151,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 case ImageAsset.ImageAssetType.External:
                     return FromExternalImageAsset((ExternalImageAsset)asset);
                 default:
-                    throw new InvalidOperationException();
+                    throw Unreachable;
             }
         }
 
@@ -206,7 +206,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 case Layer.LayerType.Text:
                     return FromTextLayer((TextLayer)layer);
                 default:
-                    throw new InvalidOperationException();
+                    throw Unreachable;
             }
         }
 
@@ -378,7 +378,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 case ShapeContentType.RoundedCorner:
                     return FromRoundedCorner((RoundedCorner)content);
                 default:
-                    throw new InvalidOperationException();
+                    throw Unreachable;
             }
         }
 
@@ -528,7 +528,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     }
 
                 default:
-                    throw new InvalidOperationException();
+                    throw Unreachable;
             }
         }
 
@@ -720,5 +720,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 yield return new XAttribute(nameof(obj.Name), obj.Name);
             }
         }
+
+        XElement Unknown() => new XElement("UnknownElement");
+
+        // The code we hit is supposed to be unreachable. This indicates a bug.
+        static Exception Unreachable => new InvalidOperationException("Unreachable code executed");
     }
 }

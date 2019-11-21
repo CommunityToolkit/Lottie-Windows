@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 15
-VisualStudioVersion = 15.0.28307.572
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29509.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "LottieData", "..\source\LottieData\LottieData.shproj", "{B3DB16EE-A821-4474-A188-E64926529BBD}"
 EndProject
@@ -26,6 +26,68 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "YamlData", "..\source\YamlD
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "WinStorageStreamsData", "..\source\WinStorageStreamsData\WinStorageStreamsData.shproj", "{2202E218-DD9F-496A-AEF4-3F07F0EA5B9D}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "GenericData", "..\source\GenericData\GenericData.shproj", "{77BCD724-8555-463B-985F-F8E8110164C4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Issues", "Issues", "{BDB88D65-320E-4293-9E55-1D3ED8332FF6}"
+	ProjectSection(SolutionItems) = preProject
+		..\source\Issues\GenerateIssuesClasses.cmd = ..\source\Issues\GenerateIssuesClasses.cmd
+		..\source\Issues\IssuesClassGenerator.t4 = ..\source\Issues\IssuesClassGenerator.t4
+		..\source\Issues\LP0001.md = ..\source\Issues\LP0001.md
+		..\source\Issues\LP0002.md = ..\source\Issues\LP0002.md
+		..\source\Issues\LP0005.md = ..\source\Issues\LP0005.md
+		..\source\Issues\LP0006.md = ..\source\Issues\LP0006.md
+		..\source\Issues\LP0007.md = ..\source\Issues\LP0007.md
+		..\source\Issues\LP0008.md = ..\source\Issues\LP0008.md
+		..\source\Issues\LP0009.md = ..\source\Issues\LP0009.md
+		..\source\Issues\LP0011.md = ..\source\Issues\LP0011.md
+		..\source\Issues\LP0012.md = ..\source\Issues\LP0012.md
+		..\source\Issues\LP0013.md = ..\source\Issues\LP0013.md
+		..\source\Issues\LP0014.md = ..\source\Issues\LP0014.md
+		..\source\Issues\LP0015.md = ..\source\Issues\LP0015.md
+		..\source\Issues\LP0016.md = ..\source\Issues\LP0016.md
+		..\source\Issues\LP0017.md = ..\source\Issues\LP0017.md
+		..\source\Issues\LP0018.md = ..\source\Issues\LP0018.md
+		..\source\Issues\LT0001.md = ..\source\Issues\LT0001.md
+		..\source\Issues\LT0002.md = ..\source\Issues\LT0002.md
+		..\source\Issues\LT0003.md = ..\source\Issues\LT0003.md
+		..\source\Issues\LT0004.md = ..\source\Issues\LT0004.md
+		..\source\Issues\LT0005.md = ..\source\Issues\LT0005.md
+		..\source\Issues\LT0006.md = ..\source\Issues\LT0006.md
+		..\source\Issues\LT0007.md = ..\source\Issues\LT0007.md
+		..\source\Issues\LT0009.md = ..\source\Issues\LT0009.md
+		..\source\Issues\LT0010.md = ..\source\Issues\LT0010.md
+		..\source\Issues\LT0011.md = ..\source\Issues\LT0011.md
+		..\source\Issues\LT0012.md = ..\source\Issues\LT0012.md
+		..\source\Issues\LT0013.md = ..\source\Issues\LT0013.md
+		..\source\Issues\LT0014.md = ..\source\Issues\LT0014.md
+		..\source\Issues\LT0015.md = ..\source\Issues\LT0015.md
+		..\source\Issues\LT0016.md = ..\source\Issues\LT0016.md
+		..\source\Issues\LT0017.md = ..\source\Issues\LT0017.md
+		..\source\Issues\LT0018.md = ..\source\Issues\LT0018.md
+		..\source\Issues\LT0019.md = ..\source\Issues\LT0019.md
+		..\source\Issues\LT0020.md = ..\source\Issues\LT0020.md
+		..\source\Issues\LT0021.md = ..\source\Issues\LT0021.md
+		..\source\Issues\LT0022.md = ..\source\Issues\LT0022.md
+		..\source\Issues\LT0023.md = ..\source\Issues\LT0023.md
+		..\source\Issues\LT0024.md = ..\source\Issues\LT0024.md
+		..\source\Issues\LT0025.md = ..\source\Issues\LT0025.md
+		..\source\Issues\LT0026.md = ..\source\Issues\LT0026.md
+		..\source\Issues\LT0027.md = ..\source\Issues\LT0027.md
+		..\source\Issues\LT0028.md = ..\source\Issues\LT0028.md
+		..\source\Issues\LT0029.md = ..\source\Issues\LT0029.md
+		..\source\Issues\LT0030.md = ..\source\Issues\LT0030.md
+		..\source\Issues\LT0031.md = ..\source\Issues\LT0031.md
+		..\source\Issues\LT0032.md = ..\source\Issues\LT0032.md
+		..\source\Issues\LT0033.md = ..\source\Issues\LT0033.md
+		..\source\Issues\LT0034.md = ..\source\Issues\LT0034.md
+		..\source\Issues\LV0001.md = ..\source\Issues\LV0001.md
+		..\source\Issues\LV0002.md = ..\source\Issues\LV0002.md
+		..\source\Issues\LV0003.md = ..\source\Issues\LV0003.md
+		..\source\Issues\ParsingIssues.tt = ..\source\Issues\ParsingIssues.tt
+		..\source\Issues\TranslationIssues.tt = ..\source\Issues\TranslationIssues.tt
+		..\source\Issues\ValidationIssues.tt = ..\source\Issues\ValidationIssues.tt
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		..\source\LottieToWinComp\LottieToWinComp.projitems*{0340244a-683c-405e-838b-f93872779532}*SharedItemsImports = 13
@@ -34,6 +96,7 @@ Global
 		..\source\YamlData\YamlData.projitems*{39c6b7f3-5e75-4019-82ab-00fd8a0a06e2}*SharedItemsImports = 13
 		..\source\LottieReader\LottieReader.projitems*{4e7d8957-3f5f-46e1-99a8-2012b806c9b0}*SharedItemsImports = 13
 		..\source\UIData\UIData.projitems*{74601e6c-2dfe-4842-b170-047941abff2c}*SharedItemsImports = 13
+		..\source\GenericData\GenericData.projitems*{77bcd724-8555-463b-985f-f8e8110164c4}*SharedItemsImports = 13
 		..\source\LottieData\LottieData.projitems*{b3db16ee-a821-4474-a188-e64926529bbd}*SharedItemsImports = 13
 		..\source\WinCompData\WinCompData.projitems*{d02870de-7ded-4916-85d4-3175ceedef74}*SharedItemsImports = 13
 	EndGlobalSection
@@ -76,6 +139,8 @@ Global
 		{74601E6C-2DFE-4842-B170-047941ABFF2C} = {AB232F35-AAF7-4AE2-B1D2-45DD9BC2F7D7}
 		{39C6B7F3-5E75-4019-82AB-00FD8A0A06E2} = {AB232F35-AAF7-4AE2-B1D2-45DD9BC2F7D7}
 		{2202E218-DD9F-496A-AEF4-3F07F0EA5B9D} = {AB232F35-AAF7-4AE2-B1D2-45DD9BC2F7D7}
+		{77BCD724-8555-463B-985F-F8E8110164C4} = {AB232F35-AAF7-4AE2-B1D2-45DD9BC2F7D7}
+		{BDB88D65-320E-4293-9E55-1D3ED8332FF6} = {AB232F35-AAF7-4AE2-B1D2-45DD9BC2F7D7}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {51B9BB4C-5196-41CF-950C-12B04AD8A61C}

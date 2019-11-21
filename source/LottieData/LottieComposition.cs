@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Toolkit.Uwp.UI.Lottie.GenericData;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 {
@@ -29,6 +30,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// <param name="fonts">Font definitions that are part of the composition.</param>
         /// <param name="layers">The layers in the composition.</param>
         /// <param name="markers">Markers that define named portions of the composition.</param>
+        /// <param name="extraData">Extra data that is related to the composition but is not part of the BodyMovin schema.</param>
         public LottieComposition(
             string name,
             double width,
@@ -42,7 +44,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             IEnumerable<Char> chars,
             IEnumerable<Font> fonts,
             LayerCollection layers,
-            IEnumerable<Marker> markers)
+            IEnumerable<Marker> markers,
+            GenericDataObject extraData)
             : base(name)
         {
             Is3d = is3d;
@@ -56,6 +59,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             Layers = layers;
             Assets = assets;
             Chars = chars.ToArray();
+            ExtraData = extraData;
             Fonts = fonts.ToArray();
             Markers = markers.ToArray();
         }
@@ -79,6 +83,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         public double OutPoint { get; }
 
         public IEnumerable<Char> Chars { get; }
+
+        public GenericDataObject ExtraData { get; }
 
         public IEnumerable<Font> Fonts { get; }
 

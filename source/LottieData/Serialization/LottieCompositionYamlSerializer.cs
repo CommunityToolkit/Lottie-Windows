@@ -227,7 +227,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 case Layer.LayerType.Text:
                     return FromTextLayer((TextLayer)layer, superclassContent);
                 default:
-                    throw new InvalidOperationException();
+                    throw Unreachable;
             }
         }
 
@@ -317,7 +317,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 case ShapeContentType.RoundedCorner:
                     return FromRoundedCorner((RoundedCorner)content, superclassContent);
                 default:
-                    throw new InvalidOperationException();
+                    throw Unreachable;
             }
         }
 
@@ -416,7 +416,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     }
 
                 default:
-                    throw new InvalidOperationException();
+                    throw Unreachable;
             }
         }
 
@@ -482,7 +482,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 case GradientStop.GradientStopKind.Opacity:
                     return FromOpacityGradientStop((OpacityGradientStop)value);
                 default:
-                    throw new InvalidOperationException();
+                    throw Unreachable;
             }
         }
 
@@ -611,5 +611,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         YamlScalar Scalar(ShapeContentType type) => Scalar(type, type.ToString());
 
         YamlScalar Scalar(Layer.MatteType type) => Scalar(type, type.ToString());
+
+        // The code we hit is supposed to be unreachable. This indicates a bug.
+        static Exception Unreachable => new InvalidOperationException("Unreachable code executed");
     }
 }

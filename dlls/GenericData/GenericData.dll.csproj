@@ -7,8 +7,6 @@
     <DefineConstants>PUBLIC_LottieData</DefineConstants>
   </PropertyGroup>
 
-  <Import Project="..\..\source\LottieData\LottieData.projitems" Label="Shared" />
-
   <Import Project="..\..\source\GenericData\GenericData.projitems" Label="Shared" />
 
   <ItemGroup>
@@ -16,7 +14,4 @@
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.6.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\YamlData\YamlData.dll.csproj" />
-  </ItemGroup>
 </Project>

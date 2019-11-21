@@ -13,6 +13,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using Microsoft.Toolkit.Uwp.UI.Lottie.GenericData;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -151,6 +152,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             var fonts = EmptyArray<Font>.Singleton;
             var layers = EmptyArray<Layer>.Singleton;
             var markers = EmptyArray<Marker>.Singleton;
+            Dictionary<string, GenericDataObject> extraData = null;
 
             ConsumeToken(reader);
 
@@ -172,7 +174,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     case JsonToken.EndConstructor:
                     case JsonToken.Date:
                     case JsonToken.Bytes:
-                        // Here means the JSON was invalid or our parser got confused.
+                        // Here means the JSON was invalid or our parser got confused. There is no way to
+                        // recover from this, so throw.
                         throw UnexpectedTokenException(reader);
 
                     case JsonToken.Comment:
@@ -193,10 +196,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                             case "chars":
                                 chars = ParseArrayOf(reader, ParseChar).ToArray();
                                 break;
-                            case "comps":
-                                _issues.IgnoredField("comps");
-                                ConsumeArray(reader);
-                                break;
                             case "ddd":
                                 is3d = ParseBool(reader);
                                 break;
@@ -207,7 +206,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                                 fonts = ParseFonts(reader).ToArray();
                                 break;
                             case "layers":
-                                layers = ParseLayers(reader);
+                                layers = ParseLayers(reader).ToArray();
                                 break;
                             case "h":
                                 height = ParseDouble(reader);
@@ -231,40 +230,54 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                                 width = ParseDouble(reader);
                                 break;
 
+                            // Treat any other property as an extension of the BodyMovin format.
                             default:
-                                throw UnexpectedTokenException(reader);
+                                _issues.UnexpectedField(currentProperty);
+                                if (extraData is null)
+                                {
+                                    extraData = new Dictionary<string, GenericDataObject>();
+                                }
+
+                                extraData.Add(currentProperty, JsonToGenericData.JTokenToGenericData(JToken.Load(reader, s_jsonLoadSettings)));
+                                break;
                         }
 
                         break;
 
                     case JsonToken.EndObject:
                         {
-                            if (version == null)
+                            // Check that the required fields were found. If any are missing, throw.
+                            if (version is null)
                             {
-                                throw new LottieCompositionReaderException("Version parameter not found.");
+                                throw Exception("Version parameter not found.", reader);
                             }
 
                             if (!width.HasValue)
                             {
-                                throw new LottieCompositionReaderException("Width parameter not found.");
+                                throw Exception("Width parameter not found.", reader);
                             }
 
                             if (!height.HasValue)
                             {
-                                throw new LottieCompositionReaderException("Height parameter not found.");
+                                throw Exception("Height parameter not found.", reader);
                             }
 
                             if (!inPoint.HasValue)
                             {
-                                throw new LottieCompositionReaderException("Start frame parameter not found.");
+                                throw Exception("Start frame parameter not found.", reader);
                             }
 
                             if (!outPoint.HasValue)
                             {
-                                throw new LottieCompositionReaderException("End frame parameter not found.");
+                                Exception("End frame parameter not found.", reader);
                             }
 
-                            int[] versions = new[] { 0, 0, 0 };
+                            if (layers is null)
+                            {
+                                throw Exception("No layers found.", reader);
+                            }
+
+                            int[] versions;
                             try
                             {
                                 versions = version.Split('.').Select(int.Parse).ToArray();
@@ -272,15 +285,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                             catch (FormatException)
                             {
                                 // Ignore
+                                versions = new[] { 0, 0, 0 };
                             }
                             catch (OverflowException)
                             {
                                 // Ignore
-                            }
-
-                            if (layers == null)
-                            {
-                                throw new LottieCompositionReaderException("No layers found.");
+                                versions = new[] { 0, 0, 0 };
                             }
 
                             var result = new LottieComposition(
@@ -294,6 +304,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                                                 version: new Version(versions[0], versions[1], versions[2]),
                                                 assets: new AssetCollection(assets),
                                                 chars: chars,
+                                                extraData: extraData is null ? GenericDataMap.Empty : GenericDataMap.Create(extraData),
                                                 fonts: fonts,
                                                 layers: new LayerCollection(layers),
                                                 markers: markers);
@@ -301,7 +312,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                         }
 
                     default:
-                        throw new InvalidOperationException();
+                        throw UnexpectedTokenException(reader);
                 }
             }
 
@@ -337,7 +348,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                                 progress = ParseDouble(reader);
                                 break;
                             default:
-                                throw UnexpectedFieldException(reader, currentProperty);
+                                _issues.IgnoredField(currentProperty);
+                                reader.Skip();
+                                break;
                         }
 
                         break;
@@ -361,7 +374,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             double height = 0.0;
             string imagePath = null;
             string fileName = null;
-            string name = null;
             Layer[] layers = null;
 
             while (reader.Read())
@@ -398,11 +410,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
                                     break;
                                 case "layers":
-                                    layers = ParseLayers(reader);
-                                    break;
-                                case "nm":
-                                    // TODO - not sure why, but shows up in one Layers asset in the corpus.
-                                    name = (string)reader.Value;
+                                    layers = ParseLayers(reader).ToArray();
                                     break;
                                 case "p":
                                     fileName = (string)reader.Value;
@@ -413,24 +421,26 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                                 case "w":
                                     width = ParseDouble(reader);
                                     break;
+
+                                // Report but ignore unexpected fields.
                                 case "xt":
-                                    // TODO - unknown - seen once in Layers asset in the corpus.
-                                    var xt = ParseInt(reader);
-                                    break;
+                                case "nm":
                                 default:
-                                    throw UnexpectedFieldException(reader, currentProperty);
+                                    _issues.UnexpectedField(currentProperty);
+                                    reader.Skip();
+                                    break;
                             }
                         }
 
                         break;
                     case JsonToken.EndObject:
                         {
-                            if (id == null)
+                            if (id is null)
                             {
                                 throw Exception("Asset with no id", reader);
                             }
 
-                            if (layers != null)
+                            if (layers is object)
                             {
                                 return new LayerCollectionAsset(id, new LayerCollection(layers));
                             }
@@ -558,7 +568,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                                     width = ParseDouble(reader);
                                     break;
                                 default:
-                                    throw UnexpectedFieldException(reader, currentProperty);
+                                    _issues.UnexpectedField(currentProperty);
+                                    break;
                             }
                         }
 
@@ -591,10 +602,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             AssertAllFieldsRead(fontsObject);
         }
 
-        Layer[] ParseLayers(JsonReader reader)
-        {
-            return LoadArrayOfJObjects(reader).Select(a => ReadLayer(a)).Where(a => a != null).ToArray();
-        }
+        IEnumerable<Layer> ParseLayers(JsonReader reader) =>
+            LoadArrayOfJObjects(reader).Select(o => ReadLayer(o)).Where(l => l != null);
 
         // May return null if there was a problem reading the layer.
         Layer ReadLayer(JObject obj)
@@ -610,7 +619,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             var layerArgs = default(Layer.LayerArgs);
 
             layerArgs.Name = ReadName(obj);
-            layerArgs.Index = ReadInt(obj, "ind") ?? throw new LottieCompositionReaderException("Missing layer index");
+            var index = ReadInt(obj, "ind");
+
+            if (!index.HasValue)
+            {
+                return null;
+            }
+
+            layerArgs.Index = index.Value;
             layerArgs.Parent = ReadInt(obj, "parent");
             layerArgs.Is3d = ReadBool(obj, "ddd") == true;
             layerArgs.AutoOrient = ReadBool(obj, "ao") == true;
@@ -661,7 +677,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
             layerArgs.LayerMatteType = TTToMatteType(obj.GetNamedNumber("tt", (double)Layer.MatteType.None));
 
-            switch (TyToLayerType(obj.GetNamedNumber("ty", double.NaN)))
+            var (isLayerTypeValid, layerType) = TyToLayerType(obj.GetNamedNumber("ty", double.NaN));
+
+            if (!isLayerTypeValid)
+            {
+                return null;
+            }
+
+            switch (layerType)
             {
                 case Layer.LayerType.PreComp:
                     {
@@ -720,7 +743,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                         return new TextLayer(in layerArgs, refId);
                     }
 
-                default: throw new InvalidOperationException();
+                default: throw Unreachable;
             }
         }
 
@@ -816,7 +839,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                         mode = Mask.MaskMode.Subtract;
                         break;
                     default:
-                        throw new LottieCompositionReaderException($"Unexpected mask mode: {maskMode}");
+                        _issues.UnexpectedValueForType("MaskMode", maskMode);
+                        continue;
                 }
 
                 AssertAllFieldsRead(obj);
@@ -933,7 +957,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 case "rp":
                     return ReadRepeater(obj, in args);
                 default:
-                    _issues.UnexpectedShapeContentType(type);
+                    _issues.UnexpectedValueForType("ShapeContentType", type);
                     return null;
             }
         }
@@ -1012,7 +1036,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 case GradientType.Radial:
                     return ReadRadialGradientStroke(obj, in shapeLayerContentArgs);
                 default:
-                    throw new InvalidOperationException();
+                    throw Unreachable;
             }
         }
 
@@ -1118,7 +1142,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 case GradientType.Radial:
                     return ReadRadialGradientFill(obj, in shapeLayerContentArgs);
                 default:
-                    throw new InvalidOperationException();
+                    throw Unreachable;
             }
         }
 
@@ -1201,7 +1225,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
             var direction = ReadBool(obj, "d") == true;
 
-            var type = SyToPolystarType(obj.GetNamedNumber("sy", double.NaN));
+            var (isPolystartTypeValid, type) = SyToPolystarType(obj.GetNamedNumber("sy", double.NaN));
+
+            if (!isPolystartTypeValid)
+            {
+                return null;
+            }
 
             var points = ReadAnimatableFloat(obj.GetNamedObject("pt"));
             if (points.IsAnimated)
@@ -1376,7 +1405,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         Animatable<Color> ReadAnimatableColor(JObject obj)
         {
-            if (obj == null)
+            if (obj is null)
             {
                 return new Animatable<Color>(Color.Black, null);
             }
@@ -1410,51 +1439,33 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         Transform ReadTransform(JObject obj, in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
         {
-            IAnimatableVector3 anchor = null;
-            IAnimatableVector3 position = null;
-            IAnimatableVector3 scalePercent = null;
-            Animatable<double> rotation = null;
-
             var anchorJson = obj.GetNamedObject("a", null);
-            if (anchorJson != null)
-            {
-                anchor = ReadAnimatableVector3(anchorJson);
-            }
-            else
-            {
-                anchor = new AnimatableVector3(default(Vector3), null);
-            }
+
+            var anchor =
+                anchorJson != null
+                ? ReadAnimatableVector3(anchorJson)
+                : new AnimatableVector3(Vector3.Zero, null);
 
             var positionJson = obj.GetNamedObject("p", null);
-            if (positionJson != null)
-            {
-                position = ReadAnimatableVector3(positionJson);
-            }
-            else
-            {
-                throw new LottieCompositionReaderException("Missing transform for position");
-            }
+
+            var position =
+                positionJson != null
+                    ? ReadAnimatableVector3(positionJson)
+                    : new AnimatableVector3(Vector3.Zero, null);
 
             var scaleJson = obj.GetNamedObject("s", null);
-            if (scaleJson != null)
-            {
-                scalePercent = ReadAnimatableVector3(scaleJson);
-            }
 
-            var rotationJson = obj.GetNamedObject("r", null);
-            if (rotationJson == null)
-            {
-                rotationJson = obj.GetNamedObject("rz", null);
-            }
+            var scalePercent =
+                scaleJson != null
+                    ? ReadAnimatableVector3(scaleJson)
+                    : new AnimatableVector3(new Vector3(100, 100, 100), null);
 
-            if (rotationJson != null)
-            {
-                rotation = ReadAnimatableFloat(rotationJson);
-            }
-            else
-            {
-                throw new LottieCompositionReaderException("Missing transform for rotation");
-            }
+            var rotationJson = obj.GetNamedObject("r", null) ?? obj.GetNamedObject("rz", null);
+
+            var rotation =
+                    rotationJson != null
+                        ? ReadAnimatableFloat(rotationJson)
+                        : new Animatable<double>(0, null);
 
             var opacityPercent = ReadOpacityPercent(obj);
 
@@ -1478,11 +1489,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 case JTokenType.Float:
                     return ReadInt(obj, name)?.Equals(1);
                 case JTokenType.Null:
+                    // Treat a missing value as false.
+                    return false;
                 case JTokenType.String:
                 case JTokenType.Array:
                 case JTokenType.Object:
                 default:
-                    throw new InvalidOperationException();
+                    throw UnexpectedTokenException(value.Type);
             }
         }
 
@@ -1523,7 +1536,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     : new Animatable<Vector2>(initialValue, propertyIndex);
             }
 
-            throw new LottieCompositionReaderException("Animatable Vector2 could not be read.");
+            return new Animatable<Vector2>(Vector2.Zero, propertyIndex);
         }
 
         IAnimatableVector3 ReadAnimatableVector3(JObject obj)
@@ -1691,17 +1704,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     case 2:
                         z = number;
                         break;
-                    default:
-                        throw new LottieCompositionReaderException("Too many values for Vector3.");
                 }
             }
 
-            // Allow either 2 or 3 values to be specified. If 2 values, assume z==0.
-            if (i < 2)
-            {
-                throw new LottieCompositionReaderException("Not enough values for Vector3.");
-            }
-
+            // Allow any number of values to be specified. Assume 0 for any missing values.
             return new Vector3(x, y, z);
         }
 
@@ -1726,11 +1732,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 }
             }
 
-            if (i < 2)
-            {
-                throw new LottieCompositionReaderException("Not enough values for Vector2.");
-            }
-
+            // Allow any number of values to be specified. Assume 0 for any missing values.
             return new Vector2(x, y);
         }
 
@@ -1780,7 +1782,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                                 goto AllColorChannelsRead;
                             }
 
-                            throw new LottieCompositionReaderException($"Expected float but found {jsonValue.Type}.");
+                            throw UnexpectedTokenException(jsonValue.Type);
                     }
 
                     var number = (double)jsonValue;
@@ -1798,20 +1800,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                         case 3:
                             a = number;
                             break;
-                        default:
-                            throw new LottieCompositionReaderException("Too many values for Color.");
                     }
                 }
 
             AllColorChannelsRead:
 
-                // If ignoring alpha, allow 3 or 4 channels. BodyMovin generates 4 channels
-                // however seeing as the alpha is ignored, 3 channels is enough.
-                if (i < (_ignoreAlpha ? 3 : 4))
-                {
-                    throw new LottieCompositionReaderException("Not enough values for Color.");
-                }
-
+                // Treat any missing values as 0.
                 // Some versions of Lottie use floats, some use bytes. Assume bytes if any values are > 1.
                 if (r > 1 || g > 1 || b > 1 || a > 1)
                 {
@@ -1845,7 +1839,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     pointsData = value.AsObject();
                 }
 
-                if (pointsData == null)
+                if (pointsData is null)
                 {
                     return null;
                 }
@@ -1855,7 +1849,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 var outTangents = pointsData.GetNamedArray("o", null);
                 var isClosed = pointsData.GetNamedBoolean("c", false);
 
-                if (vertices == null || inTangents == null || outTangents == null)
+                if (vertices is null || inTangents is null || outTangents is null)
                 {
                     throw new LottieCompositionReaderException($"Unable to process points array or tangents. {pointsData}");
                 }
@@ -2171,7 +2165,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                         // If parsing the old format, this key frame will just have the "t" startFrame value.
                         // If parsing the new format, this key frame will also have the "s" startValue.
                         var finalStartValue = lottieKeyFrame.GetNamedValue("s");
-                        if (finalStartValue == null)
+                        if (finalStartValue is null)
                         {
                             // Old format.
                             yield return new KeyFrame<T>(startFrame, endValue, to, ti, easing);
@@ -2252,7 +2246,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                         switch (array.Count)
                         {
                             case 0:
-                                throw new LottieCompositionReaderException("Expecting float but found empty array.");
+                                throw UnexpectedTokenException(jsonValue.Type);
                             case 1:
                                 return (double)array[0];
                             default:
@@ -2263,15 +2257,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     }
 
                 case JTokenType.Null:
+                    // Treat a missing value as 0.
+                    return 0.0;
+
                 case JTokenType.Boolean:
                 case JTokenType.String:
                 case JTokenType.Object:
                 default:
-                    throw new LottieCompositionReaderException($"Expected float but found {jsonValue.Type}.");
+                    throw UnexpectedTokenException(jsonValue.Type);
             }
         }
 
-        static BlendMode BmToBlendMode(double bm)
+        BlendMode BmToBlendMode(double bm)
         {
             if (bm == (int)bm)
             {
@@ -2293,77 +2290,80 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     case 13: return BlendMode.Saturation;
                     case 14: return BlendMode.Color;
                     case 15: return BlendMode.Luminosity;
-                    default:
-                        throw new LottieCompositionReaderException($"Unexpected blend mode: {bm}.");
                 }
             }
 
-            throw new LottieCompositionReaderException($"Unexpected blend mode: {bm}.");
+            _issues.UnexpectedValueForType("BlendMode", bm.ToString());
+            return BlendMode.Normal;
         }
 
-        static Layer.LayerType TyToLayerType(double ty)
+        (bool success, Layer.LayerType layerType) TyToLayerType(double ty)
         {
             if (ty == (int)ty)
             {
                 switch ((int)ty)
                 {
-                    case 0: return Layer.LayerType.PreComp;
-                    case 1: return Layer.LayerType.Solid;
-                    case 2: return Layer.LayerType.Image;
-                    case 3: return Layer.LayerType.Null;
-                    case 4: return Layer.LayerType.Shape;
-                    case 5: return Layer.LayerType.Text;
+                    case 0: return (true, Layer.LayerType.PreComp);
+                    case 1: return (true, Layer.LayerType.Solid);
+                    case 2: return (true, Layer.LayerType.Image);
+                    case 3: return (true, Layer.LayerType.Null);
+                    case 4: return (true, Layer.LayerType.Shape);
+                    case 5: return (true, Layer.LayerType.Text);
                 }
             }
 
-            throw new LottieCompositionReaderException($"Unexpected layer type: {ty}.");
+            _issues.UnexpectedValueForType("LayerType", ty.ToString());
+            return (false, Layer.LayerType.Null);
         }
 
-        static Polystar.PolyStarType SyToPolystarType(double sy)
+        (bool success, Polystar.PolyStarType type) SyToPolystarType(double sy)
         {
             if (sy == (int)sy)
             {
                 switch ((int)sy)
                 {
-                    case 1: return Polystar.PolyStarType.Star;
-                    case 2: return Polystar.PolyStarType.Polygon;
+                    case 1: return (true, Polystar.PolyStarType.Star);
+                    case 2: return (true, Polystar.PolyStarType.Polygon);
                 }
             }
 
-            throw new LottieCompositionReaderException($"Unexpected polystar type: {sy}.");
+            _issues.UnexpectedValueForType("PolyStartType", sy.ToString());
+            return (false, Polystar.PolyStarType.Star);
         }
 
-        static SolidColorStroke.LineCapType LcToLineCapType(double lc)
+        ShapeStroke.LineCapType LcToLineCapType(double lc)
         {
             if (lc == (int)lc)
             {
                 switch ((int)lc)
                 {
-                    case 1: return SolidColorStroke.LineCapType.Butt;
-                    case 2: return SolidColorStroke.LineCapType.Round;
-                    case 3: return SolidColorStroke.LineCapType.Projected;
+                    case 1: return ShapeStroke.LineCapType.Butt;
+                    case 2: return ShapeStroke.LineCapType.Round;
+                    case 3: return ShapeStroke.LineCapType.Projected;
                 }
             }
 
-            throw new LottieCompositionReaderException($"Unexpected linecap type: {lc}.");
+            _issues.UnexpectedValueForType("LineCapType", lc.ToString());
+            return ShapeStroke.LineCapType.Butt;
         }
 
-        static SolidColorStroke.LineJoinType LjToLineJoinType(double lj)
+        ShapeStroke.LineJoinType LjToLineJoinType(double lj)
         {
             if (lj == (int)lj)
             {
                 switch ((int)lj)
                 {
-                    case 1: return SolidColorStroke.LineJoinType.Miter;
-                    case 2: return SolidColorStroke.LineJoinType.Round;
-                    case 3: return SolidColorStroke.LineJoinType.Bevel;
+                    case 1: return ShapeStroke.LineJoinType.Miter;
+                    case 2: return ShapeStroke.LineJoinType.Round;
+                    case 3: return ShapeStroke.LineJoinType.Bevel;
                 }
             }
 
-            throw new LottieCompositionReaderException($"Unexpected linejoin type: {lj}.");
+            _issues.UnexpectedValueForType("LineJoinType", lj.ToString());
+            return ShapeStroke.LineJoinType.Miter;
         }
 
-        static TrimPath.TrimType MToTrimType(double m)
+        TrimPath.TrimType MToTrimType(double m)
         {
             if (m == (int)m)
             {
@@ -2374,10 +2374,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 }
             }
 
-            throw new LottieCompositionReaderException($"Unexpected trim type: {m}.");
+            _issues.UnexpectedValueForType("TrimType", m.ToString());
+            return TrimPath.TrimType.Simultaneously;
         }
 
-        static MergePaths.MergeMode MmToMergeMode(double mm)
+        MergePaths.MergeMode MmToMergeMode(double mm)
         {
             if (mm == (int)mm)
             {
@@ -2391,10 +2392,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 }
             }
 
-            throw new LottieCompositionReaderException($"Unexpected merge mode: {mm}.");
+            _issues.UnexpectedValueForType("MergeMode", mm.ToString());
+            return MergePaths.MergeMode.Merge;
         }
 
-        static GradientType TToGradientType(double t)
+        GradientType TToGradientType(double t)
         {
             if (t == (int)t)
             {
@@ -2405,7 +2407,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 }
             }
 
-            throw new LottieCompositionReaderException($"Unexpected gradient type: {t}");
+            _issues.UnexpectedValueForType("GradientType", t.ToString());
+            return GradientType.Linear;
         }
 
         enum GradientType
@@ -2414,7 +2417,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             Radial,
         }
 
-        static Layer.MatteType TTToMatteType(double tt)
+        Layer.MatteType TTToMatteType(double tt)
         {
             if (tt == (int)tt)
             {
@@ -2426,7 +2429,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 }
             }
 
-            throw new LottieCompositionReaderException($"Unexpected matte type: {tt}");
+            _issues.UnexpectedValueForType("MatteType", tt.ToString());
+            return Layer.MatteType.None;
         }
 
         // Indicates that the given field will not be read because we don't yet support it.
@@ -2498,30 +2502,39 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             switch (reader.TokenType)
             {
                 case JsonToken.Integer:
-                    return (double)(long)reader.Value;
+                    return (long)reader.Value;
                 case JsonToken.Float:
                     return (double)reader.Value;
-                default:
-                    throw Exception($"Expected a number, but got {reader.TokenType}", reader);
+                case JsonToken.String:
+                    if (double.TryParse((string)reader.Value, out var result))
+                    {
+                        return result;
+                    }
+
+                    break;
             }
+
+            throw Exception($"Expected a number, but got {reader.TokenType}", reader);
         }
 
-        static int ParseInt(JsonReader reader, bool strict = false)
+        static int ParseInt(JsonReader reader)
         {
             switch (reader.TokenType)
             {
                 case JsonToken.Integer:
                     return checked((int)(long)reader.Value);
                 case JsonToken.Float:
-                    if (strict)
+                    return checked((int)(long)Math.Round((double)reader.Value));
+                case JsonToken.String:
+                    if (double.TryParse((string)reader.Value, out var result))
                     {
-                        throw Exception("Expected an integer, but got a float", reader);
+                        return checked((int)(long)Math.Round((double)result));
                     }
 
-                    return checked((int)(long)Math.Round((double)reader.Value));
-                default:
-                    throw Exception($"Expected a number, but got {reader.TokenType}", reader);
+                    break;
             }
+
+            throw Exception($"Expected a number, but got {reader.TokenType}", reader);
         }
 
         // Loads the JObjects in an array.
@@ -2637,13 +2650,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             throw EofException;
         }
 
-        static LottieCompositionReaderException EofException => new LottieCompositionReaderException("EOF");
+        // We got to the end of the file while still reading. Fatal.
+        static LottieCompositionReaderException EofException => Exception("EOF");
 
-        static LottieCompositionReaderException UnexpectedFieldException(JsonReader reader, string field) => Exception($"Unexpected field: {field}", reader);
-
+        // The JSON is malformed - we found an unexpected token. Fatal.
         static LottieCompositionReaderException UnexpectedTokenException(JsonReader reader) => Exception($"Unexpected token: {reader.TokenType}", reader);
 
-        static LottieCompositionReaderException Exception(string message, JsonReader reader) => new LottieCompositionReaderException($"{message} @ {reader.Path}");
+        static LottieCompositionReaderException UnexpectedTokenException(JTokenType tokenType) => Exception($"Unexpected token: {tokenType}");
+
+        static LottieCompositionReaderException Exception(string message, JsonReader reader) => Exception($"{message} @ {reader.Path}");
+
+        static LottieCompositionReaderException Exception(string message) => new LottieCompositionReaderException(message);
+
+        // The code we hit is supposed to be unreachable. This indicates a bug.
+        static Exception Unreachable => new InvalidOperationException("Unreachable code executed");
     }
 
 #if CheckForUnparsedFields
@@ -2689,7 +2709,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         public static implicit operator CheckedJsonObject(Newtonsoft.Json.Linq.JObject value)
         {
-            return value == null ? null : new CheckedJsonObject(value);
+            return value is null ? null : new CheckedJsonObject(value);
         }
     }
 
@@ -2756,7 +2776,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         public static implicit operator CheckedJsonArray(Newtonsoft.Json.Linq.JArray value)
         {
-            return value == null ? null : new CheckedJsonArray(value);
+            return value is null ? null : new CheckedJsonArray(value);
         }
     }
 

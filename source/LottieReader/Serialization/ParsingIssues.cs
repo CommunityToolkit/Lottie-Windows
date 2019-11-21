@@ -60,6 +60,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         internal void UnexpectedField(string field) => Report("LP0017", $"Unexpected field: {field}.");
 
+        internal void UnexpectedValueForType(string type, string value) => Report("LP0018", $"Unexpected {type} type value: {value}.");
+
         void Report(string code, string description)
         {
             _issues.Add((code, description));

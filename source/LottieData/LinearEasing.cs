@@ -28,10 +28,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         public override int GetHashCode() => (int)Type;
 
         /// <inheritdoc/>
-        public override bool Equals(object obj) => Equals(obj as LinearEasing);
+        // All LinearEasings are equivalent.
+        public override bool Equals(object obj) => obj is LinearEasing;
 
         /// <inheritdoc/>
         // All LinearEasings are equivalent.
-        public bool Equals(LinearEasing other) => other != null;
+        public bool Equals(LinearEasing other) => other is LinearEasing;
+
+        public static bool operator ==(LinearEasing a, LinearEasing b) => a is LinearEasing && b is LinearEasing;
+
+        public static bool operator !=(LinearEasing a, LinearEasing b) => !(a == b);
     }
 }
