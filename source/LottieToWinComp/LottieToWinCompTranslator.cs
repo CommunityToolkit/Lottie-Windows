@@ -2208,7 +2208,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     // Work around the problem by using a rounded rectangle with a tiny corner radius.
                     var roundedRectangleGeometry = _c.CreateRoundedRectangleGeometry();
                     geometry = roundedRectangleGeometry;
-                    roundedRectangleGeometry.CornerRadius = new Sn.Vector2(0.000001F, 0.000001F);
+
+                    // NOTE: magic tiny corner radius number - do not change!
+                    roundedRectangleGeometry.CornerRadius = new Sn.Vector2(0.000001F);
 
                     // Convert size and position into offset. This is necessary because a geometry's offset is for
                     // its top left corner, wherease a Lottie position is for its centerpoint.
@@ -2233,8 +2235,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     {
                         rectangleGeometry.Size = Vector2(size.InitialValue);
                     }
-
-                    compositionRectangle.Geometry = geometry;
                 }
 
                 compositionRectangle.Geometry = geometry;
@@ -3110,7 +3110,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 // V7 did not reliably draw non-rounded rectangles.
                 // Work around the problem by using a rounded rectangle with a tiny corner radius.
                 var roundedRectangleGeometry = _c.CreateRoundedRectangleGeometry();
-                roundedRectangleGeometry.CornerRadius = new Sn.Vector2(0.000001F, 0.000001F);
+
+                // NOTE: magic tiny corner radius number - do not change!
+                roundedRectangleGeometry.CornerRadius = new Sn.Vector2(0.000001F);
                 roundedRectangleGeometry.Size = Vector2(context.Layer.Width, context.Layer.Height);
                 rectangle.Geometry = roundedRectangleGeometry;
             }
