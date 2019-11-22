@@ -2,9 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-// Enable workaround for RS5 where rotated rectangles were not drawn correctly.
-#define WorkAroundRectangleGeometryHalfDrawn
-
 // Use the simple algorithm for combining trim paths. We're not sure of the correct semantics
 // for multiple trim paths, so it's possible this is actually the most correct.
 #define SimpleTrimPathCombining
@@ -79,6 +76,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         // Paths are shareable.
         readonly Dictionary<(Sequence<BezierSegment>, ShapeFill.PathFillType, bool), CompositionPath> _compositionPaths = new Dictionary<(Sequence<BezierSegment>, ShapeFill.PathFillType, bool), CompositionPath>();
 
+        readonly uint _targetUapVersion;
+
         /// <summary>
         /// The lowest UAP version for which the translator can produce code. Code from the translator
         /// will never be compatible with UAP versions less than this.
@@ -101,6 +100,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             uint targetUapVersion)
         {
             _lc = lottieComposition;
+            _targetUapVersion = targetUapVersion;
             _c = new CompositionObjectFactory(compositor, targetUapVersion);
             _issues = new TranslationIssues(strictTranslation);
             _addDescriptions = addDescriptions;
@@ -2199,25 +2199,45 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             if (shapeContent.CornerRadius.AlwaysEquals(0) && shapeContext.RoundedCorner == null)
             {
+                CompositionGeometry geometry;
+
                 // Use a non-rounded rectangle geometry.
-#if WorkAroundRectangleGeometryHalfDrawn
-                // Rounded rectangles do not have a problem, so create a rounded rectangle with a tiny corner
-                // radius to work around the bug.
-                var geometry = _c.CreateRoundedRectangleGeometry();
-                geometry.CornerRadius = new Sn.Vector2(0.000001F, 0.000001F);
-#else
-                var geometry = _c.CreateRectangleGeometry();
-#endif
-                compositionRectangle.Geometry = geometry;
-
-                // Convert size and position into offset. This is necessary because a geometry's offset is for
-                // its top left corner, wherease a Lottie position is for its centerpoint.
-                geometry.Offset = Vector2(position.InitialValue - (size.InitialValue / 2));
-
-                if (!size.IsAnimated)
+                if (_targetUapVersion <= 7)
                 {
-                    geometry.Size = Vector2(size.InitialValue);
+                    // V7 did not reliably draw non-rounded rectangles.
+                    // Work around the problem by using a rounded rectangle with a tiny corner radius.
+                    var roundedRectangleGeometry = _c.CreateRoundedRectangleGeometry();
+                    geometry = roundedRectangleGeometry;
+
+                    // NOTE: magic tiny corner radius number - do not change!
+                    roundedRectangleGeometry.CornerRadius = new Sn.Vector2(0.000001F);
+
+                    // Convert size and position into offset. This is necessary because a geometry's offset is for
+                    // its top left corner, wherease a Lottie position is for its centerpoint.
+                    roundedRectangleGeometry.Offset = Vector2(position.InitialValue - (size.InitialValue / 2));
+
+                    if (!size.IsAnimated)
+                    {
+                        roundedRectangleGeometry.Size = Vector2(size.InitialValue);
+                    }
                 }
+                else
+                {
+                    // V8 and beyond doesn't need the rounded rectangle workaround.
+                    var rectangleGeometry = _c.CreateRectangleGeometry();
+                    geometry = rectangleGeometry;
+
+                    // Convert size and position into offset. This is necessary because a geometry's offset is for
+                    // its top left corner, wherease a Lottie position is for its centerpoint.
+                    rectangleGeometry.Offset = Vector2(position.InitialValue - (size.InitialValue / 2));
+
+                    if (!size.IsAnimated)
+                    {
+                        rectangleGeometry.Size = Vector2(size.InitialValue);
+                    }
+                }
+
+                compositionRectangle.Geometry = geometry;
 
                 if (position.IsAnimated || size.IsAnimated)
                 {
@@ -2247,7 +2267,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
                     var offsetExpressionAnimation = _c.CreateExpressionAnimation(offsetExpression);
                     offsetExpressionAnimation.SetReferenceParameter("my", geometry);
-                    StartExpressionAnimation(geometry, nameof(geometry.Offset), offsetExpressionAnimation);
+                    StartExpressionAnimation(geometry, "Offset", offsetExpressionAnimation);
                 }
             }
             else
@@ -3083,11 +3103,26 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 return ShapeOrVisual.Null;
             }
 
-            var rectangleGeometry = _c.CreateRectangleGeometry();
-            rectangleGeometry.Size = Vector2(context.Layer.Width, context.Layer.Height);
-
             var rectangle = _c.CreateSpriteShape();
-            rectangle.Geometry = rectangleGeometry;
+
+            if (_targetUapVersion <= 7)
+            {
+                // V7 did not reliably draw non-rounded rectangles.
+                // Work around the problem by using a rounded rectangle with a tiny corner radius.
+                var roundedRectangleGeometry = _c.CreateRoundedRectangleGeometry();
+
+                // NOTE: magic tiny corner radius number - do not change!
+                roundedRectangleGeometry.CornerRadius = new Sn.Vector2(0.000001F);
+                roundedRectangleGeometry.Size = Vector2(context.Layer.Width, context.Layer.Height);
+                rectangle.Geometry = roundedRectangleGeometry;
+            }
+            else
+            {
+                // V8 and beyond doesn't need the rounded rectangle workaround.
+                var rectangleGeometry = _c.CreateRectangleGeometry();
+                rectangleGeometry.Size = Vector2(context.Layer.Width, context.Layer.Height);
+                rectangle.Geometry = rectangleGeometry;
+            }
 
             containerShapeContentNode.Shapes.Add(rectangle);
 
@@ -3106,7 +3141,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             if (_addDescriptions)
             {
                 Describe(rectangle, "SolidLayerRectangle");
-                Describe(rectangleGeometry, "SolidLayerRectangle.RectangleGeometry");
+                Describe(rectangle.Geometry, "SolidLayerRectangle.RectangleGeometry");
             }
 
             return layerHasMasks ? (ShapeOrVisual)TranslateAndApplyMasksOnShapeTree(context, containerShapeRootNode) : containerShapeRootNode;
