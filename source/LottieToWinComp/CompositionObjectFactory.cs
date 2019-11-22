@@ -24,7 +24,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         readonly Compositor _compositor;
 
         // The UAP version of the Compositor.
-        readonly uint _uapVersion;
+        // This is used to determine whether a class that is only available in
+        // some UAP version is available from the factory.
+        readonly uint _targetUapVersion;
 
         // Holds CubicBezierEasingFunctions for reuse when they have the same parameters.
         readonly Dictionary<CubicBezierEasing, CubicBezierEasingFunction> _cubicBezierEasingFunctions = new Dictionary<CubicBezierEasing, CubicBezierEasingFunction>();
@@ -41,10 +43,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         // Holds a StepEasingFunction that can be reused in multiple animations.
         readonly StepEasingFunction _jumpStepEasingFunction;
 
-        internal CompositionObjectFactory(Compositor compositor, uint uapVersion)
+        internal CompositionObjectFactory(Compositor compositor, uint targetUapVersion)
         {
             _compositor = compositor;
-            _uapVersion = uapVersion;
+            _targetUapVersion = targetUapVersion;
 
             // Initialize singletons.
             _linearEasingFunction = _compositor.CreateLinearEasingFunction();
@@ -60,7 +62,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         // Checks whether the given API is available for the UAP version of the compositor.
         // Only responds to features above version 7.
-        internal bool IsUapApiAvailable(string apiName) => GetUapVersionForApi(apiName) <= _uapVersion;
+        internal bool IsUapApiAvailable(string apiName) => GetUapVersionForApi(apiName) <= _targetUapVersion;
 
         // Returns the UAP version required for the given API.
         // Only responds to features above version 7.
@@ -84,7 +86,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal CompositionPathGeometry CreatePathGeometry(CompositionPath path) => _compositor.CreatePathGeometry(path);
 
-        internal CompositionRectangleGeometry CreateRectangleGeometry() => _compositor.CreateRectangleGeometry();
+        internal CompositionRectangleGeometry CreateRectangleGeometry()
+        {
+            // Rectangle geometries exist in version 7, but they are unreliable (they
+            // sometimes only half draw), so create them as being version 8.
+            ConsumeVersionFeature(8);
+            return _compositor.CreateRectangleGeometry();
+        }
 
         internal CompositionRoundedRectangleGeometry CreateRoundedRectangleGeometry() => _compositor.CreateRoundedRectangleGeometry();
 
@@ -220,10 +228,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal CompositionEffectFactory CreateEffectFactory(GraphicsEffectBase effect) => _compositor.CreateEffectFactory(effect);
 
+        // Call this when consuming a feature that is only available in UAP versions > 7.
         void ConsumeVersionFeature(uint uapVersion)
         {
             Debug.Assert(
-                _uapVersion >= uapVersion,
+                _targetUapVersion >= uapVersion,
                 $"UAP version {uapVersion} features are not available.");
 
             HighestUapVersionUsed = Math.Max(HighestUapVersionUsed, uapVersion);
