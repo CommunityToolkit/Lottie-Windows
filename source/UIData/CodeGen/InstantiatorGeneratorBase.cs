@@ -1771,7 +1771,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     builder.WriteLine($"{Var} shapes = result{Deref}Shapes;");
                     foreach (var shape in obj.Shapes)
                     {
-                        builder.WriteComment(shape.ShortDescription);
+                        builder.WriteComment(((IDescribable)shape).ShortDescription);
                         builder.WriteLine($"shapes{Deref}{IListAdd}({CallFactoryFromFor(node, shape)});");
                     }
                 }

@@ -4242,9 +4242,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 _shapeOrVisual = shapeOrVisual;
             }
 
-            public string LongDescription { get => _shapeOrVisual.LongDescription; set => _shapeOrVisual.LongDescription = value; }
+            public string LongDescription
+            {
+                get => ((IDescribable)_shapeOrVisual).LongDescription;
+                set => ((IDescribable)_shapeOrVisual).LongDescription = value;
+            }
 
-            public string ShortDescription { get => _shapeOrVisual.ShortDescription; set => _shapeOrVisual.ShortDescription = value; }
+            public string ShortDescription
+            {
+                get => ((IDescribable)_shapeOrVisual).ShortDescription;
+                set => ((IDescribable)_shapeOrVisual).ShortDescription = value;
+            }
 
             public CompositionObjectType Type => _shapeOrVisual.Type;
 
