@@ -46,7 +46,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
         /// <param name="value">The value of the metadata.</param>
         public void SetMetadata(in Guid key, object value)
         {
-            if (_metadata == null)
+            if (_metadata is null)
             {
                 _metadata = new SortedDictionary<Guid, object>();
             }
@@ -63,7 +63,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
         /// <returns>The metadata, or null.</returns>
         public object TryGetMetadata(in Guid key)
         {
-            if (_metadata != null && _metadata.TryGetValue(key, out var result))
+            if (_metadata is object && _metadata.TryGetValue(key, out var result))
             {
                 return result;
             }
