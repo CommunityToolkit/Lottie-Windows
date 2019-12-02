@@ -207,8 +207,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             {
                 GroupNode childGroup;
                 var childObject = child.Object as CompositionObject;
-                var childDescription = (childObject != null && !string.IsNullOrWhiteSpace(childObject.ShortDescription))
-                    ? childObject.ShortDescription
+                var childDescription = (childObject != null && !string.IsNullOrWhiteSpace(ShortDescription(childObject)))
+                    ? ShortDescription(childObject)
                     : string.Empty;
 
                 // Start a new group for the child if:
@@ -246,6 +246,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
         string GenerateId() => $"id{_idGenerator++}";
 
         string GenerateGroupId() => $"gid{_groupIdGenerator++}";
+
+        static string ShortDescription(IDescribable describable) => describable.ShortDescription;
 
         sealed class ObjectData : Graph.Node<ObjectData>
         {

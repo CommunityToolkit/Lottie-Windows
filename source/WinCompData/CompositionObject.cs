@@ -15,7 +15,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 #endif
     abstract class CompositionObject : IDisposable, IDescribable
     {
+        // Keys used to identify the short description and long description metadata.
+        static readonly Guid s_shortDescriptionMetadataKey = new Guid("AF01D303-5572-4540-A4AC-E48F1394E1D1");
+        static readonly Guid s_longDescriptionMetadataKey = new Guid("63514254-2B3E-4794-B01D-9F67D5946A7E");
+
         readonly ListOfNeverNull<Animator> _animators = new ListOfNeverNull<Animator>();
+
+        // Null until the first metatadata is set.
+        SortedDictionary<Guid, object> _metadata;
 
         private protected CompositionObject()
         {
@@ -30,6 +37,40 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
             }
         }
 
+        /// <summary>
+        /// Associates metadata with the object. The type of metadata is indicated by the <paramref name="key"/>
+        /// <see cref="Guid"/>. If metadata for the given <paramref name="key"/> is already associated with the
+        /// object, the meatadata will be replaced with the new <paramref name="value"/>.
+        /// </summary>
+        /// <param name="key">A <see cref="Guid"/> that identifies that type of metadata.</param>
+        /// <param name="value">The value of the metadata.</param>
+        public void SetMetadata(in Guid key, object value)
+        {
+            if (_metadata == null)
+            {
+                _metadata = new SortedDictionary<Guid, object>();
+            }
+
+            _metadata[key] = value;
+        }
+
+        /// <summary>
+        /// Returns the metadata associated with this object that is identified by the given
+        /// <paramref name="key"/>, or null if no such metadata has been associated with this
+        /// object yet.
+        /// </summary>
+        /// <param name="key">A <see cref="Guid"/> that identifies that type of metadata.</param>
+        /// <returns>The metadata, or null.</returns>
+        public object TryGetMetadata(in Guid key)
+        {
+            if (_metadata != null && _metadata.TryGetValue(key, out var result))
+            {
+                return result;
+            }
+
+            return null;
+        }
+
         public string Comment { get; set; }
 
         /// <summary>
@@ -37,14 +78,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
         /// Cf. the <see cref="Comment"/> property which is a property on real composition
         /// objects that is used for debugging.
         /// </summary>
-        public string LongDescription { get; set; }
+        string IDescribable.LongDescription
+        {
+            get => (string)TryGetMetadata(in s_longDescriptionMetadataKey);
+            set => SetMetadata(in s_longDescriptionMetadataKey, value);
+        }
 
         /// <summary>
         /// Gets or sets a description of the object. This may be used to add comments to generated code.
         /// Cf. the <see cref="Comment"/> property which is a property on real composition
         /// objects that is used for debugging.
         /// </summary>
-        public string ShortDescription { get; set; }
+        string IDescribable.ShortDescription
+        {
+            get => (string)TryGetMetadata(in s_shortDescriptionMetadataKey);
+            set => SetMetadata(in s_shortDescriptionMetadataKey, value);
+        }
 
         public CompositionPropertySet Properties { get; }
 
