@@ -23,6 +23,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.GenericData
 
         public override GenericDataObjectType Type => GenericDataObjectType.Bool;
 
+        public static implicit operator GenericDataBool(bool value) => Create(value);
+
         sealed class TrueImpl : GenericDataBool
         {
             public override bool Value => true;

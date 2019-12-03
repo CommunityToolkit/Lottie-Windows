@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,7 +30,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.GenericData
                     : result;
         }
 
-        public static GenericDataList Empty => s_empty ?? (s_empty = new GenericDataList(new GenericDataObject[0]));
+        public static GenericDataList Empty => s_empty ?? (s_empty = new GenericDataList(Array.Empty<GenericDataObject>()));
 
         public GenericDataObject this[int index] => _items[index];
 
@@ -45,5 +46,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.GenericData
             => Count == 0
                 ? "[]"
                 : $"[{string.Join(", ", _items.Select(x => ToString(x)))}]";
+
+        public static implicit operator GenericDataList(GenericDataObject[] value) => Create(value);
     }
 }

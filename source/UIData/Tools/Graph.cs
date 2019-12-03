@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 
@@ -35,13 +36,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
         public class Node<T> : INodePrivate<T>
             where T : Node<T>, new()
         {
-            static readonly Vertex[] EmptyVertexArray = new Vertex[0];
-
             List<Vertex> _inReferences;
 
             public object Object { get; set; }
 
-            public Vertex[] InReferences => _inReferences == null ? EmptyVertexArray : _inReferences.ToArray();
+            public Vertex[] InReferences => _inReferences == null ? Array.Empty<Vertex>() : _inReferences.ToArray();
 
             public int ReferenceCount => InReferences.Length;
 

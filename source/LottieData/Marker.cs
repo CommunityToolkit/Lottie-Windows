@@ -21,7 +21,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
         /// <summary>
         /// Gets the time value of the marker. This value must be multipled by the composition
-        /// duration to get the actualy time.
+        /// duration to get the actual time offset.
         /// </summary>
         public double Progress { get; }
 

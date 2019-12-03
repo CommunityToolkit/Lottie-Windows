@@ -6,6 +6,7 @@
     <SharedGUID>8ef7bd77-28e9-4998-8dbb-8036f988fe65</SharedGUID>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)GenericDataToJson.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Instantiator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LottieVisualDiagnostics.cs" />

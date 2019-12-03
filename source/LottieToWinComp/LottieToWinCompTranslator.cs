@@ -30,6 +30,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.Toolkit.Uwp.UI.Lottie.GenericData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
@@ -93,7 +94,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         public static string ProgressPropertyName => "Progress";
 
         LottieToWinCompTranslator(
-            LottieData.LottieComposition lottieComposition,
+            LottieComposition lottieComposition,
             Compositor compositor,
             bool strictTranslation,
             bool addDescriptions,
@@ -152,12 +153,47 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     rootVisual = null;
                 }
 
+                var sourceMetadata = GetSourceMetadata(lottieComposition);
+
                 return new TranslationResult(
                     rootVisual: rootVisual,
                     translationIssues: translator._issues.GetIssues().Select(i =>
                         new TranslationIssue(code: i.Code, description: i.Description)),
-                    minimumRequiredUapVersion: resultRequiredUapVersion);
+                    minimumRequiredUapVersion: resultRequiredUapVersion,
+                    sourceMetadata);
             }
+        }
+
+        // Copies metadata from the given LottieComposition into a GenericDataMap.
+        static GenericDataMap GetSourceMetadata(LottieComposition lottieComposition)
+        {
+            var map = new Dictionary<string, GenericDataObject>();
+
+            map.Add("fr", lottieComposition.FramesPerSecond);
+            map.Add("ip", lottieComposition.InPoint);
+            map.Add("op", lottieComposition.OutPoint);
+            map.Add("w", lottieComposition.Width);
+            map.Add("h", lottieComposition.Height);
+            map.Add("nm", lottieComposition.Name);
+            map.Add("v", lottieComposition.Version.ToString());
+            map.Add("markers", GenericDataList.Create(lottieComposition.Markers.Select(MarkerToGenericData)));
+
+            foreach ((var key, var value) in lottieComposition.ExtraData)
+            {
+                map.Add(key, value);
+            }
+
+            return map;
+        }
+
+        // Converts a Marker to a GenericDataMap.
+        static GenericDataMap MarkerToGenericData(Marker marker)
+        {
+            var map = new Dictionary<string, GenericDataObject>();
+            map.Add("dr", marker.DurationSeconds);
+            map.Add("tm", marker.Progress);
+            map.Add("cm", marker.Name);
+            return map;
         }
 
         void Translate()

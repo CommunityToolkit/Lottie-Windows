@@ -50,5 +50,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.GenericData
             => _items.Count == 0
                 ? "{}"
                 : $"{{{string.Join(", ", _items.Select(p => $"\"{p.Key}\":{ToString(p.Value)}"))}}}";
+
+        public static implicit operator GenericDataMap(Dictionary<string, GenericDataObject> value) => Create(value);
     }
 }
