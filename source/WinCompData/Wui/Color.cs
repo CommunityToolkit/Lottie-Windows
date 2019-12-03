@@ -498,7 +498,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
 
             if (!palette.Any())
             {
-                return new(string Name, Color Color)[0];
+                return Array.Empty<(string Name, Color Color)>();
             }
 
             return

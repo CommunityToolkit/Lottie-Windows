@@ -17,9 +17,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
     /// </summary>
     public sealed class LottieVisualDiagnostics
     {
-        static readonly Issue[] EmptyIssueArray = new Issue[0];
-        static readonly KeyValuePair<string, double>[] EmptyMarkersArray = new KeyValuePair<string, double>[0];
-
         public string FileName { get; internal set; } = string.Empty;
 
         public string SuggestedFileName =>
@@ -55,11 +52,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
 
         public TimeSpan InstantiationTime { get; internal set; }
 
-        public IEnumerable<Issue> JsonParsingIssues { get; internal set; } = EmptyIssueArray;
+        public IEnumerable<Issue> JsonParsingIssues { get; internal set; } = Array.Empty<Issue>();
 
-        public IEnumerable<Issue> LottieValidationIssues { get; internal set; } = EmptyIssueArray;
+        public IEnumerable<Issue> LottieValidationIssues { get; internal set; } = Array.Empty<Issue>();
 
-        public IEnumerable<Issue> TranslationIssues { get; internal set; } = EmptyIssueArray;
+        public IEnumerable<Issue> TranslationIssues { get; internal set; } = Array.Empty<Issue>();
 
         public double LottieWidth => LottieComposition?.Width ?? 0;
 
@@ -121,7 +118,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             hText = generatedCode.hText;
         }
 
-        public KeyValuePair<string, double>[] Markers { get; internal set; } = EmptyMarkersArray;
+        public KeyValuePair<string, double>[] Markers { get; internal set; } = Array.Empty<KeyValuePair<string, double>>();
 
         // Holds the parsed LottieComposition. Only used if one of the codegen or XML options was selected.
         internal LottieComposition LottieComposition { get; set; }

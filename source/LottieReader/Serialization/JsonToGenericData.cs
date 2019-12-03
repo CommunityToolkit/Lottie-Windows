@@ -21,17 +21,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             {
                 case JTokenType.Object:
                     var jobject = (IEnumerable<KeyValuePair<string, JToken>>)token;
-                    return GenericDataMap.Create(jobject.ToDictionary(field => field.Key, field => JTokenToGenericData(field.Value)));
+                    return jobject.ToDictionary(field => field.Key, field => JTokenToGenericData(field.Value));
                 case JTokenType.Array:
                     return GenericDataList.Create(((JArray)token).Select(item => JTokenToGenericData(item)));
                 case JTokenType.Integer:
-                    return GenericDataNumber.Create((long)token);
+                    return (long)token;
                 case JTokenType.Float:
-                    return GenericDataNumber.Create((double)token);
+                    return (double)token;
                 case JTokenType.String:
-                    return GenericDataString.Create((string)token);
+                    return (string)token;
                 case JTokenType.Boolean:
-                    return GenericDataBool.Create((bool)token);
+                    return (bool)token;
                 case JTokenType.Null:
                     return null;
 

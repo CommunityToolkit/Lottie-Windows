@@ -147,11 +147,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             double? height = null;
             string name = null;
             bool? is3d = null;
-            var assets = EmptyArray<Asset>.Singleton;
-            var chars = EmptyArray<Char>.Singleton;
-            var fonts = EmptyArray<Font>.Singleton;
-            var layers = EmptyArray<Layer>.Singleton;
-            var markers = EmptyArray<Marker>.Singleton;
+            var assets = Array.Empty<Asset>();
+            var chars = Array.Empty<Char>();
+            var fonts = Array.Empty<Font>();
+            var layers = Array.Empty<Layer>();
+            var markers = Array.Empty<Marker>();
             Dictionary<string, GenericDataObject> extraData = null;
 
             ConsumeToken(reader);
@@ -2042,7 +2042,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 // Deprecated "a" field meant "isAnimated". The existence of key frames means the same thing.
                 reader.IgnoreFieldIntentionally(obj, "a");
 
-                keyFrames = EmptyArray<KeyFrame<T>>.Singleton;
+                keyFrames = Array.Empty<KeyFrame<T>>();
                 initialValue = default(T);
 
                 foreach (var field in obj)
@@ -2062,7 +2062,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                                     }
                                 }
 
-                                if (keyFrames == EmptyArray<KeyFrame<T>>.Singleton)
+                                if (keyFrames == Array.Empty<KeyFrame<T>>())
                                 {
                                     initialValue = ReadValue(k);
                                 }

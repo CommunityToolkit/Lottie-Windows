@@ -45,7 +45,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             IEnumerable<Font> fonts,
             LayerCollection layers,
             IEnumerable<Marker> markers,
-            GenericDataObject extraData)
+            GenericDataMap extraData)
             : base(name)
         {
             Is3d = is3d;
@@ -84,7 +84,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
         public IEnumerable<Char> Chars { get; }
 
-        public GenericDataObject ExtraData { get; }
+        public GenericDataMap ExtraData { get; }
 
         public IEnumerable<Font> Fonts { get; }
 

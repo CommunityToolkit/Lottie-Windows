@@ -12,22 +12,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.GenericData
 #endif
     sealed class GenericDataNumber : GenericDataObject
     {
-        readonly double _value;
-
         GenericDataNumber(double value)
         {
-            _value = value;
+            Value = value;
         }
 
         public static GenericDataNumber Create(double value) => new GenericDataNumber(value);
 
-        public double Value => _value;
+        public double Value { get; private set; }
 
         public override GenericDataObjectType Type => GenericDataObjectType.Number;
 
         public override string ToString()
-            => Math.Floor(_value) == _value
-            ? _value.ToString("0", CultureInfo.InvariantCulture)
-            : _value.ToString("G9", CultureInfo.InvariantCulture) + "F";
+            => Math.Floor(Value) == Value
+            ? Value.ToString("0", CultureInfo.InvariantCulture)
+            : Value.ToString("G9", CultureInfo.InvariantCulture) + "F";
+
+        public static implicit operator GenericDataNumber(double value) => Create(value);
     }
 }

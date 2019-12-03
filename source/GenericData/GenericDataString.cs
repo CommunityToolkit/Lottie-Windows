@@ -9,19 +9,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.GenericData
 #endif
     sealed class GenericDataString : GenericDataObject
     {
-        readonly string _value;
-
         GenericDataString(string value)
         {
-            _value = value;
+            Value = value;
         }
 
         public static GenericDataString Create(string value) => new GenericDataString(value);
 
-        public string Value => _value;
+        public string Value { get; private set; }
 
         public override GenericDataObjectType Type => GenericDataObjectType.String;
 
-        public override string ToString() => "\"" + _value + "\"";
+        public override string ToString() => "\"" + Value + "\"";
+
+        public static implicit operator GenericDataString(string value) => Create(value);
     }
 }

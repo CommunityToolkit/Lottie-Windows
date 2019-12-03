@@ -12,8 +12,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
 #endif
     sealed class Name : Expression
     {
-        internal static readonly Name[] EmptyNames = new Name[0];
-
         public Name(string value)
         {
             Value = value;
