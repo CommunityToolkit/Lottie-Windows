@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Text;
+using Microsoft.Toolkit.Uwp.UI.Lottie.GenericData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
@@ -49,12 +50,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         readonly IReadOnlyList<AnimatedVisualGenerator> _animatedVisualGenerators;
         readonly LoadedImageSurfaceInfo[] _loadedImageSurfaceInfos;
         readonly Dictionary<ObjectData, LoadedImageSurfaceInfo> _loadedImageSurfaceInfosByNode;
+        readonly GenericDataMap _sourceMetadata;
         AnimatedVisualGenerator _currentAnimatedVisualGenerator;
 
         protected InstantiatorGeneratorBase(
             string className,
             Vector2 compositionDeclaredSize,
             IReadOnlyList<(CompositionObject graphRoot, uint requiredUapVersion)> graphs,
+            GenericDataMap sourceMetadata,
             TimeSpan duration,
             bool setCommentProperties,
             bool disableFieldOptimization,
@@ -62,6 +65,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         {
             _className = className;
             _compositionDeclaredSize = compositionDeclaredSize;
+            _sourceMetadata = sourceMetadata;
             _compositionDuration = duration;
             _setCommentProperties = setCommentProperties;
             _disableFieldOptimization = disableFieldOptimization;
@@ -313,27 +317,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             WriteFileStart(builder, this);
 
             // Write the LoadedImageSurface byte arrays into the outer (IAnimatedVisualSource) class.
-            {
-                bool bytesWritten = false;
-
-                foreach (var loadedImageSurface in _loadedImageSurfaceInfos)
-                {
-                    if (loadedImageSurface.Bytes != null)
-                    {
-                        WriteBytesField(builder, loadedImageSurface.BytesFieldName);
-                        builder.OpenScope();
-                        builder.BytesToLiteral(loadedImageSurface.Bytes, maximumColumns: 100);
-                        builder.UnIndent();
-                        builder.WriteLine("};");
-                        bytesWritten = true;
-                    }
-                }
-
-                if (bytesWritten)
-                {
-                    builder.WriteLine();
-                }
-            }
+            WriteLoadedImageSurfaceArrays(builder);
 
             // Write each AnimatedVisual class.
             var firstAnimatedVisualWritten = false;
@@ -442,7 +426,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             }
         }
 
+        string String(GenericDataObject value)
+            => value.Type switch
+            {
+                GenericDataObjectType.Bool => _stringifier.Bool(((GenericDataBool)value).Value),
+                GenericDataObjectType.Number => _stringifier.Double(((GenericDataNumber)value).Value),
+                GenericDataObjectType.String => _stringifier.String(((GenericDataString)value).Value),
+                _ => throw new InvalidOperationException(),
+            };
+
         string ScopeResolve => _stringifier.ScopeResolve;
+
+        string Deref => _stringifier.Deref;
+
+        string New => _stringifier.New;
 
         string IAnimatedVisualSourceInfo.ClassName => _className;
 
@@ -467,6 +464,163 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         bool IAnimatedVisualSourceInfo.UsesCompositeEffect => _animatedVisualGenerators.Any(f => f.UsesCompositeEffect);
 
         IReadOnlyList<LoadedImageSurfaceInfo> IAnimatedVisualSourceInfo.LoadedImageSurfaceNodes => _loadedImageSurfaceInfos;
+
+        // Writes code that will return the given GenericDataMap as Windows.Data.Json.
+        void WriteJsonFactory(CodeBuilder builder, GenericDataMap jsonData, string factoryName)
+        {
+            builder.WriteLine($"{_stringifier.ReferenceTypeName("JsonObject")} {factoryName}()");
+            builder.OpenScope();
+            builder.WriteLine($"{_stringifier.Var} result = {New} JsonObject();");
+            WritePopulateJsonObject(builder, jsonData, "result", 0);
+            builder.WriteLine($"return result;");
+            builder.CloseScope();
+            builder.WriteLine();
+        }
+
+        void WritePopulateJsonArray(CodeBuilder builder, GenericDataList jsonData, string arrayName, int recursionLevel)
+        {
+            foreach (var value in jsonData)
+            {
+                if (value is null)
+                {
+                    builder.WriteLine($"{arrayName}{Deref}Append(JsonValue{Deref}CreateNullValue());");
+                }
+                else
+                {
+                    switch (value.Type)
+                    {
+                        case GenericDataObjectType.Bool:
+                            builder.WriteLine($"{arrayName}{Deref}Append(JsonValue{Deref}CreateBooleanValue({String(value)}));");
+                            break;
+                        case GenericDataObjectType.Number:
+                            builder.WriteLine($"{arrayName}{Deref}Append(JsonValue{Deref}CreateNumberValue({String(value)}));");
+                            break;
+                        case GenericDataObjectType.String:
+                            builder.WriteLine($"{arrayName}{Deref}Append(JsonValue{Deref}CreateStringValue({String(value)}));");
+                            break;
+                        case GenericDataObjectType.List:
+                            if (((GenericDataList)value).Count == 0)
+                            {
+                                builder.WriteLine($"{arrayName}{Deref}Append({New} JsonArray());");
+                            }
+                            else
+                            {
+                                var subArrayName = $"jarray_{recursionLevel}";
+                                builder.OpenScope();
+                                builder.WriteLine($"{_stringifier.Var} {subArrayName} = {New} JsonArray();");
+                                builder.WriteLine($"result{Deref}Append({subArrayName});");
+                                WritePopulateJsonArray(builder, (GenericDataList)value, subArrayName, recursionLevel + 1);
+                                builder.CloseScope();
+                            }
+
+                            break;
+                        case GenericDataObjectType.Map:
+                            if (((GenericDataMap)value).Count == 0)
+                            {
+                                builder.WriteLine($"{arrayName}{Deref}Append({New} JsonObject());");
+                            }
+                            else
+                            {
+                                var subObjectName = $"jobject_{recursionLevel}";
+                                builder.OpenScope();
+                                builder.WriteLine($"{_stringifier.Var} {subObjectName} = {New} JsonObject();");
+                                builder.WriteLine($"result{Deref}Append({subObjectName});");
+                                WritePopulateJsonObject(builder, (GenericDataMap)value, subObjectName, recursionLevel + 1);
+                                builder.CloseScope();
+                            }
+
+                            break;
+                        default:
+                            throw new InvalidOperationException();
+                    }
+                }
+            }
+        }
+
+        void WritePopulateJsonObject(CodeBuilder builder, GenericDataMap jsonData, string objectName, int recursionLevel)
+        {
+            foreach ((var key, var value) in jsonData)
+            {
+                var k = _stringifier.String(key);
+                if (value is null)
+                {
+                    builder.WriteLine($"{objectName}{Deref}Add({k}, JsonValue{Deref}CreateNullValue());");
+                }
+                else
+                {
+                    switch (value.Type)
+                    {
+                        case GenericDataObjectType.Bool:
+                            builder.WriteLine($"{objectName}{Deref}Add({k}, JsonValue{Deref}CreateBooleanValue({String(value)}));");
+                            break;
+                        case GenericDataObjectType.Number:
+                            builder.WriteLine($"{objectName}{Deref}Add({k}, JsonValue{Deref}CreateNumberValue({String(value)}));");
+                            break;
+                        case GenericDataObjectType.String:
+                            builder.WriteLine($"{objectName}{Deref}Add({k}, JsonValue{Deref}CreateStringValue({String(value)}));");
+                            break;
+                        case GenericDataObjectType.List:
+                            if (((GenericDataList)value).Count == 0)
+                            {
+                                builder.WriteLine($"{objectName}{Deref}Add({k}, {New} JsonArray());");
+                            }
+                            else
+                            {
+                                var subArrayName = $"jarray_{recursionLevel}";
+                                builder.OpenScope();
+                                builder.WriteLine($"{_stringifier.Var} {subArrayName} = {New} JsonArray();");
+                                builder.WriteLine($"result{Deref}Add({k}, {subArrayName});");
+                                WritePopulateJsonArray(builder, (GenericDataList)value, subArrayName, recursionLevel + 1);
+                                builder.CloseScope();
+                            }
+
+                            break;
+                        case GenericDataObjectType.Map:
+                            if (((GenericDataMap)value).Count == 0)
+                            {
+                                builder.WriteLine($"{objectName}{Deref}Add({k}, {New} JsonObject());");
+                            }
+                            else
+                            {
+                                var subObjectName = $"jobject_{recursionLevel}";
+                                builder.OpenScope();
+                                builder.WriteLine($"{_stringifier.Var} {subObjectName} = {New} JsonObject();");
+                                builder.WriteLine($"result{Deref}Add({k}, {subObjectName});");
+                                WritePopulateJsonObject(builder, (GenericDataMap)value, subObjectName, recursionLevel + 1);
+                                builder.CloseScope();
+                            }
+
+                            break;
+                        default:
+                            throw new InvalidOperationException();
+                    }
+                }
+            }
+        }
+
+        // Write the LoadedImageSurface byte arrays into the outer (IAnimatedVisualSource) class.
+        void WriteLoadedImageSurfaceArrays(CodeBuilder builder)
+        {
+            bool bytesWritten = false;
+
+            foreach (var loadedImageSurface in _loadedImageSurfaceInfos)
+            {
+                if (loadedImageSurface.Bytes != null)
+                {
+                    WriteBytesField(builder, loadedImageSurface.BytesFieldName);
+                    builder.OpenScope();
+                    builder.BytesToLiteral(loadedImageSurface.Bytes, maximumColumns: 100);
+                    builder.UnIndent();
+                    builder.WriteLine("};");
+                    bytesWritten = true;
+                }
+            }
+
+            if (bytesWritten)
+            {
+                builder.WriteLine();
+            }
+        }
 
         static LoadedImageSurfaceInfo LoadedImageSurfaceInfoFromObjectData(ObjectData node)
         {

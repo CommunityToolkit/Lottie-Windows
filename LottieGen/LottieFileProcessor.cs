@@ -402,6 +402,7 @@ sealed class LottieFileProcessor
         (string csText, IEnumerable<Uri> assetList) = CSharpInstantiatorGenerator.CreateFactoryCode(
                 _className,
                 _translationResults.Select(tr => ((CompositionObject)tr.RootVisual, tr.MinimumRequiredUapVersion)).ToArray(),
+                _translationResults[0].SourceMetadata,
                 (float)_lottieComposition.Width,
                 (float)_lottieComposition.Height,
                 _lottieComposition.Duration,
@@ -441,6 +442,7 @@ sealed class LottieFileProcessor
         (string cppText, string hText, IEnumerable<Uri> assetList) = CxInstantiatorGenerator.CreateFactoryCode(
                 _className,
                 _translationResults.Select(tr => ((CompositionObject)tr.RootVisual, tr.MinimumRequiredUapVersion)).ToArray(),
+                _translationResults[0].SourceMetadata,
                 (float)_lottieComposition.Width,
                 (float)_lottieComposition.Height,
                 _lottieComposition.Duration,

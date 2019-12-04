@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Toolkit.Uwp.UI.Lottie.GenericData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
@@ -90,6 +91,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             return CSharpInstantiatorGenerator.CreateFactoryCode(
                 SuggestedClassName,
                 new (CompositionObject, uint)[] { (RootVisual, RequiredUapVersion) },
+                SourceMetadata,
                 (float)LottieComposition.Width,
                 (float)LottieComposition.Height,
                 LottieComposition.Duration,
@@ -108,6 +110,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             (string cppText, string hText, IEnumerable<Uri> assetList) generatedCode = CxInstantiatorGenerator.CreateFactoryCode(
                 SuggestedClassName,
                 new (CompositionObject, uint)[] { (RootVisual, RequiredUapVersion) },
+                SourceMetadata,
                 (float)LottieComposition.Width,
                 (float)LottieComposition.Height,
                 LottieComposition.Duration,
@@ -122,6 +125,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
 
         // Holds the parsed LottieComposition. Only used if one of the codegen or XML options was selected.
         internal LottieComposition LottieComposition { get; set; }
+
+        internal GenericDataMap SourceMetadata { get; set; }
 
         // Holds the translated Visual. Only used if one of the codegen or XML options was selected.
         internal WinCompData.Visual RootVisual { get; set; }

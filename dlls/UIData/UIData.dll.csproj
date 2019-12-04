@@ -10,6 +10,7 @@
   <Import Project="..\..\source\UIData\UIData.projitems" Label="Shared" />
 
   <ItemGroup>
+    <ProjectReference Include="..\GenericData\GenericData.dll.csproj" />
     <ProjectReference Include="..\WinCompData\WinCompData.dll.csproj" />
     <ProjectReference Include="..\WinUIXamlMediaData\WinUIXamlMediaData.dll.csproj" />
   </ItemGroup>

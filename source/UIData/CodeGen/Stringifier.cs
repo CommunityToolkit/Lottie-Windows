@@ -53,6 +53,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 ? value.ToString("0", CultureInfo.InvariantCulture)
                 : value.ToString("G9", CultureInfo.InvariantCulture) + "F";
 
+        public virtual string Double(double value) =>
+            Math.Floor(value) == value
+                ? value.ToString("0", CultureInfo.InvariantCulture)
+                : value.ToString("G15", CultureInfo.InvariantCulture);
+
         public virtual string Int32(int value) => value.ToString();
 
         public virtual string Int64(long value) => value.ToString();
