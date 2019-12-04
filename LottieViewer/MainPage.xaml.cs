@@ -6,9 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Toolkit.Uwp.UI.Lottie;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
@@ -34,98 +32,6 @@ namespace LottieViewer
 
             // Connect the player's progress to the scrubber's progress.
             _scrubber.SetAnimatedCompositionObject(_stage.Player.ProgressObject);
-        }
-
-        // Avoid "async void" method. Not valid here because we handle all exceptions.
-#pragma warning disable VSTHRD100
-        async void SaveFile_Click(object sender, RoutedEventArgs e)
-        {
-#pragma warning restore VSTHRD100
-            var diagnostics = _stage.Player.Diagnostics as LottieVisualDiagnostics;
-            if (diagnostics == null)
-            {
-                return;
-            }
-
-            var filePicker = new FileSavePicker
-            {
-                SuggestedStartLocation = PickerLocationId.DocumentsLibrary,
-                SuggestedFileName = diagnostics.SuggestedFileName,
-            };
-
-            // Dropdown of file types the user can save the file as
-            filePicker.FileTypeChoices.Add("C#", new[] { ".cs" });
-            filePicker.FileTypeChoices.Add("C++ CX", new[] { ".cpp" });
-            filePicker.FileTypeChoices.Add("Lottie XML", new[] { ".xml" });
-
-            // Note that the extension needs to be unique if we're going to
-            // recognize the choice when the file is saved.
-            //filePicker.FileTypeChoices.Add("WinComp XML", new[] { ".xml" });
-            StorageFile pickedFile = null;
-            try
-            {
-                pickedFile = await filePicker.PickSaveFileAsync();
-            }
-            catch
-            {
-                // Ignore exceptions from PickSaveFileAsync()
-            }
-
-            if (pickedFile == null)
-            {
-                // No source file chosen - give up.
-                return;
-            }
-
-            var suggestedClassName = Path.GetFileNameWithoutExtension(pickedFile.Name);
-
-            switch (pickedFile.FileType)
-            {
-                // If an unrecognized file type is specified, treat it as C#.
-                default:
-                case ".cs":
-                    await FileIO.WriteTextAsync(pickedFile, diagnostics.GenerateCSharpCode());
-                    break;
-                case ".cpp":
-                    await GenerateCxCodeAsync(diagnostics, suggestedClassName, pickedFile);
-                    break;
-                case ".xml":
-                    await FileIO.WriteTextAsync(pickedFile, diagnostics.GenerateLottieXml());
-                    break;
-            }
-        }
-
-        async Task GenerateCxCodeAsync(LottieVisualDiagnostics diagnostics, string suggestedClassName, IStorageFile cppFile)
-        {
-            // Ask the user to pick a name for the .h file.
-            var filePicker = new FileSavePicker
-            {
-                SuggestedStartLocation = PickerLocationId.DocumentsLibrary,
-                SuggestedFileName = suggestedClassName,
-            };
-
-            // Dropdown of file types the user can save the file as
-            filePicker.FileTypeChoices.Add("C++ CX header", new[] { ".h" });
-
-            var hFile = await filePicker.PickSaveFileAsync();
-
-            if (hFile == null)
-            {
-                // No header file chosen - give up.
-                return;
-            }
-
-            // Generate the .cpp and the .h text.
-            diagnostics.GenerateCxCode(hFile.Name, out var cppText, out var hText);
-
-            // Write the .cpp file.
-            await FileIO.WriteTextAsync(cppFile, cppText);
-
-            // Write the .h file if the user specified one.
-            if (hFile != null)
-            {
-                await FileIO.WriteTextAsync(hFile, hText);
-            }
         }
 
         // Avoid "async void" method. Not valid here because we handle all async exceptions.

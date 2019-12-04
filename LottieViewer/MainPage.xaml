@@ -118,14 +118,6 @@
                     </Button.Flyout>
                     &#xE7BA;
                 </Button>
-                <!--  Save as: e792. Save: e74e  -->
-                <Button Click="SaveFile_Click"
-                        IsEnabled="{x:Bind _stage.Player.IsAnimatedVisualLoaded, Mode=OneWay}"
-                        Style="{StaticResource ControlsButtonStyle}"
-                        ToolTipService.ToolTip="Save Lottie as code">
-                    &#xe74e;
-                </Button>
-
             </StackPanel>
 
         </Grid>
