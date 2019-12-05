@@ -2832,7 +2832,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         }
 
         CompositionColorBrush TranslateSolidColorFill(TranslationContext context, SolidColorFill shapeFill, TrimmedAnimatable<double> opacityPercent)
-            => TranslateSolidColor(context, shapeFill.Color, shapeFill.OpacityPercent, opacityPercent);
+        {
+            // Read property bindings embedded into the name of the fill.
+            // TODO: Currently the bindings are ignored and the parsing is being done just to exercise the parser.
+            var propertyBindings = PropertyBindingsParser.ParseBindings(shapeFill.Name);
+            return TranslateSolidColor(context, shapeFill.Color, shapeFill.OpacityPercent, opacityPercent);
+        }
 
         CompositionLinearGradientBrush TranslateLinearGradientFill(
             TranslationContext context,
