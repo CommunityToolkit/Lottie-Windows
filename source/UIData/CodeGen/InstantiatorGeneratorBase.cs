@@ -541,9 +541,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         void WritePopulateJsonObject(CodeBuilder builder, GenericDataMap jsonData, string objectName, int recursionLevel)
         {
-            foreach ((var key, var value) in jsonData)
+            foreach (var pair in jsonData)
             {
-                var k = _stringifier.String(key);
+                var k = _stringifier.String(pair.Key);
+                var value = pair.Value;
+
                 if (value is null)
                 {
                     builder.WriteLine($"{objectName}{Deref}Add({k}, JsonValue{Deref}CreateNullValue());");
