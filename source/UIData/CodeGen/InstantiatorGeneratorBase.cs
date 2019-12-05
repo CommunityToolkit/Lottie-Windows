@@ -427,13 +427,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         }
 
         string String(GenericDataObject value)
-            => value.Type switch
+        {
+            switch (value.Type)
             {
-                GenericDataObjectType.Bool => _stringifier.Bool(((GenericDataBool)value).Value),
-                GenericDataObjectType.Number => _stringifier.Double(((GenericDataNumber)value).Value),
-                GenericDataObjectType.String => _stringifier.String(((GenericDataString)value).Value),
-                _ => throw new InvalidOperationException(),
-            };
+                case GenericDataObjectType.Bool: return _stringifier.Bool(((GenericDataBool)value).Value);
+                case GenericDataObjectType.Number: return _stringifier.Double(((GenericDataNumber)value).Value);
+                case GenericDataObjectType.String: return _stringifier.String(((GenericDataString)value).Value);
+                default: throw new InvalidOperationException();
+            }
+        }
 
         string ScopeResolve => _stringifier.ScopeResolve;
 
