@@ -14,8 +14,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         // Property binding language definition
         // ====================================
         // Property bindings are lists of property-name+binding-name pairs.
-        // They are specified using using a regular language (i.e. parseable
-        // by a regular expression) that is designed to look similar to CSS var
+        // They are specified using a regular language (i.e. parseable by a
+        // regular expression) that is designed to look similar to CSS var
         // functions. Just like CSS, the property bindings are enclosed within
         // curly braces and multiple property bindings are separated by semicolons.
         //
@@ -29,8 +29,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         // ------------------------------------
         // Example: "{ color :var( Foreground);color1:var(Foreground1) ; color3:var(L33t )   }"
         // ------------------------------------
-        const string PropertyNameSelector = "PropertyName";
-        const string BindingNameSelector = "BindingName";
+        const string PropertyNameSelector = "P";
+        const string BindingNameSelector = "B";
 
         const string PropertyBindingRegex =
 
