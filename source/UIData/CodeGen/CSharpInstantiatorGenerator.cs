@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using Microsoft.Toolkit.Uwp.UI.Lottie.GenericData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData;
@@ -24,6 +25,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             string className,
             Vector2 size,
             IReadOnlyList<(CompositionObject graphRoot, uint requiredUapVersion)> graphs,
+            GenericDataMap sourceMetadata,
             TimeSpan duration,
             bool setCommentProperties,
             bool disableFieldOptimization,
@@ -32,6 +34,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                   className: className,
                   compositionDeclaredSize: size,
                   graphs: graphs,
+                  sourceMetadata: sourceMetadata,
                   duration: duration,
                   setCommentProperties: setCommentProperties,
                   disableFieldOptimization: disableFieldOptimization,
@@ -48,6 +51,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         public static (string csText, IEnumerable<Uri> assetList) CreateFactoryCode(
             string className,
             IReadOnlyList<(CompositionObject graphRoot, uint requiredUapVersion)> graphs,
+            GenericDataMap sourceMetadata,
             float width,
             float height,
             TimeSpan duration,
@@ -57,6 +61,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                                 className: className,
                                 size: new Vector2(width, height),
                                 graphs: graphs,
+                                sourceMetadata: sourceMetadata,
                                 duration: duration,
                                 setCommentProperties: false,
                                 disableFieldOptimization: disableFieldOptimization,

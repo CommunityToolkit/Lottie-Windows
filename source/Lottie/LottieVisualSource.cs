@@ -14,6 +14,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
+using Microsoft.Toolkit.Uwp.UI.Lottie.GenericData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp;
@@ -398,6 +399,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
 
                 // Translating large Lotties can take significant time. Do it on another thread.
                 WinCompData.Visual wincompDataRootVisual = null;
+                GenericDataMap sourceMetadata = null;
                 uint requiredUapVersion = 0;
                 var optimizationEnabled = _owner.Options.HasFlag(LottieVisualOptions.Optimize);
 
@@ -411,6 +413,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                         addCodegenDescriptions: true);
 
                     wincompDataRootVisual = translationResult.RootVisual;
+                    sourceMetadata = translationResult.SourceMetadata;
                     requiredUapVersion = translationResult.MinimumRequiredUapVersion;
 
                     if (diagnostics != null)
@@ -446,6 +449,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                     {
                         // Save the root visual so diagnostics can generate XML and codegen.
                         diagnostics.RootVisual = wincompDataRootVisual;
+                        diagnostics.SourceMetadata = sourceMetadata;
                         diagnostics.RequiredUapVersion = requiredUapVersion;
                     }
 

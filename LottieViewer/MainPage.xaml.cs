@@ -364,12 +364,6 @@ namespace LottieViewer
             yield return Tuple.Create("Aspect ratio", $"{aspectRatio.Item1.ToString("0.###")}:{aspectRatio.Item2.ToString("0.###")}");
             yield return Tuple.Create("Size", $"{diagnostics.LottieWidth} x {diagnostics.LottieHeight}");
 
-            //yield return Tuple.Create("Version", diagnostics.LottieVersion);
-            //yield return Tuple.Create("Read", MSecs(diagnostics.ReadTime));
-            //yield return Tuple.Create("Parse", MSecs(diagnostics.ParseTime));
-            //yield return Tuple.Create("Validation", MSecs(diagnostics.ValidationTime));
-            //yield return Tuple.Create("Translation", MSecs(diagnostics.TranslationTime));
-            //yield return Tuple.Create("Instantiation", MSecs(diagnostics.InstantiationTime));
             foreach (var marker in diagnostics.Markers)
             {
                 yield return Tuple.Create("Marker", $"{marker.Key}: {marker.Value.ToString("0.0###")}");
