@@ -10,7 +10,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
     /// <summary>
     /// Describes LoadedImageSurface objects in the composition.
     /// </summary>
-#if PUBLIC_UIData
+#if PUBLIC_UIDataCodeGen
     public
 #endif
     sealed class LoadedImageSurfaceInfo

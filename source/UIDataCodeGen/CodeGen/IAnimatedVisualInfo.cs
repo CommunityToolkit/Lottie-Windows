@@ -9,7 +9,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
     /// <summary>
     /// Holds information about code being generated for an IAnimatedVisual.
     /// </summary>
-#if PUBLIC_UIData
+#if PUBLIC_UIDataCodeGen
     public
 #endif
     interface IAnimatedVisualInfo

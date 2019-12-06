@@ -6,10 +6,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
+namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 {
     /// <summary>
     /// Optimizes a <see cref="Visual"/> tree by combining and removing containers.

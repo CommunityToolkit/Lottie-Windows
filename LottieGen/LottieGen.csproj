@@ -42,5 +42,6 @@
   <Import Project="..\source\WinUIXamlMediaData\WinUIXamlMediaData.projitems" Label="Shared" />
   <Import Project="..\source\YamlData\YamlData.projitems" Label="Shared" />
   <Import Project="..\source\GenericData\GenericData.projitems" Label="Shared" />
+  <Import Project="..\source\UIDataCodeGen\UIDataCodeGen.projitems" Label="Shared" />
 
 </Project>

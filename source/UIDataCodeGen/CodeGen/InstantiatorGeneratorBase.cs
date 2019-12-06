@@ -18,7 +18,7 @@ using Wmd = Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 {
-#if PUBLIC_UIData
+#if PUBLIC_UIDataCodeGen
     public
 #endif
     abstract class InstantiatorGeneratorBase : IAnimatedVisualSourceInfo
