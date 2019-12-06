@@ -62,13 +62,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
         public IEnumerable<(T Node, LoadedImageSurface Object)> LoadedImageSurfaceNodes =>
             _loadedImageSurfaceReferences.Values.Select(n => (n, (LoadedImageSurface)n.Object));
 
-        internal T this[Wg.IGeometrySource2D obj] => _canvasGeometryReferences[obj];
+        public T this[Wg.IGeometrySource2D obj] => _canvasGeometryReferences[obj];
 
-        internal T this[CompositionObject obj] => _compositionObjectReferences[obj];
+        public T this[CompositionObject obj] => _compositionObjectReferences[obj];
 
-        internal T this[CompositionPath obj] => _compositionPathReferences[obj];
+        public T this[CompositionPath obj] => _compositionPathReferences[obj];
 
-        internal T this[LoadedImageSurface obj] => _loadedImageSurfaceReferences[obj];
+        public T this[LoadedImageSurface obj] => _loadedImageSurfaceReferences[obj];
 
         void Reference(T from, CompositionObject obj)
         {

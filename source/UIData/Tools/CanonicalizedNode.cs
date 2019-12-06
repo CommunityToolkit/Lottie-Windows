@@ -4,9 +4,8 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
+namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 {
     abstract class CanonicalizedNode<T> : Graph.Node<T>
         where T : CanonicalizedNode<T>, new()

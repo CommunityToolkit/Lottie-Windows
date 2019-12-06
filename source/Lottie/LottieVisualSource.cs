@@ -428,7 +428,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                     if (wincompDataRootVisual != null && optimizationEnabled)
                     {
                         // Optimize.
-                        wincompDataRootVisual = UIData.CodeGen.Optimizer.Optimize(wincompDataRootVisual, ignoreCommentProperties: true);
+                        wincompDataRootVisual = UIData.Tools.Optimizer.Optimize(wincompDataRootVisual, ignoreCommentProperties: true);
 
                         if (diagnostics != null)
                         {

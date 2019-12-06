@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
-using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
@@ -15,7 +14,7 @@ using Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData;
 using Wg = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wg;
 using Wui = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
+namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 {
     /// <summary>
     /// Transforms a WinCompData tree to an equivalent tree, optimizing the tree

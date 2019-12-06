@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Configurations>Debug;Release</Configurations>
+    <LangVersion>latest</LangVersion>
+    <DefineConstants>PUBLIC_UIDataCodeGen</DefineConstants>
+  </PropertyGroup>
+
+  <Import Project="..\..\source\UIDataCodeGen\UIDataCodeGen.projitems" Label="Shared" />
+
+  <ItemGroup>
+    <ProjectReference Include="..\UIData\UIData.dll.csproj" />
+  </ItemGroup>
+
+</Project>

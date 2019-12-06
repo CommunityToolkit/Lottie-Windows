@@ -88,6 +88,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Issues", "Issues", "{BDB88D
 		..\source\Issues\ValidationIssues.tt = ..\source\Issues\ValidationIssues.tt
 	EndProjectSection
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "UIDataCodeGen", "..\source\UIDataCodeGen\UIDataCodeGen.shproj", "{D02BE6C8-14DB-4B4F-8600-F3C9B69C104D}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		..\source\LottieToWinComp\LottieToWinComp.projitems*{0340244a-683c-405e-838b-f93872779532}*SharedItemsImports = 13
@@ -99,6 +101,7 @@ Global
 		..\source\GenericData\GenericData.projitems*{77bcd724-8555-463b-985f-f8e8110164c4}*SharedItemsImports = 13
 		..\source\LottieData\LottieData.projitems*{b3db16ee-a821-4474-a188-e64926529bbd}*SharedItemsImports = 13
 		..\source\WinCompData\WinCompData.projitems*{d02870de-7ded-4916-85d4-3175ceedef74}*SharedItemsImports = 13
+		..\source\UIDataCodeGen\UIDataCodeGen.projitems*{d02be6c8-14db-4b4f-8600-f3c9b69c104d}*SharedItemsImports = 13
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -141,6 +144,7 @@ Global
 		{2202E218-DD9F-496A-AEF4-3F07F0EA5B9D} = {AB232F35-AAF7-4AE2-B1D2-45DD9BC2F7D7}
 		{77BCD724-8555-463B-985F-F8E8110164C4} = {AB232F35-AAF7-4AE2-B1D2-45DD9BC2F7D7}
 		{BDB88D65-320E-4293-9E55-1D3ED8332FF6} = {AB232F35-AAF7-4AE2-B1D2-45DD9BC2F7D7}
+		{D02BE6C8-14DB-4B4F-8600-F3C9B69C104D} = {AB232F35-AAF7-4AE2-B1D2-45DD9BC2F7D7}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {51B9BB4C-5196-41CF-950C-12B04AD8A61C}

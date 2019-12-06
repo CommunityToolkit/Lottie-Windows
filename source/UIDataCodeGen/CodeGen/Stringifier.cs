@@ -17,7 +17,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
     /// Converts various language keywords and values to strings. The strings returned
     /// from here are useful for C# and may need to be overridden for other languages.
     /// </summary>
-#if PUBLIC_UIData
+#if PUBLIC_UIDataCodeGen
     public
 #endif
     class Stringifier

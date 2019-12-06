@@ -9,7 +9,7 @@ using System.Text;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 {
-#if PUBLIC_UIData
+#if PUBLIC_UIDataCodeGen
     public
 #endif
     sealed class CodeBuilder

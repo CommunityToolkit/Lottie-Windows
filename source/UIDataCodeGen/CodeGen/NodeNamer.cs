@@ -18,7 +18,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
     /// Generates names for the nodes in an <see cref="ObjectGraph{T}"/>.
     /// </summary>
     /// <typeparam name="TNode">The type of the data associated with each node.</typeparam>
-#if PUBLIC_UIData
+#if PUBLIC_UIDataCodeGen
     public
 #endif
     static class NodeNamer<TNode>

@@ -131,6 +131,10 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "GenericData", "source\Gener
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GenericData.dll", "dlls\GenericData\GenericData.dll.csproj", "{A687177E-31FF-4F05-89C6-03657C96A166}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "UIDataCodeGen", "source\UIDataCodeGen\UIDataCodeGen.shproj", "{D02BE6C8-14DB-4B4F-8600-F3C9B69C104D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UIDataCodeGen.dll", "dlls\UIDataCodeGen\UIDataCodeGen.dll.csproj", "{9B6C0B7F-0D0F-4086-9746-0D34D7667DB5}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		source\LottieToWinComp\LottieToWinComp.projitems*{0340244a-683c-405e-838b-f93872779532}*SharedItemsImports = 13
@@ -153,6 +157,7 @@ Global
 		source\Lottie\Lottie.projitems*{8ef7bd77-28e9-4998-8dbb-8036f988fe65}*SharedItemsImports = 13
 		source\LottieData\LottieData.projitems*{b3db16ee-a821-4474-a188-e64926529bbd}*SharedItemsImports = 13
 		source\WinCompData\WinCompData.projitems*{d02870de-7ded-4916-85d4-3175ceedef74}*SharedItemsImports = 13
+		source\UIDataCodeGen\UIDataCodeGen.projitems*{d02be6c8-14db-4b4f-8600-f3c9b69c104d}*SharedItemsImports = 13
 		source\LottieData\LottieData.projitems*{e392bad0-f936-4b64-a445-552597795cc7}*SharedItemsImports = 4
 		source\LottieReader\LottieReader.projitems*{e392bad0-f936-4b64-a445-552597795cc7}*SharedItemsImports = 4
 		source\LottieToWinComp\LottieToWinComp.projitems*{e392bad0-f936-4b64-a445-552597795cc7}*SharedItemsImports = 4
@@ -347,23 +352,27 @@ Global
 		{A687177E-31FF-4F05-89C6-03657C96A166}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A687177E-31FF-4F05-89C6-03657C96A166}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A687177E-31FF-4F05-89C6-03657C96A166}.Debug|ARM.ActiveCfg = Debug|Any CPU
-		{A687177E-31FF-4F05-89C6-03657C96A166}.Debug|ARM.Build.0 = Debug|Any CPU
 		{A687177E-31FF-4F05-89C6-03657C96A166}.Debug|ARM64.ActiveCfg = Debug|Any CPU
-		{A687177E-31FF-4F05-89C6-03657C96A166}.Debug|ARM64.Build.0 = Debug|Any CPU
 		{A687177E-31FF-4F05-89C6-03657C96A166}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{A687177E-31FF-4F05-89C6-03657C96A166}.Debug|x64.Build.0 = Debug|Any CPU
 		{A687177E-31FF-4F05-89C6-03657C96A166}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{A687177E-31FF-4F05-89C6-03657C96A166}.Debug|x86.Build.0 = Debug|Any CPU
 		{A687177E-31FF-4F05-89C6-03657C96A166}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A687177E-31FF-4F05-89C6-03657C96A166}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A687177E-31FF-4F05-89C6-03657C96A166}.Release|ARM.ActiveCfg = Release|Any CPU
-		{A687177E-31FF-4F05-89C6-03657C96A166}.Release|ARM.Build.0 = Release|Any CPU
 		{A687177E-31FF-4F05-89C6-03657C96A166}.Release|ARM64.ActiveCfg = Release|Any CPU
-		{A687177E-31FF-4F05-89C6-03657C96A166}.Release|ARM64.Build.0 = Release|Any CPU
 		{A687177E-31FF-4F05-89C6-03657C96A166}.Release|x64.ActiveCfg = Release|Any CPU
-		{A687177E-31FF-4F05-89C6-03657C96A166}.Release|x64.Build.0 = Release|Any CPU
 		{A687177E-31FF-4F05-89C6-03657C96A166}.Release|x86.ActiveCfg = Release|Any CPU
-		{A687177E-31FF-4F05-89C6-03657C96A166}.Release|x86.Build.0 = Release|Any CPU
+		{9B6C0B7F-0D0F-4086-9746-0D34D7667DB5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9B6C0B7F-0D0F-4086-9746-0D34D7667DB5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9B6C0B7F-0D0F-4086-9746-0D34D7667DB5}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{9B6C0B7F-0D0F-4086-9746-0D34D7667DB5}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{9B6C0B7F-0D0F-4086-9746-0D34D7667DB5}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{9B6C0B7F-0D0F-4086-9746-0D34D7667DB5}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{9B6C0B7F-0D0F-4086-9746-0D34D7667DB5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9B6C0B7F-0D0F-4086-9746-0D34D7667DB5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9B6C0B7F-0D0F-4086-9746-0D34D7667DB5}.Release|ARM.ActiveCfg = Release|Any CPU
+		{9B6C0B7F-0D0F-4086-9746-0D34D7667DB5}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{9B6C0B7F-0D0F-4086-9746-0D34D7667DB5}.Release|x64.ActiveCfg = Release|Any CPU
+		{9B6C0B7F-0D0F-4086-9746-0D34D7667DB5}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -391,6 +400,8 @@ Global
 		{07D6DFEE-E76C-4EAC-B361-99D5EDA7BCE1} = {AB232F35-AAF7-4AE2-B1D2-45DD9BC2F7D7}
 		{77BCD724-8555-463B-985F-F8E8110164C4} = {AB232F35-AAF7-4AE2-B1D2-45DD9BC2F7D7}
 		{A687177E-31FF-4F05-89C6-03657C96A166} = {C75BD686-21A6-4EB3-8D4B-D5A01C019C52}
+		{D02BE6C8-14DB-4B4F-8600-F3C9B69C104D} = {AB232F35-AAF7-4AE2-B1D2-45DD9BC2F7D7}
+		{9B6C0B7F-0D0F-4086-9746-0D34D7667DB5} = {C75BD686-21A6-4EB3-8D4B-D5A01C019C52}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {51B9BB4C-5196-41CF-950C-12B04AD8A61C}
