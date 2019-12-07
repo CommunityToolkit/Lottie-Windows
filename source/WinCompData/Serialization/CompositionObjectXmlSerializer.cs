@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Xml.Linq;
+using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
 {
@@ -692,6 +693,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
             return new XElement("PropertySet", GetContents());
             IEnumerable<XObject> GetContents()
             {
+                foreach (var prop in obj.ColorProperties)
+                {
+                    foreach (var item in FromAnimatableColor(prop.Key, animators, prop.Value))
+                    {
+                        yield return item;
+                    }
+                }
+
                 foreach (var prop in obj.ScalarProperties)
                 {
                     foreach (var item in FromAnimatableScalar(prop.Key, animators, prop.Value))
@@ -798,6 +807,23 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
             }
         }
 
+        IEnumerable<XObject> FromAnimatableColor(string name, IEnumerable<CompositionObject.Animator> animators, Color? initialValue)
+        {
+            var animation = animators.Where(a => a.AnimatedProperty == name).FirstOrDefault()?.Animation;
+
+            if (animation != null)
+            {
+                yield return FromAnimation(name, animation, initialValue);
+            }
+            else
+            {
+                if (initialValue.HasValue)
+                {
+                    yield return FromColor(name, initialValue.Value);
+                }
+            }
+        }
+
         IEnumerable<XObject> FromAnimatableScalar(string name, IEnumerable<CompositionObject.Animator> animators, float? initialValue)
         {
             var animation = animators.Where(a => a.AnimatedProperty == name).FirstOrDefault()?.Animation;
@@ -847,6 +873,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
                     yield return FromVector3(name, initialValue.Value);
                 }
             }
+        }
+
+        XElement FromColor(string name, Color value)
+        {
+            return new XElement(name, new XAttribute("ColorValue", value));
         }
 
         XElement FromScalar(string name, float value)

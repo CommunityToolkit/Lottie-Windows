@@ -410,7 +410,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                         lottieComposition: lottieComposition,
                         targetUapVersion: GetCurrentUapVersion(),
                         strictTranslation: false,
-                        addCodegenDescriptions: true);
+                        addCodegenDescriptions: false,
+                        translatePropertyBindings: false);
 
                     wincompDataRootVisual = translationResult.RootVisual;
                     sourceMetadata = translationResult.SourceMetadata;

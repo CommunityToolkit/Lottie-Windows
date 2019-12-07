@@ -23,6 +23,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CompositionEllipseGeometry.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionGeometricClip.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionGeometry.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CompositionGetValueStatus.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionGradientBrush.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionGradientExtendMode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionLinearGradientBrush.cs" />

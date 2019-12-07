@@ -633,7 +633,8 @@ sealed class LottieFileProcessor
             targetUapVersion: _options.TargetUapVersion ?? uint.MaxValue,
             minimumUapVersion: _minimumUapVersion,
             strictTranslation: false,
-            addCodegenDescriptions: true);
+            addCodegenDescriptions: true,
+            translatePropertyBindings: true);
 
         _translationResults = translationResult.TranslationResults;
         _translationIssues = translationResult.Issues;
