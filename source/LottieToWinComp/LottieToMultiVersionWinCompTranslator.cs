@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Transactions;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
@@ -29,13 +30,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// Must be >= 7 and &lt;= targetUapVersion.</param>
         /// <param name="strictTranslation">If true, throw an exception if translation issues are found.</param>
         /// <param name="addCodegenDescriptions">Add descriptions to objects for comments on generated code.</param>
+        /// <param name="translatePropertyBindings">Translate the special property binding language in Lottie object
+        /// names and create bindings to <see cref="WinCompData.CompositionPropertySet"/> values.</param>
         /// <returns>The results of the translation and the issues.</returns>
         public static MultiVersionTranslationResult TryTranslateLottieComposition(
             LottieComposition lottieComposition,
             uint targetUapVersion,
             uint minimumUapVersion,
             bool strictTranslation,
-            bool addCodegenDescriptions = true)
+            bool addCodegenDescriptions,
+            bool translatePropertyBindings)
         {
             if (targetUapVersion < LowestValidUapVersion)
             {
@@ -52,7 +56,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 targetUapVersion: targetUapVersion,
                 minimumUapVersion: minimumUapVersion,
                 strictTranslation: strictTranslation,
-                addCodegenDescriptions: addCodegenDescriptions).ToArray();
+                addCodegenDescriptions: addCodegenDescriptions,
+                translatePropertyBindings: translatePropertyBindings).ToArray();
 
             // Combine the issues that are the same in multiple versions into issues with a version range.
             var dict = new Dictionary<TranslationIssue, UapVersionRange>();
@@ -97,15 +102,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             uint targetUapVersion,
             uint minimumUapVersion,
             bool strictTranslation,
-            bool addCodegenDescriptions)
+            bool addCodegenDescriptions,
+            bool translatePropertyBindings)
         {
             // First, generate code for the target version.
             var translationResult =
                 LottieToWinCompTranslator.TryTranslateLottieComposition(
                     lottieComposition,
-                    targetUapVersion,
+                    targetUapVersion: targetUapVersion,
                     strictTranslation,
-                    addCodegenDescriptions);
+                    addCodegenDescriptions,
+                    translatePropertyBindings);
 
             yield return (
                 translationResult,
@@ -126,9 +133,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 translationResult =
                     LottieToWinCompTranslator.TryTranslateLottieComposition(
                         lottieComposition,
-                        nextLowerTarget,
-                        strictTranslation,
-                        addCodegenDescriptions);
+                        targetUapVersion: nextLowerTarget,
+                        strictTranslation: strictTranslation,
+                        addCodegenDescriptions: addCodegenDescriptions,
+                        translatePropertyBindings: translatePropertyBindings);
 
                 yield return (
                     translationResult,

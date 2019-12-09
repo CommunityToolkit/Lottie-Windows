@@ -1407,6 +1407,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 if (!propertySet.IsEmpty)
                 {
                     builder.WriteLine($"{Var} propertySet = {localName}{Deref}Properties;");
+                    foreach (var prop in propertySet.ColorProperties)
+                    {
+                        builder.WriteLine($"propertySet{Deref}InsertColor({String(prop.Key)}, {Color(prop.Value)});");
+                    }
+
                     foreach (var prop in propertySet.ScalarProperties)
                     {
                         builder.WriteLine($"propertySet{Deref}InsertScalar({String(prop.Key)}, {Float(prop.Value)});");

@@ -63,6 +63,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         readonly LottieComposition _lc;
         readonly TranslationIssues _issues;
         readonly bool _addDescriptions;
+        readonly bool _translatePropertyBindings;
         readonly CompositionObjectFactory _c;
         readonly ContainerVisual _rootVisual;
         readonly Dictionary<ScaleAndOffset, ExpressionAnimation> _progressBindingAnimations = new Dictionary<ScaleAndOffset, ExpressionAnimation>();
@@ -98,6 +99,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             Compositor compositor,
             bool strictTranslation,
             bool addDescriptions,
+            bool translatePropertyBindings,
             uint targetUapVersion)
         {
             _lc = lottieComposition;
@@ -105,6 +107,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             _c = new CompositionObjectFactory(compositor, targetUapVersion);
             _issues = new TranslationIssues(strictTranslation);
             _addDescriptions = addDescriptions;
+            _translatePropertyBindings = translatePropertyBindings;
 
             // Create the root.
             _rootVisual = _c.CreateContainerVisual();
@@ -124,19 +127,23 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// <param name="targetUapVersion">The version of UAP that the translator will ensure compatibility with. Must be >= 7.</param>
         /// <param name="strictTranslation">If true, throw an exception if translation issues are found.</param>
         /// <param name="addCodegenDescriptions">Add descriptions to objects for comments on generated code.</param>
+        /// <param name="translatePropertyBindings">Translate the special property binding language in Lottie object
+        /// names and create bindings to <see cref="CompositionPropertySet"/> values.</param>
         /// <returns>The result of the translation.</returns>
         public static TranslationResult TryTranslateLottieComposition(
             LottieComposition lottieComposition,
             uint targetUapVersion,
             bool strictTranslation,
-            bool addCodegenDescriptions = true)
+            bool addCodegenDescriptions,
+            bool translatePropertyBindings)
         {
             // Set up the translator.
             using (var translator = new LottieToWinCompTranslator(
                 lottieComposition,
                 new Compositor(),
-                strictTranslation,
-                addCodegenDescriptions,
+                strictTranslation: strictTranslation,
+                addDescriptions: addCodegenDescriptions,
+                translatePropertyBindings: translatePropertyBindings,
                 targetUapVersion))
             {
                 // Translate the Lottie content to a Composition graph.
@@ -2834,8 +2841,32 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         CompositionColorBrush TranslateSolidColorFill(TranslationContext context, SolidColorFill shapeFill, TrimmedAnimatable<double> opacityPercent)
         {
             // Read property bindings embedded into the name of the fill.
-            // TODO: Currently the bindings are ignored and the parsing is being done just to exercise the parser.
-            var propertyBindings = PropertyBindingsParser.ParseBindings(shapeFill.Name);
+            if (_translatePropertyBindings)
+            {
+                var propertyBindings = PropertyBindingsParser.ParseBindings(shapeFill.Name);
+                foreach (var binding in propertyBindings)
+                {
+                    if (binding.propertyName == "Color")
+                    {
+                        var bindingName = binding.bindingName;
+                        if (_rootVisual.Properties.TryGetColor(bindingName, out _) == CompositionGetValueStatus.Succeeded)
+                        {
+                            // A property has already been inserted for this binding name.
+                        }
+                        else
+                        {
+                            // Insert a color with the given binding name. The client is expected to set
+                            // this property name with a theme color, so the actual color placed here
+                            // doesn't really matter, but giving it an unusual color might help developers
+                            // see that they have an unbound color property.
+                            _rootVisual.Properties.InsertColor(bindingName, WinCompData.Wui.Colors.YellowGreen);
+                        }
+
+                        break;
+                    }
+                }
+            }
+
             return TranslateSolidColor(context, shapeFill.Color, shapeFill.OpacityPercent, opacityPercent);
         }
 
