@@ -10,8 +10,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 #endif
     enum CompositionGetValueStatus
     {
+        /// <summary>
+        /// The value was successfully retrieved.
+        /// </summary>
         Succeeded = 0,
+
+        /// <summary>
+        /// The value type of the key-value pair is different from the value type requested.
+        /// </summary>
         TypeMismatch = 1,
+
+        /// <summary>
+        /// The key-value pair does not exist.
+        /// </summary>
         NotFound = 2,
     }
 }
