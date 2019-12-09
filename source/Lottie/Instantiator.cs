@@ -484,6 +484,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
 
             result = CacheAndInitializeCompositionObject(obj, result);
 
+            foreach (var prop in obj.ColorProperties)
+            {
+                result.InsertColor(prop.Key, Color(prop.Value));
+            }
+
             foreach (var prop in obj.ScalarProperties)
             {
                 result.InsertScalar(prop.Key, prop.Value);
