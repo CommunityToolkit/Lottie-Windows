@@ -19,6 +19,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
         {
         }
 
+        // Defaults to #00000000.
         public Wui.Color? Color { get; set; }
 
         /// <inheritdoc/>

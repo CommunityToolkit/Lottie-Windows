@@ -1329,7 +1329,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 return result;
             }
 
-            result = CacheAndInitializeCompositionObject(obj, _c.CreateColorBrush(Color(obj.Color)));
+            result = CacheAndInitializeCompositionObject(obj, _c.CreateColorBrush());
+            if (obj.Color.HasValue)
+            {
+                result.Color = Color(obj.Color.Value);
+            }
+
             StartAnimations(obj, result);
             return result;
         }
