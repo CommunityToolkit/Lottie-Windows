@@ -1887,7 +1887,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             bool GenerateCompositionColorBrushFactory(CodeBuilder builder, CompositionColorBrush obj, ObjectData node)
             {
-                var createCallText = $"_c{Deref}CreateColorBrush({Color(obj.Color)})";
+                var createCallText = obj.Color.HasValue
+                                        ? $"_c{Deref}CreateColorBrush({Color(obj.Color.Value)})"
+                                        : $"_c{Deref}CreateColorBrush()";
 
                 if (obj.Animators.Count > 0)
                 {

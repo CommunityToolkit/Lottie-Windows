@@ -172,7 +172,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
         static bool IsBrushTransparent(CompositionBrush brush)
         {
-            return brush == null || (!brush.Animators.Any() && (brush as CompositionColorBrush)?.Color.A == 0);
+            return brush == null || (!brush.Animators.Any() && (brush as CompositionColorBrush)?.Color?.A == 0);
         }
 
         static void RemoveTransparentShapes(ObjectGraph<Node> graph)

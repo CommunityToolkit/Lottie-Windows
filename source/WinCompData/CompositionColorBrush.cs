@@ -15,7 +15,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
             Color = color;
         }
 
-        public Wui.Color Color { get; set; }
+        internal CompositionColorBrush()
+        {
+        }
+
+        public Wui.Color? Color { get; set; }
 
         /// <inheritdoc/>
         public override CompositionObjectType Type => CompositionObjectType.CompositionColorBrush;

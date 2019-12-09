@@ -78,7 +78,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 CanonicalizeKeyFrameAnimations<KeyFrameAnimation<Vector3>, Vector3>(CompositionObjectType.Vector3KeyFrameAnimation);
                 CanonicalizeKeyFrameAnimations<KeyFrameAnimation<Vector4>, Vector4>(CompositionObjectType.Vector4KeyFrameAnimation);
 
-                // ColorKeyFrameAnimations must be canonicalized before color brushes are canonicalized.
+                // ColorKeyFrameAnimations and ExpressionAnimations must be canonicalized before color brushes are canonicalized.
                 CanonicalizeColorBrushes();
 
                 CanonicalizeLoadedImageSurface(LoadedImageSurface.LoadedImageSurfaceType.FromStream);
@@ -316,7 +316,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                     let animators = obj.Animators.ToArray()
                     where animators.Length == 0 || (animators.Length == 1 && animators[0].AnimatedProperty == "Color")
                     let animator = animators.FirstOrDefault()
-                    let canonicalAnimator = animator == null ? null : CanonicalObject<ColorKeyFrameAnimation>(animator.Animation)
+                    let canonicalAnimator = animator == null ? null : CanonicalObject<CompositionAnimation>(animator.Animation)
                     group item.Node by (obj.Color, canonicalAnimator) into grouped
                     select grouped;
 
