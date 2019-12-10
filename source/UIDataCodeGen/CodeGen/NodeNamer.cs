@@ -199,14 +199,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     if (brush.Animators.Count > 0)
                     {
                         // Brush is animated. Give it a name based on the colors in the animation.
-                        var colorAnimation = (ColorKeyFrameAnimation)brush.Animators.Where(a => a.Animation is ColorKeyFrameAnimation).First().Animation;
-                        var description = DescribeAnimationRange(colorAnimation);
-                        result = "AnimatedColorBrush" + (description != null ? $"_{description}" : string.Empty);
+                        var colorAnimation = brush.Animators.Where(a => a.AnimatedProperty == "Color").First().Animation;
+                        if (colorAnimation.Type == CompositionObjectType.ColorKeyFrameAnimation)
+                        {
+                            var description = DescribeAnimationRange((ColorKeyFrameAnimation)colorAnimation);
+                            result = "AnimatedColorBrush" + (description != null ? $"_{description}" : string.Empty);
+                        }
+                        else
+                        {
+                            // The color is bound to a property set.
+                            result = "BoundColorBrush";
+                        }
                     }
                     else
                     {
                         // Brush is not animated. Give it a name based on the color.
-                        result = $"ColorBrush_{brush.Color.Name}";
+                        result = brush.Color.HasValue ? $"ColorBrush_{brush.Color.Value.Name}" : "ColorBrush";
                     }
 
                     break;

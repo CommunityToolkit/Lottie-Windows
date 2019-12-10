@@ -1376,7 +1376,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 return result;
             }
 
-            result = CacheAndInitializeCompositionObject(obj, _c.CreateColorBrush(obj.Color));
+            result = CacheAndInitializeCompositionObject(obj, _c.CreateColorBrush());
+            if (obj.Color != null)
+            {
+                result.Color = obj.Color;
+            }
+
             StartAnimationsAndFreeze(obj, result);
             return result;
         }

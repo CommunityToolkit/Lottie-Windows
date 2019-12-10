@@ -56,6 +56,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return result;
         }
 
+        // The value of a Color property on the root.
+        internal static Expression RootColorProperty(string propertyName) => Color($"{RootName}.{propertyName}");
+
         ExpressionFactory()
         {
         }

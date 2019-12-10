@@ -4122,7 +4122,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         {
             if (color.IsAnimated)
             {
-                var result = _c.CreateColorBrush(color.InitialValue);
+                var result = _c.CreateColorBrush();
 
                 ApplyColorKeyFrameAnimation(
                     context,

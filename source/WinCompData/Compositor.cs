@@ -13,6 +13,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 #endif
     sealed class Compositor
     {
+        public CompositionColorBrush CreateColorBrush() => new CompositionColorBrush();
+
         public CompositionColorBrush CreateColorBrush(Wui.Color color) => new CompositionColorBrush(color);
 
         public CompositionColorGradientStop CreateColorGradientStop(float offset, Wui.Color color) => new CompositionColorGradientStop(offset, color);

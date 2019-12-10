@@ -26,6 +26,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
 
         public static Vector2 Constant(Sn.Vector2 value) => new Vector2(Scalar(value.X), Scalar(value.Y));
 
+        public static TypeAssert Color(string name) => Name(name, TypeConstraint.Color);
+
         public static TypeAssert Scalar(string name) => Name(name, TypeConstraint.Scalar);
 
         public static Max Max(Expression x, Expression y) => new Max(x, y);

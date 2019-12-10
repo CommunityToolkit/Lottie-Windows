@@ -96,6 +96,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal CompositionRoundedRectangleGeometry CreateRoundedRectangleGeometry() => _compositor.CreateRoundedRectangleGeometry();
 
+        internal CompositionColorBrush CreateColorBrush() => _compositor.CreateColorBrush();
+
         internal CompositionColorBrush CreateColorBrush(Color color) => _compositor.CreateColorBrush(WuiColor(color));
 
         internal CompositionColorBrush CreateNonAnimatedColorBrush(Color color)

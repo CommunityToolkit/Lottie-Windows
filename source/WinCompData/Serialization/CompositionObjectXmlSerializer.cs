@@ -165,8 +165,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
                     yield return item;
                 }
 
-                var color = obj.Color;
-                yield return new XAttribute("Color", $"#{ToHex(color.A)}{ToHex(color.R)}{ToHex(color.G)}{ToHex(color.B)}");
+                if (obj.Color.HasValue)
+                {
+                    var color = obj.Color.Value;
+                    yield return new XAttribute("Color", $"#{ToHex(color.A)}{ToHex(color.R)}{ToHex(color.G)}{ToHex(color.B)}");
+                }
+
                 string ToHex(byte value) => value.ToString("X2");
             }
         }
