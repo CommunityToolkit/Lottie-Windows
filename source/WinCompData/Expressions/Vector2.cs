@@ -9,23 +9,28 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
 #endif
     sealed class Vector2 : Expression
     {
-        public Expression X { get; }
-
-        public Expression Y { get; }
+        readonly Expression _x;
+        readonly Expression _y;
 
         internal Vector2(Expression x, Expression y)
         {
-            X = x;
-            Y = y;
+            _x = x;
+            _y = y;
         }
 
-        public static Vector2 operator *(Vector2 left, double right) => new Vector2(Multiply(left.X, Scalar(right)), Multiply(left.Y, Scalar(right)));
+        public static Vector2 operator *(Vector2 left, double right)
+            => new Vector2(Multiply(left._x, Scalar(right)), Multiply(left._y, Scalar(right)));
 
         /// <inheritdoc/>
         protected override Expression Simplify() => this;
 
         /// <inheritdoc/>
-        protected override string CreateExpressionString() => $"Vector2({Parenthesize(X)},{Parenthesize(Y)})";
+        protected override string CreateExpressionString()
+            => $"Vector2({Parenthesize(_x)},{Parenthesize(_y)})";
+
+        internal static bool IsZero(Vector2 value) => IsZero(value._x) && IsZero(value._y);
+
+        internal static bool IsOne(Vector2 value) => IsOne(value._x) && IsOne(value._y);
 
         internal override bool IsAtomic => true;
 

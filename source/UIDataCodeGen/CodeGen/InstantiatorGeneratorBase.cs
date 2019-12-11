@@ -1421,6 +1421,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     {
                         builder.WriteLine($"propertySet{Deref}InsertVector2({String(prop.Key)}, {Vector2(prop.Value)});");
                     }
+
+                    foreach (var prop in propertySet.Vector3Properties)
+                    {
+                        builder.WriteLine($"propertySet{Deref}InsertVector3({String(prop.Key)}, {Vector3(prop.Value)});");
+                    }
+
+                    foreach (var prop in propertySet.Vector4Properties)
+                    {
+                        builder.WriteLine($"propertySet{Deref}InsertVector4({String(prop.Key)}, {Vector4(prop.Value)});");
+                    }
                 }
             }
 

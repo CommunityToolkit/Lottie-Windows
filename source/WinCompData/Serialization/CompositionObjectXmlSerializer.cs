@@ -720,6 +720,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
                         yield return item;
                     }
                 }
+
+                foreach (var prop in obj.Vector3Properties)
+                {
+                    foreach (var item in FromAnimatableVector3(prop.Key, animators, prop.Value))
+                    {
+                        yield return item;
+                    }
+                }
+
+                foreach (var prop in obj.Vector4Properties)
+                {
+                    foreach (var item in FromAnimatableVector4(prop.Key, animators, prop.Value))
+                    {
+                        yield return item;
+                    }
+                }
             }
         }
 
@@ -879,6 +895,23 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
             }
         }
 
+        IEnumerable<XObject> FromAnimatableVector4(string name, IEnumerable<CompositionObject.Animator> animators, Vector4? initialValue)
+        {
+            var animation = animators.Where(a => a.AnimatedProperty == name).FirstOrDefault()?.Animation;
+
+            if (animation != null)
+            {
+                yield return FromAnimation(name, animation, initialValue);
+            }
+            else
+            {
+                if (initialValue.HasValue)
+                {
+                    yield return FromVector4(name, initialValue.Value);
+                }
+            }
+        }
+
         XElement FromColor(string name, Color value)
         {
             return new XElement(name, new XAttribute("ColorValue", value));
@@ -897,14 +930,25 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
             => FromVector2(name, obj.HasValue ? obj.Value : defaultIfNull);
 
         XElement FromVector2(string name, Vector2 obj)
-        {
-            return new XElement(name, new XAttribute(nameof(obj.X), obj.X), new XAttribute(nameof(obj.Y), obj.Y));
-        }
+            => new XElement(
+                name,
+                new XAttribute(nameof(obj.X), obj.X),
+                new XAttribute(nameof(obj.Y), obj.Y));
 
         XElement FromVector3(string name, Vector3 obj)
-        {
-            return new XElement(name, new XAttribute(nameof(obj.X), obj.X), new XAttribute(nameof(obj.Y), obj.Y), new XAttribute(nameof(obj.Z), obj.Z));
-        }
+            => new XElement(
+                name,
+                new XAttribute(nameof(obj.X), obj.X),
+                new XAttribute(nameof(obj.Y), obj.Y),
+                new XAttribute(nameof(obj.Z), obj.Z));
+
+        XElement FromVector4(string name, Vector4 obj)
+            => new XElement(
+                name,
+                new XAttribute(nameof(obj.X), obj.X),
+                new XAttribute(nameof(obj.Y), obj.Y),
+                new XAttribute(nameof(obj.Z), obj.Z),
+                new XAttribute(nameof(obj.W), obj.W));
 
         XElement FromSpriteVisual(SpriteVisual obj)
         {

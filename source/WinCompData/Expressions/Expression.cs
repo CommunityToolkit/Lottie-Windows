@@ -20,6 +20,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
 
         public virtual ExpressionType InferredType { get; } = new ExpressionType(TypeConstraint.NoType);
 
+        public static ScalarSubchannel X(Expression value) => new ScalarSubchannel(value, "X");
+
+        public static ScalarSubchannel Y(Expression value) => new ScalarSubchannel(value, "Y");
+
+        public static ScalarSubchannel Z(Expression value) => new ScalarSubchannel(value, "Z");
+
+        public static ScalarSubchannel W(Expression value) => new ScalarSubchannel(value, "W");
+
         public static Number Scalar(double value) => new Number(value);
 
         public static Divide Divide(Expression x, Expression y) => new Divide(x, y);
@@ -27,6 +35,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
         public static Vector2 Constant(Sn.Vector2 value) => new Vector2(Scalar(value.X), Scalar(value.Y));
 
         public static TypeAssert Color(string name) => Name(name, TypeConstraint.Color);
+
+        public static ColorRGB ColorRGB(Expression r, Expression g, Expression b, Expression a) => new ColorRGB(r, g, b, a);
 
         public static TypeAssert Scalar(string name) => Name(name, TypeConstraint.Scalar);
 
@@ -38,6 +48,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
 
         public static TypeAssert Vector2(string name) => Name(name, TypeConstraint.Vector2);
 
+        public static TypeAssert Vector4(string name) => Name(name, TypeConstraint.Vector4);
+
         public static Vector2 Vector2(Expression x, Expression y) => new Vector2(x, y);
 
         public static Vector2 Vector2(double x, double y) => new Vector2(Scalar(x), Scalar(y));
@@ -47,6 +59,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
         public static Vector3 Vector3(Expression x, Expression y, Expression z) => new Vector3(x, y, z);
 
         public static Vector3 Vector3(Expression x, Expression y) => new Vector3(x, y, Scalar(0));
+
+        public static Vector4 Vector4(Expression x, Expression y, Expression z, Expression w) => new Vector4(x, y, z, w);
 
         protected static Squared Squared(Expression expression) => new Squared(expression);
 
@@ -139,7 +153,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
             }
             else if (expression is Vector2 vector2Expression)
             {
-                return IsZero(vector2Expression.X) && IsZero(vector2Expression.Y);
+                return IsZero(vector2Expression);
             }
             else
             {
@@ -157,7 +171,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
             }
             else if (expression is Vector2 vector2Expression)
             {
-                return IsOne(vector2Expression.X) && IsOne(vector2Expression.Y);
+                return IsOne(vector2Expression);
             }
             else
             {
