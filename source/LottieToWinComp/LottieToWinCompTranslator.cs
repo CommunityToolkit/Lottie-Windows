@@ -2828,7 +2828,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
         }
 
-        CompositionColorBrush TranslateSolidColor(TranslationContext context, Animatable<Color> color, Animatable<double> opacityPercentA, TrimmedAnimatable<double> opacityPercentB)
+        CompositionColorBrush TranslateSolidColor(
+            TranslationContext context,
+            Animatable<Color> color,
+            Animatable<double> opacityPercentA,
+            TrimmedAnimatable<double> opacityPercentB)
         {
             return CreateAnimatedColorBrush(
                 context,
@@ -2838,21 +2842,25 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 opacityPercentB);
         }
 
-        // Parses the given binding string, and return the binding name for the given property, or
-        // null if not found. Returns the first matching binding name.
+        // Parses the given binding string and returns the binding name for the given property, or
+        // null if not found. Returns the first matching binding name (there could be more than
+        // one match).
         // This is used to retrieve property bindings from binding expressions embedded in Lottie
         // object names.
-        static string FindingBindingNameForProperty(string bindingString, string propertyName)
+        static string FindFirstBindingNameForProperty(string bindingString, string propertyName)
             => PropertyBindingsParser.ParseBindings(bindingString)
                 .Where(p => p.propertyName == propertyName)
                 .Select(p => p.bindingName).FirstOrDefault();
 
-        CompositionColorBrush TranslateSolidColorFill(TranslationContext context, SolidColorFill shapeFill, TrimmedAnimatable<double> opacityPercent)
+        CompositionColorBrush TranslateSolidColorFill(
+            TranslationContext context,
+            SolidColorFill shapeFill,
+            TrimmedAnimatable<double> opacityPercent)
         {
             // Read property bindings embedded into the name of the fill.
             if (_translatePropertyBindings)
             {
-                var bindingName = FindingBindingNameForProperty(shapeFill.Name, "Color");
+                var bindingName = FindFirstBindingNameForProperty(shapeFill.Name, "Color");
                 if (bindingName is string)
                 {
                     // The fill is bound to a property name.

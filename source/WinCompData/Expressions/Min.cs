@@ -39,7 +39,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
         }
 
         /// <inheritdoc/>
-        protected override string CreateExpressionString() => $"Min({Parenthesize(Left.Simplified)}, {Parenthesize(Right.Simplified)})";
+        protected override string CreateExpressionString()
+            => $"Min({Parenthesize(Left.Simplified)}, {Parenthesize(Right.Simplified)})";
 
         /// <inheritdoc/>
         public override ExpressionType InferredType =>

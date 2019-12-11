@@ -18,13 +18,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
             _y = y;
         }
 
-        public static Vector2 operator *(Vector2 left, double right) => new Vector2(Multiply(left._x, Scalar(right)), Multiply(left._y, Scalar(right)));
+        public static Vector2 operator *(Vector2 left, double right)
+            => new Vector2(Multiply(left._x, Scalar(right)), Multiply(left._y, Scalar(right)));
 
         /// <inheritdoc/>
         protected override Expression Simplify() => this;
 
         /// <inheritdoc/>
-        protected override string CreateExpressionString() => $"Vector2({Parenthesize(_x)},{Parenthesize(_y)})";
+        protected override string CreateExpressionString()
+            => $"Vector2({Parenthesize(_x)},{Parenthesize(_y)})";
 
         internal static bool IsZero(Vector2 value) => IsZero(value._x) && IsZero(value._y);
 

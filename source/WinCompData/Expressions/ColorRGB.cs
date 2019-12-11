@@ -32,7 +32,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
         protected override Expression Simplify() => this;
 
         /// <inheritdoc/>
-        protected override string CreateExpressionString() => $"ColorRGB({A.Simplified},{R.Simplified},{G.Simplified},{B.Simplified})";
+        protected override string CreateExpressionString()
+            => $"ColorRGB({A.Simplified},{R.Simplified},{G.Simplified},{B.Simplified})";
 
         internal override bool IsAtomic => true;
 

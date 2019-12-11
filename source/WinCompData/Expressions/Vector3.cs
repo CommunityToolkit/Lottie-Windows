@@ -24,7 +24,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
         protected override Expression Simplify() => this;
 
         /// <inheritdoc/>
-        protected override string CreateExpressionString() => $"Vector3({Parenthesize(_x)},{Parenthesize(_y)},{Parenthesize(_z)})";
+        protected override string CreateExpressionString()
+            => $"Vector3({Parenthesize(_x)},{Parenthesize(_y)},{Parenthesize(_z)})";
 
         internal override bool IsAtomic => true;
 
