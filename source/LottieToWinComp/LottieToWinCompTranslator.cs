@@ -2761,7 +2761,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             ApplyCommonStrokeProperties(
                 context,
                 shapeStroke,
-                TranslateSolidColor(context, shapeStroke.Color, shapeStroke.OpacityPercent, contextOpacityPercent),
+                TranslateSolidColorStrokeColor(context, shapeStroke, contextOpacityPercent),
                 sprite);
 
             // NOTE: DashPattern animation (animating dash sizes) are not supported on CompositionSpriteShape.
@@ -2852,23 +2852,47 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 .Where(p => p.propertyName == propertyName)
                 .Select(p => p.bindingName).FirstOrDefault();
 
+        CompositionColorBrush TranslateSolidColorStrokeColor(
+            TranslationContext context,
+            SolidColorStroke shapeStroke,
+            TrimmedAnimatable<double> inheritedOpacityPercent)
+            => TranslateSolidColorWithBindings(
+                context,
+                shapeStroke.Color,
+                shapeStroke.OpacityPercent,
+                inheritedOpacityPercent,
+                bindingSpec: shapeStroke.Name);
+
         CompositionColorBrush TranslateSolidColorFill(
             TranslationContext context,
             SolidColorFill shapeFill,
-            TrimmedAnimatable<double> opacityPercent)
+            TrimmedAnimatable<double> inheritedOpacityPercent)
+            => TranslateSolidColorWithBindings(
+                context,
+                shapeFill.Color,
+                shapeFill.OpacityPercent,
+                inheritedOpacityPercent,
+                bindingSpec: shapeFill.Name);
+
+        CompositionColorBrush TranslateSolidColorWithBindings(
+            TranslationContext context,
+            Animatable<Color> color,
+            Animatable<double> colorOpacityPercent,
+            TrimmedAnimatable<double> inheritedOpacityPercent,
+            string bindingSpec)
         {
             // Read property bindings embedded into the name of the fill.
             if (_translatePropertyBindings)
             {
-                var bindingName = FindFirstBindingNameForProperty(shapeFill.Name, "Color");
+                var bindingName = FindFirstBindingNameForProperty(bindingSpec, "Color");
                 if (bindingName is string)
                 {
                     // The fill is bound to a property name.
-                    return TranslateBoundSolidColor(context, opacityPercent, bindingName);
+                    return TranslateBoundSolidColor(context, inheritedOpacityPercent, bindingName);
                 }
             }
 
-            return TranslateSolidColor(context, shapeFill.Color, shapeFill.OpacityPercent, opacityPercent);
+            return TranslateSolidColor(context, color, colorOpacityPercent, inheritedOpacityPercent);
         }
 
         // Translates a SolidColorFill that gets its color value from a property set value with the given name.
