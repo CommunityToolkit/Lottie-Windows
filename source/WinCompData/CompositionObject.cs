@@ -18,6 +18,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
         // Keys used to identify the short description and long description metadata.
         static readonly Guid s_shortDescriptionMetadataKey = new Guid("AF01D303-5572-4540-A4AC-E48F1394E1D1");
         static readonly Guid s_longDescriptionMetadataKey = new Guid("63514254-2B3E-4794-B01D-9F67D5946A7E");
+        static readonly Guid s_nameMetadataKey = new Guid("6EB18A31-FA33-43B9-8EE1-57B489DC3404");
 
         readonly ListOfNeverNull<Animator> _animators = new ListOfNeverNull<Animator>();
 
@@ -93,6 +94,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
         {
             get => (string)TryGetMetadata(in s_shortDescriptionMetadataKey);
             set => SetMetadata(in s_shortDescriptionMetadataKey, value);
+        }
+
+        /// <summary>
+        /// Gets or sets a name for the object. This may be used for variable names in generated code.
+        /// </summary>
+        string IDescribable.Name
+        {
+            get => (string)TryGetMetadata(in s_nameMetadataKey);
+            set => SetMetadata(in s_nameMetadataKey, value);
         }
 
         public CompositionPropertySet Properties { get; }

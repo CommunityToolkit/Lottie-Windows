@@ -346,6 +346,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
         {
             target.LongDescription = source.LongDescription;
             target.ShortDescription = source.ShortDescription;
+            target.Name = source.Name;
         }
 
         void InitializeCompositionObject<T>(T source, T target)
@@ -506,6 +507,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             foreach (var prop in obj.Vector2Properties)
             {
                 result.InsertVector2(prop.Key, prop.Value);
+            }
+
+            foreach (var prop in obj.Vector3Properties)
+            {
+                result.InsertVector3(prop.Key, prop.Value);
+            }
+
+            foreach (var prop in obj.Vector4Properties)
+            {
+                result.InsertVector4(prop.Key, prop.Value);
             }
 
             StartAnimationsAndFreeze(obj, result);

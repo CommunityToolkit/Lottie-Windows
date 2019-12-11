@@ -2838,36 +2838,92 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 opacityPercentB);
         }
 
+        // Parses the given binding string, and return the binding name for the given property, or
+        // null if not found. Returns the first matching binding name.
+        // This is used to retrieve property bindings from binding expressions embedded in Lottie
+        // object names.
+        static string FindingBindingNameForProperty(string bindingString, string propertyName)
+            => PropertyBindingsParser.ParseBindings(bindingString)
+                .Where(p => p.propertyName == propertyName)
+                .Select(p => p.bindingName).FirstOrDefault();
+
         CompositionColorBrush TranslateSolidColorFill(TranslationContext context, SolidColorFill shapeFill, TrimmedAnimatable<double> opacityPercent)
         {
             // Read property bindings embedded into the name of the fill.
             if (_translatePropertyBindings)
             {
-                var propertyBindings = PropertyBindingsParser.ParseBindings(shapeFill.Name);
-                foreach (var binding in propertyBindings)
+                var bindingName = FindingBindingNameForProperty(shapeFill.Name, "Color");
+                if (bindingName is string)
                 {
-                    if (binding.propertyName == "Color")
-                    {
-                        var bindingName = binding.bindingName;
-                        if (_rootVisual.Properties.TryGetColor(bindingName, out _) == CompositionGetValueStatus.Succeeded)
-                        {
-                            // A property has already been inserted for this binding name.
-                        }
-                        else
-                        {
-                            // Insert a color with the given binding name. The client is expected to set
-                            // this property name with a theme color, so the actual color placed here
-                            // doesn't really matter, but giving it an unusual color might help developers
-                            // see that they have an unbound color property.
-                            _rootVisual.Properties.InsertColor(bindingName, WinCompData.Wui.Colors.YellowGreen);
-                        }
-
-                        break;
-                    }
+                    // The fill is bound to a property name.
+                    return TranslateBoundSolidColor(context, opacityPercent, bindingName);
                 }
             }
 
             return TranslateSolidColor(context, shapeFill.Color, shapeFill.OpacityPercent, opacityPercent);
+        }
+
+        // Translates a SolidColorFill that gets its color value from a property set value with the given name.
+        CompositionColorBrush TranslateBoundSolidColor(
+            TranslationContext context,
+            TrimmedAnimatable<double> opacityPercent,
+            string bindingName)
+        {
+            // Insert a property set value for the color if one hasn't yet been added.
+            // The color is inserted as a Vector4 to allow sub-channel animation because
+            // WinComp Color expressions do not permit sub-channel animation. We used
+            // sub-channel animation to manipulate the alpha channel.
+            switch (_rootVisual.Properties.TryGetVector4(bindingName, out _))
+            {
+                case CompositionGetValueStatus.NotFound:
+                    // The property hasn't been added yet. Add it.
+                    // The color used here doesn't really matter as the user is expected to set the property set
+                    // value at runtime. Setting a bright color may help users see what's going on while they debug.
+                    _rootVisual.Properties.InsertVector4(bindingName, Vector4(WinCompData.Wui.Colors.Red));
+                    break;
+
+                case CompositionGetValueStatus.Succeeded:
+
+                    // The property has already been added.
+                    break;
+
+                case CompositionGetValueStatus.TypeMismatch:
+                default:
+                    throw new InvalidOperationException();
+            }
+
+            var brush = _c.CreateColorBrush();
+
+            if (_addDescriptions)
+            {
+                Describe(brush, $"Color bound to root CompositionPropertySet value: {bindingName}", bindingName);
+            }
+
+            // Name the brush the same as the binding name. This will allow the code generator to
+            // give it a more meaningful name.
+            Name(brush, bindingName);
+
+            ExpressionAnimation anim;
+
+            if (opacityPercent.IsAnimated)
+            {
+                // The opacity is animated. Add an animated property for the opacity and use it to multiply
+                // the alpha channel of the color.
+                brush.Properties.InsertScalar("Opacity", PercentF(opacityPercent.InitialValue));
+                ApplyPercentKeyFrameAnimation(context, opacityPercent, brush.Properties, "Opacity", "Opacity", null);
+
+                anim = _c.CreateExpressionAnimation(BoundColorWithAnimatedOpacity(bindingName));
+                anim.SetReferenceParameter("my", brush);
+            }
+            else
+            {
+                // Opacity isn't animated. Multiply the alpha channel of the color by the non-animated opacity value.
+                anim = _c.CreateExpressionAnimation(BoundColor(bindingName, opacityPercent.InitialValue / 100));
+            }
+
+            anim.SetReferenceParameter(RootName, _rootVisual);
+            StartExpressionAnimation(brush, "Color", anim);
+            return brush;
         }
 
         CompositionLinearGradientBrush TranslateLinearGradientFill(
@@ -4214,6 +4270,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             obj.LongDescription = longDescription;
         }
 
+        // Sets a name on an object.
+        void Name(IDescribable obj, string name)
+        {
+            Debug.Assert(obj.Name == null, "Names should never get set more than once");
+            obj.Name = name;
+        }
+
         static WinCompData.Wui.Color Color(LottieData.Color color) =>
             WinCompData.Wui.Color.FromArgb((byte)(255 * color.A), (byte)(255 * color.R), (byte)(255 * color.G), (byte)(255 * color.B));
 
@@ -4259,6 +4322,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     Vector3DefaultIsOne(new Sn.Vector3((float)vector3.X, (float)vector3.Y, (float)vector3.Z));
 
         static Sn.Vector3 Vector3(Sn.Vector2 vector2) => Vector3(vector2.X, vector2.Y, 0);
+
+        static Sn.Vector4 Vector4(WinCompData.Wui.Color color) => new Sn.Vector4(color.R, color.G, color.B, color.A);
 
         static float Clamp(float value, float min, float max)
         {
@@ -4324,6 +4389,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             {
                 get => ((IDescribable)_shapeOrVisual).ShortDescription;
                 set => ((IDescribable)_shapeOrVisual).ShortDescription = value;
+            }
+
+            public string Name
+            {
+                get => ((IDescribable)_shapeOrVisual).Name;
+                set => ((IDescribable)_shapeOrVisual).Name = value;
             }
 
             public CompositionObjectType Type => _shapeOrVisual.Type;

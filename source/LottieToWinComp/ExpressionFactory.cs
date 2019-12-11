@@ -5,7 +5,7 @@
 using System;
 using System.Linq;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions;
-
+using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui;
 using Sn = System.Numerics;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
@@ -21,6 +21,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         internal static readonly Expression RootProgress = Scalar($"{RootName}.{LottieToWinCompTranslator.ProgressPropertyName}");
         internal static readonly Expression MaxTStartTEnd = Max(s_myTStart, s_myTEnd);
         internal static readonly Expression MinTStartTEnd = Min(s_myTStart, s_myTEnd);
+        internal static readonly Expression MyOpacity = Scalar("my.Opacity");
         internal static readonly Expression MyPosition2 = Vector2("my.Position");
         internal static readonly Expression HalfSize2 = Divide(Vector2("my.Size"), Vector2(2, 2));
 
@@ -56,8 +57,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return result;
         }
 
-        // The value of a Color property on the root.
-        internal static Expression RootColorProperty(string propertyName) => Color($"{RootName}.{propertyName}");
+        internal static Expression BoundColor(string bindingName, double opacity)
+            => Vector4AsColorMultipliedByOpacity(RootColor4Property(bindingName), Scalar(opacity));
+
+        internal static Expression BoundColorWithAnimatedOpacity(string bindingName)
+            => Vector4AsColorMultipliedByOpacity(RootColor4Property(bindingName), MyOpacity);
+
+        // The value of a Color property stored as a Vector4 on the root.
+        static Expression RootColor4Property(string propertyName)
+            => Vector4($"{RootName}.{propertyName}");
+
+        static Expression Vector4AsColorMultipliedByOpacity(Expression colorAsVector4, Expression opacity)
+            => ColorRGB(
+                r: X(colorAsVector4),
+                g: Y(colorAsVector4),
+                b: Z(colorAsVector4),
+                a: Multiply(W(colorAsVector4), opacity));
 
         ExpressionFactory()
         {

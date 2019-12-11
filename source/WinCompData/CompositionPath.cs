@@ -21,9 +21,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
         public Wg.IGeometrySource2D Source { get; }
 
         /// <inheritdoc/>
-        public string LongDescription { get; set; }
+        string IDescribable.LongDescription { get; set; }
 
         /// <inheritdoc/>
-        public string ShortDescription { get; set; }
+        string IDescribable.ShortDescription { get; set; }
+
+        /// <inheritdoc/>
+        string IDescribable.Name { get; set; }
     }
 }

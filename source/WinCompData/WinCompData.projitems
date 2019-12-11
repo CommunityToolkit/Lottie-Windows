@@ -49,6 +49,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)ExpressionAnimation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Expressions\BinaryExpression.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Expressions\Boolean.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Expressions\ScalarSubchannel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Expressions\ColorRGB.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Expressions\Cubed.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Expressions\CubicBezierFunction2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Expressions\Divide.cs" />
@@ -70,6 +72,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Expressions\UntypedExpression.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Expressions\Vector2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Expressions\Vector3.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Expressions\Vector4.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ICompositionSurface.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IContainShapes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IDescribable.cs" />

@@ -22,6 +22,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
         PropertyBag<Color> _colorProperties;
         PropertyBag<float> _scalarProperties;
         PropertyBag<Vector2> _vector2Properties;
+        PropertyBag<Vector3> _vector3Properties;
+        PropertyBag<Vector4> _vector4Properties;
 
         internal CompositionPropertySet(CompositionObject owner)
         {
@@ -36,17 +38,29 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 
         public void InsertVector2(string propertyName, Vector2 value) => Insert(propertyName, in value, ref _vector2Properties);
 
+        public void InsertVector3(string propertyName, Vector3 value) => Insert(propertyName, in value, ref _vector3Properties);
+
+        public void InsertVector4(string propertyName, Vector4 value) => Insert(propertyName, in value, ref _vector4Properties);
+
         public CompositionGetValueStatus TryGetColor(string propertyName, out Color value) => TryGet(propertyName, ref _colorProperties, out value);
 
         public CompositionGetValueStatus TryGetScalar(string propertyName, out float value) => TryGet(propertyName, ref _scalarProperties, out value);
 
         public CompositionGetValueStatus TryGetVector2(string propertyName, out Vector2 value) => TryGet(propertyName, ref _vector2Properties, out value);
 
+        public CompositionGetValueStatus TryGetVector3(string propertyName, out Vector3 value) => TryGet(propertyName, ref _vector3Properties, out value);
+
+        public CompositionGetValueStatus TryGetVector4(string propertyName, out Vector4 value) => TryGet(propertyName, ref _vector4Properties, out value);
+
         public IEnumerable<KeyValuePair<string, Color>> ColorProperties => _colorProperties.Entries;
 
         public IEnumerable<KeyValuePair<string, float>> ScalarProperties => _scalarProperties.Entries;
 
         public IEnumerable<KeyValuePair<string, Vector2>> Vector2Properties => _vector2Properties.Entries;
+
+        public IEnumerable<KeyValuePair<string, Vector3>> Vector3Properties => _vector3Properties.Entries;
+
+        public IEnumerable<KeyValuePair<string, Vector4>> Vector4Properties => _vector4Properties.Entries;
 
         public IEnumerable<string> PropertyNames => _names ?? Enumerable.Empty<string>();
 
@@ -81,9 +95,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 
         CompositionGetValueStatus TryGet<T>(string propertyName, ref PropertyBag<T> bag, out T value)
         {
-            // There's nothing in this property set.
-            if (_names is null)
+            if (_names is null || !_names.Contains(propertyName))
             {
+                // The name isn't in this property set.
                 value = default(T);
                 return CompositionGetValueStatus.NotFound;
             }

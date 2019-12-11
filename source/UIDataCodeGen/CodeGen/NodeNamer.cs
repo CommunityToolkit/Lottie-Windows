@@ -208,7 +208,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                         else
                         {
                             // The color is bound to a property set.
-                            result = "BoundColorBrush";
+                            var objectName = ((IDescribable)brush).Name;
+
+                            result = string.IsNullOrWhiteSpace(objectName)
+                                ? "BoundColorBrush"
+                                : $"{objectName}ColorBrush";
                         }
                     }
                     else

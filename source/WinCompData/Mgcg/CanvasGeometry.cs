@@ -71,17 +71,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg
             {
                 SourceGeometry = this,
                 TransformMatrix = transformMatrix,
-                LongDescription = LongDescription,
-                ShortDescription = ShortDescription,
             };
 
         public abstract GeometryType Type { get; }
 
         /// <inheritdoc/>
-        public string LongDescription { get; set; }
+        string IDescribable.LongDescription { get; set; }
 
         /// <inheritdoc/>
-        public string ShortDescription { get; set; }
+        string IDescribable.ShortDescription { get; set; }
+
+        /// <inheritdoc/>
+        string IDescribable.Name { get; set; }
 
         /// <summary>
         /// The type of a <see cref="CanvasGeometry"/>.
