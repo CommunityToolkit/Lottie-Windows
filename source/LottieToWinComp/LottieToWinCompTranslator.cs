@@ -30,9 +30,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Microsoft.Toolkit.Uwp.UI.Lottie.GenericData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization;
+using Microsoft.Toolkit.Uwp.UI.Lottie.LottieMetadata;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgc;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce;
@@ -60,6 +60,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
     {
         // The name used to bind to the property set that contains the Progress property.
         const string RootName = "_";
+
+        // Identifies the Lottie metadata in TranslationResult.SourceMetadata.
+        static readonly Guid s_lottieMetadataKey = new Guid("EA3D6538-361A-4B1C-960D-50A6C35563A5");
+
+        // Identifies the bound property names in TranslationResult.SourceMetadata.
+        static readonly Guid s_propertyBindingNamesKey = new Guid("A115C46A-254C-43E6-A3C7-9DE516C3C3C8");
+
         readonly LottieComposition _lc;
         readonly TranslationIssues _issues;
         readonly bool _addDescriptions;
@@ -77,6 +84,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         // Paths are shareable.
         readonly Dictionary<(Sequence<BezierSegment>, ShapeFill.PathFillType, bool), CompositionPath> _compositionPaths = new Dictionary<(Sequence<BezierSegment>, ShapeFill.PathFillType, bool), CompositionPath>();
+
+        // The names that are bound to properties (such as the Color of a SolidColorFill).
+        // Keep track of them here so they aren't added twice, and so they can be reported
+        // in the metadata.
+        readonly HashSet<string> _propertyBindingNames = new HashSet<string>();
 
         readonly uint _targetUapVersion;
 
@@ -160,7 +172,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     rootVisual = null;
                 }
 
-                var sourceMetadata = GetSourceMetadata(lottieComposition);
+                // Add the metadata.
+                var sourceMetadata = new Dictionary<Guid, object>();
+
+                // Metadata from the source.
+                sourceMetadata.Add(s_lottieMetadataKey, GetSourceMetadata(lottieComposition));
+
+                // The list of property binding names.
+                if (translator._propertyBindingNames.Count > 0)
+                {
+                    sourceMetadata.Add(s_propertyBindingNamesKey, translator._propertyBindingNames.OrderBy(n => n).ToArray());
+                }
 
                 return new TranslationResult(
                     rootVisual: rootVisual,
@@ -171,37 +193,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
         }
 
-        // Copies metadata from the given LottieComposition into a GenericDataMap.
-        static GenericDataMap GetSourceMetadata(LottieComposition lottieComposition)
-        {
-            var map = new Dictionary<string, GenericDataObject>();
-
-            map.Add("fr", lottieComposition.FramesPerSecond);
-            map.Add("ip", lottieComposition.InPoint);
-            map.Add("op", lottieComposition.OutPoint);
-            map.Add("w", lottieComposition.Width);
-            map.Add("h", lottieComposition.Height);
-            map.Add("nm", lottieComposition.Name);
-            map.Add("v", lottieComposition.Version.ToString());
-            map.Add("markers", GenericDataList.Create(lottieComposition.Markers.Select(MarkerToGenericData)));
-
-            foreach ((var key, var value) in lottieComposition.ExtraData)
-            {
-                map.Add(key, value);
-            }
-
-            return map;
-        }
-
-        // Converts a Marker to a GenericDataMap.
-        static GenericDataMap MarkerToGenericData(Marker marker)
-        {
-            var map = new Dictionary<string, GenericDataObject>();
-            map.Add("dr", marker.DurationSeconds);
-            map.Add("tm", marker.Progress);
-            map.Add("cm", marker.Name);
-            return map;
-        }
+        static LottieCompositionMetadata GetSourceMetadata(LottieComposition lottieComposition)
+            => new LottieCompositionMetadata(
+                lottieComposition.Name,
+                lottieComposition.FramesPerSecond,
+                lottieComposition.InPoint,
+                lottieComposition.OutPoint,
+                lottieComposition.Markers.Select(m => (m.Name, m.Frame, m.DurationMilliseconds)));
 
         void Translate()
         {
@@ -2912,6 +2910,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     // The color used here doesn't really matter as the user is expected to set the property set
                     // value at runtime. Setting a bright color may help users see what's going on while they debug.
                     _rootVisual.Properties.InsertVector4(bindingName, Vector4(WinCompData.Wui.Colors.Red));
+                    _propertyBindingNames.Add(bindingName);
                     break;
 
                 case CompositionGetValueStatus.Succeeded:

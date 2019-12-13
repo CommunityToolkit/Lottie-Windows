@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using Microsoft.Toolkit.Uwp.UI.Lottie.GenericData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData;
@@ -25,7 +24,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             string className,
             Vector2 size,
             IReadOnlyList<(CompositionObject graphRoot, uint requiredUapVersion)> graphs,
-            GenericDataMap sourceMetadata,
+            IReadOnlyDictionary<Guid, object> sourceMetadata,
             TimeSpan duration,
             bool setCommentProperties,
             bool disableFieldOptimization,
@@ -51,7 +50,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         public static (string csText, IEnumerable<Uri> assetList) CreateFactoryCode(
             string className,
             IReadOnlyList<(CompositionObject graphRoot, uint requiredUapVersion)> graphs,
-            GenericDataMap sourceMetadata,
+            IReadOnlyDictionary<Guid, object> sourceMetadata,
             float width,
             float height,
             TimeSpan duration,
@@ -125,7 +124,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             // If the composition has LoadedImageSurface, write a class that implements the IDynamicAnimatedVisualSource interface.
             // Otherwise, implement the IAnimatedVisualSource interface.
-            if (info.LoadedImageSurfaceNodes.Count > 0)
+            if (info.LoadedImageSurfaces.Count > 0)
             {
                 WriteIDynamicAnimatedVisualSource(builder, info);
             }
@@ -142,6 +141,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         {
             builder.WriteLine("namespace AnimatedVisuals");
             builder.OpenScope();
+
+            // Write a description of the source as comments.
+            foreach (var line in GetSourceDescriptionLines())
+            {
+                builder.WriteComment(line);
+            }
+
             builder.WriteLine($"sealed class {info.ClassName} : IAnimatedVisualSource");
             builder.OpenScope();
 
@@ -179,7 +185,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.OpenScope();
 
             // Declare variables.
-            builder.WriteLine($"{_s.Const(_s.Int32TypeName)} c_loadedImageSurfaceCount = {info.LoadedImageSurfaceNodes.Count};");
+            builder.WriteLine($"{_s.Const(_s.Int32TypeName)} c_loadedImageSurfaceCount = {info.LoadedImageSurfaces.Count};");
             builder.WriteLine($"{_s.Int32TypeName} _loadCompleteEventCount;");
             builder.WriteLine("bool _isAnimatedVisualSourceDynamic = true;");
             builder.WriteLine("bool _isTryCreateAnimatedVisualCalled;");
@@ -187,7 +193,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.WriteLine("EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource, object>> _animatedVisualInvalidatedEventTokenTable;");
 
             // Declare the variables to hold the LoadedImageSurfaces.
-            foreach (var n in info.LoadedImageSurfaceNodes)
+            foreach (var n in info.LoadedImageSurfaces)
             {
                 builder.WriteLine($"{_s.ReferenceTypeName(n.TypeName)} {n.FieldName};");
             }
@@ -511,7 +517,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.OpenScope();
             builder.WriteLine("var eventHandler = new TypedEventHandler<LoadedImageSurface, LoadedImageSourceLoadCompletedEventArgs>(HandleLoadCompleted);");
 
-            foreach (var n in info.LoadedImageSurfaceNodes)
+            foreach (var n in info.LoadedImageSurfaces)
             {
                 switch (n.LoadedImageSurfaceType)
                 {

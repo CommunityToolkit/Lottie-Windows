@@ -135,15 +135,21 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "UIDataCodeGen", "source\UID
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UIDataCodeGen.dll", "dlls\UIDataCodeGen\UIDataCodeGen.dll.csproj", "{9B6C0B7F-0D0F-4086-9746-0D34D7667DB5}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "LottieMetadata", "source\LottieMetadata\LottieMetadata.shproj", "{04B43A1A-DDFB-4A61-BF36-39F5E666C702}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LottieMetadata.dll", "dlls\LottieMetadata\LottieMetadata.dll.csproj", "{25CEB8B8-90E0-4D23-9978-0CD83889D4AC}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		source\LottieToWinComp\LottieToWinComp.projitems*{0340244a-683c-405e-838b-f93872779532}*SharedItemsImports = 13
+		source\LottieMetadata\LottieMetadata.projitems*{04b43a1a-ddfb-4a61-bf36-39f5e666c702}*SharedItemsImports = 13
 		source\WinStorageStreamsData\WinStorageStreamsData.projitems*{2202e218-dd9f-496a-aef4-3f07f0ea5b9d}*SharedItemsImports = 13
 		source\WinUIXamlMediaData\WinUIXamlMediaData.projitems*{30059ca7-0745-4eec-8d11-b14850a70c98}*SharedItemsImports = 13
 		source\YamlData\YamlData.projitems*{39c6b7f3-5e75-4019-82ab-00fd8a0a06e2}*SharedItemsImports = 13
 		source\LottieReader\LottieReader.projitems*{4e7d8957-3f5f-46e1-99a8-2012b806c9b0}*SharedItemsImports = 13
 		source\GenericData\GenericData.projitems*{5120efd7-a556-46bf-8d56-f65f1ef9a305}*SharedItemsImports = 4
 		source\LottieData\LottieData.projitems*{5120efd7-a556-46bf-8d56-f65f1ef9a305}*SharedItemsImports = 4
+		source\LottieMetadata\LottieMetadata.projitems*{5120efd7-a556-46bf-8d56-f65f1ef9a305}*SharedItemsImports = 4
 		source\LottieReader\LottieReader.projitems*{5120efd7-a556-46bf-8d56-f65f1ef9a305}*SharedItemsImports = 4
 		source\LottieToWinComp\LottieToWinComp.projitems*{5120efd7-a556-46bf-8d56-f65f1ef9a305}*SharedItemsImports = 4
 		source\Lottie\Lottie.projitems*{5120efd7-a556-46bf-8d56-f65f1ef9a305}*SharedItemsImports = 4
@@ -373,6 +379,26 @@ Global
 		{9B6C0B7F-0D0F-4086-9746-0D34D7667DB5}.Release|ARM64.ActiveCfg = Release|Any CPU
 		{9B6C0B7F-0D0F-4086-9746-0D34D7667DB5}.Release|x64.ActiveCfg = Release|Any CPU
 		{9B6C0B7F-0D0F-4086-9746-0D34D7667DB5}.Release|x86.ActiveCfg = Release|Any CPU
+		{25CEB8B8-90E0-4D23-9978-0CD83889D4AC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{25CEB8B8-90E0-4D23-9978-0CD83889D4AC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{25CEB8B8-90E0-4D23-9978-0CD83889D4AC}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{25CEB8B8-90E0-4D23-9978-0CD83889D4AC}.Debug|ARM.Build.0 = Debug|Any CPU
+		{25CEB8B8-90E0-4D23-9978-0CD83889D4AC}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{25CEB8B8-90E0-4D23-9978-0CD83889D4AC}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{25CEB8B8-90E0-4D23-9978-0CD83889D4AC}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{25CEB8B8-90E0-4D23-9978-0CD83889D4AC}.Debug|x64.Build.0 = Debug|Any CPU
+		{25CEB8B8-90E0-4D23-9978-0CD83889D4AC}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{25CEB8B8-90E0-4D23-9978-0CD83889D4AC}.Debug|x86.Build.0 = Debug|Any CPU
+		{25CEB8B8-90E0-4D23-9978-0CD83889D4AC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{25CEB8B8-90E0-4D23-9978-0CD83889D4AC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{25CEB8B8-90E0-4D23-9978-0CD83889D4AC}.Release|ARM.ActiveCfg = Release|Any CPU
+		{25CEB8B8-90E0-4D23-9978-0CD83889D4AC}.Release|ARM.Build.0 = Release|Any CPU
+		{25CEB8B8-90E0-4D23-9978-0CD83889D4AC}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{25CEB8B8-90E0-4D23-9978-0CD83889D4AC}.Release|ARM64.Build.0 = Release|Any CPU
+		{25CEB8B8-90E0-4D23-9978-0CD83889D4AC}.Release|x64.ActiveCfg = Release|Any CPU
+		{25CEB8B8-90E0-4D23-9978-0CD83889D4AC}.Release|x64.Build.0 = Release|Any CPU
+		{25CEB8B8-90E0-4D23-9978-0CD83889D4AC}.Release|x86.ActiveCfg = Release|Any CPU
+		{25CEB8B8-90E0-4D23-9978-0CD83889D4AC}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -402,6 +428,8 @@ Global
 		{A687177E-31FF-4F05-89C6-03657C96A166} = {C75BD686-21A6-4EB3-8D4B-D5A01C019C52}
 		{D02BE6C8-14DB-4B4F-8600-F3C9B69C104D} = {AB232F35-AAF7-4AE2-B1D2-45DD9BC2F7D7}
 		{9B6C0B7F-0D0F-4086-9746-0D34D7667DB5} = {C75BD686-21A6-4EB3-8D4B-D5A01C019C52}
+		{04B43A1A-DDFB-4A61-BF36-39F5E666C702} = {AB232F35-AAF7-4AE2-B1D2-45DD9BC2F7D7}
+		{25CEB8B8-90E0-4D23-9978-0CD83889D4AC} = {C75BD686-21A6-4EB3-8D4B-D5A01C019C52}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {51B9BB4C-5196-41CF-950C-12B04AD8A61C}

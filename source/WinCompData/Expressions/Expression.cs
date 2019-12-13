@@ -153,7 +153,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
             }
             else if (expression is Vector2 vector2Expression)
             {
-                return IsZero(vector2Expression);
+                return Expressions.Vector2.IsZero(vector2Expression);
             }
             else
             {
@@ -171,7 +171,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
             }
             else if (expression is Vector2 vector2Expression)
             {
-                return IsOne(vector2Expression);
+                return Expressions.Vector2.IsOne(vector2Expression);
             }
             else
             {

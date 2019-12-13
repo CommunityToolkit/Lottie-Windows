@@ -10,22 +10,24 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
     sealed class Marker : LottieObject
     {
         public Marker(
-            double progress,
             string name,
-            double durationSeconds)
+            double frame,
+            double durationMilliseconds)
             : base(name)
         {
-            Progress = progress;
-            DurationSeconds = durationSeconds;
+            Frame = frame;
+            DurationMilliseconds = durationMilliseconds;
         }
 
         /// <summary>
-        /// Gets the time value of the marker. This value must be multipled by the composition
-        /// duration to get the actual time offset.
+        /// Gets the frame for the start of the marker.
         /// </summary>
-        public double Progress { get; }
+        public double Frame { get; }
 
-        public double DurationSeconds { get; }
+        /// <summary>
+        /// Gets the duration in milliseconds.
+        /// </summary>
+        public double DurationMilliseconds { get; }
 
         /// <inheritdoc/>
         public override LottieObjectType ObjectType => LottieObjectType.Marker;

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.Numerics;
 
@@ -74,6 +75,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// <summary>
         /// Gets the XAML LoadedImageSurface nodes of the composition.
         /// </summary>
-        IReadOnlyList<LoadedImageSurfaceInfo> LoadedImageSurfaceNodes { get; }
+        IReadOnlyList<LoadedImageSurfaceInfo> LoadedImageSurfaces { get; }
+
+        /// <summary>
+        /// Accesses metadata associated with the source of the composition. This may contain
+        /// information such as the frame rate and markers from the source. The contents of
+        /// this data is source specific.
+        /// </summary>
+        IReadOnlyDictionary<Guid, object> SourceMetadata { get; }
     }
 }
