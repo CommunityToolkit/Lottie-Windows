@@ -378,7 +378,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                     diagnostics.LottieComposition = lottieComposition;
 
                     // Create the marker info.
-                    diagnostics.Markers = 
+                    diagnostics.Markers =
                         lottieComposition.Markers.Select(m =>
                             new KeyValuePair<string, double>(
                                 m.Name,
