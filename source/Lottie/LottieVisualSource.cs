@@ -377,12 +377,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                     // code can be derived from it.
                     diagnostics.LottieComposition = lottieComposition;
 
-                    // For each marker, normalize to a progress value by subtracting the InPoint (so it is relative to the start of the animation)
-                    // and dividing by OutPoint - InPoint
-                    diagnostics.Markers = lottieComposition.Markers.Select(m =>
-                    {
-                        return new KeyValuePair<string, double>(m.Name, (m.Frame * lottieComposition.FramesPerSecond) / lottieComposition.Duration.TotalSeconds);
-                    }).ToArray();
+                    // Create the marker info.
+                    diagnostics.Markers = 
+                        lottieComposition.Markers.Select(m =>
+                            new KeyValuePair<string, double>(
+                                m.Name,
+                                m.Frame * lottieComposition.FramesPerSecond / lottieComposition.Duration.TotalSeconds)).ToArray();
 
                     // Validate the composition and report if issues are found.
                     diagnostics.LottieValidationIssues = ToIssues(LottieCompositionValidator.Validate(lottieComposition));
