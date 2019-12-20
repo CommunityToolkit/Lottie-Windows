@@ -27,7 +27,7 @@ using Windows.UI.Xaml;
 namespace Microsoft.Toolkit.Uwp.UI.Lottie
 {
     /// <summary>
-    /// A <see cref="IAnimatedVisualSource"/> for a Lottie composition. This allows
+    /// An <see cref="IAnimatedVisualSource"/> for a Lottie composition. This allows
     /// a Lottie to be specified as the source for a <see cref="AnimatedVisualPlayer"/>.
     /// </summary>
     public sealed class LottieVisualSource : DependencyObject, IDynamicAnimatedVisualSource
