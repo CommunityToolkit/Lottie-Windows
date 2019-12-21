@@ -296,7 +296,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// <summary>
         /// Returns text that describes the contents of the source metadata.
         /// </summary>
-        /// <param name="builder">A <see cref="CodeBuilder"/> used to write the output.</param>
         /// <returns>A list of strings describing the source.</returns>
         protected IEnumerable<string> GetSourceDescriptionLines()
         {
