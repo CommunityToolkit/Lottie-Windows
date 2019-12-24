@@ -658,7 +658,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     yield return item;
                 }
 
-                yield return new XAttribute(nameof(obj.Progress), obj.Progress);
+                yield return new XAttribute(nameof(obj.Frame), obj.Frame);
+                yield return new XAttribute(nameof(obj.DurationMilliseconds), obj.DurationMilliseconds);
             }
         }
 

@@ -577,7 +577,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         YamlObject FromMarker(Marker obj, YamlMap superclassContent)
         {
             var result = superclassContent;
-            result.Add("Progress", obj.Progress);
+            result.Add(nameof(obj.Frame), obj.Frame);
+            result.Add(nameof(obj.DurationMilliseconds), obj.DurationMilliseconds);
             return result;
         }
 

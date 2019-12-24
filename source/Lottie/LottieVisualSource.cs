@@ -14,11 +14,9 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
-using Microsoft.Toolkit.Uwp.UI.Lottie.GenericData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp;
-using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Foundation;
 using Windows.Foundation.Metadata;
@@ -29,7 +27,7 @@ using Windows.UI.Xaml;
 namespace Microsoft.Toolkit.Uwp.UI.Lottie
 {
     /// <summary>
-    /// A <see cref="IAnimatedVisualSource"/> for a Lottie composition. This allows
+    /// An <see cref="IAnimatedVisualSource"/> for a Lottie composition. This allows
     /// a Lottie to be specified as the source for a <see cref="AnimatedVisualPlayer"/>.
     /// </summary>
     public sealed class LottieVisualSource : DependencyObject, IDynamicAnimatedVisualSource
@@ -379,12 +377,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                     // code can be derived from it.
                     diagnostics.LottieComposition = lottieComposition;
 
-                    // For each marker, normalize to a progress value by subtracting the InPoint (so it is relative to the start of the animation)
-                    // and dividing by OutPoint - InPoint
-                    diagnostics.Markers = lottieComposition.Markers.Select(m =>
-                    {
-                        return new KeyValuePair<string, double>(m.Name, (m.Progress * lottieComposition.FramesPerSecond) / lottieComposition.Duration.TotalSeconds);
-                    }).ToArray();
+                    // Create the marker info.
+                    diagnostics.Markers =
+                        lottieComposition.Markers.Select(m =>
+                            new KeyValuePair<string, double>(
+                                m.Name,
+                                m.Frame * lottieComposition.FramesPerSecond / lottieComposition.Duration.TotalSeconds)).ToArray();
 
                     // Validate the composition and report if issues are found.
                     diagnostics.LottieValidationIssues = ToIssues(LottieCompositionValidator.Validate(lottieComposition));
@@ -399,7 +397,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
 
                 // Translating large Lotties can take significant time. Do it on another thread.
                 WinCompData.Visual wincompDataRootVisual = null;
-                GenericDataMap sourceMetadata = null;
                 uint requiredUapVersion = 0;
                 var optimizationEnabled = _owner.Options.HasFlag(LottieVisualOptions.Optimize);
 
@@ -414,7 +411,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                         translatePropertyBindings: false);
 
                     wincompDataRootVisual = translationResult.RootVisual;
-                    sourceMetadata = translationResult.SourceMetadata;
                     requiredUapVersion = translationResult.MinimumRequiredUapVersion;
 
                     if (diagnostics != null)
@@ -450,7 +446,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                     {
                         // Save the root visual so diagnostics can generate XML and codegen.
                         diagnostics.RootVisual = wincompDataRootVisual;
-                        diagnostics.SourceMetadata = sourceMetadata;
                         diagnostics.RequiredUapVersion = requiredUapVersion;
                     }
 

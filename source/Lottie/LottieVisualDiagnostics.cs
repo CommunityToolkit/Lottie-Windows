@@ -53,8 +53,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         // Holds the parsed LottieComposition. Only used if one of the codegen or XML options was selected.
         internal LottieComposition LottieComposition { get; set; }
 
-        internal GenericDataMap SourceMetadata { get; set; }
-
         // Holds the translated Visual. Only used if one of the codegen or XML options was selected.
         internal WinCompData.Visual RootVisual { get; set; }
 

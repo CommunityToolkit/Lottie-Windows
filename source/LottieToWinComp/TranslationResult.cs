@@ -2,9 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Toolkit.Uwp.UI.Lottie.GenericData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
@@ -21,7 +21,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             Visual rootVisual,
             IEnumerable<TranslationIssue> translationIssues,
             uint minimumRequiredUapVersion,
-            GenericDataMap sourceMetadata)
+            IReadOnlyDictionary<Guid, object> sourceMetadata)
         {
             RootVisual = rootVisual;
             TranslationIssues = translationIssues.ToArray();
@@ -37,7 +37,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// <summary>
         /// Metadata from the source.
         /// </summary>
-        public GenericDataMap SourceMetadata { get; }
+        public IReadOnlyDictionary<Guid, object> SourceMetadata { get; }
 
         /// <summary>
         /// The list of issues discovered during translation.

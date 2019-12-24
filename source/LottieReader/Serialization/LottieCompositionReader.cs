@@ -324,8 +324,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             ExpectToken(reader, JsonToken.StartObject);
 
             string name = null;
-            double durationSeconds = 0;
-            double progress = 0;
+            double durationMilliseconds = 0;
+            double frame = 0;
 
             while (reader.Read())
             {
@@ -342,10 +342,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                                 name = (string)reader.Value;
                                 break;
                             case "dr":
-                                durationSeconds = ParseDouble(reader);
+                                durationMilliseconds = ParseDouble(reader);
                                 break;
                             case "tm":
-                                progress = ParseDouble(reader);
+                                frame = ParseDouble(reader);
                                 break;
                             default:
                                 _issues.IgnoredField(currentProperty);
@@ -355,7 +355,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
                         break;
                     case JsonToken.EndObject:
-                        return new Marker(progress, name, durationSeconds);
+                        return new Marker(name: name, frame: frame, durationMilliseconds: durationMilliseconds);
                     default:
                         throw UnexpectedTokenException(reader);
                 }
