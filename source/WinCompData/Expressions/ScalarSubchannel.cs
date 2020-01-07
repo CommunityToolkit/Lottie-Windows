@@ -20,11 +20,66 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
         public string ChannelName { get; }
 
         /// <inheritdoc/>
-        protected override Expression Simplify() => this;
+        protected override Expression Simplify()
+        {
+            switch (Value)
+            {
+                case Vector4 vector:
+                    switch (ChannelName)
+                    {
+                        case "X":
+                        case "x":
+                            return vector.X;
+                        case "Y":
+                        case "y":
+                            return vector.Y;
+                        case "Z":
+                        case "z":
+                            return vector.Z;
+                        case "W":
+                        case "w":
+                            return vector.W;
+                    }
+
+                    break;
+
+                case Vector3 vector:
+                    switch (ChannelName)
+                    {
+                        case "X":
+                        case "x":
+                            return vector.X;
+                        case "Y":
+                        case "y":
+                            return vector.Y;
+                        case "Z":
+                        case "z":
+                            return vector.Z;
+                    }
+
+                    break;
+
+                case Vector2 vector:
+                    switch (ChannelName)
+                    {
+                        case "X":
+                        case "x":
+                            return vector.X;
+                        case "Y":
+                        case "y":
+                            return vector.Y;
+                    }
+
+                    break;
+            }
+
+            return this;
+        }
 
         /// <inheritdoc/>
         protected override string CreateExpressionString() => $"{Value}.{ChannelName}";
 
+        /// <inheritdoc/>
         internal override bool IsAtomic => true;
 
         /// <inheritdoc/>
