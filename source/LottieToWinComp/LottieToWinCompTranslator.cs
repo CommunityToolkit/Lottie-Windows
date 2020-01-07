@@ -441,7 +441,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
                 // The mask geometry needs to be colored with something so that it can be used
                 // as a mask.
-                maskSpriteShape.FillBrush = _c.CreateNonAnimatedColorBrush(LottieData.Color.Black);
+                maskSpriteShape.FillBrush = CreateNonAnimatedColorBrush(LottieData.Color.Black);
 
                 resultContainer.Shapes.Add(maskSpriteShape);
             }
@@ -2829,15 +2829,168 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         CompositionColorBrush TranslateSolidColor(
             TranslationContext context,
             Animatable<Color> color,
-            Animatable<double> opacityPercentA,
-            TrimmedAnimatable<double> opacityPercentB)
+            Animatable<double> opacityPercent,
+            TrimmedAnimatable<double> inheritedOpacityPercent)
         {
             return CreateAnimatedColorBrush(
                 context,
-                MultiplyAnimatableColorByAnimatableOpacityPercent(
-                    context.TrimAnimatable(color),
-                    context.TrimAnimatable(opacityPercentA)),
-                opacityPercentB);
+                context.TrimAnimatable(color),
+                context.TrimAnimatable(opacityPercent),
+                in inheritedOpacityPercent);
+        }
+
+        [Flags]
+        enum ColorOpacityCombination
+        {
+            None = 0,
+            Color = 1,
+            OpacityPercent = 2,
+            InheritedOpacityPercent = 4,
+        }
+
+        CompositionColorBrush CreateAnimatedColorBrush(
+            TranslationContext context,
+            in TrimmedAnimatable<Color> color,
+            in TrimmedAnimatable<double> opacityPercent,
+            in TrimmedAnimatable<double> inheritedOpacityPercent)
+        {
+            // Opacity is pushed to the alpha channel of the brush. Translate this in the simplest
+            // way depending on whether the color or the opacities are animated.
+            var combination = ColorOpacityCombination.None;
+
+            if (color.IsAnimated)
+            {
+                combination |= ColorOpacityCombination.Color;
+            }
+
+            if (opacityPercent.IsAnimated)
+            {
+                combination |= ColorOpacityCombination.OpacityPercent;
+            }
+
+            if (inheritedOpacityPercent.IsAnimated)
+            {
+                combination |= ColorOpacityCombination.InheritedOpacityPercent;
+            }
+
+            switch (combination)
+            {
+                case ColorOpacityCombination.None:
+                    return CreateNonAnimatedColorBrush(
+                        MultiplyColorByOpacityPercent(color.InitialValue, opacityPercent.InitialValue, inheritedOpacityPercent.InitialValue));
+                case ColorOpacityCombination.Color:
+                    return CreateAnimatedColorBrush(
+                        context,
+                        MultiplyAnimatableColorByOpacityPercent(color, (opacityPercent.InitialValue / 100) * (inheritedOpacityPercent.InitialValue / 100)));
+                case ColorOpacityCombination.OpacityPercent:
+                    return CreateAnimatedColorBrush(
+                        context,
+                        MultiplyColorByAnimatableOpacityPercent(color.InitialValue.MultipliedByOpacity(inheritedOpacityPercent.InitialValue / 100), opacityPercent));
+                case ColorOpacityCombination.InheritedOpacityPercent:
+                    return CreateAnimatedColorBrush(
+                        context,
+                        MultiplyColorByAnimatableOpacityPercent(color.InitialValue.MultipliedByOpacity(opacityPercent.InitialValue / 100), inheritedOpacityPercent));
+                case ColorOpacityCombination.OpacityPercent | ColorOpacityCombination.InheritedOpacityPercent:
+                    return CreateAnimatedColorBrush(
+                        context,
+                        MultiplyColorByAnimatableOpacityPercent(color.InitialValue, opacityPercent), inheritedOpacityPercent);
+                case ColorOpacityCombination.Color | ColorOpacityCombination.OpacityPercent:
+                    return CreateAnimatedColorBrushWithAnimatedOpacity(
+                        context,
+                        in color,
+                        MultiplyAnimatableOpacityPercentByOpacityPercent(opacityPercent, inheritedOpacityPercent.InitialValue));
+                case ColorOpacityCombination.Color | ColorOpacityCombination.InheritedOpacityPercent:
+                    return CreateAnimatedColorBrushWithAnimatedOpacity(
+                        context,
+                        in color,
+                        MultiplyAnimatableOpacityPercentByOpacityPercent(inheritedOpacityPercent, opacityPercent.InitialValue));
+                case ColorOpacityCombination.Color | ColorOpacityCombination.OpacityPercent | ColorOpacityCombination.InheritedOpacityPercent:
+                    return CreateAnimatedColorBrushWithAnimatedOpacityAndAnimatedInheritedOpacity(
+                        context,
+                        in color,
+                        in opacityPercent,
+                        in inheritedOpacityPercent);
+                default:
+                    throw new InvalidOperationException();
+            }
+        }
+
+        CompositionColorBrush CreateAnimatedColorBrush(
+            TranslationContext context,
+            in TrimmedAnimatable<Color> color,
+            in TrimmedAnimatable<double> opacityPercent)
+        {
+            if (color.IsAnimated && opacityPercent.IsAnimated)
+            {
+                return CreateAnimatedColorBrushWithAnimatedOpacity(context, in color, in opacityPercent);
+            }
+            else if (opacityPercent.IsAnimated)
+            {
+                // Color is not animated. Opacity might be.
+                var multipliedColor = MultiplyColorByAnimatableOpacityPercent(color.InitialValue, in opacityPercent);
+                return CreateAnimatedColorBrush(context, multipliedColor);
+            }
+            else
+            {
+                // Opacity is not animated. Color might be.
+                return CreateAnimatedColorBrush(context, color);
+            }
+        }
+
+        // Creates an animated color brush where the color and the opacity are both animated.
+        CompositionColorBrush CreateAnimatedColorBrushWithAnimatedOpacity(
+            TranslationContext context,
+            in TrimmedAnimatable<Color> color,
+            in TrimmedAnimatable<double> opacityPercent)
+        {
+            Debug.Assert(color.IsAnimated && opacityPercent.IsAnimated, "Precondition");
+
+            // Both the color and opacity are animated. Create properties for them and multiply
+            // to get the final color using an expression.
+            var result = _c.CreateColorBrush();
+
+            // The opacity is animated. Add an animated property for the opacity and use it to multiply
+            // the alpha channel of the color.
+            result.Properties.InsertScalar("Opacity", PercentF(opacityPercent.InitialValue));
+            ApplyPercentKeyFrameAnimation(context, opacityPercent, result.Properties, "Opacity", "Opacity", null);
+
+            result.Properties.InsertVector4("Color", Vector4(Color(color.InitialValue)));
+            ApplyColorKeyFrameAnimationAsVector4(context, color, result.Properties, "Color", "Color", null);
+
+            var anim = _c.CreateExpressionAnimation(ExpressionFactory.AnimatedColorWithAnimatedOpacity);
+            anim.SetReferenceParameter("my", result.Properties);
+            StartExpressionAnimation(result, "Color", anim);
+            return result;
+        }
+
+        // Creates an animated color brush where the color, opacity, and inherited opacity are all animated.
+        CompositionColorBrush CreateAnimatedColorBrushWithAnimatedOpacityAndAnimatedInheritedOpacity(
+            TranslationContext context,
+            in TrimmedAnimatable<Color> color,
+            in TrimmedAnimatable<double> opacityPercent,
+            in TrimmedAnimatable<double> inheritedOpacityPercent)
+        {
+            Debug.Assert(color.IsAnimated && opacityPercent.IsAnimated && inheritedOpacityPercent.IsAnimated, "Precondition");
+
+            // Color, opacity, and inherited opacity are all animated.
+            // Create properties for them and multiply to get the final color using an expression.
+            var result = _c.CreateColorBrush();
+
+            // The opacity is animated. Add an animated property for the opacity and use it to multiply
+            // the alpha channel of the color.
+            result.Properties.InsertScalar("Opacity", PercentF(opacityPercent.InitialValue));
+            ApplyPercentKeyFrameAnimation(context, opacityPercent, result.Properties, "Opacity", "Opacity", null);
+
+            result.Properties.InsertScalar("InheritedOpacity", PercentF(opacityPercent.InitialValue));
+            ApplyPercentKeyFrameAnimation(context, inheritedOpacityPercent, result.Properties, "InheritedOpacity", "InheritedOpacity", null);
+
+            result.Properties.InsertVector4("Color", Vector4(Color(color.InitialValue)));
+            ApplyColorKeyFrameAnimationAsVector4(context, color, result.Properties, "Color", "Color", null);
+
+            var anim = _c.CreateExpressionAnimation(ExpressionFactory.AnimatedColorWithAnimatedOpacityWithAnimatedInheritedOpacity);
+            anim.SetReferenceParameter("my", result.Properties);
+            StartExpressionAnimation(result, nameof(result.Color), anim);
+            return result;
         }
 
         // Parses the given binding string and returns the binding name for the given property, or
@@ -2962,22 +3115,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             LinearGradientFill shapeFill,
             TrimmedAnimatable<double> opacityPercent)
         {
-            if (opacityPercent.IsAnimated)
-            {
-                // We don't yet support animated opacity with LinearGradientFill.
-                _issues.GradientFillIsNotSupported("Linear", "animated opacity");
-            }
-
             return TranslateLinearGradient(
                 context,
                 shapeFill,
-                MaxOpacityPercent(in opacityPercent));
+                in opacityPercent,
+                isStroke: false);
         }
 
         CompositionGradientBrush TranslateLinearGradientStroke(
             TranslationContext context,
             LinearGradientStroke shapeStroke,
-            TrimmedAnimatable<double> contextOpacityPercent)
+            in TrimmedAnimatable<double> contextOpacityPercent)
         {
             if (contextOpacityPercent.IsAnimated)
             {
@@ -2988,47 +3136,39 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return TranslateLinearGradient(
                 context,
                 shapeStroke,
-                MaxOpacityPercent(in contextOpacityPercent));
+                in contextOpacityPercent,
+                isStroke: true);
         }
 
         CompositionBrush TranslateRadialGradientFill(
             TranslationContext context,
             RadialGradientFill shapeFill,
-            TrimmedAnimatable<double> opacityPercent)
+            in TrimmedAnimatable<double> opacityPercent)
         {
-            if (opacityPercent.IsAnimated)
-            {
-                // We don't yet support animated opacity with RadialGradientFill.
-                _issues.GradientFillIsNotSupported("Radial", "animated opacity");
-            }
-
             return TranslateRadialGradient(
                 context,
                 shapeFill,
-                MaxOpacityPercent(in opacityPercent));
+                in opacityPercent,
+                isStroke: false);
         }
 
         CompositionGradientBrush TranslateRadialGradientStroke(
             TranslationContext context,
             RadialGradientStroke shapeStroke,
-            TrimmedAnimatable<double> contextOpacityPercent)
+            in TrimmedAnimatable<double> contextOpacityPercent)
         {
-            if (contextOpacityPercent.IsAnimated)
-            {
-                // We don't yet support animated opacity with RadialGradientStroke.
-                _issues.GradientStrokeIsNotSupported("Radial", "animated opacity");
-            }
-
             return TranslateRadialGradient(
                 context,
                 shapeStroke,
-                MaxOpacityPercent(in contextOpacityPercent));
+                in contextOpacityPercent,
+                isStroke: true);
         }
 
         CompositionLinearGradientBrush TranslateLinearGradient(
             TranslationContext context,
             IGradient linearGradient,
-            double opacityPercentValue)
+            in TrimmedAnimatable<double> opacityPercent,
+            bool isStroke)
         {
             var result = _c.CreateLinearGradientBrush();
 
@@ -3056,7 +3196,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 result.EndPoint = Vector2(endPoint.InitialValue);
             }
 
-            var brushStops = result.ColorStops;
             var gradientStops = context.TrimAnimatable(linearGradient.GradientStops);
 
             if (gradientStops.InitialValue.Items.IsEmpty)
@@ -3065,59 +3204,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 return null;
             }
 
-            if (gradientStops.IsAnimated)
-            {
-                // Lottie represents animation of stops as a sequence of lists of stops.
-                // WinComp uses a single list of stops where each stop is animated.
-
-                // Lottie represents stops as either color or opacity stops. Convert them all to color stops.
-                var colorStopKeyFrames = gradientStops.KeyFrames.SelectToArray(kf => GradientStopOptimizer.Optimize(kf));
-                var stopsCount = gradientStops.InitialValue.Items.Length;
-
-                // Create the Composition stops and animate them.
-                for (var i = 0; i < stopsCount; i++)
-                {
-                    var gradientStop = _c.CreateColorGradientStop();
-                    brushStops.Add(gradientStop);
-
-                    // Extract the color key frames for this stop.
-                    var colorKeyFrames = ExtractKeyFramesFromColorStopKeyFrames(
-                        colorStopKeyFrames,
-                        i,
-                        gs => MultiplyColorByOpacityPercent(gs.Color, opacityPercentValue)).ToArray();
-
-                    ApplyColorKeyFrameAnimation(
-                        context,
-                        new TrimmedAnimatable<Color>(context, colorKeyFrames[0].Value, colorKeyFrames),
-                        gradientStop,
-                        nameof(gradientStop.Color));
-
-                    // Extract the offset key frames for this stop.
-                    var offsetKeyFrames = ExtractKeyFramesFromColorStopKeyFrames(
-                        colorStopKeyFrames,
-                        i,
-                        gs => gs.Offset).ToArray();
-
-                    ApplyScalarKeyFrameAnimation(
-                        context,
-                        new TrimmedAnimatable<double>(context, offsetKeyFrames[0].Value, offsetKeyFrames),
-                        gradientStop,
-                        nameof(gradientStop.Offset));
-                }
-            }
-            else
-            {
-                // Distinct() here eliminates any redundant stops. It is safe to eliminate them
-                // in the non-animated case. If there are key frames then it's potentially dangerous
-                // as every key frame needs to have the same number of stops, and Distinct() might
-                // eliminate different stops from each KeyFrame.
-                foreach (var stop in GradientStopOptimizer.Optimize(gradientStops.InitialValue.Items.ToArray()).Distinct())
-                {
-                    var offset = stop.Offset;
-                    var color = MultiplyColorByOpacityPercent(stop.Color, opacityPercentValue);
-                    brushStops.Add(_c.CreateColorGradientStop(Float(offset), color));
-                }
-            }
+            TranslateAndApplyColorGradientStops(context, result, in gradientStops, in opacityPercent, isStroke: isStroke, isRadial: false);
 
             return result;
         }
@@ -3125,13 +3212,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         CompositionGradientBrush TranslateRadialGradient(
             TranslationContext context,
             IRadialGradient gradient,
-            double opacityPercentValue)
+            in TrimmedAnimatable<double> opacityPercent,
+            bool isStroke)
         {
             if (!IsUapApiAvailable(nameof(CompositionRadialGradientBrush), versionDependentFeatureDescription: "Radial gradient fill"))
             {
                 // CompositionRadialGradientBrush didn't exist until UAP v8. If the target OS doesn't support
                 // UAP v8 then fall back to linear gradients as a compromise.
-                return TranslateLinearGradient(context, gradient, opacityPercentValue);
+                return TranslateLinearGradient(context, gradient, opacityPercent, isStroke: isStroke);
             }
 
             var result = _c.CreateRadialGradientBrush();
@@ -3166,7 +3254,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 _issues.GradientFillIsNotSupported("Radial", "animated highlight length");
             }
 
-            var brushStops = result.ColorStops;
             var gradientStops = context.TrimAnimatable(gradient.GradientStops);
 
             if (gradientStops.InitialValue.Items.IsEmpty)
@@ -3175,8 +3262,45 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 return null;
             }
 
+            TranslateAndApplyColorGradientStops(context, result, in gradientStops, in opacityPercent, isStroke: isStroke, isRadial: true);
+
+            return result;
+        }
+
+        void TranslateAndApplyColorGradientStops(
+            TranslationContext context,
+            CompositionGradientBrush brush,
+            in TrimmedAnimatable<Sequence<GradientStop>> gradientStops,
+            in TrimmedAnimatable<double> opacityPercent,
+            bool isStroke,
+            bool isRadial)
+        {
             if (gradientStops.IsAnimated)
             {
+                double opacityPercentValue;
+
+                if (opacityPercent.IsAnimated)
+                {
+                    var fillType = isRadial ? "Radial" : "Linear";
+                    if (isStroke)
+                    {
+                        // We don't yet support animated opacity with RadialGradientStroke.
+                        _issues.GradientStrokeIsNotSupported(fillType, "animated opacity");
+                    }
+                    else
+                    {
+                        // We don't yet support animated opacity with RadialGradientStroke.
+                        _issues.GradientFillIsNotSupported(fillType, "animated opacity");
+                    }
+
+                    // Until we support animated opacity, use the maximum opacity.
+                    opacityPercentValue = MaxOpacityPercent(in opacityPercent);
+                }
+                else
+                {
+                    opacityPercentValue = opacityPercent.InitialValue;
+                }
+
                 // Lottie represents animation of stops as a sequence of lists of stops.
                 // WinComp uses a single list of stops where each stop is animated.
 
@@ -3189,7 +3313,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 for (var i = 0; i < stopsCount; i++)
                 {
                     var gradientStop = _c.CreateColorGradientStop();
-                    brushStops.Add(gradientStop);
+                    brush.ColorStops.Add(gradientStop);
 
                     // Extract the color key frames for this stop.
                     var colorKeyFrames = ExtractKeyFramesFromColorStopKeyFrames(
@@ -3214,19 +3338,63 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
             else
             {
-                // Distinct() here eliminates any redundant stops. It is safe to eliminate them
-                // in the non-animated case. If there are key frames then it's potentially dangerous
-                // as every key frame needs to have the same number of stops, and Distinct() might
-                // eliminate different stops from each KeyFrame.
-                foreach (var stop in GradientStopOptimizer.Optimize(gradientStops.InitialValue.Items.ToArray()).Distinct())
+                if (opacityPercent.IsAnimated)
                 {
-                    var offset = stop.Offset;
-                    var color = MultiplyColorByOpacityPercent(stop.Color, opacityPercentValue);
-                    brushStops.Add(_c.CreateColorGradientStop(Float(offset), color));
+                    TranslateAndApplyColorGradientStopsWithAnimatedOpacity(context, brush, gradientStops.InitialValue, in opacityPercent);
+                }
+                else
+                {
+                    TranslateAndApplyNonAnimatedColorGradientStops(context, brush, gradientStops.InitialValue, opacityPercent.InitialValue);
                 }
             }
+        }
 
-            return result;
+        void TranslateAndApplyNonAnimatedColorGradientStops(
+            TranslationContext context,
+            CompositionGradientBrush brush,
+            Sequence<GradientStop> gradientStops,
+            double opacityPercent)
+        {
+            // Distinct() here eliminates any redundant stops. It is safe to eliminate them
+            // in the non-animated case. If there are key frames then it's potentially dangerous
+            // as every key frame needs to have the same number of stops, and Distinct() might
+            // eliminate different stops from each KeyFrame.
+            foreach (var stop in GradientStopOptimizer.Optimize(gradientStops.Items.ToArray()).Distinct())
+            {
+                var offset = stop.Offset;
+                var color = MultiplyColorByOpacityPercent(stop.Color, opacityPercent);
+                brush.ColorStops.Add(_c.CreateColorGradientStop(Float(offset), color));
+            }
+        }
+
+        void TranslateAndApplyColorGradientStopsWithAnimatedOpacity(
+            TranslationContext context,
+            CompositionGradientBrush brush,
+            Sequence<GradientStop> gradientStops,
+            in TrimmedAnimatable<double> opacityPercent)
+        {
+            // The opacity is animated. Add an animated property for the opacity and use it to multiply
+            // the alpha channel of the color. The opacity here is pre-multiplied by 255 in order to
+            // simplify the expression animation used for the color stops.
+            brush.Properties.InsertScalar("Opacity", PercentF(opacityPercent.InitialValue * 255));
+            ApplyScaledPercentKeyFrameAnimation(context, opacityPercent, 255, brush.Properties, "Opacity", "Opacity", null);
+
+            // Distinct() here eliminates any redundant stops. It is safe to eliminate them
+            // in the non-animated case. If there are key frames then it's potentially dangerous
+            // as every key frame needs to have the same number of stops, and Distinct() might
+            // eliminate different stops from each KeyFrame.
+            foreach (var stop in GradientStopOptimizer.Optimize(gradientStops.Items.ToArray()).Distinct())
+            {
+                var colorStop = _c.CreateColorGradientStop();
+                colorStop.Offset = Float(stop.Offset);
+
+                var anim = _c.CreateExpressionAnimation(ColorWithPreMultipliedAnimatedOpacity(Color(stop.Color)));
+                anim.SetReferenceParameter("my", brush.Properties);
+                StartExpressionAnimation(colorStop, "Color", anim);
+
+                // Bind the color to the opacity multiplied by the color.
+                brush.ColorStops.Add(colorStop);
+            }
         }
 
         static IEnumerable<KeyFrame<TKeyFrame>> ExtractKeyFramesFromColorStopKeyFrames<TKeyFrame>(
@@ -3294,7 +3462,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             // for the layer from TryCreateContainerVisualTransformChain.
             // If that layer has no masks, opacity is implemented via the alpha channel on the brush.
             rectangle.FillBrush = layerHasMasks
-                ? _c.CreateNonAnimatedColorBrush(context.Layer.Color)
+                ? CreateNonAnimatedColorBrush(context.Layer.Color)
                 : CreateAnimatedColorBrush(context, context.Layer.Color, context.TrimAnimatable(context.Layer.Transform.OpacityPercent));
 
             if (_addDescriptions)
@@ -3674,6 +3842,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             string shortDescription = null)
             => ApplyScaledScalarKeyFrameAnimation(context, value, 0.01, targetObject, targetPropertyName, longDescription, shortDescription);
 
+        void ApplyScaledPercentKeyFrameAnimation(
+            TranslationContext context,
+            in TrimmedAnimatable<double> value,
+            double scale,
+            CompositionObject targetObject,
+            string targetPropertyName,
+            string longDescription = null,
+            string shortDescription = null)
+            => ApplyScaledScalarKeyFrameAnimation(context, value, scale * 0.01, targetObject, targetPropertyName, longDescription, shortDescription);
+
         void ApplyScaledScalarKeyFrameAnimation(
             TranslationContext context,
             in TrimmedAnimatable<double> value,
@@ -3710,6 +3888,27 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 value,
                 _c.CreateColorKeyFrameAnimation,
                 (ca, progress, val, easing) => ca.InsertKeyFrame(progress, Color(val), easing),
+                null,
+                targetObject,
+                targetPropertyName,
+                longDescription,
+                shortDescription);
+        }
+
+        void ApplyColorKeyFrameAnimationAsVector4(
+            TranslationContext context,
+            in TrimmedAnimatable<LottieData.Color> value,
+            CompositionObject targetObject,
+            string targetPropertyName,
+            string longDescription = null,
+            string shortDescription = null)
+        {
+            Debug.Assert(value.IsAnimated, "Precondition");
+            GenericCreateCompositionKeyFrameAnimation(
+                context,
+                value,
+                _c.CreateVector4KeyFrameAnimation,
+                (ca, progress, val, easing) => ca.InsertKeyFrame(progress, Vector4(Color(val)), easing),
                 null,
                 targetObject,
                 targetPropertyName,
@@ -4123,46 +4322,29 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return result;
         }
 
-        TrimmedAnimatable<Color> MultiplyAnimatableColorByAnimatableOpacityPercent(
+        TrimmedAnimatable<Color> MultiplyAnimatableColorByOpacityPercent(
             in TrimmedAnimatable<Color> color,
-            in TrimmedAnimatable<double> opacityPercent)
+            double opacityPercent)
         {
+            var initialColorValue = MultiplyColorByOpacityPercent(color.InitialValue, opacityPercent);
+
             if (color.IsAnimated)
             {
-                var opacityPercentInitialValue = opacityPercent.InitialValue;
-
-                if (opacityPercent.IsAnimated)
-                {
-                    // TOOD: multiply animations to produce a new set of key frames for the opacity-multiplied color.
-                    _issues.OpacityAndColorAnimatedTogetherIsNotSupported();
-
-                    // Multiply the color values by the maximum opacity. This is a heuristic
-                    // that can give a better result than just returning the color.
-                    opacityPercentInitialValue = MaxOpacityPercent(in opacityPercent);
-                }
-
-                // Multiply the color animation by the single opacity value.
+                // Multiply the color animation values by the opacity.
                 return new TrimmedAnimatable<Color>(
                     color.Context,
-                    initialValue: MultiplyColorByOpacityPercent(color.InitialValue, opacityPercent.InitialValue),
+                    initialValue: initialColorValue,
                     keyFrames: color.KeyFrames.SelectToSpan(kf =>
                         new KeyFrame<Color>(
                             kf.Frame,
-                            MultiplyColorByOpacityPercent(kf.Value, opacityPercentInitialValue),
+                            MultiplyColorByOpacityPercent(kf.Value, opacityPercent),
                             kf.SpatialControlPoint1,
                             kf.SpatialControlPoint2,
                             kf.Easing)));
             }
-            else if (opacityPercent.IsAnimated)
-            {
-                // Color is not animated.
-                return MultiplyColorByAnimatableOpacityPercent(color.InitialValue, opacityPercent);
-            }
             else
             {
-                // Multiply color by opacity
-                var nonAnimatedMultipliedColor = MultiplyColorByOpacityPercent(color.InitialValue, opacityPercent.InitialValue);
-                return new TrimmedAnimatable<Color>(color.Context, nonAnimatedMultipliedColor);
+                return new TrimmedAnimatable<Color>(color.Context, initialColorValue);
             }
         }
 
@@ -4193,15 +4375,38 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         static Color MultiplyColorByOpacityPercent(Color color, double opacityPercent)
             => color?.MultipliedByOpacity(opacityPercent / 100);
 
+        static Color MultiplyColorByOpacityPercent(Color color, double opacityPercent, double inheritedOpacityPercent)
+            => color?.MultipliedByOpacity(opacityPercent / 100).MultipliedByOpacity(inheritedOpacityPercent / 100);
+
+        double MultiplyOpacityPercentByOpacityPercent(double opacityPercentA, double opacityPercentB)
+            => (opacityPercentA / 100) * (opacityPercentB / 100) * 100;
+
+        TrimmedAnimatable<double> MultiplyAnimatableOpacityPercentByOpacityPercent(
+            in TrimmedAnimatable<double> opacityPercent,
+            double otherOpacityPercent)
+        {
+            if (!opacityPercent.IsAnimated)
+            {
+                return new TrimmedAnimatable<double>(opacityPercent.Context, MultiplyOpacityPercentByOpacityPercent(opacityPercent.InitialValue, otherOpacityPercent));
+            }
+            else
+            {
+                return new TrimmedAnimatable<double>(
+                    opacityPercent.Context,
+                    initialValue: MultiplyOpacityPercentByOpacityPercent(opacityPercent.InitialValue, otherOpacityPercent),
+                    keyFrames: opacityPercent.KeyFrames.SelectToSpan(kf =>
+                        new KeyFrame<double>(
+                            kf.Frame,
+                            MultiplyOpacityPercentByOpacityPercent(kf.Value, otherOpacityPercent),
+                            kf.SpatialControlPoint1,
+                            kf.SpatialControlPoint2,
+                            kf.Easing)));
+            }
+        }
+
         CompositionColorBrush CreateAnimatedColorBrush(TranslationContext context, Color color, in TrimmedAnimatable<double> opacityPercent)
         {
             var multipliedColor = MultiplyColorByAnimatableOpacityPercent(color, opacityPercent);
-            return CreateAnimatedColorBrush(context, multipliedColor);
-        }
-
-        CompositionColorBrush CreateAnimatedColorBrush(TranslationContext context, in TrimmedAnimatable<Color> color, in TrimmedAnimatable<double> opacityPercent)
-        {
-            var multipliedColor = MultiplyAnimatableColorByAnimatableOpacityPercent(color, opacityPercent);
             return CreateAnimatedColorBrush(context, multipliedColor);
         }
 
@@ -4222,8 +4427,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
             else
             {
-                return _c.CreateNonAnimatedColorBrush(color.InitialValue);
+                return CreateNonAnimatedColorBrush(color.InitialValue);
             }
+        }
+
+        CompositionColorBrush CreateNonAnimatedColorBrush(Color color)
+        {
+            if (!_nonAnimatedColorBrushes.TryGetValue(color, out var result))
+            {
+                result = _c.CreateNonAnimatedColorBrush(color);
+                _nonAnimatedColorBrushes.Add(color, result);
+            }
+
+            return result;
         }
 
         // Implements IDisposable.Dispose(). Currently not needed but will be required

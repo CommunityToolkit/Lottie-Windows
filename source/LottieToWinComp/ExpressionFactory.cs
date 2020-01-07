@@ -21,9 +21,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         internal static readonly Expression RootProgress = Scalar($"{RootName}.{LottieToWinCompTranslator.ProgressPropertyName}");
         internal static readonly Expression MaxTStartTEnd = Max(s_myTStart, s_myTEnd);
         internal static readonly Expression MinTStartTEnd = Min(s_myTStart, s_myTEnd);
+        internal static readonly Expression MyColor = Scalar("my.Color");
         internal static readonly Expression MyOpacity = Scalar("my.Opacity");
+        internal static readonly Expression MyInheritedOpacity = Scalar("my.InheritedOpacity");
         internal static readonly Expression MyPosition2 = Vector2("my.Position");
         internal static readonly Expression HalfSize2 = Divide(Vector2("my.Size"), Vector2(2, 2));
+        internal static readonly Expression AnimatedColorWithAnimatedOpacity =
+            Vector4AsColorMultipliedByOpacity(MyColor, MyOpacity);
+
+        internal static readonly Expression AnimatedColorWithAnimatedOpacityWithAnimatedInheritedOpacity =
+            Vector4AsColorMultipliedByOpacityByOpacity(MyColor, MyOpacity, MyInheritedOpacity);
 
         // Depends on MyPosition2 and HalfSize2 so must be declared after them.
         internal static readonly Expression PositionAndSizeToOffsetExpression = Subtract(MyPosition2, HalfSize2);
@@ -57,6 +64,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return result;
         }
 
+        internal static Expression ColorWithAnimatedOpacity(Color color)
+            => Vector4AsColorMultipliedByOpacity(Vector4(Scalar(color.R), Scalar(color.G), Scalar(color.B), Scalar(color.A)), MyOpacity);
+
+        // The given color multiplied by MyOpacity, where MyOpacity is pre-multiplied by 255.
+        // The premultiplication means that when the color's alpha is 255, after multiplication
+        // my MyOpacity simplifies to just (MyOpacity) instead of needing to be (255 * MyOpacity).
+        internal static Expression ColorWithPreMultipliedAnimatedOpacity(Color color)
+            => Vector4AsColorMultipliedByOpacity(Vector4(Scalar(color.R), Scalar(color.G), Scalar(color.B), Divide(Scalar(color.A), Scalar(255))), MyOpacity);
+
         internal static Expression BoundColor(string bindingName, double opacity)
             => Vector4AsColorMultipliedByOpacity(RootColor4Property(bindingName), Scalar(opacity));
 
@@ -73,6 +89,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 g: Y(colorAsVector4),
                 b: Z(colorAsVector4),
                 a: Multiply(W(colorAsVector4), opacity));
+
+        static Expression Vector4AsColorMultipliedByOpacityByOpacity(Expression colorAsVector4, Expression opacity, Expression otherOpacity)
+            => ColorRGB(
+                r: X(colorAsVector4),
+                g: Y(colorAsVector4),
+                b: Z(colorAsVector4),
+                a: Multiply(Multiply(W(colorAsVector4), opacity), otherOpacity));
 
         ExpressionFactory()
         {
