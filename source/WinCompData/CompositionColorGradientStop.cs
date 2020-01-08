@@ -10,6 +10,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 #endif
     sealed class CompositionColorGradientStop : CompositionObject
     {
+        internal CompositionColorGradientStop()
+        {
+        }
+
         internal CompositionColorGradientStop(float offset, Wui.Color color)
         {
             Color = color;

@@ -499,6 +499,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 result.InsertVector2(prop.Key, prop.Value);
             }
 
+            foreach (var prop in obj.Vector3Properties)
+            {
+                result.InsertVector3(prop.Key, prop.Value);
+            }
+
+            foreach (var prop in obj.Vector4Properties)
+            {
+                result.InsertVector4(prop.Key, prop.Value);
+            }
+
             StartAnimations(obj, result);
             return result;
         }

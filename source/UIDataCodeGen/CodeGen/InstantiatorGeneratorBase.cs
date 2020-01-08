@@ -734,56 +734,35 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 // Build the object graph.
                 _objectGraph = ObjectGraph<ObjectData>.FromCompositionObject(graphRoot, includeVertices: true);
 
-                // Filter out ExpressionAnimations that are unique. They will use a single instance that is reset on each use.
-                // TODO - should look at the distinct inrefs - i.e. how many objects are referencing, to deal with objects that reference multiple times.
-                var nodes =
-                    from node in _objectGraph.Nodes
-                    where !(node.Object is ExpressionAnimation) ||
-                            node.InReferences.Length > 1
-                    select node;
-
-                // Filter out types for which we won't create objects:
-                //  AnimationController is created implicitly.
-                //  CompositionPropertySet is created implicitly.
-                nodes =
-                    (from node in nodes
-                     where node.Type != Graph.NodeType.CompositionObject ||
-                         !(((CompositionObject)node.Object).Type == CompositionObjectType.AnimationController ||
-                          ((CompositionObject)node.Object).Type == CompositionObjectType.CompositionPropertySet)
-                     select node).Distinct().ToArray();
+                // Get the nodes for which factory methods need to be created.
+                var factoryNodes = _objectGraph.Nodes.Where(n => n.NeedsAFactory).ToArray();
 
                 // Give names to each node, except the nodes that may be shared by multiple IAnimatedVisuals.
-                foreach ((var n, var name) in NodeNamer<ObjectData>.GenerateNodeNames(nodes.Where(n => !n.IsShareableNode)))
+                foreach ((var n, var name) in NodeNamer<ObjectData>.GenerateNodeNames(factoryNodes.Where(n => !n.IsShareableNode)))
                 {
                     n.Name = name;
                 }
 
-                // Give the root node a special name.
-                _rootNode = NodeFor(graphRoot);
-                _rootNode.Name = "Root";
-
-                // Save the nodes, ordered by the name that was just set.
-                _nodes = OrderByName(nodes).ToArray();
-
                 // Force storage to be allocated for nodes that have multiple references to them,
                 // or is a LoadedImageSurface.
-                foreach (var node in _nodes)
+                foreach (var node in factoryNodes)
                 {
-                    if (FilteredInRefs(node).Count() > 1 || node.IsLoadedImageSurface)
+                    if (node.IsLoadedImageSurface)
                     {
-                        // Node is referenced more than once or is a LoadedImageSurface, so it requires storage.
+                        // LoadedImageSurfaces are cached and shared between IAnimatedVisual instances, so
+                        // they require storage.
                         node.RequiresStorage = true;
-
-                        if (node.IsLoadedImageSurface)
-                        {
-                            // Node is a LoadedImageSurface which requires read-only storage.
-                            node.RequiresReadonlyStorage = true;
-                        }
+                        node.RequiresReadonlyStorage = true;
+                    }
+                    else if (FilteredInRefs(node).Count() > 1)
+                    {
+                        // Node is referenced more than once so it requires storage.
+                        node.RequiresStorage = true;
                     }
                 }
 
                 // Force inlining on CompositionPath nodes that are only referenced once, because they are always very simple.
-                foreach (var node in _nodes)
+                foreach (var node in factoryNodes)
                 {
                     if (node.Type == Graph.NodeType.CompositionPath && FilteredInRefs(node).Count() == 1)
                     {
@@ -793,20 +772,23 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     }
                 }
 
-                // Ensure the root object has storage if it is referenced by anything else in the graph.
-                // This is necessary because the root node is referenced from the instantiator entrypoint
-                // but that isn't counted in the InReference.
-                // Because the root object is exposed via IAnimatedVisual::RootVisual this means that
-                // there must always be storage for the root object.
+                // Find the root node.
+                _rootNode = NodeFor(graphRoot);
+
+                // Ensure the root object has storage because it is referenced from IAnimated::RootVisual.
                 _rootNode.RequiresStorage = true;
+
+                // Give the root node a special name so it is easy to find in the code.
+                _rootNode.Name = "Root";
+
+                // Save the nodes, ordered by name.
+                _nodes = OrderByName(factoryNodes).ToArray();
             }
 
             internal IAnimatedVisualInfo AnimatedVisualInfo => this;
 
             // Returns the nodes that can be shared between multiple IAnimatedVisuals.
             internal IEnumerable<ObjectData> GetShareableNodes() => _nodes.Where(n => n.IsShareableNode);
-
-            internal uint RequiredUapVersion => _requiredUapVersion;
 
             /// <summary>
             /// Gets a list of the <see cref="LoadedImageSurfaceInfo"/> representing the LoadedImageSurface of the AnimatedVisual and its properties.
@@ -2449,6 +2431,44 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                             return "LoadedImageSurface";
                         default:
                             throw new InvalidOperationException();
+                    }
+                }
+            }
+
+            // True iff a factory should be created for the given node.
+            internal bool NeedsAFactory
+            {
+                get
+                {
+                    return Type switch
+                    {
+                        Graph.NodeType.CanvasGeometry => true,
+                        Graph.NodeType.CompositionPath => true,
+                        Graph.NodeType.LoadedImageSurface => true,
+                        Graph.NodeType.CompositionObject => NeedsAFactory((CompositionObject)Object),
+                        _ => throw new InvalidOperationException(),
+                    };
+
+                    bool NeedsAFactory(CompositionObject obj)
+                    {
+                        return obj.Type switch
+                        {
+                            // AnimationController is never created explicitly - they result from
+                            // calling TryGetAnimationController(...).
+                            CompositionObjectType.AnimationController => false,
+
+                            // CompositionPropertySet is never created explicitly - they just exist
+                            // on the Properties property of every CompositionObject.
+                            CompositionObjectType.CompositionPropertySet => false,
+
+                            // ExpressionAnimations that are not shared will use the "_reusableExpressionAnimation"
+                            // so there is no need for a factory for them. Detect the shared case by counting the
+                            // InReferences to the node.
+                            CompositionObjectType.ExpressionAnimation => InReferences.Length > 1,
+
+                            // All other CompositionObjects need factories
+                            _ => true,
+                        };
                     }
                 }
             }
