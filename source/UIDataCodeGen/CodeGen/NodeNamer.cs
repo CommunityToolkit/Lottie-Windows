@@ -141,13 +141,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                  where animator.Animation == node.Object
                  select animator.AnimatedProperty).Distinct().ToArray();
 
-            return animators.Length == 1 ? animators[0] : null;
+            return animators.Length == 1 ? SanitizePropertyName(animators[0]) : null;
         }
 
-        static string SanitizePropertyName(string propertyName)
-        {
-            return propertyName == null ? null : propertyName.Replace(".", string.Empty);
-        }
+        static string SanitizePropertyName(string propertyName) =>
+            propertyName?.Replace(".", string.Empty);
 
         static string DescribeCompositionObject(TNode node, CompositionObject obj)
         {
@@ -161,13 +159,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     result = AppendDescription($"{TryGetAnimatedPropertyName(node)}ScalarAnimation", DescribeAnimationRange((ScalarKeyFrameAnimation)obj));
                     break;
                 case CompositionObjectType.Vector2KeyFrameAnimation:
-                    result = $"{SanitizePropertyName(TryGetAnimatedPropertyName(node))}Vector2Animation";
+                    result = $"{TryGetAnimatedPropertyName(node)}Vector2Animation";
                     break;
                 case CompositionObjectType.Vector3KeyFrameAnimation:
-                    result = $"{SanitizePropertyName(TryGetAnimatedPropertyName(node))}Vector3Animation";
+                    result = $"{TryGetAnimatedPropertyName(node)}Vector3Animation";
                     break;
                 case CompositionObjectType.Vector4KeyFrameAnimation:
-                    result = $"{SanitizePropertyName(TryGetAnimatedPropertyName(node))}Vector4Animation";
+                    result = $"{TryGetAnimatedPropertyName(node)}Vector4Animation";
                     break;
                 case CompositionObjectType.CompositionColorBrush:
                     // Color brushes that are not animated get names describing their color.
@@ -177,9 +175,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     {
                         // Brush is animated. Give it a name based on the colors in the animation.
                         var colorAnimation = brush.Animators.Where(a => a.AnimatedProperty == "Color").First().Animation;
-                        if (colorAnimation.Type == CompositionObjectType.ColorKeyFrameAnimation)
+                        if (colorAnimation is ColorKeyFrameAnimation colorKeyFrameAnimation)
                         {
-                            result = AppendDescription("AnimatedColorBrush", DescribeAnimationRange((ColorKeyFrameAnimation)colorAnimation));
+                            result = AppendDescription("AnimatedColorBrush", DescribeAnimationRange(colorKeyFrameAnimation));
                         }
                         else
                         {
@@ -203,10 +201,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     if (stop.Animators.Count > 0)
                     {
                         // Brush is animated. Give it a name based on the colors in the animation.
-                        var colorAnimation = stop.Animators.Where(a => a.Animation is ColorKeyFrameAnimation).First().Animation;
-                        if (colorAnimation.Type == CompositionObjectType.ColorKeyFrameAnimation)
+                        var colorAnimation = stop.Animators.Where(a => a.AnimatedProperty == "Color").First().Animation;
+                        if (colorAnimation is ColorKeyFrameAnimation colorKeyFrameAnimation)
                         {
-                            result = AppendDescription("AnimatedGradientStop", DescribeAnimationRange((ColorKeyFrameAnimation)colorAnimation));
+                            result = AppendDescription("AnimatedGradientStop", DescribeAnimationRange(colorKeyFrameAnimation));
                         }
                         else
                         {
