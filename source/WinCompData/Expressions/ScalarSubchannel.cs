@@ -22,21 +22,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
         /// <inheritdoc/>
         protected override Expression Simplify()
         {
+            var channelNameLower = ChannelName?.ToLowerInvariant() ?? string.Empty;
+
             switch (Value)
             {
                 case Vector4 vector:
-                    switch (ChannelName)
+                    switch (channelNameLower)
                     {
-                        case "X":
                         case "x":
                             return vector.X;
-                        case "Y":
                         case "y":
                             return vector.Y;
-                        case "Z":
                         case "z":
                             return vector.Z;
-                        case "W":
                         case "w":
                             return vector.W;
                     }
@@ -44,15 +42,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
                     break;
 
                 case Vector3 vector:
-                    switch (ChannelName)
+                    switch (channelNameLower)
                     {
-                        case "X":
                         case "x":
                             return vector.X;
-                        case "Y":
                         case "y":
                             return vector.Y;
-                        case "Z":
                         case "z":
                             return vector.Z;
                     }
@@ -60,12 +55,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
                     break;
 
                 case Vector2 vector:
-                    switch (ChannelName)
+                    switch (channelNameLower)
                     {
-                        case "X":
                         case "x":
                             return vector.X;
-                        case "Y":
                         case "y":
                             return vector.Y;
                     }

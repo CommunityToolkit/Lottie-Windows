@@ -28,6 +28,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
             var x = X.Simplified;
             var y = Y.Simplified;
             var z = Z.Simplified;
+
             return x == X && y == Y && z == Z
                 ? this
                 : new Vector3(x, y, z);
