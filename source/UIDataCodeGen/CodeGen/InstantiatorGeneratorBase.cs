@@ -734,7 +734,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 // Build the object graph.
                 _objectGraph = ObjectGraph<ObjectData>.FromCompositionObject(graphRoot, includeVertices: true);
 
-                // Get the nodes for which factory methods need to be created.
+                // Get the nodes that will produce factory methods.
                 var factoryNodes = _objectGraph.Nodes.Where(n => n.NeedsAFactory).ToArray();
 
                 // Give names to each node, except the nodes that may be shared by multiple IAnimatedVisuals.
@@ -744,12 +744,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 }
 
                 // Force storage to be allocated for nodes that have multiple references to them,
-                // or is a LoadedImageSurface.
+                // or are LoadedImageSurfaces.
                 foreach (var node in factoryNodes)
                 {
-                    if (node.IsLoadedImageSurface)
+                    if (node.IsShareableNode)
                     {
-                        // LoadedImageSurfaces are cached and shared between IAnimatedVisual instances, so
+                        // Shareable nodes are cached and shared between IAnimatedVisual instances, so
                         // they require storage.
                         node.RequiresStorage = true;
                         node.RequiresReadonlyStorage = true;
