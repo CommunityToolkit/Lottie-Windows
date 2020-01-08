@@ -2466,7 +2466,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                             // InReferences to the node.
                             CompositionObjectType.ExpressionAnimation => InReferences.Length > 1,
 
-                            // All other CompositionObjects need factories
+                            // All other CompositionObjects need factories.
                             _ => true,
                         };
                     }
