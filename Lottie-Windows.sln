@@ -391,7 +391,6 @@ Global
 		{25CEB8B8-90E0-4D23-9978-0CD83889D4AC}.Release|ARM64.ActiveCfg = Release|Any CPU
 		{25CEB8B8-90E0-4D23-9978-0CD83889D4AC}.Release|x64.ActiveCfg = Release|Any CPU
 		{25CEB8B8-90E0-4D23-9978-0CD83889D4AC}.Release|x86.ActiveCfg = Release|Any CPU
-		{25CEB8B8-90E0-4D23-9978-0CD83889D4AC}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
