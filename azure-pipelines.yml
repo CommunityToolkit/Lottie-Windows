@@ -36,12 +36,12 @@ steps:
 - task: DotNetCoreInstaller@0
   inputs:
     packageType: 'sdk' # Options: runtime, sdk
-    version: '2.2.x' 
+    version: '2.2.207' 
 
 - task: DotNetCoreInstaller@0
   inputs:
     packageType: 'sdk' # Options: runtime, sdk
-    version: '3.1.x' 
+    version: '3.1.100' 
 
 - script: nbgv cloud
   displayName: Set Version
