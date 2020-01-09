@@ -189,26 +189,27 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             var expression = obj.Expression;
             var expressionType = expression.InferredType;
             return expressionType.IsValid && !expressionType.IsGeneric
-                ? $"{expressionType.Constraints.ToString()}ExpressionAnimation"
+                ? $"{expressionType.Constraints}ExpressionAnimation"
                 : "ExpressionAnimation";
         }
 
         static string DescribeStepEasingFunction(StepEasingFunction obj)
         {
             // Recognize 2 common patterns: HoldThenStep and StepThenHold
-            if (obj.StepCount == 1 && obj.IsFinalStepSingleFrame && !obj.IsInitialStepSingleFrame)
+            if (obj.StepCount == 1)
             {
-                return "HoldThenStepEasingFunction";
+                if (obj.IsFinalStepSingleFrame && !obj.IsInitialStepSingleFrame)
+                {
+                    return "HoldThenStepEasingFunction";
+                }
+                else if (obj.IsInitialStepSingleFrame && !obj.IsFinalStepSingleFrame)
+                {
+                    return "StepThenHoldEasingFunction";
+                }
             }
-            else if (obj.StepCount == 1 && obj.IsInitialStepSingleFrame && !obj.IsFinalStepSingleFrame)
-            {
-                return "StepThenHoldEasingFunction";
-            }
-            else
-            {
-                // Didn't recognize the pattern.
-                return obj.ToString();
-            }
+
+            // Didn't recognize the pattern.
+            return "EasingFunction";
         }
 
         static string DescribeLoadedImageSurface(TNode node, LoadedImageSurface obj)
