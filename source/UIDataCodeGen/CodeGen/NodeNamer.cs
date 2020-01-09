@@ -122,8 +122,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 CompositionObjectType.CompositionColorGradientStop => DescribeCompositionColorGradientStop((CompositionColorGradientStop)obj),
                 CompositionObjectType.StepEasingFunction => DescribeStepEasingFunction((StepEasingFunction)obj),
 
-                // All other cases, just ToString() the object.
-                _ => obj.ToString(),
+                // All other cases, just ToString() the type name.
+                _ => obj.Type.ToString(),
             };
 
             // Remove the "Composition" prefix so the name is easier to read.
