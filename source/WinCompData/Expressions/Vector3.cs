@@ -9,23 +9,38 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
 #endif
     sealed class Vector3 : Expression
     {
-        readonly Expression _x;
-        readonly Expression _y;
-        readonly Expression _z;
-
         internal Vector3(Expression x, Expression y, Expression z)
         {
-            _x = x;
-            _y = y;
-            _z = z;
+            X = x;
+            Y = y;
+            Z = z;
+        }
+
+        public new Expression X { get; }
+
+        public new Expression Y { get; }
+
+        public new Expression Z { get; }
+
+        /// <inheritdoc/>
+        protected override Expression Simplify()
+        {
+            var x = X.Simplified;
+            var y = Y.Simplified;
+            var z = Z.Simplified;
+
+            return x == X && y == Y && z == Z
+                ? this
+                : new Vector3(x, y, z);
         }
 
         /// <inheritdoc/>
-        protected override Expression Simplify() => this;
-
-        /// <inheritdoc/>
         protected override string CreateExpressionString()
-            => $"Vector3({Parenthesize(_x)},{Parenthesize(_y)},{Parenthesize(_z)})";
+            => $"Vector3({Parenthesize(X)},{Parenthesize(Y)},{Parenthesize(Z)})";
+
+        internal static bool IsZero(Vector3 value) => IsZero(value.X) && IsZero(value.Y) && IsZero(value.Z);
+
+        internal static bool IsOne(Vector3 value) => IsOne(value.X) && IsOne(value.Y) && IsOne(value.Z);
 
         internal override bool IsAtomic => true;
 
