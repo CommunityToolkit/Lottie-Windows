@@ -774,7 +774,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
                 // Force inlining on CompositionPath nodes that are only referenced once, because they are always very simple.
                 foreach (var node in _objectGraph.Nodes.Where(
-                                        n => n.Type == Graph.NodeType.CompositionPath && 
+                                        n => n.Type == Graph.NodeType.CompositionPath &&
                                         IsEqualToOne(FilteredInRefs(n))))
                 {
                     var pathSourceFactoryCall = CallFactoryFromFor(node, ((CompositionPath)node.Object).Source);
