@@ -91,6 +91,156 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             }
         }
 
+        // Returns a description of the given CompositionObject, suitable for use as an identifier.
+        static string DescribeCompositionObject(TNode node, CompositionObject obj)
+        {
+            var result = obj.Type switch
+            {
+                // For some animations, we can include a description of the start and end values
+                // to make the names more descriptive.
+                CompositionObjectType.ColorKeyFrameAnimation
+                    => AppendDescription("ColorAnimation", DescribeAnimationRange((ColorKeyFrameAnimation)obj)),
+                CompositionObjectType.ScalarKeyFrameAnimation
+                    => AppendDescription($"{TryGetAnimatedPropertyName(node)}ScalarAnimation", DescribeAnimationRange((ScalarKeyFrameAnimation)obj)),
+
+                // Do not include descriptions of the animation range for vectors - the names
+                // end up being very long, complicated, and confusing to the reader.
+                CompositionObjectType.Vector2KeyFrameAnimation => $"{TryGetAnimatedPropertyName(node)}Vector2Animation",
+                CompositionObjectType.Vector3KeyFrameAnimation => $"{TryGetAnimatedPropertyName(node)}Vector3Animation",
+                CompositionObjectType.Vector4KeyFrameAnimation => $"{TryGetAnimatedPropertyName(node)}Vector4Animation",
+
+                // Geometries include their size as part of the description.
+                CompositionObjectType.CompositionRectangleGeometry
+                    => AppendDescription("Rectangle", Vector2AsId(((CompositionRectangleGeometry)obj).Size)),
+                CompositionObjectType.CompositionRoundedRectangleGeometry
+                    => AppendDescription("RoundedRectangle", Vector2AsId(((CompositionRoundedRectangleGeometry)obj).Size)),
+                CompositionObjectType.CompositionEllipseGeometry
+                    => AppendDescription("Ellipse", Vector2AsId(((CompositionEllipseGeometry)obj).Radius)),
+
+                CompositionObjectType.ExpressionAnimation => DescribeExpressionAnimation(node, (ExpressionAnimation)obj),
+                CompositionObjectType.CompositionColorBrush => DescribeCompositionColorBrush(node, (CompositionColorBrush)obj),
+                CompositionObjectType.CompositionColorGradientStop => DescribeCompositionColorGradientStop(node, (CompositionColorGradientStop)obj),
+                CompositionObjectType.StepEasingFunction => DescribeStepEasingFunction(node, (StepEasingFunction)obj),
+
+                // All other cases, just ToString() the object.
+                _ => obj.ToString(),
+            };
+
+            // Remove the "Composition" prefix so the name is easier to read.
+            // The prefix is redundant as far as the reader is concerned because most of the
+            // objects have it and it doesn't indicate anything useful to the reader.
+            return StripPrefix(result, "Composition");
+        }
+
+        static string DescribeCompositionColorBrush(TNode node, CompositionColorBrush obj)
+        {
+            // Color brushes that are not animated get names describing their color.
+            // Optimization ensures there will only be one brush for any one non-animated color.
+            if (obj.Animators.Count > 0)
+            {
+                // Brush is animated. Give it a name based on the colors in the animation.
+                var colorAnimation = obj.Animators.Where(a => a.AnimatedProperty == "Color").First().Animation;
+                if (colorAnimation is ColorKeyFrameAnimation colorKeyFrameAnimation)
+                {
+                    return AppendDescription("AnimatedColorBrush", DescribeAnimationRange(colorKeyFrameAnimation));
+                }
+                else
+                {
+                    // The color is bound to a property set.
+                    var objectName = ((IDescribable)obj).Name;
+
+                    return string.IsNullOrWhiteSpace(objectName)
+                        ? "BoundColorBrush"
+                        : $"{objectName}ColorBrush";
+                }
+            }
+            else
+            {
+                // Brush is not animated. Give it a name based on the color.
+                return AppendDescription("ColorBrush", obj.Color?.Name);
+            }
+        }
+
+        static string DescribeCompositionColorGradientStop(TNode node, CompositionColorGradientStop obj)
+        {
+            if (obj.Animators.Count > 0)
+            {
+                // Brush is animated. Give it a name based on the colors in the animation.
+                var colorAnimation = obj.Animators.Where(a => a.AnimatedProperty == "Color").First().Animation;
+                if (colorAnimation is ColorKeyFrameAnimation colorKeyFrameAnimation)
+                {
+                    return AppendDescription("AnimatedGradientStop", DescribeAnimationRange(colorKeyFrameAnimation));
+                }
+                else
+                {
+                    // The color is bound to an expression.
+                    return "BoundColorStop";
+                }
+            }
+            else
+            {
+                // Brush is not animated. Give it a name based on the color.
+                return AppendDescription("GradientStop", obj.Color.Name);
+            }
+        }
+
+        static string DescribeExpressionAnimation(TNode node, ExpressionAnimation obj)
+        {
+            var expression = obj.Expression;
+            var expressionType = expression.InferredType;
+            return expressionType.IsValid && !expressionType.IsGeneric
+                ? $"{expressionType.Constraints.ToString()}ExpressionAnimation"
+                : "ExpressionAnimation";
+        }
+
+        static string DescribeStepEasingFunction(TNode node, StepEasingFunction obj)
+        {
+            // Recognize 2 common patterns: HoldThenStep and StepThenHold
+            if (obj.StepCount == 1 && obj.IsFinalStepSingleFrame && !obj.IsInitialStepSingleFrame)
+            {
+                return "HoldThenStepEasingFunction";
+            }
+            else if (obj.StepCount == 1 && obj.IsInitialStepSingleFrame && !obj.IsFinalStepSingleFrame)
+            {
+                return "StepThenHoldEasingFunction";
+            }
+            else
+            {
+                // Didn't recognize the pattern.
+                return obj.ToString();
+            }
+        }
+
+        static string DescribeLoadedImageSurface(TNode node, LoadedImageSurface obj)
+        {
+            string result = null;
+            switch (obj.Type)
+            {
+                case LoadedImageSurface.LoadedImageSurfaceType.FromStream:
+                    result = "ImageFromStream";
+                    break;
+                case LoadedImageSurface.LoadedImageSurfaceType.FromUri:
+                    var loadedImageSurfaceFromUri = (LoadedImageSurfaceFromUri)obj;
+
+                    // Get the image file name only.
+                    var imageFileName = loadedImageSurfaceFromUri.Uri.Segments.Last();
+                    var imageFileNameWithoutExtension = imageFileName.Substring(0, imageFileName.LastIndexOf('.'));
+
+                    // Replace any disallowed character with underscores.
+                    var cleanedImageName = new string((from ch in imageFileNameWithoutExtension
+                                                       select char.IsLetterOrDigit(ch) ? ch : '_').ToArray());
+
+                    // Remove any duplicated underscores.
+                    cleanedImageName = cleanedImageName.Replace("__", "_");
+                    result = AppendDescription("Image", cleanedImageName);
+                    break;
+                default:
+                    throw new InvalidOperationException();
+            }
+
+            return result;
+        }
+
         static string AppendDescription(string baseName, string description)
             => baseName + (string.IsNullOrWhiteSpace(description) ? string.Empty : $"_{description}");
 
@@ -147,168 +297,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         static string SanitizePropertyName(string propertyName) =>
             propertyName?.Replace(".", string.Empty);
 
-        static string DescribeCompositionObject(TNode node, CompositionObject obj)
-        {
-            string result = null;
-            switch (obj.Type)
-            {
-                case CompositionObjectType.ColorKeyFrameAnimation:
-                    result = AppendDescription("ColorAnimation", DescribeAnimationRange((ColorKeyFrameAnimation)obj));
-                    break;
-                case CompositionObjectType.ScalarKeyFrameAnimation:
-                    result = AppendDescription($"{TryGetAnimatedPropertyName(node)}ScalarAnimation", DescribeAnimationRange((ScalarKeyFrameAnimation)obj));
-                    break;
-                case CompositionObjectType.Vector2KeyFrameAnimation:
-                    result = $"{TryGetAnimatedPropertyName(node)}Vector2Animation";
-                    break;
-                case CompositionObjectType.Vector3KeyFrameAnimation:
-                    result = $"{TryGetAnimatedPropertyName(node)}Vector3Animation";
-                    break;
-                case CompositionObjectType.Vector4KeyFrameAnimation:
-                    result = $"{TryGetAnimatedPropertyName(node)}Vector4Animation";
-                    break;
-                case CompositionObjectType.CompositionColorBrush:
-                    // Color brushes that are not animated get names describing their color.
-                    // Optimization ensures there will only be one brush for any one non-animated color.
-                    var brush = (CompositionColorBrush)obj;
-                    if (brush.Animators.Count > 0)
-                    {
-                        // Brush is animated. Give it a name based on the colors in the animation.
-                        var colorAnimation = brush.Animators.Where(a => a.AnimatedProperty == "Color").First().Animation;
-                        if (colorAnimation is ColorKeyFrameAnimation colorKeyFrameAnimation)
-                        {
-                            result = AppendDescription("AnimatedColorBrush", DescribeAnimationRange(colorKeyFrameAnimation));
-                        }
-                        else
-                        {
-                            // The color is bound to a property set.
-                            var objectName = ((IDescribable)brush).Name;
-
-                            result = string.IsNullOrWhiteSpace(objectName)
-                                ? "BoundColorBrush"
-                                : $"{objectName}ColorBrush";
-                        }
-                    }
-                    else
-                    {
-                        // Brush is not animated. Give it a name based on the color.
-                        result = AppendDescription("ColorBrush", brush.Color?.Name);
-                    }
-
-                    break;
-                case CompositionObjectType.CompositionColorGradientStop:
-                    var stop = (CompositionColorGradientStop)obj;
-                    if (stop.Animators.Count > 0)
-                    {
-                        // Brush is animated. Give it a name based on the colors in the animation.
-                        var colorAnimation = stop.Animators.Where(a => a.AnimatedProperty == "Color").First().Animation;
-                        if (colorAnimation is ColorKeyFrameAnimation colorKeyFrameAnimation)
-                        {
-                            result = AppendDescription("AnimatedGradientStop", DescribeAnimationRange(colorKeyFrameAnimation));
-                        }
-                        else
-                        {
-                            // The color is bound to an expression.
-                            result = "BoundColorStop";
-                        }
-                    }
-                    else
-                    {
-                        // Brush is not animated. Give it a name based on the color.
-                        result = AppendDescription("GradientStop", stop.Color.Name);
-                    }
-
-                    break;
-                case CompositionObjectType.CompositionRectangleGeometry:
-                    var rectangle = (CompositionRectangleGeometry)obj;
-                    result = AppendDescription("Rectangle", Vector2AsId(rectangle.Size));
-                    break;
-                case CompositionObjectType.CompositionRoundedRectangleGeometry:
-                    var roundedRectangle = (CompositionRoundedRectangleGeometry)obj;
-                    result = AppendDescription("RoundedRectangle", Vector2AsId(roundedRectangle.Size));
-                    break;
-                case CompositionObjectType.CompositionEllipseGeometry:
-                    var ellipse = (CompositionEllipseGeometry)obj;
-                    result = AppendDescription("Ellipse", Vector2AsId(ellipse.Radius));
-                    break;
-                case CompositionObjectType.ExpressionAnimation:
-                    var expressionAnimation = (ExpressionAnimation)obj;
-                    var expression = expressionAnimation.Expression;
-                    var expressionType = expression.InferredType;
-                    if (expressionType.IsValid && !expressionType.IsGeneric)
-                    {
-                        result = $"{expressionType.Constraints.ToString()}ExpressionAnimation";
-                    }
-                    else
-                    {
-                        result = "ExpressionAnimation";
-                    }
-
-                    break;
-                case CompositionObjectType.StepEasingFunction:
-                    // Recognize 2 common patterns: HoldThenStep and StepThenHold
-                    var stepEasingFunction = (StepEasingFunction)obj;
-                    if (stepEasingFunction.StepCount == 1 && stepEasingFunction.IsFinalStepSingleFrame && !stepEasingFunction.IsInitialStepSingleFrame)
-                    {
-                        result = "HoldThenStepEasingFunction";
-                    }
-                    else if (stepEasingFunction.StepCount == 1 && stepEasingFunction.IsInitialStepSingleFrame && !stepEasingFunction.IsFinalStepSingleFrame)
-                    {
-                        result = "StepThenHoldEasingFunction";
-                    }
-                    else
-                    {
-                        // Didn't recognize the pattern.
-                        goto default;
-                    }
-
-                    break;
-                default:
-                    result = obj.Type.ToString();
-                    break;
-            }
-
-            // Remove the "Composition" prefix so the name is easier to read.
-            const string compositionPrefix = "Composition";
-            if (result.StartsWith(compositionPrefix))
-            {
-                result = result.Substring(compositionPrefix.Length);
-            }
-
-            return result;
-        }
-
-        static string DescribeLoadedImageSurface(TNode node, LoadedImageSurface obj)
-        {
-            string result = null;
-            var loadedImageSurface = (LoadedImageSurface)node.Object;
-
-            switch (loadedImageSurface.Type)
-            {
-                case LoadedImageSurface.LoadedImageSurfaceType.FromStream:
-                    result = "ImageFromStream";
-                    break;
-                case LoadedImageSurface.LoadedImageSurfaceType.FromUri:
-                    var loadedImageSurfaceFromUri = (LoadedImageSurfaceFromUri)loadedImageSurface;
-
-                    // Get the image file name only.
-                    var imageFileName = loadedImageSurfaceFromUri.Uri.Segments.Last();
-                    var imageFileNameWithoutExtension = imageFileName.Substring(0, imageFileName.LastIndexOf('.'));
-
-                    // Replace any disallowed character with underscores.
-                    var cleanedImageName = new string((from ch in imageFileNameWithoutExtension
-                                                       select char.IsLetterOrDigit(ch) ? ch : '_').ToArray());
-
-                    // Remove any duplicated underscores.
-                    cleanedImageName = cleanedImageName.Replace("__", "_");
-                    result = AppendDescription("Image", cleanedImageName);
-                    break;
-                default:
-                    throw new InvalidOperationException();
-            }
-
-            return result;
-        }
+        // Removes the given prefix from a name.
+        static string StripPrefix(string name, string prefix)
+            => name.StartsWith(prefix)
+                ? name.Substring(prefix.Length)
+                : name;
 
         // A float for use in an id.
         static string FloatAsId(float value) => value.ToString("0.###", CultureInfo.InvariantCulture).Replace('.', 'p').Replace('-', 'm');
