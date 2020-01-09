@@ -430,6 +430,44 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.WriteLine($"{typeName} {fieldName};");
         }
 
+        // Returns true iff the given sequence has exactly one item in it.
+        // This is equivalent to Count() == 1, but doesn't require the whole
+        // sequence to be enumerated.
+        static bool IsEqualToOne<T>(IEnumerable<T> items)
+        {
+            var count = 0;
+            foreach (var item in items)
+            {
+                if (count == 1)
+                {
+                    return false;
+                }
+
+                count++;
+            }
+
+            return count == 1;
+        }
+
+        // Returns true iff the given sequence has more than one item in it.
+        // This is equivalent to Count() > 1, but doesn't require the whole
+        // sequence to be enumerated.
+        static bool IsGreaterThanOne<T>(IEnumerable<T> items)
+        {
+            var count = 0;
+            foreach (var item in items)
+            {
+                if (count == 1)
+                {
+                    return true;
+                }
+
+                count++;
+            }
+
+            return false;
+        }
+
         // Gets the InReferences for node, ignoring those from ExpressionAnimations
         // that have a single instance because they are treated specially (they are initialized inline).
         static IEnumerable<ObjectData> FilteredInRefs(ObjectData node)
@@ -450,9 +488,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     }
 
                     // ... is the animation animating a property on the current node or its property set.
-                    bool isExpressionOnThisNode = false;
+                    var isExpressionOnThisNode = false;
 
-                    var compObject = node.Object as CompositionObject;
+                    var compObject = (CompositionObject)node.Object;
 
                     // Search the animators to find the animator for this ExpressionAnimation.
                     // It will be found iff the ExpressionAnimation is animating this node.
@@ -734,6 +772,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 // Build the object graph.
                 _objectGraph = ObjectGraph<ObjectData>.FromCompositionObject(graphRoot, includeVertices: true);
 
+                // Force inlining on CompositionPath nodes that are only referenced once, because they are always very simple.
+                foreach (var node in _objectGraph.Nodes.Where(
+                                        n => n.Type == Graph.NodeType.CompositionPath && 
+                                        IsEqualToOne(FilteredInRefs(n))))
+                {
+                    var pathSourceFactoryCall = CallFactoryFromFor(node, ((CompositionPath)node.Object).Source);
+                    node.ForceInline($"{New} CompositionPath({_stringifier.FactoryCall(pathSourceFactoryCall)})");
+                }
+
                 // Get the nodes that will produce factory methods.
                 var factoryNodes = _objectGraph.Nodes.Where(n => n.NeedsAFactory).ToArray();
 
@@ -754,21 +801,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                         node.RequiresStorage = true;
                         node.RequiresReadonlyStorage = true;
                     }
-                    else if (FilteredInRefs(node).Count() > 1)
+                    else if (IsGreaterThanOne(FilteredInRefs(node)))
                     {
                         // Node is referenced more than once so it requires storage.
                         node.RequiresStorage = true;
-                    }
-                }
-
-                // Force inlining on CompositionPath nodes that are only referenced once, because they are always very simple.
-                foreach (var node in factoryNodes)
-                {
-                    if (node.Type == Graph.NodeType.CompositionPath && FilteredInRefs(node).Count() == 1)
-                    {
-                        node.RequiresStorage = false;
-                        var pathSourceFactoryCall = CallFactoryFromFor(node, ((CompositionPath)node.Object).Source);
-                        node.ForceInline($"{New} CompositionPath({_stringifier.FactoryCall(pathSourceFactoryCall)})");
                     }
                 }
 
@@ -1026,10 +1062,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
                 builder.WriteLine();
 
-                // Write methods for each node.
+                // Write factory methods for each node.
                 foreach (var node in _nodes)
                 {
-                    WriteCodeForNode(builder, node);
+                    // Only generate a factory method if the node is not inlined into the caller.
+                    if (!node.Inlined)
+                    {
+                        WriteFactoryForNode(builder, node);
+                    }
                 }
 
                 // Write the end of the AnimatedVisual class.
@@ -1053,29 +1093,25 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 }
             }
 
-            // Generates code for the given node. The code is written into the given CodeBuilder.
-            void WriteCodeForNode(CodeBuilder builder, ObjectData node)
+            // Generates a factory method for the given node. The code is written into the given CodeBuilder.
+            void WriteFactoryForNode(CodeBuilder builder, ObjectData node)
             {
-                // Only generate if the node is not inlined into the caller.
-                if (!node.Inlined)
+                switch (node.Type)
                 {
-                    switch (node.Type)
-                    {
-                        case Graph.NodeType.CompositionObject:
-                            GenerateObjectFactory(builder, (CompositionObject)node.Object, node);
-                            break;
-                        case Graph.NodeType.CompositionPath:
-                            GenerateCompositionPathFactory(builder, (CompositionPath)node.Object, node);
-                            break;
-                        case Graph.NodeType.CanvasGeometry:
-                            GenerateCanvasGeometryFactory(builder, (CanvasGeometry)node.Object, node);
-                            break;
-                        case Graph.NodeType.LoadedImageSurface:
-                            // LoadedImageSurface is written out in the IDynamicAnimatedVisualSource class, so does not need to do anything here.
-                            break;
-                        default:
-                            throw new InvalidOperationException();
-                    }
+                    case Graph.NodeType.CompositionObject:
+                        GenerateObjectFactory(builder, (CompositionObject)node.Object, node);
+                        break;
+                    case Graph.NodeType.CompositionPath:
+                        GenerateCompositionPathFactory(builder, (CompositionPath)node.Object, node);
+                        break;
+                    case Graph.NodeType.CanvasGeometry:
+                        GenerateCanvasGeometryFactory(builder, (CanvasGeometry)node.Object, node);
+                        break;
+                    case Graph.NodeType.LoadedImageSurface:
+                        // LoadedImageSurface is written out in the IDynamicAnimatedVisualSource class, so does not need to do anything here.
+                        break;
+                    default:
+                        throw new InvalidOperationException();
                 }
             }
 
@@ -2411,36 +2447,28 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             internal void ForceInline(string replacementFactoryCall)
             {
                 _overriddenFactoryCall = replacementFactoryCall;
+                RequiresStorage = false;
+                RequiresReadonlyStorage = false;
             }
 
             // The name of the type of the object described by this node.
             // This is the name used as the return type of a factory method.
             internal string TypeName
-            {
-                get
+                => Type switch
                 {
-                    switch (Type)
-                    {
-                        case Graph.NodeType.CompositionObject:
-                            return ((CompositionObject)Object).Type.ToString();
-                        case Graph.NodeType.CompositionPath:
-                            return "CompositionPath";
-                        case Graph.NodeType.CanvasGeometry:
-                            return "CanvasGeometry";
-                        case Graph.NodeType.LoadedImageSurface:
-                            return "LoadedImageSurface";
-                        default:
-                            throw new InvalidOperationException();
-                    }
-                }
-            }
+                    Graph.NodeType.CompositionObject => ((CompositionObject)Object).Type.ToString(),
+                    Graph.NodeType.CompositionPath => "CompositionPath",
+                    Graph.NodeType.CanvasGeometry => "CanvasGeometry",
+                    Graph.NodeType.LoadedImageSurface => "LoadedImageSurface",
+                    _ => throw new InvalidOperationException(),
+                };
 
             // True iff a factory should be created for the given node.
             internal bool NeedsAFactory
             {
                 get
                 {
-                    return Type switch
+                    return !Inlined && Type switch
                     {
                         Graph.NodeType.CanvasGeometry => true,
                         Graph.NodeType.CompositionPath => true,
