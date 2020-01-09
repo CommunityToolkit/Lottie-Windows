@@ -165,7 +165,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         {
             if (obj.Animators.Count > 0)
             {
-                // Brush is animated. Give it a name based on the colors in the animation.
+                // Gradient stop is animated. Give it a name based on the colors in the animation.
                 var colorAnimation = obj.Animators.Where(a => a.AnimatedProperty == "Color").First().Animation;
                 if (colorAnimation is ColorKeyFrameAnimation colorKeyFrameAnimation)
                 {
@@ -179,7 +179,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             }
             else
             {
-                // Brush is not animated. Give it a name based on the color.
+                // Gradient stop is not animated. Give it a name based on the color.
                 return AppendDescription("GradientStop", obj.Color.Name);
             }
         }
