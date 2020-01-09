@@ -117,10 +117,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 CompositionObjectType.CompositionEllipseGeometry
                     => AppendDescription("Ellipse", Vector2AsId(((CompositionEllipseGeometry)obj).Radius)),
 
-                CompositionObjectType.ExpressionAnimation => DescribeExpressionAnimation(node, (ExpressionAnimation)obj),
-                CompositionObjectType.CompositionColorBrush => DescribeCompositionColorBrush(node, (CompositionColorBrush)obj),
-                CompositionObjectType.CompositionColorGradientStop => DescribeCompositionColorGradientStop(node, (CompositionColorGradientStop)obj),
-                CompositionObjectType.StepEasingFunction => DescribeStepEasingFunction(node, (StepEasingFunction)obj),
+                CompositionObjectType.ExpressionAnimation => DescribeExpressionAnimation((ExpressionAnimation)obj),
+                CompositionObjectType.CompositionColorBrush => DescribeCompositionColorBrush((CompositionColorBrush)obj),
+                CompositionObjectType.CompositionColorGradientStop => DescribeCompositionColorGradientStop((CompositionColorGradientStop)obj),
+                CompositionObjectType.StepEasingFunction => DescribeStepEasingFunction((StepEasingFunction)obj),
 
                 // All other cases, just ToString() the object.
                 _ => obj.ToString(),
@@ -132,7 +132,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             return StripPrefix(result, "Composition");
         }
 
-        static string DescribeCompositionColorBrush(TNode node, CompositionColorBrush obj)
+        static string DescribeCompositionColorBrush(CompositionColorBrush obj)
         {
             // Color brushes that are not animated get names describing their color.
             // Optimization ensures there will only be one brush for any one non-animated color.
@@ -161,7 +161,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             }
         }
 
-        static string DescribeCompositionColorGradientStop(TNode node, CompositionColorGradientStop obj)
+        static string DescribeCompositionColorGradientStop(CompositionColorGradientStop obj)
         {
             if (obj.Animators.Count > 0)
             {
@@ -184,7 +184,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             }
         }
 
-        static string DescribeExpressionAnimation(TNode node, ExpressionAnimation obj)
+        static string DescribeExpressionAnimation(ExpressionAnimation obj)
         {
             var expression = obj.Expression;
             var expressionType = expression.InferredType;
@@ -193,7 +193,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 : "ExpressionAnimation";
         }
 
-        static string DescribeStepEasingFunction(TNode node, StepEasingFunction obj)
+        static string DescribeStepEasingFunction(StepEasingFunction obj)
         {
             // Recognize 2 common patterns: HoldThenStep and StepThenHold
             if (obj.StepCount == 1 && obj.IsFinalStepSingleFrame && !obj.IsInitialStepSingleFrame)
@@ -241,25 +241,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             return result;
         }
 
-        static string AppendDescription(string baseName, string description)
-            => baseName + (string.IsNullOrWhiteSpace(description) ? string.Empty : $"_{description}");
-
-        // Returns the value from the given keyframe, or null.
-        static T? ValueFromKeyFrame<T>(KeyFrameAnimation<T>.KeyFrame kf)
-            where T : struct
-        {
-            return kf is KeyFrameAnimation<T>.ValueKeyFrame valueKf ? (T?)valueKf.Value : null;
-        }
-
-        static (T? First, T? Last) FirstAndLastValuesFromKeyFrame<T>(KeyFrameAnimation<T> animation)
-            where T : struct
-        {
-            // If there's only one keyframe, return it as the last value and leave the first value null.
-            var first = animation.KeyFrameCount > 1 ? ValueFromKeyFrame(animation.KeyFrames.First()) : null;
-            var last = ValueFromKeyFrame(animation.KeyFrames.Last());
-            return (first, last);
-        }
-
         // Returns a string for use in an identifier that describes a ColorKeyFrameAnimation, or null
         // if the animation cannot be described.
         static string DescribeAnimationRange(ColorKeyFrameAnimation animation) => DescribeAnimationRange(animation, v => v.Name);
@@ -281,6 +262,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 : null;
         }
 
+        // Returns the value from the given keyframe, or null.
+        static T? ValueFromKeyFrame<T>(KeyFrameAnimation<T>.KeyFrame kf)
+            where T : struct
+                => kf is KeyFrameAnimation<T>.ValueKeyFrame valueKf ? (T?)valueKf.Value : null;
+
+        static (T? First, T? Last) FirstAndLastValuesFromKeyFrame<T>(KeyFrameAnimation<T> animation)
+            where T : struct
+        {
+            // If there's only one keyframe, return it as the last value and leave the first value null.
+            var first = animation.KeyFrameCount > 1 ? ValueFromKeyFrame(animation.KeyFrames.First()) : null;
+            var last = ValueFromKeyFrame(animation.KeyFrames.Last());
+            return (first, last);
+        }
+
         static string TryGetAnimatedPropertyName(TNode node)
         {
             // Find the property name that references this animation.
@@ -294,8 +289,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             return animators.Length == 1 ? SanitizePropertyName(animators[0]) : null;
         }
 
-        static string SanitizePropertyName(string propertyName) =>
-            propertyName?.Replace(".", string.Empty);
+        static string AppendDescription(string baseName, string description)
+            => baseName + (string.IsNullOrWhiteSpace(description) ? string.Empty : $"_{description}");
+
+        static string SanitizePropertyName(string propertyName)
+            => propertyName?.Replace(".", string.Empty);
 
         // Removes the given prefix from a name.
         static string StripPrefix(string name, string prefix)
@@ -304,14 +302,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 : name;
 
         // A float for use in an id.
-        static string FloatAsId(float value) => value.ToString("0.###", CultureInfo.InvariantCulture).Replace('.', 'p').Replace('-', 'm');
+        static string FloatAsId(float value)
+            => value.ToString("0.###", CultureInfo.InvariantCulture).Replace('.', 'p').Replace('-', 'm');
 
         // A Vector2 for use in an id.
         static string Vector2AsId(Vector2 size)
-        {
-            return size.X == size.Y
-                ? FloatAsId(size.X)
-                : $"{FloatAsId(size.X)}x{FloatAsId(size.Y)}";
-        }
+            => size.X == size.Y ? FloatAsId(size.X) : $"{FloatAsId(size.X)}x{FloatAsId(size.Y)}";
     }
 }
