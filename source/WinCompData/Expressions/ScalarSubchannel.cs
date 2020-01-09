@@ -20,11 +20,59 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
         public string ChannelName { get; }
 
         /// <inheritdoc/>
-        protected override Expression Simplify() => this;
+        protected override Expression Simplify()
+        {
+            var channelNameLower = ChannelName?.ToLowerInvariant() ?? string.Empty;
+
+            switch (Value)
+            {
+                case Vector4 vector:
+                    switch (channelNameLower)
+                    {
+                        case "x":
+                            return vector.X;
+                        case "y":
+                            return vector.Y;
+                        case "z":
+                            return vector.Z;
+                        case "w":
+                            return vector.W;
+                    }
+
+                    break;
+
+                case Vector3 vector:
+                    switch (channelNameLower)
+                    {
+                        case "x":
+                            return vector.X;
+                        case "y":
+                            return vector.Y;
+                        case "z":
+                            return vector.Z;
+                    }
+
+                    break;
+
+                case Vector2 vector:
+                    switch (channelNameLower)
+                    {
+                        case "x":
+                            return vector.X;
+                        case "y":
+                            return vector.Y;
+                    }
+
+                    break;
+            }
+
+            return this;
+        }
 
         /// <inheritdoc/>
         protected override string CreateExpressionString() => $"{Value}.{ChannelName}";
 
+        /// <inheritdoc/>
         internal override bool IsAtomic => true;
 
         /// <inheritdoc/>

@@ -107,26 +107,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
         internal virtual bool IsAtomic => false;
 
         /// <inheritdoc/>
-        public sealed override string ToString()
-        {
-            // Expressions are immutable, so it's always safe to return a cached string representation.
-            return _expressionStringCache != null
-                ? _expressionStringCache
-                : _expressionStringCache = Simplified.CreateExpressionString();
-        }
+        // Expressions are immutable, so it's always safe to return a cached version.
+        public sealed override string ToString() =>
+            _expressionStringCache ?? (_expressionStringCache = Simplified.CreateExpressionString());
 
         /// <summary>
         /// Gets a simplified form of the expression. May be the same as this.
         /// </summary>
-        public Expression Simplified
-        {
-            get
-            {
-                return _simplifiedExpressionCache != null
-                    ? _simplifiedExpressionCache
-                    : _simplifiedExpressionCache = Simplify();
-            }
-        }
+        // Expressions are immutable, so it's always safe to return a cached version.
+        public Expression Simplified =>
+            _simplifiedExpressionCache ?? (_simplifiedExpressionCache = Simplify());
 
         /// <summary>
         /// Returns an equivalent expression, simplified if possible.
@@ -145,38 +135,46 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
 
         protected static bool IsZero(Expression expression)
         {
-            if (expression is Number numberExpression)
+            switch (expression)
             {
-                // Cast to a float for purposes of determining if it is equal to 1 because
-                // Composition will do this internally.
-                return (float)numberExpression.Value == 0;
+                case Number number:
+                    // Cast to a float for purposes of determining if it is equal to 0 because
+                    // Composition will do this internally.
+                    return (float)number.Value == 0;
+
+                case Vector2 vector:
+                    return Expressions.Vector2.IsZero(vector);
+
+                case Vector3 vector:
+                    return Expressions.Vector3.IsZero(vector);
+
+                case Vector4 vector:
+                    return Expressions.Vector4.IsZero(vector);
             }
-            else if (expression is Vector2 vector2Expression)
-            {
-                return Expressions.Vector2.IsZero(vector2Expression);
-            }
-            else
-            {
-                return false;
-            }
+
+            return false;
         }
 
         protected static bool IsOne(Expression expression)
         {
-            if (expression is Number numberExpression)
+            switch (expression)
             {
-                // Cast to a float for purposes of determining if it is equal to 1 because
-                // Composition will do this internally.
-                return (float)numberExpression.Value == 1;
+                case Number number:
+                    // Cast to a float for purposes of determining if it is equal to 1 because
+                    // Composition will do this internally.
+                    return (float)number.Value == 1;
+
+                case Vector2 vector:
+                    return Expressions.Vector2.IsOne(vector);
+
+                case Vector3 vector:
+                    return Expressions.Vector3.IsOne(vector);
+
+                case Vector4 vector:
+                    return Expressions.Vector4.IsOne(vector);
             }
-            else if (expression is Vector2 vector2Expression)
-            {
-                return Expressions.Vector2.IsOne(vector2Expression);
-            }
-            else
-            {
-                return false;
-            }
+
+            return false;
         }
     }
 }
