@@ -25,7 +25,7 @@ Local builds can be installed from your bin\nupkg directory:
 
 Local builds can be run directly:
 
-    dotnet f:\GitHub\Lottie-Windows\LottieGen\bin\AnyCpu\Debug\netcoreapp3.1\lottiegen.exe
+    f:\GitHub\Lottie-Windows\LottieGen\bin\AnyCpu\Debug\netcoreapp3.1\lottiegen.exe
 
 ## Updating
     dotnet tool update -g LottieGen
