@@ -45,7 +45,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                         baseName = DescribeCompositionObject(node, (CompositionObject)node.Object);
                         break;
                     case Graph.NodeType.CompositionPath:
-                        baseName = "CompositionPath";
+                        baseName = "Path";
                         break;
                     case Graph.NodeType.CanvasGeometry:
                         baseName = "Geometry";
