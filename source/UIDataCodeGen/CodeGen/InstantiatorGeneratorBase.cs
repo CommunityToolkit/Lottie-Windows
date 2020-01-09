@@ -777,8 +777,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                                         n => n.Type == Graph.NodeType.CompositionPath &&
                                         IsEqualToOne(FilteredInRefs(n))))
                 {
-                    var pathSourceFactoryCall = CallFactoryFromFor(node, ((CompositionPath)node.Object).Source);
-                    node.ForceInline($"{New} CompositionPath({_stringifier.FactoryCall(pathSourceFactoryCall)})");
+                    node.ForceInline(() =>
+                    {
+                        var inlinedFactoryCode = CallFactoryFromFor(node, ((CompositionPath)node.Object).Source);
+                        return $"{New} CompositionPath({_stringifier.FactoryCall(inlinedFactoryCode)})";
+                    });
                 }
 
                 // Get the nodes that will produce factory methods.
@@ -2318,7 +2321,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         // A node in the object graph, annotated with extra stuff to assist in code generation.
         sealed class ObjectData : Graph.Node<ObjectData>
         {
-            string _overriddenFactoryCall;
+            Func<string> _overriddenFactoryCall;
             Dictionary<ObjectData, string> _callFactoryFromForCache;
 
             public Dictionary<ObjectData, string> CallFactoryFromForCache
@@ -2345,16 +2348,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             // been inlined, this can generate the code into the returned string, otherwise
             // it returns code for calling the factory.
             internal string FactoryCall()
-            {
-                if (Inlined)
-                {
-                    return _overriddenFactoryCall;
-                }
-                else
-                {
-                    return $"{Name}()";
-                }
-            }
+                 => Inlined ? _overriddenFactoryCall() : $"{Name}()";
 
             IEnumerable<string> GetAncestorShortComments()
             {
@@ -2437,14 +2431,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             internal bool UsesCompositeEffect => Object is CompositionEffectBrush compositeEffectBrush && compositeEffectBrush.GetEffect().Type == Mgce.GraphicsEffectType.CompositeEffect;
 
             // Identifies the byte array of a LoadedImageSurface.
-            internal string LoadedImageSurfaceBytesFieldName => $"s_{Name}_Bytes";
+            internal string LoadedImageSurfaceBytesFieldName => IsLoadedImageSurface ? $"s_{Name}_Bytes" : null;
 
             internal Uri LoadedImageSurfaceImageUri { get; set; }
 
             // True if the code to create the object will be generated inline.
             internal bool Inlined => _overriddenFactoryCall != null;
 
-            internal void ForceInline(string replacementFactoryCall)
+            internal void ForceInline(Func<string> replacementFactoryCall)
             {
                 _overriddenFactoryCall = replacementFactoryCall;
                 RequiresStorage = false;
@@ -2502,7 +2496,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             }
 
             // For debugging purposes only.
-            public override string ToString() => Name == null ? $"{TypeName} {InReferences.Length}" : $"{Name} {InReferences.Length}";
+            public override string ToString() => Name == null ? $"{TypeName} {Position}" : $"{Name} {Position}";
 
             // Sets the first character to lower case.
             static string CamelCase(string value) => $"_{char.ToLowerInvariant(value[0])}{value.Substring(1)}";
