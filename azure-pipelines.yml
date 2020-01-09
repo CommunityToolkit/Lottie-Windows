@@ -7,24 +7,27 @@ pr:
 - rel/*
 
 pool:
-  vmImage: vs2017-win2016
+  vmImage: windows-2019
 
 variables: 
   BuildConfiguration: Lottie-Windows
 
 steps:
+# Set up a VS build environment.
 - task: BatchScript@1
   inputs:
-    filename: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise\\Common7\\Tools\\VsDevCmd.bat"
+    filename: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\Common7\\Tools\\VsDevCmd.bat"
     arguments: -no_logo
     modifyEnvironment: true
   displayName: Setup Environment Variables
-  
-- task: NuGetToolInstaller@0
-  displayName: Use NuGet 4.7.0
-  inputs:
-    versionSpec: 4.7.0
 
+# Install NuGet tools.  
+- task: NuGetToolInstaller@0
+  displayName: Use NuGet 5.0.0
+  inputs:
+    versionSpec: 5.0.0
+
+# Install Nerbank.GitVersioning.
 - task: DotNetCoreCLI@2  
   inputs:
     command: custom
@@ -32,22 +35,34 @@ steps:
     arguments: install --tool-path . nbgv
   displayName: Install NBGV tool
 
-# .NET Core SDK Installer
-- task: DotNetCoreInstaller@0
+# .NET Core SDK Installer.
+# 2.2.x is needed to build the UWP code.
+# 3.1.x is used for everything else that the UWP apps don't depend on.
+- task: UseDotNet@2
   inputs:
     packageType: 'sdk' # Options: runtime, sdk
-    version: '2.2.100' 
+    version: '2.2.x' 
 
+- task: UseDotNet@2
+  inputs:
+    packageType: 'sdk' # Options: runtime, sdk
+    version: '3.1.x' 
+
+# Nerdbank.GitVersioning
 - script: nbgv cloud
   displayName: Set Version
 
+# Install the Windows SDK. Version 18362 (Windows 1909 release).
+# This is needed to build the UWP code.
 - powershell: .\build\Install-WindowsSdkISO.ps1 18362
   displayName: Insider SDK
 
+# Run the build.
 - powershell: .\build.ps1 -target=Package
   displayName: Build
   workingDirectory: .\build
 
+# Sign the result of the build.
 - task: PowerShell@2
   displayName: Authenticode Sign Packages
   inputs:
@@ -58,6 +73,7 @@ steps:
     ArtifactDirectory: bin\nupkg
   condition: and(succeeded(), not(eq(variables['build.reason'], 'PullRequest')), not(eq(variables['SignClientSecret'], '')), not(eq(variables['SignClientUser'], '')))
 
+# Publish the results of the build.
 - task: PublishBuildArtifacts@1
   displayName: Publish Package Artifacts
   inputs:

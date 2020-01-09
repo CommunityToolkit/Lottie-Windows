@@ -91,6 +91,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             }
         }
 
+        static string AppendDescription(string baseName, string description)
+            => baseName + (string.IsNullOrWhiteSpace(description) ? string.Empty : $"_{description}");
+
         // Returns the value from the given keyframe, or null.
         static T? ValueFromKeyFrame<T>(KeyFrameAnimation<T>.KeyFrame kf)
             where T : struct
@@ -109,19 +112,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         // Returns a string for use in an identifier that describes a ColorKeyFrameAnimation, or null
         // if the animation cannot be described.
-        static string DescribeAnimationRange(ColorKeyFrameAnimation animation)
-        {
-            (var firstValue, var lastValue) = FirstAndLastValuesFromKeyFrame(animation);
-            return (firstValue.HasValue && lastValue.HasValue) ? $"{firstValue.Value.Name}_to_{lastValue.Value.Name}" : null;
-        }
+        static string DescribeAnimationRange(ColorKeyFrameAnimation animation) => DescribeAnimationRange(animation, v => v.Name);
 
-        static string DescribeAnimationRange(ScalarKeyFrameAnimation animation)
+        // Returns a string for use in an identifier that describes a ScalarKeyFrameAnimation, or null
+        // if the animation cannot be described.
+        static string DescribeAnimationRange(ScalarKeyFrameAnimation animation) => DescribeAnimationRange(animation, FloatAsId);
+
+        // Returns a string for use in an identifier that describes a KeyFrameAnimation, or null
+        // if the animation cannot be described.
+        static string DescribeAnimationRange<T>(KeyFrameAnimation<T> animation, Func<T, string> valueFormatter)
+            where T : struct
         {
             (var firstValue, var lastValue) = FirstAndLastValuesFromKeyFrame(animation);
             return lastValue.HasValue
                 ? firstValue.HasValue
-                    ? $"{FloatId(firstValue.Value)}_to_{FloatId(lastValue.Value)}"
-                    : $"to_{FloatId(lastValue.Value)}"
+                    ? $"{valueFormatter(firstValue.Value)}_to_{valueFormatter(lastValue.Value)}"
+                    : $"to_{valueFormatter(lastValue.Value)}"
                 : null;
         }
 
@@ -135,13 +141,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                  where animator.Animation == node.Object
                  select animator.AnimatedProperty).Distinct().ToArray();
 
-            return animators.Length == 1 ? animators[0] : null;
+            return animators.Length == 1 ? SanitizePropertyName(animators[0]) : null;
         }
 
-        static string SanitizePropertyName(string propertyName)
-        {
-            return propertyName == null ? null : propertyName.Replace(".", string.Empty);
-        }
+        static string SanitizePropertyName(string propertyName) =>
+            propertyName?.Replace(".", string.Empty);
 
         static string DescribeCompositionObject(TNode node, CompositionObject obj)
         {
@@ -149,48 +153,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             switch (obj.Type)
             {
                 case CompositionObjectType.ColorKeyFrameAnimation:
-                    {
-                        result = "ColorAnimation";
-                        var description = DescribeAnimationRange((ColorKeyFrameAnimation)obj);
-                        if (description != null)
-                        {
-                            result += $"_{description}";
-                        }
-                    }
-
+                    result = AppendDescription("ColorAnimation", DescribeAnimationRange((ColorKeyFrameAnimation)obj));
                     break;
                 case CompositionObjectType.ScalarKeyFrameAnimation:
-                    {
-                        var animatedPropertyName = SanitizePropertyName(TryGetAnimatedPropertyName(node));
-                        result = $"{animatedPropertyName}ScalarAnimation";
-                        var description = DescribeAnimationRange((ScalarKeyFrameAnimation)obj);
-                        if (description != null)
-                        {
-                            result += $"_{description}";
-                       }
-                    }
-
+                    result = AppendDescription($"{TryGetAnimatedPropertyName(node)}ScalarAnimation", DescribeAnimationRange((ScalarKeyFrameAnimation)obj));
                     break;
                 case CompositionObjectType.Vector2KeyFrameAnimation:
-                    {
-                        var animatedPropertyName = SanitizePropertyName(TryGetAnimatedPropertyName(node));
-                        result = $"{animatedPropertyName}Vector2Animation";
-                    }
-
+                    result = $"{TryGetAnimatedPropertyName(node)}Vector2Animation";
                     break;
                 case CompositionObjectType.Vector3KeyFrameAnimation:
-                    {
-                        var animatedPropertyName = SanitizePropertyName(TryGetAnimatedPropertyName(node));
-                        result = $"{animatedPropertyName}Vector3Animation";
-                    }
-
+                    result = $"{TryGetAnimatedPropertyName(node)}Vector3Animation";
                     break;
                 case CompositionObjectType.Vector4KeyFrameAnimation:
-                    {
-                        var animatedPropertyName = SanitizePropertyName(TryGetAnimatedPropertyName(node));
-                        result = $"{animatedPropertyName}Vector4Animation";
-                    }
-
+                    result = $"{TryGetAnimatedPropertyName(node)}Vector4Animation";
                     break;
                 case CompositionObjectType.CompositionColorBrush:
                     // Color brushes that are not animated get names describing their color.
@@ -200,10 +175,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     {
                         // Brush is animated. Give it a name based on the colors in the animation.
                         var colorAnimation = brush.Animators.Where(a => a.AnimatedProperty == "Color").First().Animation;
-                        if (colorAnimation.Type == CompositionObjectType.ColorKeyFrameAnimation)
+                        if (colorAnimation is ColorKeyFrameAnimation colorKeyFrameAnimation)
                         {
-                            var description = DescribeAnimationRange((ColorKeyFrameAnimation)colorAnimation);
-                            result = "AnimatedColorBrush" + (description != null ? $"_{description}" : string.Empty);
+                            result = AppendDescription("AnimatedColorBrush", DescribeAnimationRange(colorKeyFrameAnimation));
                         }
                         else
                         {
@@ -218,7 +192,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     else
                     {
                         // Brush is not animated. Give it a name based on the color.
-                        result = brush.Color.HasValue ? $"ColorBrush_{brush.Color.Value.Name}" : "ColorBrush";
+                        result = AppendDescription("ColorBrush", brush.Color?.Name);
                     }
 
                     break;
@@ -227,28 +201,35 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     if (stop.Animators.Count > 0)
                     {
                         // Brush is animated. Give it a name based on the colors in the animation.
-                        var colorAnimation = (ColorKeyFrameAnimation)stop.Animators.Where(a => a.Animation is ColorKeyFrameAnimation).First().Animation;
-                        var description = DescribeAnimationRange(colorAnimation);
-                        result = "AnimatedGradientStop" + (description != null ? $"_{description}" : string.Empty);
+                        var colorAnimation = stop.Animators.Where(a => a.AnimatedProperty == "Color").First().Animation;
+                        if (colorAnimation is ColorKeyFrameAnimation colorKeyFrameAnimation)
+                        {
+                            result = AppendDescription("AnimatedGradientStop", DescribeAnimationRange(colorKeyFrameAnimation));
+                        }
+                        else
+                        {
+                            // The color is bound to an expression.
+                            result = "BoundColorStop";
+                        }
                     }
                     else
                     {
                         // Brush is not animated. Give it a name based on the color.
-                        result = $"GradientStop_{stop.Color.Name}";
+                        result = AppendDescription("GradientStop", stop.Color.Name);
                     }
 
                     break;
                 case CompositionObjectType.CompositionRectangleGeometry:
                     var rectangle = (CompositionRectangleGeometry)obj;
-                    result = $"Rectangle_{Vector2Id(rectangle.Size)}";
+                    result = AppendDescription("Rectangle", Vector2AsId(rectangle.Size));
                     break;
                 case CompositionObjectType.CompositionRoundedRectangleGeometry:
                     var roundedRectangle = (CompositionRoundedRectangleGeometry)obj;
-                    result = $"RoundedRectangle_{Vector2Id(roundedRectangle.Size)}";
+                    result = AppendDescription("RoundedRectangle", Vector2AsId(roundedRectangle.Size));
                     break;
                 case CompositionObjectType.CompositionEllipseGeometry:
                     var ellipse = (CompositionEllipseGeometry)obj;
-                    result = $"Ellipse_{Vector2Id(ellipse.Radius)}";
+                    result = AppendDescription("Ellipse", Vector2AsId(ellipse.Radius));
                     break;
                 case CompositionObjectType.ExpressionAnimation:
                     var expressionAnimation = (ExpressionAnimation)obj;
@@ -316,11 +297,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
                     // Replace any disallowed character with underscores.
                     var cleanedImageName = new string((from ch in imageFileNameWithoutExtension
-                                                        select char.IsLetterOrDigit(ch) ? ch : '_').ToArray());
+                                                       select char.IsLetterOrDigit(ch) ? ch : '_').ToArray());
 
                     // Remove any duplicated underscores.
                     cleanedImageName = cleanedImageName.Replace("__", "_");
-                    result = $"Image_{cleanedImageName}";
+                    result = AppendDescription("Image", cleanedImageName);
                     break;
                 default:
                     throw new InvalidOperationException();
@@ -329,14 +310,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             return result;
         }
 
-        static string FloatId(float value) => value.ToString("0.###", CultureInfo.InvariantCulture).Replace('.', 'p').Replace('-', 'm');
+        // A float for use in an id.
+        static string FloatAsId(float value) => value.ToString("0.###", CultureInfo.InvariantCulture).Replace('.', 'p').Replace('-', 'm');
 
         // A Vector2 for use in an id.
-        static string Vector2Id(Vector2 size)
+        static string Vector2AsId(Vector2 size)
         {
             return size.X == size.Y
-                ? FloatId(size.X)
-                : $"{FloatId(size.X)}x{FloatId(size.Y)}";
+                ? FloatAsId(size.X)
+                : $"{FloatAsId(size.X)}x{FloatAsId(size.Y)}";
         }
     }
 }

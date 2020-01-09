@@ -5,14 +5,11 @@
 ##########################################################################
 
 <#
-
 .SYNOPSIS
 This is a Powershell script to bootstrap a Cake build.
-
 .DESCRIPTION
 This Powershell script will download NuGet if missing, restore NuGet tools (including Cake)
 and execute your Cake build script with the parameters you provide.
-
 .PARAMETER Script
 The build script to execute.
 .PARAMETER Target
@@ -29,10 +26,8 @@ Performs a dry run.
 Skips restoring of packages.
 .PARAMETER ScriptArgs
 Remaining arguments are added here.
-
 .LINK
 https://cakebuild.net
-
 #>
 
 [CmdletBinding()]
@@ -59,7 +54,10 @@ try {
     # Use integers because the enumeration values for TLS 1.2 and TLS 1.1 won't
     # exist in .NET 4.0, even though they are addressable if .NET 4.5+ is
     # installed (.NET 4.5 is an in-place upgrade).
-    [System.Net.ServicePointManager]::SecurityProtocol = 3072 -bor 768 -bor 192 -bor 48
+    # PowerShell Core already has support for TLS 1.2 so we can skip this if running in that.
+    if (-not $IsCoreCLR) {
+        [System.Net.ServicePointManager]::SecurityProtocol = 3072 -bor 768 -bor 192 -bor 48
+    }
   } catch {
     Write-Output 'Unable to set PowerShell to use TLS 1.2 and TLS 1.1 due to old .NET Framework installed. If you see underlying connection closed or trust errors, you may need to upgrade to .NET Framework 4.5+ and PowerShell v3'
   }
@@ -118,7 +116,7 @@ $MODULES_PACKAGES_CONFIG = Join-Path $MODULES_DIR "packages.config"
 # Make sure tools folder exists
 if ((Test-Path $PSScriptRoot) -and !(Test-Path $TOOLS_DIR)) {
     Write-Verbose -Message "Creating tools directory..."
-    New-Item -Path $TOOLS_DIR -Type directory | out-null
+    New-Item -Path $TOOLS_DIR -Type Directory | Out-Null
 }
 
 # Make sure that packages.config exist.
@@ -155,7 +153,12 @@ if (!(Test-Path $NUGET_EXE)) {
 }
 
 # Save nuget.exe path to environment to be available to child processed
-$ENV:NUGET_EXE = $NUGET_EXE
+$env:NUGET_EXE = $NUGET_EXE
+$env:NUGET_EXE_INVOCATION = if ($IsLinux -or $IsMacOS) {
+    "mono `"$NUGET_EXE`""
+} else {
+    "`"$NUGET_EXE`""
+}
 
 # Restore tools from NuGet?
 if(-Not $SkipToolPackageRestore.IsPresent) {
@@ -163,16 +166,17 @@ if(-Not $SkipToolPackageRestore.IsPresent) {
     Set-Location $TOOLS_DIR
 
     # Check for changes in packages.config and remove installed tools if true.
-    [string] $md5Hash = MD5HashFile($PACKAGES_CONFIG)
+    [string] $md5Hash = MD5HashFile $PACKAGES_CONFIG
     if((!(Test-Path $PACKAGES_CONFIG_MD5)) -Or
-      ($md5Hash -ne (Get-Content $PACKAGES_CONFIG_MD5 ))) {
+    ($md5Hash -ne (Get-Content $PACKAGES_CONFIG_MD5 ))) {
         Write-Verbose -Message "Missing or changed package.config hash..."
         Get-ChildItem -Exclude packages.config,nuget.exe,Cake.Bakery |
-        Remove-Item -Recurse
+        Remove-Item -Recurse -Force
     }
 
     Write-Verbose -Message "Restoring tools from NuGet..."
-    $NuGetOutput = Invoke-Expression "&`"$NUGET_EXE`" install -ExcludeVersion -OutputDirectory `"$TOOLS_DIR`""
+    
+    $NuGetOutput = Invoke-Expression "& $env:NUGET_EXE_INVOCATION install -ExcludeVersion -OutputDirectory `"$TOOLS_DIR`""
 
     if ($LASTEXITCODE -ne 0) {
         Throw "An error occurred while restoring NuGet tools."
@@ -181,7 +185,7 @@ if(-Not $SkipToolPackageRestore.IsPresent) {
     {
         $md5Hash | Out-File $PACKAGES_CONFIG_MD5 -Encoding "ASCII"
     }
-    Write-Verbose -Message ($NuGetOutput | out-string)
+    Write-Verbose -Message ($NuGetOutput | Out-String)
 
     Pop-Location
 }
@@ -192,13 +196,13 @@ if (Test-Path $ADDINS_PACKAGES_CONFIG) {
     Set-Location $ADDINS_DIR
 
     Write-Verbose -Message "Restoring addins from NuGet..."
-    $NuGetOutput = Invoke-Expression "&`"$NUGET_EXE`" install -ExcludeVersion -OutputDirectory `"$ADDINS_DIR`""
+    $NuGetOutput = Invoke-Expression "& $env:NUGET_EXE_INVOCATION install -ExcludeVersion -OutputDirectory `"$ADDINS_DIR`""
 
     if ($LASTEXITCODE -ne 0) {
         Throw "An error occurred while restoring NuGet addins."
     }
 
-    Write-Verbose -Message ($NuGetOutput | out-string)
+    Write-Verbose -Message ($NuGetOutput | Out-String)
 
     Pop-Location
 }
@@ -209,13 +213,13 @@ if (Test-Path $MODULES_PACKAGES_CONFIG) {
     Set-Location $MODULES_DIR
 
     Write-Verbose -Message "Restoring modules from NuGet..."
-    $NuGetOutput = Invoke-Expression "&`"$NUGET_EXE`" install -ExcludeVersion -OutputDirectory `"$MODULES_DIR`""
+    $NuGetOutput = Invoke-Expression "& $env:NUGET_EXE_INVOCATION install -ExcludeVersion -OutputDirectory `"$MODULES_DIR`""
 
     if ($LASTEXITCODE -ne 0) {
         Throw "An error occurred while restoring NuGet modules."
     }
 
-    Write-Verbose -Message ($NuGetOutput | out-string)
+    Write-Verbose -Message ($NuGetOutput | Out-String)
 
     Pop-Location
 }
@@ -225,9 +229,16 @@ if (!(Test-Path $CAKE_EXE)) {
     Throw "Could not find Cake.exe at $CAKE_EXE"
 }
 
-# Build Cake arguments
-$cakeArguments = @("$Script");
-if ($Target) { $cakeArguments += "-target=$Target" }
+$CAKE_EXE_INVOCATION = if ($IsLinux -or $IsMacOS) {
+    "mono `"$CAKE_EXE`""
+} else {
+    "`"$CAKE_EXE`""
+}
+
+ # Build an array (not a string) of Cake arguments to be joined later
+$cakeArguments = @()
+if ($Script) { $cakeArguments += "`"$Script`"" }
+if ($Target) { $cakeArguments += "-target=`"$Target`"" }
 if ($Configuration) { $cakeArguments += "-configuration=$Configuration" }
 if ($Verbosity) { $cakeArguments += "-verbosity=$Verbosity" }
 if ($ShowDescription) { $cakeArguments += "-showdescription" }
@@ -236,5 +247,5 @@ $cakeArguments += $ScriptArgs
 
 # Start Cake
 Write-Host "Running build script..."
-&$CAKE_EXE $cakeArguments
+Invoke-Expression "& $CAKE_EXE_INVOCATION $($cakeArguments -join " ")"
 exit $LASTEXITCODE

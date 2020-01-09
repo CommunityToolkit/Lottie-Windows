@@ -1,7 +1,7 @@
 #module "Cake.Longpath.Module"
 
-#addin "Cake.FileHelpers"
-#addin "Cake.Powershell"
+#addin nuget:?package=Cake.FileHelpers&version=3.2.1
+#addin nuget:?package=Cake.Powershell&version=0.4.8
 
 using System;
 using System.Linq;
@@ -15,11 +15,11 @@ var target = Argument("target", "Default");
 var configuration = Argument("configuration", "Release");
 
 //////////////////////////////////////////////////////////////////////
-// VERSIONS
+// VERSIONS OF TOOLS TO USE
 //////////////////////////////////////////////////////////////////////
 
-var gitVersioningVersion = "2.1.65";
-var inheritDocVersion = "2.0.2";
+var gitVersioningVersion = "3.0.28";
+var inheritDocVersion = "2.3.0";
 
 //////////////////////////////////////////////////////////////////////
 // VARIABLES

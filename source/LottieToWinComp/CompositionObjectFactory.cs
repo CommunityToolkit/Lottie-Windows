@@ -117,7 +117,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return result;
         }
 
-        internal CompositionColorGradientStop CreateColorGradientStop() => _compositor.CreateColorGradientStop(0, default);
+        internal CompositionColorGradientStop CreateColorGradientStop() => _compositor.CreateColorGradientStop();
 
         internal CompositionColorGradientStop CreateColorGradientStop(float offset, Color color) => _compositor.CreateColorGradientStop(offset, WuiColor(color));
 

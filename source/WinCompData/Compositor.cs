@@ -17,6 +17,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 
         public CompositionColorBrush CreateColorBrush(Wui.Color color) => new CompositionColorBrush(color);
 
+        public CompositionColorGradientStop CreateColorGradientStop() => new CompositionColorGradientStop();
+
         public CompositionColorGradientStop CreateColorGradientStop(float offset, Wui.Color color) => new CompositionColorGradientStop(offset, color);
 
         public ColorKeyFrameAnimation CreateColorKeyFrameAnimation() => new ColorKeyFrameAnimation();
