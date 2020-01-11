@@ -435,18 +435,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         // sequence to be enumerated.
         static bool IsEqualToOne<T>(IEnumerable<T> items)
         {
-            var count = 0;
+            var seenOne = false;
             foreach (var item in items)
             {
-                if (count == 1)
+                if (seenOne)
                 {
+                    // Already seen one item - the sequence has more than one item.
                     return false;
                 }
 
-                count++;
+                seenOne = true;
             }
 
-            return count == 1;
+            return seenOne;
         }
 
         // Returns true iff the given sequence has more than one item in it.
@@ -454,17 +455,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         // sequence to be enumerated.
         static bool IsGreaterThanOne<T>(IEnumerable<T> items)
         {
-            var count = 0;
+            var seenOne = false;
             foreach (var item in items)
             {
-                if (count == 1)
+                if (seenOne)
                 {
+                    // Already seen one item - the sequence has at least one item.
                     return true;
                 }
 
-                count++;
+                seenOne = true;
             }
 
+            // The sequence is empty.
             return false;
         }
 
@@ -487,7 +490,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                         continue;
                     }
 
-                    // ... is the animation animating a property on the current node or its property set.
+                    // ... is the animation animating a property on the current node or its property set?
                     var isExpressionOnThisNode = false;
 
                     var compObject = (CompositionObject)node.Object;
@@ -772,7 +775,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 // Build the object graph.
                 _objectGraph = ObjectGraph<ObjectData>.FromCompositionObject(graphRoot, includeVertices: true);
 
-                // Force inlining on CompositionPath nodes that are only referenced once, because they are always very simple.
+                // Force inlining on CompositionPath nodes that are only referenced once, because their factories
+                // are always very simple.
                 foreach (var node in _objectGraph.Nodes.Where(
                                         n => n.Type == Graph.NodeType.CompositionPath &&
                                         IsEqualToOne(FilteredInRefs(n))))
