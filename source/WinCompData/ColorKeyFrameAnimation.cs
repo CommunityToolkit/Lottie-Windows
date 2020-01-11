@@ -8,7 +8,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 #if PUBLIC_WinCompData
     public
 #endif
-    sealed class ColorKeyFrameAnimation : KeyFrameAnimation<Wui.Color>
+    sealed class ColorKeyFrameAnimation : KeyFrameAnimation<Wui.Color, Expressions.Color>
     {
         internal ColorKeyFrameAnimation()
             : base(null)

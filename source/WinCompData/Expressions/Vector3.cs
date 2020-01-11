@@ -7,44 +7,78 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
 #if PUBLIC_WinCompData
     public
 #endif
-    sealed class Vector3 : Expression
+    abstract class Vector3 : Expression_<Vector3>
     {
-        internal Vector3(Expression x, Expression y, Expression z)
+        protected Vector3()
         {
-            X = x;
-            Y = y;
-            Z = z;
         }
 
-        public new Expression X { get; }
+        public virtual Scalar X => Channel("X");
 
-        public new Expression Y { get; }
+        public virtual Scalar Y => Channel("Y");
 
-        public new Expression Z { get; }
+        public virtual Scalar Z => Channel("Z");
 
         /// <inheritdoc/>
-        protected override Expression Simplify()
-        {
-            var x = X.Simplified;
-            var y = Y.Simplified;
-            var z = Z.Simplified;
+        public override sealed ExpressionType Type => ExpressionType.Vector3;
 
-            return x == X && y == Y && z == Z
-                ? this
-                : new Vector3(x, y, z);
+        internal static Vector3 Zero { get; } = new Constructed(Expressions.Scalar.Zero, Expressions.Scalar.Zero, Expressions.Scalar.Zero);
+
+        internal static Vector3 One { get; } = new Constructed(Expressions.Scalar.One, Expressions.Scalar.One, Expressions.Scalar.One);
+
+        internal bool IsZero => Simplified is Constructed constructed && constructed.X.IsZero && constructed.Y.IsZero && constructed.Z.IsZero;
+
+        internal bool IsOne => Simplified is Constructed constructed && constructed.X.IsOne && constructed.Y.IsOne && constructed.Z.IsOne;
+
+        internal sealed class Asserted : Vector3
+        {
+            readonly string _text;
+
+            public Asserted(string text)
+            {
+                _text = text;
+            }
+
+            /// <inheritdoc/>
+            protected override string CreateExpressionText() => _text;
+
+            protected override bool IsAtomic => true;
         }
 
-        /// <inheritdoc/>
-        protected override string CreateExpressionString()
-            => $"Vector3({Parenthesize(X)},{Parenthesize(Y)},{Parenthesize(Z)})";
+        internal sealed class Constructed : Vector3
+        {
+            internal Constructed(Scalar x, Scalar y, Scalar z)
+            {
+                X = x;
+                Y = y;
+                Z = z;
+            }
 
-        internal static bool IsZero(Vector3 value) => IsZero(value.X) && IsZero(value.Y) && IsZero(value.Z);
+            public override Scalar X { get; }
 
-        internal static bool IsOne(Vector3 value) => IsOne(value.X) && IsOne(value.Y) && IsOne(value.Z);
+            public override Scalar Y { get; }
 
-        internal override bool IsAtomic => true;
+            public override Scalar Z { get; }
 
-        /// <inheritdoc/>
-        public override ExpressionType InferredType => new ExpressionType(TypeConstraint.Vector3);
+            /// <inheritdoc/>
+            protected override Vector3 Simplify()
+            {
+                var x = X.Simplified;
+                var y = Y.Simplified;
+                var z = Z.Simplified;
+
+                return x == X && y == Y && z == Z
+                    ? this
+                    : Vector3(x, y, z);
+            }
+
+            /// <inheritdoc/>
+            protected override string CreateExpressionText()
+                => $"Vector3({Parenthesize(X)},{Parenthesize(Y)},{Parenthesize(Z)})";
+
+            protected override bool IsAtomic => true;
+        }
+
+        Scalar Channel(string channelName) => Expressions.Scalar.Channel(this, channelName);
     }
 }

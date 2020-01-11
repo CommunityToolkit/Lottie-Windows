@@ -10,6 +10,7 @@ using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData;
+using Expr = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions;
 using Wg = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wg;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
@@ -72,11 +73,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
                 CanonicalizeExpressionAnimations();
 
-                CanonicalizeKeyFrameAnimations<KeyFrameAnimation<Color>, Color>(CompositionObjectType.ColorKeyFrameAnimation);
-                CanonicalizeKeyFrameAnimations<KeyFrameAnimation<float>, float>(CompositionObjectType.ScalarKeyFrameAnimation);
-                CanonicalizeKeyFrameAnimations<KeyFrameAnimation<Vector2>, Vector2>(CompositionObjectType.Vector2KeyFrameAnimation);
-                CanonicalizeKeyFrameAnimations<KeyFrameAnimation<Vector3>, Vector3>(CompositionObjectType.Vector3KeyFrameAnimation);
-                CanonicalizeKeyFrameAnimations<KeyFrameAnimation<Vector4>, Vector4>(CompositionObjectType.Vector4KeyFrameAnimation);
+                CanonicalizeKeyFrameAnimations<KeyFrameAnimation<Color, Expr.Color>, Color, Expr.Color>(CompositionObjectType.ColorKeyFrameAnimation);
+                CanonicalizeKeyFrameAnimations<KeyFrameAnimation<float, Expr.Scalar>, float, Expr.Scalar>(CompositionObjectType.ScalarKeyFrameAnimation);
+                CanonicalizeKeyFrameAnimations<KeyFrameAnimation<Vector2, Expr.Vector2>, Vector2, Expr.Vector2>(CompositionObjectType.Vector2KeyFrameAnimation);
+                CanonicalizeKeyFrameAnimations<KeyFrameAnimation<Vector3, Expr.Vector3>, Vector3, Expr.Vector3>(CompositionObjectType.Vector3KeyFrameAnimation);
+                CanonicalizeKeyFrameAnimations<KeyFrameAnimation<Vector4, Expr.Vector4>, Vector4, Expr.Vector4>(CompositionObjectType.Vector4KeyFrameAnimation);
 
                 // ColorKeyFrameAnimations and ExpressionAnimations must be canonicalized before color brushes are canonicalized.
                 CanonicalizeColorBrushes();
@@ -180,26 +181,28 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 return (animation.Expression, animation.Target, rp0.Key, CanonicalObject<CompositionObject>(rp0.Value));
             }
 
-            void CanonicalizeKeyFrameAnimations<TA, TKFA>(CompositionObjectType animationType)
-                where TA : KeyFrameAnimation<TKFA>
+            void CanonicalizeKeyFrameAnimations<TA, TKFA, TExpression>(CompositionObjectType animationType)
+                where TA : KeyFrameAnimation<TKFA, TExpression>
+                where TExpression : Expr.Expression_<TExpression>
             {
                 var items = GetCanonicalizableCompositionObjects<TA>(animationType);
 
                 var grouping =
                     from item in items
-                    group item.Node by new KeyFrameAnimationKey<TKFA>(this, item.Object)
+                    group item.Node by new KeyFrameAnimationKey<TKFA, TExpression>(this, item.Object)
                     into grouped
                     select grouped;
 
                 CanonicalizeGrouping(grouping);
             }
 
-            sealed class KeyFrameAnimationKey<TKFA>
+            sealed class KeyFrameAnimationKey<TKFA, TExpression>
+                where TExpression : Expr.Expression_<TExpression>
             {
                 readonly CanonicalizerWorker<TNode> _owner;
-                readonly KeyFrameAnimation<TKFA> _obj;
+                readonly KeyFrameAnimation<TKFA, TExpression> _obj;
 
-                internal KeyFrameAnimationKey(CanonicalizerWorker<TNode> owner, KeyFrameAnimation<TKFA> obj)
+                internal KeyFrameAnimationKey(CanonicalizerWorker<TNode> owner, KeyFrameAnimation<TKFA, TExpression> obj)
                 {
                     _owner = owner;
                     _obj = obj;
@@ -223,7 +226,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                         return false;
                     }
 
-                    var other = obj as KeyFrameAnimationKey<TKFA>;
+                    var other = obj as KeyFrameAnimationKey<TKFA, TExpression>;
                     if (other == null)
                     {
                         return false;
@@ -271,18 +274,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
                         switch (thisKf.Type)
                         {
-                            case KeyFrameAnimation<TKFA>.KeyFrameType.Expression:
-                                var thisExpressionKeyFrame = (KeyFrameAnimation<TKFA>.ExpressionKeyFrame)thisKf;
-                                var otherExpressionKeyFrame = (KeyFrameAnimation<TKFA>.ExpressionKeyFrame)otherKf;
+                            case KeyFrameType.Expression:
+                                var thisExpressionKeyFrame = (KeyFrameAnimation<TKFA, TExpression>.ExpressionKeyFrame)thisKf;
+                                var otherExpressionKeyFrame = (KeyFrameAnimation<TKFA, TExpression>.ExpressionKeyFrame)otherKf;
                                 if (thisExpressionKeyFrame.Expression != otherExpressionKeyFrame.Expression)
                                 {
                                     return false;
                                 }
 
                                 break;
-                            case KeyFrameAnimation<TKFA>.KeyFrameType.Value:
-                                var thisValueKeyFrame = (KeyFrameAnimation<TKFA>.ValueKeyFrame)thisKf;
-                                var otherValueKeyFrame = (KeyFrameAnimation<TKFA>.ValueKeyFrame)otherKf;
+                            case KeyFrameType.Value:
+                                var thisValueKeyFrame = (KeyFrameAnimation<TKFA, TExpression>.ValueKeyFrame)thisKf;
+                                var otherValueKeyFrame = (KeyFrameAnimation<TKFA, TExpression>.ValueKeyFrame)otherKf;
                                 if (!thisValueKeyFrame.Value.Equals(otherValueKeyFrame.Value))
                                 {
                                     return false;

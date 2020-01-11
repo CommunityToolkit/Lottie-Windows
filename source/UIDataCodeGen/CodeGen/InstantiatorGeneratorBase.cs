@@ -12,6 +12,7 @@ using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui;
+using Expr = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions;
 using Mgce = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce;
 using Wg = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wg;
 using Wmd = Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData;
@@ -896,6 +897,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             // readonly on C#, const on C++.
             string Readonly(string value) => _stringifier.Readonly(value);
 
+            string String(WinCompData.Expressions.Expression value) => String(value.ToText());
+
             string String(string value) => _stringifier.String(value);
 
             string Vector2(Vector2 value) => _stringifier.Vector2(value);
@@ -1386,7 +1389,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 WriteObjectFactoryStart(builder, node);
                 WriteCreateAssignment(builder, node, $"_c{Deref}CreateExpressionAnimation()");
                 InitializeCompositionAnimation(builder, obj, node);
-                builder.WriteLine($"result{Deref}Expression = {String(obj.Expression.ToString())};");
+                builder.WriteLine($"result{Deref}Expression = {String(obj.Expression)};");
                 StartAnimations(builder, obj, node);
                 WriteObjectFactoryEnd(builder);
                 return true;
@@ -1418,7 +1421,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 if (!animationNode.RequiresStorage && animator.Animation is ExpressionAnimation expressionAnimation)
                 {
                     builder.WriteLine($"{SingletonExpressionAnimationName}{Deref}ClearAllParameters();");
-                    builder.WriteLine($"{SingletonExpressionAnimationName}{Deref}Expression = {String(expressionAnimation.Expression.ToString())};");
+                    builder.WriteLine($"{SingletonExpressionAnimationName}{Deref}Expression = {String(expressionAnimation.Expression)};");
 
                     // If there is a Target set it. Note however that the Target isn't used for anything
                     // interesting in this scenario, and there is no way to reset the Target to an
@@ -1755,12 +1758,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 {
                     switch (kf.Type)
                     {
-                        case KeyFrameAnimation<Color>.KeyFrameType.Expression:
-                            var expressionKeyFrame = (KeyFrameAnimation<Color>.ExpressionKeyFrame)kf;
+                        case KeyFrameType.Expression:
+                            var expressionKeyFrame = (KeyFrameAnimation<Color, Expr.Color>.ExpressionKeyFrame)kf;
                             builder.WriteLine($"result{Deref}InsertExpressionKeyFrame({Float(kf.Progress)}, {String(expressionKeyFrame.Expression)}, {CallFactoryFromFor(node, kf.Easing)});");
                             break;
-                        case KeyFrameAnimation<Color>.KeyFrameType.Value:
-                            var valueKeyFrame = (KeyFrameAnimation<Color>.ValueKeyFrame)kf;
+                        case KeyFrameType.Value:
+                            var valueKeyFrame = (KeyFrameAnimation<Color, Expr.Color>.ValueKeyFrame)kf;
                             builder.WriteComment(valueKeyFrame.Value.Name);
                             builder.WriteLine($"result{Deref}InsertKeyFrame({Float(kf.Progress)}, {Color(valueKeyFrame.Value)}, {CallFactoryFromFor(node, kf.Easing)});");
                             break;
@@ -1784,12 +1787,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 {
                     switch (kf.Type)
                     {
-                        case KeyFrameAnimation<Vector2>.KeyFrameType.Expression:
-                            var expressionKeyFrame = (KeyFrameAnimation<Vector2>.ExpressionKeyFrame)kf;
+                        case KeyFrameType.Expression:
+                            var expressionKeyFrame = (KeyFrameAnimation<Vector2, Expr.Vector2>.ExpressionKeyFrame)kf;
                             builder.WriteLine($"result{Deref}InsertExpressionKeyFrame({Float(kf.Progress)}, {String(expressionKeyFrame.Expression)}, {CallFactoryFromFor(node, kf.Easing)});");
                             break;
-                        case KeyFrameAnimation<Vector2>.KeyFrameType.Value:
-                            var valueKeyFrame = (KeyFrameAnimation<Vector2>.ValueKeyFrame)kf;
+                        case KeyFrameType.Value:
+                            var valueKeyFrame = (KeyFrameAnimation<Vector2, Expr.Vector2>.ValueKeyFrame)kf;
                             builder.WriteLine($"result{Deref}InsertKeyFrame({Float(kf.Progress)}, {Vector2(valueKeyFrame.Value)}, {CallFactoryFromFor(node, kf.Easing)});");
                             break;
                         default:
@@ -1812,12 +1815,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 {
                     switch (kf.Type)
                     {
-                        case KeyFrameAnimation<Vector3>.KeyFrameType.Expression:
-                            var expressionKeyFrame = (KeyFrameAnimation<Vector3>.ExpressionKeyFrame)kf;
+                        case KeyFrameType.Expression:
+                            var expressionKeyFrame = (KeyFrameAnimation<Vector3, Expr.Vector3>.ExpressionKeyFrame)kf;
                             builder.WriteLine($"result{Deref}InsertExpressionKeyFrame({Float(kf.Progress)}, {String(expressionKeyFrame.Expression)}, {CallFactoryFromFor(node, kf.Easing)});");
                             break;
-                        case KeyFrameAnimation<Vector3>.KeyFrameType.Value:
-                            var valueKeyFrame = (KeyFrameAnimation<Vector3>.ValueKeyFrame)kf;
+                        case KeyFrameType.Value:
+                            var valueKeyFrame = (KeyFrameAnimation<Vector3, Expr.Vector3>.ValueKeyFrame)kf;
                             builder.WriteLine($"result{Deref}InsertKeyFrame({Float(kf.Progress)}, {Vector3(valueKeyFrame.Value)}, {CallFactoryFromFor(node, kf.Easing)});");
                             break;
                         default:
@@ -1840,12 +1843,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 {
                     switch (kf.Type)
                     {
-                        case KeyFrameAnimation<Vector4>.KeyFrameType.Expression:
-                            var expressionKeyFrame = (KeyFrameAnimation<Vector4>.ExpressionKeyFrame)kf;
+                        case KeyFrameType.Expression:
+                            var expressionKeyFrame = (KeyFrameAnimation<Vector4, Expr.Vector4>.ExpressionKeyFrame)kf;
                             builder.WriteLine($"result{Deref}InsertExpressionKeyFrame({Float(kf.Progress)}, {String(expressionKeyFrame.Expression)}, {CallFactoryFromFor(node, kf.Easing)});");
                             break;
-                        case KeyFrameAnimation<Vector4>.KeyFrameType.Value:
-                            var valueKeyFrame = (KeyFrameAnimation<Vector4>.ValueKeyFrame)kf;
+                        case KeyFrameType.Value:
+                            var valueKeyFrame = (KeyFrameAnimation<Vector4, Expr.Vector4>.ValueKeyFrame)kf;
                             builder.WriteLine($"result{Deref}InsertKeyFrame({Float(kf.Progress)}, {Vector4(valueKeyFrame.Value)}, {CallFactoryFromFor(node, kf.Easing)});");
                             break;
                         default:
@@ -1885,12 +1888,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 {
                     switch (kf.Type)
                     {
-                        case KeyFrameAnimation<float>.KeyFrameType.Expression:
-                            var expressionKeyFrame = (KeyFrameAnimation<float>.ExpressionKeyFrame)kf;
+                        case KeyFrameType.Expression:
+                            var expressionKeyFrame = (KeyFrameAnimation<float, Expr.Scalar>.ExpressionKeyFrame)kf;
                             builder.WriteLine($"result{Deref}InsertExpressionKeyFrame({Float(kf.Progress)}, {String(expressionKeyFrame.Expression)}, {CallFactoryFromFor(node, kf.Easing)});");
                             break;
-                        case KeyFrameAnimation<float>.KeyFrameType.Value:
-                            var valueKeyFrame = (KeyFrameAnimation<float>.ValueKeyFrame)kf;
+                        case KeyFrameType.Value:
+                            var valueKeyFrame = (KeyFrameAnimation<float, Expr.Scalar>.ValueKeyFrame)kf;
                             builder.WriteLine($"result{Deref}InsertKeyFrame({Float(kf.Progress)}, {Float(valueKeyFrame.Value)}, {CallFactoryFromFor(node, kf.Easing)});");
                             break;
                         default:

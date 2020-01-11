@@ -11,6 +11,7 @@ using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Microsoft.Graphics.Canvas.Geometry;
+using Expr = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions;
 using Mgc = Microsoft.Graphics.Canvas;
 using Mgce = Microsoft.Graphics.Canvas.Effects;
 using Wc = Windows.UI.Composition;
@@ -567,7 +568,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 result.Target = obj.Target;
             }
 
-            result.Expression = obj.Expression.Simplified.ToString();
+            result.Expression = obj.Expression.ToString();
             result.ClearAllParameters();
             foreach (var parameter in obj.ReferenceParameters)
             {
@@ -602,12 +603,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             {
                 switch (kf.Type)
                 {
-                    case Wd.KeyFrameAnimation<Wd.Wui.Color>.KeyFrameType.Expression:
-                        var expressionKeyFrame = (Wd.KeyFrameAnimation<Wd.Wui.Color>.ExpressionKeyFrame)kf;
-                        result.InsertExpressionKeyFrame(kf.Progress, expressionKeyFrame.Expression, GetCompositionEasingFunction(kf.Easing));
+                    case Wd.KeyFrameType.Expression:
+                        var expressionKeyFrame = (Wd.KeyFrameAnimation<Wd.Wui.Color, Expr.Color>.ExpressionKeyFrame)kf;
+                        result.InsertExpressionKeyFrame(kf.Progress, expressionKeyFrame.Expression.ToText(), GetCompositionEasingFunction(kf.Easing));
                         break;
-                    case Wd.KeyFrameAnimation<Wd.Wui.Color>.KeyFrameType.Value:
-                        var valueKeyFrame = (Wd.KeyFrameAnimation<Wd.Wui.Color>.ValueKeyFrame)kf;
+                    case Wd.KeyFrameType.Value:
+                        var valueKeyFrame = (Wd.KeyFrameAnimation<Wd.Wui.Color, Expr.Color>.ValueKeyFrame)kf;
                         result.InsertKeyFrame(kf.Progress, Color(valueKeyFrame.Value), GetCompositionEasingFunction(kf.Easing));
                         break;
                     default:
@@ -631,12 +632,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             {
                 switch (kf.Type)
                 {
-                    case Wd.KeyFrameAnimation<float>.KeyFrameType.Expression:
-                        var expressionKeyFrame = (Wd.KeyFrameAnimation<float>.ExpressionKeyFrame)kf;
-                        result.InsertExpressionKeyFrame(kf.Progress, expressionKeyFrame.Expression, GetCompositionEasingFunction(kf.Easing));
+                    case Wd.KeyFrameType.Expression:
+                        var expressionKeyFrame = (Wd.KeyFrameAnimation<float, Expr.Scalar>.ExpressionKeyFrame)kf;
+                        result.InsertExpressionKeyFrame(kf.Progress, expressionKeyFrame.Expression.ToText(), GetCompositionEasingFunction(kf.Easing));
                         break;
-                    case Wd.KeyFrameAnimation<float>.KeyFrameType.Value:
-                        var valueKeyFrame = (Wd.KeyFrameAnimation<float>.ValueKeyFrame)kf;
+                    case Wd.KeyFrameType.Value:
+                        var valueKeyFrame = (Wd.KeyFrameAnimation<float, Expr.Scalar>.ValueKeyFrame)kf;
                         result.InsertKeyFrame(kf.Progress, valueKeyFrame.Value, GetCompositionEasingFunction(kf.Easing));
                         break;
                     default:
@@ -660,12 +661,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             {
                 switch (kf.Type)
                 {
-                    case Wd.KeyFrameAnimation<Vector2>.KeyFrameType.Expression:
-                        var expressionKeyFrame = (Wd.KeyFrameAnimation<Vector2>.ExpressionKeyFrame)kf;
-                        result.InsertExpressionKeyFrame(kf.Progress, expressionKeyFrame.Expression, GetCompositionEasingFunction(kf.Easing));
+                    case Wd.KeyFrameType.Expression:
+                        var expressionKeyFrame = (Wd.KeyFrameAnimation<Vector2, Expr.Vector2>.ExpressionKeyFrame)kf;
+                        result.InsertExpressionKeyFrame(kf.Progress, expressionKeyFrame.Expression.ToText(), GetCompositionEasingFunction(kf.Easing));
                         break;
-                    case Wd.KeyFrameAnimation<Vector2>.KeyFrameType.Value:
-                        var valueKeyFrame = (Wd.KeyFrameAnimation<Vector2>.ValueKeyFrame)kf;
+                    case Wd.KeyFrameType.Value:
+                        var valueKeyFrame = (Wd.KeyFrameAnimation<Vector2, Expr.Vector2>.ValueKeyFrame)kf;
                         result.InsertKeyFrame(kf.Progress, valueKeyFrame.Value, GetCompositionEasingFunction(kf.Easing));
                         break;
                     default:
@@ -689,12 +690,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             {
                 switch (kf.Type)
                 {
-                    case Wd.KeyFrameAnimation<Vector3>.KeyFrameType.Expression:
-                        var expressionKeyFrame = (Wd.KeyFrameAnimation<Vector3>.ExpressionKeyFrame)kf;
-                        result.InsertExpressionKeyFrame(kf.Progress, expressionKeyFrame.Expression, GetCompositionEasingFunction(kf.Easing));
+                    case Wd.KeyFrameType.Expression:
+                        var expressionKeyFrame = (Wd.KeyFrameAnimation<Vector3, Expr.Vector3>.ExpressionKeyFrame)kf;
+                        result.InsertExpressionKeyFrame(kf.Progress, expressionKeyFrame.Expression.ToText(), GetCompositionEasingFunction(kf.Easing));
                         break;
-                    case Wd.KeyFrameAnimation<Vector3>.KeyFrameType.Value:
-                        var valueKeyFrame = (Wd.KeyFrameAnimation<Vector3>.ValueKeyFrame)kf;
+                    case Wd.KeyFrameType.Value:
+                        var valueKeyFrame = (Wd.KeyFrameAnimation<Vector3, Expr.Vector3>.ValueKeyFrame)kf;
                         result.InsertKeyFrame(kf.Progress, valueKeyFrame.Value, GetCompositionEasingFunction(kf.Easing));
                         break;
                     default:
@@ -718,12 +719,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             {
                 switch (kf.Type)
                 {
-                    case Wd.KeyFrameAnimation<Vector4>.KeyFrameType.Expression:
-                        var expressionKeyFrame = (Wd.KeyFrameAnimation<Vector4>.ExpressionKeyFrame)kf;
-                        result.InsertExpressionKeyFrame(kf.Progress, expressionKeyFrame.Expression, GetCompositionEasingFunction(kf.Easing));
+                    case Wd.KeyFrameType.Expression:
+                        var expressionKeyFrame = (Wd.KeyFrameAnimation<Vector4, Expr.Vector4>.ExpressionKeyFrame)kf;
+                        result.InsertExpressionKeyFrame(kf.Progress, expressionKeyFrame.Expression.ToText(), GetCompositionEasingFunction(kf.Easing));
                         break;
-                    case Wd.KeyFrameAnimation<Vector4>.KeyFrameType.Value:
-                        var valueKeyFrame = (Wd.KeyFrameAnimation<Vector4>.ValueKeyFrame)kf;
+                    case Wd.KeyFrameType.Value:
+                        var valueKeyFrame = (Wd.KeyFrameAnimation<Vector4, Expr.Vector4>.ValueKeyFrame)kf;
                         result.InsertKeyFrame(kf.Progress, valueKeyFrame.Value, GetCompositionEasingFunction(kf.Easing));
                         break;
                     default:

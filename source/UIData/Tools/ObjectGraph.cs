@@ -9,6 +9,7 @@ using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData;
+using Expr = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions;
 using Wg = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wg;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
@@ -447,7 +448,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             VisitKeyFrameAnimation(obj, node);
             foreach (var keyFrame in obj.KeyFrames)
             {
-                Reference(node, ((KeyFrameAnimation<CompositionPath>.ValueKeyFrame)keyFrame).Value);
+                Reference(node, ((KeyFrameAnimation<CompositionPath, Expr.Void>.ValueKeyFrame)keyFrame).Value);
             }
 
             return true;
@@ -464,7 +465,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             return true;
         }
 
-        bool VisitKeyFrameAnimation<TKFA>(KeyFrameAnimation<TKFA> obj, T node)
+        bool VisitKeyFrameAnimation<TKFA, TExpression>(KeyFrameAnimation<TKFA, TExpression> obj, T node)
+            where TExpression : Expr.Expression_<TExpression>
         {
             VisitCompositionAnimation(obj, node);
             foreach (var keyFrame in obj.KeyFrames)

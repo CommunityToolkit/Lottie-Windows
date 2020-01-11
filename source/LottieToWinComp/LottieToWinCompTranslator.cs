@@ -39,12 +39,8 @@ using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData;
 using static Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp.ExpressionFactory;
-
-using CubicBezierFunction2 = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions.CubicBezierFunction2;
 using Expr = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions.Expression;
-using ExpressionType = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions.ExpressionType;
 using Sn = System.Numerics;
-using TypeConstraint = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions.TypeConstraint;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 {
@@ -885,7 +881,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
                 // M11 and M22 need to have the same value. Either tie them together with an expression, or
                 // use the same keyframe animation for both. Probably cheaper to use an expression.
-                var m11expression = _c.CreateExpressionAnimation(ExpressionFactory.TransformMatrixM11Expression);
+                var m11expression = _c.CreateExpressionAnimation(TransformMatrixM11Expression);
                 m11expression.SetReferenceParameter("my", visibilityNode);
                 StartExpressionAnimation(visibilityNode, "TransformMatrix._22", m11expression);
 
@@ -3488,7 +3484,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             if (anchorIsAnimated)
             {
                 container.Properties.InsertVector2("Anchor", initialAnchor);
-                var centerPointExpression = _c.CreateExpressionAnimation(container.IsShape ? MyAnchor2 : MyAnchor3);
+                var centerPointExpression = _c.CreateExpressionAnimation(container.IsShape ? (Expr)MyAnchor2 : (Expr)MyAnchor3);
                 centerPointExpression.SetReferenceParameter("my", container);
                 StartExpressionAnimation(container, nameof(container.CenterPoint), centerPointExpression);
 
@@ -3519,7 +3515,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             if (positionIsAnimated && anchorIsAnimated)
             {
                 // Both position and anchor are animated.
-                offsetExpression = _c.CreateExpressionAnimation(container.IsShape ? PositionMinusAnchor2 : PositionMinusAnchor3);
+                offsetExpression = _c.CreateExpressionAnimation(container.IsShape ? (Expr)PositionMinusAnchor2 : (Expr)PositionMinusAnchor3);
             }
             else if (positionIsAnimated)
             {
@@ -3554,11 +3550,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         //ApplyVector3KeyFrameAnimation(context, (AnimatableVector3)position, container, "Offset");
                         offsetExpression = _c.CreateExpressionAnimation(container.IsShape
                             ? (Expr)Expr.Vector2(
-                                Expr.Subtract(Expr.Scalar("my.Position.X"), Expr.Scalar(initialAnchor.X)),
-                                Expr.Subtract(Expr.Scalar("my.Position.Y"), Expr.Scalar(initialAnchor.Y)))
+                                MyPosition2.X - initialAnchor.X,
+                                MyPosition2.Y - initialAnchor.Y)
                             : (Expr)Expr.Vector3(
-                                Expr.Subtract(Expr.Scalar("my.Position.X"), Expr.Scalar(initialAnchor.X)),
-                                Expr.Subtract(Expr.Scalar("my.Position.Y"), Expr.Scalar(initialAnchor.Y))));
+                                MyPosition2.X - initialAnchor.X,
+                                MyPosition2.Y - initialAnchor.Y,
+                                0));
 
                         positionIsAnimated = true;
                     }
@@ -3567,11 +3564,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 {
                     offsetExpression = _c.CreateExpressionAnimation(container.IsShape
                         ? (Expr)Expr.Vector2(
-                            Expr.Subtract(Expr.Scalar("my.Position.X"), Expr.Scalar(initialAnchor.X)),
-                            Expr.Subtract(Expr.Scalar("my.Position.Y"), Expr.Scalar(initialAnchor.Y)))
+                            MyPosition2.X - initialAnchor.X,
+                            MyPosition2.Y - initialAnchor.Y)
                         : (Expr)Expr.Vector3(
-                            Expr.Subtract(Expr.Scalar("my.Position.X"), Expr.Scalar(initialAnchor.X)),
-                            Expr.Subtract(Expr.Scalar("my.Position.Y"), Expr.Scalar(initialAnchor.Y))));
+                            MyPosition2.X - initialAnchor.X,
+                            MyPosition2.Y - initialAnchor.Y,
+                            0));
                 }
             }
             else if (anchorIsAnimated)
@@ -3579,11 +3577,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 // Only anchor is animated.
                 offsetExpression = _c.CreateExpressionAnimation(container.IsShape
                     ? (Expr)Expr.Vector2(
-                        Expr.Subtract(Expr.Scalar(initialPosition.X), Expr.Scalar("my.Anchor.X")),
-                        Expr.Subtract(Expr.Scalar(initialPosition.Y), Expr.Scalar("my.Anchor.Y")))
+                        initialPosition.X - MyAnchor2.X,
+                        initialPosition.Y - MyAnchor2.Y)
                     : (Expr)Expr.Vector3(
-                        Expr.Subtract(Expr.Scalar(initialPosition.X), Expr.Scalar("my.Anchor.X")),
-                        Expr.Subtract(Expr.Scalar(initialPosition.Y), Expr.Scalar("my.Anchor.Y"))));
+                        initialPosition.X - MyAnchor2.X,
+                        initialPosition.Y - MyAnchor2.Y,
+                        0));
             }
 
             if (!positionIsAnimated && !anchorIsAnimated)
@@ -3773,7 +3772,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 value,
                 _c.CreateVector2KeyFrameAnimation,
                 (ca, progress, val, easing) => ca.InsertKeyFrame(progress, Vector2(val * scale), easing),
-                (ca, progress, expr, easing) => ca.InsertExpressionKeyFrame(progress, scale != 1 ? Scale(expr, scale) : expr.ToString(), easing),
+                (ca, progress, expr, easing) => ca.InsertExpressionKeyFrame(progress, scale * expr, easing),
                 targetObject,
                 targetPropertyName,
                 longDescription,
@@ -3795,7 +3794,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 value,
                 _c.CreateVector3KeyFrameAnimation,
                 (ca, progress, val, easing) => ca.InsertKeyFrame(progress, Vector3(val) * (float)scale, easing),
-                (ca, progress, expr, easing) => ca.InsertExpressionKeyFrame(progress, scale != 1 ? Scale(expr, scale).ToString() : expr.ToString(), easing),
+                (ca, progress, expr, easing) => throw new InvalidOperationException(),
                 targetObject,
                 targetPropertyName,
                 longDescription,
@@ -3807,7 +3806,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             in TrimmedAnimatable<T> value,
             Func<TCA> compositionAnimationFactory,
             Action<TCA, float, T, CompositionEasingFunction> insertKeyFrame,
-            Action<TCA, float, Expr, CompositionEasingFunction> insertExpressionKeyFrame,
+            Action<TCA, float, CubicBezierFunction2, CompositionEasingFunction> insertExpressionKeyFrame,
             CompositionObject targetObject,
             string targetPropertyName,
             string longDescription,
@@ -3908,7 +3907,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                             break;
                         case Easing.EasingType.Hold:
                             // Holds should never have interesting cubic beziers, so replace with one that is definitely colinear.
-                            cb = CubicBezierFunction2.Zero;
+                            cb = CubicBezierFunction2.ZeroBezier;
                             break;
                         default:
                             throw new InvalidOperationException();
@@ -4023,18 +4022,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return (float)result;
         }
 
-        static string Scale(Expr expression, double scale)
-        {
-            return Expr.Multiply(Expr.Scalar(scale), expression).ToString();
-        }
-
-        sealed class TimeRemap : Expr
+        sealed class TimeRemap : WinCompData.Expressions.Scalar
         {
             readonly double _tRangeLow;
             readonly double _tRangeHigh;
-            readonly Expr _t;
+            readonly WinCompData.Expressions.Scalar _t;
 
-            internal TimeRemap(double tRangeLow, double tRangeHigh, Expr t)
+            internal TimeRemap(double tRangeLow, double tRangeHigh, WinCompData.Expressions.Scalar t)
             {
                 if (tRangeLow >= tRangeHigh)
                 {
@@ -4046,18 +4040,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 _t = t;
             }
 
-            protected override Expr Simplify()
+            protected override WinCompData.Expressions.Scalar Simplify()
             {
                 // Adjust t and (1-t) based on the given range. This will make T vary between
                 // 0..1 over the duration of the keyframe.
-                return Multiply(
-                    Scalar(1 / (_tRangeHigh - _tRangeLow)),
-                    Subtract(_t, Scalar(_tRangeLow)));
+                return (1 / (_tRangeHigh - _tRangeLow)) * (_t - _tRangeLow);
             }
 
-            protected override string CreateExpressionString() => Simplified.ToString();
-
-            public override ExpressionType InferredType => new ExpressionType(TypeConstraint.Scalar);
+            protected override string CreateExpressionText() => Simplified.ToString();
         }
 
         // Returns the name of a variable on the root property set that advances linearly from 0 to 1 over the
@@ -4096,7 +4086,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 var oneOne = Vector2(1);
                 var easing = CubicBezierFunction2.Create(Vector2(0), Vector2(controlPoint1), Vector2(controlPoint2), oneOne, remap);
 
-                var animation = _c.CreateExpressionAnimation(Expr.Scalar($"({easing}).Y"));
+                var animation = _c.CreateExpressionAnimation(easing.Y);
                 animation.SetReferenceParameter(RootName, _rootVisual);
                 StartExpressionAnimation(_rootVisual, propertyName, animation);
                 result = Expr.Scalar($"{RootName}.{propertyName}");

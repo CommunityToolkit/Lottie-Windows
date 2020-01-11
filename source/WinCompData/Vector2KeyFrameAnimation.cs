@@ -10,7 +10,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 #if PUBLIC_WinCompData
     public
 #endif
-    sealed class Vector2KeyFrameAnimation : KeyFrameAnimation<Vector2>
+    sealed class Vector2KeyFrameAnimation : KeyFrameAnimation<Vector2, Expressions.Vector2>
     {
         internal Vector2KeyFrameAnimation()
             : base(null)

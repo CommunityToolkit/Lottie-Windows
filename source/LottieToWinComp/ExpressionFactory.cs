@@ -5,90 +5,83 @@
 using System;
 using System.Linq;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui;
+using static Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions.Expression;
 using Sn = System.Numerics;
+using Wui = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 {
-    sealed class ExpressionFactory : Expression
+    static class ExpressionFactory
     {
-        // The name used to bind to the property set that contains the Progress property.
-        const string RootName = "_";
-        static readonly Expression s_myTStart = Scalar("my.TStart");
-        static readonly Expression s_myTEnd = Scalar("my.TEnd");
+        internal static readonly Vector2 MyAnchor2 = MyVector2("Anchor");
+        internal static readonly Vector4 MyColor = MyVector4("Color");
+        internal static readonly Scalar MyInheritedOpacity = MyScalar("InheritedOpacity");
+        internal static readonly Scalar MyOpacity = MyScalar("Opacity");
+        internal static readonly Vector2 MyPosition2 = MyVector2("Position");
+        internal static readonly Vector2 MySize = MyVector2("Size");
+        internal static readonly Matrix3x2 MyTransformMatrix = MyMatrix3x2("TransformMatrix");
+        static readonly Scalar MyTStart = MyScalar("TStart");
+        static readonly Scalar MyTEnd = MyScalar("TEnd");
 
         // An expression that refers to the name of the root property set and the Progress property on it.
-        internal static readonly Expression RootProgress = Scalar($"{RootName}.{LottieToWinCompTranslator.ProgressPropertyName}");
-        internal static readonly Expression MaxTStartTEnd = Max(s_myTStart, s_myTEnd);
-        internal static readonly Expression MinTStartTEnd = Min(s_myTStart, s_myTEnd);
-        internal static readonly Expression MyOpacity = Scalar("my.Opacity");
-        internal static readonly Expression MyPosition2 = Vector2("my.Position");
-        internal static readonly Expression HalfSize2 = Divide(Vector2("my.Size"), Vector2(2, 2));
+        internal static readonly Scalar RootProgress = Scalar(RootProperty(LottieToWinCompTranslator.ProgressPropertyName));
+        internal static readonly Scalar MaxTStartTEnd = Max(MyTStart, MyTEnd);
+        internal static readonly Scalar MinTStartTEnd = Min(MyTStart, MyTEnd);
+        static readonly Vector2 HalfMySize = MySize / Vector2(2, 2);
+        internal static readonly Color AnimatedColorWithAnimatedOpacity =
+            Vector4AsColorMultipliedByOpacity(MyColor, MyOpacity);
+
+        internal static readonly Color AnimatedColorWithAnimatedOpacityWithAnimatedInheritedOpacity =
+            Vector4AsColorMultipliedByOpacityByOpacity(MyColor, MyOpacity, MyInheritedOpacity);
 
         // Depends on MyPosition2 and HalfSize2 so must be declared after them.
-        internal static readonly Expression PositionAndSizeToOffsetExpression = Subtract(MyPosition2, HalfSize2);
-        internal static readonly Expression TransformMatrixM11Expression = Scalar("my.TransformMatrix._11");
-        internal static readonly Expression MyAnchor2 = Vector2("my.Anchor");
-        internal static readonly Expression PositionMinusAnchor2 = Subtract(MyPosition2, MyAnchor2);
-        internal static readonly Expression MyAnchor3 = Vector3(Scalar("my.Anchor.X"), Scalar("my.Anchor.Y"));
-        internal static readonly Expression PositionMinusAnchor3 = Vector3(
-                                                                        Subtract(Scalar("my.Position.X"), Scalar("my.Anchor.X")),
-                                                                        Subtract(Scalar("my.Position.Y"), Scalar("my.Anchor.Y")),
-                                                                        Scalar(0));
+        internal static readonly Vector2 PositionAndSizeToOffsetExpression = MyPosition2 - HalfMySize;
+        internal static readonly Scalar TransformMatrixM11Expression = MyTransformMatrix._11;
+        internal static readonly Vector2 PositionMinusAnchor2 = MyPosition2 - MyAnchor2;
+        internal static readonly Vector3 MyAnchor3 = Vector3(MyAnchor2.X, MyAnchor2.Y, 0);
+        internal static readonly Vector3 PositionMinusAnchor3 = Vector3(
+                                                                        MyPosition2.X - MyAnchor2.X,
+                                                                        MyPosition2.Y - MyAnchor2.Y,
+                                                                        0);
 
-        internal static Expression PositionToOffsetExpression(Sn.Vector2 position) => Subtract(Vector2(position), HalfSize2);
+        internal static Color BoundColor(string bindingName, double opacity)
+            => Vector4AsColorMultipliedByOpacity(RootColor4Property(bindingName), opacity);
 
-        internal static Expression HalfSizeToOffsetExpression(Sn.Vector2 halfSize) => Subtract(MyPosition2, Vector2(halfSize));
-
-        internal static Expression ScaledAndOffsetRootProgress(double scale, double offset)
-        {
-            var result = RootProgress;
-
-            if (scale != 1)
-            {
-                result = Multiply(result, Scalar(scale));
-            }
-
-            if (offset != 0)
-            {
-                result = Sum(result, Scalar(offset));
-            }
-
-            return result;
-        }
-
-        internal static Expression BoundColor(string bindingName, double opacity)
-            => Vector4AsColorMultipliedByOpacity(RootColor4Property(bindingName), Scalar(opacity));
-
-        internal static Expression BoundColorWithAnimatedOpacity(string bindingName)
+        internal static Color BoundColorWithAnimatedOpacity(string bindingName)
             => Vector4AsColorMultipliedByOpacity(RootColor4Property(bindingName), MyOpacity);
 
+        internal static Color ColorWithAnimatedOpacity(Wui.Color color)
+            => Vector4AsColorMultipliedByOpacity(Vector4(color.R, color.G, color.B, color.A), MyOpacity);
+
+        // The given color multiplied by MyOpacity, where MyOpacity is pre-multiplied by 255.
+        // The premultiplication means that when the color's alpha is 255, after multiplication
+        // my MyOpacity simplifies to just (MyOpacity) instead of needing to be (255 * MyOpacity).
+        internal static Color ColorWithPreMultipliedAnimatedOpacity(Wui.Color color)
+            => Vector4AsColorMultipliedByOpacity(Vector4(color.R, color.G, color.B, color.A / 255), MyOpacity);
+
+        internal static Vector2 HalfSizeToOffsetExpression(Sn.Vector2 halfSize) => MyPosition2 - Vector2(halfSize);
+
+        internal static Vector2 PositionToOffsetExpression(Sn.Vector2 position) => Vector2(position) - HalfMySize;
+
         // The value of a Color property stored as a Vector4 on the root.
-        static Expression RootColor4Property(string propertyName)
-            => Vector4($"{RootName}.{propertyName}");
+        static Vector4 RootColor4Property(string propertyName) => Vector4(RootProperty(propertyName));
 
-        static Expression Vector4AsColorMultipliedByOpacity(Expression colorAsVector4, Expression opacity)
-            => ColorRGB(
-                r: X(colorAsVector4),
-                g: Y(colorAsVector4),
-                b: Z(colorAsVector4),
-                a: Multiply(W(colorAsVector4), opacity));
+        internal static Scalar ScaledAndOffsetRootProgress(double scale, double offset)
+            => (RootProgress * scale) + offset;
 
-        ExpressionFactory()
-        {
-        }
+        static Color Vector4AsColorMultipliedByOpacity(Vector4 colorAsVector4, Scalar opacity)
+            => Color(
+                r: colorAsVector4.X,
+                g: colorAsVector4.Y,
+                b: colorAsVector4.Z,
+                a: colorAsVector4.W * opacity);
 
-        protected override string CreateExpressionString()
-        {
-            // Not needed - the class cannot be instantiated.
-            throw new NotImplementedException();
-        }
-
-        protected override Expression Simplify()
-        {
-            // Not needed - the class cannot be instantiated.
-            throw new NotImplementedException();
-        }
+        static Color Vector4AsColorMultipliedByOpacityByOpacity(Vector4 colorAsVector4, Scalar opacity, Scalar otherOpacity)
+            => Color(
+                r: colorAsVector4.X,
+                g: colorAsVector4.Y,
+                b: colorAsVector4.Z,
+                a: colorAsVector4.W * opacity * otherOpacity);
 
         /// <summary>
         /// A segment of a progress expression. Defines the expression that is to be
@@ -96,7 +89,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// </summary>
         public sealed class Segment
         {
-            public Segment(double fromProgress, double toProgress, Expression value)
+            public Segment(double fromProgress, double toProgress, Scalar value)
             {
                 Value = value;
                 FromProgress = fromProgress;
@@ -106,14 +99,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             /// <summary>
             /// Gets the values that defines a progress expression over this segment.
             /// </summary>
-            public Expression Value { get; }
+            public Scalar Value { get; }
 
             public double FromProgress { get; }
 
             public double ToProgress { get; }
         }
 
-        internal static Expression CreateProgressExpression(Expression progress, params Segment[] segments)
+        internal static Scalar CreateProgressExpression(Scalar progress, params Segment[] segments)
         {
             // Verify that the segments are contiguous and start <= 0 and end >= 1
             var orderedSegments = segments.OrderBy(e => e.FromProgress).ToArray();
@@ -168,7 +161,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     count: 1 + lastSegmentIndex.Value - firstSegmentIndex.Value), progress);
         }
 
-        static Expression CreateProgressExpression(ArraySegment<Segment> segments, Expression progress)
+        static Scalar CreateProgressExpression(ArraySegment<Segment> segments, Scalar progress)
         {
             switch (segments.Count)
             {
@@ -183,11 +176,24 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     var expression0 = CreateProgressExpression(new ArraySegment<Segment>(segmentsArray, segments.Offset, pivot), progress);
                     var expression1 = CreateProgressExpression(new ArraySegment<Segment>(segmentsArray, segments.Offset + pivot, segments.Count - pivot), progress);
                     var pivotProgress = segmentsArray[segments.Offset + pivot - 1].ToProgress;
-                    return new Ternary(
-                        condition: new LessThan(progress, new Number(pivotProgress)),
+                    return Ternary(
+                        condition: LessThan(progress, pivotProgress),
                         trueValue: expression0,
                         falseValue: expression1);
             }
         }
+
+        static Matrix3x2 MyMatrix3x2(string propertyName) => Matrix3x2(My(propertyName));
+
+        static Scalar MyScalar(string propertyName) => Scalar(My(propertyName));
+
+        static Vector2 MyVector2(string propertyName) => Vector2(My(propertyName));
+
+        static Vector4 MyVector4(string propertyName) => Vector4(My(propertyName));
+
+        static string My(string propertyName) => $"my.{propertyName}";
+
+        // A property on the root property set. Used to bind to the property set that contains the Progress property.
+        static string RootProperty(string propertyName) => $"_.{propertyName}";
     }
 }

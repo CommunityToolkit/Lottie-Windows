@@ -8,7 +8,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 #if PUBLIC_WinCompData
     public
 #endif
-    sealed class ScalarKeyFrameAnimation : KeyFrameAnimation<float>
+    sealed class ScalarKeyFrameAnimation : KeyFrameAnimation<float, Expressions.Scalar>
     {
         internal ScalarKeyFrameAnimation()
             : base(null)
