@@ -7,6 +7,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
     /// <summary>
     /// Describes the type of an <see cref="Expression"/> or variable.
     /// </summary>
+    /// <summary>
+    /// Types to which an expression or variable is constrained.
+    /// </summary>
 #if PUBLIC_WinCompData
     public
 #endif

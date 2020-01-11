@@ -39,7 +39,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                   sourceMetadata: sourceMetadata,
                   duration: duration,
                   setCommentProperties: setCommentProperties,
-                  disableFieldOptimization: false,
+                  disableFieldOptimization: disableFieldOptimization,
                   stringifier: stringifier)
         {
             _s = stringifier;

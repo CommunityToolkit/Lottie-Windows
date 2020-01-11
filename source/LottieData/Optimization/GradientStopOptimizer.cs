@@ -166,7 +166,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                     }
                 }
 
-                yield return new ColorGradientStop(currentStop.Offset, color.MultipliedByOpacity(opacity));
+                yield return new ColorGradientStop(currentStop.Offset, color * opacity);
             }
         }
 

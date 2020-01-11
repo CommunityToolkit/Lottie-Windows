@@ -63,6 +63,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         // Identifies the bound property names in TranslationResult.SourceMetadata.
         static readonly Guid s_propertyBindingNamesKey = new Guid("A115C46A-254C-43E6-A3C7-9DE516C3C3C8");
 
+        // Generates a sequence of ints from 0..int.MaxValue. Used to attach indexes to sequences using Zip.
+        static readonly IEnumerable<int> PositiveInts = Enumerable.Range(0, int.MaxValue);
+
         readonly LottieComposition _lc;
         readonly TranslationIssues _issues;
         readonly bool _addDescriptions;
@@ -437,7 +440,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
                 // The mask geometry needs to be colored with something so that it can be used
                 // as a mask.
-                maskSpriteShape.FillBrush = _c.CreateNonAnimatedColorBrush(LottieData.Color.Black);
+                maskSpriteShape.FillBrush = CreateNonAnimatedColorBrush(LottieData.Color.Black);
 
                 resultContainer.Shapes.Add(maskSpriteShape);
             }
@@ -1175,7 +1178,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         sealed class ShapeContentContext
         {
-            static readonly Animatable<Opacity> s_100Percent = new Animatable<Opacity>(LottieData.Opacity.Opaque, null);
+            static readonly Animatable<Opacity> s_Opaque = new Animatable<Opacity>(LottieData.Opacity.Opaque, null);
 
             readonly LottieToWinCompTranslator _owner;
 
@@ -1192,14 +1195,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             // Opacity is not part of the Lottie context for shapes. But because WinComp
             // doesn't support opacity on shapes, the opacity is inherited from
             // the Transform and passed through to the brushes here.
-            internal Animatable<Opacity> Opacity { get; private set; }
+            internal CompositeOpacity Opacity { get; private set; } = CompositeOpacity.Opaque;
 
             internal ShapeContentContext(LottieToWinCompTranslator owner)
             {
                 _owner = owner;
-
-                // Assume opacity is 100% unless otherwise set.
-                Opacity = s_100Percent;
             }
 
             internal void UpdateFromStack(Stack<ShapeLayerContent> stack)
@@ -1256,7 +1256,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     return;
                 }
 
-                Opacity = ComposeOpacities(Opacity, transform.Opacity);
+                Opacity = Opacity.ComposedWith(transform.Opacity);
             }
 
             // Only used when translating geometries. Layers use an extra Shape or Visual to
@@ -1265,110 +1265,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             internal void SetTransform(Transform transform)
             {
                 Transform = transform;
-            }
-
-            Animatable<Opacity> ComposeOpacities(Animatable<Opacity> a, Animatable<Opacity> b)
-            {
-                if (a == null || ReferenceEquals(a, s_100Percent))
-                {
-                    return b;
-                }
-
-                if (b == null || ReferenceEquals(b, s_100Percent))
-                {
-                    return a;
-                }
-
-                if (!a.IsAnimated && !b.IsAnimated)
-                {
-                    // Neither is animated. Just use the initial values.
-                    return new Animatable<Opacity>(a.InitialValue * b.InitialValue, null);
-                }
-
-                if (a.IsAnimated && b.IsAnimated)
-                {
-                    // Both are animated.
-                    if (a.KeyFrames[0].Frame >= b.KeyFrames[b.KeyFrames.Length - 1].Frame ||
-                        b.KeyFrames[0].Frame >= a.KeyFrames[a.KeyFrames.Length - 1].Frame)
-                    {
-                        // The animations are non-overlapping.
-                        if (a.KeyFrames[0].Frame >= b.KeyFrames[b.KeyFrames.Length - 1].Frame)
-                        {
-                            return ComposeNonOverlappingAnimatedPercents(b, a);
-                        }
-                        else
-                        {
-                            return ComposeNonOverlappingAnimatedPercents(a, b);
-                        }
-                    }
-                    else
-                    {
-                        // The animations overlap. We currently don't support this case.
-                        _owner._issues.AnimationMultiplicationIsNotSupported();
-                        return a;
-                    }
-                }
-
-                // Only one is animated.
-                if (a.IsAnimated)
-                {
-                    if (b.InitialValue.IsOpaque)
-                    {
-                        return a;
-                    }
-                    else
-                    {
-                        var bScale = b.InitialValue;
-                        return new Animatable<Opacity>(
-                            initialValue: a.InitialValue * bScale,
-                            keyFrames: a.KeyFrames.SelectToSpan(kf => ScaleKeyFrame(kf, bScale)),
-                            propertyIndex: null);
-                    }
-                }
-                else
-                {
-                    return ComposeOpacities(b, a);
-                }
-            }
-
-            // Composes 2 animated percent values where the frames in first come before second.
-            Animatable<Opacity> ComposeNonOverlappingAnimatedPercents(Animatable<Opacity> first, Animatable<Opacity> second)
-            {
-                Debug.Assert(first.IsAnimated, "Precondition");
-                Debug.Assert(second.IsAnimated, "Precondition");
-                Debug.Assert(first.KeyFrames[first.KeyFrames.Length - 1].Frame <= second.KeyFrames[0].Frame, "Precondition");
-
-                var resultFrames = new KeyFrame<Opacity>[first.KeyFrames.Length + second.KeyFrames.Length];
-                var resultCount = 0;
-                var secondInitialScale = second.InitialValue;
-                var firstFinalScale = first.KeyFrames[first.KeyFrames.Length - 1].Value;
-
-                foreach (var kf in first.KeyFrames)
-                {
-                    resultFrames[resultCount] = ScaleKeyFrame(kf, secondInitialScale);
-                    resultCount++;
-                }
-
-                foreach (var kf in second.KeyFrames)
-                {
-                    resultFrames[resultCount] = ScaleKeyFrame(kf, firstFinalScale);
-                    resultCount++;
-                }
-
-                return new Animatable<Opacity>(
-                    first.InitialValue,
-                    new ReadOnlySpan<KeyFrame<Opacity>>(resultFrames, 0, resultCount),
-                    null);
-            }
-
-            KeyFrame<Opacity> ScaleKeyFrame(KeyFrame<Opacity> keyFrame, Opacity scale)
-            {
-                return new KeyFrame<Opacity>(
-                                keyFrame.Frame,
-                                keyFrame.Value * scale,
-                                keyFrame.SpatialControlPoint1,
-                                keyFrame.SpatialControlPoint2,
-                                keyFrame.Easing);
             }
 
             ShapeFill ComposeFills(ShapeFill a, ShapeFill b)
@@ -1402,7 +1298,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             {
                 if (!b.Color.IsAnimated && !b.Opacity.IsAnimated)
                 {
-                    if (b.Opacity.InitialValue.IsOpaque &&
+                    if (b.Opacity.InitialValue == LottieData.Opacity.Opaque &&
                         b.Color.InitialValue.A == 1)
                     {
                         // b overrides a.
@@ -1586,7 +1482,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 #if !NoClipping
             layerHasMasks = context.Layer.Masks.Any();
 #endif
-
             CompositionContainerShape containerShapeRootNode = null;
             CompositionContainerShape containerShapeContentNode = null;
 
@@ -1715,7 +1610,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 }
             }
 
-            CheckForUnsupportedShapeGroup(contents);
+            CheckForUnsupportedShapeGroup(in contents);
 
             var stack = new Stack<ShapeLayerContent>(contents.ToArray());
 
@@ -2482,8 +2377,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         void TranslateAndApplyShapeContentContext(TranslationContext context, ShapeContentContext shapeContext, CompositionSpriteShape shape, double trimOffsetDegrees = 0)
         {
-            shape.FillBrush = TranslateShapeFill(context, shapeContext.Fill, context.TrimAnimatable(shapeContext.Opacity));
-            TranslateAndApplyStroke(context, shapeContext.Stroke, shape, context.TrimAnimatable(shapeContext.Opacity));
+            shape.FillBrush = TranslateShapeFill(context, shapeContext.Fill, shapeContext.Opacity);
+            TranslateAndApplyStroke(context, shapeContext.Stroke, shape, shapeContext.Opacity);
             TranslateAndApplyTrimPath(context, shapeContext.TrimPath, shape.Geometry, trimOffsetDegrees);
         }
 
@@ -2594,7 +2489,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 }
             }
 
-            var order = GetAnimatableOrder(startPercent, endPercent);
+            var order = GetAnimatableOrder(in startPercent, in endPercent);
 
             switch (order)
             {
@@ -2692,7 +2587,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             TranslationContext context,
             ShapeStroke shapeStroke,
             CompositionSpriteShape sprite,
-            TrimmedAnimatable<Opacity> contextOpacity)
+            CompositeOpacity contextOpacity)
         {
             if (shapeStroke == null)
             {
@@ -2724,12 +2619,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             TranslationContext context,
             LinearGradientStroke shapeStroke,
             CompositionSpriteShape sprite,
-            TrimmedAnimatable<Opacity> contextOpacity)
+            CompositeOpacity contextOpacity)
         {
             ApplyCommonStrokeProperties(
                 context,
                 shapeStroke,
-                TranslateLinearGradientStroke(context, shapeStroke, contextOpacity),
+                TranslateLinearGradient(context, shapeStroke, contextOpacity),
                 sprite);
         }
 
@@ -2737,12 +2632,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             TranslationContext context,
             RadialGradientStroke shapeStroke,
             CompositionSpriteShape sprite,
-            TrimmedAnimatable<Opacity> contextOpacity)
+            CompositeOpacity contextOpacity)
         {
             ApplyCommonStrokeProperties(
                 context,
                 shapeStroke,
-                TranslateRadialGradientStroke(context, shapeStroke, contextOpacity),
+                TranslateRadialGradient(context, shapeStroke, contextOpacity),
                 sprite);
         }
 
@@ -2750,7 +2645,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             TranslationContext context,
             SolidColorStroke shapeStroke,
             CompositionSpriteShape sprite,
-            TrimmedAnimatable<Opacity> contextOpacity)
+            CompositeOpacity contextOpacity)
         {
             ApplyCommonStrokeProperties(
                 context,
@@ -2802,7 +2697,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             sprite.StrokeBrush = brush;
         }
 
-        CompositionBrush TranslateShapeFill(TranslationContext context, ShapeFill shapeFill, TrimmedAnimatable<Opacity> opacity)
+        CompositionBrush TranslateShapeFill(TranslationContext context, ShapeFill shapeFill, CompositeOpacity opacity)
         {
             if (shapeFill == null)
             {
@@ -2814,26 +2709,70 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 case ShapeFill.ShapeFillKind.SolidColor:
                     return TranslateSolidColorFill(context, (SolidColorFill)shapeFill, opacity);
                 case ShapeFill.ShapeFillKind.LinearGradient:
-                    return TranslateLinearGradientFill(context, (LinearGradientFill)shapeFill, opacity);
+                    return TranslateLinearGradient(context, (LinearGradientFill)shapeFill, opacity);
                 case ShapeFill.ShapeFillKind.RadialGradient:
-                    return TranslateRadialGradientFill(context, (RadialGradientFill)shapeFill, opacity);
+                    return TranslateRadialGradient(context, (RadialGradientFill)shapeFill, opacity);
                 default:
                     throw new InvalidOperationException();
             }
         }
 
-        CompositionColorBrush TranslateSolidColor(
+        CompositionColorBrush CreateAnimatedColorBrush(
             TranslationContext context,
-            Animatable<Color> color,
-            Animatable<Opacity> opacityA,
-            TrimmedAnimatable<Opacity> opacityB)
+            in TrimmedAnimatable<Color> color,
+            CompositeOpacity opacity)
         {
-            return CreateAnimatedColorBrush(
-                context,
-                MultiplyAnimatableColorByAnimatableOpacity(
-                    context.TrimAnimatable(color),
-                    context.TrimAnimatable(opacityA)),
-                opacityB);
+            // Opacity is pushed to the alpha channel of the brush. Translate this in the simplest
+            // way depending on whether the color or the opacities are animated.
+            if (!opacity.IsAnimated)
+            {
+                // The opacity isn't animated, so it can be simply multiplied into the color.
+                var nonAnimatedOpacity = opacity.NonAnimatedValue;
+                return color.IsAnimated
+                    ? CreateAnimatedColorBrush(context, MultiplyAnimatableColorByOpacity(color, nonAnimatedOpacity))
+                    : CreateNonAnimatedColorBrush(color.InitialValue * nonAnimatedOpacity);
+            }
+
+            // The opacity has animation. If it's a simple animation (i.e. not composed) and the color
+            // is not animated then the color can simply be multiplied by the animation. Otherwise we
+            // need to create an expression to relate the opacity value to the color value.
+            var animatableOpacities =
+                (from a in opacity.GetAnimatables().Zip(PositiveInts, (first, second) => (First: first, Second: second))
+                 select (animatable: a.First, name: $"Opacity{a.Second}")).ToArray();
+
+            if (animatableOpacities.Length == 1 && !color.IsAnimated)
+            {
+                // The color is not animated, so the opacity can be multiplied into the alpha channel.
+                return CreateAnimatedColorBrush(
+                    context,
+                    MultiplyColorByAnimatableOpacity(color.InitialValue, context.TrimAnimatable(animatableOpacities[0].animatable)));
+            }
+
+            // We can't simply multiply the opacity into the alpha channel because the opacity animation is not simple
+            // or the color is animated. Create properties for the opacities and color and multiply them into a
+            // color expression.
+            var result = _c.CreateColorBrush();
+
+            // Add a property for each opacity.
+            foreach (var a in animatableOpacities)
+            {
+                var trimmedOpacity = context.TrimAnimatable(a.animatable);
+                var propertyName = a.name;
+                result.Properties.InsertScalar(propertyName, Opacity(trimmedOpacity.InitialValue));
+                ApplyOpacityKeyFrameAnimation(context, trimmedOpacity, result.Properties, propertyName, propertyName, null);
+            }
+
+            result.Properties.InsertVector4("Color", Vector4(Color(color.InitialValue)));
+            if (color.IsAnimated)
+            {
+                ApplyColorKeyFrameAnimationAsVector4(context, color, result.Properties, "Color", "Color", null);
+            }
+
+            var opacityScalarExpressions = animatableOpacities.Select(a => Expr.Scalar($"my.{a.name}")).ToArray();
+            var anim = _c.CreateExpressionAnimation(ExpressionFactory.MyColorAsVector4MultipliedByOpacity(opacityScalarExpressions));
+            anim.SetReferenceParameter("my", result.Properties);
+            StartExpressionAnimation(result, nameof(result.Color), anim);
+            return result;
         }
 
         // Parses the given binding string and returns the binding name for the given property, or
@@ -2842,38 +2781,34 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         // This is used to retrieve property bindings from binding expressions embedded in Lottie
         // object names.
         static string FindFirstBindingNameForProperty(string bindingString, string propertyName)
-            => PropertyBindingsParser.ParseBindings(bindingString)
-                .Where(p => p.propertyName == propertyName)
-                .Select(p => p.bindingName).FirstOrDefault();
+                => PropertyBindingsParser.ParseBindings(bindingString)
+                    .Where(p => p.propertyName == propertyName)
+                    .Select(p => p.bindingName).FirstOrDefault();
 
         CompositionColorBrush TranslateSolidColorStrokeColor(
             TranslationContext context,
             SolidColorStroke shapeStroke,
-            TrimmedAnimatable<Opacity> inheritedOpacity)
+            CompositeOpacity inheritedOpacity)
             => TranslateSolidColorWithBindings(
                 context,
                 shapeStroke.Color,
-                shapeStroke.Opacity,
-                inheritedOpacity,
+                inheritedOpacity.ComposedWith(shapeStroke.Opacity),
                 bindingSpec: shapeStroke.Name);
 
         CompositionColorBrush TranslateSolidColorFill(
             TranslationContext context,
             SolidColorFill shapeFill,
-            TrimmedAnimatable<Opacity> inheritedOpacity)
+            CompositeOpacity inheritedOpacity)
             => TranslateSolidColorWithBindings(
                 context,
                 shapeFill.Color,
-                shapeFill.Opacity,
-                inheritedOpacity,
+                inheritedOpacity.ComposedWith(shapeFill.Opacity),
                 bindingSpec: shapeFill.Name);
 
         CompositionColorBrush TranslateSolidColorWithBindings(
             TranslationContext context,
             Animatable<Color> color,
-            Animatable<Opacity
-                > colorOpacity,
-            TrimmedAnimatable<Opacity> inheritedOpacity,
+            CompositeOpacity opacity,
             string bindingSpec)
         {
             // Read property bindings embedded into the name of the fill.
@@ -2883,17 +2818,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 if (bindingName is string)
                 {
                     // The fill is bound to a property name.
-                    return TranslateBoundSolidColor(context, inheritedOpacity, bindingName);
+                    return TranslateBoundSolidColor(context, opacity, bindingName);
                 }
             }
 
-            return TranslateSolidColor(context, color, colorOpacity, inheritedOpacity);
+            return CreateAnimatedColorBrush(context, context.TrimAnimatable(color), opacity);
         }
 
         // Translates a SolidColorFill that gets its color value from a property set value with the given name.
         CompositionColorBrush TranslateBoundSolidColor(
             TranslationContext context,
-            TrimmedAnimatable<Opacity> opacity,
+            CompositeOpacity opacity,
             string bindingName)
         {
             // Insert a property set value for the color if one hasn't yet been added.
@@ -2920,112 +2855,55 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     throw new InvalidOperationException();
             }
 
-            var brush = _c.CreateColorBrush();
+            var result = _c.CreateColorBrush();
 
             if (_addDescriptions)
             {
-                Describe(brush, $"Color bound to root CompositionPropertySet value: {bindingName}", bindingName);
+                Describe(result, $"Color bound to root CompositionPropertySet value: {bindingName}", bindingName);
             }
 
             // Name the brush the same as the binding name. This will allow the code generator to
             // give it a more meaningful name.
-            Name(brush, bindingName);
-
-            ExpressionAnimation anim;
+            Name(result, bindingName);
 
             if (opacity.IsAnimated)
             {
-                // The opacity is animated. Add an animated property for the opacity and use it to multiply
-                // the alpha channel of the color.
-                brush.Properties.InsertScalar("Opacity", Opacity(opacity.InitialValue));
-                ApplyOpacityKeyFrameAnimation(context, opacity, brush.Properties, "Opacity", "Opacity", null);
+                // The opacity has animation. Create an expression to relate the opacity value to the color value.
+                var animatableOpacities =
+                    (from a in opacity.GetAnimatables().Zip(PositiveInts, (first, second) => (First: first, Second: second))
+                     select (animatable: a.First, name: $"Opacity{a.Second}")).ToArray();
 
-                anim = _c.CreateExpressionAnimation(BoundColorWithAnimatedOpacity(bindingName));
-                anim.SetReferenceParameter("my", brush);
+                // Add a property for each opacity.
+                foreach (var a in animatableOpacities)
+                {
+                    var trimmedOpacity = context.TrimAnimatable(a.animatable);
+                    var propertyName = a.name;
+                    result.Properties.InsertScalar(propertyName, Opacity(trimmedOpacity.InitialValue));
+                    ApplyOpacityKeyFrameAnimation(context, trimmedOpacity, result.Properties, propertyName, propertyName, null);
+                }
+
+                var opacityScalarExpressions = animatableOpacities.Select(a => Expr.Scalar($"my.{a.name}")).ToArray();
+                var anim = _c.CreateExpressionAnimation(BoundColorAsVector4MultipliedByOpacities(bindingName, opacityScalarExpressions));
+                anim.SetReferenceParameter("my", result.Properties);
+                anim.SetReferenceParameter(RootName, _rootVisual);
+
+                StartExpressionAnimation(result, nameof(result.Color), anim);
+                return result;
             }
             else
             {
                 // Opacity isn't animated. Multiply the alpha channel of the color by the non-animated opacity value.
-                anim = _c.CreateExpressionAnimation(BoundColor(bindingName, opacity.InitialValue.Value));
+                var anim = _c.CreateExpressionAnimation(BoundColorMultipliedByOpacity(bindingName, opacity.NonAnimatedValue));
+                anim.SetReferenceParameter(RootName, _rootVisual);
+                StartExpressionAnimation(result, nameof(result.Color), anim);
+                return result;
             }
-
-            anim.SetReferenceParameter(RootName, _rootVisual);
-            StartExpressionAnimation(brush, "Color", anim);
-            return brush;
-        }
-
-        CompositionLinearGradientBrush TranslateLinearGradientFill(
-            TranslationContext context,
-            LinearGradientFill shapeFill,
-            TrimmedAnimatable<Opacity> opacity)
-        {
-            if (opacity.IsAnimated)
-            {
-                // We don't yet support animated opacity with LinearGradientFill.
-                _issues.GradientFillIsNotSupported("Linear", "animated opacity");
-            }
-
-            return TranslateLinearGradient(
-                context,
-                shapeFill,
-                MaxOpacity(in opacity));
-        }
-
-        CompositionGradientBrush TranslateLinearGradientStroke(
-            TranslationContext context,
-            LinearGradientStroke shapeStroke,
-            TrimmedAnimatable<Opacity> contextOpacity)
-        {
-            if (contextOpacity.IsAnimated)
-            {
-                // We don't yet support animated opacity with LinearGradientFill.
-                _issues.GradientStrokeIsNotSupported("Linear", "animated opacity");
-            }
-
-            return TranslateLinearGradient(
-                context,
-                shapeStroke,
-                MaxOpacity(in contextOpacity));
-        }
-
-        CompositionBrush TranslateRadialGradientFill(
-            TranslationContext context,
-            RadialGradientFill shapeFill,
-            TrimmedAnimatable<Opacity> opacity)
-        {
-            if (opacity.IsAnimated)
-            {
-                // We don't yet support animated opacity with RadialGradientFill.
-                _issues.GradientFillIsNotSupported("Radial", "animated opacity");
-            }
-
-            return TranslateRadialGradient(
-                context,
-                shapeFill,
-                MaxOpacity(in opacity));
-        }
-
-        CompositionGradientBrush TranslateRadialGradientStroke(
-            TranslationContext context,
-            RadialGradientStroke shapeStroke,
-            TrimmedAnimatable<Opacity> contextOpacity)
-        {
-            if (contextOpacity.IsAnimated)
-            {
-                // We don't yet support animated opacity with RadialGradientStroke.
-                _issues.GradientStrokeIsNotSupported("Radial", "animated opacity");
-            }
-
-            return TranslateRadialGradient(
-                context,
-                shapeStroke,
-                MaxOpacity(in contextOpacity));
         }
 
         CompositionLinearGradientBrush TranslateLinearGradient(
             TranslationContext context,
             IGradient linearGradient,
-            Opacity opacity)
+            CompositeOpacity opacity)
         {
             var result = _c.CreateLinearGradientBrush();
 
@@ -3053,7 +2931,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 result.EndPoint = Vector2(endPoint.InitialValue);
             }
 
-            var brushStops = result.ColorStops;
             var gradientStops = context.TrimAnimatable(linearGradient.GradientStops);
 
             if (gradientStops.InitialValue.Items.IsEmpty)
@@ -3062,59 +2939,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 return null;
             }
 
-            if (gradientStops.IsAnimated)
-            {
-                // Lottie represents animation of stops as a sequence of lists of stops.
-                // WinComp uses a single list of stops where each stop is animated.
-
-                // Lottie represents stops as either color or opacity stops. Convert them all to color stops.
-                var colorStopKeyFrames = gradientStops.KeyFrames.SelectToArray(kf => GradientStopOptimizer.Optimize(kf));
-                var stopsCount = gradientStops.InitialValue.Items.Length;
-
-                // Create the Composition stops and animate them.
-                for (var i = 0; i < stopsCount; i++)
-                {
-                    var gradientStop = _c.CreateColorGradientStop();
-                    brushStops.Add(gradientStop);
-
-                    // Extract the color key frames for this stop.
-                    var colorKeyFrames = ExtractKeyFramesFromColorStopKeyFrames(
-                        colorStopKeyFrames,
-                        i,
-                        gs => MultiplyColorByOpacity(gs.Color, opacity)).ToArray();
-
-                    ApplyColorKeyFrameAnimation(
-                        context,
-                        new TrimmedAnimatable<Color>(context, colorKeyFrames[0].Value, colorKeyFrames),
-                        gradientStop,
-                        nameof(gradientStop.Color));
-
-                    // Extract the offset key frames for this stop.
-                    var offsetKeyFrames = ExtractKeyFramesFromColorStopKeyFrames(
-                        colorStopKeyFrames,
-                        i,
-                        gs => gs.Offset).ToArray();
-
-                    ApplyScalarKeyFrameAnimation(
-                        context,
-                        new TrimmedAnimatable<double>(context, offsetKeyFrames[0].Value, offsetKeyFrames),
-                        gradientStop,
-                        nameof(gradientStop.Offset));
-                }
-            }
-            else
-            {
-                // Distinct() here eliminates any redundant stops. It is safe to eliminate them
-                // in the non-animated case. If there are key frames then it's potentially dangerous
-                // as every key frame needs to have the same number of stops, and Distinct() might
-                // eliminate different stops from each KeyFrame.
-                foreach (var stop in GradientStopOptimizer.Optimize(gradientStops.InitialValue.Items.ToArray()).Distinct())
-                {
-                    var offset = stop.Offset;
-                    var color = MultiplyColorByOpacity(stop.Color, opacity);
-                    brushStops.Add(_c.CreateColorGradientStop(Float(offset), color));
-                }
-            }
+            TranslateAndApplyGradientStops(context, result, in gradientStops, opacity);
 
             return result;
         }
@@ -3122,7 +2947,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         CompositionGradientBrush TranslateRadialGradient(
             TranslationContext context,
             IRadialGradient gradient,
-            Opacity opacity)
+            CompositeOpacity opacity)
         {
             if (!IsUapApiAvailable(nameof(CompositionRadialGradientBrush), versionDependentFeatureDescription: "Radial gradient fill"))
             {
@@ -3163,7 +2988,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 _issues.GradientFillIsNotSupported("Radial", "animated highlight length");
             }
 
-            var brushStops = result.ColorStops;
             var gradientStops = context.TrimAnimatable(gradient.GradientStops);
 
             if (gradientStops.InitialValue.Items.IsEmpty)
@@ -3172,58 +2996,228 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 return null;
             }
 
+            TranslateAndApplyGradientStops(context, result, in gradientStops, opacity);
+
+            return result;
+        }
+
+        void TranslateAndApplyGradientStops(
+            TranslationContext context,
+            CompositionGradientBrush brush,
+            in TrimmedAnimatable<Sequence<GradientStop>> gradientStops,
+            CompositeOpacity opacity)
+        {
             if (gradientStops.IsAnimated)
             {
-                // Lottie represents animation of stops as a sequence of lists of stops.
-                // WinComp uses a single list of stops where each stop is animated.
-
-                // Lottie represents stops as either color or opacity stops. Convert them all to color stops.
-                var colorStopKeyFrames = gradientStops.KeyFrames.SelectToArray(kf => GradientStopOptimizer.Optimize(kf));
-                var stopsCount = gradientStops.InitialValue.Items.Length;
-                var keyframesCount = gradientStops.KeyFrames.Length;
-
-                // Create the Composition stops and animate them.
-                for (var i = 0; i < stopsCount; i++)
-                {
-                    var gradientStop = _c.CreateColorGradientStop();
-                    brushStops.Add(gradientStop);
-
-                    // Extract the color key frames for this stop.
-                    var colorKeyFrames = ExtractKeyFramesFromColorStopKeyFrames(
-                        colorStopKeyFrames,
-                        i,
-                        gs => MultiplyColorByOpacity(gs.Color, opacity)).ToArray();
-
-                    ApplyColorKeyFrameAnimation(
-                        context,
-                        new TrimmedAnimatable<Color>(context, colorKeyFrames[0].Value, colorKeyFrames),
-                        gradientStop,
-                        nameof(gradientStop.Color));
-
-                    // Extract the offset key frames for this stop.
-                    var offsetKeyFrames = ExtractKeyFramesFromColorStopKeyFrames(colorStopKeyFrames, i, gs => gs.Offset).ToArray();
-                    ApplyScalarKeyFrameAnimation(
-                        context,
-                        new TrimmedAnimatable<double>(context, offsetKeyFrames[0].Value, offsetKeyFrames),
-                        gradientStop,
-                        nameof(gradientStop.Offset));
-                }
+                TranslateAndApplyAnimatedGradientStops(context, brush, gradientStops, opacity);
             }
             else
             {
-                // Distinct() here eliminates any redundant stops. It is safe to eliminate them
-                // in the non-animated case. If there are key frames then it's potentially dangerous
-                // as every key frame needs to have the same number of stops, and Distinct() might
-                // eliminate different stops from each KeyFrame.
-                foreach (var stop in GradientStopOptimizer.Optimize(gradientStops.InitialValue.Items.ToArray()).Distinct())
-                {
-                    var offset = stop.Offset;
-                    var color = MultiplyColorByOpacity(stop.Color, opacity);
-                    brushStops.Add(_c.CreateColorGradientStop(Float(offset), color));
-                }
+                TranslateAndApplyNonAnimatedGradientStops(context, brush, gradientStops.InitialValue, opacity);
+            }
+        }
+
+        void TranslateAndApplyAnimatedGradientStops(
+            TranslationContext context,
+            CompositionGradientBrush brush,
+            in TrimmedAnimatable<Sequence<GradientStop>> gradientStops,
+            CompositeOpacity opacity)
+        {
+            if (opacity.IsAnimated)
+            {
+                TranslateAndApplyAnimatedGradientStopsWithAnimatedOpacity(context, brush, in gradientStops, opacity);
+            }
+            else
+            {
+                TranslateAndApplyAnimatedColorGradientStopsWithStaticOpacity(context, brush, in gradientStops, opacity.NonAnimatedValue);
+            }
+        }
+
+        void TranslateAndApplyAnimatedGradientStopsWithAnimatedOpacity(
+            TranslationContext context,
+            CompositionGradientBrush brush,
+            in TrimmedAnimatable<Sequence<GradientStop>> gradientStops,
+            CompositeOpacity opacity)
+        {
+            // Lottie represents animation of stops as a sequence of lists of stops.
+            // WinComp uses a single list of stops where each stop is animated.
+
+            // Lottie represents stops as either color or opacity stops. Convert them all to color stops.
+            var colorStopKeyFrames = gradientStops.KeyFrames.SelectToArray(kf => GradientStopOptimizer.Optimize(kf));
+            var stopsCount = gradientStops.InitialValue.Items.Length;
+            var keyframesCount = gradientStops.KeyFrames.Length;
+
+            // The opacity has animation. Create an expression to relate the opacity value to the color value.
+            var animatableOpacities =
+                (from a in opacity.GetAnimatables().Zip(PositiveInts, (first, second) => (First: first, Second: second))
+                 select (animatable: a.First, name: $"Opacity{a.Second}")).ToArray();
+
+            // Add a property for each opacity.
+            foreach (var a in animatableOpacities)
+            {
+                var trimmedOpacity = context.TrimAnimatable(a.animatable);
+                var propertyName = a.name;
+                brush.Properties.InsertScalar(propertyName, Opacity(trimmedOpacity.InitialValue * 255));
+
+                // Pre-multiply the opacities by 255 so we can use the simpler
+                // expression for multiplying color by opacity.
+                ApplyScaledOpacityKeyFrameAnimation(context, trimmedOpacity, 255, brush.Properties, propertyName, propertyName, null);
             }
 
-            return result;
+            var opacityExpressions = animatableOpacities.Select(ao => Expr.Scalar($"my.{ao.name}")).ToArray();
+
+            // Create the Composition stops and animate them.
+            for (var i = 0; i < stopsCount; i++)
+            {
+                var gradientStop = _c.CreateColorGradientStop();
+                brush.ColorStops.Add(gradientStop);
+
+                // Extract the color key frames for this stop.
+                var colorKeyFrames = ExtractKeyFramesFromColorStopKeyFrames(
+                    colorStopKeyFrames,
+                    i,
+                    gs => ExpressionFactory.ColorMultipliedByPreMultipliedOpacities(Color(gs.Color), opacityExpressions)).ToArray();
+
+                // Bind the color to the opacities multiplied by the colors.
+                ApplyExpressionColorKeyFrameAnimation(
+                    context,
+                    new TrimmedAnimatable<WinCompData.Expressions.Color>(context, colorKeyFrames[0].Value, colorKeyFrames),
+                    gradientStop,
+                    nameof(gradientStop.Color),
+                    anim => anim.SetReferenceParameter("my", brush.Properties));
+
+                // Extract the offset key frames for this stop.
+                var offsetKeyFrames = ExtractKeyFramesFromColorStopKeyFrames(colorStopKeyFrames, i, gs => gs.Offset).ToArray();
+                ApplyScalarKeyFrameAnimation(
+                    context,
+                    new TrimmedAnimatable<double>(context, offsetKeyFrames[0].Value, offsetKeyFrames),
+                    gradientStop,
+                    nameof(gradientStop.Offset));
+            }
+        }
+
+        void TranslateAndApplyAnimatedColorGradientStopsWithStaticOpacity(
+            TranslationContext context,
+            CompositionGradientBrush brush,
+            in TrimmedAnimatable<Sequence<GradientStop>> gradientStops,
+            Opacity opacity)
+        {
+            // Lottie represents animation of stops as a sequence of lists of stops.
+            // WinComp uses a single list of stops where each stop is animated.
+
+            // Lottie represents stops as either color or opacity stops. Convert them all to color stops.
+            var colorStopKeyFrames = gradientStops.KeyFrames.SelectToArray(kf => GradientStopOptimizer.Optimize(kf));
+            var stopsCount = gradientStops.InitialValue.Items.Length;
+            var keyframesCount = gradientStops.KeyFrames.Length;
+
+            // Create the Composition stops and animate them.
+            for (var i = 0; i < stopsCount; i++)
+            {
+                var gradientStop = _c.CreateColorGradientStop();
+                brush.ColorStops.Add(gradientStop);
+
+                // Extract the color key frames for this stop.
+                var colorKeyFrames = ExtractKeyFramesFromColorStopKeyFrames(
+                    colorStopKeyFrames,
+                    i,
+                    gs => gs.Color * opacity).ToArray();
+
+                ApplyColorKeyFrameAnimation(
+                    context,
+                    new TrimmedAnimatable<Color>(context, colorKeyFrames[0].Value, colorKeyFrames),
+                    gradientStop,
+                    nameof(gradientStop.Color));
+
+                // Extract the offset key frames for this stop.
+                var offsetKeyFrames = ExtractKeyFramesFromColorStopKeyFrames(colorStopKeyFrames, i, gs => gs.Offset).ToArray();
+                ApplyScalarKeyFrameAnimation(
+                    context,
+                    new TrimmedAnimatable<double>(context, offsetKeyFrames[0].Value, offsetKeyFrames),
+                    gradientStop,
+                    nameof(gradientStop.Offset));
+            }
+        }
+
+        void TranslateAndApplyNonAnimatedGradientStops(
+            TranslationContext context,
+            CompositionGradientBrush brush,
+            Sequence<GradientStop> gradientStops,
+            CompositeOpacity opacity)
+        {
+            // Distinct() here eliminates any redundant stops. It is safe to eliminate them
+            // in the non-animated case. If there were key frames then it would be potentially dangerous
+            // as every key frame needs to have the same number of stops, and Distinct() might
+            // eliminate different stops from each KeyFrame.
+            var optimizedGradientStops = GradientStopOptimizer.Optimize(gradientStops.Items.ToArray()).Distinct();
+
+            if (opacity.IsAnimated)
+            {
+                TranslateAndApplyNonAnimatedColorGradientStopsWithAnimatedOpacity(context, brush, optimizedGradientStops, opacity);
+            }
+            else
+            {
+                TranslateAndApplyNonAnimatedColorGradientStopsWithStaticOpacity(context, brush, optimizedGradientStops, opacity.NonAnimatedValue);
+            }
+        }
+
+        void TranslateAndApplyNonAnimatedColorGradientStopsWithStaticOpacity(
+            TranslationContext context,
+            CompositionGradientBrush brush,
+            IEnumerable<ColorGradientStop> gradientStops,
+            Opacity opacity)
+        {
+            foreach (var stop in gradientStops)
+            {
+                var color = stop.Color * opacity;
+                brush.ColorStops.Add(_c.CreateColorGradientStop(Float(stop.Offset), color));
+            }
+        }
+
+        void TranslateAndApplyNonAnimatedColorGradientStopsWithAnimatedOpacity(
+            TranslationContext context,
+            CompositionGradientBrush brush,
+            IEnumerable<ColorGradientStop> gradientStops,
+            CompositeOpacity opacity)
+        {
+            // The opacity has animation. Create an expression to relate the opacity value to the color value.
+            var animatableOpacities =
+                (from a in opacity.GetAnimatables().Zip(PositiveInts, (first, second) => (First: first, Second: second))
+                 select (animatable: a.First, name: $"Opacity{a.Second}")).ToArray();
+
+            // Add a property for each opacity.
+            foreach (var a in animatableOpacities)
+            {
+                var trimmedOpacity = context.TrimAnimatable(a.animatable);
+                var propertyName = a.name;
+                brush.Properties.InsertScalar(propertyName, Opacity(trimmedOpacity.InitialValue * 255));
+
+                // Pre-multiply the opacities by 255 so we can use the simpler
+                // expression for multiplying color by opacity.
+                ApplyScaledOpacityKeyFrameAnimation(context, trimmedOpacity, 255, brush.Properties, propertyName, propertyName, null);
+            }
+
+            var opacityExpressions = animatableOpacities.Select(ao => Expr.Scalar($"my.{ao.name}")).ToArray();
+
+            foreach (var stop in gradientStops)
+            {
+                var colorStop = _c.CreateColorGradientStop();
+                colorStop.Offset = Float(stop.Offset);
+
+                if (stop.Color.A == 0)
+                {
+                    // The stop has 0 alpha, so no point multiplying it by opacity.
+                    colorStop.Color = Color(stop.Color);
+                }
+                else
+                {
+                    // Bind the color to the opacity multiplied by the color.
+                    var anim = _c.CreateExpressionAnimation(ColorMultipliedByPreMultipliedOpacities(Color(stop.Color), opacityExpressions));
+                    anim.SetReferenceParameter("my", brush.Properties);
+                    StartExpressionAnimation(colorStop, "Color", anim);
+                }
+
+                brush.ColorStops.Add(colorStop);
+            }
         }
 
         static IEnumerable<KeyFrame<TKeyFrame>> ExtractKeyFramesFromColorStopKeyFrames<TKeyFrame>(
@@ -3291,7 +3285,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             // for the layer from TryCreateContainerVisualTransformChain.
             // If that layer has no masks, opacity is implemented via the alpha channel on the brush.
             rectangle.FillBrush = layerHasMasks
-                ? _c.CreateNonAnimatedColorBrush(context.Layer.Color)
+                ? CreateNonAnimatedColorBrush(context.Layer.Color)
                 : CreateAnimatedColorBrush(context, context.Layer.Color, context.TrimAnimatable(context.Layer.Transform.Opacity));
 
             if (_addDescriptions)
@@ -3485,7 +3479,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             if (anchorIsAnimated)
             {
                 container.Properties.InsertVector2("Anchor", initialAnchor);
-                var centerPointExpression = _c.CreateExpressionAnimation(container.IsShape ? (Expr)MyAnchor2 : (Expr)MyAnchor3);
+                var centerPointExpression = _c.CreateExpressionAnimation(container.IsShape ? (Expr)MyAnchor : (Expr)MyAnchor3);
                 centerPointExpression.SetReferenceParameter("my", container);
                 StartExpressionAnimation(container, nameof(container.CenterPoint), centerPointExpression);
 
@@ -3551,11 +3545,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         //ApplyVector3KeyFrameAnimation(context, (AnimatableVector3)position, container, "Offset");
                         offsetExpression = _c.CreateExpressionAnimation(container.IsShape
                             ? (Expr)Expr.Vector2(
-                                MyPosition2.X - initialAnchor.X,
-                                MyPosition2.Y - initialAnchor.Y)
+                                MyPosition.X - initialAnchor.X,
+                                MyPosition.Y - initialAnchor.Y)
                             : (Expr)Expr.Vector3(
-                                MyPosition2.X - initialAnchor.X,
-                                MyPosition2.Y - initialAnchor.Y,
+                                MyPosition.X - initialAnchor.X,
+                                MyPosition.Y - initialAnchor.Y,
                                 0));
 
                         positionIsAnimated = true;
@@ -3565,11 +3559,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 {
                     offsetExpression = _c.CreateExpressionAnimation(container.IsShape
                         ? (Expr)Expr.Vector2(
-                            MyPosition2.X - initialAnchor.X,
-                            MyPosition2.Y - initialAnchor.Y)
+                            MyPosition.X - initialAnchor.X,
+                            MyPosition.Y - initialAnchor.Y)
                         : (Expr)Expr.Vector3(
-                            MyPosition2.X - initialAnchor.X,
-                            MyPosition2.Y - initialAnchor.Y,
+                            MyPosition.X - initialAnchor.X,
+                            MyPosition.Y - initialAnchor.Y,
                             0));
                 }
             }
@@ -3578,11 +3572,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 // Only anchor is animated.
                 offsetExpression = _c.CreateExpressionAnimation(container.IsShape
                     ? (Expr)Expr.Vector2(
-                        initialPosition.X - MyAnchor2.X,
-                        initialPosition.Y - MyAnchor2.Y)
+                        initialPosition.X - MyAnchor.X,
+                        initialPosition.Y - MyAnchor.Y)
                     : (Expr)Expr.Vector3(
-                        initialPosition.X - MyAnchor2.X,
-                        initialPosition.Y - MyAnchor2.Y,
+                        initialPosition.X - MyAnchor.X,
+                        initialPosition.Y - MyAnchor.Y,
                         0));
             }
 
@@ -3748,14 +3742,58 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 shortDescription);
         }
 
-        void ApplyPathKeyFrameAnimation(
+        void ApplyExpressionColorKeyFrameAnimation(
             TranslationContext context,
-            in TrimmedAnimatable<Sequence<BezierSegment>> value,
-            ShapeFill.PathFillType fillType,
+            in TrimmedAnimatable<WinCompData.Expressions.Color> value,
+            CompositionObject targetObject,
+            string targetPropertyName,
+            Action<ColorKeyFrameAnimation> beforeStartCallback,
+            string longDescription = null,
+            string shortDescription = null)
+        {
+            Debug.Assert(value.IsAnimated, "Precondition");
+            GenericCreateCompositionKeyFrameAnimation(
+                context,
+                value,
+                _c.CreateColorKeyFrameAnimation,
+                (ca, progress, val, easing) => ca.InsertExpressionKeyFrame(progress, val, easing),
+                null,
+                targetObject,
+                targetPropertyName,
+                longDescription,
+                shortDescription,
+                beforeStartCallback);
+        }
+
+        void ApplyColorKeyFrameAnimationAsVector4(
+            TranslationContext context,
+            in TrimmedAnimatable<LottieData.Color> value,
             CompositionObject targetObject,
             string targetPropertyName,
             string longDescription = null,
             string shortDescription = null)
+        {
+            Debug.Assert(value.IsAnimated, "Precondition");
+            GenericCreateCompositionKeyFrameAnimation(
+                context,
+                value,
+                _c.CreateVector4KeyFrameAnimation,
+                (ca, progress, val, easing) => ca.InsertKeyFrame(progress, Vector4(Color(val)), easing),
+                null,
+                targetObject,
+                targetPropertyName,
+                longDescription,
+                shortDescription);
+        }
+
+        void ApplyPathKeyFrameAnimation(
+                TranslationContext context,
+                in TrimmedAnimatable<Sequence<BezierSegment>> value,
+                ShapeFill.PathFillType fillType,
+                CompositionObject targetObject,
+                string targetPropertyName,
+                string longDescription = null,
+                string shortDescription = null)
         {
             Debug.Assert(value.IsAnimated, "Precondition");
             GenericCreateCompositionKeyFrameAnimation(
@@ -3842,7 +3880,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             CompositionObject targetObject,
             string targetPropertyName,
             string longDescription,
-            string shortDescription)
+            string shortDescription,
+            Action<TCA> beforeStartCallback = null)
                 where TCA : KeyFrameAnimation_
                 where T : IEquatable<T>
         {
@@ -4029,6 +4068,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 compositionAnimation.SetReferenceParameter(RootName, _rootVisual);
             }
 
+            beforeStartCallback?.Invoke(compositionAnimation);
+
             // Start the animation scaled and offset.
             StartKeyframeAnimation(targetObject, targetPropertyName, compositionAnimation, scale, offset);
 
@@ -4145,46 +4186,29 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return result;
         }
 
-        TrimmedAnimatable<Color> MultiplyAnimatableColorByAnimatableOpacity(
+        TrimmedAnimatable<Color> MultiplyAnimatableColorByOpacity(
             in TrimmedAnimatable<Color> color,
-            in TrimmedAnimatable<Opacity> opacity)
+            Opacity opacity)
         {
+            var initialColorValue = color.InitialValue * opacity;
+
             if (color.IsAnimated)
             {
-                var opacityInitialValue = opacity.InitialValue;
-
-                if (opacity.IsAnimated)
-                {
-                    // TOOD: multiply animations to produce a new set of key frames for the opacity-multiplied color.
-                    _issues.OpacityAndColorAnimatedTogetherIsNotSupported();
-
-                    // Multiply the color values by the maximum opacity. This is a heuristic
-                    // that can give a better result than just returning the color.
-                    opacityInitialValue = MaxOpacity(in opacity);
-                }
-
-                // Multiply the color animation by the single opacity value.
+                // Multiply the color animation by the opacity.
                 return new TrimmedAnimatable<Color>(
                     color.Context,
-                    initialValue: MultiplyColorByOpacity(color.InitialValue, opacity.InitialValue),
+                    initialValue: initialColorValue,
                     keyFrames: color.KeyFrames.SelectToSpan(kf =>
                         new KeyFrame<Color>(
                             kf.Frame,
-                            MultiplyColorByOpacity(kf.Value, opacityInitialValue),
+                            kf.Value * opacity,
                             kf.SpatialControlPoint1,
                             kf.SpatialControlPoint2,
                             kf.Easing)));
             }
-            else if (opacity.IsAnimated)
-            {
-                // Color is not animated.
-                return MultiplyColorByAnimatableOpacity(color.InitialValue, opacity);
-            }
             else
             {
-                // Multiply color by opacity
-                var nonAnimatedMultipliedColor = MultiplyColorByOpacity(color.InitialValue, opacity.InitialValue);
-                return new TrimmedAnimatable<Color>(color.Context, nonAnimatedMultipliedColor);
+                return new TrimmedAnimatable<Color>(color.Context, initialColorValue);
             }
         }
 
@@ -4194,36 +4218,27 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         {
             if (!opacity.IsAnimated)
             {
-                return new TrimmedAnimatable<Color>(opacity.Context, MultiplyColorByOpacity(color, opacity.InitialValue));
+                return new TrimmedAnimatable<Color>(opacity.Context, color * opacity.InitialValue);
             }
             else
             {
                 // Multiply the single color value by the opacity animation.
                 return new TrimmedAnimatable<Color>(
                     opacity.Context,
-                    initialValue: MultiplyColorByOpacity(color, opacity.InitialValue),
+                    initialValue: color * opacity.InitialValue,
                     keyFrames: opacity.KeyFrames.SelectToSpan(kf =>
                         new KeyFrame<Color>(
                             kf.Frame,
-                            MultiplyColorByOpacity(color, kf.Value),
+                            color * kf.Value,
                             kf.SpatialControlPoint1,
                             kf.SpatialControlPoint2,
                             kf.Easing)));
             }
         }
 
-        static Color MultiplyColorByOpacity(Color color, Opacity opacity)
-            => color?.MultipliedByOpacity(opacity);
-
         CompositionColorBrush CreateAnimatedColorBrush(TranslationContext context, Color color, in TrimmedAnimatable<Opacity> opacity)
         {
-            var multipliedColor = MultiplyColorByAnimatableOpacity(color, opacity);
-            return CreateAnimatedColorBrush(context, multipliedColor);
-        }
-
-        CompositionColorBrush CreateAnimatedColorBrush(TranslationContext context, in TrimmedAnimatable<Color> color, in TrimmedAnimatable<Opacity> opacity)
-        {
-            var multipliedColor = MultiplyAnimatableColorByAnimatableOpacity(color, opacity);
+            var multipliedColor = MultiplyColorByAnimatableOpacity(color, in opacity);
             return CreateAnimatedColorBrush(context, multipliedColor);
         }
 
@@ -4244,8 +4259,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
             else
             {
-                return _c.CreateNonAnimatedColorBrush(color.InitialValue);
+                return CreateNonAnimatedColorBrush(color.InitialValue);
             }
+        }
+
+        CompositionColorBrush CreateNonAnimatedColorBrush(Color color)
+        {
+            if (!_nonAnimatedColorBrushes.TryGetValue(color, out var result))
+            {
+                result = _c.CreateNonAnimatedColorBrush(color);
+                _nonAnimatedColorBrushes.Add(color, result);
+            }
+
+            return result;
         }
 
         // Implements IDisposable.Dispose(). Currently not needed but will be required
@@ -4254,38 +4280,30 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         {
         }
 
-        // Returns the maximum opacity value from the given TrimmedAnimatable.
-        // This works for any double value, but we call it MaxOpacity because that
-        // is where it is useful, and the name makes the intention clearer.
-        static Opacity MaxOpacity(in TrimmedAnimatable<Opacity> animatable)
-            => animatable.IsAnimated
-                ? animatable.KeyFrames.Max(kf => kf.Value)
-                : animatable.InitialValue;
-
-        static CompositionStrokeCap StrokeCap(SolidColorStroke.LineCapType lineCapType)
+        static CompositionStrokeCap StrokeCap(ShapeStroke.LineCapType lineCapType)
         {
             switch (lineCapType)
             {
-                case SolidColorStroke.LineCapType.Butt:
+                case ShapeStroke.LineCapType.Butt:
                     return CompositionStrokeCap.Flat;
-                case SolidColorStroke.LineCapType.Round:
+                case ShapeStroke.LineCapType.Round:
                     return CompositionStrokeCap.Round;
-                case SolidColorStroke.LineCapType.Projected:
+                case ShapeStroke.LineCapType.Projected:
                     return CompositionStrokeCap.Square;
                 default:
                     throw new InvalidOperationException();
             }
         }
 
-        static CompositionStrokeLineJoin StrokeLineJoin(SolidColorStroke.LineJoinType lineJoinType)
+        static CompositionStrokeLineJoin StrokeLineJoin(ShapeStroke.LineJoinType lineJoinType)
         {
             switch (lineJoinType)
             {
-                case SolidColorStroke.LineJoinType.Bevel:
+                case ShapeStroke.LineJoinType.Bevel:
                     return CompositionStrokeLineJoin.Bevel;
-                case SolidColorStroke.LineJoinType.Miter:
+                case ShapeStroke.LineJoinType.Miter:
                     return CompositionStrokeLineJoin.Miter;
-                case SolidColorStroke.LineJoinType.Round:
+                case ShapeStroke.LineJoinType.Round:
                 default:
                     return CompositionStrokeLineJoin.Round;
             }

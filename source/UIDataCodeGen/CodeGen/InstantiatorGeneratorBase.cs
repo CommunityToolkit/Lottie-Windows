@@ -317,7 +317,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     yield return "Segments (aka markers):";
                     foreach (var (name, start, end) in metadata.Markers)
                     {
-                        var duration = $"{(end.time - start.time).TotalMilliseconds}mS";
+                        var durationMs = (end.time - start.time).TotalMilliseconds;
+                        var duration = durationMs == 0 ? string.Empty : $"{durationMs}mS";
                         var playCommand = start.time == end.time
                                 ? $"player{Deref}SetProgress({start.progress})"
                                 : $"player{Deref}PlayAsync({start.progress}, {end.progress}, _)";
@@ -472,22 +473,27 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             return false;
         }
 
-        // Gets the InReferences for node, ignoring those from ExpressionAnimations
-        // that have a single instance because they are treated specially (they are initialized inline).
+        // The InReferences on a node are used to determine whether a node needs storage (it does
+        // if multiple other nodes it), however in some cases a node with multiple InReferences does
+        // not need storage:
+        // * If the references are only from an ExpressionAnimation that is created in the factory
+        //   for the node.
+        // This method gets the InReferences, filtering out those which can be ignored because they
+        // are dealt with in the factory for the node.
         static IEnumerable<ObjectData> FilteredInRefs(ObjectData node)
         {
             // Examine all of the inrefs to the node.
             foreach (var vertex in node.InReferences)
             {
-                var item = vertex.Node;
+                var from = vertex.Node;
 
                 // If the inref is from an ExpressionAnimation ...
-                if (item.Object is ExpressionAnimation exprAnim)
+                if (from.Object is ExpressionAnimation exprAnim)
                 {
                     // ... is the animation shared?
-                    if (item.InReferences.Length > 1)
+                    if (from.InReferences.Length > 1)
                     {
-                        yield return item;
+                        yield return from;
                         continue;
                     }
 
@@ -510,12 +516,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
                     if (!isExpressionOnThisNode)
                     {
-                        yield return item;
+                        yield return from;
                     }
                 }
                 else
                 {
-                    yield return item;
+                    yield return from;
                 }
             }
         }
@@ -800,7 +806,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
                 // Force storage to be allocated for nodes that have multiple references to them,
                 // or are LoadedImageSurfaces.
-                foreach (var node in factoryNodes)
+                foreach (var node in _objectGraph.Nodes)
                 {
                     if (node.IsShareableNode)
                     {
@@ -812,7 +818,26 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     else if (IsGreaterThanOne(FilteredInRefs(node)))
                     {
                         // Node is referenced more than once so it requires storage.
-                        node.RequiresStorage = true;
+                        if (node.Object is CompositionPropertySet propertySet)
+                        {
+                            // The node is a ComositionPropertySet. Rather than storing
+                            // it, store the owner of the CompositionPropertySet. The
+                            // CompositionPropertySet can be reached from its owner.
+                            var propertySetOwner = NodeFor(propertySet.Owner);
+                            if (propertySetOwner != null)
+                            {
+                                propertySetOwner.RequiresStorage = true;
+                            }
+                            else
+                            {
+                                // It's an un-owned CompositionPropertySEt.
+                                node.RequiresStorage = true;
+                            }
+                        }
+                        else
+                        {
+                            node.RequiresStorage = true;
+                        }
                     }
                 }
 
@@ -974,12 +999,36 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     return calleeNode.FactoryCall();
                 }
 
+                if (calleeNode.Object is CompositionPropertySet propertySet)
+                {
+                    // CompositionPropertySets do not have factories unless they are
+                    // unowned. The call to the factory is therefore a call to the owner's
+                    // factory, then a dereference of the ".Properties" property on the owner.
+                    if (propertySet.Owner != null)
+                    {
+                        return $"{CallFactoryFromFor(callerNode, NodeFor(propertySet.Owner))}{Deref}Properties";
+                    }
+                }
+
                 // Find the vertex from caller to callee.
                 var firstVertexFromCallerToCallee =
                         (from inref in calleeNode.InReferences
                          where inref.Node == callerNode
                          orderby inref.Position
+                         select inref).FirstOrDefault();
+
+                if (firstVertexFromCallerToCallee.Node is null &&
+                    calleeNode.Object is CompositionObject calleeCompositionObject)
+                {
+                    // Didn't find a reference from caller to callee. The reference may be to
+                    // the property set of the callee.
+                    var propertySetNode = NodeFor(calleeCompositionObject.Properties);
+                    firstVertexFromCallerToCallee =
+                        (from inref in propertySetNode.InReferences
+                         where inref.Node == callerNode
+                         orderby inref.Position
                          select inref).First();
+                }
 
                 // Find the first vertex to the callee from any caller.
                 var firstVertexToCallee = calleeNode.InReferences.First();
@@ -1029,10 +1078,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 return true;
             }
 
-            void WriteObjectFactoryStartWithoutCache(CodeBuilder builder, ObjectData node, IEnumerable<string> parameters = null)
+            void WriteObjectFactoryStart(CodeBuilder builder, ObjectData node, IEnumerable<string> parameters = null)
             {
                 // Save the node as the current node while the factory is being written.
                 _currentObjectFactoryNode = node;
+                builder.WriteComment(node.LongComment);
+
+                // Write the signature of the method.
                 builder.WriteLine($"{_owner._stringifier.ReferenceTypeName(node.TypeName)} {node.Name}({(parameters == null ? string.Empty : string.Join(", ", parameters))})");
                 builder.OpenScope();
             }
@@ -1045,10 +1097,54 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 _currentObjectFactoryNode = null;
             }
 
-            void WriteObjectFactoryStart(CodeBuilder builder, ObjectData node, IEnumerable<string> parameters = null)
+            // Writes a factory that just creates an object but doesn't parameterize it before it is returned.
+            void WriteSimpleObjectFactory(CodeBuilder builder, ObjectData node, string createCallText)
             {
-                builder.WriteComment(node.LongComment);
-                WriteObjectFactoryStartWithoutCache(builder, node, parameters);
+                WriteObjectFactoryStart(builder, node);
+                if (node.RequiresStorage)
+                {
+                    if (_owner._disableFieldOptimization)
+                    {
+                        // Create the object unless it has already been created.
+                        builder.WriteLine($"return ({node.FieldName} == {Null})");
+                        builder.Indent();
+                        builder.WriteLine($"? {node.FieldName} = {createCallText}");
+                        builder.WriteLine($": {node.FieldName};");
+                        builder.UnIndent();
+                    }
+                    else
+                    {
+                        // If field optimization is enabled, the method will only get called once.
+                        builder.WriteLine($"return {node.FieldName} = {createCallText};");
+                    }
+                }
+                else
+                {
+                    // The object is only used once.
+                    builder.WriteLine($"return {createCallText};");
+                }
+
+                builder.CloseScope();
+                builder.WriteLine();
+                _currentObjectFactoryNode = null;
+            }
+
+            void WriteCreateAssignment(CodeBuilder builder, ObjectData node, string createCallText)
+            {
+                if (node.RequiresStorage)
+                {
+                    if (_owner._disableFieldOptimization)
+                    {
+                        // If the field has already been assigned, return its value.
+                        builder.WriteLine($"if ({node.FieldName} != {Null}) {{ return {node.FieldName}; }}");
+                    }
+
+                    builder.WriteLine($"{Var} result = {node.FieldName} = {createCallText};");
+                }
+                else
+                {
+                    builder.WriteLine($"{Var} result = {createCallText};");
+                }
             }
 
             internal void WriteAnimatedVisualCode(CodeBuilder builder)
@@ -1260,7 +1356,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     builder.WriteLine($"result{Deref}BottomInset = {Float(obj.BottomInset)}");
                 }
 
-                StartAnimations(builder, obj, node);
+                StartAnimationsOnResult(builder, obj, node);
                 WriteObjectFactoryEnd(builder);
                 return true;
             }
@@ -1276,7 +1372,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     builder.WriteLine($"result{Deref}Geometry = {CallFactoryFromFor(node, obj.Geometry)};");
                 }
 
-                StartAnimations(builder, obj, node);
+                StartAnimationsOnResult(builder, obj, node);
                 WriteObjectFactoryEnd(builder);
                 return true;
             }
@@ -1297,7 +1393,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     builder.WriteLine($"result{Deref}EndPoint = {Vector2(obj.EndPoint.Value)};");
                 }
 
-                StartAnimations(builder, obj, node);
+                StartAnimationsOnResult(builder, obj, node);
                 WriteObjectFactoryEnd(builder);
                 return true;
             }
@@ -1323,7 +1419,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     builder.WriteLine($"result{Deref}GradientOriginOffset = {Vector2(obj.GradientOriginOffset.Value)};");
                 }
 
-                StartAnimations(builder, obj, node);
+                StartAnimationsOnResult(builder, obj, node);
                 WriteObjectFactoryEnd(builder);
                 return true;
             }
@@ -1379,7 +1475,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 WriteObjectFactoryStart(builder, node);
                 WriteCreateAssignment(builder, node, $"_c{Deref}CreateContainerVisual()");
                 InitializeContainerVisual(builder, obj, node);
-                StartAnimations(builder, obj, node);
+                StartAnimationsOnResult(builder, obj, node);
                 WriteObjectFactoryEnd(builder);
                 return true;
             }
@@ -1390,25 +1486,34 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 WriteCreateAssignment(builder, node, $"_c{Deref}CreateExpressionAnimation()");
                 InitializeCompositionAnimation(builder, obj, node);
                 builder.WriteLine($"result{Deref}Expression = {String(obj.Expression)};");
-                StartAnimations(builder, obj, node);
+                StartAnimationsOnResult(builder, obj, node);
                 WriteObjectFactoryEnd(builder);
                 return true;
             }
 
-            void StartAnimations(CodeBuilder builder, CompositionObject obj, ObjectData node, string localName = "result", string animationNamePrefix = "")
-            {
-                bool controllerVariableAdded = false;
+            void StartAnimationsOnResult(CodeBuilder builder, CompositionObject obj, ObjectData node)
+                => StartAnimations(builder, obj, node, "result");
 
+            void StartAnimations(CodeBuilder builder, CompositionObject obj, ObjectData node, string localName)
+            {
+                var controllerVariableAdded = false;
+                StartAnimations(builder, obj, node, localName, ref controllerVariableAdded);
+            }
+
+            void StartAnimations(CodeBuilder builder, CompositionObject obj, ObjectData node, string localName, ref bool controllerVariableAdded)
+            {
                 // Start the animations for properties on the object.
                 foreach (var animator in obj.Animators)
                 {
                     StartAnimation(builder, obj, node, localName, ref controllerVariableAdded, animator);
                 }
 
-                // Start the animations for properties on the property set.
-                foreach (var animator in obj.Properties.Animators)
+                // Start the animations for the properties on the property set on the object.
+                // Prevent infinite recursion - the Properties on a CompositionPropertySet is itself.
+                if (obj.Type != CompositionObjectType.CompositionPropertySet)
                 {
-                    StartAnimation(builder, obj.Properties, NodeFor(obj.Properties), localName, ref controllerVariableAdded, animator);
+                    // Start the animations for properties on the property set.
+                    StartAnimations(builder, obj.Properties, NodeFor(obj.Properties), "propertySet", ref controllerVariableAdded);
                 }
             }
 
@@ -1420,31 +1525,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 var animationNode = NodeFor(animator.Animation);
                 if (!animationNode.RequiresStorage && animator.Animation is ExpressionAnimation expressionAnimation)
                 {
-                    builder.WriteLine($"{SingletonExpressionAnimationName}{Deref}ClearAllParameters();");
-                    builder.WriteLine($"{SingletonExpressionAnimationName}{Deref}Expression = {String(expressionAnimation.Expression)};");
-
-                    // If there is a Target set it. Note however that the Target isn't used for anything
-                    // interesting in this scenario, and there is no way to reset the Target to an
-                    // empty string (the Target API disallows empty). In reality, for all our uses
-                    // the Target will not be set and it doesn't matter if it was set previously.
-                    if (!string.IsNullOrWhiteSpace(expressionAnimation.Target))
-                    {
-                        builder.WriteLine($"{SingletonExpressionAnimationName}{Deref}Target = {String(expressionAnimation.Target)};");
-                    }
-
-                    foreach (var rp in expressionAnimation.ReferenceParameters)
-                    {
-                        var referenceParamenterValueName = rp.Value == obj
-                            ? localName
-                            : CallFactoryFromFor(animationNode, rp.Value);
-                        builder.WriteLine($"{SingletonExpressionAnimationName}{Deref}SetReferenceParameter({String(rp.Key)}, {referenceParamenterValueName});");
-                    }
-
-                    builder.WriteLine($"{localName}{Deref}StartAnimation({String(animator.AnimatedProperty)}, {SingletonExpressionAnimationName});");
+                    StartSingletonExpressionAnimation(builder, obj, localName, animator, animationNode, expressionAnimation);
                 }
                 else
                 {
-                    // KeyFrameAnimation or shared animation
+                    // KeyFrameAnimation or a shared ExpressionAnimation
                     var animationFactoryCall = CallFactoryFromFor(node, animationNode);
                     builder.WriteLine($"{localName}{Deref}StartAnimation({String(animator.AnimatedProperty)}, {animationFactoryCall});");
                 }
@@ -1471,11 +1556,62 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     }
 
                     // Recurse to start animations on the controller.
-                    StartAnimations(builder, animator.Controller, NodeFor(animator.Controller), "controller", "controller");
+                    StartAnimations(builder, animator.Controller, NodeFor(animator.Controller), "controller");
                 }
             }
 
-            void InitializeCompositionObject(CodeBuilder builder, CompositionObject obj, ObjectData node, string localName = "result", string animationNamePrefix = "")
+            // Starts an ExpressionAnimation that uses the shared singleton ExpressionAnimation.
+            // This reparameterizes the singleton each time it is called, and therefore avoids the
+            // cost of creating a new ExpressionAnimation. However, because it get reparameterized
+            // for each use, it cannot be used if the ExpressionAnimation is shared by multiple nodes.
+            void StartSingletonExpressionAnimation(CodeBuilder builder, CompositionObject obj, string localName, CompositionObject.Animator animator, ObjectData animationNode, ExpressionAnimation expressionAnimation)
+            {
+                builder.WriteLine($"{SingletonExpressionAnimationName}{Deref}ClearAllParameters();");
+                builder.WriteLine($"{SingletonExpressionAnimationName}{Deref}Expression = {String(expressionAnimation.Expression)};");
+
+                // If there is a Target set it. Note however that the Target isn't used for anything
+                // interesting in this scenario, and there is no way to reset the Target to an
+                // empty string (the Target API disallows empty). In reality, for all our uses
+                // the Target will not be set and it doesn't matter if it was set previously.
+                if (!string.IsNullOrWhiteSpace(expressionAnimation.Target))
+                {
+                    builder.WriteLine($"{SingletonExpressionAnimationName}{Deref}Target = {String(expressionAnimation.Target)};");
+                }
+
+                foreach (var rp in animator.Animation.ReferenceParameters)
+                {
+                    string referenceParameterValueName;
+                    if (rp.Value == obj)
+                    {
+                        referenceParameterValueName = localName;
+                    }
+                    else if (rp.Value.Type == CompositionObjectType.CompositionPropertySet)
+                    {
+                        var propSet = (CompositionPropertySet)rp.Value;
+                        var propSetOwner = propSet.Owner;
+                        if (propSetOwner == obj)
+                        {
+                            // Use the name of the local that is holding the property set.
+                            referenceParameterValueName = "propertySet";
+                        }
+                        else
+                        {
+                            // Get the factory for the owner of the property set, and get the Properties object from it.
+                            referenceParameterValueName = CallFactoryFromFor(animationNode, propSetOwner);
+                        }
+                    }
+                    else
+                    {
+                        referenceParameterValueName = CallFactoryFromFor(animationNode, rp.Value);
+                    }
+
+                    builder.WriteLine($"{SingletonExpressionAnimationName}{Deref}SetReferenceParameter({String(rp.Key)}, {referenceParameterValueName});");
+                }
+
+                builder.WriteLine($"{localName}{Deref}StartAnimation({String(animator.AnimatedProperty)}, {SingletonExpressionAnimationName});");
+            }
+
+            void InitializeCompositionObject(CodeBuilder builder, CompositionObject obj, ObjectData node, string localName = "result")
             {
                 if (_owner._setCommentProperties)
                 {
@@ -1772,7 +1908,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     }
                 }
 
-                StartAnimations(builder, obj, node);
+                StartAnimationsOnResult(builder, obj, node);
                 WriteObjectFactoryEnd(builder);
                 return true;
             }
@@ -1800,7 +1936,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     }
                 }
 
-                StartAnimations(builder, obj, node);
+                StartAnimationsOnResult(builder, obj, node);
                 WriteObjectFactoryEnd(builder);
                 return true;
             }
@@ -1828,7 +1964,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     }
                 }
 
-                StartAnimations(builder, obj, node);
+                StartAnimationsOnResult(builder, obj, node);
                 WriteObjectFactoryEnd(builder);
                 return true;
             }
@@ -1856,7 +1992,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     }
                 }
 
-                StartAnimations(builder, obj, node);
+                StartAnimationsOnResult(builder, obj, node);
                 WriteObjectFactoryEnd(builder);
                 return true;
             }
@@ -1873,7 +2009,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     builder.WriteLine($"result{Deref}InsertKeyFrame({Float(kf.Progress)}, {CallFactoryFromFor(node, valueKeyFrame.Value)}, {CallFactoryFromFor(node, kf.Easing)});");
                 }
 
-                StartAnimations(builder, obj, node);
+                StartAnimationsOnResult(builder, obj, node);
                 WriteObjectFactoryEnd(builder);
                 return true;
             }
@@ -1901,7 +2037,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     }
                 }
 
-                StartAnimations(builder, obj, node);
+                StartAnimationsOnResult(builder, obj, node);
                 WriteObjectFactoryEnd(builder);
                 return true;
             }
@@ -1918,7 +2054,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 }
 
                 builder.WriteLine($"result{Deref}Size = {Vector2(obj.Size)};");
-                StartAnimations(builder, obj, node);
+                StartAnimationsOnResult(builder, obj, node);
                 WriteObjectFactoryEnd(builder);
                 return true;
             }
@@ -1936,7 +2072,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 }
 
                 builder.WriteLine($"result{Deref}Size = {Vector2(obj.Size)};");
-                StartAnimations(builder, obj, node);
+                StartAnimationsOnResult(builder, obj, node);
                 WriteObjectFactoryEnd(builder);
                 return true;
             }
@@ -1953,7 +2089,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 }
 
                 builder.WriteLine($"result{Deref}Radius = {Vector2(obj.Radius)};");
-                StartAnimations(builder, obj, node);
+                StartAnimationsOnResult(builder, obj, node);
                 WriteObjectFactoryEnd(builder);
                 return true;
             }
@@ -1972,7 +2108,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 }
 
                 InitializeCompositionGeometry(builder, obj, node);
-                StartAnimations(builder, obj, node);
+                StartAnimationsOnResult(builder, obj, node);
                 WriteObjectFactoryEnd(builder);
                 return true;
             }
@@ -1988,7 +2124,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     WriteObjectFactoryStart(builder, node);
                     WriteCreateAssignment(builder, node, createCallText);
                     InitializeCompositionBrush(builder, obj, node);
-                    StartAnimations(builder, obj, node);
+                    StartAnimationsOnResult(builder, obj, node);
                     WriteObjectFactoryEnd(builder);
                 }
                 else
@@ -2004,9 +2140,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 if (obj.Animators.Count > 0)
                 {
                     WriteObjectFactoryStart(builder, node);
-                    WriteCreateAssignment(builder, node, $"_c{Deref}CreateColorGradientStop()");
+                    WriteCreateAssignment(builder, node, $"_c{Deref}CreateColorGradientStop({Float(obj.Offset)}, {Color(obj.Color)})");
                     InitializeCompositionObject(builder, obj, node);
-                    StartAnimations(builder, obj, node);
+                    StartAnimationsOnResult(builder, obj, node);
                     WriteObjectFactoryEnd(builder);
                 }
                 else
@@ -2033,7 +2169,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     }
                 }
 
-                StartAnimations(builder, obj, node);
+                StartAnimationsOnResult(builder, obj, node);
                 WriteObjectFactoryEnd(builder);
                 return true;
             }
@@ -2049,7 +2185,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     builder.WriteLine($"result{Deref}Brush = {CallFactoryFromFor(node, obj.Brush)};");
                 }
 
-                StartAnimations(builder, obj, node);
+                StartAnimationsOnResult(builder, obj, node);
                 WriteObjectFactoryEnd(builder);
                 return true;
             }
@@ -2069,7 +2205,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     }
                 }
 
-                StartAnimations(builder, obj, node);
+                StartAnimationsOnResult(builder, obj, node);
                 WriteObjectFactoryEnd(builder);
                 return true;
             }
@@ -2109,7 +2245,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                         throw new InvalidOperationException();
                 }
 
-                StartAnimations(builder, obj, node);
+                StartAnimationsOnResult(builder, obj, node);
                 WriteObjectFactoryEnd(builder);
                 return true;
             }
@@ -2184,7 +2320,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     builder.WriteLine($"result{Deref}StrokeThickness = {Float(obj.StrokeThickness)};");
                 }
 
-                StartAnimations(builder, obj, node);
+                StartAnimationsOnResult(builder, obj, node);
                 WriteObjectFactoryEnd(builder);
                 return true;
             }
@@ -2210,7 +2346,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     }
                 }
 
-                StartAnimations(builder, obj, node);
+                StartAnimationsOnResult(builder, obj, node);
                 WriteObjectFactoryEnd(builder);
                 return true;
             }
@@ -2221,7 +2357,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 WriteCreateAssignment(builder, node, $"_c{Deref}CreateViewBox()");
                 InitializeCompositionObject(builder, obj, node);
                 builder.WriteLine($"result.Size = {Vector2(obj.Size)};");
-                StartAnimations(builder, obj, node);
+                StartAnimationsOnResult(builder, obj, node);
                 WriteObjectFactoryEnd(builder);
                 return true;
             }
@@ -2247,37 +2383,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     builder.WriteLine($"result{Deref}SourceOffset = {Vector2(obj.SourceOffset.Value)};");
                 }
 
-                StartAnimations(builder, obj, node);
+                StartAnimationsOnResult(builder, obj, node);
                 WriteObjectFactoryEnd(builder);
                 return true;
-            }
-
-            void WriteCreateAssignment(CodeBuilder builder, ObjectData node, string createCallText)
-            {
-                if (node.RequiresStorage)
-                {
-                    if (_owner._disableFieldOptimization)
-                    {
-                        // If the field has already been assigned, return its value.
-                        builder.WriteLine($"if ({node.FieldName} != {Null}) {{ return {node.FieldName}; }}");
-                    }
-
-                    builder.WriteLine($"{Var} result = {node.FieldName} = {createCallText};");
-                }
-                else
-                {
-                    builder.WriteLine($"{Var} result = {createCallText};");
-                }
-            }
-
-            // Handles object factories that are just a create call.
-            void WriteSimpleObjectFactory(CodeBuilder builder, ObjectData node, string createCallText)
-            {
-                builder.WriteComment(node.LongComment);
-                WriteObjectFactoryStartWithoutCache(builder, node);
-                WriteCreateAssignment(builder, node, createCallText);
-                builder.CloseScope();
-                builder.WriteLine();
             }
 
             IAnimatedVisualSourceInfo IAnimatedVisualInfo.AnimatedVisualSourceInfo => _owner;
@@ -2355,7 +2463,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 var parents = InReferences.Select(v => v.Node).ToArray();
                 if (parents.Length == 1)
                 {
-                    // There is exactly one parent.
+                    // There is exactly one parent. Get its comments.
                     if (string.IsNullOrWhiteSpace(parents[0].ShortComment))
                     {
                         // Parent has no comment.
@@ -2367,7 +2475,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                         yield return ancestorShortcomment;
                     }
 
-                    yield return parents[0].ShortComment;
+                    if (!string.IsNullOrWhiteSpace(parents[0].ShortComment))
+                    {
+                        yield return parents[0].ShortComment;
+                    }
                 }
             }
 

@@ -13,11 +13,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 {
     static class ExpressionFactory
     {
-        internal static readonly Vector2 MyAnchor2 = MyVector2("Anchor");
+        internal static readonly Vector2 MyAnchor = MyVector2("Anchor");
+        internal static readonly Vector3 MyAnchor3 = Vector3(MyAnchor.X, MyAnchor.Y, 0);
         internal static readonly Vector4 MyColor = MyVector4("Color");
         internal static readonly Scalar MyInheritedOpacity = MyScalar("InheritedOpacity");
         internal static readonly Scalar MyOpacity = MyScalar("Opacity");
-        internal static readonly Vector2 MyPosition2 = MyVector2("Position");
+        internal static readonly Vector2 MyPosition = MyVector2("Position");
         internal static readonly Vector2 MySize = MyVector2("Size");
         internal static readonly Matrix3x2 MyTransformMatrix = MyMatrix3x2("TransformMatrix");
         static readonly Scalar MyTStart = MyScalar("TStart");
@@ -29,37 +30,30 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         internal static readonly Scalar MinTStartTEnd = Min(MyTStart, MyTEnd);
         static readonly Vector2 HalfMySize = MySize / Vector2(2, 2);
         internal static readonly Color AnimatedColorWithAnimatedOpacity =
-            Vector4AsColorMultipliedByOpacity(MyColor, MyOpacity);
-
-        internal static readonly Color AnimatedColorWithAnimatedOpacityWithAnimatedInheritedOpacity =
-            Vector4AsColorMultipliedByOpacityByOpacity(MyColor, MyOpacity, MyInheritedOpacity);
+            ColorAsVector4MultipliedByOpacities(MyColor, new[] { MyOpacity });
 
         // Depends on MyPosition2 and HalfSize2 so must be declared after them.
-        internal static readonly Vector2 PositionAndSizeToOffsetExpression = MyPosition2 - HalfMySize;
+        internal static readonly Vector2 PositionAndSizeToOffsetExpression = MyPosition - HalfMySize;
         internal static readonly Scalar TransformMatrixM11Expression = MyTransformMatrix._11;
-        internal static readonly Vector2 PositionMinusAnchor2 = MyPosition2 - MyAnchor2;
-        internal static readonly Vector3 MyAnchor3 = Vector3(MyAnchor2.X, MyAnchor2.Y, 0);
+        internal static readonly Vector2 PositionMinusAnchor2 = MyPosition - MyAnchor;
         internal static readonly Vector3 PositionMinusAnchor3 = Vector3(
-                                                                        MyPosition2.X - MyAnchor2.X,
-                                                                        MyPosition2.Y - MyAnchor2.Y,
+                                                                        MyPosition.X - MyAnchor.X,
+                                                                        MyPosition.Y - MyAnchor.Y,
                                                                         0);
 
-        internal static Color BoundColor(string bindingName, double opacity)
-            => Vector4AsColorMultipliedByOpacity(RootColor4Property(bindingName), opacity);
+        internal static Color BoundColorMultipliedByOpacity(string bindingName, LottieData.Opacity opacity)
+            => ColorAsVector4MultipliedByOpacity(RootColor4Property(bindingName), opacity.Value);
 
-        internal static Color BoundColorWithAnimatedOpacity(string bindingName)
-            => Vector4AsColorMultipliedByOpacity(RootColor4Property(bindingName), MyOpacity);
+        internal static Color BoundColorAsVector4MultipliedByOpacities(string bindingName, Scalar[] opacities)
+            => ColorAsVector4MultipliedByOpacities(RootColor4Property(bindingName), opacities);
 
-        internal static Color ColorWithAnimatedOpacity(Wui.Color color)
-            => Vector4AsColorMultipliedByOpacity(Vector4(color.R, color.G, color.B, color.A), MyOpacity);
+        // The given color multiplied by the given opacity, where the opacity is pre-multiplied by 255.
+        // The premultiplication can result in a simpler expression when color.A is 255 because
+        // 255 / 255 * premultipliedOpacity * 255 will simplify to just premultipliedOpacity.
+        internal static Color ColorMultipliedByPreMultipliedOpacities(Wui.Color color, Scalar[] premultipliedOpacities)
+            => ColorAsVector4MultipliedByOpacities(Vector4(color.R, color.G, color.B, color.A / 255.0), premultipliedOpacities);
 
-        // The given color multiplied by MyOpacity, where MyOpacity is pre-multiplied by 255.
-        // The premultiplication means that when the color's alpha is 255, after multiplication
-        // my MyOpacity simplifies to just (MyOpacity) instead of needing to be (255 * MyOpacity).
-        internal static Color ColorWithPreMultipliedAnimatedOpacity(Wui.Color color)
-            => Vector4AsColorMultipliedByOpacity(Vector4(color.R, color.G, color.B, color.A / 255), MyOpacity);
-
-        internal static Vector2 HalfSizeToOffsetExpression(Sn.Vector2 halfSize) => MyPosition2 - Vector2(halfSize);
+        internal static Vector2 HalfSizeToOffsetExpression(Sn.Vector2 halfSize) => MyPosition - Vector2(halfSize);
 
         internal static Vector2 PositionToOffsetExpression(Sn.Vector2 position) => Vector2(position) - HalfMySize;
 
@@ -67,21 +61,44 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         static Vector4 RootColor4Property(string propertyName) => Vector4(RootProperty(propertyName));
 
         internal static Scalar ScaledAndOffsetRootProgress(double scale, double offset)
-            => (RootProgress * scale) + offset;
+        {
+            var result = RootProgress;
 
-        static Color Vector4AsColorMultipliedByOpacity(Vector4 colorAsVector4, Scalar opacity)
+            // Avoid creating expressions that are more complex than necessary.
+            // Even though they'll simplify down, they create unnecessary object.
+            if (scale != 1)
+            {
+                result *= scale;
+            }
+
+            if (offset != 0)
+            {
+                result += offset;
+            }
+
+            return result;
+        }
+
+        internal static Color MyColorAsVector4MultipliedByOpacity(Scalar[] opacities)
+            => ColorAsVector4MultipliedByOpacities(MyColor, opacities);
+
+        static Color ColorAsVector4MultipliedByOpacity(Vector4 colorAsVector4, Scalar opacity)
             => Color(
                 r: colorAsVector4.X,
                 g: colorAsVector4.Y,
                 b: colorAsVector4.Z,
                 a: colorAsVector4.W * opacity);
 
-        static Color Vector4AsColorMultipliedByOpacityByOpacity(Vector4 colorAsVector4, Scalar opacity, Scalar otherOpacity)
-            => Color(
-                r: colorAsVector4.X,
-                g: colorAsVector4.Y,
-                b: colorAsVector4.Z,
-                a: colorAsVector4.W * opacity * otherOpacity);
+        static Color ColorAsVector4MultipliedByOpacities(Vector4 colorAsVector4, Scalar[] opacities)
+        {
+            var multipliedOpacities = opacities[0];
+            for (var i = 1; i < opacities.Length; i++)
+            {
+                multipliedOpacities *= opacities[i];
+            }
+
+            return ColorAsVector4MultipliedByOpacity(colorAsVector4, multipliedOpacities);
+        }
 
         /// <summary>
         /// A segment of a progress expression. Defines the expression that is to be
