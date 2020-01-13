@@ -568,7 +568,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 result.Target = obj.Target;
             }
 
-            result.Expression = obj.Expression.ToString();
+            result.Expression = obj.Expression.ToText();
             result.ClearAllParameters();
             foreach (var parameter in obj.ReferenceParameters)
             {
