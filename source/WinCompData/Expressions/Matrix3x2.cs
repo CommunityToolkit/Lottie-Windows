@@ -2,36 +2,114 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
 {
 #if PUBLIC_WinCompData
     public
 #endif
-    sealed class Matrix3x2 : Expression
+    abstract class Matrix3x2 : Expression_<Matrix3x2>
     {
-        readonly string _representation;
+        [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Consistency with Windows.UI.Composition.Composition")]
+        [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "Consistency with Windows.UI.Composition.Composition")]
+        public virtual Scalar _11 => Channel("_11");
 
-        Matrix3x2(string representation)
+        [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Consistency with Windows.UI.Composition.Composition")]
+        [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "Consistency with Windows.UI.Composition.Composition")]
+        public virtual Scalar _12 => Channel("_12");
+
+        [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Consistency with Windows.UI.Composition.Composition")]
+        [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "Consistency with Windows.UI.Composition.Composition")]
+        public virtual Scalar _21 => Channel("_21");
+
+        [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Consistency with Windows.UI.Composition.Composition")]
+        [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "Consistency with Windows.UI.Composition.Composition")]
+        public virtual Scalar _22 => Channel("_11");
+
+        [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Consistency with Windows.UI.Composition.Composition")]
+        [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "Consistency with Windows.UI.Composition.Composition")]
+        public virtual Scalar _31 => Channel("_31");
+
+        [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Consistency with Windows.UI.Composition.Composition")]
+        [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "Consistency with Windows.UI.Composition.Composition")]
+        public virtual Scalar _32 => Channel("_32");
+
+        /// <inheritdoc/>
+        public override sealed ExpressionType Type => ExpressionType.Matrix3x2;
+
+        public static Matrix3x2 Zero { get; } = new Constructed(0, 0, 0, 0, 0, 0);
+
+        public static Matrix3x2 Identity { get; } = new Constructed(1, 0, 0, 1, 0, 0);
+
+        internal sealed class Asserted : Matrix3x2
         {
-            _representation = representation;
+            readonly string _text;
+
+            internal Asserted(string text)
+            {
+                _text = text;
+            }
+
+            /// <inheritdoc/>
+            protected override string CreateExpressionText() => _text;
+
+            protected override bool IsAtomic => true;
         }
 
-        public static Matrix3x2 Zero { get; } = new Matrix3x2("Matrix3x2(0,0,0,0,0,0)");
-
-        public static Matrix3x2 Identity { get; } = new Matrix3x2("Matrix3x2(1,0,0,1,0,0)");
-
-        /// <inheritdoc/>
-        protected override Expression Simplify()
+        internal sealed class Constructed : Matrix3x2
         {
-            return this;
+            internal Constructed(Scalar m11, Scalar m12, Scalar m21, Scalar m22, Scalar m31, Scalar m32)
+            {
+                _11 = m11;
+                _12 = m12;
+
+                _21 = m21;
+                _22 = m22;
+
+                _31 = m31;
+                _32 = m32;
+            }
+
+            public override Scalar _11 { get; }
+
+            public override Scalar _12 { get; }
+
+            public override Scalar _21 { get; }
+
+            public override Scalar _22 { get; }
+
+            public override Scalar _31 { get; }
+
+            public override Scalar _32 { get; }
+
+            /// <inheritdoc/>
+            protected override Matrix3x2 Simplify()
+            {
+                var m11 = _11.Simplified;
+                var m12 = _12.Simplified;
+
+                var m21 = _21.Simplified;
+                var m22 = _22.Simplified;
+
+                var m31 = _31.Simplified;
+                var m32 = _32.Simplified;
+
+                return
+                    m11 != _11 || m12 != _12 ||
+                    m21 != _21 || m22 != _22 ||
+                    m31 != _31 || m32 != _32
+                        ? new Constructed(m11, m12, m21, m22, m31, m32)
+                        : this;
+            }
+
+            /// <inheritdoc/>
+            protected override string CreateExpressionText()
+                => $"Matrix3x2({Parenthesize(_11)},{Parenthesize(_12)},{Parenthesize(_21)},{Parenthesize(_22)},{Parenthesize(_31)},{Parenthesize(_32)})";
+
+            protected override bool IsAtomic => true;
         }
 
-        /// <inheritdoc/>
-        protected override string CreateExpressionString() => _representation;
-
-        internal override bool IsAtomic => true;
-
-        /// <inheritdoc/>
-        public override ExpressionType InferredType => new ExpressionType(TypeConstraint.Matrix3x2);
+        Scalar Channel(string channelName) => Expressions.Scalar.Channel(this, channelName);
     }
 }

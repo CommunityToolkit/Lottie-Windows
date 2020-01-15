@@ -9,6 +9,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CanvasGeometryCombiner.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionObjectFactory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ContainerShapeOrVisual.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CubicBezierFunction2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ExpressionFactory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Float32.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LottieToMultiVersionWinCompTranslator.cs" />

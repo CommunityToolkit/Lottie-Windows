@@ -7,10 +7,10 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Numerics;
-
 using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData;
+using Expr = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 {
@@ -187,10 +187,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         static string DescribeExpressionAnimation(ExpressionAnimation obj)
         {
             var expression = obj.Expression;
-            var expressionType = expression.InferredType;
-            return expressionType.IsValid && !expressionType.IsGeneric
-                ? $"{expressionType.Constraints}ExpressionAnimation"
-                : "ExpressionAnimation";
+            var expressionType = expression.Type;
+            return $"{expressionType}ExpressionAnimation";
         }
 
         static string DescribeStepEasingFunction(StepEasingFunction obj)
@@ -252,8 +250,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         // Returns a string for use in an identifier that describes a KeyFrameAnimation, or null
         // if the animation cannot be described.
-        static string DescribeAnimationRange<T>(KeyFrameAnimation<T> animation, Func<T, string> valueFormatter)
+        static string DescribeAnimationRange<T, TExpression>(KeyFrameAnimation<T, TExpression> animation, Func<T, string> valueFormatter)
             where T : struct
+            where TExpression : Expr.Expression_<TExpression>
         {
             (var firstValue, var lastValue) = FirstAndLastValuesFromKeyFrame(animation);
             return lastValue.HasValue
@@ -264,12 +263,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         }
 
         // Returns the value from the given keyframe, or null.
-        static T? ValueFromKeyFrame<T>(KeyFrameAnimation<T>.KeyFrame kf)
+        static T? ValueFromKeyFrame<T, TExpression>(KeyFrameAnimation<T, TExpression>.KeyFrame kf)
+            where TExpression : Expr.Expression_<TExpression>
             where T : struct
-                => kf is KeyFrameAnimation<T>.ValueKeyFrame valueKf ? (T?)valueKf.Value : null;
+                => kf is KeyFrameAnimation<T, TExpression>.ValueKeyFrame valueKf ? (T?)valueKf.Value : null;
 
-        static (T? First, T? Last) FirstAndLastValuesFromKeyFrame<T>(KeyFrameAnimation<T> animation)
+        static (T? First, T? Last) FirstAndLastValuesFromKeyFrame<T, TExpression>(KeyFrameAnimation<T, TExpression> animation)
             where T : struct
+            where TExpression : Expr.Expression_<TExpression>
         {
             // If there's only one keyframe, return it as the last value and leave the first value null.
             var first = animation.KeyFrameCount > 1 ? ValueFromKeyFrame(animation.KeyFrames.First()) : null;

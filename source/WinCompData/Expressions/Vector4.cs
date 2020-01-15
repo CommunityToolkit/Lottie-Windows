@@ -7,48 +7,84 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
 #if PUBLIC_WinCompData
     public
 #endif
-    sealed class Vector4 : Expression
+    abstract class Vector4 : Expression_<Vector4>
     {
-        internal Vector4(Expression x, Expression y, Expression z, Expression w)
+        Vector4()
         {
-            X = x;
-            Y = y;
-            Z = z;
-            W = w;
         }
 
-        public new Expression X { get; }
+        public virtual Scalar W => Channel("W");
 
-        public new Expression Y { get; }
+        public virtual Scalar X => Channel("X");
 
-        public new Expression Z { get; }
+        public virtual Scalar Y => Channel("Y");
 
-        public new Expression W { get; }
+        public virtual Scalar Z => Channel("Z");
 
         /// <inheritdoc/>
-        protected override Expression Simplify()
-        {
-            var x = X.Simplified;
-            var y = Y.Simplified;
-            var z = Z.Simplified;
-            var w = W.Simplified;
+        public override sealed ExpressionType Type => ExpressionType.Vector4;
 
-            return x == X && y == Y && z == Z && w == W
-                ? this
-                : new Vector4(x, y, z, w);
+        internal static Vector4 Zero { get; } = new Constructed(Expressions.Scalar.Zero, Expressions.Scalar.Zero, Expressions.Scalar.Zero, Expressions.Scalar.Zero);
+
+        internal static Vector4 One { get; } = new Constructed(Expressions.Scalar.One, Expressions.Scalar.One, Expressions.Scalar.One, Expressions.Scalar.One);
+
+        internal bool IsZero => Simplified is Constructed constructed && constructed.X.IsZero && constructed.Y.IsZero && constructed.Z.IsZero && constructed.W.IsZero;
+
+        internal bool IsOne => Simplified is Constructed constructed && constructed.X.IsOne && constructed.Y.IsOne && constructed.Z.IsOne && constructed.W.IsOne;
+
+        internal sealed class Asserted : Vector4
+        {
+            readonly string _text;
+
+            public Asserted(string text)
+            {
+                _text = text;
+            }
+
+            /// <inheritdoc/>
+            protected override string CreateExpressionText() => _text;
+
+            protected override bool IsAtomic => true;
         }
 
-        /// <inheritdoc/>
-        protected override string CreateExpressionString()
-            => $"Vector4({Parenthesize(X)},{Parenthesize(Y)},{Parenthesize(Z)},{Parenthesize(W)})";
+        internal sealed class Constructed : Vector4
+        {
+            internal Constructed(Scalar x, Scalar y, Scalar z, Scalar w)
+            {
+                X = x;
+                Y = y;
+                Z = z;
+                W = w;
+            }
 
-        internal static bool IsZero(Vector4 value) => IsZero(value.X) && IsZero(value.Y) && IsZero(value.Z) && IsZero(value.W);
+            public override Scalar X { get; }
 
-        internal static bool IsOne(Vector4 value) => IsOne(value.X) && IsOne(value.Y) && IsOne(value.Z) && IsOne(value.W);
+            public override Scalar Y { get; }
 
-        internal override bool IsAtomic => true;
+            public override Scalar Z { get; }
 
-        /// <inheritdoc/>
-        public override ExpressionType InferredType => new ExpressionType(TypeConstraint.Vector4);
+            public override Scalar W { get; }
+
+            /// <inheritdoc/>
+            protected override Vector4 Simplify()
+            {
+                var x = X.Simplified;
+                var y = Y.Simplified;
+                var z = Z.Simplified;
+                var w = W.Simplified;
+
+                return x == X && y == Y && z == Z && w == W
+                    ? this
+                    : new Constructed(x, y, z, w);
+            }
+
+            /// <inheritdoc/>
+            protected override string CreateExpressionText()
+                => $"Vector4({Parenthesize(X)},{Parenthesize(Y)},{Parenthesize(Z)},{Parenthesize(W)})";
+
+            protected override bool IsAtomic => true;
+        }
+
+        Scalar Channel(string channelName) => Expressions.Scalar.Channel(this, channelName);
     }
 }

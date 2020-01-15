@@ -8,7 +8,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 #if PUBLIC_WinCompData
     public
 #endif
-    sealed class PathKeyFrameAnimation : KeyFrameAnimation<CompositionPath>
+    sealed class PathKeyFrameAnimation
+        : KeyFrameAnimation<CompositionPath, Expressions.Void>
     {
         internal PathKeyFrameAnimation()
             : base(null)

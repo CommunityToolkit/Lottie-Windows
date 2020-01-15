@@ -3,30 +3,31 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions;
 using SnVector2 = System.Numerics.Vector2;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
+namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 {
     /// <summary>
     /// A cubic bezier function with type Vector2.
     /// </summary>
-#if PUBLIC_WinCompData
+#if PUBLIC
     public
 #endif
-    sealed class CubicBezierFunction2 : Expression
+    sealed class CubicBezierFunction2 : Vector2
     {
         readonly SnVector2 _p0;
         readonly SnVector2 _p1;
         readonly SnVector2 _p2;
         readonly SnVector2 _p3;
-        readonly Expression _t;
+        readonly Scalar _t;
 
-        public static CubicBezierFunction2 Create(SnVector2 controlPoint0, SnVector2 controlPoint1, SnVector2 controlPoint2, SnVector2 controlPoint3, Expression t)
+        public static CubicBezierFunction2 Create(SnVector2 controlPoint0, SnVector2 controlPoint1, SnVector2 controlPoint2, SnVector2 controlPoint3, Scalar t)
         {
             return new CubicBezierFunction2(controlPoint0, controlPoint1, controlPoint2, controlPoint3, t);
         }
 
-        CubicBezierFunction2(SnVector2 controlPoint0, SnVector2 controlPoint1, SnVector2 controlPoint2, SnVector2 controlPoint3, Expression t)
+        CubicBezierFunction2(SnVector2 controlPoint0, SnVector2 controlPoint1, SnVector2 controlPoint2, SnVector2 controlPoint3, Scalar t)
         {
             _p0 = controlPoint0;
             _p1 = controlPoint1;
@@ -38,7 +39,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
         /// <summary>
         /// Gets a <see cref="CubicBezierFunction2"/> that describes a line from 0 to 0.
         /// </summary>
-        public static CubicBezierFunction2 Zero { get; } = Create(new SnVector2(0, 0), new SnVector2(0, 0), new SnVector2(0, 0), new SnVector2(0, 0), Scalar(0));
+        public static CubicBezierFunction2 ZeroBezier { get; } = Create(SnVector2.Zero, SnVector2.Zero, SnVector2.Zero, SnVector2.Zero, 0);
 
         /// <summary>
         /// Gets a value indicating whether the cubic bezier is equivalent to a line drawn from point 0 to point 3.
@@ -137,29 +138,26 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
 
         /// <inheritdoc/>
         // (1-t)^3P0 + 3(1-t)^2tP1 + 3(1-t)t^2P2 + t^3P3
-        protected override Expression Simplify()
+        protected override Vector2 Simplify()
         {
-            var oneMinusT = Subtract(Scalar(1), _t);
+            var oneMinusT = 1 - _t;
 
             // (1-t)^3P0
-            var p0Part = Multiply(Cubed(oneMinusT), Constant(_p0));
+            var p0Part = Pow(oneMinusT, 3) * Vector2(_p0);
 
             // (1-t)^2t3P1
-            var p1Part = Multiply(Scalar(3), Squared(oneMinusT), _t, Constant(_p1));
+            var p1Part = 3 * Squared(oneMinusT) * _t * Vector2(_p1);
 
             // (1-t)t^23P2
-            var p2Part = Multiply(Scalar(3), oneMinusT, Squared(_t), Constant(_p2));
+            var p2Part = 3 * oneMinusT * Squared(_t) * Vector2(_p2);
 
             // t^3P3
-            var p3Part = Multiply(Cubed(_t), Constant(_p3));
+            var p3Part = Pow(_t, 3) * Vector2(_p3);
 
-            return Sum(p0Part, p1Part, p2Part, p3Part).Simplified;
+            return (p0Part + p1Part + p2Part + p3Part).Simplified;
         }
 
         /// <inheritdoc/>
-        protected override string CreateExpressionString() => Simplified.ToString();
-
-        /// <inheritdoc/>
-        public override ExpressionType InferredType => new ExpressionType(TypeConstraint.Vector2);
+        protected override string CreateExpressionText() => ToText();
     }
 }

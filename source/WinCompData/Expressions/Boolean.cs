@@ -10,24 +10,91 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
 #if PUBLIC_WinCompData
     public
 #endif
-    sealed class Boolean : Expression
+    abstract class Boolean : Expression_<Boolean>
     {
-        public bool Value { get; }
+        /// <inheritdoc/>
+        public override sealed ExpressionType Type => ExpressionType.Boolean;
 
-        public Boolean(bool value)
+        // Allow any bool to be treated as a Boolean.Literal.
+        public static implicit operator Boolean(bool value) => value ? True : False;
+
+        public static Boolean True { get; } = new Literal(true);
+
+        public static Boolean False { get; } = new Literal(false);
+
+        internal sealed class Asserted : Boolean
         {
-            Value = value;
+            readonly string _text;
+
+            public Asserted(string text)
+            {
+                _text = text;
+            }
+
+            /// <inheritdoc/>
+            protected override string CreateExpressionText() => _text;
+
+            protected override bool IsAtomic => true;
         }
 
-        /// <inheritdoc/>
-        protected override string CreateExpressionString() => Value ? "true" : "false";
+        internal abstract class BinaryScalarExpression : Boolean
+        {
+            internal BinaryScalarExpression(Scalar left, Scalar right)
+            {
+                Left = left;
+                Right = right;
+            }
 
-        internal override bool IsAtomic => true;
+            internal Scalar Left { get; }
 
-        /// <inheritdoc/>
-        protected override Expression Simplify() => this;
+            internal Scalar Right { get; }
+        }
 
-        /// <inheritdoc/>
-        public override ExpressionType InferredType => new ExpressionType(TypeConstraint.Boolean);
+        internal sealed new class LessThan : BinaryScalarExpression
+        {
+            public LessThan(Scalar left, Scalar right)
+                : base(left, right)
+            {
+            }
+
+            /// <inheritdoc/>
+            protected override Boolean Simplify()
+            {
+                var left = Left.Simplified;
+                var right = Right.Simplified;
+
+                if (left is Scalar.Literal literalLeft && right is Scalar.Literal literalRight)
+                {
+                    // They're both constants. Evaluate them.
+                    return new Literal(literalLeft.Value < literalRight.Value);
+                }
+
+                return left != Left || right != Right
+                    ? new LessThan(left, right)
+                    : this;
+            }
+
+            /// <inheritdoc/>
+            protected override string CreateExpressionText()
+                => $"{Parenthesize(Left)} < {Parenthesize(Right)}";
+        }
+
+        sealed class Literal : Boolean
+        {
+            public bool Value { get; }
+
+            public Literal(bool value)
+            {
+                Value = value;
+            }
+
+            /// <inheritdoc/>
+            protected override Boolean Simplify() => Value ? True : False;
+
+            /// <inheritdoc/>
+            protected override string CreateExpressionText() => Value ? "true" : "false";
+
+            protected override bool IsAtomic => true;
+        }
     }
 }

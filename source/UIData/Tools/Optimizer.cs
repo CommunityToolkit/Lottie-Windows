@@ -11,6 +11,7 @@ using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData;
+using Expr = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions;
 using Wg = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wg;
 using Wui = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui;
 
@@ -587,12 +588,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             {
                 switch (kf.Type)
                 {
-                    case KeyFrameAnimation<Wui.Color>.KeyFrameType.Expression:
-                        var expressionKeyFrame = (KeyFrameAnimation<Wui.Color>.ExpressionKeyFrame)kf;
+                    case KeyFrameType.Expression:
+                        var expressionKeyFrame = (KeyFrameAnimation<Wui.Color, Expr.Color>.ExpressionKeyFrame)kf;
                         result.InsertExpressionKeyFrame(kf.Progress, expressionKeyFrame.Expression, GetCompositionEasingFunction(kf.Easing));
                         break;
-                    case KeyFrameAnimation<Wui.Color>.KeyFrameType.Value:
-                        var valueKeyFrame = (KeyFrameAnimation<Wui.Color>.ValueKeyFrame)kf;
+                    case KeyFrameType.Value:
+                        var valueKeyFrame = (KeyFrameAnimation<Wui.Color, Expr.Color>.ValueKeyFrame)kf;
                         result.InsertKeyFrame(kf.Progress, valueKeyFrame.Value, GetCompositionEasingFunction(kf.Easing));
                         break;
                     default:
@@ -616,12 +617,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             {
                 switch (kf.Type)
                 {
-                    case KeyFrameAnimation<float>.KeyFrameType.Expression:
-                        var expressionKeyFrame = (KeyFrameAnimation<float>.ExpressionKeyFrame)kf;
+                    case KeyFrameType.Expression:
+                        var expressionKeyFrame = (KeyFrameAnimation<float, Expr.Scalar>.ExpressionKeyFrame)kf;
                         result.InsertExpressionKeyFrame(kf.Progress, expressionKeyFrame.Expression, GetCompositionEasingFunction(kf.Easing));
                         break;
-                    case KeyFrameAnimation<float>.KeyFrameType.Value:
-                        var valueKeyFrame = (KeyFrameAnimation<float>.ValueKeyFrame)kf;
+                    case KeyFrameType.Value:
+                        var valueKeyFrame = (KeyFrameAnimation<float, Expr.Scalar>.ValueKeyFrame)kf;
                         result.InsertKeyFrame(kf.Progress, valueKeyFrame.Value, GetCompositionEasingFunction(kf.Easing));
                         break;
                     default:
@@ -645,12 +646,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             {
                 switch (kf.Type)
                 {
-                    case KeyFrameAnimation<Vector2>.KeyFrameType.Expression:
-                        var expressionKeyFrame = (KeyFrameAnimation<Vector2>.ExpressionKeyFrame)kf;
+                    case KeyFrameType.Expression:
+                        var expressionKeyFrame = (KeyFrameAnimation<Vector2, Expr.Vector2>.ExpressionKeyFrame)kf;
                         result.InsertExpressionKeyFrame(kf.Progress, expressionKeyFrame.Expression, GetCompositionEasingFunction(kf.Easing));
                         break;
-                    case KeyFrameAnimation<Vector2>.KeyFrameType.Value:
-                        var valueKeyFrame = (KeyFrameAnimation<Vector2>.ValueKeyFrame)kf;
+                    case KeyFrameType.Value:
+                        var valueKeyFrame = (KeyFrameAnimation<Vector2, Expr.Vector2>.ValueKeyFrame)kf;
                         result.InsertKeyFrame(kf.Progress, valueKeyFrame.Value, GetCompositionEasingFunction(kf.Easing));
                         break;
                     default:
@@ -674,12 +675,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             {
                 switch (kf.Type)
                 {
-                    case KeyFrameAnimation<Vector3>.KeyFrameType.Expression:
-                        var expressionKeyFrame = (KeyFrameAnimation<Vector3>.ExpressionKeyFrame)kf;
+                    case KeyFrameType.Expression:
+                        var expressionKeyFrame = (KeyFrameAnimation<Vector3, Expr.Vector3>.ExpressionKeyFrame)kf;
                         result.InsertExpressionKeyFrame(kf.Progress, expressionKeyFrame.Expression, GetCompositionEasingFunction(kf.Easing));
                         break;
-                    case KeyFrameAnimation<Vector3>.KeyFrameType.Value:
-                        var valueKeyFrame = (KeyFrameAnimation<Vector3>.ValueKeyFrame)kf;
+                    case KeyFrameType.Value:
+                        var valueKeyFrame = (KeyFrameAnimation<Vector3, Expr.Vector3>.ValueKeyFrame)kf;
                         result.InsertKeyFrame(kf.Progress, valueKeyFrame.Value, GetCompositionEasingFunction(kf.Easing));
                         break;
                     default:
@@ -703,12 +704,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             {
                 switch (kf.Type)
                 {
-                    case KeyFrameAnimation<Vector4>.KeyFrameType.Expression:
-                        var expressionKeyFrame = (KeyFrameAnimation<Vector4>.ExpressionKeyFrame)kf;
+                    case KeyFrameType.Expression:
+                        var expressionKeyFrame = (KeyFrameAnimation<Vector4, Expr.Vector4>.ExpressionKeyFrame)kf;
                         result.InsertExpressionKeyFrame(kf.Progress, expressionKeyFrame.Expression, GetCompositionEasingFunction(kf.Easing));
                         break;
-                    case KeyFrameAnimation<Vector4>.KeyFrameType.Value:
-                        var valueKeyFrame = (KeyFrameAnimation<Vector4>.ValueKeyFrame)kf;
+                    case KeyFrameType.Value:
+                        var valueKeyFrame = (KeyFrameAnimation<Vector4, Expr.Vector4>.ValueKeyFrame)kf;
                         result.InsertKeyFrame(kf.Progress, valueKeyFrame.Value, GetCompositionEasingFunction(kf.Easing));
                         break;
                     default:

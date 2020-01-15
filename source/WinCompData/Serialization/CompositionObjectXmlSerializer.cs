@@ -9,6 +9,7 @@ using System.Linq;
 using System.Numerics;
 using System.Xml.Linq;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui;
+using Expr = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
 {
@@ -750,8 +751,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
             return name;
         }
 
-        XElement FromAnimation<T>(string name, CompositionAnimation animation, T? initialValue)
+        XElement FromAnimation<T, TExpression>(string name, CompositionAnimation animation, T? initialValue)
             where T : struct
+            where TExpression : Expr.Expression_<TExpression>
         {
             switch (animation.Type)
             {
@@ -763,7 +765,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
                 case CompositionObjectType.Vector2KeyFrameAnimation:
                 case CompositionObjectType.Vector3KeyFrameAnimation:
                 case CompositionObjectType.Vector4KeyFrameAnimation:
-                    return FromKeyFrameAnimation(name, (KeyFrameAnimation<T>)animation, initialValue);
+                    return FromKeyFrameAnimation(name, (KeyFrameAnimation<T, TExpression>)animation, initialValue);
                 default:
                     throw new InvalidOperationException();
             }
@@ -784,12 +786,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
                     yield return new XAttribute("Target", obj.Target);
                 }
 
-                yield return new XText(obj.Expression.ToString());
+                yield return new XText(obj.Expression.ToText());
             }
         }
 
-        XElement FromKeyFrameAnimation<T>(string name, KeyFrameAnimation<T> obj, T? initialValue)
+        XElement FromKeyFrameAnimation<T, TExpression>(string name, KeyFrameAnimation<T, TExpression> obj, T? initialValue)
             where T : struct
+            where TExpression : Expr.Expression_<TExpression>
         {
             return new XElement(name, GetContents());
             IEnumerable<XObject> GetContents()
@@ -812,15 +815,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
             }
         }
 
-        static string GetKeyFrameValue<T>(KeyFrameAnimation<T>.KeyFrame kf)
+        static string GetKeyFrameValue<T, TExpression>(KeyFrameAnimation<T, TExpression>.KeyFrame kf)
+            where TExpression : Expr.Expression_<TExpression>
         {
             switch (kf.Type)
             {
-                case KeyFrameAnimation<T>.KeyFrameType.Expression:
-                    var expressionKeyFrame = (KeyFrameAnimation<T>.ExpressionKeyFrame)kf;
-                    return $"\"{expressionKeyFrame.Expression}\"";
-                case KeyFrameAnimation<T>.KeyFrameType.Value:
-                    var valueKeyFrame = (KeyFrameAnimation<T>.ValueKeyFrame)kf;
+                case KeyFrameType.Expression:
+                    var expressionKeyFrame = (KeyFrameAnimation<T, TExpression>.ExpressionKeyFrame)kf;
+                    return $"\"{expressionKeyFrame.Expression.ToText()}\"";
+                case KeyFrameType.Value:
+                    var valueKeyFrame = (KeyFrameAnimation<T, TExpression>.ValueKeyFrame)kf;
                     return valueKeyFrame.Value.ToString();
                 default:
                     throw new InvalidOperationException();
@@ -833,7 +837,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
 
             if (animation != null)
             {
-                yield return FromAnimation(name, animation, initialValue);
+                yield return FromAnimation<Color, Expr.Color>(name, animation, initialValue);
             }
             else
             {
@@ -850,7 +854,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
 
             if (animation != null)
             {
-                yield return FromAnimation(name, animation, initialValue);
+                yield return FromAnimation<float, Expr.Scalar>(name, animation, initialValue);
             }
             else
             {
@@ -867,7 +871,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
 
             if (animation != null)
             {
-                yield return FromAnimation(name, animation, initialValue);
+                yield return FromAnimation<Vector2, Expr.Vector2>(name, animation, initialValue);
             }
             else
             {
@@ -884,7 +888,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
 
             if (animation != null)
             {
-                yield return FromAnimation(name, animation, initialValue);
+                yield return FromAnimation<Vector3, Expr.Vector3>(name, animation, initialValue);
             }
             else
             {
@@ -901,7 +905,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
 
             if (animation != null)
             {
-                yield return FromAnimation(name, animation, initialValue);
+                yield return FromAnimation<Vector4, Expr.Vector4>(name, animation, initialValue);
             }
             else
             {
