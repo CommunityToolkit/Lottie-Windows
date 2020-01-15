@@ -22,7 +22,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
         // Allow any double to be treated as a Scalar.Literal.
         public static implicit operator Scalar(double value) => new Literal(value);
 
-        public static Scalar operator -(Scalar left, Scalar right) => new Difference(left, right);
+        public static Scalar operator -(Scalar left, Scalar right) => new Subtract(left, right);
 
         public static Scalar operator +(Scalar left, Scalar right) => new Add(left, right);
 
@@ -112,39 +112,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
             public Scalar Left { get; }
 
             public Scalar Right { get; }
-        }
-
-        internal sealed class Difference : BinaryExpression
-        {
-            public Difference(Scalar left, Scalar right)
-                : base(left, right)
-            {
-            }
-
-            /// <inheritdoc/>
-            protected override Scalar Simplify()
-            {
-                var left = Left.Simplified;
-                var right = Right.Simplified;
-
-                if (right.IsZero)
-                {
-                    return left;
-                }
-
-                // If both are numbers, simplify to the calculated value.
-                if (left is Literal literalLeft && right is Literal literalRight)
-                {
-                    return new Literal(literalLeft.Value - literalRight.Value);
-                }
-
-                return left != Left || right != Right
-                    ? new Difference(left, right)
-                    : this;
-            }
-
-            /// <inheritdoc/>
-            protected override string CreateExpressionText() => $"{Parenthesize(Left)} - {Parenthesize(Right)}";
         }
 
         internal sealed class Divide : BinaryExpression
@@ -438,6 +405,39 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
 
             /// <inheritdoc/>
             protected override bool IsAtomic => true;
+        }
+
+        internal sealed class Subtract : BinaryExpression
+        {
+            public Subtract(Scalar left, Scalar right)
+                : base(left, right)
+            {
+            }
+
+            /// <inheritdoc/>
+            protected override Scalar Simplify()
+            {
+                var left = Left.Simplified;
+                var right = Right.Simplified;
+
+                if (right.IsZero)
+                {
+                    return left;
+                }
+
+                // If both are numbers, simplify to the calculated value.
+                if (left is Literal literalLeft && right is Literal literalRight)
+                {
+                    return new Literal(literalLeft.Value - literalRight.Value);
+                }
+
+                return left != Left || right != Right
+                    ? new Subtract(left, right)
+                    : this;
+            }
+
+            /// <inheritdoc/>
+            protected override string CreateExpressionText() => $"{Parenthesize(Left)} - {Parenthesize(Right)}";
         }
 
         internal sealed new class Ternary : Scalar
