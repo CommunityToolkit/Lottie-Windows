@@ -21,7 +21,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
 
         public static Vector2 operator -(Vector2 left, Vector2 right) => new Subtract(left, right);
 
-        public static Vector2 operator +(Vector2 left, Vector2 right) => new Sum(left, right);
+        public static Vector2 operator +(Vector2 left, Vector2 right) => new Add(left, right);
 
         public static Vector2 operator *(Scalar left, Vector2 right) => new ScalarMultiply(left, right);
 
@@ -37,6 +37,43 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
         internal bool IsZero => Simplified is Constructed constructed && constructed.X.IsZero && constructed.Y.IsZero;
 
         internal bool IsOne => Simplified is Constructed constructed && constructed.X.IsOne && constructed.Y.IsOne;
+
+        internal sealed class Add : BinaryExpression
+        {
+            internal Add(Vector2 left, Vector2 right)
+                : base(left, right)
+            {
+            }
+
+            /// <inheritdoc/>
+            protected override Vector2 Simplify()
+            {
+                var left = Left.Simplified;
+                var right = Right.Simplified;
+
+                if (left.IsZero)
+                {
+                    return right;
+                }
+
+                if (right.IsZero)
+                {
+                    return left;
+                }
+
+                return left != Left || right != Right
+                    ? new Add(left, right)
+                    : this;
+            }
+
+            /// <inheritdoc/>
+            protected override string CreateExpressionText()
+            {
+                var left = Left is Add ? Left.ToText() : Parenthesize(Left);
+                var right = Right is Add ? Right.ToText() : Parenthesize(Right);
+                return $"{left} + {right}";
+            }
+        }
 
         internal sealed class Asserted : Vector2
         {
@@ -247,43 +284,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
             /// <inheritdoc/>
             protected override string CreateExpressionText()
                 => $"{Parenthesize(Left)} - {Parenthesize(Right)}";
-        }
-
-        internal sealed class Sum : BinaryExpression
-        {
-            internal Sum(Vector2 left, Vector2 right)
-                : base(left, right)
-            {
-            }
-
-            /// <inheritdoc/>
-            protected override Vector2 Simplify()
-            {
-                var left = Left.Simplified;
-                var right = Right.Simplified;
-
-                if (left.IsZero)
-                {
-                    return right;
-                }
-
-                if (right.IsZero)
-                {
-                    return left;
-                }
-
-                return left != Left || right != Right
-                    ? new Sum(left, right)
-                    : this;
-            }
-
-            /// <inheritdoc/>
-            protected override string CreateExpressionText()
-            {
-                var left = Left is Sum ? Left.ToText() : Parenthesize(Left);
-                var right = Right is Sum ? Right.ToText() : Parenthesize(Right);
-                return $"{left} + {right}";
-            }
         }
 
         Scalar Channel(string channelName) => Expressions.Scalar.Channel(this, channelName);

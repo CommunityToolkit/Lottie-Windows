@@ -22,9 +22,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
         // Allow any double to be treated as a Scalar.Literal.
         public static implicit operator Scalar(double value) => new Literal(value);
 
-        public static Scalar operator -(Scalar left, Scalar right) => new Subtract(left, right);
+        public static Scalar operator -(Scalar left, Scalar right) => new Difference(left, right);
 
-        public static Scalar operator +(Scalar left, Scalar right) => new Sum(left, right);
+        public static Scalar operator +(Scalar left, Scalar right) => new Add(left, right);
 
         public static Scalar operator *(Scalar left, Scalar right) => new Multiply(left, right);
 
@@ -44,6 +44,47 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
         // Cast to a float for purposes of determining if it is equal to 0 because
         // Composition will do this internally.
         internal bool IsOne => Simplified is Literal literal && ((float)literal.Value) == 1;
+
+        internal sealed class Add : BinaryExpression
+        {
+            public Add(Scalar left, Scalar right)
+                : base(left, right)
+            {
+            }
+
+            /// <inheritdoc/>
+            protected override Scalar Simplify()
+            {
+                var left = Left.Simplified;
+                var right = Right.Simplified;
+                if (left.IsZero)
+                {
+                    return right;
+                }
+
+                if (right.IsZero)
+                {
+                    return left;
+                }
+
+                if (left is Literal literalLeft && right is Literal literalRight)
+                {
+                    return new Literal(literalLeft.Value + literalRight.Value);
+                }
+
+                return left != Left || right != Right
+                    ? new Add(left, right)
+                    : this;
+            }
+
+            /// <inheritdoc/>
+            protected override string CreateExpressionText()
+            {
+                var left = Left is Add ? Left.ToText() : Parenthesize(Left);
+                var right = Right is Add ? Right.ToText() : Parenthesize(Right);
+                return $"{left} + {right}";
+            }
+        }
 
         internal sealed class Asserted : Scalar
         {
@@ -71,6 +112,39 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
             public Scalar Left { get; }
 
             public Scalar Right { get; }
+        }
+
+        internal sealed class Difference : BinaryExpression
+        {
+            public Difference(Scalar left, Scalar right)
+                : base(left, right)
+            {
+            }
+
+            /// <inheritdoc/>
+            protected override Scalar Simplify()
+            {
+                var left = Left.Simplified;
+                var right = Right.Simplified;
+
+                if (right.IsZero)
+                {
+                    return left;
+                }
+
+                // If both are numbers, simplify to the calculated value.
+                if (left is Literal literalLeft && right is Literal literalRight)
+                {
+                    return new Literal(literalLeft.Value - literalRight.Value);
+                }
+
+                return left != Left || right != Right
+                    ? new Difference(left, right)
+                    : this;
+            }
+
+            /// <inheritdoc/>
+            protected override string CreateExpressionText() => $"{Parenthesize(Left)} - {Parenthesize(Right)}";
         }
 
         internal sealed class Divide : BinaryExpression
@@ -186,9 +260,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
                 var left = Left.Simplified;
                 var right = Right.Simplified;
 
-                var literalLeft = left as Literal;
-                var literalRight = right as Literal;
-                if (literalLeft != null && literalRight != null)
+                if (left is Literal literalLeft && right is Literal literalRight)
                 {
                     // They're both constants. Evaluate them.
                     return new Literal(Math.Min(literalLeft.Value, literalRight.Value));
@@ -235,6 +307,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
                 if (right.IsOne)
                 {
                     return left;
+                }
+
+                if (left == right)
+                {
+                    return new Squared(left);
                 }
 
                 if (left is Literal literalLeft && right is Literal literalRight)
@@ -310,80 +387,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
             /// <inheritdoc/>
             protected override string CreateExpressionText()
                 => $"Pow({Value.ToText()}, {Power.ToText()})";
-        }
-
-        internal sealed class Sum : BinaryExpression
-        {
-            public Sum(Scalar left, Scalar right)
-                : base(left, right)
-            {
-            }
-
-            /// <inheritdoc/>
-            protected override Scalar Simplify()
-            {
-                var left = Left.Simplified;
-                var right = Right.Simplified;
-                if (left.IsZero)
-                {
-                    return right;
-                }
-
-                if (right.IsZero)
-                {
-                    return left;
-                }
-
-                if (left is Literal literalLeft && right is Literal literalRight)
-                {
-                    return new Literal(literalLeft.Value + literalRight.Value);
-                }
-
-                return left != Left || right != Right
-                    ? new Sum(left, right)
-                    : this;
-            }
-
-            /// <inheritdoc/>
-            protected override string CreateExpressionText()
-            {
-                var left = Left is Sum ? Left.ToText() : Parenthesize(Left);
-                var right = Right is Sum ? Right.ToText() : Parenthesize(Right);
-                return $"{left} + {right}";
-            }
-        }
-
-        internal sealed class Subtract : BinaryExpression
-        {
-            public Subtract(Scalar left, Scalar right)
-                : base(left, right)
-            {
-            }
-
-            /// <inheritdoc/>
-            protected override Scalar Simplify()
-            {
-                var left = Left.Simplified;
-                var right = Right.Simplified;
-
-                if (right.IsZero)
-                {
-                    return left;
-                }
-
-                // If both are numbers, simplify to the calculated value.
-                if (left is Literal literalLeft && right is Literal literalRight)
-                {
-                    return new Literal(literalLeft.Value - literalRight.Value);
-                }
-
-                return left != Left || right != Right
-                    ? new Subtract(left, right)
-                    : this;
-            }
-
-            /// <inheritdoc/>
-            protected override string CreateExpressionText() => $"{Parenthesize(Left)} - {Parenthesize(Right)}";
         }
 
         internal sealed new class Squared : Scalar
