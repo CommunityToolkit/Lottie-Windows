@@ -2,12 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
 {
 #if PUBLIC_WinCompData
     public
 #endif
-    abstract class Expression_<T> : Expression
+    abstract class Expression_<T> : Expression, IEquatable<T>
         where T : Expression_<T>
     {
         string _expressionTextCache;
@@ -30,5 +32,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
             => _expressionTextCache ?? (_expressionTextCache = Simplified.CreateExpressionText());
 
         protected virtual T Simplify() => (T)this;
+
+        public bool Equals(T other) => !(other is null) && other.ToText() == ToText();
     }
 }

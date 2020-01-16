@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using Sn = System.Numerics;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
@@ -9,7 +10,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
 #if PUBLIC_WinCompData
     public
 #endif
-    abstract class Expression
+    abstract class Expression : IEquatable<Expression>
     {
         private protected Expression()
         {
@@ -83,5 +84,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
         /// </summary>
         /// <returns>The expression as a string suitable for use in the Windows.UI.Composition animation APIs.</returns>
         protected abstract string CreateExpressionText();
+
+        public bool Equals(Expression other) => !(other is null) && other.ToText() == ToText();
+
+        public override sealed bool Equals(object obj) => (obj is Expression other) && Equals(other);
+
+        public override sealed int GetHashCode() => ToText().GetHashCode();
     }
 }
