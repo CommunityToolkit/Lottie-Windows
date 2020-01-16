@@ -70,13 +70,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 CanonicalizeCubicBezierEasingFunctions();
                 CanonicalizeStepEasingFunctions();
 
-                CanonicalizeKeyFrameAnimations<KeyFrameAnimation<Wui.Color, Expr.Color>, Wui.Color, Expr.Color>(CompositionObjectType.ColorKeyFrameAnimation);
-                CanonicalizeKeyFrameAnimations<KeyFrameAnimation<float, Expr.Scalar>, float, Expr.Scalar>(CompositionObjectType.ScalarKeyFrameAnimation);
-                CanonicalizeKeyFrameAnimations<KeyFrameAnimation<Sn.Vector2, Expr.Vector2>, Sn.Vector2, Expr.Vector2>(CompositionObjectType.Vector2KeyFrameAnimation);
-                CanonicalizeKeyFrameAnimations<KeyFrameAnimation<Sn.Vector3, Expr.Vector3>, Sn.Vector3, Expr.Vector3>(CompositionObjectType.Vector3KeyFrameAnimation);
-                CanonicalizeKeyFrameAnimations<KeyFrameAnimation<Sn.Vector4, Expr.Vector4>, Sn.Vector4, Expr.Vector4>(CompositionObjectType.Vector4KeyFrameAnimation);
-
                 CanonicalizeExpressionAnimations();
+
+                CanonicalizeKeyFrameAnimations<Wui.Color, Expr.Color>(CompositionObjectType.ColorKeyFrameAnimation);
+                CanonicalizeKeyFrameAnimations<float, Expr.Scalar>(CompositionObjectType.ScalarKeyFrameAnimation);
+                CanonicalizeKeyFrameAnimations<Sn.Vector2, Expr.Vector2>(CompositionObjectType.Vector2KeyFrameAnimation);
+                CanonicalizeKeyFrameAnimations<Sn.Vector3, Expr.Vector3>(CompositionObjectType.Vector3KeyFrameAnimation);
+                CanonicalizeKeyFrameAnimations<Sn.Vector4, Expr.Vector4>(CompositionObjectType.Vector4KeyFrameAnimation);
 
                 // ColorKeyFrameAnimations and ExpressionAnimations must be canonicalized before color brushes are canonicalized.
                 CanonicalizeColorBrushes();
@@ -184,11 +184,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 return (animation.Expression.ToText(), animation.Target, rp0.Key, CanonicalObject<CompositionObject>(rp0.Value));
             }
 
-            void CanonicalizeKeyFrameAnimations<TA, TKFA, TExpression>(CompositionObjectType animationType)
-                where TA : KeyFrameAnimation<TKFA, TExpression>
+            void CanonicalizeKeyFrameAnimations<TKFA, TExpression>(CompositionObjectType animationType)
                 where TExpression : Expr.Expression_<TExpression>
             {
-                var items = GetCanonicalizableCompositionObjects<TA>(animationType);
+                var items = GetCanonicalizableCompositionObjects<KeyFrameAnimation<TKFA, TExpression>>(animationType);
 
                 var grouping =
                     from item in items
