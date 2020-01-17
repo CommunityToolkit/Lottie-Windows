@@ -21,6 +21,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         public override GradientStopKind Kind => GradientStopKind.Opacity;
 
         /// <inheritdoc/>
-        public override string ToString() => $"{Opacity.Value * 100}%@{Offset}";
+        public override string ToString() => $"{Opacity.Percent}%@{Offset}";
     }
 }

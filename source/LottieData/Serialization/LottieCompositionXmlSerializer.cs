@@ -463,7 +463,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 }
 
                 yield return FromAnimatable("Color", content.Color);
-                yield return FromAnimatable("OpacityPercent", content.Opacity);
+                yield return FromAnimatable("Opacity", content.Opacity);
             }
         }
 
