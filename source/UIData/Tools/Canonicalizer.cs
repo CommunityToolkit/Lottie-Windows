@@ -5,13 +5,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData;
 using Expr = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions;
+using Sn = System.Numerics;
 using Wg = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wg;
+using Wui = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 {
@@ -52,7 +52,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             // Find the nodes that are equivalent and point them all to a single canonical representation.
             void Canonicalize()
             {
-                CanonicalizeColorGradientStops();
                 CanonicalizeInsetClips();
                 CanonicalizeEllipseGeometries();
                 CanonicalizeRectangleGeometries();
@@ -73,11 +72,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
                 CanonicalizeExpressionAnimations();
 
-                CanonicalizeKeyFrameAnimations<KeyFrameAnimation<Color, Expr.Color>, Color, Expr.Color>(CompositionObjectType.ColorKeyFrameAnimation);
-                CanonicalizeKeyFrameAnimations<KeyFrameAnimation<float, Expr.Scalar>, float, Expr.Scalar>(CompositionObjectType.ScalarKeyFrameAnimation);
-                CanonicalizeKeyFrameAnimations<KeyFrameAnimation<Vector2, Expr.Vector2>, Vector2, Expr.Vector2>(CompositionObjectType.Vector2KeyFrameAnimation);
-                CanonicalizeKeyFrameAnimations<KeyFrameAnimation<Vector3, Expr.Vector3>, Vector3, Expr.Vector3>(CompositionObjectType.Vector3KeyFrameAnimation);
-                CanonicalizeKeyFrameAnimations<KeyFrameAnimation<Vector4, Expr.Vector4>, Vector4, Expr.Vector4>(CompositionObjectType.Vector4KeyFrameAnimation);
+                CanonicalizeKeyFrameAnimations<Wui.Color, Expr.Color>(CompositionObjectType.ColorKeyFrameAnimation);
+                CanonicalizeKeyFrameAnimations<float, Expr.Scalar>(CompositionObjectType.ScalarKeyFrameAnimation);
+                CanonicalizeKeyFrameAnimations<Sn.Vector2, Expr.Vector2>(CompositionObjectType.Vector2KeyFrameAnimation);
+                CanonicalizeKeyFrameAnimations<Sn.Vector3, Expr.Vector3>(CompositionObjectType.Vector3KeyFrameAnimation);
+                CanonicalizeKeyFrameAnimations<Sn.Vector4, Expr.Vector4>(CompositionObjectType.Vector4KeyFrameAnimation);
 
                 // ColorKeyFrameAnimations and ExpressionAnimations must be canonicalized before color brushes are canonicalized.
                 CanonicalizeColorBrushes();
@@ -87,6 +86,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
                 // LoadedImageSurfaces must be canonicalized before surface brushes are canonicalized.
                 CanonicalizeCompositionSurfaceBrushes();
+
+                // Expression animations and anything that can be referenced by an expression
+                // animation on a gradient stop must be canonicalized before gradient stops.
+                CanonicalizeColorGradientStops();
             }
 
             TNode NodeFor(Wg.IGeometrySource2D obj) => _graph[obj].Canonical;
@@ -174,18 +177,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 CanonicalizeGrouping(grouping);
             }
 
-            (WinCompData.Expressions.Expression, string, string, CompositionObject) GetExpressionAnimationKey1(ExpressionAnimation animation)
+            (string expression, string, string, CompositionObject) GetExpressionAnimationKey1(ExpressionAnimation animation)
             {
                 var rp0 = animation.ReferenceParameters.First();
 
-                return (animation.Expression, animation.Target, rp0.Key, CanonicalObject<CompositionObject>(rp0.Value));
+                return (animation.Expression.ToText(), animation.Target, rp0.Key, CanonicalObject<CompositionObject>(rp0.Value));
             }
 
-            void CanonicalizeKeyFrameAnimations<TA, TKFA, TExpression>(CompositionObjectType animationType)
-                where TA : KeyFrameAnimation<TKFA, TExpression>
+            void CanonicalizeKeyFrameAnimations<TKFA, TExpression>(CompositionObjectType animationType)
                 where TExpression : Expr.Expression_<TExpression>
             {
-                var items = GetCanonicalizableCompositionObjects<TA>(animationType);
+                var items = GetCanonicalizableCompositionObjects<KeyFrameAnimation<TKFA, TExpression>>(animationType);
 
                 var grouping =
                     from item in items
@@ -330,8 +332,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             {
                 // CompositionColorGradientStopCollections do not support having the same
                 // CompositionColorGradientStop appearing more than once in the same collection, so
-                // we have to special-case canonicalization for CompositionColorGradientStop so that
-                // they are shared between collections, but not within a collection.
+                // we have to special-case canonicalization so that they are shared between
+                // collections, but not within a collection.
 
                 // Get the gradient brushes.
                 var gradientBrushes = GetCompositionObjects<CompositionGradientBrush>(CompositionObjectType.CompositionLinearGradientBrush).Concat(
@@ -339,10 +341,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
                 // For each CompositionGradientBrush, get the non-animated stops, and give each an index
                 // indicating whether it is the 1st, 2nd, 3rd, etc stop with that color and offset
-                // in collection.
+                // in the collection.
                 var nonAnimatedStopsWithIndex =
                     from b in gradientBrushes
                     let nonAnimatedStops = from s in b.Object.ColorStops
+                                           where (_ignoreCommentProperties || s.Comment == null)
+                                              && s.Properties.IsEmpty && !s.Animators.Any()
                                            group s by (s.Color, s.Offset) into g
                                            from s2 in g.Zip(PositiveInts, (x, y) => (Stop: x, Index: y))
                                            select s2
@@ -350,18 +354,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                     select s;
 
                 // Group by stops that have the same color and index.
-                var items =
-                    from s in nonAnimatedStopsWithIndex
-                    let obj = s.Stop
-                    where (_ignoreCommentProperties || obj.Comment == null)
-                       && obj.Properties.IsEmpty
-                    select (Node: NodeFor(obj), ObjectWithIndex: (Object: obj, Index: s.Index));
-
                 var grouping =
-                    from item in items
-                    let obj = item.ObjectWithIndex.Object
-                    where !obj.Animators.Any()
-                    group item.Node by (obj.Color, obj.Offset, item.ObjectWithIndex.Index)
+                    from item in nonAnimatedStopsWithIndex
+                    let obj = item.Stop
+                    group NodeFor(obj) by (obj.Color, obj.Offset, item.Index)
                     into grouped
                     select grouped;
 
@@ -585,17 +581,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             {
                 foreach (var group in grouping)
                 {
-                    // The canonical node is the node that appears first in the
-                    // traversal of the tree.
-                    var orderedGroup = group.OrderBy(n => n.Position);
-                    var groupArray = orderedGroup.ToArray();
-                    var canonical = groupArray[0];
+                    // Pick a node to be the canonical node. Any node in the group is suitable
+                    // because, by definition, they are all equivalent, but for consistency
+                    // we always pick the node that appears first in the traversal of the tree.
+                    var nodes = group.ToArray();
+                    var canonical = nodes.OrderBy(n => n.Position).FirstOrDefault();
 
-                    // Point every node to the canonical node.
-                    foreach (var node in group)
+                    // Point every node to the designated canonical node.
+                    foreach (var node in nodes)
                     {
                         node.Canonical = canonical;
-                        node.NodesInGroup = groupArray;
                     }
                 }
             }
