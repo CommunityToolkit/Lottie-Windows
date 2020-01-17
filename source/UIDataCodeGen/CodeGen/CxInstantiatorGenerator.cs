@@ -747,6 +747,11 @@ public:
 
         string IDynamicAnimatedVisualSourceHeaderText(string className, IEnumerable<LoadedImageSurfaceInfo> loadedImageSurfaceInfo)
         {
+            var metadataComments =
+                GetSourceDescriptionLines().Any()
+                    ? "\r\n// " + string.Join("\r\n// ", GetSourceDescriptionLines())
+                    : string.Empty;
+
             var nodes = loadedImageSurfaceInfo.ToArray();
             var imageFieldsText = new StringBuilder();
 
@@ -764,7 +769,7 @@ using namespace Windows::UI::Xaml::Data;
 using namespace Windows::UI::Xaml::Media;
 
 namespace AnimatedVisuals
-{{
+{{{metadataComments}
 public ref class {className} sealed : public IDynamicAnimatedVisualSource, INotifyPropertyChanged
 {{
 public:
