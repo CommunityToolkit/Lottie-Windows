@@ -122,6 +122,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             builder.WriteLine();
 
+            builder.WriteLine("namespace AnimatedVisuals");
+            builder.OpenScope();
+
+            // Write a description of the source as comments.
+            foreach (var line in GetSourceDescriptionLines())
+            {
+                builder.WriteComment(line);
+            }
+
             // If the composition has LoadedImageSurface, write a class that implements the IDynamicAnimatedVisualSource interface.
             // Otherwise, implement the IAnimatedVisualSource interface.
             if (info.LoadedImageSurfaces.Count > 0)
@@ -132,6 +141,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             {
                 WriteIAnimatedVisualSource(builder, info);
             }
+
+            builder.CloseScope();
+            builder.WriteLine();
         }
 
         /// <summary>
@@ -139,15 +151,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// </summary>
         void WriteIAnimatedVisualSource(CodeBuilder builder, IAnimatedVisualSourceInfo info)
         {
-            builder.WriteLine("namespace AnimatedVisuals");
-            builder.OpenScope();
-
-            // Write a description of the source as comments.
-            foreach (var line in GetSourceDescriptionLines())
-            {
-                builder.WriteComment(line);
-            }
-
             builder.WriteLine($"sealed class {info.ClassName} : IAnimatedVisualSource");
             builder.OpenScope();
 
@@ -170,8 +173,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             }
 
             builder.WriteLine("return null;");
-            builder.CloseScope();
-            builder.WriteLine();
         }
 
         /// <summary>
@@ -179,8 +180,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// </summary>
         void WriteIDynamicAnimatedVisualSource(CodeBuilder builder, IAnimatedVisualSourceInfo info)
         {
-            builder.WriteLine("namespace AnimatedVisuals");
-            builder.OpenScope();
             builder.WriteLine($"sealed class {info.ClassName} : IDynamicAnimatedVisualSource, INotifyPropertyChanged");
             builder.OpenScope();
 
@@ -299,8 +298,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.WriteLine("EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource, object>> GetAnimatedVisualInvalidatedEventRegistrationTokenTable()");
             builder.OpenScope();
             builder.WriteLine("return EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource, object>>.GetOrCreateEventRegistrationTokenTable(ref _animatedVisualInvalidatedEventTokenTable);");
-            builder.CloseScope();
-            builder.WriteLine();
         }
 
         /// <inheritdoc/>
