@@ -100,5 +100,21 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
             return result;
         }
+
+        public static Opacity Max<TSource>(this ReadOnlySpan<TSource> source, Func<TSource, Opacity> selector)
+        {
+            var result = Opacity.Transparent;
+
+            foreach (var item in source)
+            {
+                var candidate = selector(item);
+                if (candidate > result)
+                {
+                    result = candidate;
+                }
+            }
+
+            return result;
+        }
     }
 }

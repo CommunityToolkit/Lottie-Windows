@@ -9,18 +9,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 #endif
     sealed class OpacityGradientStop : GradientStop
     {
-        public OpacityGradientStop(double offset, double opacityPercent)
+        public OpacityGradientStop(double offset, Opacity opacity)
             : base(offset)
         {
-            OpacityPercent = opacityPercent;
+            Opacity = opacity;
         }
 
-        public double OpacityPercent { get; }
+        public Opacity Opacity { get; }
 
         /// <inheritdoc/>
         public override GradientStopKind Kind => GradientStopKind.Opacity;
 
         /// <inheritdoc/>
-        public override string ToString() => $"{OpacityPercent}%@{Offset}";
+        public override string ToString() => $"{Opacity.Percent}%@{Offset}";
     }
 }

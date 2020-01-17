@@ -63,7 +63,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                 // The stop is either an OpacityGradientStop or a ColorGradientStop. Convert to a ColorGradientStop
                 // by interpolating the color or opacity as necessary.
                 Color color;
-                double opacityPercent;
+                Opacity opacity;
 
                 if (currentStop.Kind == GradientStop.GradientStopKind.Color)
                 {
@@ -80,7 +80,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                         orderedStops[i + 1].Offset == currentStop.Offset &&
                         orderedStops[i + 1].Kind == GradientStop.GradientStopKind.Opacity)
                     {
-                        opacityPercent = ((OpacityGradientStop)orderedStops[i + 1]).OpacityPercent;
+                        opacity = ((OpacityGradientStop)orderedStops[i + 1]).Opacity;
                     }
                     else
                     {
@@ -102,16 +102,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                         if (previousOpacityStop == null)
                         {
                             // There is no previous opacity stop. Use the next opacity
-                            // stop if there is one, or 100% if there are no opacity stops.
-                            opacityPercent = nextOpacityStop?.OpacityPercent ?? 100;
+                            // stop if there is one, or Opaque if there are no opacity stops.
+                            opacity = nextOpacityStop?.Opacity ?? Opacity.Opaque;
                         }
                         else
                         {
                             // If there's a following opacity stop, interpolate between previous
                             // and next, otherwise continue using the previous opacity.
-                            opacityPercent = nextOpacityStop == null
-                                ? previousOpacityStop.OpacityPercent
-                                : InterpolateOpacityPercent(previousOpacityStop, nextOpacityStop, currentStop.Offset);
+                            opacity = nextOpacityStop == null
+                                ? previousOpacityStop.Opacity
+                                : InterpolateOpacity(previousOpacityStop, nextOpacityStop, currentStop.Offset);
                         }
                     }
                 }
@@ -120,7 +120,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                     // The stop is an OpacityGradientStop. Get the opacity value directly from the stop,
                     // and interpolate the color value from the surrounding ColorStops.
                     var currentOpacityStop = previousOpacityStop = (OpacityGradientStop)currentStop;
-                    opacityPercent = previousOpacityStop.OpacityPercent;
+                    opacity = previousOpacityStop.Opacity;
 
                     // Invalidate nextOpacityStop to force a search for the next opacity stop.
                     nextOpacityStop = null;
@@ -166,7 +166,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                     }
                 }
 
-                yield return new ColorGradientStop(currentStop.Offset, color.MultipliedByOpacity(opacityPercent / 100.0));
+                yield return new ColorGradientStop(currentStop.Offset, color.MultipliedByOpacity(opacity));
             }
         }
 
@@ -190,8 +190,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
              => a.y + ((x - a.x) * ((b.y - a.y) / (b.x - a.x)));
 
         // Returns the opacity percent at the given offset between a and b.
-        static double InterpolateOpacityPercent(OpacityGradientStop a, OpacityGradientStop b, double atOffset)
-             => Lerp((a.Offset, a.OpacityPercent / 100.0), (b.Offset, b.OpacityPercent / 100.0), atOffset) * 100;
+        static Opacity InterpolateOpacity(OpacityGradientStop a, OpacityGradientStop b, double atOffset)
+             => Opacity.FromFloat(Lerp((a.Offset, a.Opacity.Value), (b.Offset, b.Opacity.Value), atOffset));
 
         // Returns the color at the given offset between a and b.
         static Color InterpolateColor(ColorGradientStop a, ColorGradientStop b, double atOffset)

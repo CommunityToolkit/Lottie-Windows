@@ -46,6 +46,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)\Mask.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\MergePaths.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\NullLayer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Opacity.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\OpacityGradientStop.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Optimization\GradientStopOptimizer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Optimization\Optimizer.cs" />

@@ -328,7 +328,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 { "Name", mask.Name },
                 { "Inverted", mask.Inverted },
                 { "Mode", Scalar(mask.Mode) },
-                { "OpacityPercent", FromAnimatable(mask.OpacityPercent) },
+                { "OpacityPercent", FromAnimatable(mask.Opacity, FromOpacityPercent) },
                 { "Points", FromAnimatable(mask.Points, p => FromSequence(p, FromBezierSegment)) },
             };
             return result;
@@ -345,7 +345,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         {
             var result = superclassContent;
             result.Add("Color", FromAnimatable(content.Color, FromColor));
-            result.Add("OpacityPercent", FromAnimatable(content.OpacityPercent));
+            result.Add("OpacityPercent", FromAnimatable(content.Opacity, FromOpacityPercent));
             result.Add("Thickness", FromAnimatable(content.StrokeWidth));
             return result;
         }
@@ -366,14 +366,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         {
             var result = superclassContent;
             result.Add("Color", FromAnimatable(content.Color, FromColor));
-            result.Add("OpacityPercent", FromAnimatable(content.OpacityPercent));
+            result.Add("OpacityPercent", FromAnimatable(content.Opacity, FromOpacityPercent));
             return result;
         }
 
         YamlObject FromLinearGradientFill(LinearGradientFill content, YamlMap superclassContent)
         {
             var result = superclassContent;
-            result.Add("OpacityPercent", FromAnimatable(content.OpacityPercent));
+            result.Add("OpacityPercent", FromAnimatable(content.Opacity, FromOpacityPercent));
             result.Add("GradientStops", FromAnimatable(content.GradientStops, p => FromSequence(p, FromGradientStop)));
             return result;
         }
@@ -381,7 +381,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         YamlObject FromRadialGradientFill(RadialGradientFill content, YamlMap superclassContent)
         {
             var result = superclassContent;
-            result.Add("OpacityPercent", FromAnimatable(content.OpacityPercent));
+            result.Add("OpacityPercent", FromAnimatable(content.Opacity, FromOpacityPercent));
             result.Add("GradientStops", FromAnimatable(content.GradientStops, p => FromSequence(p, FromGradientStop)));
             return result;
         }
@@ -392,7 +392,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             result.Add("ScalePercent", FromAnimatable(content.ScalePercent));
             result.Add("Position", FromAnimatable(content.Position));
             result.Add("Anchor", FromAnimatable(content.Anchor));
-            result.Add("OpacityPercent", FromAnimatable(content.OpacityPercent));
+            result.Add("OpacityPercent", FromAnimatable(content.Opacity, FromOpacityPercent));
             result.Add("RotationDegrees", FromAnimatable(content.RotationDegrees));
             return result;
         }
@@ -439,6 +439,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         static YamlObject FromDouble(double value) => (YamlScalar)value;
 
         static YamlObject FromColor(Color value) => (YamlScalar)value?.ToString();
+
+        static YamlObject FromOpacityPercent(Opacity value) => (YamlScalar)value.Percent;
 
         static YamlObject FromVector3(Vector3 value)
         {
@@ -500,7 +502,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         {
             var result = new YamlMap
             {
-                { "OpacityPercent", value.OpacityPercent },
+                { "OpacityPercent", value.Opacity.Percent },
                 { "Offset", value.Offset },
             };
             return result;

@@ -11,7 +11,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
     {
         public RadialGradientStroke(
             in ShapeLayerContentArgs args,
-            Animatable<double> opacityPercent,
+            Animatable<Opacity> opacity,
             Animatable<double> strokeWidth,
             LineCapType capType,
             LineJoinType joinType,
@@ -21,7 +21,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             Animatable<Sequence<GradientStop>> gradientStops,
             Animatable<double> highlightLength,
             Animatable<double> highlightDegrees)
-            : base(in args, opacityPercent, strokeWidth, capType, joinType, miterLimit)
+            : base(in args, opacity, strokeWidth, capType, joinType, miterLimit)
         {
             StartPoint = startPoint;
             EndPoint = endPoint;

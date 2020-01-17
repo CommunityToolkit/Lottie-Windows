@@ -50,8 +50,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// Return the color with the given opacity multiplied into the alpha channel.
         /// </summary>
         /// <returns>The color with the given opacity multiplied into the alpha channel.</returns>
-        public Color MultipliedByOpacity(double opacity)
-            => opacity == 1 ? this : new Color(opacity * A, R, G, B);
+        public Color MultipliedByOpacity(Opacity opacity)
+            => opacity.IsOpaque ? this : new Color(opacity.Value * A, R, G, B);
 
         /// <inheritdoc/>
         public override bool Equals(object obj) => obj is Color && Equals((Color)obj);
