@@ -2275,15 +2275,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             {
                 builder.WriteComment(node.LongComment);
                 WriteObjectFactoryStartWithoutCache(builder, node);
-                if (node.RequiresStorage)
-                {
-                    builder.WriteLine($"return {node.FieldName} = {createCallText};");
-                }
-                else
-                {
-                    builder.WriteLine($"return {createCallText};");
-                }
-
+                WriteCreateAssignment(builder, node, createCallText);
                 builder.CloseScope();
                 builder.WriteLine();
             }
