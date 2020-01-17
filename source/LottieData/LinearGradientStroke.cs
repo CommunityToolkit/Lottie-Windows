@@ -11,7 +11,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
     {
         public LinearGradientStroke(
             in ShapeLayerContentArgs args,
-            Animatable<double> opacityPercent,
+            Animatable<Opacity> opacity,
             Animatable<double> strokeWidth,
             LineCapType capType,
             LineJoinType joinType,
@@ -19,7 +19,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             IAnimatableVector3 startPoint,
             IAnimatableVector3 endPoint,
             Animatable<Sequence<GradientStop>> gradientStops)
-            : base(in args, opacityPercent, strokeWidth, capType, joinType, miterLimit)
+            : base(in args, opacity, strokeWidth, capType, joinType, miterLimit)
         {
             StartPoint = startPoint;
             EndPoint = endPoint;

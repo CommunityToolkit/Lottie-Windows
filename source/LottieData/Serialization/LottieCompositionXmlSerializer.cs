@@ -390,7 +390,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 yield return new XAttribute(nameof(mask.Inverted), mask.Inverted);
                 yield return new XAttribute(nameof(mask.Name), mask.Name);
                 yield return FromAnimatable(nameof(mask.Points), mask.Points);
-                yield return FromAnimatable(nameof(mask.OpacityPercent), mask.OpacityPercent);
+                yield return FromAnimatable(nameof(mask.Opacity), mask.Opacity);
                 yield return new XAttribute(nameof(mask.Mode), mask.Mode);
             }
         }
@@ -423,7 +423,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 }
 
                 yield return FromAnimatable(nameof(content.Color), content.Color);
-                yield return FromAnimatable(nameof(content.OpacityPercent), content.OpacityPercent);
+                yield return FromAnimatable(nameof(content.Opacity), content.Opacity);
                 yield return FromAnimatable(nameof(content.StrokeWidth), content.StrokeWidth);
             }
         }
@@ -463,7 +463,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 }
 
                 yield return FromAnimatable("Color", content.Color);
-                yield return FromAnimatable("OpacityPercent", content.OpacityPercent);
+                yield return FromAnimatable("OpacityPercent", content.Opacity);
             }
         }
 
@@ -506,7 +506,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 yield return FromAnimatable(nameof(content.ScalePercent), content.ScalePercent);
                 yield return FromAnimatable(nameof(content.Position), content.Position);
                 yield return FromAnimatable(nameof(content.Anchor), content.Anchor);
-                yield return FromAnimatable(nameof(content.OpacityPercent), content.OpacityPercent);
+                yield return FromAnimatable(nameof(content.Opacity), content.Opacity);
                 yield return FromAnimatable(nameof(content.RotationDegrees), content.RotationDegrees);
             }
         }

@@ -34,6 +34,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
     sealed class LottieCompositionReader
     {
         static readonly AnimatableFloatParser s_animatableFloatParser = new AnimatableFloatParser();
+        static readonly AnimatableOpacityParser s_animatableOpacityParser = new AnimatableOpacityParser();
         static readonly AnimatableVector2Parser s_animatableVector2Parser = new AnimatableVector2Parser();
         static readonly AnimatableVector3Parser s_animatableVector3Parser = new AnimatableVector3Parser();
         static readonly AnimatableGeometryParser s_animatableGeometryParser = new AnimatableGeometryParser();
@@ -812,7 +813,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 var inverted = obj.GetNamedBoolean("inv");
                 var name = ReadName(obj);
                 var animatedGeometry = ReadAnimatableGeometry(obj.GetNamedObject("pt"));
-                var opacityPercent = ReadAnimatableFloat(obj.GetNamedObject("o"));
+                var opacity = ReadOpacityFromO(obj);
                 var mode = Mask.MaskMode.None;
                 var maskMode = obj.GetNamedString("mode");
                 switch (maskMode)
@@ -848,7 +849,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     inverted,
                     name,
                     animatedGeometry,
-                    opacityPercent,
+                    opacity,
                     mode
                 );
             }
@@ -983,8 +984,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             IgnoreFieldThatIsNotYetSupported(obj, "fillEnabled");
             IgnoreFieldThatIsNotYetSupported(obj, "hd");
 
-            var color = ReadColor(obj);
-            var opacityPercent = ReadOpacityPercent(obj);
+            var color = ReadColorFromC(obj);
+            var opacity = ReadOpacityFromO(obj);
             var strokeWidth = ReadAnimatableFloat(obj.GetNamedObject("w"));
             var capType = LcToLineCapType(obj.GetNamedNumber("lc"));
             var joinType = LjToLineJoinType(obj.GetNamedNumber("lj"));
@@ -1019,7 +1020,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 offset ?? s_animatable_0,
                 dashPattern,
                 color,
-                opacityPercent,
+                opacity,
                 strokeWidth,
                 capType,
                 joinType,
@@ -1047,7 +1048,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             IgnoreFieldThatIsNotYetSupported(obj, "t");
             IgnoreFieldThatIsNotYetSupported(obj, "1");
 
-            var opacityPercent = ReadOpacityPercent(obj);
+            var opacity = ReadOpacityFromO(obj);
             var strokeWidth = ReadAnimatableFloat(obj.GetNamedObject("w"));
             var capType = LcToLineCapType(obj.GetNamedNumber("lc"));
             var joinType = LjToLineJoinType(obj.GetNamedNumber("lj"));
@@ -1059,7 +1060,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             AssertAllFieldsRead(obj);
             return new LinearGradientStroke(
                 in shapeLayerContentArgs,
-                opacityPercent,
+                opacity,
                 strokeWidth,
                 capType,
                 joinType,
@@ -1092,7 +1093,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 highlightDegrees = ReadAnimatableFloat(highlightAngleObject);
             }
 
-            var opacityPercent = ReadOpacityPercent(obj);
+            var opacity = ReadOpacityFromO(obj);
             var strokeWidth = ReadAnimatableFloat(obj.GetNamedObject("w"));
             var capType = LcToLineCapType(obj.GetNamedNumber("lc"));
             var joinType = LjToLineJoinType(obj.GetNamedNumber("lj"));
@@ -1104,7 +1105,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             AssertAllFieldsRead(obj);
             return new RadialGradientStroke(
                 in shapeLayerContentArgs,
-                opacityPercent: opacityPercent,
+                opacity: opacity,
                 strokeWidth: strokeWidth,
                 capType: capType,
                 joinType: joinType,
@@ -1125,11 +1126,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             IgnoreFieldThatIsNotYetSupported(obj, "hd");
 
             var fillType = ReadFillType(obj);
-            var opacityPercent = ReadOpacityPercent(obj);
-            var color = ReadColor(obj);
+            var opacity = ReadOpacityFromO(obj);
+            var color = ReadColorFromC(obj);
 
             AssertAllFieldsRead(obj);
-            return new SolidColorFill(in shapeLayerContentArgs, fillType, opacityPercent, color);
+            return new SolidColorFill(in shapeLayerContentArgs, fillType, opacity, color);
         }
 
         // gf
@@ -1153,7 +1154,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             IgnoreFieldThatIsNotYetSupported(obj, "1");
 
             var fillType = ReadFillType(obj);
-            var opacityPercent = ReadOpacityPercent(obj);
+            var opacity = ReadOpacityFromO(obj);
             var startPoint = ReadAnimatableVector3(obj.GetNamedObject("s"));
             var endPoint = ReadAnimatableVector3(obj.GetNamedObject("e"));
             ReadAnimatableGradientStops(obj.GetNamedObject("g"), out var gradientStops);
@@ -1176,7 +1177,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             return new RadialGradientFill(
                 in shapeLayerContentArgs,
                 fillType: fillType,
-                opacityPercent: opacityPercent,
+                opacity: opacity,
                 startPoint: startPoint,
                 endPoint: endPoint,
                 gradientStops: gradientStops,
@@ -1190,7 +1191,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             IgnoreFieldThatIsNotYetSupported(obj, "hd");
 
             var fillType = ReadFillType(obj);
-            var opacityPercent = ReadOpacityPercent(obj);
+            var opacity = ReadOpacityFromO(obj);
             var startPoint = ReadAnimatableVector3(obj.GetNamedObject("s"));
             var endPoint = ReadAnimatableVector3(obj.GetNamedObject("e"));
             ReadAnimatableGradientStops(obj.GetNamedObject("g"), out var gradientStops);
@@ -1199,7 +1200,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             return new LinearGradientFill(
                 in shapeLayerContentArgs,
                 fillType: fillType,
-                opacityPercent: opacityPercent,
+                opacity: opacity,
                 startPoint: startPoint,
                 endPoint: endPoint,
                 gradientStops: gradientStops);
@@ -1386,21 +1387,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             return isWindingFill ? ShapeFill.PathFillType.Winding : ShapeFill.PathFillType.EvenOdd;
         }
 
-        Animatable<double> ReadOpacityPercent(JObject obj)
-        {
-            var jsonOpacity = obj.GetNamedObject("o", null);
-            return ReadOpacityPercentFromObject(jsonOpacity);
-        }
-
-        Animatable<double> ReadOpacityPercentFromObject(JObject obj)
-        {
-            var result = obj != null
-                ? ReadAnimatableFloat(obj)
-                : new Animatable<double>(100, null);
-            return result;
-        }
-
-        Animatable<Color> ReadColor(JObject obj) =>
+        Animatable<Color> ReadColorFromC(JObject obj) =>
             ReadAnimatableColor(obj.GetNamedObject("c", null));
 
         Animatable<Color> ReadAnimatableColor(JObject obj)
@@ -1423,8 +1410,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         // except they have an extra couple properties.
         RepeaterTransform ReadRepeaterTransform(JObject obj, in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
         {
-            var startOpacityPercent = ReadOpacityPercentFromObject(obj.GetNamedObject("so", null));
-            var endOpacityPercent = ReadOpacityPercentFromObject(obj.GetNamedObject("eo", null));
+            var startOpacity = ReadOpacityFromObject(obj.GetNamedObject("so", null));
+            var endOpacity = ReadOpacityFromObject(obj.GetNamedObject("eo", null));
             var transform = ReadTransform(obj, in shapeLayerContentArgs);
             return new RepeaterTransform(
                 in shapeLayerContentArgs,
@@ -1432,9 +1419,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 transform.Position,
                 transform.ScalePercent,
                 transform.RotationDegrees,
-                transform.OpacityPercent,
-                startOpacityPercent,
-                endOpacityPercent);
+                transform.Opacity,
+                startOpacity,
+                endOpacity);
         }
 
         Transform ReadTransform(JObject obj, in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
@@ -1467,9 +1454,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                         ? ReadAnimatableFloat(rotationJson)
                         : new Animatable<double>(0, null);
 
-            var opacityPercent = ReadOpacityPercent(obj);
+            var opacity = ReadOpacityFromO(obj);
 
-            return new Transform(in shapeLayerContentArgs, anchor, position, scalePercent, rotation, opacityPercent);
+            return new Transform(in shapeLayerContentArgs, anchor, position, scalePercent, rotation, opacity);
         }
 
         static bool? ReadBool(JObject obj, string name)
@@ -1598,8 +1585,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             if (numberOfColorStops.HasValue)
             {
                 // There may be opacity stops. Read them.
-                var animatableOpacityPercentStopsParser = new AnimatableOpacityPercentStopsParser(numberOfColorStops.Value);
-                animatableOpacityPercentStopsParser.ParseJson(
+                var animatableOpacityStopsParser = new AnimatableOpacityStopsParser(numberOfColorStops.Value);
+                animatableOpacityStopsParser.ParseJson(
                     this,
                     obj.GetNamedObject("k"),
                     out var opacityKeyFrames,
@@ -1680,6 +1667,30 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             return keyFrames.Any()
                 ? new Animatable<double>(keyFrames, propertyIndex)
                 : new Animatable<double>(initialValue, propertyIndex);
+        }
+
+        Animatable<Opacity> ReadOpacityFromO(JObject obj)
+        {
+            var jsonOpacity = obj.GetNamedObject("o", null);
+            return ReadOpacityFromObject(jsonOpacity);
+        }
+
+        Animatable<Opacity> ReadOpacityFromObject(JObject obj)
+        {
+            var result = obj != null
+                ? ReadAnimatableOpacity(obj)
+                : new Animatable<Opacity>(Opacity.Opaque, null);
+            return result;
+        }
+
+        Animatable<Opacity> ReadAnimatableOpacity(JObject obj)
+        {
+            s_animatableOpacityParser.ParseJson(this, obj, out IEnumerable<KeyFrame<Opacity>> keyFrames, out Opacity initialValue);
+            var propertyIndex = ReadInt(obj, "ix");
+
+            return keyFrames.Any()
+                ? new Animatable<Opacity>(keyFrames, propertyIndex)
+                : new Animatable<Opacity>(initialValue, propertyIndex);
         }
 
         static Vector3 ReadVector3FromJsonArray(JArray array)
@@ -1981,12 +1992,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             }
         }
 
-        sealed class AnimatableOpacityPercentStopsParser : AnimatableParser<Sequence<GradientStop>>
+        sealed class AnimatableOpacityStopsParser : AnimatableParser<Sequence<GradientStop>>
         {
             // The number of color stops. The opacity stops follow this number of color stops.
             readonly int _colorStopCount;
 
-            internal AnimatableOpacityPercentStopsParser(int colorStopCount)
+            internal AnimatableOpacityStopsParser(int colorStopCount)
             {
                 _colorStopCount = colorStopCount;
             }
@@ -2014,7 +2025,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                                 opacity /= 255;
                             }
 
-                            gradientStops[i / 2] = new OpacityGradientStop(offset, opacityPercent: opacity * 100);
+                            gradientStops[i / 2] = new OpacityGradientStop(offset, opacity: Opacity.FromFloat(opacity));
                             break;
                     }
                 }
@@ -2026,6 +2037,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         sealed class AnimatableFloatParser : AnimatableParser<double>
         {
             protected override double ReadValue(JToken obj) => ReadFloat(obj);
+        }
+
+        sealed class AnimatableOpacityParser : AnimatableParser<Opacity>
+        {
+            protected override Opacity ReadValue(JToken obj) => Opacity.FromFloat(ReadFloat(obj) / 100.0);
         }
 
         abstract class AnimatableParser<T>

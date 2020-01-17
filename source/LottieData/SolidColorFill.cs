@@ -12,9 +12,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         public SolidColorFill(
             in ShapeLayerContentArgs args,
             PathFillType fillType,
-            Animatable<double> opacityPercent,
+            Animatable<Opacity> opacity,
             Animatable<Color> color)
-            : base(in args, fillType, opacityPercent)
+            : base(in args, fillType, opacity)
         {
             Color = color;
         }

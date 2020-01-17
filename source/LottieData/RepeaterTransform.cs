@@ -15,23 +15,23 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             IAnimatableVector3 position,
             IAnimatableVector3 scalePercent,
             Animatable<double> rotationDegrees,
-            Animatable<double> opacityPercent,
-            Animatable<double> startOpacityPercent,
-            Animatable<double> endOpacityPercent)
-            : base(in args, anchor, position, scalePercent, rotationDegrees, opacityPercent)
+            Animatable<Opacity> opacity,
+            Animatable<Opacity> startOpacity,
+            Animatable<Opacity> endOpacity)
+            : base(in args, anchor, position, scalePercent, rotationDegrees, opacity)
         {
-            StartOpacityPercent = startOpacityPercent;
-            EndOpacityPercent = endOpacityPercent;
+            StartOpacity = startOpacity;
+            EndOpacity = endOpacity;
         }
 
         /// <summary>
         /// Gets the opacity of the original shaped. Only used by <see cref="Repeater"/>.
         /// </summary>
-        public Animatable<double> StartOpacityPercent { get; }
+        public Animatable<Opacity> StartOpacity { get; }
 
         /// <summary>
         /// Gets the opacity of the last copy of the original shape. Only used by <see cref="Repeater"/>.
         /// </summary>
-        public Animatable<double> EndOpacityPercent { get; }
+        public Animatable<Opacity> EndOpacity { get; }
     }
 }

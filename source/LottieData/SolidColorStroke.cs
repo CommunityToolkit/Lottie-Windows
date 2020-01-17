@@ -20,12 +20,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             Animatable<double> dashOffset,
             IEnumerable<double> dashPattern,
             Animatable<Color> color,
-            Animatable<double> opacityPercent,
+            Animatable<Opacity> opacity,
             Animatable<double> strokeWidth,
             LineCapType capType,
             LineJoinType joinType,
             double miterLimit)
-            : base(in args, opacityPercent, strokeWidth, capType, joinType, miterLimit)
+            : base(in args, opacity, strokeWidth, capType, joinType, miterLimit)
         {
             DashOffset = dashOffset;
             _dashPattern = dashPattern.ToArray();

@@ -16,14 +16,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             bool inverted,
             string name,
             Animatable<Sequence<BezierSegment>> points,
-            Animatable<double> opacityPercent,
+            Animatable<Opacity> opacity,
             MaskMode mode
         )
         {
             Inverted = inverted;
             Name = name;
             Points = points;
-            OpacityPercent = opacityPercent;
+            Opacity = opacity;
             Mode = mode;
         }
 
@@ -33,7 +33,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
         public Animatable<Sequence<BezierSegment>> Points { get; }
 
-        public Animatable<double> OpacityPercent { get; }
+        public Animatable<Opacity> Opacity { get; }
 
         public MaskMode Mode { get; }
 

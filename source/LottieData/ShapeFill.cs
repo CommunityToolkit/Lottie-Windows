@@ -12,14 +12,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         public ShapeFill(
             in ShapeLayerContentArgs args,
             PathFillType fillType,
-            Animatable<double> opacityPercent)
+            Animatable<Opacity> opacity)
             : base(in args)
         {
-            OpacityPercent = opacityPercent;
+            Opacity = opacity;
             FillType = fillType;
         }
 
-        public Animatable<double> OpacityPercent { get; }
+        public Animatable<Opacity> Opacity { get; }
 
         public abstract ShapeFillKind FillKind { get; }
 
