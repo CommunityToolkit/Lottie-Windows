@@ -66,10 +66,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
             }
 
             /// <inheritdoc/>
-            protected override string CreateExpressionText()
-            {
-                return $"ColorRGB({A},{R},{G},{B})";
-            }
+            protected override string CreateExpressionText() => $"ColorRGB({A},{R},{G},{B})";
 
             protected override bool IsAtomic => true;
         }

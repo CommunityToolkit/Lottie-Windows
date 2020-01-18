@@ -61,12 +61,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// <summary>
         /// Return a color with the given opacity multiplied into the alpha channel of the given color.
         /// </summary>
-        public static Color operator *(Color color, Opacity opacity) => color.MultipliedByOpacity(opacity);
+        public static Color operator *(Color color, Opacity opacity) => color?.MultipliedByOpacity(opacity);
 
         /// <summary>
         /// Return a color with the given opacity multiplied into the alpha channel of the given color.
         /// </summary>
-        public static Color operator *(Opacity opacity, Color color) => color.MultipliedByOpacity(opacity);
+        public static Color operator *(Opacity opacity, Color color) => color?.MultipliedByOpacity(opacity);
 
         Color MultipliedByOpacity(Opacity opacity) => opacity.IsOpaque ? this : new Color(opacity.Value * A, R, G, B);
 
