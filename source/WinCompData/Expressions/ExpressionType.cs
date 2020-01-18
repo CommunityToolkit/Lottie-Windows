@@ -5,7 +5,7 @@
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
 {
     /// <summary>
-    /// Describes the type of an <see cref="Expression"/> or variable.
+    /// Describes the type of an <see cref="Expression"/>.
     /// </summary>
 #if PUBLIC_WinCompData
     public

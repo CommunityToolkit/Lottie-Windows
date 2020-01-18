@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Transactions;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp

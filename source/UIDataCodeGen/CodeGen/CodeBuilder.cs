@@ -198,7 +198,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                                 }
                             }
 
-                            XMLCLOSEFOUND:
+                        XMLCLOSEFOUND:
                             break;
                         case '\r':
                             // CR found. Break immediately
@@ -250,8 +250,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     breakLookahead++;
                 }
 
-                // Found whitespace or end of string. Look for next
-                WHITESPACE_FOUND:
+            // Found whitespace or end of string. Look for next
+            WHITESPACE_FOUND:
                 ;
             } while (breakLookahead != text.Length && breakLookahead <= maxLineLength);
 
@@ -326,6 +326,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             // A string or a CodeBuilder.
             internal object Text;
             internal int IndentCount;
+
+            // In the debugger, show the contents of the line.
+            public override string ToString() => Text.ToString();
         }
     }
 }

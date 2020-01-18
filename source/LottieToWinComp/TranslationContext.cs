@@ -47,6 +47,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal double DurationInFrames { get; private set; }
 
+        public override string ToString() => Layer.Name ?? Layer.Type.ToString();
+
         // Constructs a context for the given layer that is a child of this context.
         internal For<T> SubContext<T>(T layer)
             where T : Layer

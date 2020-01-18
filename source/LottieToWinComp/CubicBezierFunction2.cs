@@ -11,9 +11,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
     /// <summary>
     /// A cubic bezier function with type Vector2.
     /// </summary>
-#if PUBLIC
-    public
-#endif
     sealed class CubicBezierFunction2 : Vector2
     {
         readonly SnVector2 _p0;

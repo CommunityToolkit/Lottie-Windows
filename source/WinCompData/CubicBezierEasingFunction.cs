@@ -12,7 +12,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 #endif
     sealed class CubicBezierEasingFunction : CompositionEasingFunction
     {
-        internal CubicBezierEasingFunction(Vector2 controlPoint1, Vector2 controlPoint2) {
+        internal CubicBezierEasingFunction(Vector2 controlPoint1, Vector2 controlPoint2)
+        {
             ControlPoint1 = controlPoint1;
             ControlPoint2 = controlPoint2;
         }
