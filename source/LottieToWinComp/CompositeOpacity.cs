@@ -15,16 +15,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
     sealed class CompositeOpacity
     {
         readonly CompositeOpacity _previous;
-        readonly Animatable<Opacity> _current;
+        readonly Opacity _initialValue;
+        readonly KeyFrame<Opacity>[] _keyFrames;
 
-        CompositeOpacity(CompositeOpacity previous, Animatable<Opacity> opacity)
+        CompositeOpacity(CompositeOpacity previous, Opacity initialValue, in ReadOnlySpan<KeyFrame<Opacity>> keyFrames)
         {
-            Debug.Assert(previous is null || opacity.IsAnimated, "Precondition");
+            Debug.Assert(previous is null || keyFrames.Length > 1, "Precondition");
+
             _previous = previous;
-            _current = opacity;
+
+            _keyFrames = keyFrames.Length > 1 ? keyFrames.ToArray() : Array.Empty<KeyFrame<Opacity>>();
+            _initialValue = initialValue;
         }
 
-        internal static CompositeOpacity Opaque { get; } = new CompositeOpacity(null, new Animatable<Opacity>(Opacity.Opaque, null));
+        internal static CompositeOpacity Opaque { get; } = new CompositeOpacity(null, Opacity.Opaque, Array.Empty<KeyFrame<Opacity>>());
 
         /// <summary>
         /// Returns a <see cref="CompositeOpacity"/> that multiplies the given opacity by
@@ -32,7 +36,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// </summary>
         /// <returns>A <see cref="CompositeOpacity"/> that multiplies the given opacity by
         /// this <see cref="CompositeOpacity"/>.</returns>
-        internal CompositeOpacity ComposedWith(Animatable<Opacity> opacity)
+        internal CompositeOpacity ComposedWith(in TrimmedAnimatable<Opacity> opacity)
         {
             if (opacity.AlwaysEquals(Opacity.Opaque))
             {
@@ -40,24 +44,30 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 return this;
             }
 
-            // Try to compose the current opacity with the new one.
-            var composedOpacity = TryComposeOpacities(_current, opacity);
+            var myOpacity = new TrimmedAnimatable<Opacity>(opacity.Context, _initialValue, _keyFrames);
 
-            return composedOpacity is null
-                ? new CompositeOpacity(this, opacity)
-                : new CompositeOpacity(_previous, composedOpacity);
+            // Try to compose the current opacity with the new one.
+            if (TryComposeOpacities(in myOpacity, in opacity, out var composedOpacity))
+            {
+                return new CompositeOpacity(_previous, composedOpacity.InitialValue, composedOpacity.KeyFrames);
+            }
+            else
+            {
+                // Couldn't compose into the TrimmedAnimatable.
+                return new CompositeOpacity(this, opacity.InitialValue, opacity.KeyFrames);
+            }
         }
 
         // Checking for whether the current opacity is animated is sufficient because if it
         // wasn't animated it would have been multiplied into the previous animations.
-        internal bool IsAnimated => _current.IsAnimated;
+        internal bool IsAnimated => _keyFrames.Length > 1;
 
         internal IEnumerable<Animatable<Opacity>> GetAnimatables()
         {
             var cur = this;
             do
             {
-                yield return cur._current;
+                yield return new Animatable<Opacity>(initialValue: cur._initialValue, keyFrames: cur._keyFrames, propertyIndex: null);
                 cur = cur._previous;
             } while (cur != null);
         }
@@ -72,13 +82,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     throw new InvalidOperationException();
                 }
 
-                return _current.InitialValue;
+                return _initialValue;
             }
         }
 
         public override string ToString() => IsAnimated ? "Animated opacity" : "Non-animated opacity";
 
-        static Animatable<Opacity> TryComposeOpacities(Animatable<Opacity> a, Animatable<Opacity> b)
+        static bool TryComposeOpacities(in TrimmedAnimatable<Opacity> a, in TrimmedAnimatable<Opacity> b, out TrimmedAnimatable<Opacity> result)
         {
             var isAAnimated = a.IsAnimated;
             var isBAnimated = b.IsAnimated;
@@ -94,48 +104,53 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         // The animations are non-overlapping.
                         if (a.KeyFrames[0].Frame >= b.KeyFrames[b.KeyFrames.Length - 1].Frame)
                         {
-                            return ComposeNonOverlappingAnimatedOpacities(b, a);
+                            result = ComposeNonOverlappingAnimatedOpacities(in b, in a);
+                            return true;
                         }
                         else
                         {
-                            return ComposeNonOverlappingAnimatedOpacities(a, b);
+                            result = ComposeNonOverlappingAnimatedOpacities(in a, in b);
+                            return true;
                         }
                     }
                     else
                     {
                         // The animations overlap.
-                        // Return null to indicate that they can't be composed into a single result.
-                        return null;
+                        // Return false to indicate that they can't be composed into a single result.
+                        result = default(TrimmedAnimatable<Opacity>);
+                        return false;
                     }
                 }
                 else
                 {
-                    return ComposeAnimatedAndNonAnimated(a, b.InitialValue);
+                    result = ComposeAnimatedAndNonAnimated(in a, b.InitialValue);
+                    return true;
                 }
             }
             else
             {
-                return ComposeAnimatedAndNonAnimated(b, a.InitialValue);
+                result = ComposeAnimatedAndNonAnimated(in b, a.InitialValue);
+                return true;
             }
         }
 
-        static Animatable<Opacity> ComposeAnimatedAndNonAnimated(Animatable<Opacity> animatable, Opacity opacity)
+        static TrimmedAnimatable<Opacity> ComposeAnimatedAndNonAnimated(in TrimmedAnimatable<Opacity> animatable, Opacity opacity)
         {
             return opacity.IsOpaque
                 ? animatable
-                : new Animatable<Opacity>(
+                : new TrimmedAnimatable<Opacity>(
+                    context: animatable.Context,
                     initialValue: animatable.InitialValue * opacity,
                     keyFrames: animatable.KeyFrames.SelectToSpan(kf => new KeyFrame<Opacity>(
                                 kf.Frame,
                                 kf.Value * opacity,
                                 kf.SpatialControlPoint1,
                                 kf.SpatialControlPoint2,
-                                kf.Easing)),
-                    propertyIndex: null);
+                                kf.Easing)));
         }
 
         // Composes 2 animated opacity values where the frames in first come before second.
-        static Animatable<Opacity> ComposeNonOverlappingAnimatedOpacities(Animatable<Opacity> first, Animatable<Opacity> second)
+        static TrimmedAnimatable<Opacity> ComposeNonOverlappingAnimatedOpacities(in TrimmedAnimatable<Opacity> first, in TrimmedAnimatable<Opacity> second)
         {
             Debug.Assert(first.IsAnimated, "Precondition");
             Debug.Assert(second.IsAnimated, "Precondition");
@@ -158,10 +173,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 resultCount++;
             }
 
-            return new Animatable<Opacity>(
+            return new TrimmedAnimatable<Opacity>(
+                first.Context,
                 first.InitialValue,
-                new ReadOnlySpan<KeyFrame<Opacity>>(resultFrames, 0, resultCount),
-                null);
+                new ReadOnlySpan<KeyFrame<Opacity>>(resultFrames, 0, resultCount));
         }
 
         static KeyFrame<Opacity> ScaleKeyFrame(KeyFrame<Opacity> keyFrame, Opacity scale)

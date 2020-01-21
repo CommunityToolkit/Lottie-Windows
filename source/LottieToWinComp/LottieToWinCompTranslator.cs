@@ -1249,14 +1249,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 };
             }
 
-            internal void UpdateOpacityFromTransform(Transform transform)
+            internal void UpdateOpacityFromTransform(TranslationContext context, Transform transform)
             {
                 if (transform == null)
                 {
                     return;
                 }
 
-                Opacity = Opacity.ComposedWith(transform.Opacity);
+                Opacity = Opacity.ComposedWith(context.TrimAnimatable(transform.Opacity));
             }
 
             // Only used when translating geometries. Layers use an extra Shape or Visual to
@@ -1492,7 +1492,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
 
             var shapeContext = new ShapeContentContext(this);
-            shapeContext.UpdateOpacityFromTransform(context.Layer.Transform);
+            shapeContext.UpdateOpacityFromTransform(context, context.Layer.Transform);
             containerShapeContentNode.Shapes.Add(TranslateShapeLayerContents(context, shapeContext, context.Layer.Contents));
 
             return layerHasMasks ? (ShapeOrVisual)TranslateAndApplyMasksOnShapeTree(context, containerShapeRootNode) : containerShapeRootNode;
@@ -1690,7 +1690,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                             var transform = (Transform)shapeContent;
 
                             // Multiply the opacity in the transform.
-                            shapeContext.UpdateOpacityFromTransform(transform);
+                            shapeContext.UpdateOpacityFromTransform(context, transform);
 
                             // Insert a new container at the top. The transform will be applied to it.
                             var newContainer = _c.CreateContainerShape();
@@ -2756,10 +2756,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             // Add a property for each opacity.
             foreach (var a in animatableOpacities)
             {
-                var trimmedOpacity = context.TrimAnimatable(a.animatable);
+                var trimmed = context.TrimAnimatable(a.animatable);
                 var propertyName = a.name;
-                result.Properties.InsertScalar(propertyName, Opacity(trimmedOpacity.InitialValue));
-                ApplyOpacityKeyFrameAnimation(context, trimmedOpacity, result.Properties, propertyName, propertyName, null);
+                result.Properties.InsertScalar(propertyName, Opacity(trimmed.InitialValue));
+                ApplyOpacityKeyFrameAnimation(context, trimmed, result.Properties, propertyName, propertyName, null);
             }
 
             result.Properties.InsertVector4("Color", Vector4(Color(color.InitialValue)));
@@ -2792,7 +2792,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             => TranslateSolidColorWithBindings(
                 context,
                 shapeStroke.Color,
-                inheritedOpacity.ComposedWith(shapeStroke.Opacity),
+                inheritedOpacity.ComposedWith(context.TrimAnimatable(shapeStroke.Opacity)),
                 bindingSpec: shapeStroke.Name);
 
         CompositionColorBrush TranslateSolidColorFill(
@@ -2802,7 +2802,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             => TranslateSolidColorWithBindings(
                 context,
                 shapeFill.Color,
-                inheritedOpacity.ComposedWith(shapeFill.Opacity),
+                inheritedOpacity.ComposedWith(context.TrimAnimatable(shapeFill.Opacity)),
                 bindingSpec: shapeFill.Name);
 
         CompositionColorBrush TranslateSolidColorWithBindings(
@@ -2876,10 +2876,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 // Add a property for each opacity.
                 foreach (var a in animatableOpacities)
                 {
-                    var trimmedOpacity = context.TrimAnimatable(a.animatable);
                     var propertyName = a.name;
-                    result.Properties.InsertScalar(propertyName, Opacity(trimmedOpacity.InitialValue));
-                    ApplyOpacityKeyFrameAnimation(context, trimmedOpacity, result.Properties, propertyName, propertyName, null);
+                    result.Properties.InsertScalar(propertyName, Opacity(a.animatable.InitialValue));
+                    ApplyOpacityKeyFrameAnimation(context, context.TrimAnimatable(a.animatable), result.Properties, propertyName, propertyName, null);
                 }
 
                 var opacityScalarExpressions = animatableOpacities.Select(a => Expr.Scalar($"my.{a.name}")).ToArray();
