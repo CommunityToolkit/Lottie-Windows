@@ -202,7 +202,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             var removed = new HashSet<CompositionContainerShape>();
 
             // Keep going as long as progress is made.
-            for (var madeProgress = true; madeProgress; )
+            for (var madeProgress = true; madeProgress;)
             {
                 madeProgress = false;
                 foreach (var (Container, Parent) in containerNodes)
