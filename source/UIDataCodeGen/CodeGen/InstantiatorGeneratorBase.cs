@@ -1181,11 +1181,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             void WriteExpressionAnimationBinder(CodeBuilder builder)
             {
-                builder.WriteLine($"void BindTargetProperty(");
+                builder.WriteLine($"void BindProperty(");
                 builder.Indent();
                 builder.Indent();
                 builder.WriteLine($"{ReferenceTypeName("CompositionObject")} target,");
                 builder.WriteLine($"{ReferenceTypeName("String")} propertyName,");
+                builder.WriteLine($"{ReferenceTypeName("CompositionObject")} referenceObject,");
                 builder.WriteLine($"{ReferenceTypeName("String")} referenceParameterName,");
                 builder.WriteLine($"{ReferenceTypeName("String")} expression)");
                 builder.UnIndent();
@@ -1193,7 +1194,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 builder.OpenScope();
                 builder.WriteLine($"{SingletonExpressionAnimationName}{Deref}ClearAllParameters();");
                 builder.WriteLine($"{SingletonExpressionAnimationName}{Deref}Expression = expression;");
-                builder.WriteLine($"{SingletonExpressionAnimationName}{Deref}SetReferenceParameter(referenceParameterName, target);");
+                builder.WriteLine($"{SingletonExpressionAnimationName}{Deref}SetReferenceParameter(referenceParameterName, referenceObject);");
                 builder.WriteLine($"target{Deref}StartAnimation(propertyName, {SingletonExpressionAnimationName});");
                 builder.CloseScope();
                 builder.WriteLine();
@@ -1663,16 +1664,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
                 var referenceParameters = animator.Animation.ReferenceParameters.ToArray();
                 if (referenceParameters.Length == 1 &&
-                    referenceParameters[0].Value == obj &&
                     string.IsNullOrWhiteSpace(animation.Target))
                 {
-                    // Special-case where there is exactly one reference parameter and it is
-                    // the target object. Call a helper.
+                    var rp = referenceParameters[0];
+                    var referenceParameterName = GetReferenceParameterName(obj, localName, animationNode, rp);
+
+                    // Special-case where there is exactly one reference parameter. Call a helper.
                     builder.WriteLine(
-                        $"BindTargetProperty({localName}, " +
-                        $"{String(animator.AnimatedProperty)}, " +
-                        $"{String(referenceParameters[0].Key)}, " +
-                        $"{String(animation.Expression)});");
+                        $"BindProperty({localName}, " + // target
+                        $"{String(animator.AnimatedProperty)}, " + // property on target
+                        $"{referenceParameterName}, " + // reference object
+                        $"{String(rp.Key)}, " + // reference property name
+                        $"{String(animation.Expression.ToText())});");  // expression
                 }
                 else
                 {
@@ -1690,36 +1693,47 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
                     foreach (var rp in animation.ReferenceParameters)
                     {
-                        string referenceParameterValueName;
-                        if (rp.Value == obj)
-                        {
-                            referenceParameterValueName = localName;
-                        }
-                        else if (rp.Value.Type == CompositionObjectType.CompositionPropertySet)
-                        {
-                            var propSet = (CompositionPropertySet)rp.Value;
-                            var propSetOwner = propSet.Owner;
-                            if (propSetOwner == obj)
-                            {
-                                // Use the name of the local that is holding the property set.
-                                referenceParameterValueName = "propertySet";
-                            }
-                            else
-                            {
-                                // Get the factory for the owner of the property set, and get the Properties object from it.
-                                referenceParameterValueName = CallFactoryFromFor(animationNode, propSetOwner);
-                            }
-                        }
-                        else
-                        {
-                            referenceParameterValueName = CallFactoryFromFor(animationNode, rp.Value);
-                        }
+                        var referenceParameterName = GetReferenceParameterName(obj, localName, animationNode, rp);
 
-                        builder.WriteLine($"{SingletonExpressionAnimationName}{Deref}SetReferenceParameter({String(rp.Key)}, {referenceParameterValueName});");
+                        builder.WriteLine($"{SingletonExpressionAnimationName}{Deref}SetReferenceParameter({String(rp.Key)}, {referenceParameterName});");
                     }
 
                     builder.WriteLine($"{localName}{Deref}StartAnimation({String(animator.AnimatedProperty)}, {SingletonExpressionAnimationName});");
                 }
+            }
+
+            string GetReferenceParameterName(
+                CompositionObject obj,
+                string localName,
+                ObjectData animationNode,
+                KeyValuePair<string, CompositionObject> referenceParameter)
+            {
+                string referenceParameterName;
+                if (referenceParameter.Value == obj)
+                {
+                    referenceParameterName = localName;
+                }
+                else if (referenceParameter.Value.Type == CompositionObjectType.CompositionPropertySet)
+                {
+                    var propSet = (CompositionPropertySet)referenceParameter.Value;
+                    var propSetOwner = propSet.Owner;
+                    if (propSetOwner == obj)
+                    {
+                        // Use the name of the local that is holding the property set.
+                        referenceParameterName = "propertySet";
+                    }
+                    else
+                    {
+                        // Get the factory for the owner of the property set, and get the Properties object from it.
+                        referenceParameterName = CallFactoryFromFor(animationNode, propSetOwner);
+                    }
+                }
+                else
+                {
+                    referenceParameterName = CallFactoryFromFor(animationNode, referenceParameter.Value);
+                }
+
+                return referenceParameterName;
             }
 
             void InitializeCompositionObject(CodeBuilder builder, CompositionObject obj, ObjectData node, string localName = "result")
