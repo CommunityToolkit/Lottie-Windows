@@ -46,13 +46,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// </summary>
         public double B { get; }
 
-        /// <summary>
-        /// Return the color with the given opacity multiplied into the alpha channel.
-        /// </summary>
-        /// <returns>The color with the given opacity multiplied into the alpha channel.</returns>
-        public Color MultipliedByOpacity(Opacity opacity)
-            => opacity.IsOpaque ? this : new Color(opacity.Value * A, R, G, B);
-
         /// <inheritdoc/>
         public override bool Equals(object obj) => obj is Color && Equals((Color)obj);
 
@@ -64,6 +57,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
         /// <inheritdoc/>
         public override string ToString() => $"#{ToHex(A)}{ToHex(R)}{ToHex(G)}{ToHex(B)}";
+
+        /// <summary>
+        /// Return a color with the given opacity multiplied into the alpha channel of the given color.
+        /// </summary>
+        public static Color operator *(Color color, Opacity opacity) => color?.MultipliedByOpacity(opacity);
+
+        /// <summary>
+        /// Return a color with the given opacity multiplied into the alpha channel of the given color.
+        /// </summary>
+        public static Color operator *(Opacity opacity, Color color) => color?.MultipliedByOpacity(opacity);
+
+        Color MultipliedByOpacity(Opacity opacity) => opacity.IsOpaque ? this : new Color(opacity.Value * A, R, G, B);
 
         static string ToHex(double value) => ((byte)(value * 255)).ToString("X2");
     }
