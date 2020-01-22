@@ -474,12 +474,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         }
 
         // The InReferences on a node are used to determine whether a node needs storage (it does
-        // if multiple other nodes it), however in some cases a node with multiple InReferences does
-        // not need storage:
+        // if multiple other nodes reference it), however in one case a node with multiple
+        // InReferences does not need storage:
         // * If the references are only from an ExpressionAnimation that is created in the factory
         //   for the node.
-        // This method gets the InReferences, filtering out those which can be ignored because they
-        // are dealt with in the factory for the node.
+        // This method gets the InReferences, filtering out those which can be ignored.
         static IEnumerable<ObjectData> FilteredInRefs(ObjectData node)
         {
             // Examine all of the inrefs to the node.
@@ -830,7 +829,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                             }
                             else
                             {
-                                // It's an un-owned CompositionPropertySEt.
+                                // It's an un-owned CompositionPropertySet.
                                 node.RequiresStorage = true;
                             }
                         }
@@ -1562,9 +1561,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             // Starts an ExpressionAnimation that uses the shared singleton ExpressionAnimation.
             // This reparameterizes the singleton each time it is called, and therefore avoids the
-            // cost of creating a new ExpressionAnimation. However, because it get reparameterized
+            // cost of creating a new ExpressionAnimation. However, because it gets reparameterized
             // for each use, it cannot be used if the ExpressionAnimation is shared by multiple nodes.
-            void StartSingletonExpressionAnimation(CodeBuilder builder, CompositionObject obj, string localName, CompositionObject.Animator animator, ObjectData animationNode, ExpressionAnimation expressionAnimation)
+            void StartSingletonExpressionAnimation(
+                    CodeBuilder builder,
+                    CompositionObject obj,
+                    string localName,
+                    CompositionObject.Animator animator,
+                    ObjectData animationNode,
+                    ExpressionAnimation expressionAnimation)
             {
                 builder.WriteLine($"{SingletonExpressionAnimationName}{Deref}ClearAllParameters();");
                 builder.WriteLine($"{SingletonExpressionAnimationName}{Deref}Expression = {String(expressionAnimation.Expression)};");

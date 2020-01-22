@@ -88,7 +88,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         public override string ToString() => IsAnimated ? "Animated opacity" : "Non-animated opacity";
 
-        static bool TryComposeOpacities(in TrimmedAnimatable<Opacity> a, in TrimmedAnimatable<Opacity> b, out TrimmedAnimatable<Opacity> result)
+        // Attempts to compose 2 animatables into a single animatable. This handles non-animated
+        // animatables and animated animatables that do not overlap in time.
+        // Will return false if the animatables overlap in time.
+        static bool TryComposeOpacities(
+            in TrimmedAnimatable<Opacity> a,
+            in TrimmedAnimatable<Opacity> b,
+            out TrimmedAnimatable<Opacity> result)
         {
             var isAAnimated = a.IsAnimated;
             var isBAnimated = b.IsAnimated;
@@ -158,18 +164,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             var resultFrames = new KeyFrame<Opacity>[first.KeyFrames.Length + second.KeyFrames.Length];
             var resultCount = 0;
-            var secondInitialScale = second.InitialValue;
-            var firstFinalScale = first.KeyFrames[first.KeyFrames.Length - 1].Value;
+            var initialValueOfSecondAnimation = second.InitialValue;
+            var finalValueOfFirstAnimation = first.KeyFrames[first.KeyFrames.Length - 1].Value;
 
+            // Multiply the opacity of the keyframes in the first animatable by the initial
+            // opacity value of the second animatable.
             foreach (var kf in first.KeyFrames)
             {
-                resultFrames[resultCount] = ScaleKeyFrame(kf, secondInitialScale);
+                resultFrames[resultCount] = ScaleKeyFrame(kf, initialValueOfSecondAnimation);
                 resultCount++;
             }
 
+            // Multiply the opacity of the keyframes in the second animatable by the final
+            // opacity value of the first animatable.
             foreach (var kf in second.KeyFrames)
             {
-                resultFrames[resultCount] = ScaleKeyFrame(kf, firstFinalScale);
+                resultFrames[resultCount] = ScaleKeyFrame(kf, finalValueOfFirstAnimation);
                 resultCount++;
             }
 
