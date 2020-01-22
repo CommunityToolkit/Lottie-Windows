@@ -146,7 +146,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 }
                 else
                 {
-                    // The color is bound to a property set.
+                    // The color is bound to an expression.
                     var objectName = ((IDescribable)obj).Name;
 
                     return string.IsNullOrWhiteSpace(objectName)
@@ -174,7 +174,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 else
                 {
                     // The color is bound to an expression.
-                    return "BoundColorStop";
+                    var objectName = ((IDescribable)obj).Name;
+
+                    return string.IsNullOrWhiteSpace(objectName)
+                        ? "BoundGradientStop"
+                        : $"{objectName}GradientStop";
                 }
             }
             else

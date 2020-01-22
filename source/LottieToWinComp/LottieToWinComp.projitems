@@ -7,6 +7,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)CanvasGeometryCombiner.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CompositeOpacity.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionObjectFactory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ContainerShapeOrVisual.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CubicBezierFunction2.cs" />
