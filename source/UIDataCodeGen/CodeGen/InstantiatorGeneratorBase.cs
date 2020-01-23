@@ -1152,7 +1152,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 {
                     case 0:
                         // No items, nothing to do.
-                        return;
+                        break;
 
                     case 1:
                         {
