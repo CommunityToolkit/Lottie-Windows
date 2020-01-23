@@ -1482,9 +1482,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             bool GenerateExpressionAnimationFactory(CodeBuilder builder, ExpressionAnimation obj, ObjectData node)
             {
                 WriteObjectFactoryStart(builder, node);
-                WriteCreateAssignment(builder, node, $"_c{Deref}CreateExpressionAnimation()");
+                WriteCreateAssignment(builder, node, $"_c{Deref}CreateExpressionAnimation({String(obj.Expression)})");
                 InitializeCompositionAnimation(builder, obj, node);
-                builder.WriteLine($"result{Deref}Expression = {String(obj.Expression)};");
                 StartAnimationsOnResult(builder, obj, node);
                 WriteObjectFactoryEnd(builder);
                 return true;
@@ -2258,17 +2257,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             bool GenerateSpriteShapeFactory(CodeBuilder builder, CompositionSpriteShape obj, ObjectData node)
             {
                 WriteObjectFactoryStart(builder, node);
-                WriteCreateAssignment(builder, node, $"_c{Deref}CreateSpriteShape()");
+                if (obj.Geometry is null)
+                {
+                    WriteCreateAssignment(builder, node, $"_c{Deref}CreateSpriteShape()");
+                }
+                else
+                {
+                    WriteCreateAssignment(builder, node, $"_c{Deref}CreateSpriteShape({CallFactoryFromFor(node, obj.Geometry)})");
+                }
+
                 InitializeCompositionShape(builder, obj, node);
 
                 if (obj.FillBrush != null)
                 {
                     builder.WriteLine($"result{Deref}FillBrush = {CallFactoryFromFor(node, obj.FillBrush)};");
-                }
-
-                if (obj.Geometry != null)
-                {
-                    builder.WriteLine($"result{Deref}Geometry = {CallFactoryFromFor(node, obj.Geometry)};");
                 }
 
                 if (obj.IsStrokeNonScaling)
