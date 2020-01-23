@@ -11,7 +11,6 @@ using Microsoft.Toolkit.Uwp.UI.Lottie.GenericData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui;
 using Expr = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions;
 using Mgce = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce;
 using Sn = System.Numerics;
@@ -2033,11 +2032,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     switch (kf.Type)
                     {
                         case KeyFrameType.Expression:
-                            var expressionKeyFrame = (KeyFrameAnimation<Color, Expr.Color>.ExpressionKeyFrame)kf;
+                            var expressionKeyFrame = (KeyFrameAnimation<Wui.Color, Expr.Color>.ExpressionKeyFrame)kf;
                             builder.WriteLine($"result{Deref}InsertExpressionKeyFrame({Float(kf.Progress)}, {String(expressionKeyFrame.Expression)}, {CallFactoryFromFor(node, kf.Easing)});");
                             break;
                         case KeyFrameType.Value:
-                            var valueKeyFrame = (KeyFrameAnimation<Color, Expr.Color>.ValueKeyFrame)kf;
+                            var valueKeyFrame = (KeyFrameAnimation<Wui.Color, Expr.Color>.ValueKeyFrame)kf;
                             builder.WriteComment(valueKeyFrame.Value.Name);
                             builder.WriteLine($"result{Deref}InsertKeyFrame({Float(kf.Progress)}, {Color(valueKeyFrame.Value)}, {CallFactoryFromFor(node, kf.Easing)});");
                             break;
