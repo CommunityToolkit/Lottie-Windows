@@ -375,8 +375,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             // Write the LoadedImageSurface byte arrays into the outer (IAnimatedVisualSource) class.
             WriteLoadedImageSurfaceArrays(builder);
 
-            // Write the method that binds AnimationController.Progress of animations to an expression.
-            WriteAnimationControllerProgressBinder(builder);
+            // Write the method that starts an animation and binds its AnimationController.Progress to an expression.
+            WriteHelperStartProgressBoundAnimation(builder);
 
             // Write each AnimatedVisual class.
             var firstAnimatedVisualWritten = false;
@@ -761,22 +761,25 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         static IEnumerable<ObjectData> OrderByName(IEnumerable<ObjectData> nodes) =>
             nodes.OrderBy(n => n.Name, AlphanumericStringComparer.Instance);
 
-        // Writes a static method that binds the Progress property of an AnimationController for an
-        // animated property of a CompositionObject to an expression.
-        void WriteAnimationControllerProgressBinder(CodeBuilder builder)
+        // Writes a static method that starts an animation, then binds the Progress property of its
+        // AnimationController for that animation to an expression. This is used to start animations
+        // that have their progress bound to the progress of another property.
+        void WriteHelperStartProgressBoundAnimation(CodeBuilder builder)
         {
-            builder.WriteLine($"{Static} void BindAnimationControllerProgress(");
+            builder.WriteLine($"{Static} void StartProgressBoundAnimation(");
             builder.Indent();
             builder.Indent();
             builder.WriteLine($"{ReferenceTypeName("CompositionObject")} target,");
-            builder.WriteLine($"{ReferenceTypeName("String")} propertyName,");
-            builder.WriteLine($"{ReferenceTypeName("ExpressionAnimation")} progressExpression)");
+            builder.WriteLine($"{ReferenceTypeName("String")} animatedPropertyName,");
+            builder.WriteLine($"{ReferenceTypeName("CompositionAnimation")} animation,");
+            builder.WriteLine($"{ReferenceTypeName("ExpressionAnimation")} controllerProgressExpression)");
             builder.UnIndent();
             builder.UnIndent();
             builder.OpenScope();
-            builder.WriteLine($"{Var} controller = target{Deref}TryGetAnimationController(propertyName);");
+            builder.WriteLine($"target{Deref}StartAnimation(animatedPropertyName, animation);");
+            builder.WriteLine($"{Var} controller = target{Deref}TryGetAnimationController(animatedPropertyName);");
             builder.WriteLine($"controller{Deref}Pause();");
-            builder.WriteLine($"controller{Deref}StartAnimation(\"Progress\", progressExpression);");
+            builder.WriteLine($"controller{Deref}StartAnimation(\"Progress\", controllerProgressExpression);");
             builder.CloseScope();
             builder.WriteLine();
         }
@@ -1179,23 +1182,23 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 }
             }
 
-            void WriteExpressionAnimationBinder(CodeBuilder builder)
+            void WriteHelperExpressionAnimationBinder(CodeBuilder builder)
             {
                 builder.WriteLine($"void BindProperty(");
                 builder.Indent();
                 builder.Indent();
                 builder.WriteLine($"{ReferenceTypeName("CompositionObject")} target,");
-                builder.WriteLine($"{ReferenceTypeName("String")} propertyName,");
-                builder.WriteLine($"{ReferenceTypeName("CompositionObject")} referenceObject,");
+                builder.WriteLine($"{ReferenceTypeName("String")} animatedPropertyName,");
+                builder.WriteLine($"{ReferenceTypeName("String")} expression,");
                 builder.WriteLine($"{ReferenceTypeName("String")} referenceParameterName,");
-                builder.WriteLine($"{ReferenceTypeName("String")} expression)");
+                builder.WriteLine($"{ReferenceTypeName("CompositionObject")} referencedObject)");
                 builder.UnIndent();
                 builder.UnIndent();
                 builder.OpenScope();
                 builder.WriteLine($"{SingletonExpressionAnimationName}{Deref}ClearAllParameters();");
                 builder.WriteLine($"{SingletonExpressionAnimationName}{Deref}Expression = expression;");
-                builder.WriteLine($"{SingletonExpressionAnimationName}{Deref}SetReferenceParameter(referenceParameterName, referenceObject);");
-                builder.WriteLine($"target{Deref}StartAnimation(propertyName, {SingletonExpressionAnimationName});");
+                builder.WriteLine($"{SingletonExpressionAnimationName}{Deref}SetReferenceParameter(referenceParameterName, referencedObject);");
+                builder.WriteLine($"target{Deref}StartAnimation(animatedPropertyName, {SingletonExpressionAnimationName});");
                 builder.CloseScope();
                 builder.WriteLine();
             }
@@ -1222,7 +1225,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 builder.WriteLine();
 
                 // Write the method that binds an expression to an object using the singleton ExpressionAnimation object.
-                WriteExpressionAnimationBinder(builder);
+                WriteHelperExpressionAnimationBinder(builder);
 
                 // Write factory methods for each node.
                 foreach (var node in _nodes)
@@ -1582,15 +1585,51 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 if (!animationNode.RequiresStorage && animator.Animation is ExpressionAnimation expressionAnimation)
                 {
                     StartSingletonExpressionAnimation(builder, obj, localName, animator, animationNode, expressionAnimation);
+                    ConfigureAnimationController(builder, localName, ref controllerVariableAdded, animator);
                 }
                 else
                 {
                     // KeyFrameAnimation or a shared ExpressionAnimation
                     var animationFactoryCall = CallFactoryFromFor(node, animationNode);
-                    builder.WriteLine($"{localName}{Deref}StartAnimation({String(animator.AnimatedProperty)}, {animationFactoryCall});");
-                }
 
-                ConfigureAnimationController(builder, localName, ref controllerVariableAdded, animator);
+                    if (animator.Controller != null)
+                    {
+                        // The animation has a controller.
+                        var controller = animator.Controller;
+
+                        var controllerAnimators = controller.Animators;
+
+                        if (controllerAnimators.Count == 1)
+                        {
+                            // The controller has only one property being animated.
+                            var controllerAnimator = controllerAnimators[0];
+                            if (controllerAnimator.AnimatedProperty == "Progress" &&
+                                controllerAnimator.Animation is ExpressionAnimation controllerExpressionAnimation &&
+                                controller.IsPaused)
+                            {
+                                // The controller has only its Progress property animated, and it's animated by
+                                // an expression animation.
+                                var controllerExpressionAnimationNode = NodeFor(controllerExpressionAnimation);
+
+                                if (controllerExpressionAnimationNode.NeedsAFactory)
+                                {
+                                    // Special-case for a paused controller that has only its Progress property animated by
+                                    // an ExpressionAnimation that has a factory. Generate a call to a helper that will do the work.
+                                    // Note that this is the common case for Lottie.
+                                    builder.WriteLine(
+                                        $"StartProgressBoundAnimation({localName}, " +
+                                        $"{String(animator.AnimatedProperty)}, " +
+                                        $"{animationFactoryCall}, " +
+                                        $"{CallFactoryFromFor(NodeFor(animator.Controller), controllerExpressionAnimationNode)});");
+                                    return;
+                                }
+                            }
+                        }
+                    }
+
+                    builder.WriteLine($"{localName}{Deref}StartAnimation({String(animator.AnimatedProperty)}, {animationFactoryCall});");
+                    ConfigureAnimationController(builder, localName, ref controllerVariableAdded, animator);
+                }
             }
 
             void ConfigureAnimationController(CodeBuilder builder, string localName, ref bool controllerVariableAdded, CompositionObject.Animator animator)
@@ -1600,31 +1639,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 if (animator.Controller != null)
                 {
                     var controller = animator.Controller;
-
-                    var controllerAnimators = controller.Animators;
-
-                    if (controllerAnimators.Count == 1)
-                    {
-                        var controllerAnimator = controllerAnimators[0];
-                        if (controllerAnimator.AnimatedProperty == "Progress" &&
-                            controllerAnimator.Animation is ExpressionAnimation controllerExpressionAnimation &&
-                            controller.IsPaused)
-                        {
-                            var controllerAnimationNode = NodeFor(controllerExpressionAnimation);
-
-                            if (controllerAnimationNode.NeedsAFactory)
-                            {
-                                // Special-case for a paused controller that has only its Progress property animated by
-                                // an ExpressionAnimation that has a factory. Generate a call to a helper that will do the work.
-                                // Note that this is the common case for Lottie.
-                                builder.WriteLine(
-                                    $"BindAnimationControllerProgress({localName}, " +
-                                    $"{String(animator.AnimatedProperty)},  " +
-                                    $"{CallFactoryFromFor(NodeFor(animator.Controller), controllerAnimationNode)});");
-                                return;
-                            }
-                        }
-                    }
 
                     if (!controllerVariableAdded)
                     {
@@ -1638,13 +1652,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                         builder.WriteLine($"controller = {localName}{Deref}TryGetAnimationController({String(animator.AnimatedProperty)});");
                     }
 
-                    if (animator.Controller.IsPaused)
+                    if (controller.IsPaused)
                     {
                         builder.WriteLine($"controller{Deref}Pause();");
                     }
 
                     // Recurse to start animations on the controller.
-                    StartAnimations(builder, animator.Controller, NodeFor(animator.Controller), "controller");
+                    StartAnimations(builder, controller, NodeFor(controller), "controller");
                 }
             }
 
@@ -1673,9 +1687,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     builder.WriteLine(
                         $"BindProperty({localName}, " + // target
                         $"{String(animator.AnimatedProperty)}, " + // property on target
-                        $"{referenceParameterName}, " + // reference object
+                        $"{String(animation.Expression.ToText())}, " + // expression
                         $"{String(rp.Key)}, " + // reference property name
-                        $"{String(animation.Expression.ToText())});");  // expression
+                        $"{referenceParameterName});"); // reference object
                 }
                 else
                 {
