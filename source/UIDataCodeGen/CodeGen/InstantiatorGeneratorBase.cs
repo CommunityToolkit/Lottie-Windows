@@ -745,6 +745,32 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                                 bytes: bytes);
         }
 
+        // Finds the ExpressionAnimation that is used to synchronize the other animations
+        // to the Root.Progress property, and gives it a special name to help readability.
+        // It is a node that is an ExpressionAnimation with the expression "_.Progress"
+        // and a single reference parameter binding "_" to the root object.
+        static void FindAndNameRootProgressExpression(
+            IEnumerable<(ObjectData, CompositionObject)> compositionObjectNodes,
+            CompositionObject graphRoot)
+        {
+            foreach ((var node, var compositionObject) in compositionObjectNodes)
+            {
+                if (compositionObject.Type == CompositionObjectType.ExpressionAnimation)
+                {
+                    var expressionAnimation = (ExpressionAnimation)compositionObject;
+                    if (expressionAnimation.Expression.ToText() == "_.Progress")
+                    {
+                        if (expressionAnimation.ReferenceParameters.First().Value == graphRoot)
+                        {
+                            // Found it! Name it and done.
+                            node.Name = "RootProgress";
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+
         // Orders nodes by their name using alpha-numeric ordering (which is the most natural ordering for code
         // names that contain embedded numbers).
         static IEnumerable<ObjectData> OrderByName(IEnumerable<ObjectData> nodes) =>
@@ -848,6 +874,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
                 // Give the root node a special name so it is easy to find in the code.
                 _rootNode.Name = "Root";
+
+                // Give a special name to the root progress expression animation to help readability.
+                FindAndNameRootProgressExpression(_objectGraph.CompositionObjectNodes, graphRoot);
 
                 // Save the nodes, ordered by name.
                 _nodes = OrderByName(factoryNodes).ToArray();
