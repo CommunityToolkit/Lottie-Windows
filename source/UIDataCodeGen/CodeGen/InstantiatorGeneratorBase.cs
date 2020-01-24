@@ -853,6 +853,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     });
                 }
 
+                // Force inlining on CubicBezierEasingFunction nodes that are only referenced once, because their factories
+                // are always very simple.
+                foreach (var node in _objectGraph.Nodes.Where(
+                                        n => n.Type == Graph.NodeType.CompositionObject &&
+                                        n.Object is CubicBezierEasingFunction &&
+                                        IsEqualToOne(FilteredInRefs(n))))
+                {
+                    node.ForceInline(() =>
+                    {
+                        return CallCreateCubicBezierEasingFunction((CubicBezierEasingFunction)node.Object);
+                    });
+                }
+
                 // Get the nodes that will produce factory methods.
                 var factoryNodes = _objectGraph.Nodes.Where(n => n.NeedsAFactory).ToArray();
 
@@ -1308,6 +1321,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 }
             }
 
+            string CallCreateCubicBezierEasingFunction(CubicBezierEasingFunction obj)
+                => $"_c{Deref}CreateCubicBezierEasingFunction({Vector2(obj.ControlPoint1)}, {Vector2(obj.ControlPoint2)})";
+
             bool GenerateCanvasGeometryFactory(CodeBuilder builder, CanvasGeometry obj, ObjectData node)
             {
                 WriteObjectFactoryStart(builder, node);
@@ -1519,7 +1535,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             bool GenerateCubicBezierEasingFunctionFactory(CodeBuilder builder, CubicBezierEasingFunction obj, ObjectData node)
             {
-                WriteSimpleObjectFactory(builder, node, $"_c{Deref}CreateCubicBezierEasingFunction({Vector2(obj.ControlPoint1)}, {Vector2(obj.ControlPoint2)})");
+                WriteSimpleObjectFactory(builder, node, CallCreateCubicBezierEasingFunction(obj));
                 return true;
             }
 
