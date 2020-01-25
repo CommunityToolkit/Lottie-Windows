@@ -13,5 +13,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.YamlData
     abstract class YamlObject
     {
         internal abstract YamlObjectKind Kind { get; }
+
+        /// <summary>
+        /// A comment. Comments should be a single line.
+        /// </summary>
+        public string Comment { get; set; }
     }
 }

@@ -35,10 +35,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         YamlMap GetLottieObjectContent(LottieObject obj)
         {
+            var name = obj.Name;
+
             var result = new YamlMap
             {
-                { "Name", obj.Name },
+                { "Name", name },
             };
+
+            if (name is string)
+            {
+                result.Comment = name;
+            }
+
             return result;
         }
 
@@ -279,7 +287,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         YamlObject FromShapeLayerContent(ShapeLayerContent content, YamlMap superclassContent)
         {
-            superclassContent.Add("MatchName", content.MatchName);
             superclassContent.Add("ContentType", Scalar(content.ContentType));
 
             switch (content.ContentType)
