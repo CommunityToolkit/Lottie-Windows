@@ -335,16 +335,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 graph[child0].Parent = (CompositionObject)parent;
 
                 // Insert the rest of the children.
-                for (var i = 1; i < children.Length; i++)
+                for (var n = 1; n < children.Length; n++)
                 {
-                    var childI = children[i];
+                    var childN = children[n];
 
-                    CopyDescriptions(container, childI);
+                    CopyDescriptions(container, childN);
 
-                    parent.Shapes.Insert(index + i, childI);
+                    parent.Shapes.Insert(index + n, childN);
 
                     // Fix the parent pointer in the graph.
-                    graph[childI].Parent = (CompositionObject)parent;
+                    graph[childN].Parent = (CompositionObject)parent;
                 }
             }
         }
@@ -410,16 +410,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 graph[child0].Parent = parent;
 
                 // Insert the rest of the children.
-                for (var i = 1; i < children.Length; i++)
+                for (var n = 1; n < children.Length; n++)
                 {
-                    var childI = children[i];
+                    var childN = children[n];
 
-                    CopyDescriptions(container, childI);
+                    CopyDescriptions(container, childN);
 
-                    parent.Children.Insert(index + i, childI);
+                    parent.Children.Insert(index + n, childN);
 
                     // Fix the parent pointer in the graph.
-                    graph[childI].Parent = parent;
+                    graph[childN].Parent = parent;
                 }
             }
         }
