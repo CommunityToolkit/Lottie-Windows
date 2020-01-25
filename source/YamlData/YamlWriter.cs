@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -34,29 +35,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.YamlData
         /// </summary>
         /// <param name="obj">The object to write.</param>
         public void WriteObject(YamlObject obj)
-        {
-            if (obj == null)
-            {
-                WriteInline("~");
-            }
-            else
-            {
-                switch (obj.Kind)
-                {
-                    case YamlObjectKind.Scalar:
-                        WriteScalar((YamlScalar)obj);
-                        break;
-                    case YamlObjectKind.Map:
-                        WriteMap((YamlMap)obj);
-                        break;
-                    case YamlObjectKind.Sequence:
-                        WriteSequence((YamlSequence)obj);
-                        break;
-                    default:
-                        throw new InvalidOperationException();
-                }
-            }
-        }
+            => WriteObject(obj, allowInlining: true);
 
         /// <summary>
         /// Writes the given string to the output.
@@ -92,9 +71,35 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.YamlData
             _column = 0;
         }
 
-        void WriteScalar(YamlScalar obj)
+        void WriteObject(YamlObject obj, bool allowInlining)
         {
-            if (TryInlineScalar(obj, _maximumWidth - _indentColumn, out var inlined))
+            if (obj is null)
+            {
+                // Nulls are always written inline.
+                WriteInline("~");
+            }
+            else
+            {
+                switch (obj.Kind)
+                {
+                    case YamlObjectKind.Scalar:
+                        WriteScalar((YamlScalar)obj, allowInlining);
+                        break;
+                    case YamlObjectKind.Map:
+                        WriteMap((YamlMap)obj, allowInlining);
+                        break;
+                    case YamlObjectKind.Sequence:
+                        WriteSequence((YamlSequence)obj, allowInlining);
+                        break;
+                    default:
+                        throw new InvalidOperationException();
+                }
+            }
+        }
+
+        void WriteScalar(YamlScalar obj, bool allowInlining)
+        {
+            if (allowInlining && TryInlineScalar(obj, _maximumWidth - _indentColumn, out var inlined))
             {
                 WriteInline(inlined);
             }
@@ -104,9 +109,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.YamlData
             }
         }
 
-        void WriteMap(YamlMap obj)
+        void WriteMap(YamlMap obj, bool allowInlining)
         {
-            if (TryInlineMap(obj, _maximumWidth - _indentColumn, out var inlined))
+            if (allowInlining && TryInlineMap(obj, _maximumWidth - _indentColumn, out var inlined))
             {
                 WriteInline(inlined);
             }
@@ -119,9 +124,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.YamlData
                 foreach (var (key, value) in obj)
                 {
                     WriteLine();
-                    Write($"{key}:");
+
+                    if (TryWriteComment(value))
+                    {
+                        WriteLine();
+                        allowInlining = false;
+                    }
+                    else
+                    {
+                        allowInlining = true;
+                    }
+
+                    Write($"{key}: ");
                     _indentColumn += _indentSize;
-                    WriteObject(value);
+                    WriteObject(value, allowInlining);
                     _indentColumn -= _indentSize;
                 }
 
@@ -129,9 +145,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.YamlData
             }
         }
 
-        void WriteSequence(YamlSequence obj)
+        void WriteSequence(YamlSequence obj, bool allowInlining)
         {
-            if (TryInlineSequence(obj, _maximumWidth - _indentColumn, out var inlined))
+            if (allowInlining && TryInlineSequence(obj, _maximumWidth - _indentColumn, out var inlined))
             {
                 WriteInline(inlined);
             }
@@ -139,13 +155,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.YamlData
             {
                 var oldInlineColumn = _inlineColumn;
                 _inlineColumn = _indentColumn + _indentSize;
+
                 foreach (var item in obj)
                 {
                     WriteLine();
                     Write("- ");
+
+                    allowInlining = !TryWriteComment(item);
+
                     _indentColumn += _indentSize;
                     _inlineColumn = _indentColumn;
-                    WriteObject(item);
+                    WriteObject(item, allowInlining);
                     _indentColumn -= _indentSize;
                 }
 
@@ -160,7 +180,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.YamlData
                 result = null;
                 return false;
             }
-            else if (obj == null)
+            else if (obj is null)
             {
                 result = "~";
                 return true;
@@ -195,9 +215,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.YamlData
         bool TryInlineMap(YamlMap obj, int maximumWidth, out string result)
         {
             result = null;
+
+            // If any of the items have comments, do not inline as there's nowhere to write the comments.
+            if (obj.Any(a => a.value?.Comment is string))
+            {
+                return false;
+            }
+
             var sb = new StringBuilder();
             sb.Append("{ ");
             var firstSeen = false;
+
             foreach (var (key, value) in obj)
             {
                 if (firstSeen)
@@ -232,9 +260,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.YamlData
         bool TryInlineSequence(YamlSequence obj, int maximumWidth, out string result)
         {
             result = null;
+
+            // If any of the items have comments, do not inline as there's nowhere to write the comments.
+            if (obj.Any(a => a?.Comment is string))
+            {
+                return false;
+            }
+
             var sb = new StringBuilder();
             sb.Append("[ ");
             var firstSeen = false;
+
             foreach (var value in obj)
             {
                 if (firstSeen)
@@ -262,6 +298,53 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.YamlData
             }
 
             return result != null;
+        }
+
+        bool TryWriteComment(YamlObject obj)
+        {
+            if (obj?.Comment is null)
+            {
+                return false;
+            }
+
+            // We only support single line comments. Filter out newlines and other
+            // non-printable characters.
+            var cleanComment = new string(FilterNonPrintingCharacters(obj.Comment).ToArray());
+
+            Write($"# {cleanComment}");
+            return true;
+        }
+
+        static IEnumerable<char> FilterNonPrintingCharacters(string input)
+        {
+            var consecutiveSpaces = 0;
+            foreach (var ch in input)
+            {
+                if (char.IsControl(ch))
+                {
+                    // Replace the non-printing character with a space.
+                    // If a space was output previously, just drop the character
+                    // on the floor.
+                    if (consecutiveSpaces == 0)
+                    {
+                        yield return ' ';
+                        consecutiveSpaces++;
+                    }
+
+                    continue;
+                }
+                else if (char.IsWhiteSpace(ch))
+                {
+                    // Keep track of the fact that some whitespace was seen.
+                    consecutiveSpaces++;
+                }
+                else
+                {
+                    consecutiveSpaces = 0;
+                }
+
+                yield return ch;
+            }
         }
     }
 }
