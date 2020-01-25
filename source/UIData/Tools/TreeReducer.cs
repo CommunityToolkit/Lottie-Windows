@@ -325,18 +325,26 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 container.Shapes.Clear();
 
                 // Insert the first child where the container was.
-                parent.Shapes[index] = children[0];
+                var child0 = children[0];
+
+                CopyDescriptions(container, child0);
+
+                parent.Shapes[index] = child0;
 
                 // Fix the parent pointer in the graph.
-                graph[children[0]].Parent = (CompositionObject)parent;
+                graph[child0].Parent = (CompositionObject)parent;
 
                 // Insert the rest of the children.
                 for (var i = 1; i < children.Length; i++)
                 {
-                    parent.Shapes.Insert(index + i, children[i]);
+                    var childI = children[i];
+
+                    CopyDescriptions(container, childI);
+
+                    parent.Shapes.Insert(index + i, childI);
 
                     // Fix the parent pointer in the graph.
-                    graph[children[i]].Parent = (CompositionObject)parent;
+                    graph[childI].Parent = (CompositionObject)parent;
                 }
             }
         }
@@ -392,18 +400,70 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 container.Children.Clear();
 
                 // Insert the first child where the container was.
-                parent.Children[index] = children[0];
+                var child0 = children[0];
+
+                CopyDescriptions(container, child0);
+
+                parent.Children[index] = child0;
 
                 // Fix the parent pointer in the graph.
-                graph[children[0]].Parent = parent;
+                graph[child0].Parent = parent;
 
                 // Insert the rest of the children.
                 for (var i = 1; i < children.Length; i++)
                 {
-                    parent.Children.Insert(index + i, children[i]);
+                    var childI = children[i];
+
+                    CopyDescriptions(container, childI);
+
+                    parent.Children.Insert(index + i, childI);
 
                     // Fix the parent pointer in the graph.
-                    graph[children[i]].Parent = parent;
+                    graph[childI].Parent = parent;
+                }
+            }
+        }
+
+        static void CopyDescriptions(IDescribable from, IDescribable to)
+        {
+            // Append the short description.
+            var fromShortDescription = from.ShortDescription;
+            if (!string.IsNullOrWhiteSpace(fromShortDescription))
+            {
+                var toShortDescription = to.ShortDescription;
+                if (string.IsNullOrWhiteSpace(toShortDescription))
+                {
+                    to.ShortDescription = fromShortDescription;
+                }
+                else
+                {
+                    to.ShortDescription = $"{toShortDescription} / {fromShortDescription}";
+                }
+            }
+
+            // Do not try to append the long description - it's impossible to do
+            // a reasonable job of combining 2 long descriptions. But if the "to"
+            // object doesn't already have a long description, copy the long
+            // description from the "from" object.
+            var toLongDescription = to.LongDescription;
+            if (string.IsNullOrWhiteSpace(toLongDescription))
+            {
+                var fromLongDescription = from.LongDescription;
+                if (!string.IsNullOrWhiteSpace(fromLongDescription))
+                {
+                    to.LongDescription = fromLongDescription;
+                }
+            }
+
+            // If the "from" object has a name and the "to" object does not,
+            // copy the name. For any other case it's not clear what we should
+            // do, so just leave the name as it was.
+            var fromName = from.Name;
+            if (!string.IsNullOrWhiteSpace(fromName))
+            {
+                if (string.IsNullOrWhiteSpace(to.Name))
+                {
+                    to.Name = fromName;
                 }
             }
         }
