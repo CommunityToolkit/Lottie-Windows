@@ -28,6 +28,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 
                 ((IDescribable)this).LongDescription = ((IDescribable)other).LongDescription;
                 ((IDescribable)this).ShortDescription = ((IDescribable)other).ShortDescription;
+                ((IDescribable)this).Name = ((IDescribable)other).Name;
                 Comment = other.Comment;
             }
         }

@@ -125,6 +125,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             if (_addDescriptions)
             {
                 Describe(_rootVisual, "The root of the composition.", string.Empty);
+                Name(_rootVisual, "Root");
             }
 
             // Add the master progress property to the visual.
@@ -2860,11 +2861,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             if (_addDescriptions)
             {
                 Describe(result, $"Color bound to root CompositionPropertySet value: {bindingName}", bindingName);
-            }
 
-            // Name the brush the same as the binding name. This will allow the code generator to
-            // give it a more meaningful name.
-            Name(result, bindingName);
+                // Name the brush with a name that includes the binding name. This will allow the code generator to
+                // give its factory a more meaningful name.
+                Name(result, $"BoundColor_{bindingName}");
+            }
 
             if (opacity.IsAnimated)
             {
@@ -3641,6 +3642,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             {
                 bindingAnimation = _c.CreateExpressionAnimation(ScaledAndOffsetRootProgress(scale, offset));
                 bindingAnimation.SetReferenceParameter(RootName, _rootVisual);
+                if (_addDescriptions)
+                {
+                    // Give the animation a nice readable name in codegen.
+                    var name = key.Offset != 0 || key.Scale != 1
+                        ? "RootProgressRemapped"
+                        : "RootProgress";
+
+                    Name(bindingAnimation, name);
+                }
+
                 _progressBindingAnimations.Add(key, bindingAnimation);
             }
 
@@ -4333,17 +4344,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         void Describe(IDescribable obj, string longDescription, string shortDescription = null)
         {
             Debug.Assert(_addDescriptions, "This method should only be called if the user wanted descriptions");
-            Debug.Assert(obj.ShortDescription == null, "Descriptions should never get set more than once");
-            Debug.Assert(obj.LongDescription == null, "Descriptions should never get set more than once");
+            Debug.Assert(obj.ShortDescription is null, "Descriptions should never get set more than once");
+            Debug.Assert(obj.LongDescription is null, "Descriptions should never get set more than once");
 
             obj.ShortDescription = shortDescription ?? longDescription;
             obj.LongDescription = longDescription;
         }
 
-        // Sets a name on an object.
-        void Name(IDescribable obj, string name)
+        // Sets a name on an object. This allows the code generator to give the object
+        // a more meaningful name.
+        static void Name(IDescribable obj, string name)
         {
-            Debug.Assert(obj.Name == null, "Names should never get set more than once");
+            Debug.Assert(obj.Name is null, "Names should never get set more than once");
             obj.Name = name;
         }
 
@@ -4418,14 +4430,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         // A pair of doubles used as a key in a dictionary.
         sealed class ScaleAndOffset
         {
-            readonly double _scale;
-            readonly double _offset;
-
             internal ScaleAndOffset(double scale, double offset)
             {
-                _scale = scale;
-                _offset = offset;
+                Scale = scale;
+                Offset = offset;
             }
+
+            internal double Scale { get; }
+
+            internal double Offset { get; }
 
             public override bool Equals(object obj)
             {
@@ -4435,10 +4448,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     return false;
                 }
 
-                return other._scale == _scale && other._offset == _offset;
+                return other.Scale == Scale && other.Offset == Offset;
             }
 
-            public override int GetHashCode() => _scale.GetHashCode() ^ _offset.GetHashCode();
+            public override int GetHashCode() => Scale.GetHashCode() ^ Offset.GetHashCode();
         }
 
         // A type that is either a CompositionType or a Visual.
