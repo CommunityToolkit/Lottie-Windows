@@ -59,6 +59,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)\Repeater.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\RepeaterTransform.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\RoundedCorner.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Rotation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Sequence.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Serialization\LottieCompositionXmlSerializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Serialization\LottieCompositionYamlSerializer.cs" />

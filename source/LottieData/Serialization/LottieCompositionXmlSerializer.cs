@@ -507,7 +507,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 yield return FromAnimatable(nameof(content.Position), content.Position);
                 yield return FromAnimatable(nameof(content.Anchor), content.Anchor);
                 yield return FromAnimatable(nameof(content.Opacity), content.Opacity);
-                yield return FromAnimatable(nameof(content.RotationDegrees), content.RotationDegrees);
+                yield return FromAnimatable(nameof(content.Rotation), content.Rotation);
             }
         }
 
@@ -644,7 +644,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
                 yield return FromAnimatable(nameof(content.StartPercent), content.StartPercent);
                 yield return FromAnimatable(nameof(content.EndPercent), content.EndPercent);
-                yield return FromAnimatable(nameof(content.OffsetDegrees), content.OffsetDegrees);
+                yield return FromAnimatable(nameof(content.Offset), content.Offset);
             }
         }
 
