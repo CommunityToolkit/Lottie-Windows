@@ -10,6 +10,7 @@ using System.Text;
 using Microsoft.Toolkit.Uwp.UI.Lottie.GenericData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
+using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.MetaData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui;
 using Expr = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions;
@@ -775,6 +776,53 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         // names that contain embedded numbers).
         static IEnumerable<ObjectData> OrderByName(IEnumerable<ObjectData> nodes) =>
             nodes.OrderBy(n => n.Name, AlphanumericStringComparer.Instance);
+
+        static string PropertySetValueType(PropertySetValueType value)
+    => value switch
+    {
+        WinCompData.MetaData.PropertySetValueType.Color => "Color",
+        WinCompData.MetaData.PropertySetValueType.Scalar => "Scalar",
+        WinCompData.MetaData.PropertySetValueType.Vector2 => "Vector2",
+        WinCompData.MetaData.PropertySetValueType.Vector3 => "Vector3",
+        WinCompData.MetaData.PropertySetValueType.Vector4 => "Vector4",
+        _ => throw new InvalidOperationException(),
+    };
+
+        string PropertySetValueInitializer(CompositionPropertySet propertySet, string propertyName, WinCompData.MetaData.PropertySetValueType propertyType)
+            => propertyType switch
+            {
+                WinCompData.MetaData.PropertySetValueType.Color => PropertySetColorValueInitializer(propertySet, propertyName),
+                WinCompData.MetaData.PropertySetValueType.Scalar => PropertySetScalarValueInitializer(propertySet, propertyName),
+                WinCompData.MetaData.PropertySetValueType.Vector2 => PropertySetVector2ValueInitializer(propertySet, propertyName),
+                WinCompData.MetaData.PropertySetValueType.Vector3 => PropertySetVector3ValueInitializer(propertySet, propertyName),
+                WinCompData.MetaData.PropertySetValueType.Vector4 => PropertySetVector4ValueInitializer(propertySet, propertyName),
+                _ => throw new InvalidOperationException(),
+            };
+
+        string PropertySetColorValueInitializer(CompositionPropertySet propertySet, string propertyName)
+            => propertySet.TryGetColor(propertyName, out var value) == CompositionGetValueStatus.Succeeded
+                    ? _stringifier.Color(value)
+                    : throw new InvalidOperationException();
+
+        string PropertySetScalarValueInitializer(CompositionPropertySet propertySet, string propertyName)
+            => propertySet.TryGetScalar(propertyName, out var value) == CompositionGetValueStatus.Succeeded
+                    ? _stringifier.Float(value)
+                    : throw new InvalidOperationException();
+
+        string PropertySetVector2ValueInitializer(CompositionPropertySet propertySet, string propertyName)
+            => propertySet.TryGetVector2(propertyName, out var value) == CompositionGetValueStatus.Succeeded
+                    ? _stringifier.Vector2(value)
+                    : throw new InvalidOperationException();
+
+        string PropertySetVector3ValueInitializer(CompositionPropertySet propertySet, string propertyName)
+            => propertySet.TryGetVector3(propertyName, out var value) == CompositionGetValueStatus.Succeeded
+                    ? _stringifier.Vector3(value)
+                    : throw new InvalidOperationException();
+
+        string PropertySetVector4ValueInitializer(CompositionPropertySet propertySet, string propertyName)
+            => propertySet.TryGetVector4(propertyName, out var value) == CompositionGetValueStatus.Succeeded
+                    ? _stringifier.Vector4(value)
+                    : throw new InvalidOperationException();
 
         /// <summary>
         /// Generates an IAnimatedVisual implementation.
@@ -1671,32 +1719,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 }
 
                 var propertySet = obj.Properties;
-                if (!propertySet.IsEmpty)
+
+                if (propertySet.Names.Count > 0)
                 {
                     builder.WriteLine($"{Var} propertySet = {localName}{Deref}Properties;");
-                    foreach (var prop in propertySet.ColorProperties)
+                    foreach (var (name, type) in propertySet.Names)
                     {
-                        builder.WriteLine($"propertySet{Deref}InsertColor({String(prop.Key)}, {Color(prop.Value)});");
-                    }
-
-                    foreach (var prop in propertySet.ScalarProperties)
-                    {
-                        builder.WriteLine($"propertySet{Deref}InsertScalar({String(prop.Key)}, {Float(prop.Value)});");
-                    }
-
-                    foreach (var prop in propertySet.Vector2Properties)
-                    {
-                        builder.WriteLine($"propertySet{Deref}InsertVector2({String(prop.Key)}, {Vector2(prop.Value)});");
-                    }
-
-                    foreach (var prop in propertySet.Vector3Properties)
-                    {
-                        builder.WriteLine($"propertySet{Deref}InsertVector3({String(prop.Key)}, {Vector3(prop.Value)});");
-                    }
-
-                    foreach (var prop in propertySet.Vector4Properties)
-                    {
-                        builder.WriteLine($"propertySet{Deref}InsertVector4({String(prop.Key)}, {Vector4(prop.Value)});");
+                        var valueInitializer = _owner.PropertySetValueInitializer(propertySet, name, type);
+                        builder.WriteLine($"propertySet{Deref}Insert{PropertySetValueType(type)}({String(name)}, {valueInitializer});");
                     }
                 }
             }

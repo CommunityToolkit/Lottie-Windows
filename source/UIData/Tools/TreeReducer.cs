@@ -232,7 +232,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             var elidableContainers = containerShapes.Where(n =>
             {
                 var container = (CompositionContainerShape)n.Object;
-                if (!container.Properties.IsEmpty ||
+                if (container.Properties.Names.Count > 0 ||
                     container.Animators.Count > 0 ||
                     container.CenterPoint != null ||
                     container.Offset != null ||
@@ -244,7 +244,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
                 foreach (var child in container.Shapes)
                 {
-                    if (!child.Properties.IsEmpty ||
+                    if (child.Properties.Names.Count > 0 ||
                         child.Animators.Count > 0 ||
                         child.CenterPoint != null ||
                         child.Offset != null ||
@@ -286,7 +286,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                     container.Scale != null ||
                     container.TransformMatrix != null ||
                     container.Animators.Count > 0 ||
-                    !container.Properties.IsEmpty)
+                    container.Properties.Names.Count > 0)
                 {
                     return false;
                 }
@@ -366,7 +366,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                     container.Size == null &&
                     container.TransformMatrix == null &&
                     container.Animators.Count == 0 &&
-                    container.Properties.IsEmpty;
+                    container.Properties.Names.Count == 0;
             }).ToArray();
 
             // Pull the children of the container into the parent of the container. Remove the unnecessary containers.
