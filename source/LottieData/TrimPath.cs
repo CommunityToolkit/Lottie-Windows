@@ -14,20 +14,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             TrimType trimPathType,
             Animatable<double> startPercent,
             Animatable<double> endPercent,
-            Animatable<double> offsetDegrees)
+            Animatable<Rotation> offset)
             : base(in args)
         {
             TrimPathType = trimPathType;
             StartPercent = startPercent;
             EndPercent = endPercent;
-            OffsetDegrees = offsetDegrees;
+            Offset = offset;
         }
 
         public Animatable<double> StartPercent { get; }
 
         public Animatable<double> EndPercent { get; }
 
-        public Animatable<double> OffsetDegrees { get; }
+        public Animatable<Rotation> Offset { get; }
 
         public TrimType TrimPathType { get; }
 

@@ -400,7 +400,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             result.Add("Position", FromAnimatable(content.Position));
             result.Add("Anchor", FromAnimatable(content.Anchor));
             result.Add("OpacityPercent", FromAnimatable(content.Opacity, FromOpacityPercent));
-            result.Add("RotationDegrees", FromAnimatable(content.RotationDegrees));
+            result.Add("RotationDegrees", FromAnimatable(content.Rotation, FromRotation));
             return result;
         }
 
@@ -448,6 +448,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         static YamlObject FromColor(Color value) => (YamlScalar)value?.ToString();
 
         static YamlObject FromOpacityPercent(Opacity value) => (YamlScalar)value.Percent;
+
+        static YamlObject FromRotation(Rotation value) => (YamlScalar)value.Degrees;
 
         static YamlObject FromVector3(Vector3 value)
         {
@@ -577,7 +579,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             var result = superclassContent;
             result.Add("StartPercent", FromAnimatable(content.StartPercent));
             result.Add("EndPercent", FromAnimatable(content.EndPercent));
-            result.Add("OffsetDegrees", FromAnimatable(content.OffsetDegrees));
+            result.Add("Offset", FromAnimatable(content.Offset, FromRotation));
             return result;
         }
 
