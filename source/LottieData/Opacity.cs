@@ -7,7 +7,7 @@ using System;
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 {
     /// <summary>
-    /// A percentage value.
+    /// An opacity value. 0 is transparent, 1 is opaque.
     /// </summary>
 #if PUBLIC_LottieData
     public
