@@ -43,11 +43,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             Enumerable.SequenceEqual(_items, other._items);
 
         /// <inheritdoc/>
-        public override bool Equals(object obj)
-        {
-            var other = obj as Sequence<T>;
-            return other != null && Equals(other);
-        }
+        public override bool Equals(object obj) => Equals(obj as Sequence<T>);
 
         /// <inheritdoc/>
         public override int GetHashCode()

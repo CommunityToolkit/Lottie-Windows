@@ -47,7 +47,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         public double B { get; }
 
         /// <inheritdoc/>
-        public override bool Equals(object obj) => obj is Color other && Equals(other);
+        public override bool Equals(object obj) => Equals(obj as Color);
 
         /// <inheritdoc/>
         public bool Equals(Color other) => A == other.A && R == other.R && G == other.G && B == other.B;

@@ -29,11 +29,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         public override int GetHashCode() => (int)Type;
 
         /// <inheritdoc/>
-        public override bool Equals(object obj) => Equals(obj as HoldEasing);
+        // All HoldEasings are equivalent.
+        public override bool Equals(object obj) => obj is HoldEasing;
 
         /// <inheritdoc/>
         // All HoldEasings are equivalent.
-        public bool Equals(HoldEasing other) => other != null;
+        public bool Equals(HoldEasing other) => other is HoldEasing;
 
         public static bool operator ==(HoldEasing a, HoldEasing b) => a is HoldEasing && b is HoldEasing;
 
