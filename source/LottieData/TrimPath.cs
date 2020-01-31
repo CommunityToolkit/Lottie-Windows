@@ -12,20 +12,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         public TrimPath(
             in ShapeLayerContentArgs args,
             TrimType trimPathType,
-            Animatable<double> startPercent,
-            Animatable<double> endPercent,
+            Animatable<Trim> startTrim,
+            Animatable<Trim> endTrim,
             Animatable<Rotation> offset)
             : base(in args)
         {
             TrimPathType = trimPathType;
-            StartPercent = startPercent;
-            EndPercent = endPercent;
+            StartTrim = startTrim;
+            EndTrim = endTrim;
             Offset = offset;
         }
 
-        public Animatable<double> StartPercent { get; }
+        public Animatable<Trim> StartTrim { get; }
 
-        public Animatable<double> EndPercent { get; }
+        public Animatable<Trim> EndTrim { get; }
 
         public Animatable<Rotation> Offset { get; }
 
