@@ -14,14 +14,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             IAnimatableVector3 anchor,
             IAnimatableVector3 position,
             IAnimatableVector3 scalePercent,
-            Animatable<double> rotationDegrees,
+            Animatable<Rotation> rotation,
             Animatable<Opacity> opacity)
             : base(in args)
         {
             Anchor = anchor;
             Position = position;
             ScalePercent = scalePercent;
-            RotationDegrees = rotationDegrees;
+            Rotation = rotation;
             Opacity = opacity;
         }
 
@@ -37,11 +37,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
         public IAnimatableVector3 ScalePercent { get; }
 
-        public Animatable<double> RotationDegrees { get; }
+        public Animatable<Rotation> Rotation { get; }
 
         public Animatable<Opacity> Opacity { get; }
 
-        public bool IsAnimated => Anchor.IsAnimated || Position.IsAnimated || ScalePercent.IsAnimated || RotationDegrees.IsAnimated || Opacity.IsAnimated;
+        public bool IsAnimated => Anchor.IsAnimated || Position.IsAnimated || ScalePercent.IsAnimated || Rotation.IsAnimated || Opacity.IsAnimated;
 
         /// <inheritdoc/>
         public override ShapeContentType ContentType => ShapeContentType.Transform;
