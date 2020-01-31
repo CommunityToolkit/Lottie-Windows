@@ -33,6 +33,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
         public static Opacity FromFloat(double value) => new Opacity(value);
 
+        public static Opacity FromPercent(double percent) => new Opacity(percent / 100);
+
         public static Opacity operator *(Opacity left, Opacity right) => new Opacity(left.Value * right.Value);
 
         public static Opacity operator *(Opacity opacity, double scale) => new Opacity(opacity.Value * scale);

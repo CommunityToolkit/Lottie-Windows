@@ -2259,7 +2259,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             }
         }
 
-        static Opacity ReadOpacity(JToken jsonValue) => Opacity.FromFloat(ReadFloat(jsonValue) / 100.0);
+        static Opacity ReadOpacity(JToken jsonValue) => Opacity.FromPercent(ReadFloat(jsonValue));
 
         static Rotation ReadRotation(JToken jsonValue) => Rotation.FromDegrees(ReadFloat(jsonValue));
 
