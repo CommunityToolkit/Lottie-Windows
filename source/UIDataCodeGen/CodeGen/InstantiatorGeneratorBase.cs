@@ -1244,6 +1244,38 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 builder.WriteLine();
             }
 
+            void WritePopulateShapesCollection(CodeBuilder builder, IList<CompositionShape> shapes, ObjectData node)
+            {
+                switch (shapes.Count)
+                {
+                    case 0:
+                        // No items, nothing to do.
+                        break;
+
+                    case 1:
+                        {
+                            // A single item. We can add the shape in a single line.
+                            var shape = shapes[0];
+                            builder.WriteComment(((IDescribable)shape).ShortDescription);
+                            builder.WriteLine($"result{Deref}Shapes{Deref}{IListAdd}({CallFactoryFromFor(node, shape)});");
+                            break;
+                        }
+
+                    default:
+                        {
+                            // Multiple items requires the use of a local.
+                            builder.WriteLine($"{Var} shapes = result{Deref}Shapes;");
+                            foreach (var shape in shapes)
+                            {
+                                builder.WriteComment(((IDescribable)shape).ShortDescription);
+                                builder.WriteLine($"shapes{Deref}{IListAdd}({CallFactoryFromFor(node, shape)});");
+                            }
+
+                            break;
+                        }
+                }
+            }
+
             internal void WriteAnimatedVisualCode(CodeBuilder builder)
             {
                 _owner._currentAnimatedVisualGenerator = this;
@@ -2002,13 +2034,33 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             {
                 InitializeVisual(builder, obj, node);
 
-                if (obj.Children.Any())
+                switch (obj.Children.Count)
                 {
-                    builder.WriteLine($"{Var} children = result{Deref}Children;");
-                    foreach (var child in obj.Children)
-                    {
-                        builder.WriteLine($"children{Deref}InsertAtTop({CallFactoryFromFor(node, child)});");
-                    }
+                    case 0:
+                        // No children, nothing to do.
+                        break;
+
+                    case 1:
+                        {
+                            // A single child. We can add the child in a single line.
+                            var child = obj.Children[0];
+                            builder.WriteComment(((IDescribable)child).ShortDescription);
+                            builder.WriteLine($"result{Deref}Children{Deref}InsertAtTop({CallFactoryFromFor(node, child)});");
+                            break;
+                        }
+
+                    default:
+                        {
+                            // Multiple children requires the use of a local.
+                            builder.WriteLine($"{Var} children = result{Deref}Children;");
+                            foreach (var child in obj.Children)
+                            {
+                                builder.WriteComment(((IDescribable)child).ShortDescription);
+                                builder.WriteLine($"children{Deref}InsertAtTop({CallFactoryFromFor(node, child)});");
+                            }
+
+                            break;
+                        }
                 }
             }
 
@@ -2340,17 +2392,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 WriteObjectFactoryStart(builder, node);
                 WriteCreateAssignment(builder, node, $"_c{Deref}CreateShapeVisual()");
                 InitializeContainerVisual(builder, obj, node);
-
-                if (obj.Shapes.Count > 0)
-                {
-                    builder.WriteLine($"{Var} shapes = result{Deref}Shapes;");
-                    foreach (var shape in obj.Shapes)
-                    {
-                        builder.WriteComment(((IDescribable)shape).ShortDescription);
-                        builder.WriteLine($"shapes{Deref}{IListAdd}({CallFactoryFromFor(node, shape)});");
-                    }
-                }
-
+                WritePopulateShapesCollection(builder, obj.Shapes, node);
                 StartAnimationsOnResult(builder, obj, node);
                 WriteObjectFactoryEnd(builder);
                 return true;
@@ -2377,16 +2419,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 WriteObjectFactoryStart(builder, node);
                 WriteCreateAssignment(builder, node, $"_c{Deref}CreateContainerShape()");
                 InitializeCompositionShape(builder, obj, node);
-
-                if (obj.Shapes.Count > 0)
-                {
-                    builder.WriteLine($"{Var} shapes = result{Deref}Shapes;");
-                    foreach (var shape in obj.Shapes)
-                    {
-                        builder.WriteLine($"shapes{Deref}{IListAdd}({CallFactoryFromFor(node, shape)});");
-                    }
-                }
-
+                WritePopulateShapesCollection(builder, obj.Shapes, node);
                 StartAnimationsOnResult(builder, obj, node);
                 WriteObjectFactoryEnd(builder);
                 return true;
