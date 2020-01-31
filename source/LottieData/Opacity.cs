@@ -12,7 +12,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 #if PUBLIC_LottieData
     public
 #endif
-    struct Opacity : IEquatable<Opacity>
+    readonly struct Opacity : IEquatable<Opacity>
     {
         Opacity(double value)
         {
@@ -47,7 +47,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
         public bool Equals(Opacity other) => other.Value == Value;
 
-        public override bool Equals(object obj) => obj is Opacity other ? other.Equals(this) : false;
+        public override bool Equals(object obj) => obj is Opacity other && Equals(other);
 
         public override int GetHashCode() => Value.GetHashCode();
 
