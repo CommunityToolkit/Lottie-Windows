@@ -326,8 +326,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         }
 
         YamlObject FromMask(Mask mask)
-        {
-            var result = new YamlMap
+            => new YamlMap
             {
                 { nameof(mask.Name), mask.Name },
                 { nameof(mask.Inverted), mask.Inverted },
@@ -335,8 +334,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 { nameof(mask.Opacity), FromAnimatable(mask.Opacity) },
                 { nameof(mask.Points), FromAnimatable(mask.Points, p => FromSequence(p, FromBezierSegment)) },
             };
-            return result;
-        }
 
         YamlObject FromShapeGroup(ShapeGroup content, YamlMap superclassContent)
         {
