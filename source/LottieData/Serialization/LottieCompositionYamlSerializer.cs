@@ -440,6 +440,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         YamlObject FromAnimatable(Animatable<Opacity> animatable) => FromAnimatable(animatable, Scalar);
 
+        static YamlObject FromRotation(Rotation value) => (YamlScalar)value.Degrees;
+
         static YamlObject FromVector3(Vector3 value)
         {
             var result = new YamlMap

@@ -1441,10 +1441,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     return a;
                 }
 
-                if (!a.StartPercent.IsAnimated && !a.StartPercent.IsAnimated && !a.OffsetDegrees.IsAnimated)
+                if (!a.StartPercent.IsAnimated && !a.StartPercent.IsAnimated && !a.Offset.IsAnimated)
                 {
                     // a is not animated.
-                    if (!b.StartPercent.IsAnimated && !b.StartPercent.IsAnimated && !b.OffsetDegrees.IsAnimated)
+                    if (!b.StartPercent.IsAnimated && !b.StartPercent.IsAnimated && !b.Offset.IsAnimated)
                     {
                         // Both are not animated.
                         if (a.StartPercent.InitialValue == b.EndPercent.InitialValue)
@@ -1457,12 +1457,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                             // b trims out everything. a is unnecessary.
                             return b;
                         }
-                        else if (a.StartPercent.InitialValue == 0 && a.EndPercent.InitialValue == 100 && a.OffsetDegrees.InitialValue == 0)
+                        else if (a.StartPercent.InitialValue == 0 && a.EndPercent.InitialValue == 100 && a.Offset.InitialValue.Degrees == 0)
                         {
                             // a is trimming nothing. a is unnecessary.
                             return b;
                         }
-                        else if (b.StartPercent.InitialValue == 0 && b.EndPercent.InitialValue == 100 && b.OffsetDegrees.InitialValue == 0)
+                        else if (b.StartPercent.InitialValue == 0 && b.EndPercent.InitialValue == 100 && b.Offset.InitialValue.Degrees == 0)
                         {
                             // b is trimming nothing. b is unnecessary.
                             return a;
@@ -1968,7 +1968,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var anchor = Vector2(transform.Anchor.InitialValue);
             var position = Vector2(transform.Position.InitialValue);
             var scale = Vector2(transform.ScalePercent.InitialValue / 100.0);
-            var rotation = (float)DegreesToRadians(transform.RotationDegrees.InitialValue);
+            var rotation = (float)transform.Rotation.InitialValue.Radians;
 
             // Calculate the matrix that is equivalent to the properties.
             var combinedMatrix =
@@ -1978,8 +1978,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             return combinedMatrix;
         }
-
-        static double DegreesToRadians(double angle) => Math.PI * angle / 180.0;
 
         CanvasGeometry CreateWin2dPathGeometryFromShape(
             TranslationContext context,
@@ -2268,7 +2266,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             // TODO - this only works correctly if Size and TrimOffset are not animated. A complete solution requires
             //        adding another property.
             var isPartialTrimPath = shapeContext.TrimPath != null &&
-                (shapeContext.TrimPath.StartPercent.IsAnimated || shapeContext.TrimPath.EndPercent.IsAnimated || shapeContext.TrimPath.OffsetDegrees.IsAnimated ||
+                (shapeContext.TrimPath.StartPercent.IsAnimated || shapeContext.TrimPath.EndPercent.IsAnimated || shapeContext.TrimPath.Offset.IsAnimated ||
                 shapeContext.TrimPath.StartPercent.InitialValue != 0 || shapeContext.TrimPath.EndPercent.InitialValue != 100);
 
             if (size.IsAnimated && isPartialTrimPath)
@@ -2473,7 +2471,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             var startPercent = context.TrimAnimatable(trimPath.StartPercent);
             var endPercent = context.TrimAnimatable(trimPath.EndPercent);
-            var trimPathOffsetDegrees = context.TrimAnimatable(trimPath.OffsetDegrees);
+            var trimPathOffset = context.TrimAnimatable(trimPath.Offset);
 
             if (!startPercent.IsAnimated && !endPercent.IsAnimated)
             {
@@ -2557,12 +2555,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 }
             }
 
-            if (trimOffsetDegrees != 0 && !trimPathOffsetDegrees.IsAnimated)
+            if (trimOffsetDegrees != 0 && !trimPathOffset.IsAnimated)
             {
                 // Rectangle shapes are treated specially here to account for Lottie rectangle 0,0 being
                 // top right and WinComp rectangle 0,0 being top left. As long as the TrimOffset isn't
                 // being animated we can simply add an offset to the trim path.
-                geometry.TrimOffset = (float)((trimPathOffsetDegrees.InitialValue + trimOffsetDegrees) / 360);
+                geometry.TrimOffset = (float)((trimPathOffset.InitialValue.Degrees + trimOffsetDegrees) / 360);
             }
             else
             {
@@ -2572,13 +2570,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     _issues.AnimatedTrimOffsetWithStaticTrimOffsetIsNotSupported();
                 }
 
-                if (trimPathOffsetDegrees.IsAnimated)
+                if (trimPathOffset.IsAnimated)
                 {
-                    ApplyScaledScalarKeyFrameAnimation(context, trimPathOffsetDegrees, 1 / 360.0, geometry, nameof(geometry.TrimOffset), "TrimOffset", null);
+                    ApplyScaledRotationKeyFrameAnimation(context, trimPathOffset, 1 / 360.0, geometry, nameof(geometry.TrimOffset), "TrimOffset", null);
                 }
                 else
                 {
-                    geometry.TrimOffset = Float(trimPathOffsetDegrees.InitialValue / 360);
+                    geometry.TrimOffset = Float(trimPathOffset.InitialValue.Degrees / 360);
                 }
             }
         }
@@ -2805,6 +2803,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 inheritedOpacity.ComposedWith(context.TrimAnimatable(shapeFill.Opacity)),
                 bindingSpec: shapeFill.Name);
 
+        // Returns a single color that can be used to represent the given animatable color.
+        // This is used as the default color for property bindings. If the animatable color is
+        // not animated then we return its value. If it's animated we return the value of the
+        // keyframe with the highest alpha, so that it's likely to be visible.
+        // The actual color we return here isn't all that important since it is expected to be set
+        // to some other value at runtime via property binding, but it is handy to have a visible
+        // color when testing, and even better if the color looks like what the designer saw.
+        static Color DefaultValueOf(Animatable<Color> animatableColor)
+            => animatableColor.IsAnimated
+                ? animatableColor.KeyFrames.ToArray().OrderByDescending(kf => kf.Value.A).First().Value
+                : animatableColor.InitialValue;
+
         CompositionColorBrush TranslateSolidColorWithBindings(
             TranslationContext context,
             Animatable<Color> color,
@@ -2818,7 +2828,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 if (bindingName is string)
                 {
                     // The fill is bound to a property name.
-                    return TranslateBoundSolidColor(context, opacity, bindingName);
+                    return TranslateBoundSolidColor(context, opacity, bindingName, DefaultValueOf(color));
                 }
             }
 
@@ -2829,7 +2839,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         CompositionColorBrush TranslateBoundSolidColor(
             TranslationContext context,
             CompositeOpacity opacity,
-            string bindingName)
+            string bindingName,
+            Color defaultColor)
         {
             // Insert a property set value for the color if one hasn't yet been added.
             // The color is inserted as a Vector4 to allow sub-channel animation because
@@ -2839,9 +2850,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             {
                 case CompositionGetValueStatus.NotFound:
                     // The property hasn't been added yet. Add it.
-                    // The color used here doesn't really matter as the user is expected to set the property set
-                    // value at runtime. Setting a bright color may help users see what's going on while they debug.
-                    _rootVisual.Properties.InsertVector4(bindingName, Vector4(WinCompData.Wui.Colors.Red));
+                    _rootVisual.Properties.InsertVector4(bindingName, Vector4(Color(defaultColor)));
                     _propertyBindingNames.Add(bindingName);
                     break;
 
@@ -3383,7 +3392,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 context,
                 transform.Anchor,
                 transform.Position,
-                context.TrimAnimatable(transform.RotationDegrees),
+                context.TrimAnimatable(transform.Rotation),
                 context.TrimAnimatable(transform.ScalePercent),
                 container);
 
@@ -3395,7 +3404,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             TranslationContext context,
             IAnimatableVector3 anchor,
             IAnimatableVector3 position,
-            in TrimmedAnimatable<double> rotationDegrees,
+            in TrimmedAnimatable<Rotation> rotation,
             in TrimmedAnimatable<Vector3> scalePercent,
             ContainerShapeOrVisual container)
         {
@@ -3411,13 +3420,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             //    as just an offset)
             //
             // The current implementation doesn't take all cases into consideration yet.
-            if (rotationDegrees.IsAnimated)
+            if (rotation.IsAnimated)
             {
-                ApplyScalarKeyFrameAnimation(context, rotationDegrees, container, nameof(container.RotationAngleInDegrees), "Rotation");
+                ApplyRotationKeyFrameAnimation(context, rotation, container, nameof(container.RotationAngleInDegrees), "Rotation");
             }
             else
             {
-                container.RotationAngleInDegrees = FloatDefaultIsZero(rotationDegrees.InitialValue);
+                container.RotationAngleInDegrees = FloatDefaultIsZero(rotation.InitialValue.Degrees);
             }
 
 #if !NoScaling
@@ -3649,6 +3658,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             controller.StartAnimation("Progress", bindingAnimation);
         }
 
+        void ApplyRotationKeyFrameAnimation(
+            TranslationContext context,
+            in TrimmedAnimatable<Rotation> value,
+            CompositionObject targetObject,
+            string targetPropertyName,
+            string longDescription = null,
+            string shortDescription = null)
+            => ApplyScaledRotationKeyFrameAnimation(context, value, 1, targetObject, targetPropertyName, longDescription, shortDescription);
+
         void ApplyScalarKeyFrameAnimation(
             TranslationContext context,
             in TrimmedAnimatable<double> value,
@@ -3675,6 +3693,28 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             string longDescription = null,
             string shortDescription = null)
             => ApplyScaledOpacityKeyFrameAnimation(context, value, 1, targetObject, targetPropertyName, longDescription, shortDescription);
+
+        void ApplyScaledRotationKeyFrameAnimation(
+            TranslationContext context,
+            in TrimmedAnimatable<Rotation> value,
+            double scale,
+            CompositionObject targetObject,
+            string targetPropertyName,
+            string longDescription,
+            string shortDescription)
+        {
+            Debug.Assert(value.IsAnimated, "Precondition");
+            GenericCreateCompositionKeyFrameAnimation(
+                context,
+                value,
+                _c.CreateScalarKeyFrameAnimation,
+                (ca, progress, val, easing) => ca.InsertKeyFrame(progress, (float)(val.Degrees * scale), easing),
+                null,
+                targetObject,
+                targetPropertyName,
+                longDescription,
+                shortDescription);
+        }
 
         void ApplyScaledOpacityKeyFrameAnimation(
             TranslationContext context,
