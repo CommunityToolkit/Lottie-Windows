@@ -68,7 +68,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 //       called CompositionPath() and then a call was made to "new CompositionPath(...)"
                 //       the C++ compiler will complain that CompositionPath is not a type.
                 //       So to ensure we don't hit that case, append a counter suffix, unless the name
-                //       known to not be a type name.
+                //       is known to not be a type name.
                 if (nodeList.Count == 1 && nodeName.IsNotATypeName)
                 {
                     // The name is unique, is not a type name, or is in the whitelist, so no need for a suffix.
