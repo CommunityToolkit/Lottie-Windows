@@ -778,15 +778,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             nodes.OrderBy(n => n.Name, AlphanumericStringComparer.Instance);
 
         static string PropertySetValueType(PropertySetValueType value)
-    => value switch
-    {
-        WinCompData.MetaData.PropertySetValueType.Color => "Color",
-        WinCompData.MetaData.PropertySetValueType.Scalar => "Scalar",
-        WinCompData.MetaData.PropertySetValueType.Vector2 => "Vector2",
-        WinCompData.MetaData.PropertySetValueType.Vector3 => "Vector3",
-        WinCompData.MetaData.PropertySetValueType.Vector4 => "Vector4",
-        _ => throw new InvalidOperationException(),
-    };
+            => value switch
+            {
+                WinCompData.MetaData.PropertySetValueType.Color => "Color",
+                WinCompData.MetaData.PropertySetValueType.Scalar => "Scalar",
+                WinCompData.MetaData.PropertySetValueType.Vector2 => "Vector2",
+                WinCompData.MetaData.PropertySetValueType.Vector3 => "Vector3",
+                WinCompData.MetaData.PropertySetValueType.Vector4 => "Vector4",
+                _ => throw new InvalidOperationException(),
+            };
 
         string PropertySetValueInitializer(CompositionPropertySet propertySet, string propertyName, WinCompData.MetaData.PropertySetValueType propertyType)
             => propertyType switch

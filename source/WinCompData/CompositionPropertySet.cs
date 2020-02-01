@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Numerics;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.MetaData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui;
@@ -77,6 +78,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 
         void Insert<T>(string propertyName, in T value, PropertySetValueType type, ref PropertyBag<T> bag)
         {
+            Debug.Assert(type != PropertySetValueType.None, "Precondition");
+
             // Ensure the names set exists.
             if (_names == s_empty)
             {
