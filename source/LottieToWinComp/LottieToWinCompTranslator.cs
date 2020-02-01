@@ -2808,13 +2808,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         // Returns a single color that can be used to represent the given animatable color.
         // This is used as the default color for property bindings. If the animatable color is
         // not animated then we return its value. If it's animated we return the value of the
-        // keyframe with the highest alpha, so that it likely to be visible.
-        // The actual color we return here isn't all that important as it is expected to be set
+        // keyframe with the highest alpha, so that it's likely to be visible.
+        // The actual color we return here isn't all that important since it is expected to be set
         // to some other value at runtime via property binding, but it is handy to have a visible
         // color when testing, and even better if the color looks like what the designer saw.
         static Color DefaultValueOf(Animatable<Color> animatableColor)
             => animatableColor.IsAnimated
-                ? animatableColor.KeyFrames.ToArray().OrderByDescending(kf => kf.Value.A).Select(kf => kf.Value).First()
+                ? animatableColor.KeyFrames.ToArray().OrderByDescending(kf => kf.Value.A).First().Value
                 : animatableColor.InitialValue;
 
         CompositionColorBrush TranslateSolidColorWithBindings(
