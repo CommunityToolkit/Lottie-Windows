@@ -2804,6 +2804,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 inheritedOpacity.ComposedWith(context.TrimAnimatable(shapeFill.Opacity)),
                 bindingSpec: shapeFill.Name);
 
+        // Returns a single color that can be used to represent the given animatable color.
+        // This is used as the default color for property bindings. If the animatable color is
+        // not animated then we return its value. If it's animated we return the value of the
+        // keyframe with the highest alpha, so that it's likely to be visible.
+        // The actual color we return here isn't all that important since it is expected to be set
+        // to some other value at runtime via property binding, but it is handy to have a visible
+        // color when testing, and even better if the color looks like what the designer saw.
+        static Color DefaultValueOf(Animatable<Color> animatableColor)
+            => animatableColor.IsAnimated
+                ? animatableColor.KeyFrames.ToArray().OrderByDescending(kf => kf.Value.A).First().Value
+                : animatableColor.InitialValue;
+
         CompositionColorBrush TranslateSolidColorWithBindings(
             TranslationContext context,
             Animatable<Color> color,
@@ -2817,7 +2829,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 if (bindingName is string)
                 {
                     // The fill is bound to a property name.
-                    return TranslateBoundSolidColor(context, opacity, bindingName);
+                    return TranslateBoundSolidColor(context, opacity, bindingName, DefaultValueOf(color));
                 }
             }
 
@@ -2828,7 +2840,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         CompositionColorBrush TranslateBoundSolidColor(
             TranslationContext context,
             CompositeOpacity opacity,
-            string bindingName)
+            string bindingName,
+            Color defaultColor)
         {
             // Insert a property set value for the color if one hasn't yet been added.
             // The color is inserted as a Vector4 to allow sub-channel animation because
@@ -2838,9 +2851,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             {
                 case CompositionGetValueStatus.NotFound:
                     // The property hasn't been added yet. Add it.
-                    // The color used here doesn't really matter as the user is expected to set the property set
-                    // value at runtime. Setting a bright color may help users see what's going on while they debug.
-                    _rootVisual.Properties.InsertVector4(bindingName, Vector4(WinCompData.Wui.Colors.Red));
+                    _rootVisual.Properties.InsertVector4(bindingName, Vector4(Color(defaultColor)));
                     _propertyBindingNames.Add(bindingName);
                     break;
 
