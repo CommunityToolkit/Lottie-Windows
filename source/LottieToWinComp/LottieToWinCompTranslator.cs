@@ -4402,7 +4402,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         static Sn.Vector2? Vector2DefaultIsOne(LottieData.Vector3 vector2)
             => vector2.X == 1 && vector2.Y == 1 ? null : (Sn.Vector2?)Vector2(vector2);
 
-        static Sn.Vector2? Vector2DefaultIsZero(Sn.Vector2 vector2) 
+        static Sn.Vector2? Vector2DefaultIsZero(Sn.Vector2 vector2)
             => vector2.X == 0 && vector2.Y == 0 ? null : (Sn.Vector2?)vector2;
 
         static Sn.Vector2 ClampedVector2(LottieData.Vector3 vector3) => ClampedVector2((float)vector3.X, (float)vector3.Y);
@@ -4413,13 +4413,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         static Sn.Vector3 Vector3(LottieData.Vector3 vector3) => new Sn.Vector3((float)vector3.X, (float)vector3.Y, (float)vector3.Z);
 
-        static Sn.Vector3? Vector3DefaultIsZero(Sn.Vector2 vector2) 
+        static Sn.Vector3? Vector3DefaultIsZero(Sn.Vector2 vector2)
             => vector2.X == 0 && vector2.Y == 0 ? null : (Sn.Vector3?)Vector3(vector2);
 
-        static Sn.Vector3? Vector3DefaultIsOne(Sn.Vector3 vector3) 
+        static Sn.Vector3? Vector3DefaultIsOne(Sn.Vector3 vector3)
             => vector3.X == 1 && vector3.Y == 1 && vector3.Z == 1 ? null : (Sn.Vector3?)vector3;
 
-        static Sn.Vector3? Vector3DefaultIsOne(LottieData.Vector3 vector3) 
+        static Sn.Vector3? Vector3DefaultIsOne(LottieData.Vector3 vector3)
             => Vector3DefaultIsOne(new Sn.Vector3((float)vector3.X, (float)vector3.Y, (float)vector3.Z));
 
         static Sn.Vector3 Vector3(Sn.Vector2 vector2) => Vector3(vector2.X, vector2.Y, 0);
