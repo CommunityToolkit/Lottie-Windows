@@ -163,6 +163,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             // A sorted set to hold the namespaces that the generated code will use. The set is maintained in sorted order.
             var namespaces = new SortedSet<string>();
 
+            namespaces.Add("Platform");
             namespaces.Add("Windows::Foundation");
             namespaces.Add("Windows::Foundation::Numerics");
             namespaces.Add("Windows::UI");
@@ -207,6 +208,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
                 // Typedef to simplify generation
                 builder.WriteLine("typedef ComPtr<GeoSource> CanvasGeometry;");
+                builder.WriteLine();
             }
 
             if (info.UsesCompositeEffect)
