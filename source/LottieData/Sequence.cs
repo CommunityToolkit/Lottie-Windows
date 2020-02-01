@@ -39,7 +39,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
         /// <inheritdoc/>
         public bool Equals(Sequence<T> other) =>
-            other != null &&
+            other is Sequence<T> &&
             Enumerable.SequenceEqual(_items, other._items);
 
         /// <inheritdoc/>
