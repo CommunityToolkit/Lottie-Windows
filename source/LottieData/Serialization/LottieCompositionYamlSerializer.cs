@@ -394,7 +394,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             result.Add(nameof(content.Position), FromAnimatable(content.Position));
             result.Add(nameof(content.Anchor), FromAnimatable(content.Anchor));
             result.Add(nameof(content.Opacity), FromAnimatable(content.Opacity));
-            result.Add(nameof(content.RotationDegrees), FromAnimatable(content.RotationDegrees));
+            result.Add(nameof(content.Rotation), FromAnimatable(content.Rotation));
             return result;
         }
 
@@ -423,16 +423,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         YamlObject FromAnimatable<T>(Animatable<T> animatable, Func<T, YamlObject> valueSelector)
             where T : IEquatable<T>
-        {
-            if (!animatable.IsAnimated)
-            {
-                return valueSelector(animatable.InitialValue);
-            }
-            else
-            {
-                return FromSpan<KeyFrame<T>>(animatable.KeyFrames, kf => FromKeyFrame(kf, valueSelector));
-            }
-        }
+            => animatable.IsAnimated
+                ? FromSpan<KeyFrame<T>>(animatable.KeyFrames, kf => FromKeyFrame(kf, valueSelector))
+                : valueSelector(animatable.InitialValue);
 
         YamlObject FromAnimatable(Animatable<Color> animatable) => FromAnimatable(animatable, Scalar);
 
@@ -440,7 +433,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         YamlObject FromAnimatable(Animatable<Opacity> animatable) => FromAnimatable(animatable, Scalar);
 
-        static YamlObject FromRotation(Rotation value) => (YamlScalar)value.Degrees;
+        YamlObject FromAnimatable(Animatable<Rotation> animatable) => FromAnimatable(animatable, Scalar);
 
         static YamlObject FromVector3(Vector3 value)
         {
@@ -493,7 +486,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             var result = new YamlMap
             {
                 { nameof(value.Color), Scalar(value.Color) },
-                { nameof(value.Offset), value.Offset},
+                { nameof(value.Offset), Scalar(value.Offset) },
             };
             return result;
         }
@@ -503,7 +496,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             var result = new YamlMap
             {
                 { nameof(value.Opacity), Scalar(value.Opacity) },
-                { nameof(value.Offset), value.Offset },
+                { nameof(value.Offset), Scalar(value.Offset) },
             };
             return result;
         }
@@ -518,9 +511,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 { nameof(keyFrame.Easing), Scalar(keyFrame.Easing.Type) },
             };
 
-            if (keyFrame is KeyFrame<Vector3>)
+            if (keyFrame is KeyFrame<Vector3> v3kf)
             {
-                var v3kf = (KeyFrame<Vector3>)(object)keyFrame;
                 var cp1 = v3kf.SpatialControlPoint1;
                 var cp2 = v3kf.SpatialControlPoint2;
                 if (cp1 != Vector3.Zero || cp2 != Vector3.Zero)
@@ -570,7 +562,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             var result = superclassContent;
             result.Add(nameof(content.StartPercent), FromAnimatable(content.StartPercent));
             result.Add(nameof(content.EndPercent), FromAnimatable(content.EndPercent));
-            result.Add(nameof(content.OffsetDegrees), FromAnimatable(content.OffsetDegrees));
+            result.Add(nameof(content.Offset), FromAnimatable(content.Offset));
             return result;
         }
 
@@ -603,7 +595,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             return result;
         }
 
-        YamlScalar Scalar(Color value) => Scalar(value, $"'{value.ToString()}'");
+        YamlScalar Scalar(Color value) => Scalar(value, $"'{value}'");
 
         YamlScalar Scalar(double value) => value;
 
@@ -614,6 +606,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         YamlScalar Scalar(Mask.MaskMode type) => Scalar(type, type.ToString());
 
         YamlScalar Scalar(Opacity value) => Scalar(value, $"{value.Percent}%");
+
+        YamlScalar Scalar(Rotation value) => Scalar(value, $"{value.Degrees}°");
 
         YamlScalar Scalar(ShapeContentType type) => Scalar(type, type.ToString());
 
