@@ -14,11 +14,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             IAnimatableVector3 anchor,
             IAnimatableVector3 position,
             IAnimatableVector3 scalePercent,
-            Animatable<double> rotationDegrees,
+            Animatable<Rotation> rotation,
             Animatable<Opacity> opacity,
             Animatable<Opacity> startOpacity,
             Animatable<Opacity> endOpacity)
-            : base(in args, anchor, position, scalePercent, rotationDegrees, opacity)
+            : base(in args, anchor, position, scalePercent, rotation, opacity)
         {
             StartOpacity = startOpacity;
             EndOpacity = endOpacity;

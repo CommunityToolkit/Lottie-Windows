@@ -35,6 +35,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
     {
         static readonly AnimatableFloatParser s_animatableFloatParser = new AnimatableFloatParser();
         static readonly AnimatableOpacityParser s_animatableOpacityParser = new AnimatableOpacityParser();
+        static readonly AnimatableRotationParser s_animatableRotationParser = new AnimatableRotationParser();
         static readonly AnimatableVector2Parser s_animatableVector2Parser = new AnimatableVector2Parser();
         static readonly AnimatableVector3Parser s_animatableVector3Parser = new AnimatableVector3Parser();
         static readonly AnimatableGeometryParser s_animatableGeometryParser = new AnimatableGeometryParser();
@@ -1337,7 +1338,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
             var startPercent = ReadAnimatableFloat(obj.GetNamedObject("s"));
             var endPercent = ReadAnimatableFloat(obj.GetNamedObject("e"));
-            var offsetDegrees = ReadAnimatableFloat(obj.GetNamedObject("o"));
+            var offset = ReadAnimatableRotation(obj.GetNamedObject("o"));
             var trimType = MToTrimType(obj.GetNamedNumber("m", 1));
             AssertAllFieldsRead(obj);
             return new TrimPath(
@@ -1345,7 +1346,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 trimType,
                 startPercent,
                 endPercent,
-                offsetDegrees);
+                offset);
         }
 
         Repeater ReadRepeater(JObject obj, in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
@@ -1418,7 +1419,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 transform.Anchor,
                 transform.Position,
                 transform.ScalePercent,
-                transform.RotationDegrees,
+                transform.Rotation,
                 transform.Opacity,
                 startOpacity,
                 endOpacity);
@@ -1451,8 +1452,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
             var rotation =
                     rotationJson != null
-                        ? ReadAnimatableFloat(rotationJson)
-                        : new Animatable<double>(0, null);
+                        ? ReadAnimatableRotation(rotationJson)
+                        : new Animatable<Rotation>(Rotation.None, null);
 
             var opacity = ReadOpacityFromO(obj);
 
@@ -1667,6 +1668,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             return keyFrames.Any()
                 ? new Animatable<double>(keyFrames, propertyIndex)
                 : new Animatable<double>(initialValue, propertyIndex);
+        }
+
+        Animatable<Rotation> ReadAnimatableRotation(JObject obj)
+        {
+            s_animatableRotationParser.ParseJson(this, obj, out IEnumerable<KeyFrame<Rotation>> keyFrames, out Rotation initialValue);
+            var propertyIndex = ReadInt(obj, "ix");
+
+            return keyFrames.Any()
+                ? new Animatable<Rotation>(keyFrames, propertyIndex)
+                : new Animatable<Rotation>(initialValue, propertyIndex);
         }
 
         Animatable<Opacity> ReadOpacityFromO(JObject obj)
@@ -2042,6 +2053,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         sealed class AnimatableOpacityParser : AnimatableParser<Opacity>
         {
             protected override Opacity ReadValue(JToken obj) => Opacity.FromFloat(ReadFloat(obj) / 100.0);
+        }
+
+        sealed class AnimatableRotationParser : AnimatableParser<Rotation>
+        {
+            protected override Rotation ReadValue(JToken obj) => Rotation.FromDegrees(ReadFloat(obj));
         }
 
         abstract class AnimatableParser<T>
