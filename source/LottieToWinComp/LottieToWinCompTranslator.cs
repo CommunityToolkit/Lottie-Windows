@@ -4482,8 +4482,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             public override bool Equals(object obj)
                 => obj is ScaleAndOffset other &&
-                   other._scale == _scale &&
-                   other._offset == _offset;
+                   other.Scale == Scale &&
+                   other.Offset == Offset;
 
             public override int GetHashCode() => Scale.GetHashCode() ^ Offset.GetHashCode();
         }
