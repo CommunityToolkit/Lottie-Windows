@@ -61,7 +61,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                         break;
                     case CompositionObjectType.CompositionPropertySet:
                         {
-                            var propertyCount = ((CompositionPropertySet)n.Object).PropertyNames.Count();
+                            var propertyCount = ((CompositionPropertySet)n.Object).Names.Count();
                             if (propertyCount > 0)
                             {
                                 PropertySetCount++;

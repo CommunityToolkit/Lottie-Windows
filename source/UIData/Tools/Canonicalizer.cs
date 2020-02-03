@@ -137,7 +137,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                     from item in items
                     let obj = item.Object
                     where (_ignoreCommentProperties || obj.Comment == null)
-                       && obj.Properties.IsEmpty
+                       && obj.Properties.Names.Count == 0
                        && obj.Animators.Count == 0
                     select (item.Node, obj);
             }
@@ -312,7 +312,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                     from item in nodes
                     let obj = item.Object
                     where (_ignoreCommentProperties || obj.Comment == null)
-                       && obj.Properties.IsEmpty
+                       && obj.Properties.Names.Count == 0
                     select (item.Node, obj);
 
                 var grouping =
@@ -346,7 +346,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                     from b in gradientBrushes
                     let nonAnimatedStops = from s in b.Object.ColorStops
                                            where (_ignoreCommentProperties || s.Comment == null)
-                                              && s.Properties.IsEmpty && !s.Animators.Any()
+                                              && s.Properties.Names.Count == 0 && !s.Animators.Any()
                                            group s by (s.Color, s.Offset) into g
                                            from s2 in g.Zip(PositiveInts, (x, y) => (Stop: x, Index: y))
                                            select s2
@@ -373,7 +373,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                     from item in nodes
                     let obj = item.Object
                     where (_ignoreCommentProperties || obj.Comment == null)
-                       && obj.Properties.IsEmpty
+                       && obj.Properties.Names.Count == 0
                     select (item.Node, obj);
 
                 var grouping =

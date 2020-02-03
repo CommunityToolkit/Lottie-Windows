@@ -495,29 +495,48 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
             result = CacheAndInitializeCompositionObject(obj, result);
 
-            foreach (var prop in obj.ColorProperties)
+            foreach (var (name, type) in obj.Names)
             {
-                result.InsertColor(prop.Key, prop.Value);
-            }
+                switch (type)
+                {
+                    case WinCompData.MetaData.PropertySetValueType.Color:
+                        {
+                            obj.TryGetColor(name, out var value);
+                            result.InsertColor(name, value);
+                            break;
+                        }
 
-            foreach (var prop in obj.ScalarProperties)
-            {
-                result.InsertScalar(prop.Key, prop.Value);
-            }
+                    case WinCompData.MetaData.PropertySetValueType.Scalar:
+                        {
+                            obj.TryGetScalar(name, out var value);
+                            result.InsertScalar(name, value);
+                            break;
+                        }
 
-            foreach (var prop in obj.Vector2Properties)
-            {
-                result.InsertVector2(prop.Key, prop.Value);
-            }
+                    case WinCompData.MetaData.PropertySetValueType.Vector2:
+                        {
+                            obj.TryGetVector2(name, out var value);
+                            result.InsertVector2(name, value);
+                            break;
+                        }
 
-            foreach (var prop in obj.Vector3Properties)
-            {
-                result.InsertVector3(prop.Key, prop.Value);
-            }
+                    case WinCompData.MetaData.PropertySetValueType.Vector3:
+                        {
+                            obj.TryGetVector3(name, out var value);
+                            result.InsertVector3(name, value);
+                            break;
+                        }
 
-            foreach (var prop in obj.Vector4Properties)
-            {
-                result.InsertVector4(prop.Key, prop.Value);
+                    case WinCompData.MetaData.PropertySetValueType.Vector4:
+                        {
+                            obj.TryGetVector4(name, out var value);
+                            result.InsertVector4(name, value);
+                            break;
+                        }
+
+                    default:
+                        throw new InvalidOperationException();
+                }
             }
 
             StartAnimationsAndFreeze(obj, result);

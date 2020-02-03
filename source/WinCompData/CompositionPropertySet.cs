@@ -4,21 +4,26 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics;
 using System.Numerics;
+using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.MetaData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 {
     // CompositionPropertySet was introduced in version 2. Boolean types
     // were added in version 3.
-    [MetaData.UapVersion(2)]
+    [UapVersion(2)]
 #if PUBLIC_WinCompData
     public
 #endif
     sealed class CompositionPropertySet : CompositionObject
     {
-        HashSet<string> _names;
+        static readonly SortedDictionary<string, PropertySetValueType> s_empty = new SortedDictionary<string, PropertySetValueType>();
+
+        // Initialized to an empty sentinel value, then replaced with a new object
+        // when the first value is added.
+        SortedDictionary<string, PropertySetValueType> _names = s_empty;
         PropertyBag<Color> _colorProperties;
         PropertyBag<float> _scalarProperties;
         PropertyBag<Vector2> _vector2Properties;
@@ -32,70 +37,78 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 
         public CompositionObject Owner { get; }
 
-        public void InsertColor(string propertyName, Color value) => Insert(propertyName, in value, ref _colorProperties);
+        public void InsertColor(string propertyName, Color value)
+            => Insert(propertyName, in value, PropertySetValueType.Color, ref _colorProperties);
 
-        public void InsertScalar(string propertyName, float value) => Insert(propertyName, in value, ref _scalarProperties);
+        public void InsertScalar(string propertyName, float value)
+            => Insert(propertyName, in value, PropertySetValueType.Scalar, ref _scalarProperties);
 
-        public void InsertVector2(string propertyName, Vector2 value) => Insert(propertyName, in value, ref _vector2Properties);
+        public void InsertVector2(string propertyName, Vector2 value)
+            => Insert(propertyName, in value, PropertySetValueType.Vector2, ref _vector2Properties);
 
-        public void InsertVector3(string propertyName, Vector3 value) => Insert(propertyName, in value, ref _vector3Properties);
+        public void InsertVector3(string propertyName, Vector3 value)
+            => Insert(propertyName, in value, PropertySetValueType.Vector3, ref _vector3Properties);
 
-        public void InsertVector4(string propertyName, Vector4 value) => Insert(propertyName, in value, ref _vector4Properties);
+        public void InsertVector4(string propertyName, Vector4 value)
+            => Insert(propertyName, in value, PropertySetValueType.Vector4, ref _vector4Properties);
 
-        public CompositionGetValueStatus TryGetColor(string propertyName, out Color value) => TryGet(propertyName, ref _colorProperties, out value);
+        public CompositionGetValueStatus TryGetColor(string propertyName, out Color value)
+            => TryGet(propertyName, PropertySetValueType.Color, ref _colorProperties, out value);
 
-        public CompositionGetValueStatus TryGetScalar(string propertyName, out float value) => TryGet(propertyName, ref _scalarProperties, out value);
+        public CompositionGetValueStatus TryGetScalar(string propertyName, out float value)
+            => TryGet(propertyName, PropertySetValueType.Scalar, ref _scalarProperties, out value);
 
-        public CompositionGetValueStatus TryGetVector2(string propertyName, out Vector2 value) => TryGet(propertyName, ref _vector2Properties, out value);
+        public CompositionGetValueStatus TryGetVector2(string propertyName, out Vector2 value)
+            => TryGet(propertyName, PropertySetValueType.Vector2, ref _vector2Properties, out value);
 
-        public CompositionGetValueStatus TryGetVector3(string propertyName, out Vector3 value) => TryGet(propertyName, ref _vector3Properties, out value);
+        public CompositionGetValueStatus TryGetVector3(string propertyName, out Vector3 value)
+            => TryGet(propertyName, PropertySetValueType.Vector3, ref _vector3Properties, out value);
 
-        public CompositionGetValueStatus TryGetVector4(string propertyName, out Vector4 value) => TryGet(propertyName, ref _vector4Properties, out value);
+        public CompositionGetValueStatus TryGetVector4(string propertyName, out Vector4 value)
+            => TryGet(propertyName, PropertySetValueType.Vector4, ref _vector4Properties, out value);
 
-        public IEnumerable<KeyValuePair<string, Color>> ColorProperties => _colorProperties.Entries;
-
-        public IEnumerable<KeyValuePair<string, float>> ScalarProperties => _scalarProperties.Entries;
-
-        public IEnumerable<KeyValuePair<string, Vector2>> Vector2Properties => _vector2Properties.Entries;
-
-        public IEnumerable<KeyValuePair<string, Vector3>> Vector3Properties => _vector3Properties.Entries;
-
-        public IEnumerable<KeyValuePair<string, Vector4>> Vector4Properties => _vector4Properties.Entries;
-
-        public IEnumerable<string> PropertyNames => _names ?? Enumerable.Empty<string>();
-
-        public bool IsEmpty => !(_names?.Count > 0);
+        /// <summary>
+        /// Returns the names and types of the values that have been added to this <see cref="CompositionPropertySet"/>.
+        /// The results are ordered by name.
+        /// </summary>
+        public IReadOnlyDictionary<string, PropertySetValueType> Names => _names;
 
         /// <inheritdoc/>
         public override CompositionObjectType Type => CompositionObjectType.CompositionPropertySet;
 
-        void Insert<T>(string propertyName, in T value, ref PropertyBag<T> bag)
+        void Insert<T>(string propertyName, in T value, PropertySetValueType type, ref PropertyBag<T> bag)
         {
+            Debug.Assert(type != PropertySetValueType.None, "Precondition");
+
             // Ensure the names set exists.
-            if (_names is null)
+            if (_names == s_empty)
             {
                 // CompositionPropertySet ignores the case of property names.
-                _names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                _names = new SortedDictionary<string, PropertySetValueType>(StringComparer.OrdinalIgnoreCase);
             }
 
             // Try to add the name to the set of names.
-            if (!_names.Add(propertyName))
+            if (_names.TryGetValue(propertyName, out var existingPropertyType))
             {
                 // The name already existed. That's ok as long the name is associated
                 // with the correct type.
-                if (!bag.ContainsKey(propertyName))
+                if (existingPropertyType != type)
                 {
                     throw new ArgumentException();
                 }
+            }
+            else
+            {
+                _names.Add(propertyName, type);
             }
 
             // Set the value.
             bag.SetValue(propertyName, in value);
         }
 
-        CompositionGetValueStatus TryGet<T>(string propertyName, ref PropertyBag<T> bag, out T value)
+        CompositionGetValueStatus TryGet<T>(string propertyName, PropertySetValueType type, ref PropertyBag<T> bag, out T value)
         {
-            if (_names is null || !_names.Contains(propertyName))
+            if (!_names.TryGetValue(propertyName, out var existingPropertyType))
             {
                 // The name isn't in this property set.
                 value = default(T);
@@ -103,9 +116,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
             }
 
             // The name is in the property set - does it refer to the right type?
-            return bag.TryGetValue(propertyName, out value)
-                ? CompositionGetValueStatus.Succeeded
-                : CompositionGetValueStatus.TypeMismatch;
+            if (existingPropertyType != type)
+            {
+                // The name is in the property set, but not for this type.
+                value = default(T);
+                return CompositionGetValueStatus.TypeMismatch;
+            }
+
+            if (!bag.TryGetValue(propertyName, out value))
+            {
+                throw new InvalidOperationException();
+            }
+
+            return CompositionGetValueStatus.Succeeded;
         }
 
         struct PropertyBag<T>
@@ -138,11 +161,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 
                 return _dictionary.TryGetValue(propertyName, out value);
             }
-
-            internal IEnumerable<string> Names => _dictionary?.Keys ?? Enumerable.Empty<string>();
-
-            internal IEnumerable<KeyValuePair<string, T>> Entries
-                => _dictionary ?? Enumerable.Empty<KeyValuePair<string, T>>();
         }
     }
 }
