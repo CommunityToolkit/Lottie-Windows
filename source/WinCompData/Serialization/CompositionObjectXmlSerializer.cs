@@ -565,12 +565,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
 
             // Find the animations that are targetting properties in the property set.
             var propertySetAnimators =
-                from pn in obj.Properties.PropertyNames
+                from pn in obj.Properties.Names
                 from an in obj.Animators
-                where an.AnimatedProperty == pn
+                where an.AnimatedProperty == pn.Key
                 select an;
 
-            if (!obj.Properties.IsEmpty)
+            if (obj.Properties.Names.Count > 0)
             {
                 yield return FromCompositionPropertySet(obj.Properties, propertySetAnimators);
             }
@@ -698,43 +698,67 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
             return new XElement("PropertySet", GetContents());
             IEnumerable<XObject> GetContents()
             {
-                foreach (var prop in obj.ColorProperties)
+                foreach (var (name, type) in obj.Names)
                 {
-                    foreach (var item in FromAnimatableColor(prop.Key, animators, prop.Value))
+                    switch (type)
                     {
-                        yield return item;
-                    }
-                }
+                        case MetaData.PropertySetValueType.Color:
+                            {
+                                obj.TryGetColor(name, out var value);
+                                foreach (var item in FromAnimatableColor(name, animators, value))
+                                {
+                                    yield return item;
+                                }
 
-                foreach (var prop in obj.ScalarProperties)
-                {
-                    foreach (var item in FromAnimatableScalar(prop.Key, animators, prop.Value))
-                    {
-                        yield return item;
-                    }
-                }
+                                break;
+                            }
 
-                foreach (var prop in obj.Vector2Properties)
-                {
-                    foreach (var item in FromAnimatableVector2(prop.Key, animators, prop.Value))
-                    {
-                        yield return item;
-                    }
-                }
+                        case MetaData.PropertySetValueType.Scalar:
+                            {
+                                obj.TryGetScalar(name, out var value);
+                                foreach (var item in FromAnimatableScalar(name, animators, value))
+                                {
+                                    yield return item;
+                                }
 
-                foreach (var prop in obj.Vector3Properties)
-                {
-                    foreach (var item in FromAnimatableVector3(prop.Key, animators, prop.Value))
-                    {
-                        yield return item;
-                    }
-                }
+                                break;
+                            }
 
-                foreach (var prop in obj.Vector4Properties)
-                {
-                    foreach (var item in FromAnimatableVector4(prop.Key, animators, prop.Value))
-                    {
-                        yield return item;
+                        case MetaData.PropertySetValueType.Vector2:
+                            {
+                                obj.TryGetVector2(name, out var value);
+                                foreach (var item in FromAnimatableVector2(name, animators, value))
+                                {
+                                    yield return item;
+                                }
+
+                                break;
+                            }
+
+                        case MetaData.PropertySetValueType.Vector3:
+                            {
+                                obj.TryGetVector3(name, out var value);
+                                foreach (var item in FromAnimatableVector3(name, animators, value))
+                                {
+                                    yield return item;
+                                }
+
+                                break;
+                            }
+
+                        case MetaData.PropertySetValueType.Vector4:
+                            {
+                                obj.TryGetVector4(name, out var value);
+                                foreach (var item in FromAnimatableVector4(name, animators, value))
+                                {
+                                    yield return item;
+                                }
+
+                                break;
+                            }
+
+                        default:
+                            throw new InvalidOperationException();
                     }
                 }
             }

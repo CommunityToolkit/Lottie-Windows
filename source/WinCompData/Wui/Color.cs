@@ -65,7 +65,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui
         public bool Equals(Color other) => A == other.A && R == other.R && G == other.G && B == other.B;
 
         /// <inheritdoc/>
-        public override bool Equals(object obj) => obj is Color && Equals((Color)obj);
+        public override bool Equals(object obj) => obj is Color other && Equals(other);
 
         /// <inheritdoc/>
         public override int GetHashCode() => A * R * G * B;
