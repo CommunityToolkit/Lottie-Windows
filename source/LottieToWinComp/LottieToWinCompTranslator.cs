@@ -2475,13 +2475,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             if (!startTrim.IsAnimated && !endTrim.IsAnimated)
             {
-                // Handle some well-known static cases
+                // Handle some well-known static cases.
                 if (startTrim.InitialValue.Value == 0 && endTrim.InitialValue.Value == 1)
                 {
                     // The trim does nothing.
                     return;
                 }
-                else if (startTrim.InitialValue.Value == endTrim.InitialValue.Value)
+                else if (startTrim.InitialValue == endTrim.InitialValue)
                 {
                     // TODO - the trim trims away all of the path.
                 }

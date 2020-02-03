@@ -1797,96 +1797,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             }
         }
 
-        static PathGeometry ReadGeometry(JToken value)
-        {
-            JObject pointsData = null;
-            if (value.Type == JTokenType.Array)
-            {
-                var firstItem = value.AsArray().First();
-                var firstItemAsObject = firstItem.AsObject();
-                if (firstItem.Type == JTokenType.Object && firstItemAsObject.ContainsKey("v"))
-                {
-                    pointsData = firstItemAsObject;
-                }
-            }
-            else if (value.Type == JTokenType.Object && value.AsObject().ContainsKey("v"))
-            {
-                pointsData = value.AsObject();
-            }
-
-            if (pointsData is null)
-            {
-                return null;
-            }
-
-            var vertices = pointsData.GetNamedArray("v", null);
-            var inTangents = pointsData.GetNamedArray("i", null);
-            var outTangents = pointsData.GetNamedArray("o", null);
-            var isClosed = pointsData.GetNamedBoolean("c", false);
-
-            if (vertices is null || inTangents is null || outTangents is null)
-            {
-                throw new LottieCompositionReaderException($"Unable to process points array or tangents. {pointsData}");
-            }
-
-            var beziers = new BezierSegment[isClosed ? vertices.Count : Math.Max(vertices.Count - 1, 0)];
-
-            if (beziers.Length > 0)
-            {
-                // The vertices for the figure.
-                var verticesAsVector2 = ReadVector2Array(vertices);
-
-                // The control points that define the cubic beziers between the vertices.
-                var inTangentsAsVector2 = ReadVector2Array(inTangents);
-                var outTangentsAsVector2 = ReadVector2Array(outTangents);
-
-                if (verticesAsVector2.Length != inTangentsAsVector2.Length ||
-                    verticesAsVector2.Length != outTangentsAsVector2.Length)
-                {
-                    throw new LottieCompositionReaderException($"Invalid path data. {pointsData}");
-                }
-
-                var cp3 = verticesAsVector2[0];
-
-                for (var i = 0; i < beziers.Length; i++)
-                {
-                    // cp0 is the start point of the segment.
-                    var cp0 = cp3;
-
-                    // cp1 is relative to cp0
-                    var cp1 = cp0 + outTangentsAsVector2[i];
-
-                    // cp3 is the endpoint of the segment.
-                    cp3 = verticesAsVector2[(i + 1) % verticesAsVector2.Length];
-
-                    // cp2 is relative to cp3
-                    var cp2 = cp3 + inTangentsAsVector2[(i + 1) % inTangentsAsVector2.Length];
-
-                    beziers[i] = new BezierSegment(
-                        cp0: cp0,
-                        cp1: cp1,
-                        cp2: cp2,
-                        cp3: cp3);
-                }
-            }
-
-            return new PathGeometry(beziers);
-        }
-
-        static Vector2[] ReadVector2Array(JArray array)
-        {
-            IEnumerable<Vector2> ToVector2Enumerable()
-            {
-                var count = array.Count;
-                for (int i = 0; i < count; i++)
-                {
-                    yield return ReadVector2FromJsonArray(array[i].AsArray());
-                }
-            }
-
-            return ToVector2Enumerable().ToArray();
-        }
-
         sealed class AnimatableColorStopsParser : AnimatableParser<Sequence<GradientStop>>
         {
             // The number of color stops. The opacity stops follow this number
@@ -2254,6 +2164,96 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 default:
                     throw UnexpectedTokenException(jsonValue.Type);
             }
+        }
+
+        static PathGeometry ReadGeometry(JToken value)
+        {
+            JObject pointsData = null;
+            if (value.Type == JTokenType.Array)
+            {
+                var firstItem = value.AsArray().First();
+                var firstItemAsObject = firstItem.AsObject();
+                if (firstItem.Type == JTokenType.Object && firstItemAsObject.ContainsKey("v"))
+                {
+                    pointsData = firstItemAsObject;
+                }
+            }
+            else if (value.Type == JTokenType.Object && value.AsObject().ContainsKey("v"))
+            {
+                pointsData = value.AsObject();
+            }
+
+            if (pointsData is null)
+            {
+                return null;
+            }
+
+            var vertices = pointsData.GetNamedArray("v", null);
+            var inTangents = pointsData.GetNamedArray("i", null);
+            var outTangents = pointsData.GetNamedArray("o", null);
+            var isClosed = pointsData.GetNamedBoolean("c", false);
+
+            if (vertices is null || inTangents is null || outTangents is null)
+            {
+                throw new LottieCompositionReaderException($"Unable to process points array or tangents. {pointsData}");
+            }
+
+            var beziers = new BezierSegment[isClosed ? vertices.Count : Math.Max(vertices.Count - 1, 0)];
+
+            if (beziers.Length > 0)
+            {
+                // The vertices for the figure.
+                var verticesAsVector2 = ReadVector2Array(vertices);
+
+                // The control points that define the cubic beziers between the vertices.
+                var inTangentsAsVector2 = ReadVector2Array(inTangents);
+                var outTangentsAsVector2 = ReadVector2Array(outTangents);
+
+                if (verticesAsVector2.Length != inTangentsAsVector2.Length ||
+                    verticesAsVector2.Length != outTangentsAsVector2.Length)
+                {
+                    throw new LottieCompositionReaderException($"Invalid path data. {pointsData}");
+                }
+
+                var cp3 = verticesAsVector2[0];
+
+                for (var i = 0; i < beziers.Length; i++)
+                {
+                    // cp0 is the start point of the segment.
+                    var cp0 = cp3;
+
+                    // cp1 is relative to cp0
+                    var cp1 = cp0 + outTangentsAsVector2[i];
+
+                    // cp3 is the endpoint of the segment.
+                    cp3 = verticesAsVector2[(i + 1) % verticesAsVector2.Length];
+
+                    // cp2 is relative to cp3
+                    var cp2 = cp3 + inTangentsAsVector2[(i + 1) % inTangentsAsVector2.Length];
+
+                    beziers[i] = new BezierSegment(
+                        cp0: cp0,
+                        cp1: cp1,
+                        cp2: cp2,
+                        cp3: cp3);
+                }
+            }
+
+            return new PathGeometry(beziers);
+        }
+
+        static Vector2[] ReadVector2Array(JArray array)
+        {
+            IEnumerable<Vector2> ToVector2Enumerable()
+            {
+                var count = array.Count;
+                for (int i = 0; i < count; i++)
+                {
+                    yield return ReadVector2FromJsonArray(array[i].AsArray());
+                }
+            }
+
+            return ToVector2Enumerable().ToArray();
         }
 
         static Opacity ReadOpacity(JToken jsonValue) => Opacity.FromPercent(ReadFloat(jsonValue));
