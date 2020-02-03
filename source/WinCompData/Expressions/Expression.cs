@@ -85,9 +85,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
         /// <returns>The expression as a string suitable for use in the Windows.UI.Composition animation APIs.</returns>
         protected abstract string CreateExpressionText();
 
-        public bool Equals(Expression other) => !(other is null) && other.ToText() == ToText();
+        public bool Equals(Expression other) => other is Expression && other.ToText() == ToText();
 
-        public override sealed bool Equals(object obj) => (obj is Expression other) && Equals(other);
+        public override sealed bool Equals(object obj) => Equals(obj as Expression);
 
         public override sealed int GetHashCode() => ToText().GetHashCode();
     }
