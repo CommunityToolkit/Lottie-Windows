@@ -7,7 +7,7 @@ using System;
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 {
     /// <summary>
-    /// A rotation value.
+    /// A trimming amount. Used to describe how much of a path should be trimmed.
     /// </summary>
 #if PUBLIC_LottieData
     public
