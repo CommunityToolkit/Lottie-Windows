@@ -4164,8 +4164,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         // Returns the name of a variable on the root property set that advances linearly from 0 to 1 over the
         // given range of Progress.
-        TimeRemap GetRemappedProgress(double tRangeLow, double tRangeHigh) =>
-            new TimeRemap(tRangeLow, tRangeHigh, ExpressionFactory.RootProgress);
+        TimeRemap GetRemappedProgress(double tRangeLow, double tRangeHigh)
+            => new TimeRemap(tRangeLow, tRangeHigh, ExpressionFactory.RootProgress);
 
         int _tCounter = 0;
 
@@ -4387,8 +4387,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             obj.Name = name;
         }
 
-        static WinCompData.Wui.Color Color(LottieData.Color color) =>
-            WinCompData.Wui.Color.FromArgb((byte)(255 * color.A), (byte)(255 * color.R), (byte)(255 * color.G), (byte)(255 * color.B));
+        static WinCompData.Wui.Color Color(LottieData.Color color)
+            => WinCompData.Wui.Color.FromArgb((byte)(255 * color.A), (byte)(255 * color.R), (byte)(255 * color.G), (byte)(255 * color.B));
 
         static float Float(double value) => (float)value;
 
@@ -4410,11 +4410,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         static Sn.Vector2 Vector2(float x) => new Sn.Vector2(x, x);
 
-        static Sn.Vector2? Vector2DefaultIsOne(LottieData.Vector3 vector2) =>
-            vector2.X == 1 && vector2.Y == 1 ? null : (Sn.Vector2?)Vector2(vector2);
+        static Sn.Vector2? Vector2DefaultIsOne(LottieData.Vector3 vector2)
+            => vector2.X == 1 && vector2.Y == 1 ? null : (Sn.Vector2?)Vector2(vector2);
 
-        static Sn.Vector2? Vector2DefaultIsZero(Sn.Vector2 vector2) =>
-            vector2.X == 0 && vector2.Y == 0 ? null : (Sn.Vector2?)vector2;
+        static Sn.Vector2? Vector2DefaultIsZero(Sn.Vector2 vector2)
+            => vector2.X == 0 && vector2.Y == 0 ? null : (Sn.Vector2?)vector2;
 
         static Sn.Vector2 ClampedVector2(LottieData.Vector3 vector3) => ClampedVector2((float)vector3.X, (float)vector3.Y);
 
@@ -4424,14 +4424,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         static Sn.Vector3 Vector3(LottieData.Vector3 vector3) => new Sn.Vector3((float)vector3.X, (float)vector3.Y, (float)vector3.Z);
 
-        static Sn.Vector3? Vector3DefaultIsZero(Sn.Vector2 vector2) =>
-                    vector2.X == 0 && vector2.Y == 0 ? null : (Sn.Vector3?)Vector3(vector2);
+        static Sn.Vector3? Vector3DefaultIsZero(Sn.Vector2 vector2)
+            => vector2.X == 0 && vector2.Y == 0 ? null : (Sn.Vector3?)Vector3(vector2);
 
-        static Sn.Vector3? Vector3DefaultIsOne(Sn.Vector3 vector3) =>
-                    vector3.X == 1 && vector3.Y == 1 && vector3.Z == 1 ? null : (Sn.Vector3?)vector3;
+        static Sn.Vector3? Vector3DefaultIsOne(Sn.Vector3 vector3)
+            => vector3.X == 1 && vector3.Y == 1 && vector3.Z == 1 ? null : (Sn.Vector3?)vector3;
 
-        static Sn.Vector3? Vector3DefaultIsOne(LottieData.Vector3 vector3) =>
-                    Vector3DefaultIsOne(new Sn.Vector3((float)vector3.X, (float)vector3.Y, (float)vector3.Z));
+        static Sn.Vector3? Vector3DefaultIsOne(LottieData.Vector3 vector3)
+            => Vector3DefaultIsOne(new Sn.Vector3((float)vector3.X, (float)vector3.Y, (float)vector3.Z));
 
         static Sn.Vector3 Vector3(Sn.Vector2 vector2) => Vector3(vector2.X, vector2.Y, 0);
 
@@ -4468,15 +4468,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
 
             public override bool Equals(object obj)
-            {
-                var other = obj as ScaleAndOffset;
-                if (other == null)
-                {
-                    return false;
-                }
-
-                return other._scale == _scale && other._offset == _offset;
-            }
+                => obj is ScaleAndOffset other &&
+                   other._scale == _scale &&
+                   other._offset == _offset;
 
             public override int GetHashCode() => _scale.GetHashCode() ^ _offset.GetHashCode();
         }

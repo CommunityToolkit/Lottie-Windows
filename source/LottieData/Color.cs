@@ -47,10 +47,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         public double B { get; }
 
         /// <inheritdoc/>
-        public override bool Equals(object obj) => obj is Color && Equals((Color)obj);
+        public override bool Equals(object obj) => Equals(obj as Color);
 
         /// <inheritdoc/>
-        public bool Equals(Color other) => A == other.A && R == other.R && G == other.G && B == other.B;
+        public bool Equals(Color other) => other is Color && (A == other.A && R == other.R && G == other.G && B == other.B);
 
         /// <inheritdoc/>
         public override int GetHashCode() => (A * R * G * B).GetHashCode();

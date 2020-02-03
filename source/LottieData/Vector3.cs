@@ -45,7 +45,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         public static bool operator !=(Vector3 left, Vector3 right) => !left.Equals(right);
 
         /// <inheritdoc/>
-        public override bool Equals(object obj) => obj is Vector3 && Equals((Vector3)obj);
+        public override bool Equals(object obj) => obj is Vector3 other && Equals(other);
 
         /// <inheritdoc/>
         public bool Equals(Vector3 other) => X == other.X && Y == other.Y && Z == other.Z;
