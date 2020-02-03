@@ -39,7 +39,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
             var result = new YamlMap
             {
-                { "Name", name },
+                { nameof(obj.Name), name },
             };
 
             if (name is string)
@@ -89,22 +89,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     return FromShapeLayerContent((ShapeLayerContent)obj, superclassContent);
 
                 default:
-                    throw new InvalidOperationException();
+                    throw Unreachable;
             }
         }
 
         YamlObject FromLottieComposition(LottieComposition lottieComposition, YamlMap superclassContent)
         {
             var result = superclassContent;
-            result.Add("Version", lottieComposition.Version);
-            result.Add("Width", lottieComposition.Width);
-            result.Add("Height", lottieComposition.Height);
-            result.Add("InPoint", lottieComposition.InPoint);
-            result.Add("OutPoint", lottieComposition.OutPoint);
-            result.Add("Duration", lottieComposition.Duration);
-            result.Add("Assets", FromEnumerable(lottieComposition.Assets, FromAsset));
-            result.Add("Layers", FromLayerCollection(lottieComposition.Layers));
-            result.Add("Markers", FromEnumerable(lottieComposition.Markers, FromMarker));
+            result.Add(nameof(lottieComposition.Version), lottieComposition.Version);
+            result.Add(nameof(lottieComposition.Width), lottieComposition.Width);
+            result.Add(nameof(lottieComposition.Height), lottieComposition.Height);
+            result.Add(nameof(lottieComposition.InPoint), lottieComposition.InPoint);
+            result.Add(nameof(lottieComposition.OutPoint), lottieComposition.OutPoint);
+            result.Add(nameof(lottieComposition.Duration), lottieComposition.Duration);
+            result.Add(nameof(lottieComposition.Assets), FromEnumerable(lottieComposition.Assets, FromAsset));
+            result.Add(nameof(lottieComposition.Layers), FromLayerCollection(lottieComposition.Layers));
+            result.Add(nameof(lottieComposition.Markers), FromEnumerable(lottieComposition.Markers, FromMarker));
             return result;
         }
 
@@ -143,62 +143,59 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         YamlObject FromAsset(Asset asset)
         {
+            var superclassContent = new YamlMap
+            {
+                { nameof(asset.Id), asset.Id },
+            };
+
             switch (asset.Type)
             {
                 case Asset.AssetType.LayerCollection:
-                    return FromLayersAsset((LayerCollectionAsset)asset);
+                    return FromLayersAsset((LayerCollectionAsset)asset, superclassContent);
                 case Asset.AssetType.Image:
-                    return FromImageAsset((ImageAsset)asset);
+                    return FromImageAsset((ImageAsset)asset, superclassContent);
                 default:
-                    throw new InvalidOperationException();
+                    throw Unreachable;
             }
         }
 
-        YamlObject FromLayersAsset(LayerCollectionAsset asset)
+        YamlObject FromLayersAsset(LayerCollectionAsset asset, YamlMap superclassContent)
         {
-            var result = new YamlMap
-            {
-                { "Id", asset.Id },
-                { "Layers", FromLayerCollection(asset.Layers) },
-            };
+            var result = superclassContent;
+            result.Add(nameof(asset.Layers), FromLayerCollection(asset.Layers));
             return result;
         }
 
-        YamlObject FromImageAsset(ImageAsset asset)
+        YamlObject FromImageAsset(ImageAsset asset, YamlMap superclassContent)
         {
+            superclassContent.Add(nameof(asset.Width), asset.Width);
+            superclassContent.Add(nameof(asset.Height), asset.Height);
+
             switch (asset.ImageType)
             {
                 case ImageAsset.ImageAssetType.Embedded:
-                    return FromEmbeddedImageAsset((EmbeddedImageAsset)asset);
+                    return FromEmbeddedImageAsset((EmbeddedImageAsset)asset, superclassContent);
                 case ImageAsset.ImageAssetType.External:
-                    return FromExternalImageAsset((ExternalImageAsset)asset);
+                    return FromExternalImageAsset((ExternalImageAsset)asset, superclassContent);
                 default:
-                    throw new InvalidOperationException();
+                    throw Unreachable;
             }
         }
 
-        YamlObject FromEmbeddedImageAsset(EmbeddedImageAsset asset)
+        YamlObject FromEmbeddedImageAsset(EmbeddedImageAsset asset, YamlMap superclassContent)
         {
-            return new YamlMap
-            {
-                { "Id", asset.Id },
-                { "Width", asset.Width },
-                { "Height", asset.Height },
-                { "Format", asset.Format},
-                { "SizeInBytes", asset.Bytes.Length},
-            };
+            var result = superclassContent;
+            result.Add(nameof(asset.Format), asset.Format);
+            result.Add(nameof(asset.Bytes.Length), asset.Bytes.Length);
+            return result;
         }
 
-        YamlObject FromExternalImageAsset(ExternalImageAsset asset)
+        YamlObject FromExternalImageAsset(ExternalImageAsset asset, YamlMap superclassContent)
         {
-            return new YamlMap
-            {
-                { "Id", asset.Id },
-                { "Width", asset.Width },
-                { "Height", asset.Height },
-                { "Path", asset.Path },
-                { "Filename", asset.FileName },
-            };
+            var result = superclassContent;
+            result.Add(nameof(asset.Path), asset.Path);
+            result.Add(nameof(asset.FileName), asset.FileName);
+            return result;
         }
 
         YamlSequence FromLayerCollection(LayerCollection layers) =>
@@ -208,17 +205,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         YamlObject FromLayer(Layer layer, YamlMap superclassContent)
         {
-            superclassContent.Add("Type", Scalar(layer.Type));
-            superclassContent.Add("Parent", layer.Parent);
-            superclassContent.Add("Index", layer.Index);
-            superclassContent.Add("IsHidden", layer.IsHidden);
-            superclassContent.Add("StartTime", layer.StartTime);
-            superclassContent.Add("InPoint", layer.InPoint);
-            superclassContent.Add("OutPoint", layer.OutPoint);
-            superclassContent.Add("TimeStretch", layer.TimeStretch);
-            superclassContent.Add("Transform", FromShapeLayerContent(layer.Transform));
-            superclassContent.Add("Masks", FromSpan(layer.Masks, FromMask));
-            superclassContent.Add("MatteType", Scalar(layer.LayerMatteType));
+            superclassContent.Add(nameof(layer.Type), Scalar(layer.Type));
+            superclassContent.Add(nameof(layer.Parent), layer.Parent);
+            superclassContent.Add(nameof(layer.Index), layer.Index);
+            superclassContent.Add(nameof(layer.IsHidden), layer.IsHidden);
+            superclassContent.Add(nameof(layer.StartTime), layer.StartTime);
+            superclassContent.Add(nameof(layer.InPoint), layer.InPoint);
+            superclassContent.Add(nameof(layer.OutPoint), layer.OutPoint);
+            superclassContent.Add(nameof(layer.TimeStretch), layer.TimeStretch);
+            superclassContent.Add(nameof(layer.Transform), FromShapeLayerContent(layer.Transform));
+            superclassContent.Add(nameof(layer.Masks), FromSpan(layer.Masks, FromMask));
+            superclassContent.Add(nameof(layer.LayerMatteType), Scalar(layer.LayerMatteType));
 
             switch (layer.Type)
             {
@@ -242,25 +239,25 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         YamlObject FromPreCompLayer(PreCompLayer layer, YamlMap superclassContent)
         {
             var result = superclassContent;
-            result.Add("Width", layer.Width);
-            result.Add("Height", layer.Height);
-            result.Add("RefId", layer.RefId);
+            result.Add(nameof(layer.Width), layer.Width);
+            result.Add(nameof(layer.Height), layer.Height);
+            result.Add(nameof(layer.RefId), layer.RefId);
             return result;
         }
 
         YamlObject FromSolidLayer(SolidLayer layer, YamlMap superclassContent)
         {
             var result = superclassContent;
-            result.Add("Width", layer.Width);
-            result.Add("Height", layer.Height);
-            result.Add("Color", Scalar(layer.Color));
+            result.Add(nameof(layer.Width), layer.Width);
+            result.Add(nameof(layer.Height), layer.Height);
+            result.Add(nameof(layer.Color), Scalar(layer.Color));
             return result;
         }
 
         YamlObject FromImageLayer(ImageLayer layer, YamlMap superclassContent)
         {
             var result = superclassContent;
-            result.Add("RefId", layer.RefId);
+            result.Add(nameof(layer.RefId), layer.RefId);
             return result;
         }
 
@@ -273,7 +270,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         YamlObject FromShapeLayer(ShapeLayer layer, YamlMap superclassContent)
         {
             var result = superclassContent;
-            result.Add("Content", FromSpan(layer.Contents, FromShapeLayerContent));
+            result.Add(nameof(layer.Contents), FromSpan(layer.Contents, FromShapeLayerContent));
             return result;
         }
 
@@ -287,7 +284,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         YamlObject FromShapeLayerContent(ShapeLayerContent content, YamlMap superclassContent)
         {
-            superclassContent.Add("ContentType", Scalar(content.ContentType));
+            superclassContent.Add(nameof(content.ContentType), Scalar(content.ContentType));
 
             switch (content.ContentType)
             {
@@ -329,31 +326,28 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         }
 
         YamlObject FromMask(Mask mask)
-        {
-            var result = new YamlMap
+            => new YamlMap
             {
-                { "Name", mask.Name },
-                { "Inverted", mask.Inverted },
-                { "Mode", Scalar(mask.Mode) },
-                { "OpacityPercent", FromAnimatable(mask.Opacity, FromOpacityPercent) },
-                { "Points", FromAnimatable(mask.Points, p => FromSequence(p, FromBezierSegment)) },
+                { nameof(mask.Name), mask.Name },
+                { nameof(mask.Inverted), mask.Inverted },
+                { nameof(mask.Mode), Scalar(mask.Mode) },
+                { nameof(mask.Opacity), FromAnimatable(mask.Opacity) },
+                { nameof(mask.Points), FromAnimatable(mask.Points, p => FromSequence(p, FromBezierSegment)) },
             };
-            return result;
-        }
 
         YamlObject FromShapeGroup(ShapeGroup content, YamlMap superclassContent)
         {
             var result = superclassContent;
-            result.Add("Items", FromSpan(content.Contents, FromShapeLayerContent));
+            result.Add(nameof(content.Contents), FromSpan(content.Contents, FromShapeLayerContent));
             return result;
         }
 
         YamlObject FromSolidColorStroke(SolidColorStroke content, YamlMap superclassContent)
         {
             var result = superclassContent;
-            result.Add("Color", FromAnimatable(content.Color, FromColor));
-            result.Add("OpacityPercent", FromAnimatable(content.Opacity, FromOpacityPercent));
-            result.Add("Thickness", FromAnimatable(content.StrokeWidth));
+            result.Add(nameof(content.Color), FromAnimatable(content.Color));
+            result.Add(nameof(content.Opacity), FromAnimatable(content.Opacity));
+            result.Add(nameof(content.StrokeWidth), FromAnimatable(content.StrokeWidth));
             return result;
         }
 
@@ -372,35 +366,35 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         YamlObject FromSolidColorFill(SolidColorFill content, YamlMap superclassContent)
         {
             var result = superclassContent;
-            result.Add("Color", FromAnimatable(content.Color, FromColor));
-            result.Add("OpacityPercent", FromAnimatable(content.Opacity, FromOpacityPercent));
+            result.Add(nameof(content.Color), FromAnimatable(content.Color));
+            result.Add(nameof(content.Opacity), FromAnimatable(content.Opacity));
             return result;
         }
 
         YamlObject FromLinearGradientFill(LinearGradientFill content, YamlMap superclassContent)
         {
             var result = superclassContent;
-            result.Add("OpacityPercent", FromAnimatable(content.Opacity, FromOpacityPercent));
-            result.Add("GradientStops", FromAnimatable(content.GradientStops, p => FromSequence(p, FromGradientStop)));
+            result.Add(nameof(content.Opacity), FromAnimatable(content.Opacity));
+            result.Add(nameof(content.GradientStops), FromAnimatable(content.GradientStops, p => FromSequence(p, FromGradientStop)));
             return result;
         }
 
         YamlObject FromRadialGradientFill(RadialGradientFill content, YamlMap superclassContent)
         {
             var result = superclassContent;
-            result.Add("OpacityPercent", FromAnimatable(content.Opacity, FromOpacityPercent));
-            result.Add("GradientStops", FromAnimatable(content.GradientStops, p => FromSequence(p, FromGradientStop)));
+            result.Add(nameof(content.Opacity), FromAnimatable(content.Opacity));
+            result.Add(nameof(content.GradientStops), FromAnimatable(content.GradientStops, p => FromSequence(p, FromGradientStop)));
             return result;
         }
 
         YamlObject FromTransform(Transform content, YamlMap superclassContent)
         {
             var result = superclassContent;
-            result.Add("ScalePercent", FromAnimatable(content.ScalePercent));
-            result.Add("Position", FromAnimatable(content.Position));
-            result.Add("Anchor", FromAnimatable(content.Anchor));
-            result.Add("OpacityPercent", FromAnimatable(content.Opacity, FromOpacityPercent));
-            result.Add("RotationDegrees", FromAnimatable(content.Rotation, FromRotation));
+            result.Add(nameof(content.ScalePercent), FromAnimatable(content.ScalePercent));
+            result.Add(nameof(content.Position), FromAnimatable(content.Position));
+            result.Add(nameof(content.Anchor), FromAnimatable(content.Anchor));
+            result.Add(nameof(content.Opacity), FromAnimatable(content.Opacity));
+            result.Add(nameof(content.Rotation), FromAnimatable(content.Rotation));
             return result;
         }
 
@@ -415,9 +409,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                         var xyz = (AnimatableXYZ)animatable;
                         var result = new YamlMap
                         {
-                            { "X", FromAnimatable(xyz.X) },
-                            { "Y", FromAnimatable(xyz.Y) },
-                            { "Z", FromAnimatable(xyz.Z) },
+                            { nameof(xyz.X), FromAnimatable(xyz.X) },
+                            { nameof(xyz.Y), FromAnimatable(xyz.Y) },
+                            { nameof(xyz.Z), FromAnimatable(xyz.Z) },
                         };
                         return result;
                     }
@@ -429,27 +423,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         YamlObject FromAnimatable<T>(Animatable<T> animatable, Func<T, YamlObject> valueSelector)
             where T : IEquatable<T>
-        {
-            if (!animatable.IsAnimated)
-            {
-                return valueSelector(animatable.InitialValue);
-            }
-            else
-            {
-                return FromSpan<KeyFrame<T>>(animatable.KeyFrames, kf => FromKeyFrame(kf, valueSelector));
-            }
-        }
+            => animatable.IsAnimated
+                ? FromSpan<KeyFrame<T>>(animatable.KeyFrames, kf => FromKeyFrame(kf, valueSelector))
+                : valueSelector(animatable.InitialValue);
 
-        YamlObject FromAnimatable(Animatable<double> animatable)
-            => FromAnimatable(animatable, FromDouble);
+        YamlObject FromAnimatable(Animatable<Color> animatable) => FromAnimatable(animatable, Scalar);
 
-        static YamlObject FromDouble(double value) => (YamlScalar)value;
+        YamlObject FromAnimatable(Animatable<double> animatable) => FromAnimatable(animatable, Scalar);
 
-        static YamlObject FromColor(Color value) => (YamlScalar)value?.ToString();
+        YamlObject FromAnimatable(Animatable<Opacity> animatable) => FromAnimatable(animatable, Scalar);
 
-        static YamlObject FromOpacityPercent(Opacity value) => (YamlScalar)value.Percent;
-
-        static YamlObject FromRotation(Rotation value) => (YamlScalar)value.Degrees;
+        YamlObject FromAnimatable(Animatable<Rotation> animatable) => FromAnimatable(animatable, Scalar);
 
         static YamlObject FromTrim(Trim value) => (YamlScalar)value.Percent;
 
@@ -457,9 +441,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         {
             var result = new YamlMap
             {
-                { "X", value.X },
-                { "Y", value.Y },
-                { "Z", value.Z },
+                { nameof(value.X), value.X },
+                { nameof(value.Y), value.Y },
+                { nameof(value.Z), value.Z },
             };
             return result;
         }
@@ -468,8 +452,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         {
             var result = new YamlMap
             {
-                { "X", value.X },
-                { "Y", value.Y },
+                { nameof(value.X), value.X },
+                { nameof(value.Y), value.Y },
             };
             return result;
         }
@@ -478,15 +462,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         {
             var result = new YamlMap
             {
-                { "ControlPoint0", FromVector2(value.ControlPoint0) },
-                { "ControlPoint1", FromVector2(value.ControlPoint1) },
-                { "ControlPoint2", FromVector2(value.ControlPoint2) },
-                { "ControlPoint3", FromVector2(value.ControlPoint3) },
+                { nameof(value.ControlPoint0), FromVector2(value.ControlPoint0) },
+                { nameof(value.ControlPoint1), FromVector2(value.ControlPoint1) },
+                { nameof(value.ControlPoint2), FromVector2(value.ControlPoint2) },
+                { nameof(value.ControlPoint3), FromVector2(value.ControlPoint3) },
             };
             return result;
         }
 
-        static YamlObject FromGradientStop(GradientStop value)
+        YamlObject FromGradientStop(GradientStop value)
         {
             switch (value.Kind)
             {
@@ -499,22 +483,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             }
         }
 
-        static YamlObject FromColorGradientStop(ColorGradientStop value)
+        YamlObject FromColorGradientStop(ColorGradientStop value)
         {
             var result = new YamlMap
             {
-                { "Color", FromColor(value.Color) },
-                { "Offset", value.Offset},
+                { nameof(value.Color), Scalar(value.Color) },
+                { nameof(value.Offset), Scalar(value.Offset) },
             };
             return result;
         }
 
-        static YamlObject FromOpacityGradientStop(OpacityGradientStop value)
+        YamlObject FromOpacityGradientStop(OpacityGradientStop value)
         {
             var result = new YamlMap
             {
-                { "OpacityPercent", value.Opacity.Percent },
-                { "Offset", value.Offset },
+                { nameof(value.Opacity), Scalar(value.Opacity) },
+                { nameof(value.Offset), Scalar(value.Offset) },
             };
             return result;
         }
@@ -524,21 +508,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         {
             var result = new YamlMap
             {
-                { "Frame", keyFrame.Frame },
-                { "Value", valueSelector(keyFrame.Value) },
-                { "Easing", Scalar(keyFrame.Easing.Type) },
+                { nameof(keyFrame.Frame), keyFrame.Frame },
+                { nameof(keyFrame.Value), valueSelector(keyFrame.Value) },
+                { nameof(keyFrame.Easing), Scalar(keyFrame.Easing.Type) },
             };
 
-            if (keyFrame is KeyFrame<Vector3>)
+            if (keyFrame is KeyFrame<Vector3> v3kf)
             {
-                var v3kf = (KeyFrame<Vector3>)(object)keyFrame;
                 var cp1 = v3kf.SpatialControlPoint1;
                 var cp2 = v3kf.SpatialControlPoint2;
                 if (cp1 != Vector3.Zero || cp2 != Vector3.Zero)
                 {
                     // Spatial bezier
-                    result.Add("ControlPoint1", FromVector3(cp1));
-                    result.Add("ControlPoint2", FromVector3(cp2));
+                    result.Add(nameof(v3kf.SpatialControlPoint1), FromVector3(cp1));
+                    result.Add(nameof(v3kf.SpatialControlPoint2), FromVector3(cp2));
                 }
             }
 
@@ -548,25 +531,25 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         YamlObject FromPath(Path content, YamlMap superclassContent)
         {
             var result = superclassContent;
-            result.Add("Direction", content.Direction);
-            result.Add("Data", FromAnimatable(content.Data, p => FromSequence(p, FromBezierSegment)));
+            result.Add(nameof(content.Direction), content.Direction);
+            result.Add(nameof(content.Data), FromAnimatable(content.Data, p => FromSequence(p, FromBezierSegment)));
             return result;
         }
 
         YamlMap FromEllipse(Ellipse content, YamlMap superclassContent)
         {
             var result = superclassContent;
-            result.Add("Diameter", FromAnimatable(content.Diameter));
-            result.Add("Position", FromAnimatable(content.Position));
+            result.Add(nameof(content.Diameter), FromAnimatable(content.Diameter));
+            result.Add(nameof(content.Position), FromAnimatable(content.Position));
             return result;
         }
 
         YamlObject FromRectangle(Rectangle content, YamlMap superclassContent)
         {
             var result = superclassContent;
-            result.Add("Size", FromAnimatable(content.Size));
-            result.Add("Position", FromAnimatable(content.Position));
-            result.Add("CornerRadius", FromAnimatable(content.CornerRadius));
+            result.Add(nameof(content.Size), FromAnimatable(content.Size));
+            result.Add(nameof(content.Position), FromAnimatable(content.Position));
+            result.Add(nameof(content.CornerRadius), FromAnimatable(content.CornerRadius));
             return result;
         }
 
@@ -579,9 +562,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         YamlObject FromTrimPath(TrimPath content, YamlMap superclassContent)
         {
             var result = superclassContent;
-            result.Add("StartPercent", FromAnimatable(content.StartTrim, FromTrim));
-            result.Add("EndPercent", FromAnimatable(content.EndTrim, FromTrim));
-            result.Add("Offset", FromAnimatable(content.Offset, FromRotation));
+            result.Add(nameof(content.StartPercent), FromAnimatable(content.StartPercent));
+            result.Add(nameof(content.EndPercent), FromAnimatable(content.EndPercent));
+            result.Add(nameof(content.Offset), FromAnimatable(content.Offset));
             return result;
         }
 
@@ -604,7 +587,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         YamlObject FromRoundedCorner(RoundedCorner content, YamlMap superclassContent)
         {
             var result = superclassContent;
-            result.Add("Radius", FromAnimatable(content.Radius));
+            result.Add(nameof(content.Radius), FromAnimatable(content.Radius));
             return result;
         }
 
@@ -614,13 +597,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             return result;
         }
 
-        YamlScalar Scalar(Color value) => Scalar(value, $"'{value.ToString()}'");
+        YamlScalar Scalar(Color value) => Scalar(value, $"'{value}'");
+
+        YamlScalar Scalar(double value) => value;
 
         YamlScalar Scalar(Easing.EasingType type) => Scalar(type, type.ToString());
 
         YamlScalar Scalar(Layer.LayerType type) => Scalar(type, type.ToString());
 
         YamlScalar Scalar(Mask.MaskMode type) => Scalar(type, type.ToString());
+
+        YamlScalar Scalar(Opacity value) => Scalar(value, $"{value.Percent}%");
+
+        YamlScalar Scalar(Rotation value) => Scalar(value, $"{value.Degrees}°");
 
         YamlScalar Scalar(ShapeContentType type) => Scalar(type, type.ToString());
 
