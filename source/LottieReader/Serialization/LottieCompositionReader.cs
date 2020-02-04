@@ -33,12 +33,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 #endif
     sealed class LottieCompositionReader
     {
-        static readonly AnimatableFloatParser s_animatableFloatParser = new AnimatableFloatParser();
-        static readonly AnimatableOpacityParser s_animatableOpacityParser = new AnimatableOpacityParser();
-        static readonly AnimatableRotationParser s_animatableRotationParser = new AnimatableRotationParser();
-        static readonly AnimatableVector2Parser s_animatableVector2Parser = new AnimatableVector2Parser();
-        static readonly AnimatableVector3Parser s_animatableVector3Parser = new AnimatableVector3Parser();
-        static readonly AnimatableGeometryParser s_animatableGeometryParser = new AnimatableGeometryParser();
+        static readonly AnimatableParser<double> s_animatableFloatParser = CreateAnimatableParser(ReadFloat);
+        static readonly AnimatableParser<Opacity> s_animatableOpacityParser = CreateAnimatableParser(ReadOpacity);
+        static readonly AnimatableParser<PathGeometry> s_animatableGeometryParser = CreateAnimatableParser(ReadGeometry);
+        static readonly AnimatableParser<Rotation> s_animatableRotationParser = CreateAnimatableParser(ReadRotation);
+        static readonly AnimatableParser<Trim> s_animatableTrimParser = CreateAnimatableParser(ReadTrim);
+        static readonly AnimatableParser<Vector3> s_animatableVector3Parser = CreateAnimatableParser(ReadVector3);
         static readonly Animatable<double> s_animatable_0 = new Animatable<double>(0, null);
         static readonly JsonLoadSettings s_jsonLoadSettings = new JsonLoadSettings
         {
@@ -1336,16 +1336,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             IgnoreFieldThatIsNotYetSupported(obj, "ix");
             IgnoreFieldThatIsNotYetSupported(obj, "hd");
 
-            var startPercent = ReadAnimatableFloat(obj.GetNamedObject("s"));
-            var endPercent = ReadAnimatableFloat(obj.GetNamedObject("e"));
+            var startTrim = ReadAnimatableTrim(obj.GetNamedObject("s"));
+            var endTrim = ReadAnimatableTrim(obj.GetNamedObject("e"));
             var offset = ReadAnimatableRotation(obj.GetNamedObject("o"));
             var trimType = MToTrimType(obj.GetNamedNumber("m", 1));
             AssertAllFieldsRead(obj);
             return new TrimPath(
                 in shapeLayerContentArgs,
                 trimType,
-                startPercent,
-                endPercent,
+                startTrim,
+                endTrim,
                 offset);
         }
 
@@ -1398,13 +1398,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 return new Animatable<Color>(Color.Black, null);
             }
 
-            _animatableColorParser.ParseJson(this, obj, out IEnumerable<KeyFrame<Color>> keyFrames, out Color initialValue);
-
-            var propertyIndex = ReadInt(obj, "ix");
-
-            return keyFrames.Any()
-                ? new Animatable<Color>(keyFrames, propertyIndex)
-                : new Animatable<Color>(initialValue, propertyIndex);
+            _animatableColorParser.ParseJson(this, obj, out var keyFrames, out var initialValue);
+            return CreateAnimatable(initialValue, keyFrames, ReadInt(obj, "ix"));
         }
 
         // Reads the transform for a repeater. Repeater transforms are the same as regular transforms
@@ -1506,27 +1501,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             return intValue;
         }
 
-        Animatable<Vector2> ReadAnimatableVector2(JObject obj)
-        {
-            IgnoreFieldThatIsNotYetSupported(obj, "s");
-
-            // Expressions not supported.
-            IgnoreFieldThatIsNotYetSupported(obj, "x");
-
-            var propertyIndex = ReadInt(obj, "ix");
-            if (obj.ContainsKey("k"))
-            {
-                s_animatableVector2Parser.ParseJson(this, obj, out IEnumerable<KeyFrame<Vector2>> keyFrames, out Vector2 initialValue);
-                AssertAllFieldsRead(obj);
-
-                return keyFrames.Any()
-                    ? new Animatable<Vector2>(keyFrames, propertyIndex)
-                    : new Animatable<Vector2>(initialValue, propertyIndex);
-            }
-
-            return new Animatable<Vector2>(Vector2.Zero, propertyIndex);
-        }
-
         IAnimatableVector3 ReadAnimatableVector3(JObject obj)
         {
             IgnoreFieldThatIsNotYetSupported(obj, "s");
@@ -1537,7 +1511,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             var propertyIndex = ReadInt(obj, "ix");
             if (obj.ContainsKey("k"))
             {
-                s_animatableVector3Parser.ParseJson(this, obj, out IEnumerable<KeyFrame<Vector3>> keyFrames, out Vector3 initialValue);
+                s_animatableVector3Parser.ParseJson(this, obj, out var keyFrames, out var initialValue);
                 AssertAllFieldsRead(obj);
 
                 return keyFrames.Any()
@@ -1557,7 +1531,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         Animatable<PathGeometry> ReadAnimatableGeometry(JObject obj)
         {
-            s_animatableGeometryParser.ParseJson(this, obj, out IEnumerable<KeyFrame<PathGeometry>> keyFrames, out PathGeometry initialValue);
+            s_animatableGeometryParser.ParseJson(this, obj, out var keyFrames, out var initialValue);
             var propertyIndex = ReadInt(obj, "ix");
 
             return keyFrames.Any()
@@ -1660,25 +1634,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             }
         }
 
-        Animatable<double> ReadAnimatableFloat(JObject obj)
+        Animatable<T> ReadAnimatable<T>(AnimatableParser<T> parser, JObject obj)
+            where T : IEquatable<T>
         {
-            s_animatableFloatParser.ParseJson(this, obj, out IEnumerable<KeyFrame<double>> keyFrames, out double initialValue);
-            var propertyIndex = ReadInt(obj, "ix");
-
-            return keyFrames.Any()
-                ? new Animatable<double>(keyFrames, propertyIndex)
-                : new Animatable<double>(initialValue, propertyIndex);
+            parser.ParseJson(this, obj, out var keyFrames, out var initialValue);
+            return CreateAnimatable(initialValue, keyFrames, ReadInt(obj, "ix"));
         }
 
-        Animatable<Rotation> ReadAnimatableRotation(JObject obj)
-        {
-            s_animatableRotationParser.ParseJson(this, obj, out IEnumerable<KeyFrame<Rotation>> keyFrames, out Rotation initialValue);
-            var propertyIndex = ReadInt(obj, "ix");
+        Animatable<double> ReadAnimatableFloat(JObject obj) => ReadAnimatable(s_animatableFloatParser, obj);
 
-            return keyFrames.Any()
-                ? new Animatable<Rotation>(keyFrames, propertyIndex)
-                : new Animatable<Rotation>(initialValue, propertyIndex);
-        }
+        Animatable<Opacity> ReadAnimatableOpacity(JObject obj) => ReadAnimatable(s_animatableOpacityParser, obj);
+
+        Animatable<Rotation> ReadAnimatableRotation(JObject obj) => ReadAnimatable(s_animatableRotationParser, obj);
+
+        Animatable<Trim> ReadAnimatableTrim(JObject obj) => ReadAnimatable(s_animatableTrimParser, obj);
 
         Animatable<Opacity> ReadOpacityFromO(JObject obj)
         {
@@ -1694,15 +1663,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             return result;
         }
 
-        Animatable<Opacity> ReadAnimatableOpacity(JObject obj)
-        {
-            s_animatableOpacityParser.ParseJson(this, obj, out IEnumerable<KeyFrame<Opacity>> keyFrames, out Opacity initialValue);
-            var propertyIndex = ReadInt(obj, "ix");
-
-            return keyFrames.Any()
-                ? new Animatable<Opacity>(keyFrames, propertyIndex)
-                : new Animatable<Opacity>(initialValue, propertyIndex);
-        }
+        static Animatable<T> CreateAnimatable<T>(T initialValue, IEnumerable<KeyFrame<T>> keyFrames, int? propertyIndex)
+            where T : IEquatable<T>
+            => keyFrames.Any()
+                ? new Animatable<T>(keyFrames, propertyIndex)
+                : new Animatable<T>(initialValue, propertyIndex);
 
         static Vector3 ReadVector3FromJsonArray(JArray array)
         {
@@ -1756,16 +1721,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
             // Allow any number of values to be specified. Assume 0 for any missing values.
             return new Vector2(x, y);
-        }
-
-        sealed class AnimatableVector2Parser : AnimatableParser<Vector2>
-        {
-            protected override Vector2 ReadValue(JToken obj) => ReadVector2FromJsonArray(obj.AsArray());
-        }
-
-        sealed class AnimatableVector3Parser : AnimatableParser<Vector3>
-        {
-            protected override Vector3 ReadValue(JToken obj) => ReadVector3FromJsonArray(obj.AsArray());
         }
 
         sealed class AnimatableColorParser : AnimatableParser<Color>
@@ -1839,99 +1794,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 }
 
                 return Color.FromArgb(_ignoreAlpha ? 1 : a, r, g, b);
-            }
-        }
-
-        sealed class AnimatableGeometryParser : AnimatableParser<PathGeometry>
-        {
-            protected override PathGeometry ReadValue(JToken value)
-            {
-                JObject pointsData = null;
-                if (value.Type == JTokenType.Array)
-                {
-                    var firstItem = value.AsArray().First();
-                    var firstItemAsObject = firstItem.AsObject();
-                    if (firstItem.Type == JTokenType.Object && firstItemAsObject.ContainsKey("v"))
-                    {
-                        pointsData = firstItemAsObject;
-                    }
-                }
-                else if (value.Type == JTokenType.Object && value.AsObject().ContainsKey("v"))
-                {
-                    pointsData = value.AsObject();
-                }
-
-                if (pointsData is null)
-                {
-                    return null;
-                }
-
-                var vertices = pointsData.GetNamedArray("v", null);
-                var inTangents = pointsData.GetNamedArray("i", null);
-                var outTangents = pointsData.GetNamedArray("o", null);
-                var isClosed = pointsData.GetNamedBoolean("c", false);
-
-                if (vertices is null || inTangents is null || outTangents is null)
-                {
-                    throw new LottieCompositionReaderException($"Unable to process points array or tangents. {pointsData}");
-                }
-
-                var beziers = new BezierSegment[isClosed ? vertices.Count : Math.Max(vertices.Count - 1, 0)];
-
-                if (beziers.Length > 0)
-                {
-                    // The vertices for the figure.
-                    var verticesAsVector2 = ReadVector2Array(vertices);
-
-                    // The control points that define the cubic beziers between the vertices.
-                    var inTangentsAsVector2 = ReadVector2Array(inTangents);
-                    var outTangentsAsVector2 = ReadVector2Array(outTangents);
-
-                    if (verticesAsVector2.Length != inTangentsAsVector2.Length ||
-                        verticesAsVector2.Length != outTangentsAsVector2.Length)
-                    {
-                        throw new LottieCompositionReaderException($"Invalid path data. {pointsData}");
-                    }
-
-                    var cp3 = verticesAsVector2[0];
-
-                    for (var i = 0; i < beziers.Length; i++)
-                    {
-                        // cp0 is the start point of the segment.
-                        var cp0 = cp3;
-
-                        // cp1 is relative to cp0
-                        var cp1 = cp0 + outTangentsAsVector2[i];
-
-                        // cp3 is the endpoint of the segment.
-                        cp3 = verticesAsVector2[(i + 1) % verticesAsVector2.Length];
-
-                        // cp2 is relative to cp3
-                        var cp2 = cp3 + inTangentsAsVector2[(i + 1) % inTangentsAsVector2.Length];
-
-                        beziers[i] = new BezierSegment(
-                            cp0: cp0,
-                            cp1: cp1,
-                            cp2: cp2,
-                            cp3: cp3);
-                    }
-                }
-
-                return new PathGeometry(beziers);
-            }
-
-            static Vector2[] ReadVector2Array(JArray array)
-            {
-                IEnumerable<Vector2> ToVector2Enumerable()
-                {
-                    var count = array.Count;
-                    for (int i = 0; i < count; i++)
-                    {
-                        yield return ReadVector2FromJsonArray(array[i].AsArray());
-                    }
-                }
-
-                return ToVector2Enumerable().ToArray();
             }
         }
 
@@ -2045,19 +1907,23 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             }
         }
 
-        sealed class AnimatableFloatParser : AnimatableParser<double>
-        {
-            protected override double ReadValue(JToken obj) => ReadFloat(obj);
-        }
+        static SimpleAnimatableParser<T> CreateAnimatableParser<T>(Func<JToken, T> valueReader)
+            where T : IEquatable<T>
+             => new SimpleAnimatableParser<T>(valueReader);
 
-        sealed class AnimatableOpacityParser : AnimatableParser<Opacity>
+        // An AnimatableParser that does not need to hold any state, and for which the ReadValue
+        // method can be easily expressed as a lambda.
+        sealed class SimpleAnimatableParser<T> : AnimatableParser<T>
+            where T : IEquatable<T>
         {
-            protected override Opacity ReadValue(JToken obj) => Opacity.FromFloat(ReadFloat(obj) / 100.0);
-        }
+            readonly Func<JToken, T> _valueReader;
 
-        sealed class AnimatableRotationParser : AnimatableParser<Rotation>
-        {
-            protected override Rotation ReadValue(JToken obj) => Rotation.FromDegrees(ReadFloat(obj));
+            internal SimpleAnimatableParser(Func<JToken, T> valueReader)
+            {
+                _valueReader = valueReader;
+            }
+
+            protected override T ReadValue(JToken obj) => _valueReader(obj);
         }
 
         abstract class AnimatableParser<T>
@@ -2299,6 +2165,106 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     throw UnexpectedTokenException(jsonValue.Type);
             }
         }
+
+        static PathGeometry ReadGeometry(JToken value)
+        {
+            JObject pointsData = null;
+            if (value.Type == JTokenType.Array)
+            {
+                var firstItem = value.AsArray().First();
+                var firstItemAsObject = firstItem.AsObject();
+                if (firstItem.Type == JTokenType.Object && firstItemAsObject.ContainsKey("v"))
+                {
+                    pointsData = firstItemAsObject;
+                }
+            }
+            else if (value.Type == JTokenType.Object && value.AsObject().ContainsKey("v"))
+            {
+                pointsData = value.AsObject();
+            }
+
+            if (pointsData is null)
+            {
+                return null;
+            }
+
+            var vertices = pointsData.GetNamedArray("v", null);
+            var inTangents = pointsData.GetNamedArray("i", null);
+            var outTangents = pointsData.GetNamedArray("o", null);
+            var isClosed = pointsData.GetNamedBoolean("c", false);
+
+            if (vertices is null || inTangents is null || outTangents is null)
+            {
+                throw new LottieCompositionReaderException($"Unable to process points array or tangents. {pointsData}");
+            }
+
+            var beziers = new BezierSegment[isClosed ? vertices.Count : Math.Max(vertices.Count - 1, 0)];
+
+            if (beziers.Length > 0)
+            {
+                // The vertices for the figure.
+                var verticesAsVector2 = ReadVector2Array(vertices);
+
+                // The control points that define the cubic beziers between the vertices.
+                var inTangentsAsVector2 = ReadVector2Array(inTangents);
+                var outTangentsAsVector2 = ReadVector2Array(outTangents);
+
+                if (verticesAsVector2.Length != inTangentsAsVector2.Length ||
+                    verticesAsVector2.Length != outTangentsAsVector2.Length)
+                {
+                    throw new LottieCompositionReaderException($"Invalid path data. {pointsData}");
+                }
+
+                var cp3 = verticesAsVector2[0];
+
+                for (var i = 0; i < beziers.Length; i++)
+                {
+                    // cp0 is the start point of the segment.
+                    var cp0 = cp3;
+
+                    // cp1 is relative to cp0
+                    var cp1 = cp0 + outTangentsAsVector2[i];
+
+                    // cp3 is the endpoint of the segment.
+                    cp3 = verticesAsVector2[(i + 1) % verticesAsVector2.Length];
+
+                    // cp2 is relative to cp3
+                    var cp2 = cp3 + inTangentsAsVector2[(i + 1) % inTangentsAsVector2.Length];
+
+                    beziers[i] = new BezierSegment(
+                        cp0: cp0,
+                        cp1: cp1,
+                        cp2: cp2,
+                        cp3: cp3);
+                }
+            }
+
+            return new PathGeometry(beziers);
+        }
+
+        static Vector2[] ReadVector2Array(JArray array)
+        {
+            IEnumerable<Vector2> ToVector2Enumerable()
+            {
+                var count = array.Count;
+                for (int i = 0; i < count; i++)
+                {
+                    yield return ReadVector2FromJsonArray(array[i].AsArray());
+                }
+            }
+
+            return ToVector2Enumerable().ToArray();
+        }
+
+        static Opacity ReadOpacity(JToken jsonValue) => Opacity.FromPercent(ReadFloat(jsonValue));
+
+        static Rotation ReadRotation(JToken jsonValue) => Rotation.FromDegrees(ReadFloat(jsonValue));
+
+        static Trim ReadTrim(JToken jsonValue) => Trim.FromPercent(ReadFloat(jsonValue));
+
+        static Vector2 ReadVector2(JToken jsonValue) => ReadVector2FromJsonArray(jsonValue.AsArray());
+
+        static Vector3 ReadVector3(JToken jsonValue) => ReadVector3FromJsonArray(jsonValue.AsArray());
 
         BlendMode BmToBlendMode(double bm)
         {

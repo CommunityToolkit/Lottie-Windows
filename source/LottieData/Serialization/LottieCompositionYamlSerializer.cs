@@ -435,6 +435,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         YamlObject FromAnimatable(Animatable<Rotation> animatable) => FromAnimatable(animatable, Scalar);
 
+        YamlObject FromAnimatable(Animatable<Trim> animatable) => FromAnimatable(animatable, Scalar);
+
         static YamlObject FromVector3(Vector3 value)
         {
             var result = new YamlMap
@@ -560,8 +562,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         YamlObject FromTrimPath(TrimPath content, YamlMap superclassContent)
         {
             var result = superclassContent;
-            result.Add(nameof(content.StartPercent), FromAnimatable(content.StartPercent));
-            result.Add(nameof(content.EndPercent), FromAnimatable(content.EndPercent));
+            result.Add(nameof(content.StartTrim), FromAnimatable(content.StartTrim));
+            result.Add(nameof(content.EndTrim), FromAnimatable(content.EndTrim));
             result.Add(nameof(content.Offset), FromAnimatable(content.Offset));
             return result;
         }
@@ -607,7 +609,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         YamlScalar Scalar(Opacity value) => Scalar(value, $"{value.Percent}%");
 
-        YamlScalar Scalar(Rotation value) => Scalar(value, $"{value.Degrees}°");
+        YamlScalar Scalar(Rotation value) => Scalar(value, $"{value.Degrees}Â°");
+
+        YamlScalar Scalar(Trim value) => Scalar(value, $"{value.Percent}%");
 
         YamlScalar Scalar(ShapeContentType type) => Scalar(type, type.ToString());
 

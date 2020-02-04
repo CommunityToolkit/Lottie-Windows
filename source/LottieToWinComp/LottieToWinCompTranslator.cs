@@ -1442,28 +1442,28 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     return a;
                 }
 
-                if (!a.StartPercent.IsAnimated && !a.StartPercent.IsAnimated && !a.Offset.IsAnimated)
+                if (!a.StartTrim.IsAnimated && !a.StartTrim.IsAnimated && !a.Offset.IsAnimated)
                 {
                     // a is not animated.
-                    if (!b.StartPercent.IsAnimated && !b.StartPercent.IsAnimated && !b.Offset.IsAnimated)
+                    if (!b.StartTrim.IsAnimated && !b.StartTrim.IsAnimated && !b.Offset.IsAnimated)
                     {
                         // Both are not animated.
-                        if (a.StartPercent.InitialValue == b.EndPercent.InitialValue)
+                        if (a.StartTrim.InitialValue == b.EndTrim.InitialValue)
                         {
                             // a trims out everything. b is unnecessary.
                             return a;
                         }
-                        else if (b.StartPercent.InitialValue == b.EndPercent.InitialValue)
+                        else if (b.StartTrim.InitialValue == b.EndTrim.InitialValue)
                         {
                             // b trims out everything. a is unnecessary.
                             return b;
                         }
-                        else if (a.StartPercent.InitialValue == 0 && a.EndPercent.InitialValue == 100 && a.Offset.InitialValue.Degrees == 0)
+                        else if (a.StartTrim.InitialValue.Value == 0 && a.EndTrim.InitialValue.Value == 1 && a.Offset.InitialValue.Degrees == 0)
                         {
                             // a is trimming nothing. a is unnecessary.
                             return b;
                         }
-                        else if (b.StartPercent.InitialValue == 0 && b.EndPercent.InitialValue == 100 && b.Offset.InitialValue.Degrees == 0)
+                        else if (b.StartTrim.InitialValue.Value == 0 && b.EndTrim.InitialValue.Value == 1 && b.Offset.InitialValue.Degrees == 0)
                         {
                             // b is trimming nothing. b is unnecessary.
                             return a;
@@ -2267,8 +2267,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             // TODO - this only works correctly if Size and TrimOffset are not animated. A complete solution requires
             //        adding another property.
             var isPartialTrimPath = shapeContext.TrimPath != null &&
-                (shapeContext.TrimPath.StartPercent.IsAnimated || shapeContext.TrimPath.EndPercent.IsAnimated || shapeContext.TrimPath.Offset.IsAnimated ||
-                shapeContext.TrimPath.StartPercent.InitialValue != 0 || shapeContext.TrimPath.EndPercent.InitialValue != 100);
+                (shapeContext.TrimPath.StartTrim.IsAnimated || shapeContext.TrimPath.EndTrim.IsAnimated || shapeContext.TrimPath.Offset.IsAnimated ||
+                shapeContext.TrimPath.StartTrim.InitialValue.Value != 0 || shapeContext.TrimPath.EndTrim.InitialValue.Value != 1);
 
             if (size.IsAnimated && isPartialTrimPath)
             {
@@ -2405,10 +2405,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
         }
 
-        static AnimatableOrder GetAnimatableOrder(in TrimmedAnimatable<double> a, in TrimmedAnimatable<double> b)
+        static AnimatableOrder GetAnimatableOrder(in TrimmedAnimatable<Trim> a, in TrimmedAnimatable<Trim> b)
         {
-            var initialA = a.InitialValue;
-            var initialB = b.InitialValue;
+            var initialA = a.InitialValue.Value;
+            var initialB = b.InitialValue.Value;
 
             var initialOrder = GetValueOrder(initialA, initialB);
             if (!a.IsAnimated && !b.IsAnimated)
@@ -2421,16 +2421,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var aMax = initialA;
             if (a.IsAnimated)
             {
-                aMin = Math.Min(a.KeyFrames.Min(kf => kf.Value), initialA);
-                aMax = Math.Max(a.KeyFrames.Max(kf => kf.Value), initialA);
+                aMin = Math.Min(a.KeyFrames.Min(kf => kf.Value.Value), initialA);
+                aMax = Math.Max(a.KeyFrames.Max(kf => kf.Value.Value), initialA);
             }
 
             var bMin = initialB;
             var bMax = initialB;
             if (b.IsAnimated)
             {
-                bMin = Math.Min(b.KeyFrames.Min(kf => kf.Value), initialB);
-                bMax = Math.Max(b.KeyFrames.Max(kf => kf.Value), initialB);
+                bMin = Math.Min(b.KeyFrames.Min(kf => kf.Value.Value), initialB);
+                bMax = Math.Max(b.KeyFrames.Max(kf => kf.Value.Value), initialB);
             }
 
             switch (initialOrder)
@@ -2470,25 +2470,25 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 return;
             }
 
-            var startPercent = context.TrimAnimatable(trimPath.StartPercent);
-            var endPercent = context.TrimAnimatable(trimPath.EndPercent);
+            var startTrim = context.TrimAnimatable(trimPath.StartTrim);
+            var endTrim = context.TrimAnimatable(trimPath.EndTrim);
             var trimPathOffset = context.TrimAnimatable(trimPath.Offset);
 
-            if (!startPercent.IsAnimated && !endPercent.IsAnimated)
+            if (!startTrim.IsAnimated && !endTrim.IsAnimated)
             {
-                // Handle some well-known static cases
-                if (startPercent.InitialValue == 0 && endPercent.InitialValue == 1)
+                // Handle some well-known static cases.
+                if (startTrim.InitialValue.Value == 0 && endTrim.InitialValue.Value == 1)
                 {
                     // The trim does nothing.
                     return;
                 }
-                else if (startPercent.InitialValue == endPercent.InitialValue)
+                else if (startTrim.InitialValue == endTrim.InitialValue)
                 {
                     // TODO - the trim trims away all of the path.
                 }
             }
 
-            var order = GetAnimatableOrder(in startPercent, in endPercent);
+            var order = GetAnimatableOrder(in startTrim, in endTrim);
 
             switch (order)
             {
@@ -2498,9 +2498,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 case AnimatableOrder.After:
                     {
                         // Swap is necessary to match the WinComp semantics.
-                        var temp = startPercent;
-                        startPercent = endPercent;
-                        endPercent = temp;
+                        var temp = startTrim;
+                        startTrim = endTrim;
+                        endTrim = temp;
                     }
 
                     break;
@@ -2514,20 +2514,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             {
                 // Add properties that will be animated. The TrimStart and TrimEnd properties
                 // will be set by these values through an expression.
-                geometry.Properties.InsertScalar("TStart", PercentF(startPercent.InitialValue));
-                if (startPercent.IsAnimated)
+                geometry.Properties.InsertScalar("TStart", Float(startTrim.InitialValue));
+                if (startTrim.IsAnimated)
                 {
-                    ApplyPercentKeyFrameAnimation(context, startPercent, geometry.Properties, "TStart", "TStart", null);
+                    ApplyTrimKeyFrameAnimation(context, startTrim, geometry.Properties, "TStart", "TStart", null);
                 }
 
                 var trimStartExpression = _c.CreateExpressionAnimation(ExpressionFactory.MinTStartTEnd);
                 trimStartExpression.SetReferenceParameter("my", geometry);
                 StartExpressionAnimation(geometry, nameof(geometry.TrimStart), trimStartExpression);
 
-                geometry.Properties.InsertScalar("TEnd", PercentF(endPercent.InitialValue));
-                if (endPercent.IsAnimated)
+                geometry.Properties.InsertScalar("TEnd", Float(endTrim.InitialValue));
+                if (endTrim.IsAnimated)
                 {
-                    ApplyPercentKeyFrameAnimation(context, endPercent, geometry.Properties, "TEnd", "TEnd", null);
+                    ApplyTrimKeyFrameAnimation(context, endTrim, geometry.Properties, "TEnd", "TEnd", null);
                 }
 
                 var trimEndExpression = _c.CreateExpressionAnimation(ExpressionFactory.MaxTStartTEnd);
@@ -2537,22 +2537,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             else
             {
                 // Directly animate the TrimStart and TrimEnd properties.
-                if (startPercent.IsAnimated)
+                if (startTrim.IsAnimated)
                 {
-                    ApplyPercentKeyFrameAnimation(context, startPercent, geometry, nameof(geometry.TrimStart), "TrimStart", null);
+                    ApplyTrimKeyFrameAnimation(context, startTrim, geometry, nameof(geometry.TrimStart), "TrimStart", null);
                 }
                 else
                 {
-                    geometry.TrimStart = PercentF(startPercent.InitialValue);
+                    geometry.TrimStart = Float(startTrim.InitialValue);
                 }
 
-                if (endPercent.IsAnimated)
+                if (endTrim.IsAnimated)
                 {
-                    ApplyPercentKeyFrameAnimation(context, endPercent, geometry, nameof(geometry.TrimEnd), "TrimEnd", null);
+                    ApplyTrimKeyFrameAnimation(context, endTrim, geometry, nameof(geometry.TrimEnd), "TrimEnd", null);
                 }
                 else
                 {
-                    geometry.TrimEnd = PercentF(endPercent.InitialValue);
+                    geometry.TrimEnd = Float(endTrim.InitialValue);
                 }
             }
 
@@ -3705,6 +3705,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             string shortDescription = null)
             => ApplyScaledOpacityKeyFrameAnimation(context, value, 1, targetObject, targetPropertyName, longDescription, shortDescription);
 
+        void ApplyTrimKeyFrameAnimation(
+            TranslationContext context,
+            in TrimmedAnimatable<Trim> value,
+            CompositionObject targetObject,
+            string targetPropertyName,
+            string longDescription = null,
+            string shortDescription = null)
+            => ApplyScaledTrimKeyFrameAnimation(context, value, 1, targetObject, targetPropertyName, longDescription, shortDescription);
+
         void ApplyScaledRotationKeyFrameAnimation(
             TranslationContext context,
             in TrimmedAnimatable<Rotation> value,
@@ -3764,6 +3773,28 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 value,
                 _c.CreateScalarKeyFrameAnimation,
                 (ca, progress, val, easing) => ca.InsertKeyFrame(progress, (float)(val * scale), easing),
+                null,
+                targetObject,
+                targetPropertyName,
+                longDescription,
+                shortDescription);
+        }
+
+        void ApplyScaledTrimKeyFrameAnimation(
+            TranslationContext context,
+            in TrimmedAnimatable<Trim> value,
+            double scale,
+            CompositionObject targetObject,
+            string targetPropertyName,
+            string longDescription,
+            string shortDescription)
+        {
+            Debug.Assert(value.IsAnimated, "Precondition");
+            GenericCreateCompositionKeyFrameAnimation(
+                context,
+                value,
+                _c.CreateScalarKeyFrameAnimation,
+                (ca, progress, val, easing) => ca.InsertKeyFrame(progress, (float)(val.Value * scale), easing),
                 null,
                 targetObject,
                 targetPropertyName,
@@ -4403,6 +4434,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             => WinCompData.Wui.Color.FromArgb((byte)(255 * color.A), (byte)(255 * color.R), (byte)(255 * color.G), (byte)(255 * color.B));
 
         static float Float(double value) => (float)value;
+
+        static float Float(Trim value) => (float)value.Value;
 
         static float? FloatDefaultIsZero(double value) => value == 0 ? null : (float?)value;
 
