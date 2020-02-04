@@ -6,9 +6,21 @@
     <SharedGUID>4e7d8957-3f5f-46e1-99a8-2012b806c9b0</SharedGUID>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\Animatables.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\Assets.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\Chars.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\Enums.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\Fonts.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\JCArray.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\JCObject.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\JCObjectExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\JsonToGenericData.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\JTokenExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\Layers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\LottieCompositionReader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\LottieCompositionReaderException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\ParsingIssues.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\Primitives.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\ShapeLayerContents.cs" />
   </ItemGroup>
 </Project>
