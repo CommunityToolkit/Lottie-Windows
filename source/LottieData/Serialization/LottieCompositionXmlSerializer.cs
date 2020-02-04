@@ -642,8 +642,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     yield return item;
                 }
 
-                yield return FromAnimatable(nameof(content.StartPercent), content.StartPercent);
-                yield return FromAnimatable(nameof(content.EndPercent), content.EndPercent);
+                yield return FromAnimatable(nameof(content.StartTrim), content.StartTrim);
+                yield return FromAnimatable(nameof(content.EndTrim), content.EndTrim);
                 yield return FromAnimatable(nameof(content.Offset), content.Offset);
             }
         }
