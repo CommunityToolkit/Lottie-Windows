@@ -327,7 +327,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 }
             }
 
-            var names = _sourceMetadata.ProperytBindings;
+            var names = _sourceMetadata.PropertyBindings;
             if (names.Any())
             {
                 yield return "===========";

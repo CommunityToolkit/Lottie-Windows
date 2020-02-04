@@ -31,7 +31,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         internal Lottie LottieMetadata => _lottieMetadata ?? (_lottieMetadata = new Lottie(this));
 
-        internal IReadOnlyList<(string bindingName, PropertySetValueType actualType, PropertySetValueType exposedType)> ProperytBindings
+        internal IReadOnlyList<(string bindingName, PropertySetValueType actualType, PropertySetValueType exposedType)> PropertyBindings
             => _propertyBindings ?? (_propertyBindings = _sourceMetadata.TryGetValue(s_propertyBindingNamesKey, out var propertyBindingNames)
                 ? (IReadOnlyList<(string bindingName, PropertySetValueType actualType, PropertySetValueType exposedType)>)propertyBindingNames
                 : Array.Empty<(string bindingName, PropertySetValueType actualType, PropertySetValueType exposedType)>());
