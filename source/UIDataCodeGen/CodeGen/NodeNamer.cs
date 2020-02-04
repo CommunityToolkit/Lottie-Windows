@@ -167,7 +167,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 }
                 else
                 {
-                    return NodeName.FromNonTypeName("GradientStop");
+                    return NodeName.FromNonTypeName("AnimatedGradientStop");
                 }
             }
             else
