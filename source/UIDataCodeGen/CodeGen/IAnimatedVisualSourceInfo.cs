@@ -82,6 +82,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// information such as the frame rate and markers from the source. The contents of
         /// this data is source specific.
         /// </summary>
-        IReadOnlyDictionary<Guid, object> SourceMetadata { get; }
+        SourceMetadata SourceMetadata { get; }
     }
 }
