@@ -9,6 +9,9 @@ using LCM = Microsoft.Toolkit.Uwp.UI.Lottie.LottieMetadata.LottieCompositionMeta
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 {
+#if PUBLIC_UIDataCodeGen
+    public
+#endif
     sealed class SourceMetadata
     {
         // Identifies the bound property names in SourceMetadata.
