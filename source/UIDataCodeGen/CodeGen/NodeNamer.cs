@@ -71,7 +71,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 //       is known to not be a type name.
                 if (nodeList.Count == 1 && nodeName.IsNotATypeName)
                 {
-                    // The name is unique, is not a type name, or is in the whitelist, so no need for a suffix.
+                    // The name is unique and is not a type name, so no need for a suffix.
                     yield return (nodeList[0], nodeName.Name);
                 }
                 else
