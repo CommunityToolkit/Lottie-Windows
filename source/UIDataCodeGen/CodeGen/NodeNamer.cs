@@ -316,7 +316,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             internal string Name { get; }
 
-            // True iff the name is also the name of a type.
+            // True iff the name is definitely not the name of a type.
             internal bool IsNotATypeName { get; }
 
             internal static NodeName FromNameAndDescription(string name, string description)
