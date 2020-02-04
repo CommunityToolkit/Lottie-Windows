@@ -31,45 +31,34 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// <returns>A lot of node + name pairs usable in code generation.</returns>
         public static IEnumerable<(TNode, string)> GenerateNodeNames(IEnumerable<TNode> nodes)
         {
-            var nodesByTypeName = new Dictionary<string, List<TNode>>();
+            var nodesByName = new Dictionary<NodeName, List<TNode>>();
             foreach (var node in nodes)
             {
-                string baseName;
-
                 // Generate descriptive name for each node. The name is generated based on its type
                 // and properties to give as much information about the node as possible, so that
                 // a specific node can be identified in the composition.
-                switch (node.Type)
+                var nodeName = node.Type switch
                 {
-                    case Graph.NodeType.CompositionObject:
-                        baseName = DescribeCompositionObject(node, (CompositionObject)node.Object);
-                        break;
-                    case Graph.NodeType.CompositionPath:
-                        baseName = "Path";
-                        break;
-                    case Graph.NodeType.CanvasGeometry:
-                        baseName = "Geometry";
-                        break;
-                    case Graph.NodeType.LoadedImageSurface:
-                        baseName = DescribeLoadedImageSurface(node, (LoadedImageSurface)node.Object);
-                        break;
-                    default:
-                        throw new InvalidOperationException();
-                }
+                    Graph.NodeType.CompositionObject => NameCompositionObject(node, (CompositionObject)node.Object),
+                    Graph.NodeType.CompositionPath => NodeName.FromNonTypeName("Path"),
+                    Graph.NodeType.CanvasGeometry => NodeName.FromNonTypeName("Geometry"),
+                    Graph.NodeType.LoadedImageSurface => NameLoadedImageSurface(node, (LoadedImageSurface)node.Object),
+                    _ => throw Unreachable,
+                };
 
-                if (!nodesByTypeName.TryGetValue(baseName, out var nodeList))
+                if (!nodesByName.TryGetValue(nodeName, out var nodeList))
                 {
                     nodeList = new List<TNode>();
-                    nodesByTypeName.Add(baseName, nodeList);
+                    nodesByName.Add(nodeName, nodeList);
                 }
 
                 nodeList.Add(node);
             }
 
             // Set the names on each node.
-            foreach (var entry in nodesByTypeName)
+            foreach (var entry in nodesByName)
             {
-                var baseName = entry.Key;
+                var nodeName = entry.Key;
                 var nodeList = entry.Value;
 
                 // Append a counter suffix.
@@ -78,61 +67,71 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 //       a type name. For example, if a single CompositionPath node produced a method
                 //       called CompositionPath() and then a call was made to "new CompositionPath(...)"
                 //       the C++ compiler will complain that CompositionPath is not a type.
-                //       So to ensure we don't hit that case, always append a counter suffix.
-
-                // Use only as many digits as necessary to express the largest count.
-                var digitsRequired = (int)Math.Ceiling(Math.Log10(nodeList.Count + 1));
-                var counterFormat = new string('0', digitsRequired);
-
-                for (var i = 0; i < nodeList.Count; i++)
+                //       So to ensure we don't hit that case, append a counter suffix, unless the name
+                //       is known to not be a type name.
+                if (nodeList.Count == 1 && nodeName.IsNotATypeName)
                 {
-                    yield return (nodeList[i], $"{baseName}_{i.ToString(counterFormat)}");
+                    // The name is unique and is not a type name, so no need for a suffix.
+                    yield return (nodeList[0], nodeName.Name);
+                }
+                else
+                {
+                    // Use only as many digits as necessary to express the largest count.
+                    var digitsRequired = (int)Math.Ceiling(Math.Log10(nodeList.Count + 1));
+                    var counterFormat = new string('0', digitsRequired);
+
+                    for (var i = 0; i < nodeList.Count; i++)
+                    {
+                        yield return (nodeList[i], $"{nodeName.Name}_{i.ToString(counterFormat)}");
+                    }
                 }
             }
         }
 
-        // Returns a description of the given CompositionObject, suitable for use as an identifier.
-        static string DescribeCompositionObject(TNode node, CompositionObject obj)
+        // Returns a name for the given CompositionObject, suitable for use as an identifier.
+        static NodeName NameCompositionObject(TNode node, CompositionObject obj)
         {
-            var result = obj.Type switch
+            var name = NameOf(obj);
+
+            if (name != null)
+            {
+                // The object has a name, so use it.
+                return NodeName.FromNonTypeName(name);
+            }
+
+            return obj.Type switch
             {
                 // For some animations, we can include a description of the start and end values
                 // to make the names more descriptive.
                 CompositionObjectType.ColorKeyFrameAnimation
-                    => AppendDescription("ColorAnimation", DescribeAnimationRange((ColorKeyFrameAnimation)obj)),
+                    => NodeName.FromNameAndDescription("ColorAnimation", DescribeAnimationRange((ColorKeyFrameAnimation)obj)),
                 CompositionObjectType.ScalarKeyFrameAnimation
-                    => AppendDescription($"{TryGetAnimatedPropertyName(node)}ScalarAnimation", DescribeAnimationRange((ScalarKeyFrameAnimation)obj)),
+                    => NodeName.FromNameAndDescription($"{TryGetAnimatedPropertyName(node)}ScalarAnimation", DescribeAnimationRange((ScalarKeyFrameAnimation)obj)),
 
                 // Do not include descriptions of the animation range for vectors - the names
                 // end up being very long, complicated, and confusing to the reader.
-                CompositionObjectType.Vector2KeyFrameAnimation => $"{TryGetAnimatedPropertyName(node)}Vector2Animation",
-                CompositionObjectType.Vector3KeyFrameAnimation => $"{TryGetAnimatedPropertyName(node)}Vector3Animation",
-                CompositionObjectType.Vector4KeyFrameAnimation => $"{TryGetAnimatedPropertyName(node)}Vector4Animation",
+                CompositionObjectType.Vector2KeyFrameAnimation => NodeName.FromNonTypeName($"{TryGetAnimatedPropertyName(node)}Vector2Animation"),
+                CompositionObjectType.Vector3KeyFrameAnimation => NodeName.FromNonTypeName($"{TryGetAnimatedPropertyName(node)}Vector3Animation"),
+                CompositionObjectType.Vector4KeyFrameAnimation => NodeName.FromNonTypeName($"{TryGetAnimatedPropertyName(node)}Vector4Animation"),
 
                 // Geometries include their size as part of the description.
                 CompositionObjectType.CompositionRectangleGeometry
-                    => AppendDescription("Rectangle", Vector2AsId(((CompositionRectangleGeometry)obj).Size)),
+                    => NodeName.FromNameAndDescription("Rectangle", Vector2AsId(((CompositionRectangleGeometry)obj).Size)),
                 CompositionObjectType.CompositionRoundedRectangleGeometry
-                    => AppendDescription("RoundedRectangle", Vector2AsId(((CompositionRoundedRectangleGeometry)obj).Size)),
+                    => NodeName.FromNameAndDescription("RoundedRectangle", Vector2AsId(((CompositionRoundedRectangleGeometry)obj).Size)),
                 CompositionObjectType.CompositionEllipseGeometry
-                    => AppendDescription("Ellipse", Vector2AsId(((CompositionEllipseGeometry)obj).Radius)),
+                    => NodeName.FromNameAndDescription("Ellipse", Vector2AsId(((CompositionEllipseGeometry)obj).Radius)),
 
-                CompositionObjectType.ExpressionAnimation => DescribeExpressionAnimation((ExpressionAnimation)obj),
-                CompositionObjectType.CompositionColorBrush => DescribeCompositionColorBrush((CompositionColorBrush)obj),
-                CompositionObjectType.CompositionColorGradientStop => DescribeCompositionColorGradientStop((CompositionColorGradientStop)obj),
-                CompositionObjectType.StepEasingFunction => DescribeStepEasingFunction((StepEasingFunction)obj),
+                CompositionObjectType.ExpressionAnimation => NameExpressionAnimation((ExpressionAnimation)obj),
+                CompositionObjectType.CompositionColorBrush => NameCompositionColorBrush((CompositionColorBrush)obj),
+                CompositionObjectType.CompositionColorGradientStop => NameCompositionColorGradientStop((CompositionColorGradientStop)obj),
+                CompositionObjectType.StepEasingFunction => NameStepEasingFunction((StepEasingFunction)obj),
 
-                // All other cases, just ToString() the type name.
-                _ => obj.Type.ToString(),
+                _ => NameCompositionObjectType(obj.Type),
             };
-
-            // Remove the "Composition" prefix so the name is easier to read.
-            // The prefix is redundant as far as the reader is concerned because most of the
-            // objects have it and it doesn't indicate anything useful to the reader.
-            return StripPrefix(result, "Composition");
         }
 
-        static string DescribeCompositionColorBrush(CompositionColorBrush obj)
+        static NodeName NameCompositionColorBrush(CompositionColorBrush obj)
         {
             // Color brushes that are not animated get names describing their color.
             // Optimization ensures there will only be one brush for any one non-animated color.
@@ -142,26 +141,21 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 var colorAnimation = obj.Animators.Where(a => a.AnimatedProperty == "Color").First().Animation;
                 if (colorAnimation is ColorKeyFrameAnimation colorKeyFrameAnimation)
                 {
-                    return AppendDescription("AnimatedColorBrush", DescribeAnimationRange(colorKeyFrameAnimation));
+                    return NodeName.FromNameAndDescription("AnimatedColorBrush", DescribeAnimationRange(colorKeyFrameAnimation));
                 }
                 else
                 {
-                    // The color is bound to an expression.
-                    var objectName = ((IDescribable)obj).Name;
-
-                    return string.IsNullOrWhiteSpace(objectName)
-                        ? "BoundColorBrush"
-                        : $"{objectName}ColorBrush";
+                    return NodeName.FromNonTypeName("AnimatedColorBrush");
                 }
             }
             else
             {
                 // Brush is not animated. Give it a name based on the color.
-                return AppendDescription("ColorBrush", obj.Color?.Name);
+                return NodeName.FromNameAndDescription("ColorBrush", obj.Color?.Name);
             }
         }
 
-        static string DescribeCompositionColorGradientStop(CompositionColorGradientStop obj)
+        static NodeName NameCompositionColorGradientStop(CompositionColorGradientStop obj)
         {
             if (obj.Animators.Count > 0)
             {
@@ -169,79 +163,74 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 var colorAnimation = obj.Animators.Where(a => a.AnimatedProperty == "Color").First().Animation;
                 if (colorAnimation is ColorKeyFrameAnimation colorKeyFrameAnimation)
                 {
-                    return AppendDescription("AnimatedGradientStop", DescribeAnimationRange(colorKeyFrameAnimation));
+                    return NodeName.FromNameAndDescription("AnimatedGradientStop", DescribeAnimationRange(colorKeyFrameAnimation));
                 }
                 else
                 {
-                    // The color is bound to an expression.
-                    var objectName = ((IDescribable)obj).Name;
-
-                    return string.IsNullOrWhiteSpace(objectName)
-                        ? "BoundGradientStop"
-                        : $"{objectName}GradientStop";
+                    return NodeName.FromNonTypeName("AnimatedGradientStop");
                 }
             }
             else
             {
                 // Gradient stop is not animated. Give it a name based on the color.
-                return AppendDescription("GradientStop", obj.Color.Name);
+                return NodeName.FromNameAndDescription("GradientStop", obj.Color.Name);
             }
         }
 
-        static string DescribeExpressionAnimation(ExpressionAnimation obj)
+        static NodeName NameCompositionObjectType(CompositionObjectType type)
         {
-            var expression = obj.Expression;
-            var expressionType = expression.Type;
-            return $"{expressionType}ExpressionAnimation";
+            // ToString() the type name, but strip the "Composition" prefix to make
+            // it easier to read. The "Composition" prefix is redundant as far as the
+            // reader is concerned because most of the objects have it and it doesn't
+            // indicate anything useful to the reader.
+            var typeName = type.ToString();
+            var strippedTypeName = StripPrefix(typeName, "Composition");
+            return strippedTypeName == typeName ? NodeName.FromTypeName(typeName) : NodeName.FromNonTypeName(strippedTypeName);
         }
 
-        static string DescribeStepEasingFunction(StepEasingFunction obj)
+        static NodeName NameExpressionAnimation(ExpressionAnimation obj)
+            => NodeName.FromNonTypeName($"{obj.Expression.Type}ExpressionAnimation");
+
+        static NodeName NameStepEasingFunction(StepEasingFunction obj)
         {
             // Recognize 2 common patterns: HoldThenStep and StepThenHold
             if (obj.StepCount == 1)
             {
                 if (obj.IsFinalStepSingleFrame && !obj.IsInitialStepSingleFrame)
                 {
-                    return "HoldThenStepEasingFunction";
+                    return NodeName.FromNonTypeName("HoldThenStepEasingFunction");
                 }
                 else if (obj.IsInitialStepSingleFrame && !obj.IsFinalStepSingleFrame)
                 {
-                    return "StepThenHoldEasingFunction";
+                    return NodeName.FromNonTypeName("StepThenHoldEasingFunction");
                 }
             }
 
             // Didn't recognize the pattern.
-            return "EasingFunction";
+            return NodeName.FromNonTypeName("EasingFunction");
         }
 
-        static string DescribeLoadedImageSurface(TNode node, LoadedImageSurface obj)
-        {
-            string result = null;
-            switch (obj.Type)
+        static NodeName NameLoadedImageSurface(TNode node, LoadedImageSurface obj)
+            => obj.Type switch
             {
-                case LoadedImageSurface.LoadedImageSurfaceType.FromStream:
-                    result = "ImageFromStream";
-                    break;
-                case LoadedImageSurface.LoadedImageSurfaceType.FromUri:
-                    var loadedImageSurfaceFromUri = (LoadedImageSurfaceFromUri)obj;
+                LoadedImageSurface.LoadedImageSurfaceType.FromStream => NodeName.FromNonTypeName("ImageFromStream"),
+                LoadedImageSurface.LoadedImageSurfaceType.FromUri => DescribeLoadedImageSurfaceFromUri((LoadedImageSurfaceFromUri)obj),
+                _ => throw Unreachable,
+            };
 
-                    // Get the image file name only.
-                    var imageFileName = loadedImageSurfaceFromUri.Uri.Segments.Last();
-                    var imageFileNameWithoutExtension = imageFileName.Substring(0, imageFileName.LastIndexOf('.'));
+        static NodeName DescribeLoadedImageSurfaceFromUri(LoadedImageSurfaceFromUri obj)
+        {
+            // Get the image file name only.
+            var imageFileName = obj.Uri.Segments.Last();
+            var imageFileNameWithoutExtension = imageFileName.Substring(0, imageFileName.LastIndexOf('.'));
 
-                    // Replace any disallowed character with underscores.
-                    var cleanedImageName = new string((from ch in imageFileNameWithoutExtension
-                                                       select char.IsLetterOrDigit(ch) ? ch : '_').ToArray());
+            // Replace any disallowed character with underscores.
+            var cleanedImageName = new string((from ch in imageFileNameWithoutExtension
+                                               select char.IsLetterOrDigit(ch) ? ch : '_').ToArray());
 
-                    // Remove any duplicated underscores.
-                    cleanedImageName = cleanedImageName.Replace("__", "_");
-                    result = AppendDescription("Image", cleanedImageName);
-                    break;
-                default:
-                    throw new InvalidOperationException();
-            }
-
-            return result;
+            // Remove any duplicated underscores.
+            cleanedImageName = cleanedImageName.Replace("__", "_");
+            return NodeName.FromNameAndDescription("Image", cleanedImageName);
         }
 
         // Returns a string for use in an identifier that describes a ColorKeyFrameAnimation, or null
@@ -295,9 +284,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             return animators.Length == 1 ? SanitizePropertyName(animators[0]) : null;
         }
 
-        static string AppendDescription(string baseName, string description)
-            => baseName + (string.IsNullOrWhiteSpace(description) ? string.Empty : $"_{description}");
-
         static string SanitizePropertyName(string propertyName)
             => propertyName?.Replace(".", string.Empty);
 
@@ -311,8 +297,34 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         static string FloatAsId(float value)
             => value.ToString("0.###", CultureInfo.InvariantCulture).Replace('.', 'p').Replace('-', 'm');
 
+        static string NameOf(IDescribable obj) => obj.Name;
+
         // A Vector2 for use in an id.
         static string Vector2AsId(Vector2 size)
             => size.X == size.Y ? FloatAsId(size.X) : $"{FloatAsId(size.X)}x{FloatAsId(size.Y)}";
+
+        // The code we hit is supposed to be unreachable. This indicates a bug.
+        static Exception Unreachable => new InvalidOperationException("Unreachable code executed");
+
+        readonly struct NodeName
+        {
+            NodeName(string name, bool isNotATypeName)
+            {
+                Name = name;
+                IsNotATypeName = isNotATypeName;
+            }
+
+            internal string Name { get; }
+
+            // True iff the name is definitely not the name of a type.
+            internal bool IsNotATypeName { get; }
+
+            internal static NodeName FromNameAndDescription(string name, string description)
+                => new NodeName(name + (string.IsNullOrWhiteSpace(description) ? string.Empty : $"_{description}"), true);
+
+            internal static NodeName FromNonTypeName(string name) => new NodeName(name, true);
+
+            internal static NodeName FromTypeName(string typeName) => new NodeName(typeName, false);
+        }
     }
 }
