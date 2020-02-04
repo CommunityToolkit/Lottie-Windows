@@ -34,6 +34,7 @@ using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieMetadata;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
+using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.MetaData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgc;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
@@ -60,9 +61,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         // Identifies the Lottie metadata in TranslationResult.SourceMetadata.
         static readonly Guid s_lottieMetadataKey = new Guid("EA3D6538-361A-4B1C-960D-50A6C35563A5");
 
-        // Identifies the bound property names in TranslationResult.SourceMetadata.
-        static readonly Guid s_propertyBindingNamesKey = new Guid("A115C46A-254C-43E6-A3C7-9DE516C3C3C8");
-
         // Generates a sequence of ints from 0..int.MaxValue. Used to attach indexes to sequences using Zip.
         static readonly IEnumerable<int> PositiveInts = Enumerable.Range(0, int.MaxValue);
 
@@ -85,9 +83,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         readonly Dictionary<(Sequence<BezierSegment>, ShapeFill.PathFillType, bool), CompositionPath> _compositionPaths = new Dictionary<(Sequence<BezierSegment>, ShapeFill.PathFillType, bool), CompositionPath>();
 
         // The names that are bound to properties (such as the Color of a SolidColorFill).
-        // Keep track of them here so they aren't added twice, and so they can be reported
-        // in the metadata.
-        readonly HashSet<string> _propertyBindingNames = new HashSet<string>();
+        // Keep track of them here so that codegen can generate properties for them.
+        readonly PropertyBindings _propertyBindings = new PropertyBindings();
 
         readonly uint _targetUapVersion;
 
@@ -179,10 +176,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 sourceMetadata.Add(s_lottieMetadataKey, GetSourceMetadata(lottieComposition));
 
                 // The list of property binding names.
-                if (translator._propertyBindingNames.Count > 0)
-                {
-                    sourceMetadata.Add(s_propertyBindingNamesKey, translator._propertyBindingNames.OrderBy(n => n).ToArray());
-                }
+                translator._propertyBindings.AddToSourceMetadata(sourceMetadata);
 
                 return new TranslationResult(
                     rootVisual: rootVisual,
@@ -2774,16 +2768,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return result;
         }
 
-        // Parses the given binding string and returns the binding name for the given property, or
-        // null if not found. Returns the first matching binding name (there could be more than
-        // one match).
-        // This is used to retrieve property bindings from binding expressions embedded in Lottie
-        // object names.
-        static string FindFirstBindingNameForProperty(string bindingString, string propertyName)
-                => PropertyBindingsParser.ParseBindings(bindingString)
-                    .Where(p => p.propertyName == propertyName)
-                    .Select(p => p.bindingName).FirstOrDefault();
-
         CompositionColorBrush TranslateSolidColorStrokeColor(
             TranslationContext context,
             SolidColorStroke shapeStroke,
@@ -2825,7 +2809,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             // Read property bindings embedded into the name of the fill.
             if (_translatePropertyBindings)
             {
-                var bindingName = FindFirstBindingNameForProperty(bindingSpec, "Color");
+                var bindingName = PropertyBindings.FindFirstBindingNameForProperty(bindingSpec, "Color");
                 if (bindingName is string)
                 {
                     // The fill is bound to a property name.
@@ -2838,10 +2822,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         // Translates a SolidColorFill that gets its color value from a property set value with the given name.
         CompositionColorBrush TranslateBoundSolidColor(
-            TranslationContext context,
-            CompositeOpacity opacity,
-            string bindingName,
-            Color defaultColor)
+                TranslationContext context,
+                CompositeOpacity opacity,
+                string bindingName,
+                Color defaultColor)
         {
             // Insert a property set value for the color if one hasn't yet been added.
             // The color is inserted as a Vector4 to allow sub-channel animation because
@@ -2852,7 +2836,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 case CompositionGetValueStatus.NotFound:
                     // The property hasn't been added yet. Add it.
                     _rootVisual.Properties.InsertVector4(bindingName, Vector4(Color(defaultColor)));
-                    _propertyBindingNames.Add(bindingName);
+                    _propertyBindings.AddPropertyBinding(
+                        bindingName,
+                        actualType: PropertySetValueType.Vector4,
+                        exposedType: PropertySetValueType.Color);
                     break;
 
                 case CompositionGetValueStatus.Succeeded:

@@ -16,6 +16,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)LottieToMultiVersionWinCompTranslator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LottieToWinCompTranslator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MultiVersionTranslationResult.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PropertyBindings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PropertyBindingsParser.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TranslationContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TranslationIssue.cs" />
