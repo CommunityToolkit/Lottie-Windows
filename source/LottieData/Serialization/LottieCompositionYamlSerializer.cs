@@ -618,7 +618,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         {
             var result = superclassContent;
             result.Add(nameof(obj.Frame), obj.Frame);
-            result.Add(nameof(obj.DurationMilliseconds), obj.DurationMilliseconds);
+            result.Add(nameof(obj.DurationInFrames), obj.DurationInFrames);
             return result;
         }
 

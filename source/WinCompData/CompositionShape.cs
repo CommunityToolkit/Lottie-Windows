@@ -16,12 +16,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
         {
         }
 
+        // Default is 0,0.
         public Vector2? CenterPoint { get; set; }
 
+        // Default is 0,0.
         public Vector2? Offset { get; set; }
 
+        // Default is 0.
         public float? RotationAngleInDegrees { get; set; }
 
+        // Default is 1,1.
         public Vector2? Scale { get; set; }
 
         public Matrix3x2? TransformMatrix { get; set; }

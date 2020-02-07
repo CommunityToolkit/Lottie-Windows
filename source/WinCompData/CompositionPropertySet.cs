@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Numerics;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.MetaData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui;
@@ -75,6 +76,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 
         /// <inheritdoc/>
         public override CompositionObjectType Type => CompositionObjectType.CompositionPropertySet;
+
+        // For debugging purposes only. Show the list of names in the PropertySet.
+        public override string ToString()
+        {
+            var entries = _names.Count == 0
+                ? "<none>"
+                : string.Join(", ", _names.Select(entry => $"{entry.Value}:{entry.Key}"));
+            return $"[{entries}]";
+        }
 
         void Insert<T>(string propertyName, in T value, PropertySetValueType type, ref PropertyBag<T> bag)
         {

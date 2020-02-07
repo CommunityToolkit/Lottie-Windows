@@ -19,6 +19,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
 
         public virtual Scalar Z => Channel("Z");
 
+        public static Vector3 operator +(Vector3 left, Vector3 right) => new Add(left, right);
+
+        public static Vector3 operator *(Scalar left, Vector3 right) => new ScalarMultiply(left, right);
+
         /// <inheritdoc/>
         public override sealed ExpressionType Type => ExpressionType.Vector3;
 
@@ -29,6 +33,43 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
         internal bool IsZero => Simplified is Constructed constructed && constructed.X.IsZero && constructed.Y.IsZero && constructed.Z.IsZero;
 
         internal bool IsOne => Simplified is Constructed constructed && constructed.X.IsOne && constructed.Y.IsOne && constructed.Z.IsOne;
+
+        internal sealed class Add : BinaryExpression
+        {
+            internal Add(Vector3 left, Vector3 right)
+                : base(left, right)
+            {
+            }
+
+            /// <inheritdoc/>
+            protected override Vector3 Simplify()
+            {
+                var left = Left.Simplified;
+                var right = Right.Simplified;
+
+                if (left.IsZero)
+                {
+                    return right;
+                }
+
+                if (right.IsZero)
+                {
+                    return left;
+                }
+
+                return left != Left || right != Right
+                    ? new Add(left, right)
+                    : this;
+            }
+
+            /// <inheritdoc/>
+            protected override string CreateExpressionText()
+            {
+                var left = Left is Add ? Left.ToText() : Parenthesize(Left);
+                var right = Right is Add ? Right.ToText() : Parenthesize(Right);
+                return $"{left}+{right}";
+            }
+        }
 
         internal sealed class Asserted : Vector3
         {
@@ -43,6 +84,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
             protected override string CreateExpressionText() => _text;
 
             protected override bool IsAtomic => true;
+        }
+
+        internal abstract class BinaryExpression : Vector3
+        {
+            internal BinaryExpression(Vector3 left, Vector3 right)
+            {
+                Left = left;
+                Right = right;
+            }
+
+            public Vector3 Left { get; }
+
+            public Vector3 Right { get; }
         }
 
         internal sealed class Constructed : Vector3
@@ -74,9 +128,49 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
 
             /// <inheritdoc/>
             protected override string CreateExpressionText()
-                => $"Vector3({Parenthesize(X)},{Parenthesize(Y)},{Parenthesize(Z)})";
+                => $"Vector3({X},{Y},{Z})";
 
             protected override bool IsAtomic => true;
+        }
+
+        internal sealed class ScalarMultiply : Vector3
+        {
+            internal ScalarMultiply(Scalar left, Vector3 right)
+            {
+                Left = left;
+                Right = right;
+            }
+
+            public Scalar Left { get; }
+
+            public Vector3 Right { get; }
+
+            /// <inheritdoc/>
+            protected override Vector3 Simplify()
+            {
+                var left = Left.Simplified;
+                var right = Right.Simplified;
+
+                if (left.IsZero || right.IsZero)
+                {
+                    return Zero;
+                }
+
+                if (left.IsOne)
+                {
+                    return right;
+                }
+
+                return left != Left || right != Right
+                    ? new ScalarMultiply(left, right)
+                    : this;
+            }
+
+            /// <inheritdoc/>
+            protected override string CreateExpressionText()
+                => Left is Scalar.BinaryExpression.Multiply left
+                    ? $"{left.ToText()}*{Parenthesize(Right)}"
+                    : $"{Parenthesize(Left)}*{Parenthesize(Right)}";
         }
 
         Scalar Channel(string channelName) => Expressions.Scalar.Channel(this, channelName);

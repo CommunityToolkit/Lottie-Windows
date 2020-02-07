@@ -114,6 +114,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 CompositionObjectType.Vector3KeyFrameAnimation => NodeName.FromNonTypeName($"{TryGetAnimatedPropertyName(node)}Vector3Animation"),
                 CompositionObjectType.Vector4KeyFrameAnimation => NodeName.FromNonTypeName($"{TryGetAnimatedPropertyName(node)}Vector4Animation"),
 
+                // Boolean animations don't have interesting range descriptions, but their property name
+                // is helpful to know (it is typically "IsVisible").
+                CompositionObjectType.BooleanKeyFrameAnimation => NodeName.FromNonTypeName($"{TryGetAnimatedPropertyName(node)}BooleanAnimation"),
+
                 // Geometries include their size as part of the description.
                 CompositionObjectType.CompositionRectangleGeometry
                     => NodeName.FromNameAndDescription("Rectangle", Vector2AsId(((CompositionRectangleGeometry)obj).Size)),
@@ -232,6 +236,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             cleanedImageName = cleanedImageName.Replace("__", "_");
             return NodeName.FromNameAndDescription("Image", cleanedImageName);
         }
+
+        // Returns a string for use in an identifier that describes a BooleanKeyFrameAnimation, or null
+        // if the animation cannot be described.
+        static string DescribeAnimationRange(BooleanKeyFrameAnimation animation) => DescribeAnimationRange(animation, v => v.ToString());
 
         // Returns a string for use in an identifier that describes a ColorKeyFrameAnimation, or null
         // if the animation cannot be described.

@@ -280,6 +280,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     switch (obj.Type)
                     {
                         case CompositionObjectType.AnimationController:
+                        case CompositionObjectType.BooleanKeyFrameAnimation:
                         case CompositionObjectType.ColorKeyFrameAnimation:
                         case CompositionObjectType.CompositionColorBrush:
                         case CompositionObjectType.CompositionColorGradientStop:

@@ -14,10 +14,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         // Identifies the bound property names in TranslationResult.SourceMetadata.
         static readonly Guid s_propertyBindingNamesKey = new Guid("A115C46A-254C-43E6-A3C7-9DE516C3C3C8");
 
-        readonly List<(string bindingName, PropertySetValueType actualType, PropertySetValueType exposedType)> _names =
-            new List<(string bindingName, PropertySetValueType actualType, PropertySetValueType exposedType)>();
+        readonly List<(string bindingName, PropertySetValueType actualType, PropertySetValueType exposedType, object initialValue)> _names =
+            new List<(string bindingName, PropertySetValueType actualType, PropertySetValueType exposedType, object initialValue)>();
 
-        // Adds the current list of property bindings to the source metatadata dictionary.
+        // Adds the current list of property bindings to the source metadata dictionary.
         internal void AddToSourceMetadata(Dictionary<Guid, object> sourceMetadata)
         {
             if (_names.Count > 0)
@@ -28,8 +28,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         }
 
         // Adds a property binding to the list of property bindings.
-        internal void AddPropertyBinding(string bindingName, PropertySetValueType actualType, PropertySetValueType exposedType)
-             => _names.Add((bindingName, actualType, exposedType));
+        internal void AddPropertyBinding(string bindingName, PropertySetValueType actualType, PropertySetValueType exposedType, object defaultValue)
+             => _names.Add((bindingName, actualType, exposedType, defaultValue));
 
         // Parses the given binding string and returns the binding name for the given property, or
         // null if not found. Returns the first matching binding name (there could be more than

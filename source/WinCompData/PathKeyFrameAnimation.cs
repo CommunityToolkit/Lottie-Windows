@@ -4,7 +4,9 @@
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 {
-    [MetaData.UapVersion(6)]
+    // PathKeyFrameAnimation was added in 6, but there were bugs that made
+    // it unreliable until 11.
+    [MetaData.UapVersion(11)]
 #if PUBLIC_WinCompData
     public
 #endif

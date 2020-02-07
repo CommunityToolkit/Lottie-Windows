@@ -8,16 +8,34 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\AlphanumericStringComparer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\CodeBuilder.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\CodegenConfiguration.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\ConstantType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\CppInstantiatorGeneratorBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\CppStringifier.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\CppwinrtInstantiatorGenerator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\CppwinrtStringifier.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\CSharpInstantiatorGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\CxInstantiatorGenerator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\CxStringifier.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\HeaderBuilder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\IAnimatedVisualInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\IAnimatedVisualSourceInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\InstantiatorGeneratorBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\LoadedImageSurfaceInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\MatrixDecomposer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\NamedConstant.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\NodeNamer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\PropertyBinding.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\SourceMetadata.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\Stringifier.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\Tables\ColumnData.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\Tables\GraphStatsMonospaceTableFormatter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\Tables\LottieMarkersMonospaceTableFormatter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\Tables\MonospaceTableFormatter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\Tables\Row.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\Tables\TextAlignment.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\Tables\ThemePropertiesMonospaceTableFormatter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\TypeName.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\CompositionObjectDgmlSerializer.cs" />
   </ItemGroup>
 </Project>

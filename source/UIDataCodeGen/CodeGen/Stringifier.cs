@@ -6,6 +6,7 @@ using System;
 using System.Globalization;
 using System.Numerics;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
+using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.MetaData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgc;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui;
@@ -22,15 +23,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 #endif
     class Stringifier
     {
+        public virtual string DefaultInitialize => string.Empty;
+
+        public virtual string VariableInitialization(string value) => $" = {value}";
+
         public virtual string Deref => ".";
 
         public virtual string IListAdd => "Add";
 
-        public virtual string Int32TypeName => "int";
-
-        public virtual string Int64TypeName => "long";
-
-        public virtual string New => "new";
+        public virtual string New(string typeName) => $"new {typeName}";
 
         public virtual string Null => "null";
 
@@ -38,9 +39,39 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         public virtual string Var => "var";
 
+        public virtual string ConstVar => "var";
+
         public string Const(string value) => $"const {value}";
 
+        // A constant - in C# this is just a const. In C++ this is a static constexpr.
+        public virtual string ConstExprField(string type, string name, string value) => $"const {type} {name} = {value};";
+
+        public virtual string PropertyGet(string target, string propertyName) => $"{target}{Deref}{propertyName}";
+
+        public virtual string PropertySet(string target, string propertyName, string value) => $"{target}{Deref}{propertyName} = {value}";
+
+        public string PropertySetValueType(PropertySetValueType type, bool isNamespaceQualified)
+        {
+            switch (type)
+            {
+                case WinCompData.MetaData.PropertySetValueType.Color:
+                    return isNamespaceQualified ? Namespace("Windows.UI.Colors.Color") : "Color";
+                case WinCompData.MetaData.PropertySetValueType.Scalar:
+                    return TypeFloat32;
+                case WinCompData.MetaData.PropertySetValueType.Vector2:
+                    return TypeVector2;
+                case WinCompData.MetaData.PropertySetValueType.Vector3:
+                    return TypeVector3;
+                case WinCompData.MetaData.PropertySetValueType.Vector4:
+                    return TypeVector4;
+                default:
+                    throw new InvalidOperationException();
+            }
+        }
+
         public virtual string Readonly(string value) => $"readonly {value}";
+
+        public virtual string FieldName(string value) => $"_{CamelCase(value)}";
 
         public string Bool(bool value) => value ? "true" : "false";
 
@@ -48,15 +79,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         public virtual string FactoryCall(string value) => value;
 
+        public string Float(double value) => Float((float)value);
+
         public virtual string Float(float value) =>
-            Math.Floor(value) == value
+            (Math.Floor(value) == value
                 ? value.ToString("0", CultureInfo.InvariantCulture)
-                : value.ToString("G9", CultureInfo.InvariantCulture) + "F";
+                : value.ToString("G9", CultureInfo.InvariantCulture)) + "F";
 
         public virtual string Double(double value) =>
             Math.Floor(value) == value
-                ? value.ToString("0", CultureInfo.InvariantCulture)
-                : value.ToString("G15", CultureInfo.InvariantCulture);
+                    ? value.ToString("0", CultureInfo.InvariantCulture) + "d"
+                    : value.ToString("G15", CultureInfo.InvariantCulture);
 
         public virtual string Int32(int value) => value.ToString();
 
@@ -67,6 +100,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         public virtual string Matrix4x4(Matrix4x4 value)
             => $"new Matrix4x4({Float(value.M11)}, {Float(value.M12)}, {Float(value.M13)}, {Float(value.M14)}, {Float(value.M21)}, {Float(value.M22)}, {Float(value.M23)}, {Float(value.M24)}, {Float(value.M31)}, {Float(value.M32)}, {Float(value.M33)}, {Float(value.M34)}, {Float(value.M41)}, {Float(value.M42)}, {Float(value.M43)}, {Float(value.M44)})";
+
+        public virtual string Namespace(string value) => value;
 
         public virtual string ReferenceTypeName(string value) => value;
 
@@ -83,6 +118,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         public virtual string Vector4(Vector4 value) => $"new Vector4({Float(value.X)}, {Float(value.Y)}, {Float(value.Z)}, {Float(value.W)})";
 
         public string Static => "static";
+
+        public virtual string StringType => "string";
 
         public virtual string ByteArray => "byte[]";
 
@@ -219,6 +256,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         }
 
         public virtual string Hex(int value) => $"0x{value.ToString("X2")}";
+
+        public virtual string TypeInt32 => "int";
+
+        public virtual string TypeInt64 => "long";
+
+        public virtual string TypeFloat32 { get; } = "float";
+
+        public virtual string TypeVector2 { get; } = "Vector2";
+
+        public virtual string TypeVector3 { get; } = "Vector3";
+
+        public virtual string TypeVector4 { get; } = "Vector4";
+
+        public virtual string TypeMatrix3x2 { get; } = "Matrix3x2";
 
         // Sets the first character to lower case.
         public string CamelCase(string value) => $"{char.ToLowerInvariant(value[0])}{value.Substring(1)}";

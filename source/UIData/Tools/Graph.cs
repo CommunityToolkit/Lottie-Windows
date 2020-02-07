@@ -62,6 +62,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 /// The node at the other end of the <see cref="Vertex"/>.
                 /// </summary>
                 public T Node { get; internal set; }
+
+                // For debugging purposes only.
+                public override string ToString() => $"{Node}--{Position}-->";
             }
 
             List<Vertex> INodePrivate<T>.InReferences

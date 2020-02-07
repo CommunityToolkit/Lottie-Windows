@@ -36,6 +36,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
             _keyFrames.Add(progress, new ExpressionKeyFrame { Progress = progress, Expression = expression, Easing = easing });
         }
 
+        // NOTE: this is not a valid method on BooleanKeyFrameAnimation - it does not support easing.
         public void InsertKeyFrame(float progress, T value, CompositionEasingFunction easing)
         {
             if (progress < 0 || progress > 1)
@@ -45,6 +46,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 
             _keyFrames.Add(progress, new ValueKeyFrame { Progress = progress, Value = value, Easing = easing });
         }
+
+        public void InsertKeyFrame(float progress, T value)
+            => InsertKeyFrame(progress, value, easing: null);
 
         public IEnumerable<KeyFrame> KeyFrames => _keyFrames.Values;
 

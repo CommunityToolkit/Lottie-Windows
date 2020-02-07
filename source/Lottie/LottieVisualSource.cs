@@ -403,12 +403,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 TranslationResult translationResult;
                 await CheckedAwaitAsync(Task.Run(() =>
                 {
+                    // translatePropertyBindings is turned on so that it can detect
+                    // issue if the author is using property bindings incorrectly.
                     translationResult = LottieToWinCompTranslator.TryTranslateLottieComposition(
                         lottieComposition: lottieComposition,
                         targetUapVersion: GetCurrentUapVersion(),
                         strictTranslation: false,
                         addCodegenDescriptions: false,
-                        translatePropertyBindings: false);
+                        translatePropertyBindings: true);
 
                     wincompDataRootVisual = translationResult.RootVisual;
                     requiredUapVersion = translationResult.MinimumRequiredUapVersion;

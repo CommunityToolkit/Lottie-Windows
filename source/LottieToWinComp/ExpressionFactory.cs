@@ -13,6 +13,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 {
     static class ExpressionFactory
     {
+        // The name used to bind to the property set that contains the Progress property.
+        internal const string RootName = "_";
+
+        // The name used to bind to the property set that contains the theme properties.
+        internal const string ThemePropertiesName = "_theme";
+
         internal static readonly Vector2 MyAnchor = MyVector2("Anchor");
         internal static readonly Vector3 MyAnchor3 = Vector3(MyAnchor.X, MyAnchor.Y, 0);
         internal static readonly Vector4 MyColor = MyVector4("Color");
@@ -25,7 +31,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         static readonly Scalar MyTEnd = MyScalar("TEnd");
 
         // An expression that refers to the name of the root property set and the Progress property on it.
-        internal static readonly Scalar RootProgress = Scalar(RootProperty(LottieToWinCompTranslator.ProgressPropertyName));
+        internal static readonly Scalar RootProgress = RootScalar(LottieToWinCompTranslator.ProgressPropertyName);
         internal static readonly Scalar MaxTStartTEnd = Max(MyTStart, MyTEnd);
         internal static readonly Scalar MinTStartTEnd = Min(MyTStart, MyTEnd);
         static readonly Vector2 HalfMySize = MySize / Vector2(2, 2);
@@ -41,11 +47,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                                                                         MyPosition.Y - MyAnchor.Y,
                                                                         0);
 
-        internal static Color BoundColorMultipliedByOpacity(string bindingName, LottieData.Opacity opacity)
-            => ColorAsVector4MultipliedByOpacity(RootColor4Property(bindingName), opacity.Value);
+        internal static Color ThemedColorMultipliedByOpacity(string bindingName, LottieData.Opacity opacity)
+            => ColorAsVector4MultipliedByOpacity(ThemedColor4Property(bindingName), opacity.Value);
 
-        internal static Color BoundColorAsVector4MultipliedByOpacities(string bindingName, Scalar[] opacities)
-            => ColorAsVector4MultipliedByOpacities(RootColor4Property(bindingName), opacities);
+        internal static Color ThemedColorAsVector4MultipliedByOpacities(string bindingName, Scalar[] opacities)
+            => ColorAsVector4MultipliedByOpacities(ThemedColor4Property(bindingName), opacities);
+
+        internal static Scalar ThemedScalar(string bindingName) => Scalar(ThemeProperty(bindingName));
 
         // The given color multiplied by the given opacity, where the opacity is pre-multiplied by 255.
         // The premultiplication can result in a simpler expression when color.A is 255 because
@@ -57,8 +65,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal static Vector2 PositionToOffsetExpression(Sn.Vector2 position) => Vector2(position) - HalfMySize;
 
-        // The value of a Color property stored as a Vector4 on the root.
-        static Vector4 RootColor4Property(string propertyName) => Vector4(RootProperty(propertyName));
+        internal static Scalar RootScalar(string propertyName) => Scalar(RootProperty(propertyName));
+
+        // The value of a Color property stored as a Vector4 on the theming property set.
+        static Vector4 ThemedColor4Property(string propertyName) => Vector4(ThemeProperty(propertyName));
 
         internal static Scalar ScaledAndOffsetRootProgress(double scale, double offset)
         {
@@ -211,6 +221,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         static string My(string propertyName) => $"my.{propertyName}";
 
         // A property on the root property set. Used to bind to the property set that contains the Progress property.
-        static string RootProperty(string propertyName) => $"_.{propertyName}";
+        static string RootProperty(string propertyName) => $"{RootName}.{propertyName}";
+
+        // An property on the theming property set. Used to bind to properties that can be
+        // updated for theming purposes.
+        static string ThemeProperty(string propertyName) => $"{ThemePropertiesName}.{propertyName}";
     }
 }

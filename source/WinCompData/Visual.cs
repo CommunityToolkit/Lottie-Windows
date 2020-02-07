@@ -27,14 +27,21 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 
         public CompositionClip Clip { get; set; }
 
+        // Defaults to true.
+        public bool? IsVisible { get; set; }
+
+        // Defaults to 0.
         public Vector3? Offset { get; set; }
 
+        // Defaults to 1.
         public float? Opacity { get; set; }
 
+        // Defaults to 0.
         public float? RotationAngleInDegrees { get; set; }
 
         public Vector3? RotationAxis { get; set; }
 
+        // Defaults to 1.
         public Vector3? Scale { get; set; }
 
         public Vector2? Size { get; set; }

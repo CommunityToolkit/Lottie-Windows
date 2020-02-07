@@ -4,8 +4,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using Microsoft.Toolkit.Uwp.UI.Lottie.LottieMetadata;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.MetaData;
-using LCM = Microsoft.Toolkit.Uwp.UI.Lottie.LottieMetadata.LottieCompositionMetadata;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 {
@@ -21,62 +22,39 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         static readonly Guid s_lottieMetadataKey = new Guid("EA3D6538-361A-4B1C-960D-50A6C35563A5");
 
         readonly IReadOnlyDictionary<Guid, object> _sourceMetadata;
-        IReadOnlyList<(string bindingName, PropertySetValueType actualType, PropertySetValueType exposedType)> _propertyBindings;
-        Lottie _lottieMetadata;
+        IReadOnlyList<PropertyBinding> _propertyBindings;
 
         internal SourceMetadata(IReadOnlyDictionary<Guid, object> sourceMetadata)
         {
             _sourceMetadata = sourceMetadata;
+            LottieMetadata = _sourceMetadata.TryGetValue(s_lottieMetadataKey, out var result)
+                                                        ? (LottieCompositionMetadata)result
+                                                        : LottieCompositionMetadata.Empty;
         }
 
-        internal Lottie LottieMetadata => _lottieMetadata ?? (_lottieMetadata = new Lottie(this));
+        internal LottieCompositionMetadata LottieMetadata { get; }
 
-        internal IReadOnlyList<(string bindingName, PropertySetValueType actualType, PropertySetValueType exposedType)> PropertyBindings
-            => _propertyBindings ?? (_propertyBindings = _sourceMetadata.TryGetValue(s_propertyBindingNamesKey, out var propertyBindingNames)
-                ? (IReadOnlyList<(string bindingName, PropertySetValueType actualType, PropertySetValueType exposedType)>)propertyBindingNames
-                : Array.Empty<(string bindingName, PropertySetValueType actualType, PropertySetValueType exposedType)>());
-
-        internal sealed class Lottie
+        internal IReadOnlyList<PropertyBinding> PropertyBindings
         {
-            readonly LCM _metadata;
-
-            internal Lottie(SourceMetadata owner)
+            get
             {
-                _metadata =
-                    owner._sourceMetadata.TryGetValue(s_lottieMetadataKey, out var result)
-                        ? (LCM)result
-                        : LCM.Empty;
-            }
-
-            internal string CompositionName => _metadata.CompositionName;
-
-            internal double FramesPerSecond => _metadata.FramesPerSecond;
-
-            internal TimeSpan Duration => TimeSpan.FromSeconds(DurationInFrames / FramesPerSecond);
-
-            internal double DurationInFrames => _metadata.OutPoint - _metadata.InPoint;
-
-            internal IEnumerable<(string name, (TimeSpan time, double progress) start, (TimeSpan time, double progress) end)> Markers
-            {
-                get
+                if (_propertyBindings is null)
                 {
-                    foreach (var m in _metadata.Markers)
+                    if (_sourceMetadata.TryGetValue(s_propertyBindingNamesKey, out var propertyBindingNames))
                     {
-                        var startFrame = m.Frame;
-                        var startTime = TimeSpan.FromSeconds(startFrame / FramesPerSecond);
-                        var startProgress = Clamp01(startFrame / DurationInFrames);
-                        var duration = TimeSpan.FromMilliseconds(m.DurationMilliseconds);
-                        var durationInFrames = duration.TotalSeconds * FramesPerSecond;
-                        var endFrame = startFrame + durationInFrames;
-                        var endProgress = Clamp01(endFrame / DurationInFrames);
-                        var endTime = TimeSpan.FromSeconds(endFrame / FramesPerSecond);
-                        yield return (m.Name, (startTime, startProgress), (endTime, endProgress));
+                        var list = (IReadOnlyList<(string bindingName, PropertySetValueType actualType, PropertySetValueType exposedType, object initialValue)>)propertyBindingNames;
+                        _propertyBindings = list.Select(item => new PropertyBinding(item.bindingName, item.actualType, item.exposedType, item.initialValue))
+                                                    .OrderBy(pb => pb.Name)
+                                                    .ToArray();
+                    }
+                    else
+                    {
+                        _propertyBindings = Array.Empty<PropertyBinding>();
                     }
                 }
+
+                return _propertyBindings;
             }
         }
-
-        static double Clamp01(double value)
-             => Math.Min(Math.Max(0, value), 1);
     }
 }

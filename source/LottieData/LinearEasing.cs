@@ -35,7 +35,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         // All LinearEasings are equivalent.
         public bool Equals(LinearEasing other) => other is LinearEasing;
 
-        public static bool operator ==(LinearEasing a, LinearEasing b) => a is LinearEasing && b is LinearEasing;
+        public static bool operator ==(LinearEasing a, LinearEasing b) => (a is LinearEasing && b is LinearEasing) || (a is null && b is null);
 
         public static bool operator !=(LinearEasing a, LinearEasing b) => !(a == b);
     }

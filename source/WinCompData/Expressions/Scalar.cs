@@ -82,7 +82,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
             {
                 var left = Left is Add ? Left.ToText() : Parenthesize(Left);
                 var right = Right is Add ? Right.ToText() : Parenthesize(Right);
-                return $"{left} + {right}";
+                return $"{left}+{right}";
             }
         }
 
@@ -154,7 +154,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
             }
 
             /// <inheritdoc/>
-            protected override string CreateExpressionText() => $"{Parenthesize(Left)} / {Parenthesize(Right)}";
+            protected override string CreateExpressionText() => $"{Parenthesize(Left)}/{Parenthesize(Right)}";
         }
 
         /// <summary>
@@ -211,7 +211,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
 
             /// <inheritdoc/>
             protected override string CreateExpressionText()
-                => $"Max({Parenthesize(Left)}, {Parenthesize(Right)})";
+                => $"Max({Parenthesize(Left)},{Parenthesize(Right)})";
         }
 
         internal sealed new class Min : BinaryExpression
@@ -240,7 +240,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
 
             /// <inheritdoc/>
             protected override string CreateExpressionText()
-                => $"Min({Parenthesize(Left)}, {Parenthesize(Right)})";
+                => $"Min({Parenthesize(Left)},{Parenthesize(Right)})";
         }
 
         internal sealed class Multiply : BinaryExpression
@@ -297,7 +297,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
             {
                 var left = Left is Multiply ? Left.ToText() : Parenthesize(Left);
                 var right = Right is Multiply ? Right.ToText() : Parenthesize(Right);
-                return $"{left} * {right}";
+                return $"{left}*{right}";
             }
         }
 
@@ -353,7 +353,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
 
             /// <inheritdoc/>
             protected override string CreateExpressionText()
-                => $"Pow({Value.ToText()}, {Power.ToText()})";
+                => $"Pow({Value.ToText()},{Power.ToText()})";
         }
 
         internal sealed new class Squared : Scalar
@@ -437,7 +437,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
             }
 
             /// <inheritdoc/>
-            protected override string CreateExpressionText() => $"{Parenthesize(Left)} - {Parenthesize(Right)}";
+            protected override string CreateExpressionText() => $"{Parenthesize(Left)}-{Parenthesize(Right)}";
         }
 
         internal sealed new class Ternary : Scalar
@@ -482,7 +482,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
 
             /// <inheritdoc/>
             protected override string CreateExpressionText()
-                => $"{Parenthesize(Condition)} ? {Parenthesize(TrueValue)} : {Parenthesize(FalseValue)}";
+                => $"{Parenthesize(Condition)}?{Parenthesize(TrueValue)}:{Parenthesize(FalseValue)}";
         }
     }
 }

@@ -71,7 +71,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
             {
                 var left = Left is Add ? Left.ToText() : Parenthesize(Left);
                 var right = Right is Add ? Right.ToText() : Parenthesize(Right);
-                return $"{left} + {right}";
+                return $"{left}+{right}";
             }
         }
 
@@ -128,7 +128,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
 
             /// <inheritdoc/>
             protected override string CreateExpressionText()
-                => $"Vector2({Parenthesize(X)},{Parenthesize(Y)})";
+                => $"Vector2({X},{Y})";
 
             protected override bool IsAtomic => true;
         }
@@ -168,7 +168,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
 
             /// <inheritdoc/>
             protected override string CreateExpressionText()
-                => $"{Parenthesize(Left)} / {Parenthesize(Right)}";
+                => $"{Parenthesize(Left)}/{Parenthesize(Right)}";
         }
 
         internal sealed class Multiply : BinaryExpression
@@ -214,7 +214,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
             {
                 var left = Left is Multiply ? Left.ToText() : Parenthesize(Left);
                 var right = Right is Multiply ? Right.ToText() : Parenthesize(Right);
-                return $"{left} * {right}";
+                return $"{left}*{right}";
             }
         }
 
@@ -254,8 +254,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
             /// <inheritdoc/>
             protected override string CreateExpressionText()
                 => Left is Scalar.BinaryExpression.Multiply left
-                    ? $"{left.ToText()} * {Parenthesize(Right)}"
-                    : $"{Parenthesize(Left)} * {Parenthesize(Right)}";
+                    ? $"{left.ToText()}*{Parenthesize(Right)}"
+                    : $"{Parenthesize(Left)}*{Parenthesize(Right)}";
         }
 
         internal sealed class Subtract : BinaryExpression
@@ -283,7 +283,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
 
             /// <inheritdoc/>
             protected override string CreateExpressionText()
-                => $"{Parenthesize(Left)} - {Parenthesize(Right)}";
+                => $"{Parenthesize(Left)}-{Parenthesize(Right)}";
         }
 
         Scalar Channel(string channelName) => Expressions.Scalar.Channel(this, channelName);

@@ -2,8 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using Sn = System.Numerics;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
 {
@@ -14,9 +16,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
     /// stop to ensure that the result is the same as if the <see cref="OpacityGradientStop"/>s were being
     /// used.
     /// </summary>
-#if PUBLIC_LottieData
-    public
-#endif
     static class GradientStopOptimizer
     {
         /// <summary>
@@ -30,6 +29,52 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                 spatialControlPoint1: keyFrame.SpatialControlPoint1,
                 spatialControlPoint2: keyFrame.SpatialControlPoint2,
                 easing: keyFrame.Easing);
+
+        /// <summary>
+        /// Returns an equivalent list of keyframes with any redundant color stops removed.
+        /// </summary>
+        /// <returns>An equivalent list of keyframes with any redundant color stops removed.</returns>
+        public static IEnumerable<KeyFrame<Sequence<ColorGradientStop>>> RemoveRedundantStops(IEnumerable<KeyFrame<Sequence<ColorGradientStop>>> keyFrames)
+        {
+            var input = keyFrames.ToArray();
+            var redundancies = input.Select(kf => FindRedundantColorStops(kf.Value.ToArray())).Aggregate((a, b) =>
+            {
+                if (a == null)
+                {
+                    return b;
+                }
+
+                for (var i = 0; i < a.Length; i++)
+                {
+                    a[i] &= b[i];
+                }
+
+                return a;
+            });
+
+            for (var i = 0; i < input.Length; i++)
+            {
+                var keyFrame = input[i];
+
+                yield return new KeyFrame<Sequence<ColorGradientStop>>(
+                    frame: keyFrame.Frame,
+                    value: new Sequence<ColorGradientStop>(Optimize(keyFrame.Value.ToArray(), redundancies)),
+                    spatialControlPoint1: keyFrame.SpatialControlPoint1,
+                    spatialControlPoint2: keyFrame.SpatialControlPoint2,
+                    easing: keyFrame.Easing);
+            }
+        }
+
+        static IEnumerable<ColorGradientStop> Optimize(ColorGradientStop[] stops, bool[] redundancies)
+        {
+            for (var i = 0; i < redundancies.Length; i++)
+            {
+                if (!redundancies[i])
+                {
+                    yield return stops[i];
+                }
+            }
+        }
 
         /// <summary>
         /// Converts a list of <see cref="GradientStop"/>s into an equivalent list of
@@ -200,5 +245,88 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                 r: Lerp((a.Offset, a.Color.R), (b.Offset, b.Color.R), atOffset),
                 g: Lerp((a.Offset, a.Color.G), (b.Offset, b.Color.G), atOffset),
                 b: Lerp((a.Offset, a.Color.B), (b.Offset, b.Color.B), atOffset));
+
+        /// <summary>
+        /// Removes any redundant <see cref="ColorGradientStop"/>s.
+        /// </summary>
+        /// <returns>A list of <see cref="ColorGradientStop"/>.</returns>
+        public static IEnumerable<ColorGradientStop> OptimizeColorStops(IEnumerable<ColorGradientStop> stops)
+        {
+            var list = stops.ToArray();
+
+            var redundantStops = FindRedundantColorStops(list);
+            for (var i = 0; i < list.Length; i++)
+            {
+                if (!redundantStops[i])
+                {
+                    // Output the stop if it's not redundant.
+                    yield return list[i];
+                }
+            }
+        }
+
+        // Returns a bool for each stop, set to true if the stop is redundant.
+        // This is particularly useful for eliminating the default "midpoint" stop
+        // that AfterEffects creates between any 2 stops that the user adds.
+        static bool[] FindRedundantColorStops(ColorGradientStop[] stops)
+        {
+            var result = new bool[stops.Length];
+
+            // We can only have redundant stops if there are 3 or more.
+            if (stops.Length >= 3)
+            {
+                var left = 0;
+                var middle = 1;
+
+                for (var i = 2; i < stops.Length; i++)
+                {
+                    // See if the middle stop is redundant.
+                    var right = i;
+
+                    // Determine the angle between the line from middle to left and the line
+                    // from middle to right. If the angle is small, the gradient stop does
+                    // not contribute significantly and can be safely removed.
+                    var angle = GetAngleBetweenStops(stops[left], stops[middle], stops[right]);
+
+                    // This value can be tuned to be more or less sensitive to middle gradients
+                    // that are more or less off the line formed by the outer gradients.
+                    if (angle < 0.005)
+                    {
+                        // The middle stop is redundant.
+                        result[middle] = true;
+                    }
+                    else
+                    {
+                        left = middle;
+                    }
+
+                    middle = right;
+                }
+            }
+
+            return result;
+        }
+
+        // Returns a value that indicates how significant stop b is in the sequence of stops [a,b,c]
+        static double GetAngleBetweenStops(ColorGradientStop a, ColorGradientStop b, ColorGradientStop c)
+        {
+            var colorU = new Sn.Vector4((float)(b.Offset - a.Offset), (float)(b.Color.R - a.Color.R), (float)(b.Color.G - a.Color.G), (float)(b.Color.B - a.Color.B));
+            var colorV = new Sn.Vector4((float)(c.Offset - b.Offset), (float)(c.Color.R - b.Color.R), (float)(c.Color.G - b.Color.G), (float)(c.Color.B - b.Color.B));
+
+            colorU = Sn.Vector4.Normalize(colorU);
+            colorV = Sn.Vector4.Normalize(colorV);
+
+            var colorAngle = Math.Acos(Sn.Vector4.Dot(colorU, colorV));
+
+            var alphaU = new Sn.Vector2((float)(b.Offset - a.Offset), (float)(b.Color.A - a.Color.A));
+            var alphaV = new Sn.Vector2((float)(c.Offset - b.Offset), (float)(c.Color.A - b.Color.A));
+
+            alphaU = Sn.Vector2.Normalize(alphaU);
+            alphaV = Sn.Vector2.Normalize(alphaV);
+
+            var alphaAngle = Math.Acos(Sn.Vector2.Dot(alphaU, alphaV));
+
+            return colorAngle + alphaAngle;
+        }
     }
 }

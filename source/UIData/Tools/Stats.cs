@@ -24,13 +24,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             CompositionPathCount = objectGraph.CompositionPathNodes.Count();
             CanvasGeometryCount = objectGraph.CanvasGeometryNodes.Count();
 
-            foreach (var n in objectGraph.CompositionObjectNodes)
+            foreach (var (_, obj) in objectGraph.CompositionObjectNodes)
             {
+                AnimatorCount += obj.Animators.Count;
+
                 CompositionObjectCount++;
-                switch (n.Object.Type)
+                switch (obj.Type)
                 {
                     case CompositionObjectType.AnimationController:
                         AnimationControllerCount++;
+                        break;
+                    case CompositionObjectType.BooleanKeyFrameAnimation:
+                        BooleanKeyFrameAnimationCount++;
                         break;
                     case CompositionObjectType.ColorKeyFrameAnimation:
                         ColorKeyFrameAnimationCount++;
@@ -61,7 +66,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                         break;
                     case CompositionObjectType.CompositionPropertySet:
                         {
-                            var propertyCount = ((CompositionPropertySet)n.Object).Names.Count();
+                            var propertyCount = ((CompositionPropertySet)obj).Names.Count();
                             if (propertyCount > 0)
                             {
                                 PropertySetCount++;
@@ -143,6 +148,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
         public int CanvasGeometryCount { get; }
 
         public int AnimationControllerCount { get; }
+
+        public int AnimatorCount { get; }
+
+        public int BooleanKeyFrameAnimationCount { get; }
 
         public int ColorKeyFrameAnimationCount { get; }
 

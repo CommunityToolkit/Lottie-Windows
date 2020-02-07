@@ -44,8 +44,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
             AssertGraphsAreDisjoint(result, root);
 
-            // Try to optimize away redundant containers.
-            result = TreeReducer.OptimizeContainers(result);
+            // Try to optimize away redundant parts of the graph.
+            result = GraphCompactor.Compact(result);
 
             return result;
         }
@@ -181,11 +181,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
             target.BorderMode = source.BorderMode;
             target.CenterPoint = source.CenterPoint;
+            target.IsVisible = source.IsVisible;
             target.Offset = source.Offset;
             target.Opacity = source.Opacity;
             target.RotationAngleInDegrees = source.RotationAngleInDegrees;
+            target.RotationAxis = source.RotationAxis;
             target.Scale = source.Scale;
             target.Size = source.Size;
+            target.TransformMatrix = source.TransformMatrix;
 
             return target;
         }
@@ -410,6 +413,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             {
                 case CompositionObjectType.AnimationController:
                     return GetAnimationController((AnimationController)obj);
+                case CompositionObjectType.BooleanKeyFrameAnimation:
+                    return GetBooleanKeyFrameAnimation((BooleanKeyFrameAnimation)obj);
                 case CompositionObjectType.ColorKeyFrameAnimation:
                     return GetColorKeyFrameAnimation((ColorKeyFrameAnimation)obj);
                 case CompositionObjectType.CompositionColorBrush:
@@ -564,6 +569,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             {
                 case CompositionObjectType.ExpressionAnimation:
                     return GetExpressionAnimation((ExpressionAnimation)obj);
+                case CompositionObjectType.BooleanKeyFrameAnimation:
+                    return GetBooleanKeyFrameAnimation((BooleanKeyFrameAnimation)obj);
                 case CompositionObjectType.ColorKeyFrameAnimation:
                     return GetColorKeyFrameAnimation((ColorKeyFrameAnimation)obj);
                 case CompositionObjectType.PathKeyFrameAnimation:
@@ -589,6 +596,36 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             }
 
             result = CacheAndInitializeAnimation(obj, _c.CreateExpressionAnimation(obj.Expression));
+            StartAnimationsAndFreeze(obj, result);
+            return result;
+        }
+
+        BooleanKeyFrameAnimation GetBooleanKeyFrameAnimation(BooleanKeyFrameAnimation obj)
+        {
+            if (GetExisting(obj, out var result))
+            {
+                return result;
+            }
+
+            result = CacheAndInitializeKeyFrameAnimation(obj, _c.CreateBooleanKeyFrameAnimation());
+
+            foreach (var kf in obj.KeyFrames)
+            {
+                switch (kf.Type)
+                {
+                    case KeyFrameType.Expression:
+                        var expressionKeyFrame = (KeyFrameAnimation<bool, Expr.Boolean>.ExpressionKeyFrame)kf;
+                        result.InsertExpressionKeyFrame(kf.Progress, expressionKeyFrame.Expression, GetCompositionEasingFunction(kf.Easing));
+                        break;
+                    case KeyFrameType.Value:
+                        var valueKeyFrame = (KeyFrameAnimation<bool, Expr.Boolean>.ValueKeyFrame)kf;
+                        result.InsertKeyFrame(kf.Progress, valueKeyFrame.Value);
+                        break;
+                    default:
+                        throw new InvalidOperationException();
+                }
+            }
+
             StartAnimationsAndFreeze(obj, result);
             return result;
         }
@@ -759,6 +796,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
         CompositionEasingFunction GetCompositionEasingFunction(CompositionEasingFunction obj)
         {
+            if (obj is null)
+            {
+                return null;
+            }
+
             switch (obj.Type)
             {
                 case CompositionObjectType.LinearEasingFunction:
@@ -785,6 +827,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             }
         }
 
+        static bool IsNullOrZero(float? value) => value is null || value == 0;
+
+        static bool IsNullOrOne(Vector2? value) => value is null || value == Vector2.One;
+
+        static bool IsNullOrZero(Vector2? value) => value is null || value == Vector2.Zero;
+
         InsetClip GetInsetClip(InsetClip obj)
         {
             if (GetExisting(obj, out InsetClip result))
@@ -795,33 +843,33 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             result = CacheAndInitializeCompositionObject(obj, _c.CreateInsetClip());
 
             // CompositionClip properties
-            if (obj.CenterPoint.X != 0 || obj.CenterPoint.Y != 0)
+            if (!IsNullOrZero(obj.CenterPoint))
             {
                 result.CenterPoint = obj.CenterPoint;
             }
 
-            if (obj.Scale.X != 1 || obj.Scale.Y != 1)
+            if (!IsNullOrOne(obj.Scale))
             {
                 result.Scale = obj.Scale;
             }
 
             // InsetClip properties
-            if (obj.LeftInset != 0)
+            if (!IsNullOrZero(obj.LeftInset))
             {
                 result.LeftInset = obj.LeftInset;
             }
 
-            if (obj.RightInset != 0)
+            if (!IsNullOrZero(obj.RightInset))
             {
                 result.RightInset = obj.RightInset;
             }
 
-            if (obj.TopInset != 0)
+            if (!IsNullOrZero(obj.TopInset))
             {
                 result.TopInset = obj.TopInset;
             }
 
-            if (obj.BottomInset != 0)
+            if (!IsNullOrZero(obj.BottomInset))
             {
                 result.BottomInset = obj.BottomInset;
             }
@@ -1112,15 +1160,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                     result.StrokeEndCap = obj.StrokeEndCap;
                 }
 
-                if (obj.StrokeThickness != 1)
-                {
-                    result.StrokeThickness = obj.StrokeThickness;
-                }
+                result.StrokeThickness = obj.StrokeThickness;
 
-                if (obj.StrokeMiterLimit != 1)
-                {
-                    result.StrokeMiterLimit = obj.StrokeMiterLimit;
-                }
+                result.StrokeMiterLimit = obj.StrokeMiterLimit;
 
                 if (obj.StrokeLineJoin != CompositionStrokeLineJoin.Miter)
                 {

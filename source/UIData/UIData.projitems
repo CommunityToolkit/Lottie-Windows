@@ -9,9 +9,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Tools\CanonicalizedNode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tools\Canonicalizer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tools\Graph.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tools\GraphCompactor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tools\ObjectGraph.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tools\Optimizer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tools\Stats.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Tools\TreeReducer.cs" />
   </ItemGroup>
 </Project>

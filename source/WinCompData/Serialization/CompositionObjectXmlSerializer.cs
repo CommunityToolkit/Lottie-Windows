@@ -55,6 +55,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
                 case CompositionObjectType.AnimationController:
                     yield return FromAnimationController((AnimationController)obj);
                     break;
+                case CompositionObjectType.BooleanKeyFrameAnimation:
+                    yield return FromBooleanKeyFrameAnimation((BooleanKeyFrameAnimation)obj);
+                    break;
                 case CompositionObjectType.ColorKeyFrameAnimation:
                     yield return FromColorKeyFrameAnimation((ColorKeyFrameAnimation)obj);
                     break;
@@ -141,6 +144,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
                     break;
                 default:
                     throw new InvalidOperationException();
+            }
+        }
+
+        XElement FromBooleanKeyFrameAnimation(BooleanKeyFrameAnimation obj)
+        {
+            return new XElement(GetCompositionObjectName(obj), GetContents());
+            IEnumerable<XObject> GetContents()
+            {
+                foreach (var item in GetCompositionObjectContents(obj))
+                {
+                    yield return item;
+                }
             }
         }
 
@@ -386,27 +401,29 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
                     yield return item;
                 }
 
-                if (obj.LeftInset != 0)
+                if (!IsNullOrZero(obj.LeftInset))
                 {
                     yield return new XAttribute("LeftInset", obj.LeftInset);
                 }
 
-                if (obj.TopInset != 0)
+                if (!IsNullOrZero(obj.TopInset))
                 {
                     yield return new XAttribute("TopInset", obj.TopInset);
                 }
 
-                if (obj.RightInset != 0)
+                if (!IsNullOrZero(obj.RightInset))
                 {
                     yield return new XAttribute("RightInset", obj.RightInset);
                 }
 
-                if (obj.BottomInset != 0)
+                if (!IsNullOrZero(obj.BottomInset))
                 {
                     yield return new XAttribute("BottomInset", obj.BottomInset);
                 }
             }
         }
+
+        static bool IsNullOrZero(float? value) => value is null || value == 0;
 
         XElement FromCompositionGeometricClip(CompositionGeometricClip obj)
         {
@@ -783,6 +800,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
             {
                 case CompositionObjectType.ExpressionAnimation:
                     return FromExpressionAnimation((ExpressionAnimation)animation, name);
+                case CompositionObjectType.BooleanKeyFrameAnimation:
                 case CompositionObjectType.ColorKeyFrameAnimation:
                 case CompositionObjectType.PathKeyFrameAnimation:
                 case CompositionObjectType.ScalarKeyFrameAnimation:
