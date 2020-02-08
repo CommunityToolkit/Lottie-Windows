@@ -12,9 +12,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 #pragma warning disable SA1601 // Partial elements should be documented
     sealed partial class LottieCompositionReader
     {
-        Asset ParseAsset(JsonReader reader)
+        Asset ParseAsset(ref Reader reader)
         {
-            ExpectToken(reader, JsonToken.StartObject);
+            ExpectToken(ref reader, JsonToken.StartObject);
 
             int e = 0;
             string id = null;
@@ -30,44 +30,44 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 {
                     case JsonToken.PropertyName:
                         {
-                            var currentProperty = (string)reader.Value;
-                            ConsumeToken(reader);
+                            var currentProperty = reader.GetString();
+                            ConsumeToken(ref reader);
 
                             switch (currentProperty)
                             {
                                 case "e":
                                     // TODO: unknown what this is. It shows up in image assets.
-                                    e = ParseInt(reader);
+                                    e = ParseInt(ref reader);
                                     break;
                                 case "h":
-                                    height = ParseDouble(reader);
+                                    height = ParseDouble(ref reader);
                                     break;
                                 case "id":
                                     // Older lotties use a string. New lotties use an int. Handle either as strings.
                                     switch (reader.TokenType)
                                     {
                                         case JsonToken.String:
-                                            id = (string)reader.Value;
+                                            id = reader.GetString();
                                             break;
                                         case JsonToken.Integer:
-                                            id = ParseInt(reader).ToString();
+                                            id = ParseInt(ref reader).ToString();
                                             break;
                                         default:
-                                            throw UnexpectedTokenException(reader);
+                                            throw UnexpectedTokenException(ref reader);
                                     }
 
                                     break;
                                 case "layers":
-                                    layers = ParseLayers(reader).ToArray();
+                                    layers = ParseArray(ref reader, ParseLayer);
                                     break;
                                 case "p":
-                                    fileName = (string)reader.Value;
+                                    fileName = reader.GetString();
                                     break;
                                 case "u":
-                                    imagePath = (string)reader.Value;
+                                    imagePath = reader.GetString();
                                     break;
                                 case "w":
-                                    width = ParseDouble(reader);
+                                    width = ParseDouble(ref reader);
                                     break;
 
                                 // Report but ignore unexpected fields.
@@ -85,7 +85,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                         {
                             if (id is null)
                             {
-                                throw Exception("Asset with no id", reader);
+                                throw Exception("Asset with no id", ref reader);
                             }
 
                             if (layers is object)
@@ -103,7 +103,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                             }
                         }
 
-                    default: throw UnexpectedTokenException(reader);
+                    default: throw UnexpectedTokenException(ref reader);
                 }
             }
 

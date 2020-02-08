@@ -9,6 +9,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\Animatables.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\Assets.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\Chars.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\EmptyList.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\Enums.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\Fonts.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\JCArray.cs" />
@@ -19,8 +20,11 @@
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\Layers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\LottieCompositionReader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\LottieCompositionReaderException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\Markers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\ParsingIssues.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\Primitives.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\Reader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\ShapeLayerContents.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\Exceptions.cs" />
   </ItemGroup>
 </Project>

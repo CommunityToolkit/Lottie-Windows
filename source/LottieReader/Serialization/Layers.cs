@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using static Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization.Exceptions;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 {
@@ -11,6 +12,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 #pragma warning disable SA1601 // Partial elements should be documented
     sealed partial class LottieCompositionReader
     {
+        Layer ParseLayer(ref Reader reader) => ReadLayer(JCObject.Load(ref reader, s_jsonLoadSettings));
+
         // May return null if there was a problem reading the layer.
         Layer ReadLayer(JCObject obj)
         {
@@ -151,6 +154,31 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
                 default: throw Unreachable;
             }
+        }
+
+        List<ShapeLayerContent> ReadShapes(JCObject obj)
+        {
+            return ReadShapesList(obj.GetNamedArray("shapes", null));
+        }
+
+        List<ShapeLayerContent> ReadShapesList(JCArray shapesJson)
+        {
+            var shapes = new List<ShapeLayerContent>();
+            if (shapesJson != null)
+            {
+                var shapesJsonCount = shapesJson.Count;
+                shapes.Capacity = shapesJsonCount;
+                for (var i = 0; i < shapesJsonCount; i++)
+                {
+                    var item = ReadShapeContent(shapesJson[i].AsObject());
+                    if (item != null)
+                    {
+                        shapes.Add(item);
+                    }
+                }
+            }
+
+            return shapes;
         }
 
         void ReadTextData(JCObject obj)

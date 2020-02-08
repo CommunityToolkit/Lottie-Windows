@@ -14,31 +14,31 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 #pragma warning disable SA1601 // Partial elements should be documented
     sealed partial class LottieCompositionReader
     {
-        static bool ParseBool(JsonReader reader)
+        static bool ParseBool(ref Reader reader)
         {
             switch (reader.TokenType)
             {
                 case JsonToken.Integer:
-                    return (long)reader.Value != 0;
+                    return reader.GetInt64() != 0;
                 case JsonToken.Float:
-                    return (double)reader.Value != 0;
+                    return reader.GetDouble() != 0;
                 case JsonToken.Boolean:
-                    return (bool)reader.Value;
+                    return reader.GetBoolean();
                 default:
-                    throw Exception($"Expected a bool, but got {reader.TokenType}", reader);
+                    throw Exception($"Expected a bool, but got {reader.TokenType}", ref reader);
             }
         }
 
-        static double ParseDouble(JsonReader reader)
+        static double ParseDouble(ref Reader reader)
         {
             switch (reader.TokenType)
             {
                 case JsonToken.Integer:
-                    return (long)reader.Value;
+                    return reader.GetInt64();
                 case JsonToken.Float:
-                    return (double)reader.Value;
+                    return reader.GetDouble();
                 case JsonToken.String:
-                    if (double.TryParse((string)reader.Value, out var result))
+                    if (double.TryParse(reader.GetString(), out var result))
                     {
                         return result;
                     }
@@ -46,27 +46,27 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     break;
             }
 
-            throw Exception($"Expected a number, but got {reader.TokenType}", reader);
+            throw Exception($"Expected a number, but got {reader.TokenType}", ref reader);
         }
 
-        static int ParseInt(JsonReader reader)
+        static int ParseInt(ref Reader reader)
         {
             switch (reader.TokenType)
             {
                 case JsonToken.Integer:
-                    return checked((int)(long)reader.Value);
+                    return checked((int)reader.GetInt64());
                 case JsonToken.Float:
-                    return checked((int)(long)Math.Round((double)reader.Value));
+                    return checked((int)(long)Math.Round(reader.GetDouble()));
                 case JsonToken.String:
-                    if (double.TryParse((string)reader.Value, out var result))
+                    if (double.TryParse(reader.GetString(), out var result))
                     {
-                        return checked((int)(long)Math.Round((double)result));
+                        return checked((int)(long)Math.Round(result));
                     }
 
                     break;
             }
 
-            throw Exception($"Expected a number, but got {reader.TokenType}", reader);
+            throw Exception($"Expected a number, but got {reader.TokenType}", ref reader);
         }
 
         static bool? ReadBool(JCObject obj, string name)

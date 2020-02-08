@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Toolkit.Uwp.UI.Lottie.GenericData;
 using Newtonsoft.Json.Linq;
+using static Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization.Exceptions;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 {
@@ -50,7 +51,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     throw new InvalidOperationException($"Unsupported JSON token type: {token.Type}");
 
                 default:
-                    throw new InvalidOperationException("Unreachable code executed.");
+                    throw Unreachable;
             }
         }
     }
