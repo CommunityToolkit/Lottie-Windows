@@ -291,17 +291,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 case ShapeContentType.Group:
                     return FromShapeGroup((ShapeGroup)content, superclassContent);
                 case ShapeContentType.SolidColorStroke:
-                    return FromSolidColorStroke((SolidColorStroke)content, superclassContent);
                 case ShapeContentType.LinearGradientStroke:
-                    return FromLinearGradientStroke((LinearGradientStroke)content, superclassContent);
                 case ShapeContentType.RadialGradientStroke:
-                    return FromRadialGradientStroke((RadialGradientStroke)content, superclassContent);
-                case ShapeContentType.SolidColorFill:
-                    return FromSolidColorFill((SolidColorFill)content, superclassContent);
+                    return FromShapeStroke((ShapeStroke)content, superclassContent);
                 case ShapeContentType.LinearGradientFill:
-                    return FromLinearGradientFill((LinearGradientFill)content, superclassContent);
                 case ShapeContentType.RadialGradientFill:
-                    return FromRadialGradientFill((RadialGradientFill)content, superclassContent);
+                case ShapeContentType.SolidColorFill:
+                    return FromShapeFill((ShapeFill)content, superclassContent);
                 case ShapeContentType.Transform:
                     return FromTransform((Transform)content, superclassContent);
                 case ShapeContentType.Path:
@@ -320,6 +316,43 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     return FromRepeater((Repeater)content, superclassContent);
                 case ShapeContentType.RoundedCorner:
                     return FromRoundedCorner((RoundedCorner)content, superclassContent);
+                default:
+                    throw Unreachable;
+            }
+        }
+
+        YamlObject FromShapeFill(ShapeFill content, YamlMap superclassContent)
+        {
+            superclassContent.Add(nameof(content.Opacity), FromAnimatable(content.Opacity));
+            superclassContent.Add(nameof(content.FillType), Scalar(content.FillType));
+            switch (content.FillKind)
+            {
+                case ShapeFill.ShapeFillKind.SolidColor:
+                    return FromSolidColorFill((SolidColorFill)content, superclassContent);
+                case ShapeFill.ShapeFillKind.LinearGradient:
+                    return FromLinearGradientFill((LinearGradientFill)content, superclassContent);
+                case ShapeFill.ShapeFillKind.RadialGradient:
+                    return FromRadialGradientFill((RadialGradientFill)content, superclassContent);
+                default:
+                    throw Unreachable;
+            }
+        }
+
+        YamlObject FromShapeStroke(ShapeStroke content, YamlMap superclassContent)
+        {
+            superclassContent.Add(nameof(content.Opacity), FromAnimatable(content.Opacity));
+            superclassContent.Add(nameof(content.StrokeWidth), FromAnimatable(content.StrokeWidth));
+            superclassContent.Add(nameof(content.CapType), Scalar(content.CapType));
+            superclassContent.Add(nameof(content.JoinType), Scalar(content.JoinType));
+            superclassContent.Add(nameof(content.MiterLimit), Scalar(content.MiterLimit));
+            switch (content.StrokeKind)
+            {
+                case ShapeStroke.ShapeStrokeKind.SolidColor:
+                    return FromSolidColorStroke((SolidColorStroke)content, superclassContent);
+                case ShapeStroke.ShapeStrokeKind.LinearGradient:
+                    return FromLinearGradientStroke((LinearGradientStroke)content, superclassContent);
+                case ShapeStroke.ShapeStrokeKind.RadialGradient:
+                    return FromRadialGradientStroke((RadialGradientStroke)content, superclassContent);
                 default:
                     throw Unreachable;
             }
@@ -346,20 +379,35 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         {
             var result = superclassContent;
             result.Add(nameof(content.Color), FromAnimatable(content.Color));
-            result.Add(nameof(content.Opacity), FromAnimatable(content.Opacity));
-            result.Add(nameof(content.StrokeWidth), FromAnimatable(content.StrokeWidth));
             return result;
         }
 
         YamlObject FromLinearGradientStroke(LinearGradientStroke content, YamlMap superclassContent)
         {
+            var result = FromIGradient(content, superclassContent);
+            return result;
+        }
+
+        YamlMap FromIGradient(IGradient content, YamlMap superclassContent)
+        {
             var result = superclassContent;
+            result.Add(nameof(content.StartPoint), FromAnimatable(content.StartPoint));
+            result.Add(nameof(content.EndPoint), FromAnimatable(content.EndPoint));
+            result.Add(nameof(content.GradientStops), FromAnimatable(content.GradientStops, p => FromSequence(p, FromGradientStop)));
+            return result;
+        }
+
+        YamlMap FromIRadialGradient(IRadialGradient content, YamlMap superclassContent)
+        {
+            var result = FromIGradient(content, superclassContent);
+            result.Add(nameof(content.HighlightDegrees), FromAnimatable(content.HighlightDegrees));
+            result.Add(nameof(content.HighlightLength), FromAnimatable(content.HighlightLength));
             return result;
         }
 
         YamlObject FromRadialGradientStroke(RadialGradientStroke content, YamlMap superclassContent)
         {
-            var result = superclassContent;
+            var result = FromIRadialGradient(content, superclassContent);
             return result;
         }
 
@@ -367,23 +415,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         {
             var result = superclassContent;
             result.Add(nameof(content.Color), FromAnimatable(content.Color));
-            result.Add(nameof(content.Opacity), FromAnimatable(content.Opacity));
             return result;
         }
 
         YamlObject FromLinearGradientFill(LinearGradientFill content, YamlMap superclassContent)
         {
-            var result = superclassContent;
-            result.Add(nameof(content.Opacity), FromAnimatable(content.Opacity));
-            result.Add(nameof(content.GradientStops), FromAnimatable(content.GradientStops, p => FromSequence(p, FromGradientStop)));
+            var result = FromIGradient(content, superclassContent);
             return result;
         }
 
         YamlObject FromRadialGradientFill(RadialGradientFill content, YamlMap superclassContent)
         {
-            var result = superclassContent;
-            result.Add(nameof(content.Opacity), FromAnimatable(content.Opacity));
-            result.Add(nameof(content.GradientStops), FromAnimatable(content.GradientStops, p => FromSequence(p, FromGradientStop)));
+            var result = FromIRadialGradient(content, superclassContent);
             return result;
         }
 
@@ -601,9 +644,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         YamlScalar Scalar(double value) => value;
 
-        YamlScalar Scalar(Easing.EasingType type) => Scalar(type, type.ToString());
-
-        YamlScalar Scalar(Layer.LayerType type) => Scalar(type, type.ToString());
+        YamlScalar Scalar(Enum type) => Scalar(type, type.ToString());
 
         YamlScalar Scalar(Mask.MaskMode type) => Scalar(type, type.ToString());
 
@@ -612,10 +653,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         YamlScalar Scalar(Rotation value) => Scalar(value, $"{value.Degrees}°");
 
         YamlScalar Scalar(Trim value) => Scalar(value, $"{value.Percent}%");
-
-        YamlScalar Scalar(ShapeContentType type) => Scalar(type, type.ToString());
-
-        YamlScalar Scalar(Layer.MatteType type) => Scalar(type, type.ToString());
 
         // The code we hit is supposed to be unreachable. This indicates a bug.
         static Exception Unreachable => new InvalidOperationException("Unreachable code executed");
