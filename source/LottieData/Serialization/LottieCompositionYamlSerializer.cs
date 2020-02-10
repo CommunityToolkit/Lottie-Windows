@@ -50,6 +50,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             return result;
         }
 
+        void AddFromIGradient(IGradient content, YamlMap result)
+        {
+            result.Add(nameof(content.StartPoint), FromAnimatable(content.StartPoint));
+            result.Add(nameof(content.EndPoint), FromAnimatable(content.EndPoint));
+            result.Add(nameof(content.GradientStops), FromAnimatable(content.GradientStops, p => FromSequence(p, FromGradientStop)));
+        }
+
+        void AddFromIRadialGradient(IRadialGradient content, YamlMap result)
+        {
+            result.Add(nameof(content.HighlightDegrees), FromAnimatable(content.HighlightDegrees));
+            result.Add(nameof(content.HighlightLength), FromAnimatable(content.HighlightLength));
+        }
+
         YamlObject FromLottieObject(LottieObject obj)
         {
             var superclassContent = GetLottieObjectContent(obj);
@@ -290,9 +303,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             {
                 case ShapeContentType.Group:
                     return FromShapeGroup((ShapeGroup)content, superclassContent);
-                case ShapeContentType.SolidColorStroke:
                 case ShapeContentType.LinearGradientStroke:
                 case ShapeContentType.RadialGradientStroke:
+                case ShapeContentType.SolidColorStroke:
                     return FromShapeStroke((ShapeStroke)content, superclassContent);
                 case ShapeContentType.LinearGradientFill:
                 case ShapeContentType.RadialGradientFill:
@@ -384,30 +397,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         YamlObject FromLinearGradientStroke(LinearGradientStroke content, YamlMap superclassContent)
         {
-            var result = FromIGradient(content, superclassContent);
-            return result;
-        }
-
-        YamlMap FromIGradient(IGradient content, YamlMap superclassContent)
-        {
             var result = superclassContent;
-            result.Add(nameof(content.StartPoint), FromAnimatable(content.StartPoint));
-            result.Add(nameof(content.EndPoint), FromAnimatable(content.EndPoint));
-            result.Add(nameof(content.GradientStops), FromAnimatable(content.GradientStops, p => FromSequence(p, FromGradientStop)));
-            return result;
-        }
-
-        YamlMap FromIRadialGradient(IRadialGradient content, YamlMap superclassContent)
-        {
-            var result = FromIGradient(content, superclassContent);
-            result.Add(nameof(content.HighlightDegrees), FromAnimatable(content.HighlightDegrees));
-            result.Add(nameof(content.HighlightLength), FromAnimatable(content.HighlightLength));
+            AddFromIGradient(content, result);
             return result;
         }
 
         YamlObject FromRadialGradientStroke(RadialGradientStroke content, YamlMap superclassContent)
         {
-            var result = FromIRadialGradient(content, superclassContent);
+            var result = superclassContent;
+            AddFromIRadialGradient(content, result);
             return result;
         }
 
@@ -420,13 +418,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         YamlObject FromLinearGradientFill(LinearGradientFill content, YamlMap superclassContent)
         {
-            var result = FromIGradient(content, superclassContent);
+            var result = superclassContent;
+            AddFromIGradient(content, result);
             return result;
         }
 
         YamlObject FromRadialGradientFill(RadialGradientFill content, YamlMap superclassContent)
         {
-            var result = FromIRadialGradient(content, superclassContent);
+            var result = superclassContent;
+            AddFromIRadialGradient(content, result);
             return result;
         }
 
