@@ -9,6 +9,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
     static class Exceptions
     {
         // The code we hit is supposed to be unreachable. This indicates a bug.
-        internal static Exception Unreachable => new InvalidOperationException("Unreachable code executed");
+        internal static Exception Unreachable => new InvalidOperationException("Unreachable code executed.");
     }
 }
