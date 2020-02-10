@@ -59,6 +59,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         void AddFromIRadialGradient(IRadialGradient content, YamlMap result)
         {
+            AddFromIGradient(content, result);
             result.Add(nameof(content.HighlightDegrees), FromAnimatable(content.HighlightDegrees));
             result.Add(nameof(content.HighlightLength), FromAnimatable(content.HighlightLength));
         }
