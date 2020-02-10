@@ -19,14 +19,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         bool ICollection<T>.IsReadOnly => true;
 
-        void ICollection<T>.Add(T item)
-        {
-            throw new NotImplementedException();
-        }
+        void ICollection<T>.Add(T item) => throw new NotSupportedException();
 
-        void ICollection<T>.Clear()
-        {
-        }
+        void ICollection<T>.Clear() => throw new NotSupportedException();
 
         bool ICollection<T>.Contains(T item) => false;
 
@@ -40,16 +35,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         int IList<T>.IndexOf(T item) => -1;
 
-        void IList<T>.Insert(int index, T item)
-        {
-            throw new IndexOutOfRangeException();
-        }
+        void IList<T>.Insert(int index, T item) => throw new NotSupportedException();
 
-        bool ICollection<T>.Remove(T item) => false;
+        bool ICollection<T>.Remove(T item) => throw new NotSupportedException();
 
-        void IList<T>.RemoveAt(int index)
-        {
-            throw new IndexOutOfRangeException();
-        }
+        void IList<T>.RemoveAt(int index) => throw new NotSupportedException();
     }
 }
