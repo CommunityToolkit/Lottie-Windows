@@ -34,7 +34,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.YamlData
             {
                 escapedValue = "''";
             }
-            else if (value.StartsWith(" ") || value.EndsWith(" ") || value.StartsWith("#"))
+            else if (value.StartsWith(" ") || value.EndsWith(" ") || value.StartsWith("#") || value.Contains("{"))
             {
                 escapedValue = $"'{value}'";
             }
