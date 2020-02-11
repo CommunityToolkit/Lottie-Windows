@@ -34,9 +34,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             return Wrapped.TryGetValue(propertyName, out value);
         }
 
-        internal static JCObject Load(JsonReader reader, JsonLoadSettings settings)
+        internal static JCObject Load(ref Reader reader, JsonLoadSettings settings)
         {
-            return new JCObject(Newtonsoft.Json.Linq.JObject.Load(reader, settings));
+            return new JCObject(Newtonsoft.Json.Linq.JObject.Load(reader.NewtonsoftReader, settings));
         }
 
         public IEnumerator<KeyValuePair<string, JToken>> GetEnumerator()

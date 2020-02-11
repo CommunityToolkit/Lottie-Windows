@@ -11,9 +11,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 #pragma warning disable SA1601 // Partial elements should be documented
     sealed partial class LottieCompositionReader
     {
-        Char ParseChar(JsonReader reader)
+        Char ParseChar(ref Reader reader)
         {
-            ExpectToken(reader, JsonToken.StartObject);
+            ExpectToken(ref reader, JsonToken.StartObject);
 
             string ch = null;
             string fFamily = null;
@@ -28,28 +28,28 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 {
                     case JsonToken.PropertyName:
                         {
-                            var currentProperty = (string)reader.Value;
-                            ConsumeToken(reader);
+                            var currentProperty = reader.GetString();
+                            ConsumeToken(ref reader);
 
                             switch (currentProperty)
                             {
                                 case "ch":
-                                    ch = (string)reader.Value;
+                                    ch = reader.GetString();
                                     break;
                                 case "data":
-                                    shapes = ReadShapes(JCObject.Load(reader, s_jsonLoadSettings));
+                                    shapes = ReadShapes(JCObject.Load(ref reader, s_jsonLoadSettings));
                                     break;
                                 case "fFamily":
-                                    fFamily = (string)reader.Value;
+                                    fFamily = reader.GetString();
                                     break;
                                 case "size":
-                                    size = ParseDouble(reader);
+                                    size = ParseDouble(ref reader);
                                     break;
                                 case "style":
-                                    style = (string)reader.Value;
+                                    style = reader.GetString();
                                     break;
                                 case "w":
-                                    width = ParseDouble(reader);
+                                    width = ParseDouble(ref reader);
                                     break;
                                 default:
                                     _issues.UnexpectedField(currentProperty);
@@ -63,7 +63,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                             return new Char(ch, fFamily, style, size ?? 0, width ?? 0, shapes);
                         }
 
-                    default: throw UnexpectedTokenException(reader);
+                    default: throw UnexpectedTokenException(ref reader);
                 }
             }
 

@@ -90,7 +90,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 return null;
             }
 
-            return ReadLottieCompositionFromJson(jsonReader, options, out issues);
+            var reader = new Reader(jsonReader);
+            return ReadLottieCompositionFromJson(ref reader, options, out issues);
         }
 
         LottieCompositionReader(Options options)
@@ -100,7 +101,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         }
 
         static LottieComposition ReadLottieCompositionFromJson(
-            JsonReader jsonReader,
+            ref Reader jsonReader,
             Options options,
             out IReadOnlyList<(string Code, string Description)> issues)
         {
@@ -108,7 +109,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             LottieComposition result = null;
             try
             {
-                result = reader.ParseLottieComposition(jsonReader);
+                result = reader.ParseLottieComposition(ref jsonReader);
             }
             catch (JsonReaderException e)
             {
@@ -123,7 +124,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             return result;
         }
 
-        LottieComposition ParseLottieComposition(JsonReader reader)
+        LottieComposition ParseLottieComposition(ref Reader reader)
         {
             string version = null;
             double? framesPerSecond = null;
@@ -140,7 +141,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             var markers = Array.Empty<Marker>();
             Dictionary<string, GenericDataObject> extraData = null;
 
-            ConsumeToken(reader);
+            ConsumeToken(ref reader);
 
             while (reader.Read())
             {
@@ -162,58 +163,58 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     case JsonToken.Bytes:
                         // Here means the JSON was invalid or our parser got confused. There is no way to
                         // recover from this, so throw.
-                        throw UnexpectedTokenException(reader);
+                        throw UnexpectedTokenException(ref reader);
 
                     case JsonToken.Comment:
                         // Ignore comments.
-                        ConsumeToken(reader);
+                        ConsumeToken(ref reader);
                         break;
 
                     case JsonToken.PropertyName:
-                        var currentProperty = (string)reader.Value;
+                        var currentProperty = reader.GetString();
 
-                        ConsumeToken(reader);
+                        ConsumeToken(ref reader);
 
                         switch (currentProperty)
                         {
                             case "assets":
-                                assets = ParseArrayOf(reader, ParseAsset).ToArray();
+                                assets = ParseArray(ref reader, ParseAsset);
                                 break;
                             case "chars":
-                                chars = ParseArrayOf(reader, ParseChar).ToArray();
+                                chars = ParseArray(ref reader, ParseChar);
                                 break;
                             case "ddd":
-                                is3d = ParseBool(reader);
+                                is3d = ParseBool(ref reader);
                                 break;
                             case "fr":
-                                framesPerSecond = ParseDouble(reader);
+                                framesPerSecond = ParseDouble(ref reader);
                                 break;
                             case "fonts":
-                                fonts = ParseFonts(reader).ToArray();
+                                fonts = ParseFonts(ref reader);
                                 break;
                             case "layers":
-                                layers = ParseLayers(reader).ToArray();
+                                layers = ParseArray(ref reader, ParseLayer);
                                 break;
                             case "h":
-                                height = ParseDouble(reader);
+                                height = ParseDouble(ref reader);
                                 break;
                             case "ip":
-                                inPoint = ParseDouble(reader);
+                                inPoint = ParseDouble(ref reader);
                                 break;
                             case "op":
-                                outPoint = ParseDouble(reader);
+                                outPoint = ParseDouble(ref reader);
                                 break;
                             case "markers":
-                                markers = ParseArrayOf(reader, ParseMarker).ToArray();
+                                markers = ParseArray(ref reader, ParseMarker);
                                 break;
                             case "nm":
-                                name = (string)reader.Value;
+                                name = reader.GetString();
                                 break;
                             case "v":
-                                version = (string)reader.Value;
+                                version = reader.GetString();
                                 break;
                             case "w":
-                                width = ParseDouble(reader);
+                                width = ParseDouble(ref reader);
                                 break;
 
                             // Treat any other property as an extension of the BodyMovin format.
@@ -224,7 +225,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                                     extraData = new Dictionary<string, GenericDataObject>();
                                 }
 
-                                extraData.Add(currentProperty, JsonToGenericData.JTokenToGenericData(JToken.Load(reader, s_jsonLoadSettings)));
+                                extraData.Add(currentProperty, JsonToGenericData.JTokenToGenericData(JToken.Load(reader.NewtonsoftReader, s_jsonLoadSettings)));
                                 break;
                         }
 
@@ -235,32 +236,32 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                             // Check that the required fields were found. If any are missing, throw.
                             if (version is null)
                             {
-                                throw Exception("Version parameter not found.", reader);
+                                throw Exception("Version parameter not found.", ref reader);
                             }
 
                             if (!width.HasValue)
                             {
-                                throw Exception("Width parameter not found.", reader);
+                                throw Exception("Width parameter not found.", ref reader);
                             }
 
                             if (!height.HasValue)
                             {
-                                throw Exception("Height parameter not found.", reader);
+                                throw Exception("Height parameter not found.", ref reader);
                             }
 
                             if (!inPoint.HasValue)
                             {
-                                throw Exception("Start frame parameter not found.", reader);
+                                throw Exception("Start frame parameter not found.", ref reader);
                             }
 
                             if (!outPoint.HasValue)
                             {
-                                Exception("End frame parameter not found.", reader);
+                                Exception("End frame parameter not found.", ref reader);
                             }
 
                             if (layers is null)
                             {
-                                throw Exception("No layers found.", reader);
+                                throw Exception("No layers found.", ref reader);
                             }
 
                             int[] versions;
@@ -298,84 +299,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                         }
 
                     default:
-                        throw UnexpectedTokenException(reader);
+                        throw UnexpectedTokenException(ref reader);
                 }
             }
 
             throw EofException;
-        }
-
-        Marker ParseMarker(JsonReader reader)
-        {
-            ExpectToken(reader, JsonToken.StartObject);
-
-            string name = null;
-            double durationMilliseconds = 0;
-            double frame = 0;
-
-            while (reader.Read())
-            {
-                switch (reader.TokenType)
-                {
-                    case JsonToken.PropertyName:
-                        var currentProperty = (string)reader.Value;
-
-                        ConsumeToken(reader);
-
-                        switch (currentProperty)
-                        {
-                            case "cm":
-                                name = (string)reader.Value;
-                                break;
-                            case "dr":
-                                durationMilliseconds = ParseDouble(reader);
-                                break;
-                            case "tm":
-                                frame = ParseDouble(reader);
-                                break;
-                            default:
-                                _issues.IgnoredField(currentProperty);
-                                reader.Skip();
-                                break;
-                        }
-
-                        break;
-                    case JsonToken.EndObject:
-                        return new Marker(name: name, frame: frame, durationMilliseconds: durationMilliseconds);
-                    default:
-                        throw UnexpectedTokenException(reader);
-                }
-            }
-
-            throw EofException;
-        }
-
-        IEnumerable<Layer> ParseLayers(JsonReader reader) =>
-            LoadArrayOfJCObjects(reader).Select(o => ReadLayer(o)).Where(l => l != null);
-
-        List<ShapeLayerContent> ReadShapes(JCObject obj)
-        {
-            return ReadShapesList(obj.GetNamedArray("shapes", null));
-        }
-
-        List<ShapeLayerContent> ReadShapesList(JCArray shapesJson)
-        {
-            var shapes = new List<ShapeLayerContent>();
-            if (shapesJson != null)
-            {
-                var shapesJsonCount = shapesJson.Count;
-                shapes.Capacity = shapesJsonCount;
-                for (var i = 0; i < shapesJsonCount; i++)
-                {
-                    var item = ReadShapeContent(shapesJson[i].AsObject());
-                    if (item != null)
-                    {
-                        shapes.Add(item);
-                    }
-                }
-            }
-
-            return shapes;
         }
 
         string ReadName(JCObject obj)
@@ -535,64 +463,53 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             }
         }
 
-        static void ExpectToken(JsonReader reader, JsonToken token)
+        static void ExpectToken(ref Reader reader, JsonToken token)
         {
             if (reader.TokenType != token)
             {
-                throw UnexpectedTokenException(reader);
+                throw UnexpectedTokenException(ref reader);
             }
         }
 
-        // Loads the JCObjects in an array.
-        static IEnumerable<JCObject> LoadArrayOfJCObjects(JsonReader reader)
+        delegate T Parser<T>(ref Reader reader);
+
+        T[] ParseArray<T>(ref Reader reader, Parser<T> parser)
         {
-            ExpectToken(reader, JsonToken.StartArray);
+            ExpectToken(ref reader, JsonToken.StartArray);
+
+            IList<T> list = EmptyList<T>.Singleton;
 
             while (reader.Read())
             {
                 switch (reader.TokenType)
                 {
                     case JsonToken.StartObject:
-                        yield return JCObject.Load(reader, s_jsonLoadSettings);
+                        var result = parser(ref reader);
+                        if (result != null)
+                        {
+                            if (list == EmptyList<T>.Singleton)
+                            {
+                                list = new List<T>();
+                            }
+
+                            list.Add(result);
+                        }
+
                         break;
+
                     case JsonToken.EndArray:
-                        yield break;
+                        return list.ToArray();
+
                     default:
-                        throw UnexpectedTokenException(reader);
+                        throw UnexpectedTokenException(ref reader);
                 }
             }
 
             throw EofException;
         }
 
-        IEnumerable<T> ParseArrayOf<T>(JsonReader reader, Func<JsonReader, T> parser)
-        {
-            ExpectToken(reader, JsonToken.StartArray);
-
-            while (reader.Read())
-            {
-                switch (reader.TokenType)
-                {
-                    case JsonToken.StartObject:
-                        var result = parser(reader);
-                        if (result != null)
-                        {
-                            yield return result;
-                        }
-
-                        break;
-
-                    case JsonToken.EndArray:
-                        yield break;
-
-                    default:
-                        throw UnexpectedTokenException(reader);
-                }
-            }
-        }
-
         // Consumes a token from the stream.
-        static void ConsumeToken(JsonReader reader)
+        static void ConsumeToken(ref Reader reader)
         {
             if (!reader.Read())
             {
@@ -604,15 +521,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         static LottieCompositionReaderException EofException => Exception("EOF");
 
         // The JSON is malformed - we found an unexpected token. Fatal.
-        static LottieCompositionReaderException UnexpectedTokenException(JsonReader reader) => Exception($"Unexpected token: {reader.TokenType}", reader);
+        static LottieCompositionReaderException UnexpectedTokenException(ref Reader reader) => Exception($"Unexpected token: {reader.TokenType}", ref reader);
 
         static LottieCompositionReaderException UnexpectedTokenException(JTokenType tokenType) => Exception($"Unexpected token: {tokenType}");
 
-        static LottieCompositionReaderException Exception(string message, JsonReader reader) => Exception($"{message} @ {reader.Path}");
+        static LottieCompositionReaderException Exception(string message, ref Reader reader) => Exception($"{message} @ {reader.NewtonsoftReader.Path}");
 
         static LottieCompositionReaderException Exception(string message) => new LottieCompositionReaderException(message);
-
-        // The code we hit is supposed to be unreachable. This indicates a bug.
-        static Exception Unreachable => new InvalidOperationException("Unreachable code executed");
     }
 }
