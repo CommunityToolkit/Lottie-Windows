@@ -52,8 +52,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             return CreateAnimatable(initialValue, keyFrames, objValue.Int32OrNullProperty("ix"));
         }
 
-        Animatable<double> ReadAnimatableFloat(in LottieJsonObjectElement obj)
-            => ReadAnimatable(s_animatableFloatParser, obj);
+        Animatable<double> ReadAnimatableFloat(in LottieJsonObjectElement? obj)
+        {
+            if (obj is null)
+            {
+                return new Animatable<double>(0, null);
+            }
+
+            var objValue = obj.Value;
+            return ReadAnimatable(s_animatableFloatParser, obj.Value);
+        }
 
         Animatable<PathGeometry> ReadAnimatableGeometry(in LottieJsonObjectElement obj)
         {
@@ -189,8 +197,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             else
             {
                 // Split X and Y dimensions
-                var x = ReadAnimatableFloat(obj.ObjectOrNullProperty("x").Value);
-                var y = ReadAnimatableFloat(obj.ObjectOrNullProperty("y").Value);
+                var x = ReadAnimatableFloat(obj.ObjectOrNullProperty("x"));
+                var y = ReadAnimatableFloat(obj.ObjectOrNullProperty("y"));
                 obj.AssertAllPropertiesRead();
 
                 return new AnimatableXYZ(x, y, s_animatable_0);

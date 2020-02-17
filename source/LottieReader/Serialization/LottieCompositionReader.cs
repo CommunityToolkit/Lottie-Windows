@@ -332,10 +332,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         }
 
         Animatable<Color> ReadColorFromC(in LottieJsonObjectElement obj)
-            => ReadAnimatableColor(obj.ObjectOrNullProperty("c").Value);
+            => ReadAnimatableColor(obj.ObjectOrNullProperty("c"));
 
         Animatable<Opacity> ReadOpacityFromO(in LottieJsonObjectElement obj)
-            => ReadOpacityFromObject(obj.ObjectOrNullProperty("o").Value);
+            => ReadOpacityFromObject(obj.ObjectOrNullProperty("o"));
 
         Animatable<Opacity> ReadOpacityFromObject(in LottieJsonObjectElement? obj)
         {
