@@ -86,7 +86,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             var count = array.Count;
             for (; i < count; i++)
             {
-                var number = array[i].GetDouble();
+                var number = array[i].AsDouble() ?? 0;
                 switch (i)
                 {
                     case 0:
@@ -128,7 +128,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             for (; i < count; i++)
             {
                 // NOTE: indexing JsonArray is faster than enumerating it.
-                var number = array[i].GetDouble();
+                var number = array[i].AsDouble() ?? 0;
                 switch (i)
                 {
                     case 0:

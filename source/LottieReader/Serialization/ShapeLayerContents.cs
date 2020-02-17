@@ -481,8 +481,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         ShapeFill.PathFillType ReadFillType(in LottieJsonObjectElement obj)
         {
-            var isWindingFill = obj.BoolOrNullProperty("r") == true;
-            return isWindingFill ? ShapeFill.PathFillType.Winding : ShapeFill.PathFillType.EvenOdd;
+            // If not specified, the fill type is EvenOdd.
+            var windingValue = obj.Int32OrNullProperty("r") ?? 1;
+            switch (windingValue)
+            {
+                case 0: return ShapeFill.PathFillType.EvenOdd;
+                case 1: return ShapeFill.PathFillType.Winding;
+
+                    // TODO - some files have a "2" value. There
+                    // may be another fill type.
+                default: return ShapeFill.PathFillType.Winding;
+            }
         }
 
         // Reads the transform for a repeater. Repeater transforms are the same as regular transforms

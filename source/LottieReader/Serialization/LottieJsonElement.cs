@@ -114,19 +114,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 }
             }
 
-            internal bool GetBoolean()
-            {
-                var value = AsBoolean();
-                if (value.HasValue)
-                {
-                    return value.Value;
-                }
-                else
-                {
-                    throw LottieCompositionReader.UnexpectedTokenException(Type);
-                }
-            }
-
             internal double GetDouble()
             {
                 var value = AsDouble();

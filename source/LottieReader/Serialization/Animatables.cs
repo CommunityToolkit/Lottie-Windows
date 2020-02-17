@@ -15,8 +15,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 #pragma warning disable SA1601 // Partial elements should be documented
     sealed partial class LottieCompositionReader
     {
-        static readonly AnimatableParser<double> s_animatableFloatParser = CreateAnimatableParser((in LottieJsonElement el) => el.GetDouble());
-        static readonly AnimatableParser<Opacity> s_animatableOpacityParser = CreateAnimatableParser<Opacity>(ParseOpacity);
+        static readonly AnimatableParser<double> s_animatableFloatParser = CreateAnimatableParser((in LottieJsonElement el) => el.AsDouble() ?? 0);
+        static readonly AnimatableParser<Opacity> s_animatableOpacityParser = CreateAnimatableParser(ParseOpacity);
         static readonly AnimatableParser<PathGeometry> s_animatableGeometryParser = CreateAnimatableParser(ParseGeometry);
         static readonly AnimatableParser<Rotation> s_animatableRotationParser = CreateAnimatableParser(ParseRotation);
         static readonly AnimatableParser<Trim> s_animatableTrimParser = CreateAnimatableParser(ParseTrim);
