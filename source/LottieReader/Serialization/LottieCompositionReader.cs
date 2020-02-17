@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using Microsoft.Toolkit.Uwp.UI.Lottie.GenericData;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -233,7 +232,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
                     case JsonToken.EndObject:
                         {
-                            // Check that the required fields were found. If any are missing, throw.
+                            // Check that the required properties were found. If any are missing, throw.
                             if (version is null)
                             {
                                 throw Exception("Version parameter not found.", ref reader);
@@ -306,62 +305,59 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             throw EofException;
         }
 
-        string ReadName(JCObject obj)
+        string ReadName(in LottieJsonObjectElement obj)
         {
             if (_options.HasFlag(Options.IgnoreNames))
             {
-                IgnoreFieldIntentionally(obj, "nm");
+                obj.IgnorePropertyIntentionally("nm");
                 return string.Empty;
             }
             else
             {
-                return obj.GetNamedString("nm", string.Empty);
+                return obj.StringOrNullProperty("nm") ?? string.Empty;
             }
         }
 
-        string ReadMatchName(JCObject obj)
+        string ReadMatchName(in LottieJsonObjectElement obj)
         {
             if (_options.HasFlag(Options.IgnoreMatchNames))
             {
-                IgnoreFieldIntentionally(obj, "mn");
+                obj.IgnorePropertyIntentionally("mn");
                 return string.Empty;
             }
             else
             {
-                return obj.GetNamedString("mn", string.Empty);
+                return obj.StringOrNullProperty("mn") ?? string.Empty;
             }
         }
 
-        Animatable<Color> ReadColorFromC(JCObject obj) =>
-            ReadAnimatableColor(obj.GetNamedObject("c", null));
+        Animatable<Color> ReadColorFromC(in LottieJsonObjectElement obj)
+            => ReadAnimatableColor(obj.ObjectOrNullProperty("c").Value);
 
-        Animatable<Opacity> ReadOpacityFromO(JCObject obj)
-        {
-            var jsonOpacity = obj.GetNamedObject("o", null);
-            return ReadOpacityFromObject(jsonOpacity);
-        }
+        Animatable<Opacity> ReadOpacityFromO(in LottieJsonObjectElement obj)
+            => ReadOpacityFromObject(obj.ObjectOrNullProperty("o").Value);
 
-        Animatable<Opacity> ReadOpacityFromObject(JCObject obj)
+        Animatable<Opacity> ReadOpacityFromObject(in LottieJsonObjectElement? obj)
         {
             var result = obj != null
-                ? ReadAnimatableOpacity(obj)
+                ? ReadAnimatableOpacity(obj.Value)
                 : new Animatable<Opacity>(Opacity.Opaque, null);
             return result;
         }
 
-        static PathGeometry ReadGeometry(JToken value)
+        static PathGeometry ParseGeometry(in LottieJsonElement value)
         {
-            JCObject pointsData = null;
+            LottieJsonObjectElement? pointsData = null;
             if (value.Type == JTokenType.Array)
             {
-                var firstItem = value.AsArray().First();
+                var firstItem = value.AsArray().Value[0];
                 var firstItemAsObject = firstItem.AsObject();
-                if (firstItem.Type == JTokenType.Object && firstItemAsObject.ContainsKey("v"))
+                if (firstItem.Type == JTokenType.Object && firstItemAsObject.Value.ContainsProperty("v"))
                 {
                     pointsData = firstItemAsObject;
                 }
             }
-            else if (value.Type == JTokenType.Object && value.AsObject().ContainsKey("v"))
+            else if (value.AsObject()?.ContainsProperty("v") == true)
             {
                 pointsData = value.AsObject();
             }
@@ -371,31 +367,33 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 return null;
             }
 
-            var vertices = pointsData.GetNamedArray("v", null);
-            var inTangents = pointsData.GetNamedArray("i", null);
-            var outTangents = pointsData.GetNamedArray("o", null);
-            var isClosed = pointsData.GetNamedBoolean("c", false);
+            var points = pointsData.Value;
+
+            var vertices = points.ArrayOrNullProperty("v");
+            var inTangents = points.ArrayOrNullProperty("i");
+            var outTangents = points.ArrayOrNullProperty("o");
+            var isClosed = points.BoolOrNullProperty("c") ?? false;
 
             if (vertices is null || inTangents is null || outTangents is null)
             {
-                throw new LottieCompositionReaderException($"Unable to process points array or tangents. {pointsData}");
+                throw new LottieCompositionReaderException($"Unable to process points array or tangents. {points}");
             }
 
-            var beziers = new BezierSegment[isClosed ? vertices.Count : Math.Max(vertices.Count - 1, 0)];
+            var beziers = new BezierSegment[isClosed ? vertices.Value.Count : Math.Max(vertices.Value.Count - 1, 0)];
 
             if (beziers.Length > 0)
             {
                 // The vertices for the figure.
-                var verticesAsVector2 = ReadVector2Array(vertices);
+                var verticesAsVector2 = ReadVector2Array(vertices.Value);
 
                 // The control points that define the cubic beziers between the vertices.
-                var inTangentsAsVector2 = ReadVector2Array(inTangents);
-                var outTangentsAsVector2 = ReadVector2Array(outTangents);
+                var inTangentsAsVector2 = ReadVector2Array(inTangents.Value);
+                var outTangentsAsVector2 = ReadVector2Array(outTangents.Value);
 
                 if (verticesAsVector2.Length != inTangentsAsVector2.Length ||
                     verticesAsVector2.Length != outTangentsAsVector2.Length)
                 {
-                    throw new LottieCompositionReaderException($"Invalid path data. {pointsData}");
+                    throw new LottieCompositionReaderException($"Invalid path data. {points}");
                 }
 
                 var cp3 = verticesAsVector2[0];
@@ -425,43 +423,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             return new PathGeometry(beziers);
         }
 
-        static Opacity ReadOpacity(JToken jsonValue) => Opacity.FromPercent(ReadFloat(jsonValue));
+        static Opacity ParseOpacity(in LottieJsonElement jsonValue) => Opacity.FromPercent(jsonValue.GetDouble());
 
-        static Rotation ReadRotation(JToken jsonValue) => Rotation.FromDegrees(ReadFloat(jsonValue));
+        static Rotation ParseRotation(in LottieJsonElement jsonValue) => Rotation.FromDegrees(jsonValue.GetDouble());
 
-        static Trim ReadTrim(JToken jsonValue) => Trim.FromPercent(ReadFloat(jsonValue));
-
-        // Indicates that the given field will not be read because we don't yet support it.
-        void IgnoreFieldThatIsNotYetSupported(JCObject obj, string fieldName)
-        {
-            obj.ReadFields.Add(fieldName);
-        }
-
-        // Indicates that the given field is not read because we don't need to read it.
-        void IgnoreFieldIntentionally(JCObject obj, string fieldName)
-        {
-            obj.ReadFields.Add(fieldName);
-        }
-
-        // Reports an issue if the given JsonObject has fields that were not read.
-        void AssertAllFieldsRead(JCObject obj, [CallerMemberName]string memberName = "")
-        {
-            var read = obj.ReadFields;
-            var unread = new List<string>();
-            foreach (var pair in obj)
-            {
-                if (!read.Contains(pair.Key))
-                {
-                    unread.Add(pair.Key);
-                }
-            }
-
-            unread.Sort();
-            foreach (var unreadField in unread)
-            {
-                _issues.IgnoredField($"{memberName}.{unreadField}");
-            }
-        }
+        static Trim ParseTrim(in LottieJsonElement jsonValue) => Trim.FromPercent(jsonValue.GetDouble());
 
         static void ExpectToken(ref Reader reader, JsonToken token)
         {

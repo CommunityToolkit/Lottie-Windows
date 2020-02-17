@@ -37,7 +37,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                                     ch = reader.GetString();
                                     break;
                                 case "data":
-                                    shapes = ReadShapes(JCObject.Load(ref reader, s_jsonLoadSettings));
+                                    shapes = ReadShapes(LottieJsonObjectElement.Load(this, ref reader, s_jsonLoadSettings));
                                     break;
                                 case "fFamily":
                                     fFamily = reader.GetString();

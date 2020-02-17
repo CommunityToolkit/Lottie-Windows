@@ -11,12 +11,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 #pragma warning disable SA1601 // Partial elements should be documented
     sealed partial class LottieCompositionReader
     {
-        ShapeLayerContent ReadShapeContent(JCObject obj)
+        ShapeLayerContent ReadShapeContent(in LottieJsonObjectElement obj)
         {
             var args = default(ShapeLayerContent.ShapeLayerContentArgs);
             ReadShapeLayerContentArgs(obj, ref args);
 
-            var type = obj.GetNamedString("ty");
+            var type = obj.StringOrNullProperty("ty") ?? string.Empty;
 
             switch (type)
             {
@@ -54,65 +54,67 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             }
         }
 
-        ShapeGroup ReadShapeGroup(JCObject obj, in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
+        ShapeGroup ReadShapeGroup(
+            in LottieJsonObjectElement obj,
+            in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
         {
-            // Not clear whether we need to read these fields.
-            IgnoreFieldThatIsNotYetSupported(obj, "cix");
-            IgnoreFieldThatIsNotYetSupported(obj, "cl");
-            IgnoreFieldThatIsNotYetSupported(obj, "ix");
-            IgnoreFieldThatIsNotYetSupported(obj, "hd");
+            // Not clear whether we need to read these properties.
+            obj.IgnorePropertyThatIsNotYetSupported("cix", "cl", "ix", "hd");
 
-            var numberOfProperties = ReadInt(obj, "np");
-            var items = ReadShapesList(obj.GetNamedArray("it", null));
-            AssertAllFieldsRead(obj);
+            var numberOfProperties = obj.Int32OrNullProperty("np");
+            var items = ReadShapesList(obj.ArrayOrNullProperty("it"));
+            obj.AssertAllPropertiesRead();
             return new ShapeGroup(in shapeLayerContentArgs, items);
         }
 
-        void ReadShapeLayerContentArgs(JCObject obj, ref ShapeLayerContent.ShapeLayerContentArgs args)
+        void ReadShapeLayerContentArgs(
+            in LottieJsonObjectElement obj,
+            ref ShapeLayerContent.ShapeLayerContentArgs args)
         {
             args.Name = ReadName(obj);
             args.MatchName = ReadMatchName(obj);
-            args.BlendMode = BmToBlendMode(obj.GetNamedNumber("bm", 0));
+            args.BlendMode = BmToBlendMode(obj.DoubleOrNullProperty("bm"));
         }
 
         // "st"
-        SolidColorStroke ReadSolidColorStroke(JCObject obj, in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
+        SolidColorStroke ReadSolidColorStroke(
+            in LottieJsonObjectElement obj,
+            in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
         {
-            // Not clear whether we need to read these fields.
-            IgnoreFieldThatIsNotYetSupported(obj, "fillEnabled");
-            IgnoreFieldThatIsNotYetSupported(obj, "hd");
+            // Not clear whether we need to read these properties.
+            obj.IgnorePropertyThatIsNotYetSupported("fillEnabled", "hd");
 
             var color = ReadColorFromC(obj);
             var opacity = ReadOpacityFromO(obj);
-            var strokeWidth = ReadAnimatableFloat(obj.GetNamedObject("w"));
-            var capType = LcToLineCapType(obj.GetNamedNumber("lc"));
-            var joinType = LjToLineJoinType(obj.GetNamedNumber("lj"));
-            var miterLimit = obj.GetNamedNumber("ml", 4); // Default miter limit in After Effects is 4
+            var strokeWidth = ReadAnimatableFloat(obj.ObjectOrNullProperty("w").Value);
+            var capType = LcToLineCapType(obj.DoubleOrNullProperty("lc"));
+            var joinType = LjToLineJoinType(obj.DoubleOrNullProperty("lj"));
+            var miterLimit = obj.DoubleOrNullProperty("ml") ?? 4; // Default miter limit in After Effects is 4
 
             // Get dash pattern to be set as StrokeDashArray
             Animatable<double> offset = null;
             var dashPattern = new List<double>();
-            var dashesJson = obj.GetNamedArray("d", null);
+            var dashesJson = obj.ArrayOrNullProperty("d");
             if (dashesJson != null)
             {
-                for (int i = 0; i < dashesJson.Count; i++)
+                for (int i = 0; i < dashesJson.Value.Count; i++)
                 {
-                    var dashObj = dashesJson[i].AsObject();
+                    var dashObj = dashesJson.Value[i].AsObject().Value;
 
-                    switch (dashObj.GetNamedString("n"))
+                    switch (dashObj.StringOrNullProperty("n"))
                     {
                         case "o":
-                            offset = ReadAnimatableFloat(dashObj.GetNamedObject("v"));
+                            offset = ReadAnimatableFloat(dashObj.ObjectOrNullProperty("v").Value);
                             break;
                         case "d":
                         case "g":
-                            dashPattern.Add(ReadAnimatableFloat(dashObj.GetNamedObject("v")).InitialValue);
+                            dashPattern.Add(ReadAnimatableFloat(dashObj.ObjectOrNullProperty("v").Value).InitialValue);
                             break;
                     }
                 }
             }
 
-            AssertAllFieldsRead(obj);
+            obj.AssertAllPropertiesRead();
             return new SolidColorStroke(
                 in shapeLayerContentArgs,
                 offset ?? s_animatable_0,
@@ -126,9 +128,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         }
 
         // gs
-        ShapeLayerContent ReadGradientStroke(JCObject obj, in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
+        ShapeLayerContent ReadGradientStroke(
+            in LottieJsonObjectElement obj,
+            in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
         {
-            switch (TToGradientType(obj.GetNamedNumber("t")))
+            switch (TToGradientType(obj.DoubleOrNullProperty("t")))
             {
                 case GradientType.Linear:
                     return ReadLinearGradientStroke(obj, in shapeLayerContentArgs);
@@ -139,23 +143,23 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             }
         }
 
-        LinearGradientStroke ReadLinearGradientStroke(JCObject obj, in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
+        LinearGradientStroke ReadLinearGradientStroke(
+            in LottieJsonObjectElement obj,
+            in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
         {
-            // Not clear whether we need to read these fields.
-            IgnoreFieldThatIsNotYetSupported(obj, "hd");
-            IgnoreFieldThatIsNotYetSupported(obj, "t");
-            IgnoreFieldThatIsNotYetSupported(obj, "1");
+            // Not clear whether we need to read these properties.
+            obj.IgnorePropertyThatIsNotYetSupported("hd", "t", "1");
 
             var opacity = ReadOpacityFromO(obj);
-            var strokeWidth = ReadAnimatableFloat(obj.GetNamedObject("w"));
-            var capType = LcToLineCapType(obj.GetNamedNumber("lc"));
-            var joinType = LjToLineJoinType(obj.GetNamedNumber("lj"));
-            var miterLimit = obj.GetNamedNumber("ml", 4); // Default miter limit in After Effects is 4
-            var startPoint = ReadAnimatableVector3(obj.GetNamedObject("s"));
-            var endPoint = ReadAnimatableVector3(obj.GetNamedObject("e"));
-            ReadAnimatableGradientStops(obj.GetNamedObject("g"), out var gradientStops);
+            var strokeWidth = ReadAnimatableFloat(obj.ObjectOrNullProperty("w").Value);
+            var capType = LcToLineCapType(obj.DoubleOrNullProperty("lc"));
+            var joinType = LjToLineJoinType(obj.DoubleOrNullProperty("lj"));
+            var miterLimit = obj.DoubleOrNullProperty("ml") ?? 4; // Default miter limit in After Effects is 4
+            var startPoint = ReadAnimatableVector3(obj.ObjectOrNullProperty("s").Value);
+            var endPoint = ReadAnimatableVector3(obj.ObjectOrNullProperty("e").Value);
+            ReadAnimatableGradientStops(obj.ObjectOrNullProperty("g").Value, out var gradientStops);
 
-            AssertAllFieldsRead(obj);
+            obj.AssertAllPropertiesRead();
             return new LinearGradientStroke(
                 in shapeLayerContentArgs,
                 opacity,
@@ -168,39 +172,37 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 gradientStops);
         }
 
-        RadialGradientStroke ReadRadialGradientStroke(JCObject obj, in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
+        RadialGradientStroke ReadRadialGradientStroke(
+            in LottieJsonObjectElement obj,
+            in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
         {
-            // Not clear whether we need to read these fields.
-            IgnoreFieldThatIsNotYetSupported(obj, "t");
-
-            IgnoreFieldThatIsNotYetSupported(obj, "h");
-
-            IgnoreFieldThatIsNotYetSupported(obj, "1");
+            // Not clear whether we need to read these properties.
+            obj.IgnorePropertyThatIsNotYetSupported("t", "h", "1");
 
             Animatable<double> highlightLength = null;
-            var highlightLengthObject = obj.GetNamedObject("h");
+            var highlightLengthObject = obj.ObjectOrNullProperty("h");
             if (highlightLengthObject != null)
             {
-                highlightLength = ReadAnimatableFloat(highlightLengthObject);
+                highlightLength = ReadAnimatableFloat(highlightLengthObject.Value);
             }
 
             Animatable<double> highlightDegrees = null;
-            var highlightAngleObject = obj.GetNamedObject("a");
+            var highlightAngleObject = obj.ObjectOrNullProperty("a");
             if (highlightAngleObject != null)
             {
-                highlightDegrees = ReadAnimatableFloat(highlightAngleObject);
+                highlightDegrees = ReadAnimatableFloat(highlightAngleObject.Value);
             }
 
             var opacity = ReadOpacityFromO(obj);
-            var strokeWidth = ReadAnimatableFloat(obj.GetNamedObject("w"));
-            var capType = LcToLineCapType(obj.GetNamedNumber("lc"));
-            var joinType = LjToLineJoinType(obj.GetNamedNumber("lj"));
-            var miterLimit = obj.GetNamedNumber("ml", 4); // Default miter limit in After Effects is 4
-            var startPoint = ReadAnimatableVector3(obj.GetNamedObject("s"));
-            var endPoint = ReadAnimatableVector3(obj.GetNamedObject("e"));
-            ReadAnimatableGradientStops(obj.GetNamedObject("g"), out var gradientStops);
+            var strokeWidth = ReadAnimatableFloat(obj.ObjectOrNullProperty("w").Value);
+            var capType = LcToLineCapType(obj.DoubleOrNullProperty("lc"));
+            var joinType = LjToLineJoinType(obj.DoubleOrNullProperty("lj"));
+            var miterLimit = obj.DoubleOrNullProperty("ml") ?? 4; // Default miter limit in After Effects is 4
+            var startPoint = ReadAnimatableVector3(obj.ObjectOrNullProperty("s").Value);
+            var endPoint = ReadAnimatableVector3(obj.ObjectOrNullProperty("e").Value);
+            ReadAnimatableGradientStops(obj.ObjectOrNullProperty("g").Value, out var gradientStops);
 
-            AssertAllFieldsRead(obj);
+            obj.AssertAllPropertiesRead();
             return new RadialGradientStroke(
                 in shapeLayerContentArgs,
                 opacity: opacity,
@@ -216,25 +218,27 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         }
 
         // "fl"
-        SolidColorFill ReadSolidColorFill(JCObject obj, in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
+        SolidColorFill ReadSolidColorFill(
+            in LottieJsonObjectElement obj,
+            in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
         {
-            // Not clear whether we need to read these fields.
-            IgnoreFieldThatIsNotYetSupported(obj, "fillEnabled");
-            IgnoreFieldThatIsNotYetSupported(obj, "cl");
-            IgnoreFieldThatIsNotYetSupported(obj, "hd");
+            // Not clear whether we need to read these properties.
+            obj.IgnorePropertyThatIsNotYetSupported("fillEnabled", "cl", "hd");
 
             var fillType = ReadFillType(obj);
             var opacity = ReadOpacityFromO(obj);
             var color = ReadColorFromC(obj);
 
-            AssertAllFieldsRead(obj);
+            obj.AssertAllPropertiesRead();
             return new SolidColorFill(in shapeLayerContentArgs, fillType, opacity, color);
         }
 
         // gf
-        ShapeLayerContent ReadGradientFill(JCObject obj, in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
+        ShapeLayerContent ReadGradientFill(
+            in LottieJsonObjectElement obj,
+            in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
         {
-            switch (TToGradientType(obj.GetNamedNumber("t")))
+            switch (TToGradientType(obj.DoubleOrNullProperty("t")))
             {
                 case GradientType.Linear:
                     return ReadLinearGradientFill(obj, in shapeLayerContentArgs);
@@ -245,33 +249,34 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             }
         }
 
-        RadialGradientFill ReadRadialGradientFill(JCObject obj, in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
+        RadialGradientFill ReadRadialGradientFill(
+            in LottieJsonObjectElement obj,
+            in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
         {
-            // Not clear whether we need to read these fields.
-            IgnoreFieldThatIsNotYetSupported(obj, "hd");
-            IgnoreFieldThatIsNotYetSupported(obj, "1");
+            // Not clear whether we need to read these properties.
+            obj.IgnorePropertyThatIsNotYetSupported("hd", "1");
 
             var fillType = ReadFillType(obj);
             var opacity = ReadOpacityFromO(obj);
-            var startPoint = ReadAnimatableVector3(obj.GetNamedObject("s"));
-            var endPoint = ReadAnimatableVector3(obj.GetNamedObject("e"));
-            ReadAnimatableGradientStops(obj.GetNamedObject("g"), out var gradientStops);
+            var startPoint = ReadAnimatableVector3(obj.ObjectOrNullProperty("s").Value);
+            var endPoint = ReadAnimatableVector3(obj.ObjectOrNullProperty("e").Value);
+            ReadAnimatableGradientStops(obj.ObjectOrNullProperty("g").Value, out var gradientStops);
 
             Animatable<double> highlightLength = null;
-            var highlightLengthObject = obj.GetNamedObject("h");
+            var highlightLengthObject = obj.ObjectOrNullProperty("h");
             if (highlightLengthObject != null)
             {
-                highlightLength = ReadAnimatableFloat(highlightLengthObject);
+                highlightLength = ReadAnimatableFloat(highlightLengthObject.Value);
             }
 
             Animatable<double> highlightDegrees = null;
-            var highlightAngleObject = obj.GetNamedObject("a");
+            var highlightAngleObject = obj.ObjectOrNullProperty("a");
             if (highlightAngleObject != null)
             {
-                highlightDegrees = ReadAnimatableFloat(highlightAngleObject);
+                highlightDegrees = ReadAnimatableFloat(highlightAngleObject.Value);
             }
 
-            AssertAllFieldsRead(obj);
+            obj.AssertAllPropertiesRead();
             return new RadialGradientFill(
                 in shapeLayerContentArgs,
                 fillType: fillType,
@@ -283,18 +288,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 highlightDegrees: null);
         }
 
-        LinearGradientFill ReadLinearGradientFill(JCObject obj, in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
+        LinearGradientFill ReadLinearGradientFill(
+            in LottieJsonObjectElement obj,
+            in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
         {
-            // Not clear whether we need to read these fields.
-            IgnoreFieldThatIsNotYetSupported(obj, "hd");
+            // Not clear whether we need to read these properties.
+            obj.IgnorePropertyThatIsNotYetSupported("hd");
 
             var fillType = ReadFillType(obj);
             var opacity = ReadOpacityFromO(obj);
-            var startPoint = ReadAnimatableVector3(obj.GetNamedObject("s"));
-            var endPoint = ReadAnimatableVector3(obj.GetNamedObject("e"));
-            ReadAnimatableGradientStops(obj.GetNamedObject("g"), out var gradientStops);
+            var startPoint = ReadAnimatableVector3(obj.ObjectOrNullProperty("s").Value);
+            var endPoint = ReadAnimatableVector3(obj.ObjectOrNullProperty("e").Value);
+            ReadAnimatableGradientStops(obj.ObjectOrNullProperty("g").Value, out var gradientStops);
 
-            AssertAllFieldsRead(obj);
+            obj.AssertAllPropertiesRead();
             return new LinearGradientFill(
                 in shapeLayerContentArgs,
                 fillType: fillType,
@@ -304,58 +311,61 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 gradientStops: gradientStops);
         }
 
-        Ellipse ReadEllipse(JCObject obj, in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
+        Ellipse ReadEllipse(
+            in LottieJsonObjectElement obj,
+            in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
         {
-            // Not clear whether we need to read these fields.
-            IgnoreFieldThatIsNotYetSupported(obj, "closed");
-            IgnoreFieldThatIsNotYetSupported(obj, "hd");
+            // Not clear whether we need to read these properties.
+            obj.IgnorePropertyThatIsNotYetSupported("closed", "hd");
 
-            var position = ReadAnimatableVector3(obj.GetNamedObject("p"));
-            var diameter = ReadAnimatableVector3(obj.GetNamedObject("s"));
-            var direction = ReadBool(obj, "d") == true;
-            AssertAllFieldsRead(obj);
+            var position = ReadAnimatableVector3(obj.ObjectOrNullProperty("p").Value);
+            var diameter = ReadAnimatableVector3(obj.ObjectOrNullProperty("s").Value);
+            var direction = obj.BoolOrNullProperty("d") == true;
+            obj.AssertAllPropertiesRead();
             return new Ellipse(in shapeLayerContentArgs, direction, position, diameter);
         }
 
-        Polystar ReadPolystar(JCObject obj, in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
+        Polystar ReadPolystar(
+            in LottieJsonObjectElement obj,
+            in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
         {
-            // Not clear whether we need to read these fields.
-            IgnoreFieldThatIsNotYetSupported(obj, "ix");
+            // Not clear whether we need to read these properties.
+            obj.IgnorePropertyThatIsNotYetSupported("ix");
 
-            var direction = ReadBool(obj, "d") == true;
+            var direction = obj.BoolOrNullProperty("d") == true;
 
-            var type = SyToPolystarType(obj.GetNamedNumber("sy", double.NaN));
+            var type = SyToPolystarType(obj.DoubleOrNullProperty("sy"));
 
             if (!type.HasValue)
             {
                 return null;
             }
 
-            var points = ReadAnimatableFloat(obj.GetNamedObject("pt"));
+            var points = ReadAnimatableFloat(obj.ObjectOrNullProperty("pt").Value);
             if (points.IsAnimated)
             {
                 _issues.PolystarAnimation("points");
             }
 
-            var position = ReadAnimatableVector3(obj.GetNamedObject("p"));
+            var position = ReadAnimatableVector3(obj.ObjectOrNullProperty("p").Value);
             if (position.IsAnimated)
             {
                 _issues.PolystarAnimation("position");
             }
 
-            var rotation = ReadAnimatableFloat(obj.GetNamedObject("r"));
+            var rotation = ReadAnimatableFloat(obj.ObjectOrNullProperty("r").Value);
             if (rotation.IsAnimated)
             {
                 _issues.PolystarAnimation("rotation");
             }
 
-            var outerRadius = ReadAnimatableFloat(obj.GetNamedObject("or"));
+            var outerRadius = ReadAnimatableFloat(obj.ObjectOrNullProperty("or").Value);
             if (outerRadius.IsAnimated)
             {
                 _issues.PolystarAnimation("outer radius");
             }
 
-            var outerRoundedness = ReadAnimatableFloat(obj.GetNamedObject("os"));
+            var outerRoundedness = ReadAnimatableFloat(obj.ObjectOrNullProperty("os").Value);
             if (outerRoundedness.IsAnimated)
             {
                 _issues.PolystarAnimation("outer roundedness");
@@ -366,13 +376,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
             if (type == Polystar.PolyStarType.Star)
             {
-                innerRadius = ReadAnimatableFloat(obj.GetNamedObject("ir"));
+                innerRadius = ReadAnimatableFloat(obj.ObjectOrNullProperty("ir").Value);
                 if (innerRadius.IsAnimated)
                 {
                     _issues.PolystarAnimation("inner radius");
                 }
 
-                innerRoundedness = ReadAnimatableFloat(obj.GetNamedObject("is"));
+                innerRoundedness = ReadAnimatableFloat(obj.ObjectOrNullProperty("is").Value);
                 if (innerRoundedness.IsAnimated)
                 {
                     _issues.PolystarAnimation("inner roundedness");
@@ -384,7 +394,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 innerRoundedness = null;
             }
 
-            AssertAllFieldsRead(obj);
+            obj.AssertAllPropertiesRead();
             return new Polystar(
                 in shapeLayerContentArgs,
                 direction,
@@ -398,46 +408,47 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 outerRoundedness);
         }
 
-        Rectangle ReadRectangle(JCObject obj, in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
+        Rectangle ReadRectangle(
+            in LottieJsonObjectElement obj,
+            in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
         {
-            // Not clear whether we need to read these fields.
-            IgnoreFieldThatIsNotYetSupported(obj, "hd");
+            // Not clear whether we need to read these properties.
+            obj.IgnorePropertyThatIsNotYetSupported("hd");
 
-            var direction = ReadBool(obj, "d") == true;
-            var position = ReadAnimatableVector3(obj.GetNamedObject("p"));
-            var size = ReadAnimatableVector3(obj.GetNamedObject("s"));
-            var cornerRadius = ReadAnimatableFloat(obj.GetNamedObject("r"));
+            var direction = obj.BoolOrNullProperty("d") == true;
+            var position = ReadAnimatableVector3(obj.ObjectOrNullProperty("p").Value);
+            var size = ReadAnimatableVector3(obj.ObjectOrNullProperty("s").Value);
+            var cornerRadius = ReadAnimatableFloat(obj.ObjectOrNullProperty("r").Value);
 
-            AssertAllFieldsRead(obj);
+            obj.AssertAllPropertiesRead();
             return new Rectangle(in shapeLayerContentArgs, direction, position, size, cornerRadius);
         }
 
-        Path ReadPath(JCObject obj, in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
+        Path ReadPath(
+            in LottieJsonObjectElement obj,
+            in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
         {
-            // Not clear whether we need to read these fields.
-            IgnoreFieldThatIsNotYetSupported(obj, "ind");
-            IgnoreFieldThatIsNotYetSupported(obj, "ix");
-            IgnoreFieldThatIsNotYetSupported(obj, "hd");
-            IgnoreFieldThatIsNotYetSupported(obj, "cl");
-            IgnoreFieldThatIsNotYetSupported(obj, "closed");
+            // Not clear whether we need to read these properties.
+            obj.IgnorePropertyThatIsNotYetSupported("ind", "ix", "hd", "cl", "closed");
 
-            var geometry = ReadAnimatableGeometry(obj.GetNamedObject("ks"));
-            var direction = ReadBool(obj, "d") == true;
-            AssertAllFieldsRead(obj);
+            var geometry = ReadAnimatableGeometry(obj.ObjectOrNullProperty("ks").Value);
+            var direction = obj.BoolOrNullProperty("d") == true;
+            obj.AssertAllPropertiesRead();
             return new Path(in shapeLayerContentArgs, direction, geometry);
         }
 
-        TrimPath ReadTrimPath(JCObject obj, in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
+        TrimPath ReadTrimPath(
+            in LottieJsonObjectElement obj,
+            in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
         {
-            // Not clear whether we need to read these fields.
-            IgnoreFieldThatIsNotYetSupported(obj, "ix");
-            IgnoreFieldThatIsNotYetSupported(obj, "hd");
+            // Not clear whether we need to read these properties.
+            obj.IgnorePropertyThatIsNotYetSupported("ix", "hd");
 
-            var startTrim = ReadAnimatableTrim(obj.GetNamedObject("s"));
-            var endTrim = ReadAnimatableTrim(obj.GetNamedObject("e"));
-            var offset = ReadAnimatableRotation(obj.GetNamedObject("o"));
-            var trimType = MToTrimType(obj.GetNamedNumber("m", 1));
-            AssertAllFieldsRead(obj);
+            var startTrim = ReadAnimatableTrim(obj.ObjectOrNullProperty("s").Value);
+            var endTrim = ReadAnimatableTrim(obj.ObjectOrNullProperty("e").Value);
+            var offset = ReadAnimatableRotation(obj.ObjectOrNullProperty("o").Value);
+            var trimType = MToTrimType(obj.DoubleOrNullProperty("m"));
+            obj.AssertAllPropertiesRead();
             return new TrimPath(
                 in shapeLayerContentArgs,
                 trimType,
@@ -446,51 +457,58 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 offset);
         }
 
-        Repeater ReadRepeater(JCObject obj, in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
+        Repeater ReadRepeater(
+            in LottieJsonObjectElement obj,
+            in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
         {
-            var count = ReadAnimatableFloat(obj.GetNamedObject("c"));
-            var offset = ReadAnimatableFloat(obj.GetNamedObject("o"));
-            var transform = ReadRepeaterTransform(obj.GetNamedObject("tr"), in shapeLayerContentArgs);
+            var count = ReadAnimatableFloat(obj.ObjectOrNullProperty("c").Value);
+            var offset = ReadAnimatableFloat(obj.ObjectOrNullProperty("o").Value);
+            var transform = ReadRepeaterTransform(obj.ObjectOrNullProperty("tr").Value, in shapeLayerContentArgs);
             return new Repeater(in shapeLayerContentArgs, count, offset, transform);
         }
 
-        MergePaths ReadMergePaths(JCObject obj, in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
+        MergePaths ReadMergePaths(
+            in LottieJsonObjectElement obj,
+            in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
         {
-            // Not clear whether we need to read these fields.
-            IgnoreFieldThatIsNotYetSupported(obj, "hd");
+            // Not clear whether we need to read these properties.
+            obj.IgnorePropertyThatIsNotYetSupported("hd");
 
-            var mergeMode = MmToMergeMode(obj.GetNamedNumber("mm"));
-            AssertAllFieldsRead(obj);
+            var mergeMode = MmToMergeMode(obj.DoubleOrNullProperty("mm"));
+            obj.AssertAllPropertiesRead();
             return new MergePaths(
                 in shapeLayerContentArgs,
                 mergeMode);
         }
 
-        RoundedCorner ReadRoundedCorner(JCObject obj, in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
+        RoundedCorner ReadRoundedCorner(
+            in LottieJsonObjectElement obj,
+            in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
         {
-            // Not clear whether we need to read these fields.
-            IgnoreFieldThatIsNotYetSupported(obj, "hd");
-            IgnoreFieldThatIsNotYetSupported(obj, "ix");
+            // Not clear whether we need to read these properties.
+            obj.IgnorePropertyThatIsNotYetSupported("hd", "ix");
 
-            var radius = ReadAnimatableFloat(obj.GetNamedObject("r"));
-            AssertAllFieldsRead(obj);
+            var radius = ReadAnimatableFloat(obj.ObjectOrNullProperty("r").Value);
+            obj.AssertAllPropertiesRead();
             return new RoundedCorner(
                 in shapeLayerContentArgs,
                 radius);
         }
 
-        ShapeFill.PathFillType ReadFillType(JCObject obj)
+        ShapeFill.PathFillType ReadFillType(in LottieJsonObjectElement obj)
         {
-            var isWindingFill = ReadBool(obj, "r") == true;
+            var isWindingFill = obj.BoolOrNullProperty("r") == true;
             return isWindingFill ? ShapeFill.PathFillType.Winding : ShapeFill.PathFillType.EvenOdd;
         }
 
         // Reads the transform for a repeater. Repeater transforms are the same as regular transforms
         // except they have an extra couple properties.
-        RepeaterTransform ReadRepeaterTransform(JCObject obj, in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
+        RepeaterTransform ReadRepeaterTransform(
+            in LottieJsonObjectElement obj,
+            in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
         {
-            var startOpacity = ReadOpacityFromObject(obj.GetNamedObject("so", null));
-            var endOpacity = ReadOpacityFromObject(obj.GetNamedObject("eo", null));
+            var startOpacity = ReadOpacityFromObject(obj.ObjectOrNullProperty("so"));
+            var endOpacity = ReadOpacityFromObject(obj.ObjectOrNullProperty("eo"));
             var transform = ReadTransform(obj, in shapeLayerContentArgs);
             return new RepeaterTransform(
                 in shapeLayerContentArgs,
@@ -503,34 +521,36 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 endOpacity);
         }
 
-        Transform ReadTransform(JCObject obj, in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
+        Transform ReadTransform(
+            in LottieJsonObjectElement obj,
+            in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
         {
-            var anchorJson = obj.GetNamedObject("a", null);
+            var anchorJson = obj.ObjectOrNullProperty("a");
 
             var anchor =
                 anchorJson != null
-                ? ReadAnimatableVector3(anchorJson)
+                ? ReadAnimatableVector3(anchorJson.Value)
                 : new AnimatableVector3(Vector3.Zero, null);
 
-            var positionJson = obj.GetNamedObject("p", null);
+            var positionJson = obj.ObjectOrNullProperty("p");
 
             var position =
                 positionJson != null
-                    ? ReadAnimatableVector3(positionJson)
+                    ? ReadAnimatableVector3(positionJson.Value)
                     : new AnimatableVector3(Vector3.Zero, null);
 
-            var scaleJson = obj.GetNamedObject("s", null);
+            var scaleJson = obj.ObjectOrNullProperty("s");
 
             var scalePercent =
                 scaleJson != null
-                    ? ReadAnimatableVector3(scaleJson)
+                    ? ReadAnimatableVector3(scaleJson.Value)
                     : new AnimatableVector3(new Vector3(100, 100, 100), null);
 
-            var rotationJson = obj.GetNamedObject("r", null) ?? obj.GetNamedObject("rz", null);
+            var rotationJson = obj.ObjectOrNullProperty("r") ?? obj.ObjectOrNullProperty("rz");
 
             var rotation =
                     rotationJson != null
-                        ? ReadAnimatableRotation(rotationJson)
+                        ? ReadAnimatableRotation(rotationJson.Value)
                         : new Animatable<Rotation>(Rotation.None, null);
 
             var opacity = ReadOpacityFromO(obj);
