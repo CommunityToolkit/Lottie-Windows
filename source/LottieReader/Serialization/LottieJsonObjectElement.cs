@@ -34,7 +34,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 Array.Sort(_propertyNames, Comparer.Instance);
             }
 
-            internal LottieJsonArrayElement? ArrayOrNullProperty(string propertyName)
+            public Vector3? AsVector3()
+            {
+                var x = DoubleOrNullProperty("x");
+                var y = DoubleOrNullProperty("y");
+                var z = DoubleOrNullProperty("z");
+                return x is null
+                    ? (Vector3?)null
+                    : new Vector3(x.Value, y ?? 0, z ?? 0);
+            }
+
+            internal LottieJsonArrayElement? AsArrayProperty(string propertyName)
                 => TryGetProperty(propertyName, out var value) ? value.AsArray() : null;
 
             internal bool? BoolOrNullProperty(string propertyName)

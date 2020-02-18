@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using Microsoft.Toolkit.Uwp.UI.Lottie.GenericData;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -23,8 +24,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 #pragma warning disable SA1601 // Partial elements should be documented
     sealed partial class LottieCompositionReader
     {
-        static readonly Animatable<double> s_animatable_0 = new Animatable<double>(0, null);
-
         static readonly JsonLoadSettings s_jsonLoadSettings = new JsonLoadSettings
         {
             // Ignore commands and line info. Not needed and makes the parser a bit faster.
@@ -146,30 +145,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             {
                 switch (reader.TokenType)
                 {
-                    case JsonToken.StartObject:
-                    case JsonToken.StartArray:
-                    case JsonToken.StartConstructor:
-                    case JsonToken.Raw:
-                    case JsonToken.Integer:
-                    case JsonToken.Float:
-                    case JsonToken.String:
-                    case JsonToken.Boolean:
-                    case JsonToken.Null:
-                    case JsonToken.Undefined:
-                    case JsonToken.EndArray:
-                    case JsonToken.EndConstructor:
-                    case JsonToken.Date:
-                    case JsonToken.Bytes:
-                        // Here means the JSON was invalid or our parser got confused. There is no way to
-                        // recover from this, so throw.
-                        throw UnexpectedTokenException(ref reader);
-
-                    case JsonToken.Comment:
+                    case JsonTokenType.Comment:
                         // Ignore comments.
                         ConsumeToken(ref reader);
                         break;
 
-                    case JsonToken.PropertyName:
+                    case JsonTokenType.PropertyName:
                         var currentProperty = reader.GetString();
 
                         ConsumeToken(ref reader);
@@ -183,10 +164,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                                 chars = ParseArray(ref reader, ParseChar);
                                 break;
                             case "ddd":
-                                is3d = ParseBool(ref reader);
+                                is3d = reader.ParseBool();
                                 break;
                             case "fr":
-                                framesPerSecond = ParseDouble(ref reader);
+                                framesPerSecond = reader.ParseDouble();
                                 break;
                             case "fonts":
                                 fonts = ParseFonts(ref reader);
@@ -195,13 +176,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                                 layers = ParseArray(ref reader, ParseLayer);
                                 break;
                             case "h":
-                                height = ParseDouble(ref reader);
+                                height = reader.ParseDouble();
                                 break;
                             case "ip":
-                                inPoint = ParseDouble(ref reader);
+                                inPoint = reader.ParseDouble();
                                 break;
                             case "op":
-                                outPoint = ParseDouble(ref reader);
+                                outPoint = reader.ParseDouble();
                                 break;
                             case "markers":
                                 markers = ParseArray(ref reader, ParseMarker);
@@ -213,7 +194,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                                 version = reader.GetString();
                                 break;
                             case "w":
-                                width = ParseDouble(ref reader);
+                                width = reader.ParseDouble();
                                 break;
 
                             // Treat any other property as an extension of the BodyMovin format.
@@ -230,7 +211,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
                         break;
 
-                    case JsonToken.EndObject:
+                    case JsonTokenType.EndObject:
                         {
                             // Check that the required properties were found. If any are missing, throw.
                             if (version is null)
@@ -297,6 +278,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                             return result;
                         }
 
+                    // Here means the JSON was invalid or our parser got confused. There is no way to
+                    // recover from this, so throw.
                     default:
                         throw UnexpectedTokenException(ref reader);
                 }
@@ -339,27 +322,24 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         Animatable<Opacity> ReadOpacityFromObject(in LottieJsonObjectElement? obj)
         {
-            var result = obj != null
-                ? ReadAnimatableOpacity(obj.Value)
-                : new Animatable<Opacity>(Opacity.Opaque, null);
-            return result;
+            return ReadAnimatableOpacity(obj);
         }
 
-        static PathGeometry ParseGeometry(in LottieJsonElement value)
+        static PathGeometry ParseGeometry(in LottieJsonElement element)
         {
             LottieJsonObjectElement? pointsData = null;
-            if (value.Type == JTokenType.Array)
+            if (element.Kind == JsonValueKind.Array)
             {
-                var firstItem = value.AsArray().Value[0];
-                var firstItemAsObject = firstItem.AsObject();
-                if (firstItem.Type == JTokenType.Object && firstItemAsObject.Value.ContainsProperty("v"))
+                var firstItem = element.AsArray()?[0];
+                var firstItemAsObject = firstItem?.AsObject();
+                if (firstItemAsObject?.ContainsProperty("v") == true)
                 {
                     pointsData = firstItemAsObject;
                 }
             }
-            else if (value.AsObject()?.ContainsProperty("v") == true)
+            else if (element.AsObject()?.ContainsProperty("v") == true)
             {
-                pointsData = value.AsObject();
+                pointsData = element.AsObject();
             }
 
             if (pointsData is null)
@@ -369,9 +349,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
             var points = pointsData.Value;
 
-            var vertices = points.ArrayOrNullProperty("v");
-            var inTangents = points.ArrayOrNullProperty("i");
-            var outTangents = points.ArrayOrNullProperty("o");
+            var vertices = points.AsArrayProperty("v");
+            var inTangents = points.AsArrayProperty("i");
+            var outTangents = points.AsArrayProperty("o");
             var isClosed = points.BoolOrNullProperty("c") ?? false;
 
             if (vertices is null || inTangents is null || outTangents is null)
@@ -384,11 +364,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             if (beziers.Length > 0)
             {
                 // The vertices for the figure.
-                var verticesAsVector2 = ReadVector2Array(vertices.Value);
+                var verticesAsVector2 = ReadArrayOfVector2(vertices.Value);
 
                 // The control points that define the cubic beziers between the vertices.
-                var inTangentsAsVector2 = ReadVector2Array(inTangents.Value);
-                var outTangentsAsVector2 = ReadVector2Array(outTangents.Value);
+                var inTangentsAsVector2 = ReadArrayOfVector2(inTangents.Value);
+                var outTangentsAsVector2 = ReadArrayOfVector2(outTangents.Value);
 
                 if (verticesAsVector2.Length != inTangentsAsVector2.Length ||
                     verticesAsVector2.Length != outTangentsAsVector2.Length)
@@ -423,13 +403,37 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             return new PathGeometry(beziers);
         }
 
+        static Vector2[] ReadArrayOfVector2(in LottieJsonArrayElement array)
+        {
+            var len = array.Count;
+            var result = new Vector2[len];
+            for (var i = 0; i < len; i++)
+            {
+                result[i] = array[i].AsArray()?.AsVector2() ?? default(Vector2);
+            }
+
+            return result;
+        }
+
         static Opacity ParseOpacity(in LottieJsonElement jsonValue) => Opacity.FromPercent(jsonValue.AsDouble() ?? 0);
 
         static Rotation ParseRotation(in LottieJsonElement jsonValue) => Rotation.FromDegrees(jsonValue.AsDouble() ?? 0);
 
         static Trim ParseTrim(in LottieJsonElement jsonValue) => Trim.FromPercent(jsonValue.AsDouble() ?? 0);
 
-        static void ExpectToken(ref Reader reader, JsonToken token)
+        static Vector3 ParseVector3(in LottieJsonElement jsonValue)
+        {
+            switch (jsonValue.Kind)
+            {
+                case JsonValueKind.Object:
+                    return jsonValue.AsObject()?.AsVector3() ?? Vector3.Zero;
+                case JsonValueKind.Array:
+                    return jsonValue.AsArray()?.AsVector3() ?? Vector3.Zero;
+                default: return default(Vector3);
+            }
+        }
+
+        static void ExpectToken(ref Reader reader, JsonTokenType token)
         {
             if (reader.TokenType != token)
             {
@@ -441,7 +445,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         T[] ParseArray<T>(ref Reader reader, Parser<T> parser)
         {
-            ExpectToken(ref reader, JsonToken.StartArray);
+            ExpectToken(ref reader, JsonTokenType.StartArray);
 
             IList<T> list = EmptyList<T>.Singleton;
 
@@ -449,7 +453,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             {
                 switch (reader.TokenType)
                 {
-                    case JsonToken.StartObject:
+                    case JsonTokenType.StartObject:
                         var result = parser(ref reader);
                         if (result != null)
                         {
@@ -463,7 +467,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
                         break;
 
-                    case JsonToken.EndArray:
+                    case JsonTokenType.EndArray:
                         return list.ToArray();
 
                     default:
@@ -489,7 +493,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         // The JSON is malformed - we found an unexpected token. Fatal.
         static LottieCompositionReaderException UnexpectedTokenException(ref Reader reader) => Exception($"Unexpected token: {reader.TokenType}", ref reader);
 
-        static LottieCompositionReaderException UnexpectedTokenException(JTokenType tokenType) => Exception($"Unexpected token: {tokenType}");
+        static LottieCompositionReaderException UnexpectedTokenException(JsonValueKind kind) => Exception($"Unexpected token: {kind}");
 
         static LottieCompositionReaderException Exception(string message, ref Reader reader) => Exception($"{message} @ {reader.NewtonsoftReader.Path}");
 

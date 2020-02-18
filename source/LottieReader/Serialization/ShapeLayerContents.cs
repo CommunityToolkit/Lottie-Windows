@@ -62,7 +62,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             obj.IgnorePropertyThatIsNotYetSupported("cix", "cl", "ix", "hd");
 
             var numberOfProperties = obj.Int32OrNullProperty("np");
-            var items = ReadShapesList(obj.ArrayOrNullProperty("it"));
+            var items = ReadShapesList(obj.AsArrayProperty("it"));
             obj.AssertAllPropertiesRead();
             return new ShapeGroup(in shapeLayerContentArgs, items);
         }
@@ -94,7 +94,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             // Get dash pattern to be set as StrokeDashArray
             Animatable<double> offset = null;
             var dashPattern = new List<double>();
-            var dashesJson = obj.ArrayOrNullProperty("d");
+            var dashesJson = obj.AsArrayProperty("d");
             if (dashesJson != null)
             {
                 for (int i = 0; i < dashesJson.Value.Count; i++)
@@ -117,7 +117,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             obj.AssertAllPropertiesRead();
             return new SolidColorStroke(
                 in shapeLayerContentArgs,
-                offset ?? s_animatable_0,
+                offset ?? s_animatableDoubleZero,
                 dashPattern,
                 color,
                 opacity,
@@ -155,8 +155,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             var capType = LcToLineCapType(obj.DoubleOrNullProperty("lc"));
             var joinType = LjToLineJoinType(obj.DoubleOrNullProperty("lj"));
             var miterLimit = obj.DoubleOrNullProperty("ml") ?? 4; // Default miter limit in After Effects is 4
-            var startPoint = ReadAnimatableVector3(obj.ObjectOrNullProperty("s").Value);
-            var endPoint = ReadAnimatableVector3(obj.ObjectOrNullProperty("e").Value);
+            var startPoint = ReadAnimatableVector3(obj.ObjectOrNullProperty("s"));
+            var endPoint = ReadAnimatableVector3(obj.ObjectOrNullProperty("e"));
             ReadAnimatableGradientStops(obj.ObjectOrNullProperty("g").Value, out var gradientStops);
 
             obj.AssertAllPropertiesRead();
@@ -190,8 +190,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             var capType = LcToLineCapType(obj.DoubleOrNullProperty("lc"));
             var joinType = LjToLineJoinType(obj.DoubleOrNullProperty("lj"));
             var miterLimit = obj.DoubleOrNullProperty("ml") ?? 4; // Default miter limit in After Effects is 4
-            var startPoint = ReadAnimatableVector3(obj.ObjectOrNullProperty("s").Value);
-            var endPoint = ReadAnimatableVector3(obj.ObjectOrNullProperty("e").Value);
+            var startPoint = ReadAnimatableVector3(obj.ObjectOrNullProperty("s"));
+            var endPoint = ReadAnimatableVector3(obj.ObjectOrNullProperty("e"));
             ReadAnimatableGradientStops(obj.ObjectOrNullProperty("g").Value, out var gradientStops);
 
             obj.AssertAllPropertiesRead();
@@ -250,8 +250,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
             var fillType = ReadFillType(obj);
             var opacity = ReadOpacityFromO(obj);
-            var startPoint = ReadAnimatableVector3(obj.ObjectOrNullProperty("s").Value);
-            var endPoint = ReadAnimatableVector3(obj.ObjectOrNullProperty("e").Value);
+            var startPoint = ReadAnimatableVector3(obj.ObjectOrNullProperty("s"));
+            var endPoint = ReadAnimatableVector3(obj.ObjectOrNullProperty("e"));
             ReadAnimatableGradientStops(obj.ObjectOrNullProperty("g").Value, out var gradientStops);
 
             var highlightLengthObject = obj.ObjectOrNullProperty("h");
@@ -281,8 +281,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
             var fillType = ReadFillType(obj);
             var opacity = ReadOpacityFromO(obj);
-            var startPoint = ReadAnimatableVector3(obj.ObjectOrNullProperty("s").Value);
-            var endPoint = ReadAnimatableVector3(obj.ObjectOrNullProperty("e").Value);
+            var startPoint = ReadAnimatableVector3(obj.ObjectOrNullProperty("s"));
+            var endPoint = ReadAnimatableVector3(obj.ObjectOrNullProperty("e"));
             ReadAnimatableGradientStops(obj.ObjectOrNullProperty("g").Value, out var gradientStops);
 
             obj.AssertAllPropertiesRead();
@@ -302,8 +302,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             // Not clear whether we need to read these properties.
             obj.IgnorePropertyThatIsNotYetSupported("closed", "hd");
 
-            var position = ReadAnimatableVector3(obj.ObjectOrNullProperty("p").Value);
-            var diameter = ReadAnimatableVector3(obj.ObjectOrNullProperty("s").Value);
+            var position = ReadAnimatableVector3(obj.ObjectOrNullProperty("p"));
+            var diameter = ReadAnimatableVector3(obj.ObjectOrNullProperty("s"));
             var direction = obj.BoolOrNullProperty("d") == true;
             obj.AssertAllPropertiesRead();
             return new Ellipse(in shapeLayerContentArgs, direction, position, diameter);
@@ -331,7 +331,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 _issues.PolystarAnimation("points");
             }
 
-            var position = ReadAnimatableVector3(obj.ObjectOrNullProperty("p").Value);
+            var position = ReadAnimatableVector3(obj.ObjectOrNullProperty("p"));
             if (position.IsAnimated)
             {
                 _issues.PolystarAnimation("position");
@@ -400,8 +400,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             obj.IgnorePropertyThatIsNotYetSupported("hd");
 
             var direction = obj.BoolOrNullProperty("d") == true;
-            var position = ReadAnimatableVector3(obj.ObjectOrNullProperty("p").Value);
-            var size = ReadAnimatableVector3(obj.ObjectOrNullProperty("s").Value);
+            var position = ReadAnimatableVector3(obj.ObjectOrNullProperty("p"));
+            var size = ReadAnimatableVector3(obj.ObjectOrNullProperty("s"));
             var cornerRadius = ReadAnimatableFloat(obj.ObjectOrNullProperty("r"));
 
             obj.AssertAllPropertiesRead();
@@ -428,9 +428,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             // Not clear whether we need to read these properties.
             obj.IgnorePropertyThatIsNotYetSupported("ix", "hd");
 
-            var startTrim = ReadAnimatableTrim(obj.ObjectOrNullProperty("s").Value);
-            var endTrim = ReadAnimatableTrim(obj.ObjectOrNullProperty("e").Value);
-            var offset = ReadAnimatableRotation(obj.ObjectOrNullProperty("o").Value);
+            var startTrim = ReadAnimatableTrim(obj.ObjectOrNullProperty("s"));
+            var endTrim = ReadAnimatableTrim(obj.ObjectOrNullProperty("e"));
+            var offset = ReadAnimatableRotation(obj.ObjectOrNullProperty("o"));
             var trimType = MToTrimType(obj.DoubleOrNullProperty("m"));
             obj.AssertAllPropertiesRead();
             return new TrimPath(
@@ -488,8 +488,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 case 0: return ShapeFill.PathFillType.EvenOdd;
                 case 1: return ShapeFill.PathFillType.Winding;
 
-                    // TODO - some files have a "2" value. There
-                    // may be another fill type.
+                // TODO - some files have a "2" value. There
+                // may be another fill type.
                 default: return ShapeFill.PathFillType.EvenOdd;
             }
         }
@@ -515,36 +515,44 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         }
 
         Transform ReadTransform(
+            in LottieJsonObjectElement? obj,
+            in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
+        {
+            if (obj is null)
+            {
+                return new Transform(
+                    shapeLayerContentArgs,
+                    s_animatableVector3Zero,
+                    s_animatableVector3Zero,
+                    s_animatableVector3Zero,
+                    s_animatableRotationNone,
+                    s_animatableOpacityOpaque);
+            }
+            else
+            {
+                return ReadTransform(obj.Value, shapeLayerContentArgs);
+            }
+        }
+
+        Transform ReadTransform(
             in LottieJsonObjectElement obj,
             in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
         {
             var anchorJson = obj.ObjectOrNullProperty("a");
 
-            var anchor =
-                anchorJson != null
-                ? ReadAnimatableVector3(anchorJson.Value)
-                : new AnimatableVector3(Vector3.Zero, null);
-
+            var anchor = ReadAnimatableVector3(anchorJson);
             var positionJson = obj.ObjectOrNullProperty("p");
-
-            var position =
-                positionJson != null
-                    ? ReadAnimatableVector3(positionJson.Value)
-                    : new AnimatableVector3(Vector3.Zero, null);
-
+            var position = ReadAnimatableVector3(positionJson);
             var scaleJson = obj.ObjectOrNullProperty("s");
 
             var scalePercent =
                 scaleJson != null
-                    ? ReadAnimatableVector3(scaleJson.Value)
+                    ? ReadAnimatableVector3(scaleJson)
                     : new AnimatableVector3(new Vector3(100, 100, 100), null);
 
             var rotationJson = obj.ObjectOrNullProperty("r") ?? obj.ObjectOrNullProperty("rz");
 
-            var rotation =
-                    rotationJson != null
-                        ? ReadAnimatableRotation(rotationJson.Value)
-                        : new Animatable<Rotation>(Rotation.None, null);
+            var rotation = ReadAnimatableRotation(rotationJson);
 
             var opacity = ReadOpacityFromO(obj);
 

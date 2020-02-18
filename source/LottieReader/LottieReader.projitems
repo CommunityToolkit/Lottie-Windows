@@ -22,7 +22,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\LottieJsonObjectElement.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\Markers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\ParsingIssues.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Serialization\Primitives.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\Reader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\ShapeLayerContents.cs" />
   </ItemGroup>

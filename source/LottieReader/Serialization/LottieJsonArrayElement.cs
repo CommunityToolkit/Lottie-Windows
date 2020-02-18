@@ -25,7 +25,55 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
             internal int Count => _wrapped.Count;
 
-            internal LottieJsonElement this[int index] => new LottieJsonElement(_owner, _wrapped[index]);
+            public LottieJsonElement this[int index] => new LottieJsonElement(_owner, _wrapped[index]);
+
+            public Vector2? AsVector2()
+            {
+                double? x = null;
+                double? y = null;
+                for (var i = 0; i < Count; i++)
+                {
+                    switch (i)
+                    {
+                        case 0:
+                            x = this[0].AsDouble();
+                            break;
+                        case 1:
+                            y = this[1].AsDouble();
+                            break;
+                    }
+                }
+
+                return x is null
+                    ? (Vector2?)null
+                    : new Vector2(x.Value, y ?? 0);
+            }
+
+            public Vector3? AsVector3()
+            {
+                double? x = null;
+                double? y = null;
+                double? z = null;
+                for (var i = 0; i < Count; i++)
+                {
+                    switch (i)
+                    {
+                        case 0:
+                            x = this[0].AsDouble();
+                            break;
+                        case 1:
+                            y = this[1].AsDouble();
+                            break;
+                        case 2:
+                            z = this[2].AsDouble();
+                            break;
+                    }
+                }
+
+                return x is null
+                    ? (Vector3?)null
+                    : new Vector3(x.Value, y ?? 0, z ?? 0);
+            }
 
             public Enumerator GetEnumerator() => new Enumerator(this);
 

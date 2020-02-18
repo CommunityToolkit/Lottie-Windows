@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 {
@@ -13,7 +13,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
     {
         Char ParseChar(ref Reader reader)
         {
-            ExpectToken(ref reader, JsonToken.StartObject);
+            ExpectToken(ref reader, JsonTokenType.StartObject);
 
             string ch = null;
             string fFamily = null;
@@ -26,7 +26,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             {
                 switch (reader.TokenType)
                 {
-                    case JsonToken.PropertyName:
+                    case JsonTokenType.PropertyName:
                         {
                             var currentProperty = reader.GetString();
                             ConsumeToken(ref reader);
@@ -43,13 +43,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                                     fFamily = reader.GetString();
                                     break;
                                 case "size":
-                                    size = ParseDouble(ref reader);
+                                    size = reader.ParseDouble();
                                     break;
                                 case "style":
                                     style = reader.GetString();
                                     break;
                                 case "w":
-                                    width = ParseDouble(ref reader);
+                                    width = reader.ParseDouble();
                                     break;
                                 default:
                                     _issues.UnexpectedField(currentProperty);
@@ -58,7 +58,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                         }
 
                         break;
-                    case JsonToken.EndObject:
+                    case JsonTokenType.EndObject:
                         {
                             return new Char(ch, fFamily, style, size ?? 0, width ?? 0, shapes);
                         }

@@ -63,7 +63,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             // ----------------------
             var shapeLayerContentArgs = default(ShapeLayerContent.ShapeLayerContentArgs);
             ReadShapeLayerContentArgs(obj, ref shapeLayerContentArgs);
-            layerArgs.Transform = ReadTransform(obj.ObjectOrNullProperty("ks").Value, in shapeLayerContentArgs);
+            layerArgs.Transform = ReadTransform(obj.ObjectOrNullProperty("ks"), in shapeLayerContentArgs);
 
             // ------------------------------
             // Layer Animation
@@ -79,7 +79,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
             // NOTE: The spec specifies this as 'maskProperties' but the BodyMovin tool exports
             // 'masksProperties' with the plural 'masks'.
-            var maskProperties = obj.ArrayOrNullProperty("masksProperties");
+            var maskProperties = obj.AsArrayProperty("masksProperties");
             layerArgs.Masks = maskProperties != null ? ReadMaskProperties(maskProperties.Value) : null;
 
             layerArgs.LayerMatteType = TTToMatteType(obj.DoubleOrNullProperty( "tt"));
@@ -153,7 +153,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         List<ShapeLayerContent> ReadShapes(in LottieJsonObjectElement obj)
         {
-            return ReadShapesList(obj.ArrayOrNullProperty("shapes"));
+            return ReadShapesList(obj.AsArrayProperty("shapes"));
         }
 
         List<ShapeLayerContent> ReadShapesList(in LottieJsonArrayElement? shapesJson)

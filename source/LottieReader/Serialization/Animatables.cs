@@ -5,7 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
 
 using PathGeometry = Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Sequence<Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.BezierSegment>;
 
@@ -15,13 +15,23 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 #pragma warning disable SA1601 // Partial elements should be documented
     sealed partial class LottieCompositionReader
     {
+        static readonly Animatable<double> s_animatableDoubleZero = CreateNonAnimatedAnimatable(0.0);
+        static readonly Animatable<Color> s_animatableColorBlack = CreateNonAnimatedAnimatable(Color.Black);
+        static readonly Animatable<Opacity> s_animatableOpacityOpaque = CreateNonAnimatedAnimatable(Opacity.Opaque);
+        static readonly Animatable<Rotation> s_animatableRotationNone = CreateNonAnimatedAnimatable(Rotation.None);
+        static readonly Animatable<Trim> s_animatableTrimNone = CreateNonAnimatedAnimatable(Trim.None);
+        static readonly AnimatableVector3 s_animatableVector3Zero = new AnimatableVector3(Vector3.Zero, null);
         static readonly AnimatableParser<double> s_animatableFloatParser = CreateAnimatableParser((in LottieJsonElement el) => el.AsDouble() ?? 0);
         static readonly AnimatableParser<Opacity> s_animatableOpacityParser = CreateAnimatableParser(ParseOpacity);
         static readonly AnimatableParser<PathGeometry> s_animatableGeometryParser = CreateAnimatableParser(ParseGeometry);
         static readonly AnimatableParser<Rotation> s_animatableRotationParser = CreateAnimatableParser(ParseRotation);
         static readonly AnimatableParser<Trim> s_animatableTrimParser = CreateAnimatableParser(ParseTrim);
-        static readonly AnimatableParser<Vector3> s_animatableVector3Parser = CreateAnimatableParser(ReadVector3);
+        static readonly AnimatableParser<Vector3> s_animatableVector3Parser = CreateAnimatableParser(ParseVector3);
         readonly AnimatableParser<Color> _animatableColorParser;
+
+        static Animatable<T> CreateNonAnimatedAnimatable<T>(T value)
+            where T : IEquatable<T>
+            => new Animatable<T>(value, null);
 
         static Animatable<T> CreateAnimatable<T>(T initialValue, IEnumerable<KeyFrame<T>> keyFrames, int? propertyIndex)
             where T : IEquatable<T>
@@ -44,7 +54,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         {
             if (obj is null)
             {
-                return new Animatable<Color>(Color.Black, null);
+                return s_animatableColorBlack;
             }
 
             var objValue = obj.Value;
@@ -53,15 +63,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         }
 
         Animatable<double> ReadAnimatableFloat(in LottieJsonObjectElement? obj)
-        {
-            if (obj is null)
-            {
-                return new Animatable<double>(0, null);
-            }
-
-            var objValue = obj.Value;
-            return ReadAnimatable(s_animatableFloatParser, obj.Value);
-        }
+            => obj is null
+                ? s_animatableDoubleZero
+                : ReadAnimatable(s_animatableFloatParser, obj.Value);
 
         Animatable<PathGeometry> ReadAnimatableGeometry(in LottieJsonObjectElement obj)
         {
@@ -168,14 +172,25 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             }
         }
 
-        Animatable<Opacity> ReadAnimatableOpacity(in LottieJsonObjectElement obj)
-            => ReadAnimatable(s_animatableOpacityParser, obj);
+        Animatable<Opacity> ReadAnimatableOpacity(in LottieJsonObjectElement? obj)
+            => obj is null
+                ? s_animatableOpacityOpaque
+                : ReadAnimatable(s_animatableOpacityParser, obj.Value);
 
-        Animatable<Rotation> ReadAnimatableRotation(in LottieJsonObjectElement obj)
-            => ReadAnimatable(s_animatableRotationParser, obj);
+        Animatable<Rotation> ReadAnimatableRotation(in LottieJsonObjectElement? obj)
+            => obj is null
+                ? s_animatableRotationNone
+                : ReadAnimatable(s_animatableRotationParser, obj.Value);
 
-        Animatable<Trim> ReadAnimatableTrim(in LottieJsonObjectElement obj)
-            => ReadAnimatable(s_animatableTrimParser, obj);
+        Animatable<Trim> ReadAnimatableTrim(in LottieJsonObjectElement? obj)
+            => obj is null
+                ? s_animatableTrimNone
+                : ReadAnimatable(s_animatableTrimParser, obj.Value);
+
+        IAnimatableVector3 ReadAnimatableVector3(in LottieJsonObjectElement? obj)
+            => obj is null
+                ? s_animatableVector3Zero
+                : ReadAnimatableVector3(obj.Value);
 
         IAnimatableVector3 ReadAnimatableVector3(in LottieJsonObjectElement obj)
         {
@@ -201,7 +216,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 var y = ReadAnimatableFloat(obj.ObjectOrNullProperty("y"));
                 obj.AssertAllPropertiesRead();
 
-                return new AnimatableXYZ(x, y, s_animatable_0);
+                return new AnimatableXYZ(x, y, s_animatableDoubleZero);
             }
         }
 
@@ -216,6 +231,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
             protected override Color ReadValue(LottieJsonElement obj)
             {
+                if (obj.Kind != JsonValueKind.Array)
+                {
+                    throw UnexpectedTokenException(obj.Kind);
+                }
+
                 var colorArray = obj.AsArray().Value;
                 double a = 0;
                 double r = 0;
@@ -228,10 +248,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     // Note: indexing a JsonArray is faster than enumerating.
                     var jsonValue = colorArray[i];
 
-                    switch (jsonValue.Type)
+                    switch (jsonValue.Kind)
                     {
-                        case JTokenType.Float:
-                        case JTokenType.Integer:
+                        case JsonValueKind.Number:
                             break;
                         default:
                             if (_ignoreAlpha && i == 3)
@@ -241,10 +260,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                                 goto AllColorChannelsRead;
                             }
 
-                            throw UnexpectedTokenException(jsonValue.Type);
+                            throw UnexpectedTokenException(jsonValue.Kind);
                     }
 
-                    var number = jsonValue.GetDouble();
+                    var number = jsonValue.AsDouble() ?? 0;
                     switch (i)
                     {
                         case 0:
@@ -292,7 +311,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
             protected override Sequence<GradientStop> ReadValue(LottieJsonElement obj)
             {
-                var gradientStopsData = obj.AsArray().Value.Select((in LottieJsonElement v) => v.GetDouble()).ToArray();
+                if (obj.Kind != JsonValueKind.Array)
+                {
+                    throw UnexpectedTokenException(obj.Kind);
+                }
+
+                var gradientStopsData = obj.AsArray().Value.Select((in LottieJsonElement v) => v.AsDouble() ?? 0).ToArray();
 
                 // Get the number of color stops. If _colorStopCount wasn't specified, all of
                 // the data in the array is for color stops.
@@ -359,7 +383,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
             protected override Sequence<GradientStop> ReadValue(LottieJsonElement obj)
             {
-                var gradientStopsData = obj.AsArray().Value.Select((in LottieJsonElement v) => v.GetDouble()).Skip(_colorStopCount * 4).ToArray();
+                var gradientStopsData = obj.AsArray().Value.Select((in LottieJsonElement v) => v.AsDouble() ?? 0).Skip(_colorStopCount * 4).ToArray();
                 var gradientStops = new OpacityGradientStop[gradientStopsData.Length / 2];
                 var offset = 0.0;
                 for (int i = 0; i < gradientStopsData.Length; i++)
@@ -417,12 +441,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                         case "k":
                             {
                                 var k = property.Value;
-                                if (k.Type == JTokenType.Array)
+                                if (k.Kind == JsonValueKind.Array)
                                 {
-                                    var kArray = k.AsArray().Value;
+                                    var kArray = k.AsArray();
                                     if (HasKeyframes(kArray))
                                     {
-                                        keyFrames = ReadKeyFrames(kArray).ToArray();
+                                        keyFrames = ReadKeyFrames(kArray.Value).ToArray();
                                         initialValue = keyFrames.First().Value;
                                     }
                                 }
@@ -462,10 +486,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 }
             }
 
-            static bool HasKeyframes(in LottieJsonArrayElement array)
+            static bool HasKeyframes(in LottieJsonArrayElement? array)
             {
-                var firstItem = array[0];
-                return firstItem.Type == JTokenType.Object && firstItem.AsObject()?.ContainsProperty("t") == true;
+                return array?[0].AsObject()?.ContainsProperty("t") == true;
             }
 
             IEnumerable<KeyFrame<T>> ReadKeyFrames(
@@ -556,8 +579,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     // Spatial control points.
                     if (lottieKeyFrame.ContainsProperty("ti"))
                     {
-                        ti = ReadVector3FromJsonArray(lottieKeyFrame.ArrayOrNullProperty("ti"));
-                        to = ReadVector3FromJsonArray(lottieKeyFrame.ArrayOrNullProperty("to"));
+                        ti = lottieKeyFrame.AsArrayProperty("ti")?.AsVector3() ?? Vector3.Zero;
+                        to = lottieKeyFrame.AsArrayProperty("to")?.AsVector3() ?? Vector3.Zero;
                     }
 
                     // Get the easing to the end value, and get the end value.
@@ -577,9 +600,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                         var cp2Json = lottieKeyFrame.ObjectOrNullProperty("i");
                         if (cp1Json != null && cp2Json != null)
                         {
-                            var cp1 = ReadVector3(cp1Json.Value);
-                            var cp2 = ReadVector3(cp2Json.Value);
-                            easing = new CubicBezierEasing(cp1, cp2);
+                            var cp1 = cp1Json.Value.AsVector3();
+                            var cp2 = cp2Json.Value.AsVector3();
+                            easing = new CubicBezierEasing(cp1 ?? Vector3.Zero, cp2 ?? Vector3.Zero);
                         }
                         else
                         {

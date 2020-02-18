@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Text.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
@@ -29,6 +30,43 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 _wrapped = wrapped;
             }
 
+            internal JsonValueKind Kind
+            {
+                get
+                {
+                    switch (_wrapped.Type)
+                    {
+                        case JTokenType.Array:
+                            return JsonValueKind.Array;
+                        case JTokenType.Boolean:
+                            return JsonValueKind.False;
+                        case JTokenType.Integer:
+                        case JTokenType.Float:
+                            return JsonValueKind.Number;
+                        case JTokenType.Null:
+                            return JsonValueKind.Null;
+                        case JTokenType.Object:
+                            return JsonValueKind.Object;
+                        case JTokenType.String:
+                            return JsonValueKind.String;
+
+                        case JTokenType.None:
+                        case JTokenType.Constructor:
+                        case JTokenType.Property:
+                        case JTokenType.Comment:
+                        case JTokenType.Undefined:
+                        case JTokenType.Date:
+                        case JTokenType.Raw:
+                        case JTokenType.Bytes:
+                        case JTokenType.Guid:
+                        case JTokenType.Uri:
+                        case JTokenType.TimeSpan:
+                        default:
+                            return JsonValueKind.Undefined;
+                    }
+                }
+            }
+
             internal LottieJsonArrayElement? AsArray()
                 => _wrapped.Type == JTokenType.Array
                     ? new LottieJsonArrayElement(_owner, _wrapped)
@@ -38,8 +76,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             => _wrapped.Type == JTokenType.Object
                 ? new LottieJsonObjectElement(_owner, _wrapped)
                 : (LottieJsonObjectElement?)null;
-
-            internal JTokenType Type => _wrapped.Type;
 
             internal bool? AsBoolean()
             {
@@ -111,19 +147,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                         return (string)_wrapped;
                     default:
                         return null;
-                }
-            }
-
-            internal double GetDouble()
-            {
-                var value = AsDouble();
-                if (value.HasValue)
-                {
-                    return value.Value;
-                }
-                else
-                {
-                    throw LottieCompositionReader.UnexpectedTokenException(Type);
                 }
             }
         }
