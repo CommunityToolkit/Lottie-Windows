@@ -16,7 +16,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             IList<Font> list = EmptyList<Font>.Singleton;
 
             var fontsObject = LottieJsonObjectElement.Load(this, ref reader, s_jsonLoadSettings);
-            foreach (var item in fontsObject.AsArrayProperty("list").Value)
+
+            foreach (var item in fontsObject.AsArrayProperty("list"))
             {
                 var element = item.AsObject();
                 if (!element.HasValue)
