@@ -529,6 +529,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             in LottieJsonObjectElement obj,
             in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
         {
+            obj.IgnorePropertyThatIsNotYetSupported("nm", "ty");
+
             var startOpacity = ReadOpacityFromObject(obj.ObjectOrNullProperty("so"));
             var endOpacity = ReadOpacityFromObject(obj.ObjectOrNullProperty("eo"));
             var transform = ReadTransform(obj, in shapeLayerContentArgs);
@@ -569,6 +571,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             in LottieJsonObjectElement obj,
             in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
         {
+            // Not clear what these.
+            obj.IgnorePropertyThatIsNotYetSupported("sa", "sk");
+            obj.IgnorePropertyThatIsNotYetSupported("or", "rx", "ry");
+            obj.IgnorePropertyThatIsNotYetSupported("nm", "ty");
+
             var anchorJson = obj.ObjectOrNullProperty("a");
 
             var anchor = ReadAnimatableVector3(anchorJson);
