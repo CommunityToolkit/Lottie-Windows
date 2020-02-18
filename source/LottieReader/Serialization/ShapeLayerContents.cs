@@ -482,7 +482,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         ShapeFill.PathFillType ReadFillType(in LottieJsonObjectElement obj)
         {
             // If not specified, the fill type is EvenOdd.
-            var windingValue = obj.Int32OrNullProperty("r") ?? 1;
+            var windingValue = obj.Int32OrNullProperty("r");
             switch (windingValue)
             {
                 case 0: return ShapeFill.PathFillType.EvenOdd;
@@ -490,7 +490,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
                     // TODO - some files have a "2" value. There
                     // may be another fill type.
-                default: return ShapeFill.PathFillType.Winding;
+                default: return ShapeFill.PathFillType.EvenOdd;
             }
         }
 
