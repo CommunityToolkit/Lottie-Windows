@@ -21,6 +21,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         static readonly Animatable<double> s_animatableDoubleZero = CreateNonAnimatedAnimatable(0.0);
         static readonly Animatable<Color> s_animatableColorBlack = CreateNonAnimatedAnimatable(Color.Black);
         static readonly Animatable<Opacity> s_animatableOpacityOpaque = CreateNonAnimatedAnimatable(Opacity.Opaque);
+        static readonly Animatable<PathGeometry> s_animatableGeometryEmpty = CreateNonAnimatedAnimatable(Sequence<BezierSegment>.Empty);
         static readonly Animatable<Rotation> s_animatableRotationNone = CreateNonAnimatedAnimatable(Rotation.None);
         static readonly Animatable<Sequence<GradientStop>> s_animatableGradientStopsSingle = CreateNonAnimatedAnimatable(s_defaultGradientStops);
         static readonly Animatable<Trim> s_animatableTrimNone = CreateNonAnimatedAnimatable(Trim.None);
@@ -57,42 +58,33 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         }
 
         Animatable<Color> ReadAnimatableColor(in LottieJsonObjectElement? obj)
-        {
-            if (obj is null)
-            {
-                return s_animatableColorBlack;
-            }
-
-            var objValue = obj.Value;
-            _animatableColorParser.ParseJson(this, objValue, out var keyFrames, out var initialValue);
-            return CreateAnimatable(initialValue, keyFrames, objValue.Int32OrNullProperty("ix"));
-        }
+            => obj is null
+                ? s_animatableColorBlack
+                : ReadAnimatable(_animatableColorParser, obj.Value);
 
         Animatable<double> ReadAnimatableFloat(in LottieJsonObjectElement? obj)
             => obj is null
                 ? s_animatableDoubleZero
                 : ReadAnimatable(s_animatableFloatParser, obj.Value);
 
-        Animatable<PathGeometry> ReadAnimatableGeometry(in LottieJsonObjectElement obj)
-        {
-            s_animatableGeometryParser.ParseJson(this, obj, out var keyFrames, out var initialValue);
-            var propertyIndex = obj.Int32OrNullProperty("ix");
+        Animatable<PathGeometry> ReadAnimatableGeometry(in LottieJsonObjectElement? obj)
+            => obj is null
+                ? s_animatableGeometryEmpty
+                : ReadAnimatable(s_animatableGeometryParser, obj.Value);
 
-            return keyFrames.Any()
-                ? new Animatable<PathGeometry>(keyFrames, propertyIndex)
-                : new Animatable<PathGeometry>(initialValue, propertyIndex);
-        }
+        Animatable<Sequence<GradientStop>> ReadAnimatableGradientStops(in LottieJsonObjectElement? obj)
+            => obj is null
+                ? s_animatableGradientStopsSingle
+                : ReadAnimatableGradientStops(obj.Value);
 
-        void ReadAnimatableGradientStops(
-            in LottieJsonObjectElement obj,
-            out Animatable<Sequence<GradientStop>> gradientStops)
+        Animatable<Sequence<GradientStop>> ReadAnimatableGradientStops(in LottieJsonObjectElement obj)
         {
             // If the "k" doesn't exist, we can't parse.
             var kObj = obj.ObjectOrNullProperty("k");
 
             if (kObj is null)
             {
-                gradientStops = s_animatableGradientStopsSingle;
+                return s_animatableGradientStopsSingle;
             }
             else
             {
@@ -101,15 +93,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 // then this is the number of color stops, and the remaining stops are opacity stops.
                 var numberOfColorStops = obj.Int32OrNullProperty("p");
                 var propertyIndex = obj.Int32OrNullProperty("ix");
-                ReadAnimatableGradientStops(kObj.Value, numberOfColorStops, propertyIndex, out gradientStops);
+                return ReadAnimatableGradientStops(kObj.Value, numberOfColorStops, propertyIndex);
             }
         }
 
-        void ReadAnimatableGradientStops(
+        Animatable<Sequence<GradientStop>> ReadAnimatableGradientStops(
                 in LottieJsonObjectElement obj,
                 int? numberOfColorStops,
-                int? propertyIndex,
-                out Animatable<Sequence<GradientStop>> gradientStops)
+                int? propertyIndex)
         {
             var animatableColorStopsParser = new AnimatableColorStopsParser(numberOfColorStops);
 
@@ -133,7 +124,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 {
                     // There are opacity key frames. The number of color key frames should be the same
                     // (this is asserted in ConcatGradientStopKeyFrames).
-                    gradientStops = new Animatable<Sequence<GradientStop>>(
+                    return new Animatable<Sequence<GradientStop>>(
                                             ConcatGradientStopKeyFrames(colorKeyFrames, opacityKeyFrames),
                                             propertyIndex);
                 }
@@ -147,7 +138,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                             "Numbers of key frames in opacity gradient stops and color gradient stops are unequal.");
                     }
 
-                    gradientStops = new Animatable<Sequence<GradientStop>>(
+                    return new Animatable<Sequence<GradientStop>>(
                                             new Sequence<GradientStop>(colorInitialValue.Concat(opacityInitialValue)),
                                             propertyIndex);
                 }
@@ -155,7 +146,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             else
             {
                 // There are only color stops.
-                gradientStops = colorKeyFrames.Any()
+                return colorKeyFrames.Any()
                     ? new Animatable<Sequence<GradientStop>>(colorKeyFrames, propertyIndex)
                     : new Animatable<Sequence<GradientStop>>(colorInitialValue, propertyIndex);
             }

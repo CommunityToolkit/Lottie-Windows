@@ -111,8 +111,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
                     case Layer.LayerType.Solid:
                         {
-                            var solidWidth = obj.Int32OrNullProperty("sw").Value;
-                            var solidHeight = obj.Int32OrNullProperty("sh").Value;
+                            var solidWidth = obj.Int32OrNullProperty("sw") ?? 0;
+                            var solidHeight = obj.Int32OrNullProperty("sh") ?? 0;
                             var solidColor = ReadColorFromString(obj.StringOrNullProperty("sc") ?? string.Empty);
                             return new SolidLayer(in layerArgs, solidWidth, solidHeight, solidColor);
                         }
@@ -212,7 +212,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
                 var inverted = obj.BoolOrNullProperty("inv") ?? false;
                 var name = ReadName(obj);
-                var animatedGeometry = ReadAnimatableGeometry(obj.ObjectOrNullProperty("pt").Value);
+                var animatedGeometry = ReadAnimatableGeometry(obj.ObjectOrNullProperty("pt"));
                 var opacity = ReadOpacityFromO(obj);
                 var maskMode = obj.StringOrNullProperty("mode") ?? string.Empty;
 
