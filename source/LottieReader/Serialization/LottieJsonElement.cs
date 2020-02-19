@@ -73,9 +73,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     : (LottieJsonArrayElement?)null;
 
             internal LottieJsonObjectElement? AsObject()
-            => _wrapped.Type == JTokenType.Object
-                ? new LottieJsonObjectElement(_owner, _wrapped)
-                : (LottieJsonObjectElement?)null;
+                => _wrapped.Type == JTokenType.Object
+                    ? new LottieJsonObjectElement(_owner, _wrapped)
+                    : (LottieJsonObjectElement?)null;
 
             internal bool? AsBoolean()
             {

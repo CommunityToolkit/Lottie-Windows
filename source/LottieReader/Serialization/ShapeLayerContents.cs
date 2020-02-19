@@ -320,15 +320,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
             var direction = obj.BoolOrNullProperty("d") == true;
 
-            var type = SyToPolystarType(obj.DoubleOrNullProperty("sy"));
-
-            if (!type.HasValue)
-            {
-                return null;
-            }
-
-            var polystarType = type.Value;
-
             var points = ReadAnimatableFloat(obj.ObjectOrNullProperty("pt"));
             if (points.IsAnimated)
             {
@@ -361,6 +352,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
             Animatable<double> innerRadius;
             Animatable<double> innerRoundedness;
+
+            var polystarType = SyToPolystarType(obj.DoubleOrNullProperty("sy")) ?? Polystar.PolyStarType.Polygon;
 
             switch (polystarType)
             {
@@ -571,7 +564,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             in LottieJsonObjectElement obj,
             in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
         {
-            // Not clear what these.
+            // Not clear whether we need to read these properties.
             obj.IgnorePropertyThatIsNotYetSupported("sa", "sk");
             obj.IgnorePropertyThatIsNotYetSupported("or", "rx", "ry");
             obj.IgnorePropertyThatIsNotYetSupported("nm", "ty");

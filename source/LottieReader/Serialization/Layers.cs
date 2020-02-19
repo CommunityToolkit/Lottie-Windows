@@ -20,7 +20,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             // Not clear whether we need to read these properties.
             obj.IgnorePropertyThatIsNotYetSupported("bounds", "sy", "td");
 
-            // Property 'hasMask' is deprecated and thus we are intentionally ignoring it
+            // Property 'hasMask' is deprecated and thus we are intentionally ignoring it.
             obj.IgnorePropertyIntentionally("hasMask");
 
             var layerArgs = default(Layer.LayerArgs);
@@ -194,7 +194,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             // "of":(bool)strokeOverFill
             obj.IgnorePropertyThatIsNotYetSupported("d", "p", "m");
 
-            // Array of animatable text properties (fc:fill color, sc:stroke color, sw:stroke width, t:tracking (float))
+            // Array of animatable text properties (fc:fill color, sc:stroke color, sw:stroke width, t:tracking (float)).
             obj.IgnorePropertyThatIsNotYetSupported("a");
             obj.AssertAllPropertiesRead();
         }
@@ -205,7 +205,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             {
                 var obj = elem.AsObject().Value;
 
-                // Ignoring property 'x' because it is not in the official spec
+                // Ignoring property 'x' because it is not in the official spec.
                 // The x property refers to the mask expansion. In AE you can
                 // expand or shrink a mask getting a reduced or expanded version of the same shape.
                 obj.IgnorePropertyThatIsNotYetSupported("x");
@@ -264,9 +264,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             }
             else
             {
-                var index = 1; // Skip '#'
+                var index = 1; // Skip '#'.
 
-                // '#AARRGGBB'
+                // '#AARRGGBB'.
                 byte a = 255;
                 if (hex.Length == 9)
                 {
