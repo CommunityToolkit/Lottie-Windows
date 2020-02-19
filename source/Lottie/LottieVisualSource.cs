@@ -676,7 +676,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             await task;
             await Task.Delay(_checkedDelayMs);
 #else
+#pragma warning disable VSTHRD003 // Avoid awaiting foreign Tasks
             return task;
+#pragma warning restore VSTHRD003 // Avoid awaiting foreign Tasks
 #endif
         }
 

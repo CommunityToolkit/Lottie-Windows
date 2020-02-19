@@ -4,7 +4,7 @@
 
 using System;
 using System.Linq;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 {
@@ -14,7 +14,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
     {
         Asset ParseAsset(ref Reader reader)
         {
-            ExpectToken(ref reader, JsonToken.StartObject);
+            ExpectToken(ref reader, JsonTokenType.StartObject);
 
             int e = 0;
             string id = null;
@@ -28,7 +28,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             {
                 switch (reader.TokenType)
                 {
-                    case JsonToken.PropertyName:
+                    case JsonTokenType.PropertyName:
                         {
                             var currentProperty = reader.GetString();
                             ConsumeToken(ref reader);
@@ -37,20 +37,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                             {
                                 case "e":
                                     // TODO: unknown what this is. It shows up in image assets.
-                                    e = ParseInt(ref reader);
+                                    e = reader.ParseInt();
                                     break;
                                 case "h":
-                                    height = ParseDouble(ref reader);
+                                    height = reader.ParseDouble();
                                     break;
                                 case "id":
                                     // Older lotties use a string. New lotties use an int. Handle either as strings.
                                     switch (reader.TokenType)
                                     {
-                                        case JsonToken.String:
+                                        case JsonTokenType.String:
                                             id = reader.GetString();
                                             break;
-                                        case JsonToken.Integer:
-                                            id = ParseInt(ref reader).ToString();
+                                        case JsonTokenType.Number:
+                                            id = reader.ParseInt().ToString();
                                             break;
                                         default:
                                             throw UnexpectedTokenException(ref reader);
@@ -67,7 +67,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                                     imagePath = reader.GetString();
                                     break;
                                 case "w":
-                                    width = ParseDouble(ref reader);
+                                    width = reader.ParseDouble();
                                     break;
 
                                 // Report but ignore unexpected fields.
@@ -81,7 +81,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                         }
 
                         break;
-                    case JsonToken.EndObject:
+                    case JsonTokenType.EndObject:
                         {
                             if (id is null)
                             {

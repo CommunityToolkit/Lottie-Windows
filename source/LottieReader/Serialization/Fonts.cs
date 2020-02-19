@@ -4,7 +4,6 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 {
@@ -16,14 +15,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         {
             IList<Font> list = EmptyList<Font>.Singleton;
 
-            var fontsObject = JCObject.Load(ref reader, s_jsonLoadSettings);
-            foreach (JCObject item in fontsObject.GetNamedArray("list"))
+            var fontsObject = LottieJsonObjectElement.Load(this, ref reader, s_jsonLoadSettings);
+
+            foreach (var item in fontsObject.AsArrayProperty("list"))
             {
-                var fName = item.GetNamedString("fName");
-                var fFamily = item.GetNamedString("fFamily");
-                var fStyle = item.GetNamedString("fStyle");
-                var ascent = ReadFloat(item.GetNamedValue("ascent"));
-                AssertAllFieldsRead(item);
+                var element = item.AsObject();
+                if (!element.HasValue)
+                {
+                    continue;
+                }
+
+                var obj = element.Value;
+                var fName = obj.StringOrNullProperty("fName") ?? string.Empty;
+                var fFamily = obj.StringOrNullProperty("fFamily") ?? string.Empty;
+                var fStyle = obj.StringOrNullProperty("fStyle") ?? string.Empty;
+                var ascent = obj.DoubleOrNullProperty("ascent") ?? 0;
+                obj.AssertAllPropertiesRead();
                 if (list == EmptyList<Font>.Singleton)
                 {
                     list = new List<Font>();
@@ -32,7 +39,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 list.Add(new Font(fName, fFamily, fStyle, ascent));
             }
 
-            AssertAllFieldsRead(fontsObject);
+            fontsObject.AssertAllPropertiesRead();
 
             return list.ToArray();
         }
