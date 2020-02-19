@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 {
@@ -12,7 +12,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
     {
         Marker ParseMarker(ref Reader reader)
         {
-            ExpectToken(ref reader, JsonToken.StartObject);
+            ExpectToken(ref reader, JsonTokenType.StartObject);
 
             string name = null;
             double durationMilliseconds = 0;
@@ -22,7 +22,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             {
                 switch (reader.TokenType)
                 {
-                    case JsonToken.PropertyName:
+                    case JsonTokenType.PropertyName:
                         var currentProperty = reader.GetString();
 
                         ConsumeToken(ref reader);
@@ -33,10 +33,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                                 name = reader.GetString();
                                 break;
                             case "dr":
-                                durationMilliseconds = ParseDouble(ref reader);
+                                durationMilliseconds = reader.ParseDouble();
                                 break;
                             case "tm":
-                                frame = ParseDouble(ref reader);
+                                frame = reader.ParseDouble();
                                 break;
                             default:
                                 _issues.IgnoredField(currentProperty);
@@ -45,7 +45,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                         }
 
                         break;
-                    case JsonToken.EndObject:
+                    case JsonTokenType.EndObject:
                         return new Marker(name: name, frame: frame, durationMilliseconds: durationMilliseconds);
                     default:
                         throw UnexpectedTokenException(ref reader);

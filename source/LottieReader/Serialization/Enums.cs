@@ -8,163 +8,205 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 #pragma warning disable SA1601 // Partial elements should be documented
     sealed partial class LottieCompositionReader
     {
-        BlendMode BmToBlendMode(double bm)
+        BlendMode BmToBlendMode(double? bm)
         {
-            if (bm == (int)bm)
+            if (bm.HasValue)
             {
-                switch ((int)bm)
+                if (TryAsExactInt(bm.Value, out var intValue))
                 {
-                    case 0: return BlendMode.Normal;
-                    case 1: return BlendMode.Multiply;
-                    case 2: return BlendMode.Screen;
-                    case 3: return BlendMode.Overlay;
-                    case 4: return BlendMode.Darken;
-                    case 5: return BlendMode.Lighten;
-                    case 6: return BlendMode.ColorDodge;
-                    case 7: return BlendMode.ColorBurn;
-                    case 8: return BlendMode.HardLight;
-                    case 9: return BlendMode.SoftLight;
-                    case 10: return BlendMode.Difference;
-                    case 11: return BlendMode.Exclusion;
-                    case 12: return BlendMode.Hue;
-                    case 13: return BlendMode.Saturation;
-                    case 14: return BlendMode.Color;
-                    case 15: return BlendMode.Luminosity;
+                    switch (intValue)
+                    {
+                        case 0: return BlendMode.Normal;
+                        case 1: return BlendMode.Multiply;
+                        case 2: return BlendMode.Screen;
+                        case 3: return BlendMode.Overlay;
+                        case 4: return BlendMode.Darken;
+                        case 5: return BlendMode.Lighten;
+                        case 6: return BlendMode.ColorDodge;
+                        case 7: return BlendMode.ColorBurn;
+                        case 8: return BlendMode.HardLight;
+                        case 9: return BlendMode.SoftLight;
+                        case 10: return BlendMode.Difference;
+                        case 11: return BlendMode.Exclusion;
+                        case 12: return BlendMode.Hue;
+                        case 13: return BlendMode.Saturation;
+                        case 14: return BlendMode.Color;
+                        case 15: return BlendMode.Luminosity;
+                    }
                 }
+
+                _issues.UnexpectedValueForType("BlendMode", bm.ToString());
             }
 
-            _issues.UnexpectedValueForType("BlendMode", bm.ToString());
             return BlendMode.Normal;
         }
 
-        ShapeStroke.LineCapType LcToLineCapType(double lc)
+        ShapeStroke.LineCapType LcToLineCapType(double? lc)
         {
-            if (lc == (int)lc)
+            if (lc.HasValue)
             {
-                switch ((int)lc)
+                if (TryAsExactInt(lc.Value, out var intValue))
                 {
-                    case 1: return ShapeStroke.LineCapType.Butt;
-                    case 2: return ShapeStroke.LineCapType.Round;
-                    case 3: return ShapeStroke.LineCapType.Projected;
+                    switch (intValue)
+                    {
+                        case 1: return ShapeStroke.LineCapType.Butt;
+                        case 2: return ShapeStroke.LineCapType.Round;
+                        case 3: return ShapeStroke.LineCapType.Projected;
+                    }
                 }
+
+                _issues.UnexpectedValueForType("LineCapType", lc.ToString());
             }
 
-            _issues.UnexpectedValueForType("LineCapType", lc.ToString());
             return ShapeStroke.LineCapType.Butt;
         }
 
-        ShapeStroke.LineJoinType LjToLineJoinType(double lj)
+        ShapeStroke.LineJoinType LjToLineJoinType(double? lj)
         {
-            if (lj == (int)lj)
+            if (lj.HasValue)
             {
-                switch ((int)lj)
+                if (TryAsExactInt(lj.Value, out var intValue))
                 {
-                    case 1: return ShapeStroke.LineJoinType.Miter;
-                    case 2: return ShapeStroke.LineJoinType.Round;
-                    case 3: return ShapeStroke.LineJoinType.Bevel;
+                    switch (intValue)
+                    {
+                        case 1: return ShapeStroke.LineJoinType.Miter;
+                        case 2: return ShapeStroke.LineJoinType.Round;
+                        case 3: return ShapeStroke.LineJoinType.Bevel;
+                    }
                 }
+
+                _issues.UnexpectedValueForType("LineJoinType", lj.ToString());
             }
 
-            _issues.UnexpectedValueForType("LineJoinType", lj.ToString());
             return ShapeStroke.LineJoinType.Miter;
         }
 
-        MergePaths.MergeMode MmToMergeMode(double mm)
+        MergePaths.MergeMode MmToMergeMode(double? mm)
         {
-            if (mm == (int)mm)
+            if (mm.HasValue)
             {
-                switch ((int)mm)
+                if (TryAsExactInt(mm.Value, out var intValue))
                 {
-                    case 1: return MergePaths.MergeMode.Merge;
-                    case 2: return MergePaths.MergeMode.Add;
-                    case 3: return MergePaths.MergeMode.Subtract;
-                    case 4: return MergePaths.MergeMode.Intersect;
-                    case 5: return MergePaths.MergeMode.ExcludeIntersections;
+                    switch (intValue)
+                    {
+                        case 1: return MergePaths.MergeMode.Merge;
+                        case 2: return MergePaths.MergeMode.Add;
+                        case 3: return MergePaths.MergeMode.Subtract;
+                        case 4: return MergePaths.MergeMode.Intersect;
+                        case 5: return MergePaths.MergeMode.ExcludeIntersections;
+                    }
                 }
+
+                _issues.UnexpectedValueForType("MergeMode", mm.ToString());
             }
 
-            _issues.UnexpectedValueForType("MergeMode", mm.ToString());
             return MergePaths.MergeMode.Merge;
         }
 
-        TrimPath.TrimType MToTrimType(double m)
+        TrimPath.TrimType MToTrimType(double? m)
         {
-            if (m == (int)m)
+            if (m.HasValue)
             {
-                switch ((int)m)
+                if (TryAsExactInt(m.Value, out var intValue))
                 {
-                    case 1: return TrimPath.TrimType.Simultaneously;
-                    case 2: return TrimPath.TrimType.Individually;
+                    switch (intValue)
+                    {
+                        case 1: return TrimPath.TrimType.Simultaneously;
+                        case 2: return TrimPath.TrimType.Individually;
+                    }
                 }
+
+                _issues.UnexpectedValueForType("TrimType", m.ToString());
             }
 
-            _issues.UnexpectedValueForType("TrimType", m.ToString());
             return TrimPath.TrimType.Simultaneously;
         }
 
-        Polystar.PolyStarType? SyToPolystarType(double sy)
+        Polystar.PolyStarType? SyToPolystarType(double? sy)
         {
-            if (sy == (int)sy)
+            if (sy.HasValue)
             {
-                switch ((int)sy)
+                if (TryAsExactInt(sy.Value, out var intValue))
                 {
-                    case 1: return Polystar.PolyStarType.Star;
-                    case 2: return Polystar.PolyStarType.Polygon;
+                    switch (intValue)
+                    {
+                        case 1: return Polystar.PolyStarType.Star;
+                        case 2: return Polystar.PolyStarType.Polygon;
+                    }
                 }
+
+                _issues.UnexpectedValueForType("PolyStartType", sy.ToString());
             }
 
-            _issues.UnexpectedValueForType("PolyStartType", sy.ToString());
             return null;
         }
 
-        GradientType TToGradientType(double t)
+        GradientType TToGradientType(double? t)
         {
-            if (t == (int)t)
+            if (t.HasValue)
             {
-                switch ((int)t)
+                if (TryAsExactInt(t.Value, out var intValue))
                 {
-                    case 1: return GradientType.Linear;
-                    case 2: return GradientType.Radial;
+                    switch (intValue)
+                    {
+                        case 1: return GradientType.Linear;
+                        case 2: return GradientType.Radial;
+                    }
                 }
+
+                _issues.UnexpectedValueForType("GradientType", t.ToString());
             }
 
-            _issues.UnexpectedValueForType("GradientType", t.ToString());
             return GradientType.Linear;
         }
 
-        Layer.MatteType TTToMatteType(double tt)
+        Layer.MatteType TTToMatteType(double? tt)
         {
-            if (tt == (int)tt)
+            if (tt.HasValue)
             {
-                switch ((int)tt)
+                if (TryAsExactInt(tt.Value, out var intValue))
                 {
-                    case 0: return Layer.MatteType.None;
-                    case 1: return Layer.MatteType.Add;
-                    case 2: return Layer.MatteType.Invert;
+                    switch (intValue)
+                    {
+                        case 0: return Layer.MatteType.None;
+                        case 1: return Layer.MatteType.Add;
+                        case 2: return Layer.MatteType.Invert;
+                    }
                 }
+
+                _issues.UnexpectedValueForType("MatteType", tt.ToString());
             }
 
-            _issues.UnexpectedValueForType("MatteType", tt.ToString());
             return Layer.MatteType.None;
         }
 
-        Layer.LayerType? TyToLayerType(double ty)
+        Layer.LayerType? TyToLayerType(double? ty)
         {
-            if (ty == (int)ty)
+            if (ty.HasValue)
             {
-                switch ((int)ty)
+                if (TryAsExactInt(ty.Value, out var intValue))
                 {
-                    case 0: return Layer.LayerType.PreComp;
-                    case 1: return Layer.LayerType.Solid;
-                    case 2: return Layer.LayerType.Image;
-                    case 3: return Layer.LayerType.Null;
-                    case 4: return Layer.LayerType.Shape;
-                    case 5: return Layer.LayerType.Text;
+                    switch (intValue)
+                    {
+                        case 0: return Layer.LayerType.PreComp;
+                        case 1: return Layer.LayerType.Solid;
+                        case 2: return Layer.LayerType.Image;
+                        case 3: return Layer.LayerType.Null;
+                        case 4: return Layer.LayerType.Shape;
+                        case 5: return Layer.LayerType.Text;
+                    }
                 }
+
+                _issues.UnexpectedValueForType("LayerType", ty.ToString());
             }
 
-            _issues.UnexpectedValueForType("LayerType", ty.ToString());
             return null;
+        }
+
+        static bool TryAsExactInt(double value, out int intValue)
+        {
+            intValue = (int)value;
+            return value == intValue;
         }
 
         enum GradientType

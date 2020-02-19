@@ -13,17 +13,15 @@
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\Enums.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\Exceptions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\Fonts.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Serialization\JCArray.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Serialization\JCObject.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Serialization\JCObjectExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\JsonToGenericData.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Serialization\JTokenExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\Layers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\LottieCompositionReader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\LottieCompositionReaderException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\LottieJsonArrayElement.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\LottieJsonElement.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\LottieJsonObjectElement.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\Markers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\ParsingIssues.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Serialization\Primitives.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\Reader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\ShapeLayerContents.cs" />
   </ItemGroup>
