@@ -19,7 +19,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         {
             readonly LottieCompositionReader _owner;
             readonly JObject _wrapped;
-            readonly (bool, string)[] _propertyNames;
+            readonly (bool unread, string propertyName)[] _propertyNames;
 
             internal LottieJsonObjectElement(LottieCompositionReader owner, JToken wrapped)
             {
@@ -140,9 +140,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             {
                 foreach (var pair in _propertyNames)
                 {
-                    if (pair.Item1)
+                    if (pair.unread)
                     {
-                        _owner._issues.IgnoredField($"{memberName}.{pair.Item2}");
+                        _owner._issues.IgnoredField($"{memberName}.{pair.propertyName}");
                     }
                 }
             }
@@ -157,13 +157,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 while (min <= max)
                 {
                     int mid = (min + max) / 2;
-                    var current = _propertyNames[mid].Item2;
+                    var current = _propertyNames[mid].propertyName;
                     if (propertyName == current)
                     {
-                        _propertyNames[mid].Item1 = false;
+                        _propertyNames[mid].unread = false;
                         return;
                     }
-                    else if (string.CompareOrdinal(propertyName, _propertyNames[mid].Item2) < 0)
+                    else if (string.CompareOrdinal(propertyName, current) < 0)
                     {
                         // Look left.
                         max = mid - 1;
