@@ -12,7 +12,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
     /// to include only those that affect a particular time period.
     /// </summary>
     /// <typeparam name="T">The type of the key frames.</typeparam>
-    ref struct TrimmedAnimatable<T>
+    readonly ref struct TrimmedAnimatable<T>
         where T : IEquatable<T>
     {
         internal TrimmedAnimatable(TranslationContext context, T initialValue, ReadOnlySpan<KeyFrame<T>> keyFrames)
