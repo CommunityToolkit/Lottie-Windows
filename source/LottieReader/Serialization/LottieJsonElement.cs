@@ -3,8 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Text.Json;
-using Newtonsoft.Json.Linq;
+using Microsoft.Toolkit.Uwp.UI.Lottie.GenericData;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 {
@@ -17,72 +18,35 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         internal readonly struct LottieJsonElement
         {
             readonly LottieCompositionReader _owner;
-            readonly JToken _wrapped;
+            readonly JsonElement _wrapped;
 
-            internal LottieJsonElement(LottieCompositionReader owner, JToken wrapped)
+            internal LottieJsonElement(LottieCompositionReader owner, JsonElement wrapped)
             {
-                if (wrapped is null)
-                {
-                    throw new ArgumentException();
-                }
-
                 _owner = owner;
                 _wrapped = wrapped;
             }
 
             internal JsonValueKind Kind
-            {
-                get
-                {
-                    switch (_wrapped.Type)
-                    {
-                        case JTokenType.Array:
-                            return JsonValueKind.Array;
-                        case JTokenType.Boolean:
-                            return JsonValueKind.False;
-                        case JTokenType.Integer:
-                        case JTokenType.Float:
-                            return JsonValueKind.Number;
-                        case JTokenType.Null:
-                            return JsonValueKind.Null;
-                        case JTokenType.Object:
-                            return JsonValueKind.Object;
-                        case JTokenType.String:
-                            return JsonValueKind.String;
-
-                        case JTokenType.None:
-                        case JTokenType.Constructor:
-                        case JTokenType.Property:
-                        case JTokenType.Comment:
-                        case JTokenType.Undefined:
-                        case JTokenType.Date:
-                        case JTokenType.Raw:
-                        case JTokenType.Bytes:
-                        case JTokenType.Guid:
-                        case JTokenType.Uri:
-                        case JTokenType.TimeSpan:
-                        default:
-                            return JsonValueKind.Undefined;
-                    }
-                }
-            }
+                => _wrapped.ValueKind;
 
             internal LottieJsonArrayElement? AsArray()
-                => _wrapped.Type == JTokenType.Array
+                => _wrapped.ValueKind == JsonValueKind.Array
                     ? new LottieJsonArrayElement(_owner, _wrapped)
                     : (LottieJsonArrayElement?)null;
 
             internal LottieJsonObjectElement? AsObject()
-                => _wrapped.Type == JTokenType.Object
+                => _wrapped.ValueKind == JsonValueKind.Object
                     ? new LottieJsonObjectElement(_owner, _wrapped)
                     : (LottieJsonObjectElement?)null;
 
             internal bool? AsBoolean()
             {
-                switch (_wrapped.Type)
+                switch (_wrapped.ValueKind)
                 {
-                    case JTokenType.Boolean:
-                        return (bool)_wrapped;
+                    case JsonValueKind.True:
+                        return true;
+                    case JsonValueKind.False:
+                        return false;
                     default:
                         var number = AsDouble();
                         return number.HasValue
@@ -93,17 +57,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
             internal double? AsDouble()
             {
-                switch (_wrapped.Type)
+                switch (_wrapped.ValueKind)
                 {
-                    case JTokenType.Float:
-                    case JTokenType.Integer:
-                        return (double)_wrapped;
-                    case JTokenType.String:
-                        return double.TryParse((string)_wrapped, out var result)
+                    case JsonValueKind.Number:
+                        return _wrapped.GetDouble();
+                    case JsonValueKind.String:
+                        return double.TryParse(_wrapped.GetString(), out var result)
                             ? result
                             : (double?)null;
 
-                    case JTokenType.Array:
+                    case JsonValueKind.Array:
                         {
                             var array = AsArray().Value;
                             switch (array.Count)
@@ -141,12 +104,43 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
             internal string AsString()
             {
-                switch (_wrapped.Type)
+                switch (_wrapped.ValueKind)
                 {
-                    case JTokenType.String:
-                        return (string)_wrapped;
+                    case JsonValueKind.String:
+                        return _wrapped.GetString();
                     default:
                         return null;
+                }
+            }
+
+            internal GenericDataObject ToGenericDataObject()
+            {
+                switch (Kind)
+                {
+                    case JsonValueKind.Object:
+
+                        var obj = AsObject().Value;
+                        var dict = new Dictionary<string, GenericDataObject>();
+                        foreach (var property in obj)
+                        {
+                            dict.Add(property.Key, property.Value.ToGenericDataObject());
+                        }
+
+                        return GenericDataMap.Create(dict);
+                    case JsonValueKind.Array:
+                        return GenericDataList.Create(AsArray().Value.Select<GenericDataObject>(elem => elem.ToGenericDataObject()));
+                    case JsonValueKind.String:
+                        return GenericDataString.Create(AsString());
+                    case JsonValueKind.Number:
+                        return GenericDataNumber.Create(AsDouble().Value);
+                    case JsonValueKind.True:
+                        return GenericDataBool.True;
+                    case JsonValueKind.False:
+                        return GenericDataBool.False;
+                    case JsonValueKind.Null:
+                        return null;
+                    default:
+                        throw Exceptions.Unreachable;
                 }
             }
         }

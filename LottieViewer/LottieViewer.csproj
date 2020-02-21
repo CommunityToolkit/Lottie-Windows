@@ -226,9 +226,6 @@
     <PackageReference Include="Microsoft.UI.Xaml">
       <Version>2.3.200213001</Version>
     </PackageReference>
-    <PackageReference Include="Newtonsoft.Json">
-      <Version>12.0.3</Version>
-    </PackageReference>
     <PackageReference Include="System.Memory">
       <Version>4.5.3</Version>
     </PackageReference>

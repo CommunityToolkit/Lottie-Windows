@@ -13,14 +13,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
     {
         Char ParseChar(ref Reader reader)
         {
-            ExpectToken(ref reader, JsonTokenType.StartObject);
+            reader.ExpectToken(JsonTokenType.StartObject);
 
             string ch = null;
             string fFamily = null;
             double? size = null;
             string style = null;
             double? width = null;
-            List<ShapeLayerContent> shapes = null;
+            ShapeLayerContent[] shapes = null;
 
             while (reader.Read())
             {
@@ -29,7 +29,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     case JsonTokenType.PropertyName:
                         {
                             var currentProperty = reader.GetString();
-                            ConsumeToken(ref reader);
+                            reader.ConsumeToken();
 
                             switch (currentProperty)
                             {
@@ -37,7 +37,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                                     ch = reader.GetString();
                                     break;
                                 case "data":
-                                    shapes = ReadShapes(LottieJsonObjectElement.Load(this, ref reader, s_jsonLoadSettings));
+                                    shapes = ReadShapes(ref reader);
                                     break;
                                 case "fFamily":
                                     fFamily = reader.GetString();
@@ -63,7 +63,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                             return new Char(ch, fFamily, style, size ?? 0, width ?? 0, shapes);
                         }
 
-                    default: throw UnexpectedTokenException(ref reader);
+                    default: throw reader.ThrowUnexpectedToken();
                 }
             }
 

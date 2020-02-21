@@ -12,7 +12,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 #pragma warning disable SA1601 // Partial elements should be documented
     sealed partial class LottieCompositionReader
     {
-        Layer ParseLayer(ref Reader reader) => ReadLayer(LottieJsonObjectElement.Load(this, ref reader, s_jsonLoadSettings));
+        // May return null if there was a problem reading the layer.
+        Layer ParseLayer(ref Reader reader)
+        {
+            using var subDocument = reader.ParseElement();
+
+            var obj = subDocument.RootElement.AsObject();
+
+            return obj.HasValue
+                ? ReadLayer(obj.Value)
+                : null;
+        }
 
         // May return null if there was a problem reading the layer.
         Layer ReadLayer(in LottieJsonObjectElement obj)
@@ -26,7 +36,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             var layerArgs = default(Layer.LayerArgs);
 
             layerArgs.Name = ReadName(obj);
-            var index = obj.Int32OrNullProperty("ind");
+            var index = obj.Int32PropertyOrNull("ind");
 
             if (!index.HasValue)
             {
@@ -34,12 +44,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             }
 
             layerArgs.Index = index.Value;
-            layerArgs.Parent = obj.Int32OrNullProperty("parent");
-            layerArgs.Is3d = obj.BoolOrNullProperty("ddd") == true;
-            layerArgs.AutoOrient = obj.BoolOrNullProperty("ao") == true;
-            layerArgs.BlendMode = BmToBlendMode(obj.DoubleOrNullProperty("bm"));
-            layerArgs.IsHidden = obj.BoolOrNullProperty("hd") == true;
-            var render = obj.BoolOrNullProperty("render") != false;
+            layerArgs.Parent = obj.Int32PropertyOrNull("parent");
+            layerArgs.Is3d = obj.BoolPropertyOrNull("ddd") == true;
+            layerArgs.AutoOrient = obj.BoolPropertyOrNull("ao") == true;
+            layerArgs.BlendMode = BmToBlendMode(obj.DoublePropertyOrNull("bm"));
+            layerArgs.IsHidden = obj.BoolPropertyOrNull("hd") == true;
+            var render = obj.BoolPropertyOrNull("render") != false;
 
             if (!render)
             {
@@ -48,7 +58,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             }
 
             // Warnings
-            if (layerArgs.Name.EndsWith(".ai") || obj.StringOrNullProperty("cl") == "ai")
+            if (layerArgs.Name.EndsWith(".ai") || obj.StringPropertyOrNull("cl") == "ai")
             {
                 _issues.IllustratorLayers();
             }
@@ -63,28 +73,28 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             // ----------------------
             var shapeLayerContentArgs = default(ShapeLayerContent.ShapeLayerContentArgs);
             ReadShapeLayerContentArgs(obj, ref shapeLayerContentArgs);
-            layerArgs.Transform = ReadTransform(obj.ObjectOrNullProperty("ks"), in shapeLayerContentArgs);
+            layerArgs.Transform = ReadTransform(obj.ObjectPropertyOrNull("ks"), in shapeLayerContentArgs);
 
             // ------------------------------
             // Layer Animation
             // ------------------------------
-            layerArgs.TimeStretch = obj.DoubleOrNullProperty("sr") ?? 1;
+            layerArgs.TimeStretch = obj.DoublePropertyOrNull("sr") ?? 1;
 
             // Time when the layer starts
-            layerArgs.StartFrame = obj.DoubleOrNullProperty( "st") ?? double.NaN;
+            layerArgs.StartFrame = obj.DoublePropertyOrNull("st") ?? double.NaN;
 
             // Time when the layer becomes visible.
-            layerArgs.InFrame = obj.DoubleOrNullProperty("ip") ?? double.NaN;
-            layerArgs.OutFrame = obj.DoubleOrNullProperty( "op") ?? double.NaN;
+            layerArgs.InFrame = obj.DoublePropertyOrNull("ip") ?? double.NaN;
+            layerArgs.OutFrame = obj.DoublePropertyOrNull("op") ?? double.NaN;
 
             // NOTE: The spec specifies this as 'maskProperties' but the BodyMovin tool exports
             // 'masksProperties' with the plural 'masks'.
-            var maskProperties = obj.AsArrayProperty("masksProperties");
+            var maskProperties = obj.ArrayPropertyOrNull("masksProperties");
             layerArgs.Masks = maskProperties != null ? ReadMaskProperties(maskProperties.Value) : null;
 
-            layerArgs.LayerMatteType = TTToMatteType(obj.DoubleOrNullProperty( "tt"));
+            layerArgs.LayerMatteType = TTToMatteType(obj.DoublePropertyOrNull("tt"));
 
-            Layer.LayerType? layerType = TyToLayerType(obj.DoubleOrNullProperty( "ty"));
+            Layer.LayerType? layerType = TyToLayerType(obj.DoublePropertyOrNull("ty"));
 
             if (!layerType.HasValue)
             {
@@ -97,10 +107,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 {
                     case Layer.LayerType.PreComp:
                         {
-                            var refId = obj.StringOrNullProperty("refId") ?? string.Empty;
-                            var width = obj.DoubleOrNullProperty("w") ?? double.NaN;
-                            var height = obj.DoubleOrNullProperty("h") ?? double.NaN;
-                            var tm = obj.ObjectOrNullProperty("tm");
+                            var refId = obj.StringPropertyOrNull("refId") ?? string.Empty;
+                            var width = obj.DoublePropertyOrNull("w") ?? double.NaN;
+                            var height = obj.DoublePropertyOrNull("h") ?? double.NaN;
+                            var tm = obj.ObjectPropertyOrNull("tm");
                             if (tm != null)
                             {
                                 _issues.TimeRemappingOfPreComps();
@@ -111,15 +121,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
                     case Layer.LayerType.Solid:
                         {
-                            var solidWidth = obj.Int32OrNullProperty("sw") ?? 0;
-                            var solidHeight = obj.Int32OrNullProperty("sh") ?? 0;
-                            var solidColor = ReadColorFromString(obj.StringOrNullProperty("sc") ?? string.Empty);
+                            var solidWidth = obj.Int32PropertyOrNull("sw") ?? 0;
+                            var solidHeight = obj.Int32PropertyOrNull("sh") ?? 0;
+                            var solidColor = ReadColorFromString(obj.StringPropertyOrNull("sc") ?? string.Empty);
                             return new SolidLayer(in layerArgs, solidWidth, solidHeight, solidColor);
                         }
 
                     case Layer.LayerType.Image:
                         {
-                            var refId = obj.StringOrNullProperty("refId") ?? string.Empty;
+                            var refId = obj.StringPropertyOrNull("refId") ?? string.Empty;
                             return new ImageLayer(in layerArgs, refId);
                         }
 
@@ -135,10 +145,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     case Layer.LayerType.Text:
                         {
                             // Text layer references an asset.
-                            var refId = obj.StringOrNullProperty("refId") ?? string.Empty;
+                            var refId = obj.StringPropertyOrNull("refId") ?? string.Empty;
 
                             // Text data.
-                            ReadTextData(obj.ObjectOrNullProperty("t").Value);
+                            ReadTextData(obj.ObjectPropertyOrNull("t").Value);
                             return new TextLayer(in layerArgs, refId);
                         }
 
@@ -151,12 +161,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             }
         }
 
-        List<ShapeLayerContent> ReadShapes(in LottieJsonObjectElement obj)
+        ShapeLayerContent[] ReadShapes(ref Reader reader)
         {
-            return ReadShapesList(obj.AsArrayProperty("shapes"));
+            using var subDocument = reader.ParseElement();
+            var obj = subDocument.RootElement.AsObject();
+
+            return obj.HasValue
+                ? ReadShapes(obj.Value)
+                : Array.Empty<ShapeLayerContent>();
         }
 
-        List<ShapeLayerContent> ReadShapesList(in LottieJsonArrayElement? shapesJson)
+        ShapeLayerContent[] ReadShapes(in LottieJsonObjectElement obj)
+        {
+            return ReadShapesList(obj.ArrayPropertyOrNull("shapes"));
+        }
+
+        ShapeLayerContent[] ReadShapesList(in LottieJsonArrayElement? shapesJson)
         {
             var shapes = new List<ShapeLayerContent>();
             if (shapesJson != null)
@@ -173,7 +193,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 }
             }
 
-            return shapes;
+            return shapes.ToArray();
         }
 
         void ReadTextData(in LottieJsonObjectElement obj)
@@ -210,11 +230,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 // expand or shrink a mask getting a reduced or expanded version of the same shape.
                 obj.IgnorePropertyThatIsNotYetSupported("x");
 
-                var inverted = obj.BoolOrNullProperty("inv") ?? false;
+                var inverted = obj.BoolPropertyOrNull("inv") ?? false;
                 var name = ReadName(obj);
-                var animatedGeometry = ReadAnimatableGeometry(obj.ObjectOrNullProperty("pt"));
-                var opacity = ReadOpacityFromO(obj);
-                var maskMode = obj.StringOrNullProperty("mode") ?? string.Empty;
+                var animatedGeometry = ReadAnimatableGeometry(obj.ObjectPropertyOrNull("pt"));
+                var opacity = ReadAnimatableOpacity(obj.ObjectPropertyOrNull("o"));
+                var maskMode = obj.StringPropertyOrNull("mode") ?? string.Empty;
 
                 Mask.MaskMode mode;
                 switch (maskMode)
