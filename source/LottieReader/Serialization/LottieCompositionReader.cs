@@ -487,9 +487,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                         if (text.Length >= 2 && text[1] == 0xFF)
                         {
                             // Step over the UTF16 BOM and convert to UTF8.
+                            // NOTE: the ToArray here is necessary for UWP apps as they don't
+                            //       yet support GetString(ReadOnlySpan<byte>).
                             text = Encoding.UTF8.GetBytes(
                                                 Encoding.Unicode.GetString(
-                                                    text.Slice(2, text.Length - 2)));
+                                                    text.Slice(2, text.Length - 2)
+#if WINDOWS_UWP
+                            // NOTE: the ToArray here is necessary for UWP apps as they don't
+                            //       yet support GetString(ReadOnlySpan<byte>).
+                                                    .ToArray()
+#endif // WINDOWS_UWP
+                                                    ));
                         }
 
                         break;
@@ -500,7 +508,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                             // Step over the UTF16 BOM and convert to UTF8.
                             text = Encoding.UTF8.GetBytes(
                                                 Encoding.BigEndianUnicode.GetString(
-                                                    text.Slice(2, text.Length - 2)));
+                                                    text.Slice(2, text.Length - 2)
+#if WINDOWS_UWP
+                            // NOTE: the ToArray here is necessary for UWP apps as they don't
+                            //       yet support GetString(ReadOnlySpan<byte>).
+                                                    .ToArray()
+#endif // WINDOWS_UWP
+                                                    ));
                         }
 
                         break;
