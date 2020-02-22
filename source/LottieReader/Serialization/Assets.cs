@@ -14,7 +14,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
     {
         Asset ParseAsset(ref Reader reader)
         {
-            ExpectToken(ref reader, JsonTokenType.StartObject);
+            reader.ExpectToken(JsonTokenType.StartObject);
 
             int e = 0;
             string id = null;
@@ -31,7 +31,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     case JsonTokenType.PropertyName:
                         {
                             var currentProperty = reader.GetString();
-                            ConsumeToken(ref reader);
+                            reader.ConsumeToken();
 
                             switch (currentProperty)
                             {
@@ -53,7 +53,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                                             id = reader.ParseInt().ToString();
                                             break;
                                         default:
-                                            throw UnexpectedTokenException(ref reader);
+                                            throw reader.ThrowUnexpectedToken();
                                     }
 
                                     break;
@@ -70,7 +70,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                                     width = reader.ParseDouble();
                                     break;
 
-                                // Report but ignore unexpected fields.
+                                // Report but ignore unexpected properties.
                                 case "xt":
                                 case "nm":
                                 default:
@@ -85,7 +85,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                         {
                             if (id is null)
                             {
-                                throw Exception("Asset with no id", ref reader);
+                                throw reader.Throw("Asset with no id");
                             }
 
                             if (layers is object)
@@ -103,7 +103,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                             }
                         }
 
-                    default: throw UnexpectedTokenException(ref reader);
+                    default: throw reader.ThrowUnexpectedToken();
                 }
             }
 

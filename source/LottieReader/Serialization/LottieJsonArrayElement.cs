@@ -2,8 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Diagnostics;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 {
@@ -14,16 +15,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         internal readonly struct LottieJsonArrayElement
         {
             readonly LottieCompositionReader _owner;
-            readonly JArray _wrapped;
+            readonly JsonElement _wrapped;
 
-            internal LottieJsonArrayElement(LottieCompositionReader owner, JToken wrapped)
+            internal LottieJsonArrayElement(LottieCompositionReader owner, JsonElement wrapped)
             {
-                Debug.Assert(wrapped.Type == JTokenType.Array, "Precondition");
+                Debug.Assert(wrapped.ValueKind == JsonValueKind.Array, "Precondition");
                 _owner = owner;
-                _wrapped = (JArray)wrapped;
+                _wrapped = wrapped;
             }
 
-            internal int Count => _wrapped.Count;
+            internal int Count => _wrapped.GetArrayLength();
 
             public LottieJsonElement this[int index] => new LottieJsonElement(_owner, _wrapped[index]);
 
@@ -81,6 +82,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             {
                 var count = Count;
                 var result = new T[count];
+                for (var i = 0; i < count; i++)
+                {
+                    result[i] = reader(this[i]);
+                }
+
+                return result;
+            }
+
+            internal T[] Select<T>(Func<LottieJsonElement, T> reader)
+            {
+                var count = Count;
+                var result = new T[count];
                 for (var i = 0; i < Count; i++)
                 {
                     result[i] = reader(this[i]);
@@ -102,7 +115,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
                 public LottieJsonElement Current => new LottieJsonElement(_owner._owner, _owner._wrapped[_currentIndex]);
 
-                public bool MoveNext() => _owner._wrapped.Count > ++_currentIndex;
+                public bool MoveNext() => _owner._wrapped.GetArrayLength() > ++_currentIndex;
 
                 public void Dispose()
                 {

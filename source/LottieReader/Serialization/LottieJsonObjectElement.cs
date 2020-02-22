@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 {
@@ -18,48 +18,46 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         internal readonly struct LottieJsonObjectElement
         {
             readonly LottieCompositionReader _owner;
-            readonly JObject _wrapped;
-            readonly (bool unread, string propertyName)[] _propertyNames;
+            readonly (bool unread, JsonProperty property)[] _properties;
 
-            internal LottieJsonObjectElement(LottieCompositionReader owner, JToken wrapped)
+            internal LottieJsonObjectElement(LottieCompositionReader owner, JsonElement wrapped)
             {
-                Debug.Assert(wrapped.Type == JTokenType.Object, "Precondition");
+                Debug.Assert(wrapped.ValueKind == JsonValueKind.Object, "Precondition");
                 _owner = owner;
-                _wrapped = (JObject)wrapped;
 
-                // Get the list of property names.
-                _propertyNames = ((IEnumerable<KeyValuePair<string, JToken>>)wrapped).Select(s => (true, s.Key)).ToArray();
+                // Get the properties.
+                _properties = wrapped.EnumerateObject().Select(jp => (true, jp)).ToArray();
 
                 // Sort the names so they can be binary searched.
-                Array.Sort(_propertyNames, Comparer.Instance);
+                Array.Sort(_properties, Comparer.Instance);
             }
 
             public Vector3? AsVector3()
             {
-                var x = DoubleOrNullProperty("x");
-                var y = DoubleOrNullProperty("y");
-                var z = DoubleOrNullProperty("z");
+                var x = DoublePropertyOrNull("x");
+                var y = DoublePropertyOrNull("y");
+                var z = DoublePropertyOrNull("z");
                 return x is null
                     ? (Vector3?)null
                     : new Vector3(x.Value, y ?? 0, z ?? 0);
             }
 
-            internal LottieJsonArrayElement? AsArrayProperty(string propertyName)
+            internal LottieJsonArrayElement? ArrayPropertyOrNull(string propertyName)
                 => TryGetProperty(propertyName, out var value) ? value.AsArray() : null;
 
-            internal bool? BoolOrNullProperty(string propertyName)
+            internal bool? BoolPropertyOrNull(string propertyName)
                 => TryGetProperty(propertyName, out var value) ? value.AsBoolean() : null;
 
-            internal double? DoubleOrNullProperty(string propertyName)
+            internal double? DoublePropertyOrNull(string propertyName)
                 => TryGetProperty(propertyName, out var value) ? value.AsDouble() : null;
 
-            internal int? Int32OrNullProperty(string propertyName)
+            internal int? Int32PropertyOrNull(string propertyName)
                 => TryGetProperty(propertyName, out var value) ? value.AsInt32() : null;
 
-            internal LottieJsonObjectElement? ObjectOrNullProperty(string propertyName)
+            internal LottieJsonObjectElement? ObjectPropertyOrNull(string propertyName)
                 => TryGetProperty(propertyName, out var value) ? value.AsObject() : null;
 
-            internal string StringOrNullProperty(string propertyName)
+            internal string StringPropertyOrNull(string propertyName)
                 => TryGetProperty(propertyName, out var value) ? value.AsString() : null;
 
             // Indicates that the given property will not be read because we don't yet support it.
@@ -119,49 +117,56 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
             internal bool TryGetProperty(string propertyName, out LottieJsonElement value)
             {
-                if (_wrapped.TryGetValue(propertyName, out var jtokenValue))
+                var propertyIndex = FindProperty(propertyName);
+                if (propertyIndex is null)
                 {
-                    MarkPropertyAsRead(propertyName);
-                    value = new LottieJsonElement(_owner, jtokenValue);
+                    value = default(LottieJsonElement);
+                    return false;
+                }
+                else
+                {
+                    ref var property = ref _properties[propertyIndex.Value];
+                    property.unread = false;
+                    value = new LottieJsonElement(_owner, property.property.Value);
                     return true;
                 }
-
-                value = default(LottieJsonElement);
-
-                return false;
-            }
-
-            internal static LottieJsonObjectElement Load(LottieCompositionReader owner, ref Reader reader, JsonLoadSettings settings)
-            {
-                return new LottieJsonObjectElement(owner, JObject.Load(reader.NewtonsoftReader, settings));
             }
 
             internal void AssertAllPropertiesRead([CallerMemberName]string memberName = "")
             {
-                foreach (var pair in _propertyNames)
+                foreach (var pair in _properties)
                 {
                     if (pair.unread)
                     {
-                        _owner._issues.IgnoredField($"{memberName}.{pair.propertyName}");
+                        _owner._issues.IgnoredField($"{memberName}.{pair.property.Name}");
                     }
                 }
             }
 
-            public Enumerator GetEnumerator() => new Enumerator(this, _wrapped);
+            public Enumerator GetEnumerator() => new Enumerator(this);
 
             // Marks the given property name as being read.
             void MarkPropertyAsRead(string propertyName)
             {
+                var propertyIndex = FindProperty(propertyName);
+                if (propertyIndex.HasValue)
+                {
+                    _properties[propertyIndex.Value].unread = false;
+                }
+            }
+
+            // Returns the index of the given property, or null if not found.
+            int? FindProperty(string propertyName)
+            {
                 int min = 0;
-                int max = _propertyNames.Length - 1;
+                int max = _properties.Length - 1;
                 while (min <= max)
                 {
                     int mid = (min + max) / 2;
-                    var current = _propertyNames[mid].propertyName;
+                    var current = _properties[mid].property.Name;
                     if (propertyName == current)
                     {
-                        _propertyNames[mid].unread = false;
-                        return;
+                        return mid;
                     }
                     else if (string.CompareOrdinal(propertyName, current) < 0)
                     {
@@ -176,35 +181,40 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 }
 
                 // Not found.
+                return null;
             }
 
-            sealed class Comparer : IComparer<(bool, string)>
+            sealed class Comparer : IComparer<(bool, JsonProperty)>
             {
                 internal static readonly Comparer Instance = new Comparer();
 
-                int IComparer<(bool, string)>.Compare((bool, string) x, (bool, string) y)
-                    => string.CompareOrdinal(x.Item2, y.Item2);
+                int IComparer<(bool, JsonProperty)>.Compare((bool, JsonProperty) x, (bool, JsonProperty) y)
+                    => string.CompareOrdinal(x.Item2.Name, y.Item2.Name);
             }
 
             public struct Enumerator
             {
                 readonly LottieJsonObjectElement _owner;
-                readonly IEnumerator<KeyValuePair<string, JToken>> _wrapped;
+                int _currentIndex;
 
-                internal Enumerator(LottieJsonObjectElement owner, JObject wrapped)
+                internal Enumerator(LottieJsonObjectElement owner)
                 {
                     _owner = owner;
-                    _wrapped = wrapped.GetEnumerator();
+                    _currentIndex = -1;
                 }
 
                 public KeyValuePair<string, LottieJsonElement> Current
-                    => new KeyValuePair<string, LottieJsonElement>(
-                            _wrapped.Current.Key,
-                            new LottieJsonElement(_owner._owner, _wrapped.Current.Value));
+                {
+                    get
+                    {
+                        ref var property = ref _owner._properties[_currentIndex].property;
+                        return new KeyValuePair<string, LottieJsonElement>(
+                            property.Name,
+                            new LottieJsonElement(_owner._owner, property.Value));
+                    }
+                }
 
-                public void Dispose() => _wrapped.Dispose();
-
-                public bool MoveNext() => _wrapped.MoveNext();
+                public bool MoveNext() => _owner._properties.Length > ++_currentIndex;
             }
         }
     }

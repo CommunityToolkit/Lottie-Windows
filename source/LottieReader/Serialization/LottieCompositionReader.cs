@@ -6,10 +6,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
 using Microsoft.Toolkit.Uwp.UI.Lottie.GenericData;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 using PathGeometry = Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Sequence<Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.BezierSegment>;
 
@@ -24,15 +23,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 #pragma warning disable SA1601 // Partial elements should be documented
     sealed partial class LottieCompositionReader
     {
-        static readonly JsonLoadSettings s_jsonLoadSettings = new JsonLoadSettings
-        {
-            // Ignore commands and line info. Not needed and makes the parser a bit faster.
-            CommentHandling = CommentHandling.Ignore,
-            LineInfoHandling = LineInfoHandling.Ignore,
-        };
-
-        readonly ParsingIssues _issues = new ParsingIssues(throwOnIssue: false);
-        Options _options;
+        readonly ParsingIssues _issues;
+        readonly Options _options;
 
         /// <summary>
         /// Specifies optional behavior for the reader.
@@ -74,44 +66,29 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             Options options,
             out IReadOnlyList<(string Code, string Description)> issues)
         {
-            JsonReader jsonReader;
-            try
-            {
-                var streamReader = new StreamReader(stream);
-                jsonReader = new JsonTextReader(streamReader);
-            }
-            catch (Exception e)
-            {
-                var issueCollector = new ParsingIssues(throwOnIssue: false);
-                issueCollector.FailedToParseJson(e.Message);
-                issues = issueCollector.GetIssues();
-                return null;
-            }
-
-            var reader = new Reader(jsonReader);
-            return ReadLottieCompositionFromJson(ref reader, options, out issues);
+            ReadStreamToUTF8(stream, out var utf8Text);
+            return ReadLottieCompositionFromJson(utf8Text, options, out issues);
         }
 
         LottieCompositionReader(Options options)
         {
+            _issues = new ParsingIssues(throwOnIssue: false);
             _options = options;
             _animatableColorParser = new AnimatableColorParser(!options.HasFlag(Options.DoNotIgnoreAlpha));
         }
 
         static LottieComposition ReadLottieCompositionFromJson(
-            ref Reader jsonReader,
+            in ReadOnlySpan<byte> utf8JsonText,
             Options options,
             out IReadOnlyList<(string Code, string Description)> issues)
         {
             var reader = new LottieCompositionReader(options);
+            var jsonReader = new Reader(reader, utf8JsonText);
+
             LottieComposition result = null;
             try
             {
                 result = reader.ParseLottieComposition(ref jsonReader);
-            }
-            catch (JsonReaderException e)
-            {
-                reader._issues.FatalError(e.Message);
             }
             catch (LottieCompositionReaderException e)
             {
@@ -139,7 +116,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             var markers = Array.Empty<Marker>();
             Dictionary<string, GenericDataObject> extraData = null;
 
-            ConsumeToken(ref reader);
+            reader.ConsumeToken();
 
             while (reader.Read())
             {
@@ -147,13 +124,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 {
                     case JsonTokenType.Comment:
                         // Ignore comments.
-                        ConsumeToken(ref reader);
+                        reader.ConsumeToken();
                         break;
 
                     case JsonTokenType.PropertyName:
                         var currentProperty = reader.GetString();
 
-                        ConsumeToken(ref reader);
+                        reader.ConsumeToken();
 
                         switch (currentProperty)
                         {
@@ -199,13 +176,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
                             // Treat any other property as an extension of the BodyMovin format.
                             default:
-                                _issues.UnexpectedField(currentProperty);
-                                if (extraData is null)
                                 {
-                                    extraData = new Dictionary<string, GenericDataObject>();
+                                    _issues.UnexpectedField(currentProperty);
+                                    if (extraData is null)
+                                    {
+                                        extraData = new Dictionary<string, GenericDataObject>();
+                                    }
+
+                                    using var subDocument = reader.ParseElement();
+                                    extraData.Add(currentProperty, subDocument.RootElement.ToGenericDataObject());
                                 }
 
-                                extraData.Add(currentProperty, JsonToGenericData.JTokenToGenericData(JToken.Load(reader.NewtonsoftReader, s_jsonLoadSettings)));
                                 break;
                         }
 
@@ -216,32 +197,32 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                             // Check that the required properties were found. If any are missing, throw.
                             if (version is null)
                             {
-                                throw Exception("Version parameter not found.", ref reader);
+                                throw reader.Throw("Version parameter not found.");
                             }
 
                             if (!width.HasValue)
                             {
-                                throw Exception("Width parameter not found.", ref reader);
+                                throw reader.Throw("Width parameter not found.");
                             }
 
                             if (!height.HasValue)
                             {
-                                throw Exception("Height parameter not found.", ref reader);
+                                throw reader.Throw("Height parameter not found.");
                             }
 
                             if (!inPoint.HasValue)
                             {
-                                throw Exception("Start frame parameter not found.", ref reader);
+                                throw reader.Throw("Start frame parameter not found.");
                             }
 
                             if (!outPoint.HasValue)
                             {
-                                Exception("End frame parameter not found.", ref reader);
+                                throw reader.Throw("End frame parameter not found.");
                             }
 
                             if (layers is null)
                             {
-                                throw Exception("No layers found.", ref reader);
+                                throw reader.Throw("No layers found.");
                             }
 
                             int[] versions;
@@ -281,7 +262,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     // Here means the JSON was invalid or our parser got confused. There is no way to
                     // recover from this, so throw.
                     default:
-                        throw UnexpectedTokenException(ref reader);
+                        throw reader.ThrowUnexpectedToken();
                 }
             }
 
@@ -297,7 +278,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             }
             else
             {
-                return obj.StringOrNullProperty("nm") ?? string.Empty;
+                return obj.StringPropertyOrNull("nm") ?? string.Empty;
             }
         }
 
@@ -310,19 +291,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             }
             else
             {
-                return obj.StringOrNullProperty("mn") ?? string.Empty;
+                return obj.StringPropertyOrNull("mn") ?? string.Empty;
             }
-        }
-
-        Animatable<Color> ReadColorFromC(in LottieJsonObjectElement obj)
-            => ReadAnimatableColor(obj.ObjectOrNullProperty("c"));
-
-        Animatable<Opacity> ReadOpacityFromO(in LottieJsonObjectElement obj)
-            => ReadOpacityFromObject(obj.ObjectOrNullProperty("o"));
-
-        Animatable<Opacity> ReadOpacityFromObject(in LottieJsonObjectElement? obj)
-        {
-            return ReadAnimatableOpacity(obj);
         }
 
         static PathGeometry ParseGeometry(in LottieJsonElement element)
@@ -349,10 +319,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
             var points = pointsData.Value;
 
-            var vertices = points.AsArrayProperty("v");
-            var inTangents = points.AsArrayProperty("i");
-            var outTangents = points.AsArrayProperty("o");
-            var isClosed = points.BoolOrNullProperty("c") ?? false;
+            var vertices = points.ArrayPropertyOrNull("v");
+            var inTangents = points.ArrayPropertyOrNull("i");
+            var outTangents = points.ArrayPropertyOrNull("o");
+            var isClosed = points.BoolPropertyOrNull("c") ?? false;
 
             if (vertices is null || inTangents is null || outTangents is null)
             {
@@ -433,19 +403,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             }
         }
 
-        static void ExpectToken(ref Reader reader, JsonTokenType token)
-        {
-            if (reader.TokenType != token)
-            {
-                throw UnexpectedTokenException(ref reader);
-            }
-        }
-
         delegate T Parser<T>(ref Reader reader);
 
         T[] ParseArray<T>(ref Reader reader, Parser<T> parser)
         {
-            ExpectToken(ref reader, JsonTokenType.StartArray);
+            reader.ExpectToken(JsonTokenType.StartArray);
 
             IList<T> list = EmptyList<T>.Singleton;
 
@@ -471,31 +433,95 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                         return list.ToArray();
 
                     default:
-                        throw UnexpectedTokenException(ref reader);
+                        throw reader.ThrowUnexpectedToken();
                 }
             }
 
             throw EofException;
         }
 
-        // Consumes a token from the stream.
-        static void ConsumeToken(ref Reader reader)
+        static void ReadStreamToUTF8(Stream stream, out ReadOnlySpan<byte> utf8Text)
         {
-            if (!reader.Read())
+            // This buffer size is chosen to be about 50% larger than
+            // the average file size in our corpus, so most of the time
+            // we don't need to reallocate and copy.
+            var buffer = new byte[150000];
+            var bytesRead = stream.Read(buffer, 0, buffer.Length);
+            var spaceLeftInBuffer = buffer.Length - bytesRead;
+
+            while (spaceLeftInBuffer == 0)
             {
-                throw EofException;
+                // Might be more to read. Expand the buffer.
+                var newBuffer = new byte[buffer.Length * 2];
+                spaceLeftInBuffer = buffer.Length;
+                var totalBytesRead = buffer.Length;
+                Array.Copy(buffer, 0, newBuffer, 0, totalBytesRead);
+                buffer = newBuffer;
+                bytesRead = stream.Read(buffer, totalBytesRead, buffer.Length - totalBytesRead);
+                spaceLeftInBuffer -= bytesRead;
+            }
+
+            utf8Text = new ReadOnlySpan<byte>(buffer);
+            NormalizeTextToUTF8(ref utf8Text);
+        }
+
+        // Updates the given span so that its contents are UTF8.
+        static void NormalizeTextToUTF8(ref ReadOnlySpan<byte> text)
+        {
+            if (text.Length >= 1)
+            {
+                switch (text[0])
+                {
+                    case 0xEF:
+                        // Possibly start of UTF8 BOM.
+                        if (text.Length >= 3 && text[1] == 0xBB && text[2] == 0xBF)
+                        {
+                            // UTF8 BOM.
+                            // Step over the UTF8 BOM.
+                            text = text.Slice(3, text.Length - 3);
+                        }
+
+                        break;
+                    case 0xFE:
+                        // Possibly start of UTF16LE BOM.
+                        if (text.Length >= 2 && text[1] == 0xFF)
+                        {
+                            // Step over the UTF16 BOM and convert to UTF8.
+                            text = Encoding.UTF8.GetBytes(
+                                                Encoding.Unicode.GetString(
+                                                    text.Slice(2, text.Length - 2)
+#if WINDOWS_UWP
+                            // NOTE: the ToArray here is necessary for UWP apps as they don't
+                            //       yet support GetString(ReadOnlySpan<byte>).
+                                                    .ToArray()
+#endif // WINDOWS_UWP
+                                                    ));
+                        }
+
+                        break;
+                    case 0xFF:
+                        // Possibly start of UTF16BE BOM.
+                        if (text.Length >= 2 && text[1] == 0xFE)
+                        {
+                            // Step over the UTF16 BOM and convert to UTF8.
+                            text = Encoding.UTF8.GetBytes(
+                                                Encoding.BigEndianUnicode.GetString(
+                                                    text.Slice(2, text.Length - 2)
+#if WINDOWS_UWP
+                            // NOTE: the ToArray here is necessary for UWP apps as they don't
+                            //       yet support GetString(ReadOnlySpan<byte>).
+                                                    .ToArray()
+#endif // WINDOWS_UWP
+                                                    ));
+                        }
+
+                        break;
+                }
             }
         }
 
         // We got to the end of the file while still reading. Fatal.
         static LottieCompositionReaderException EofException => Exception("EOF");
-
-        // The JSON is malformed - we found an unexpected token. Fatal.
-        static LottieCompositionReaderException UnexpectedTokenException(ref Reader reader) => Exception($"Unexpected token: {reader.TokenType}", ref reader);
-
-        static LottieCompositionReaderException UnexpectedTokenException(JsonValueKind kind) => Exception($"Unexpected token: {kind}");
-
-        static LottieCompositionReaderException Exception(string message, ref Reader reader) => Exception($"{message} @ {reader.NewtonsoftReader.Path}");
 
         static LottieCompositionReaderException Exception(string message) => new LottieCompositionReaderException(message);
     }

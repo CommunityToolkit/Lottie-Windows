@@ -12,7 +12,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
     {
         Marker ParseMarker(ref Reader reader)
         {
-            ExpectToken(ref reader, JsonTokenType.StartObject);
+            reader.ExpectToken(JsonTokenType.StartObject);
 
             string name = null;
             double durationMilliseconds = 0;
@@ -25,7 +25,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     case JsonTokenType.PropertyName:
                         var currentProperty = reader.GetString();
 
-                        ConsumeToken(ref reader);
+                        reader.ConsumeToken();
 
                         switch (currentProperty)
                         {
@@ -48,7 +48,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     case JsonTokenType.EndObject:
                         return new Marker(name: name, frame: frame, durationMilliseconds: durationMilliseconds);
                     default:
-                        throw UnexpectedTokenException(ref reader);
+                        throw reader.ThrowUnexpectedToken();
                 }
             }
 
