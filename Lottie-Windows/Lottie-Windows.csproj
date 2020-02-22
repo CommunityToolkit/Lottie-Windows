@@ -13,11 +13,6 @@
     <LangVersion>latest</LangVersion>
 
     <!-- 
-         Turn off warning about experimental types in Microsoft.UI.Xaml. This can be removed
-         once AnimatedVisualPlayer is promoted out of prerelease. -->
-    <NoWarn>8305</NoWarn>
-
-    <!-- 
          Turn off debugging information for now. It is causing errors with winmd generation because
          the build system is creating Microsoft.Toolkit.Uwp.UI.Lottie.compile.pdb but the winmdexp
          task expects the name without the "compile." in it.
@@ -27,7 +22,6 @@
     <DocumentationFile>bin\AnyCPU\Release\Microsoft.Toolkit.Uwp.UI.Lottie.xml</DocumentationFile>
 
   </PropertyGroup>
-
 
   <ItemGroup>
     <PackageReference Include="Microsoft.UI.Xaml">

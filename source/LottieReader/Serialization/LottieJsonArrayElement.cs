@@ -82,7 +82,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             {
                 var count = Count;
                 var result = new T[count];
-                for (var i = 0; i < Count; i++)
+                for (var i = 0; i < count; i++)
                 {
                     result[i] = reader(this[i]);
                 }

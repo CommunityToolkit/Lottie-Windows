@@ -62,7 +62,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             internal LottieJsonDocument ParseElement()
                 => JsonDocument.TryParseValue(ref _jsonReader, out var document)
                     ? new LottieJsonDocument(_owner, document)
-                    : throw Throw("Failed to parse value");
+                    : throw Throw("Failed to parse value.");
 
             internal bool ParseBool()
             {

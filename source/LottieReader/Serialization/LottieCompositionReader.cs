@@ -445,7 +445,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             // This buffer size is chosen to be about 50% larger than
             // the average file size in our corpus, so most of the time
             // we don't need to reallocate and copy.
-            var buffer = new byte[65536 * 2];
+            var buffer = new byte[150000];
             var bytesRead = stream.Read(buffer, 0, buffer.Length);
             var spaceLeftInBuffer = buffer.Length - bytesRead;
 
@@ -477,7 +477,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                         if (text.Length >= 3 && text[1] == 0xBB && text[2] == 0xBF)
                         {
                             // UTF8 BOM.
-                            // Step over the UTF8 BOM
+                            // Step over the UTF8 BOM.
                             text = text.Slice(3, text.Length - 3);
                         }
 
@@ -487,8 +487,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                         if (text.Length >= 2 && text[1] == 0xFF)
                         {
                             // Step over the UTF16 BOM and convert to UTF8.
-                            // NOTE: the ToArray here is necessary for UWP apps as they don't
-                            //       yet support GetString(ReadOnlySpan<byte>).
                             text = Encoding.UTF8.GetBytes(
                                                 Encoding.Unicode.GetString(
                                                     text.Slice(2, text.Length - 2)

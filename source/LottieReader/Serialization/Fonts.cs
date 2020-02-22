@@ -18,9 +18,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
             var fontsObject = subDocument.RootElement.AsObject();
 
-            return fontsObject is null
-                ? Array.Empty<Font>()
-                : ParseFonts(fontsObject.Value);
+            return fontsObject.HasValue
+                ? ParseFonts(fontsObject.Value)
+                : Array.Empty<Font>();
         }
 
         Font[] ParseFonts(in LottieJsonObjectElement fontsObject)
