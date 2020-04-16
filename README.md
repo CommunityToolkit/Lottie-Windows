@@ -33,4 +33,4 @@ to clarify expected behavior in our community.
 For more information see the [.NET Foundation Code of Conduct](http://dotnetfoundation.org/code-of-conduct).
 
 ## .NET Foundation
-This project is supported by the [.NET Foundation](http://dotnetfoundation.org).
+This project is supported by the [.NET Foundation](CODE_OF_CONDUCT.md).
