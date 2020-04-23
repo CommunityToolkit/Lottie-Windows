@@ -81,7 +81,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         // Factory used for creating properties that map from the Progress value of the animated visual
         // to another value. These are used to create properties that are required by cubic bezier
         // expressions used for spatial beziers.
-        readonly ProgressMapFactory _progressMapFactory;
+        readonly ProgressMapFactory _progressMapFactory = new ProgressMapFactory();
 
         // Property set used for property bindings for themed Lotties.
         CompositionPropertySet _themePropertySet;
@@ -114,7 +114,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             _issues = new TranslationIssues(strictTranslation);
             _addDescriptions = addDescriptions;
             _translatePropertyBindings = translatePropertyBindings;
-            _progressMapFactory = new ProgressMapFactory(lottieComposition.Duration);
 
             // Create the root.
             _rootVisual = _c.CreateContainerVisual();

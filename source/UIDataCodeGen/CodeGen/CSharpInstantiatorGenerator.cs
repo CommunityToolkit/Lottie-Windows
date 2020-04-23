@@ -80,10 +80,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             if (Info.UsesNamespaceWindowsUIXamlMedia)
             {
-                namespaces.Add("Windows.UI.Xaml.Media");
+                namespaces.Add("System.ComponentModel");
                 namespaces.Add("System.Runtime.InteropServices.WindowsRuntime");
                 namespaces.Add("Windows.Foundation");
-                namespaces.Add("System.ComponentModel");
+                namespaces.Add("Windows.UI.Xaml.Media");
             }
 
             if (Info.GenerateDependencyObject)
@@ -379,94 +379,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                  _ => throw new InvalidOperationException(),
              };
 
-        void WriteThemeMethodsAndFields(CodeBuilder builder, IAnimatedVisualSourceInfo info)
-        {
-            if (info.IsThemed)
-            {
-                builder.WriteLine($"CompositionPropertySet {info.ThemePropertiesFieldName};");
-
-                // Add fields for each of the theme properties.
-                // Not needed if generating a DependencyObject - the values wil be stored in DependencyProperty's.
-                if (!info.GenerateDependencyObject)
-                {
-                    foreach (var prop in info.SourceMetadata.PropertyBindings)
-                    {
-                        var defaultValue = GetDefaultPropertyBindingValue(prop);
-
-                        WriteInitializedField(builder, ExposedType(prop), $"_theme{prop.Name}", _s.VariableInitialization(defaultValue));
-                    }
-                }
-
-                builder.WriteLine();
-
-                // Add the public static dependency property fields for each theme property.
-                WriteDependencyPropertyFields(builder, info);
-
-                // Add properties for each of the theme properties.
-                WriteThemeProperties(builder, info);
-
-                builder.WriteLine("public CompositionPropertySet GetThemeProperties(Compositor compositor)");
-                builder.OpenScope();
-                builder.WriteLine("return EnsureThemeProperties(compositor);");
-                builder.CloseScope();
-                builder.WriteLine();
-
-                if (info.SourceMetadata.PropertyBindings.Any(pb => pb.ExposedType == PropertySetValueType.Color))
-                {
-                    // There's at least one themed color. They will need a helper method to convert to Vector4.
-                    builder.WriteLine("static Vector4 ColorAsVector4(Color color) => new Vector4(color.R, color.G, color.B, color.A);");
-                    builder.WriteLine();
-                }
-
-                // Add the dependency property change handler methods.
-                WriteDependencyPropertyChangeHandlers(builder, info);
-
-                // EnsureThemeProperties(...) method implementation.
-                builder.WriteLine("CompositionPropertySet EnsureThemeProperties(Compositor compositor)");
-                builder.OpenScope();
-                builder.WriteLine($"if ({info.ThemePropertiesFieldName} is null)");
-                builder.OpenScope();
-                builder.WriteLine($"{info.ThemePropertiesFieldName} = compositor.CreatePropertySet();");
-
-                // Initialize the values in the property set.
-                foreach (var prop in info.SourceMetadata.PropertyBindings)
-                {
-                    WriteThemePropertyInitialization(builder, info.ThemePropertiesFieldName, prop, prop.Name);
-                }
-
-                builder.CloseScope();
-                builder.WriteLine("return _themeProperties;");
-                builder.CloseScope();
-                builder.WriteLine();
-            }
-        }
-
-        string GetDefaultPropertyBindingValue(PropertyBinding prop)
-             => prop.ExposedType switch
-             {
-                 PropertySetValueType.Color => _s.Color((WinCompData.Wui.Color)prop.DefaultValue),
-
-                 // Scalars are stored as floats, but exposed as doubles as XAML markup prefers doubles.
-                 PropertySetValueType.Scalar => _s.Double((float)prop.DefaultValue),
-                 PropertySetValueType.Vector2 => _s.Vector2((Vector2)prop.DefaultValue),
-                 PropertySetValueType.Vector3 => _s.Vector3((Vector3)prop.DefaultValue),
-                 PropertySetValueType.Vector4 => _s.Vector4((Vector4)prop.DefaultValue),
-                 _ => throw new InvalidOperationException(),
-             };
-
         /// <summary>
         /// Write a class that implements the IDynamicAnimatedVisualSource interface.
         /// </summary>
         void WriteIDynamicAnimatedVisualSource(CodeBuilder builder, IAnimatedVisualSourceInfo info)
         {
-            if (info.GenerateDependencyObject)
-            {
-                builder.WriteLine($"sealed class {info.ClassName} : DependencyObject, IDynamicAnimatedVisualSource, INotifyPropertyChanged");
-            }
-            else
-            {
-                builder.WriteLine($"sealed class {info.ClassName} : IDynamicAnimatedVisualSource, INotifyPropertyChanged");
-            }
+            builder.WriteLine($"sealed class {info.ClassName} : {(info.GenerateDependencyObject ? "DependencyObject, " : string.Empty)}Microsoft.UI.Xaml.Controls.IDynamicAnimatedVisualSource, INotifyPropertyChanged");
 
             builder.OpenScope();
 
@@ -476,7 +394,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.WriteLine("bool _isAnimatedVisualSourceDynamic = true;");
             builder.WriteLine("bool _isTryCreateAnimatedVisualCalled;");
             builder.WriteLine("bool _isImageLoadingStarted;");
-            builder.WriteLine("EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource, object>> _animatedVisualInvalidatedEventTokenTable;");
+            builder.WriteLine("EventRegistrationTokenTable<TypedEventHandler<Microsoft.UI.Xaml.Controls.IDynamicAnimatedVisualSource, object>> _animatedVisualInvalidatedEventTokenTable;");
 
             // Declare the variables to hold the LoadedImageSurfaces.
             foreach (var n in info.LoadedImageSurfaces)
@@ -585,9 +503,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.WriteLine();
 
             // Generate the method that get or create the EventRegistrationTokenTable.
-            builder.WriteLine("EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource, object>> GetAnimatedVisualInvalidatedEventRegistrationTokenTable()");
+            builder.WriteLine("EventRegistrationTokenTable<TypedEventHandler<Microsoft.UI.Xaml.Controls.IDynamicAnimatedVisualSource, object>> GetAnimatedVisualInvalidatedEventRegistrationTokenTable()");
             builder.OpenScope();
-            builder.WriteLine("return EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource, object>>.GetOrCreateEventRegistrationTokenTable(ref _animatedVisualInvalidatedEventTokenTable);");
+            builder.WriteLine("return EventRegistrationTokenTable<TypedEventHandler<Microsoft.UI.Xaml.Controls.IDynamicAnimatedVisualSource, object>>.GetOrCreateEventRegistrationTokenTable(ref _animatedVisualInvalidatedEventTokenTable);");
         }
 
         /// <inheritdoc/>
@@ -789,7 +707,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         void WriteAnimatedVisualInvalidatedEvent(CodeBuilder builder)
         {
-            builder.WriteLine("public event TypedEventHandler<IDynamicAnimatedVisualSource, object> AnimatedVisualInvalidated");
+            builder.WriteLine("public event TypedEventHandler<Microsoft.UI.Xaml.Controls.IDynamicAnimatedVisualSource, object> AnimatedVisualInvalidated");
             builder.OpenScope();
             builder.WriteLine("add");
             builder.OpenScope();

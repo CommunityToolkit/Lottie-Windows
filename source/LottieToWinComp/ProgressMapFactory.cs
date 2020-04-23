@@ -17,14 +17,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
     {
         readonly List<ProgressVariable> _progressVariables = new List<ProgressVariable>();
 
-        readonly TimeSpan _duration;
-
         int _variableCounter;
-
-        internal ProgressMapFactory(TimeSpan duration)
-        {
-            _duration = duration;
-        }
 
         // Returns the name of the variable that is animated from 0 to 1 from start to end.
         internal string GetVariableForProgressMapping(float start, float end, Easing easing, double scale, double offset)
@@ -119,7 +112,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 if (cur.Next is null)
                 {
                     // Got to the end of the list. Add the range on the end.
-                    if (range.Start >= cur.End)
+                    if (range.Start > cur.End)
                     {
                         cur.Next = range;
                         return true;

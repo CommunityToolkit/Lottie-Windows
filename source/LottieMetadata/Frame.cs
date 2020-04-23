@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieMetadata
 {
@@ -11,7 +12,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieMetadata
 #if PUBLIC_LottieMetadata
     public
 #endif
-    readonly struct Frame
+    readonly struct Frame : IComparable<Frame>
     {
         readonly Duration _context;
 
@@ -55,5 +56,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieMetadata
         }
 
         public override string ToString() => $"{Number}/{Progress}/{Time}";
+
+        public int CompareTo(Frame other) => Number.CompareTo(other.Number);
     }
 }

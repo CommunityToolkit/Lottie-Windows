@@ -280,7 +280,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                             if (breakLookahead + 1 < text.Length && text[breakLookahead + 1] == '\n')
                             {
                                 // CRLF pair - step over both
-                                if (breakLookahead > maxLineLength)
+                                if (breakLookahead > maxLineLength && breakAt != 0)
                                 {
                                     // Breaking at the end of the line makes the line too long. Break earlier.
                                     remainder = text.Substring(breakAt);

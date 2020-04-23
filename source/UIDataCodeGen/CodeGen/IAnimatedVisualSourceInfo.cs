@@ -26,8 +26,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         string Namespace { get; }
 
         /// <summary>
-        /// Gets the name of the interface for the generated code, or null to generate
-        /// IAnimatedVisual/IAnimatedVisualSource.
+        /// Gets the name of the interface for the generated code.
         /// </summary>
         TypeName InterfaceType { get; }
 

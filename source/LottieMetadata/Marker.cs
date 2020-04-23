@@ -18,10 +18,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieMetadata
             Duration = duration;
         }
 
+        /// <summary>
+        /// The name of the marker.
+        /// </summary>
         public string Name { get; }
 
+        /// <summary>
+        /// The frame that the marker refers to.
+        /// </summary>
         public Frame Frame { get; }
 
+        /// <summary>
+        /// The duration of the marker.
+        /// </summary>
         public Duration Duration { get; }
 
         public override string ToString() => $"{Name}:{Frame}..{Frame + Duration}";

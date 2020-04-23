@@ -9,7 +9,6 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using Microsoft.Toolkit.Uwp.UI.Lottie.GenericData;
-using Microsoft.Toolkit.Uwp.UI.Lottie.LottieMetadata;
 using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Tables;
 using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
@@ -55,7 +54,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         readonly bool _isThemed;
         readonly IReadOnlyList<string> _toolInfo;
         readonly TypeName _interfaceType;
-        readonly IReadOnlyList<(Marker marker, string startConstant, string endConstant)> _lottieMarkers;
+        readonly IReadOnlyList<MarkerInfo> _lottieMarkers;
         readonly IReadOnlyList<NamedConstant> _internalConstants;
 
         AnimatedVisualGenerator _currentAnimatedVisualGenerator;
@@ -78,7 +77,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             _toolInfo = configuration.ToolInfo;
             _interfaceType = new TypeName(configuration.InterfaceType);
 
-            _lottieMarkers = GetMarkers(_sourceMetadata.LottieMetadata).ToArray();
+            _lottieMarkers = MarkerInfo.GetMarkerInfos(_sourceMetadata.LottieMetadata.FilteredMarkers).ToArray();
             _internalConstants = GetInternalConstants().ToArray();
 
             var graphs = configuration.ObjectGraphs;
@@ -378,18 +377,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             }
         }
 
-        static IEnumerable<(Marker marker, string startConstant, string endConstant)> GetMarkers(LottieCompositionMetadata metadata)
-        {
-            return
-                from m in metadata.FilteredMarkers
-                let constantBaseName = ConstantName(m.Name)
-                let isZeroDuration = m.Duration.Frames <= 0
-                let baseName = $"M_{constantBaseName}"
-                let startConstant = isZeroDuration ? baseName : $"{baseName}_start"
-                let endConstant = isZeroDuration ? null : $"{baseName}_end"
-                select (m, startConstant, endConstant);
-        }
-
         IEnumerable<NamedConstant> GetInternalConstants()
         {
             // Get the duration in ticks.
@@ -400,12 +387,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 _compositionDuration.Ticks);
 
             // Get the markers.
-            foreach (var (marker, startConstant, endConstant) in _lottieMarkers)
+            foreach (var marker in _lottieMarkers)
             {
-                yield return new NamedConstant(startConstant, $"Marker: {marker.Name}.", ConstantType.Float, (float)marker.Frame.Progress);
-                if (marker.Duration.Frames > 0)
+                yield return new NamedConstant(marker.StartConstant, $"Marker: {marker.Name}.", ConstantType.Float, (float)marker.StartProgress);
+                if (marker.DurationInFrames > 0)
                 {
-                    yield return new NamedConstant(endConstant, $"Marker: {marker.Name}.", ConstantType.Float, (float)(marker.Frame + marker.Duration).Progress);
+                    yield return new NamedConstant(marker.EndConstant, $"Marker: {marker.Name}.", ConstantType.Float, (float)marker.EndProgress);
                 }
             }
 
@@ -428,19 +415,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             }
         }
 
-        // Returns a name that can be used as the name of a class constant.
-        // The returned name is expected to be prefixed with string.
-        static string ConstantName(string baseName)
-        {
-            // Replace any disallowed character with underscores.
-            var constantName =
-                new string((from ch in baseName
-                            select char.IsLetterOrDigit(ch) ? ch : '_').ToArray());
-
-            // Remove any duplicated underscores.
-            return constantName.Replace("__", "_");
-        }
-
         /// <summary>
         /// Returns text that describes the contents of the source metadata.
         /// </summary>
@@ -451,9 +425,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             var metadata = _sourceMetadata.LottieMetadata;
             if (metadata != null)
             {
-                if (metadata.CompositionName != null)
+                var compositionName = SanitizeCommentLine(metadata.CompositionName);
+
+                if (!string.IsNullOrWhiteSpace(compositionName))
                 {
-                    yield return $"Name:        {metadata.CompositionName}";
+                    yield return $"Name:        {compositionName}";
                 }
 
                 yield return $"Frame rate:  {metadata.Duration.FPS} fps";
@@ -587,6 +563,38 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             name = name.ToUpperInvariant().Substring(0, 1) + name.Substring(1);
 
             return name;
+        }
+
+        // Makes the given text suitable for use as a single line comment.
+        static string SanitizeCommentLine(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                return null;
+            }
+
+            // Replace any new lines.
+            text = text.Replace("\r\n", " ").Replace("\r", " ").Replace("\n", " ");
+            text = RemoveControlCharacters(text);
+            return text.Trim();
+        }
+
+        static string RemoveControlCharacters(string text)
+        {
+            IEnumerable<char> Sanitize()
+            {
+                foreach (var ch in text)
+                {
+                    if (char.IsControl(ch))
+                    {
+                        continue;
+                    }
+
+                    yield return ch;
+                }
+            }
+
+            return new string(Sanitize().ToArray());
         }
 
         protected void WriteInitializedField(CodeBuilder builder, string typeName, string fieldName, string initialization)
@@ -2148,6 +2156,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 if (referenceParameters.Length == 1 &&
                     string.IsNullOrWhiteSpace(animation.Target))
                 {
+                    EnsureBindPropertyWritten(builder);
+
                     var rp0 = referenceParameters[0];
                     var rp0Name = GetReferenceParameterName(obj, localName, animationNode, rp0);
 
@@ -2162,6 +2172,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 else if (referenceParameters.Length == 2 &&
                     string.IsNullOrWhiteSpace(animation.Target))
                 {
+                    EnsureBindProperty2Written(builder);
+
                     var rp0 = referenceParameters[0];
                     var rp0Name = GetReferenceParameterName(obj, localName, animationNode, rp0);
 

@@ -1,10 +1,8 @@
 ﻿// Copyright(c) Microsoft Corporation.All rights reserved.
 // Licensed under the MIT License.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Toolkit.Uwp.UI.Lottie.LottieMetadata;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Tables
 {
@@ -12,10 +10,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Tables
     {
         internal static IEnumerable<string> GetMarkersDescriptionLines(
             Stringifier stringifier,
-            IEnumerable<(Marker marker, string startConstant, string endConstant)> markers)
+            IEnumerable<MarkerInfo> markers)
         {
             var ms = markers.ToArray();
-            var hasNonZeroDurations = ms.Any(m => m.marker.Duration.Frames > 0);
+            var hasNonZeroDurations = ms.Any(m => m.DurationInFrames > 0);
 
             return hasNonZeroDurations
                 ? GetMarkersWithDurationDescriptionLines(stringifier, markers)
@@ -24,7 +22,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Tables
 
         static IEnumerable<string> GetMarkersWithNoDurationsDescriptionLines(
             Stringifier stringifier,
-            IEnumerable<(Marker marker, string startConstant, string endConstant)> markers)
+            IEnumerable<MarkerInfo> markers)
         {
             var header = new[] {
                 Row.HeaderTop,
@@ -40,13 +38,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Tables
 
             var records =
                 from m in markers
-                let marker = m.marker
                 select (Row)new Row.ColumnData(
-                    ColumnData.Create(marker.Name, TextAlignment.Left),
-                    ColumnData.Create(m.startConstant, TextAlignment.Left),
-                    ColumnData.Create(marker.Frame.Number),
-                    ColumnData.Create(marker.Frame.Time.TotalMilliseconds),
-                    ColumnData.Create(stringifier.Float(marker.Frame.Progress), TextAlignment.Left)
+                    ColumnData.Create(m.Name, TextAlignment.Left),
+                    ColumnData.Create(m.StartConstant, TextAlignment.Left),
+                    ColumnData.Create(m.StartFrame),
+                    ColumnData.Create(m.StartTime.TotalMilliseconds),
+                    ColumnData.Create(stringifier.Float(m.StartProgress), TextAlignment.Left)
                 );
 
             records = records.Append(Row.BodyBottom);
@@ -56,7 +53,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Tables
 
         static IEnumerable<string> GetMarkersWithDurationDescriptionLines(
             Stringifier stringifier,
-            IEnumerable<(Marker marker, string startConstant, string endConstant)> markers)
+            IEnumerable<MarkerInfo> markers)
         {
             var header = new[] {
                 Row.HeaderTop,
@@ -85,16 +82,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Tables
 
             var records =
                 from m in markers
-                let marker = m.marker
                 select (Row)new Row.ColumnData(
-                    ColumnData.Create(marker.Name, TextAlignment.Left),
-                    ColumnData.Create(m.startConstant, TextAlignment.Left),
-                    ColumnData.Create(m.endConstant, TextAlignment.Left),
-                    ColumnData.Create(marker.Frame.Number),
-                    ColumnData.Create(marker.Frame.Time.TotalMilliseconds),
-                    marker.Duration.Frames > 0 ? ColumnData.Create(marker.Duration.Time.TotalMilliseconds) : ColumnData.Empty,
-                    ColumnData.Create(stringifier.Float(marker.Frame.Progress), TextAlignment.Left),
-                    marker.Duration.Frames > 0 ? ColumnData.Create(stringifier.Float((marker.Frame + marker.Duration).Progress), TextAlignment.Left) : ColumnData.Empty
+                    ColumnData.Create(m.Name, TextAlignment.Left),
+                    ColumnData.Create(m.StartConstant, TextAlignment.Left),
+                    ColumnData.Create(m.EndConstant, TextAlignment.Left),
+                    ColumnData.Create(m.StartFrame),
+                    ColumnData.Create(m.StartTime.TotalMilliseconds),
+                    m.DurationInFrames > 0 ? ColumnData.Create(m.Duration.TotalMilliseconds) : ColumnData.Empty,
+                    ColumnData.Create(stringifier.Float(m.StartProgress), TextAlignment.Left),
+                    m.DurationInFrames > 0 ? ColumnData.Create(stringifier.Float(m.EndProgress), TextAlignment.Left) : ColumnData.Empty
                 );
 
             records = records.Append(Row.BodyBottom);
