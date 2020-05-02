@@ -16,7 +16,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
         {
         }
 
-        // Default is 0,0.
+        // Default is 0, 0.
         public Vector2? CenterPoint { get; set; }
 
         // Default is 1, 1.

@@ -76,7 +76,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg
             /// <inheritdoc/>
             public bool Equals(Command other)
             {
-                if (other == null)
+                if (other is null)
                 {
                     return false;
                 }

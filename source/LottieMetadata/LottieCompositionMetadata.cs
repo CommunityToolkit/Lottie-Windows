@@ -25,10 +25,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieMetadata
         {
             CompositionName = compositionName;
             Duration = new Duration(outPoint - inPoint, framesPerSecond);
-            Markers = markers.Select(m => new Marker(m.name, new Frame(Duration, m.frame - inPoint),  new Duration(m.durationInFrames, Duration))).ToArray();
+            Markers = markers.Select(
+                m => new Marker(
+                    m.name,
+                    new Frame(Duration, m.frame - inPoint),
+                    new Duration(m.durationInFrames, Duration))).ToArray();
         }
 
-        public static LottieCompositionMetadata Empty => new LottieCompositionMetadata(string.Empty, 0, 0, 0, Array.Empty<(string, double, double)>());
+        public static LottieCompositionMetadata Empty { get; } =
+            new LottieCompositionMetadata(string.Empty, 0, 0, 0, Array.Empty<(string, double, double)>());
 
         public string CompositionName { get; }
 
@@ -44,8 +49,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieMetadata
         public IReadOnlyList<Marker> FilteredMarkers => FilterMarkers(Markers, Duration).ToArray();
 
         // Takes a markers list and returns another list where any markers that are
-        // are partially outside of range are adjusted to be inside range, and any
-        // markers that are completely outside of range are discarded.
+        // partially outside of the range are adjusted to be inside range, and any markers
+        // that are completely outside of the range are discarded.
         static IEnumerable<Marker> FilterMarkers(IEnumerable<Marker> markers, Duration range)
         {
             foreach (var marker in markers)
@@ -56,7 +61,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieMetadata
                     // The marker starts before the start.
                     if ((result.Frame + result.Duration).Number < 0)
                     {
-                        // It is completely before the start.
+                        // It is completely before the start of the range.
                         continue;
                     }
 
@@ -65,13 +70,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieMetadata
                 }
                 else if (result.Frame.Number > range.Frames)
                 {
-                    // It is completely after the end.
+                    // It is completely after the end of the range.
                     continue;
                 }
 
                 if ((result.Frame + result.Duration).Number > range.Frames)
                 {
-                    // The marker ends after the end. Adjust the duration so that it ends at the end.
+                    // The marker ends after the end of the range. Adjust the duration so that it ends at the end of the range.
                     result = new Marker(result.Name, result.Frame, new Duration(range.Frames - result.Frame.Number, range));
                 }
 

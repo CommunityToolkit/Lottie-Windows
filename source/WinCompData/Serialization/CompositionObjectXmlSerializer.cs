@@ -39,7 +39,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
 
         IEnumerable<XObject> FromCompositionObject(CompositionObject obj)
         {
-            if (obj == null)
+            if (obj is null)
             {
                 yield break;
             }

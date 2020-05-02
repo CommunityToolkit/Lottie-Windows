@@ -40,7 +40,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
             public object Object { get; set; }
 
-            public Vertex[] InReferences => _inReferences == null ? Array.Empty<Vertex>() : _inReferences.ToArray();
+            public Vertex[] InReferences => _inReferences is null ? Array.Empty<Vertex>() : _inReferences.ToArray();
 
             public int ReferenceCount => InReferences.Length;
 
@@ -71,7 +71,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             {
                 get
                 {
-                    if (_inReferences == null)
+                    if (_inReferences is null)
                     {
                         _inReferences = new List<Vertex>();
                     }

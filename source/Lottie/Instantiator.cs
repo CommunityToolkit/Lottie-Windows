@@ -367,6 +367,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             }
         }
 
+        /// <summary>
+        /// Starts animations on <paramref name="target"/> that have been started on <paramref name="source"/>.
+        /// </summary>
+        /// <remarks>
+        /// This is the last stage of initializing a CompositionObject. CompositionObjects are initialized
+        /// in 3 stages: creation, setting of properties, starting of animations. Animations must be started
+        /// after properties are set because setting a property will stop a running animation.
+        /// </remarks>
         void StartAnimations(Wd.CompositionObject source, Wc.CompositionObject target)
         {
             foreach (var animator in source.Animators)
@@ -443,10 +451,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                     return GetContainerVisual((Wd.ContainerVisual)obj);
                 case Wd.CompositionObjectType.CubicBezierEasingFunction:
                     return GetCubicBezierEasingFunction((Wd.CubicBezierEasingFunction)obj);
-                case Wd.CompositionObjectType.ExpressionAnimation:
-                    return GetExpressionAnimation((Wd.ExpressionAnimation)obj);
                 case Wd.CompositionObjectType.CompositionSurfaceBrush:
                     return GetCompositionSurfaceBrush((Wd.CompositionSurfaceBrush)obj);
+                case Wd.CompositionObjectType.ExpressionAnimation:
+                    return GetExpressionAnimation((Wd.ExpressionAnimation)obj);
                 case Wd.CompositionObjectType.InsetClip:
                     return GetInsetClip((Wd.InsetClip)obj);
                 case Wd.CompositionObjectType.LinearEasingFunction:
@@ -481,7 +489,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
 
             // CompositionPropertySets are usually created implicitly by CompositionObjects that own them.
             // If the CompositionPropertySet is not owned, then create it now.
-            if (obj.Owner == null)
+            if (obj.Owner is null)
             {
                 result = _c.CreatePropertySet();
             }
@@ -559,12 +567,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         {
             switch (obj.Type)
             {
-                case Wd.CompositionObjectType.ExpressionAnimation:
-                    return GetExpressionAnimation((Wd.ExpressionAnimation)obj);
                 case Wd.CompositionObjectType.BooleanKeyFrameAnimation:
                     return GetBooleanKeyFrameAnimation((Wd.BooleanKeyFrameAnimation)obj);
                 case Wd.CompositionObjectType.ColorKeyFrameAnimation:
                     return GetColorKeyFrameAnimation((Wd.ColorKeyFrameAnimation)obj);
+                case Wd.CompositionObjectType.ExpressionAnimation:
+                    return GetExpressionAnimation((Wd.ExpressionAnimation)obj);
                 case Wd.CompositionObjectType.PathKeyFrameAnimation:
                     return GetPathKeyFrameAnimation((Wd.PathKeyFrameAnimation)obj);
                 case Wd.CompositionObjectType.ScalarKeyFrameAnimation:
@@ -1278,7 +1286,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 return result;
             }
 
-            result = CacheAndInitializeCompositionGeometry(obj, _c.CreatePathGeometry(obj.Path == null ? null : GetCompositionPath(obj.Path)));
+            result = CacheAndInitializeCompositionGeometry(obj, _c.CreatePathGeometry(obj.Path is null ? null : GetCompositionPath(obj.Path)));
             StartAnimations(obj, result);
             return result;
         }

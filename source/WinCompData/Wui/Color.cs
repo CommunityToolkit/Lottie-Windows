@@ -41,7 +41,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui
             get
             {
                 var result = GetFriendlyName(A, R, G, B);
-                if (result == null)
+                if (result is null)
                 {
                     // Get the nearest named color.
                     result = GetNearestNamedColor(this).Name;
@@ -96,7 +96,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui
         static string GetFriendlyName(byte a, byte r, byte g, byte b)
         {
             var result = GetWellKnownName(a, r, g, b);
-            if (result == null)
+            if (result is null)
             {
                 if (a != 255)
                 {

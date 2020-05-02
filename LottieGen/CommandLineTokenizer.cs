@@ -75,7 +75,7 @@ sealed class CommandlineTokenizer<TKeywordId>
             }
         }
 
-        if (currrentNode.Keyword == null)
+        if (currrentNode.Keyword is null)
         {
             throw new InvalidOperationException("Keyword matches an existing prefix.");
         }

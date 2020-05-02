@@ -2,9 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -37,8 +35,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         // Typically used for writing method calls and signature.
         internal void WriteBreakableLine(string prefix, string[] breakableParts, string postfix)
         {
-            // See if the content fits on a single line.
-            if (prefix.Length + breakableParts.Sum(s => s.Length) + postfix.Length <= LineBreakWidth)
+            // See if the content fits on a single line with a space between each breakable part.
+            if (prefix.Length + /*space:*/ 1 +
+                breakableParts.Sum(s => s.Length) + /*spaces:*/ breakableParts.Length +
+                postfix.Length <= LineBreakWidth)
             {
                 WriteLine($"{prefix}{string.Join(' ', breakableParts)}{postfix}");
             }
@@ -204,7 +204,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
                         if (indentSpaceCount <= 0)
                         {
-                            // This fixes up any mismatch of indents. It will probably result.
+                            // This fixes up any mismatch of indents. It will probably result
                             // in the output looking wrong, but that's better than crashing.
                             indentSpaceCount = 0;
                         }

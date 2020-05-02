@@ -96,7 +96,7 @@ sealed class Program
         }
 
         // Check for required args
-        if (_options.InputFile == null)
+        if (_options.InputFile is null)
         {
             _reporter.WriteError("Lottie file not specified.");
             return RunResult.InvalidUsage;
@@ -234,7 +234,7 @@ sealed class Program
 Usage: {0} -InputFile LOTTIEFILE -Language LANG [Other options]
 
 OVERVIEW:
-       Generates source code from Lottie files for playing in the AnimatedVisualPlayer. 
+       Generates source code from Lottie files for playing in the AnimatedVisualPlayer.
        LOTTIEFILE is a Lottie .json file. LOTTIEFILE may contain wildcards.
        LANG is one of cs, cppcx, cppwinrt, wincompxml, lottiexml, lottieyaml, dgml, or stats.
        -Language LANG may be specified multiple times.
@@ -242,7 +242,7 @@ OVERVIEW:
        [Other options]
 
          -Help         Print this help message and exit.
-         -DisableTranslationOptimizer  
+         -DisableTranslationOptimizer
                        Disables optimization of the translation from Lottie to
                        Windows code. Mainly used to detect bugs in the optimizer.
          -DisableCodeGenOptimizer
@@ -273,6 +273,10 @@ OVERVIEW:
                        that may take advantage of features in this version in order
                        to produce a better result. If not specified, defaults to
                        the latest UAP version.
+         -TestMode     Prevents any information from being included that could change
+                       from run to run with the same inputs, for example tool version
+                       numbers, file paths, and dates. This is designed to enable
+                       testing of the tool by diffing the outputs.
 
 EXAMPLES:
 

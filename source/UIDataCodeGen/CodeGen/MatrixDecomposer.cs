@@ -31,14 +31,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             if (a != 0 || b != 0)
             {
                 var r = Math.Sqrt((a * a) + (b * b));
-                rotationDegrees = DegreesToRadians(b > 0 ? Math.Acos(a / r) : -Math.Acos(a / r));
+                rotationDegrees = RadiansToDegrees(b > 0 ? Math.Acos(a / r) : -Math.Acos(a / r));
                 scale = Vector2OrNullIfOne(r, delta / r);
                 skew = Vector2OrNullIfZero(Math.Atan(((a * c) + (b * d)) / (r * r)), 0);
             }
             else if (c != 0 || d != 0)
             {
                 var s = Math.Sqrt((c * c) + (d * d));
-                rotationDegrees = DegreesToRadians((Math.PI / 2) - (d > 0 ? Math.Acos(-c / s) : -Math.Acos(c / s)));
+                rotationDegrees = RadiansToDegrees((Math.PI / 2) - (d > 0 ? Math.Acos(-c / s) : -Math.Acos(c / s)));
                 scale = Vector2OrNullIfOne(delta / s, s);
                 skew = Vector2OrNullIfZero(0, Math.Atan(((a * c) + (b * d)) / (s * s)));
             }
@@ -95,14 +95,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         static Vector2? Vector2OrNullIfZero(double x, double y)
            => x == 0 && y == 0
-            ? (Vector2?)null
-            : new Vector2((float)x, (float)y);
+                ? (Vector2?)null
+                : new Vector2((float)x, (float)y);
 
         static Vector2? Vector2OrNullIfOne(double x, double y)
             => x == 1 && y == 1
                 ? (Vector2?)null
                 : new Vector2((float)x, (float)y);
 
-        static double DegreesToRadians(double radians) => radians * 180 / Math.PI;
+        static double RadiansToDegrees(double radians) => radians * 180 / Math.PI;
     }
 }

@@ -377,7 +377,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             {
                 var isAnimated = shape.Animators.Any() || shape.Properties.Animators.Any();
                 var geometry = shape.Geometry;
-                if (geometry == null)
+                if (geometry is null)
                 {
                     return isAnimated ? CategoryShapeAnimated : CategoryShape;
                 }

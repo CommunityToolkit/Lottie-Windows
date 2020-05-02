@@ -183,7 +183,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg
 
             public bool Equals(Group other)
             {
-                if (other == null || other.Geometries.Length != Geometries.Length)
+                if (other is null || other.Geometries.Length != Geometries.Length)
                 {
                     return false;
                 }
@@ -238,7 +238,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg
                     return true;
                 }
 
-                if (other == null)
+                if (other is null)
                 {
                     return false;
                 }

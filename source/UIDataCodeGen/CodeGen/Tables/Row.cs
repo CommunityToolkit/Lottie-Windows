@@ -42,8 +42,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Tables
             None = 0,
             BodyBottom,
             ColumnData,
-            HeaderTop,
             HeaderBottom,
+            HeaderTop,
             Separator,
         }
     }

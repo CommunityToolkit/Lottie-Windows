@@ -51,7 +51,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// <summary>
         /// When <c>true</c>, the generated IAnimatedVisualSource implementation will
         /// be a subclass of DependencyObject, and any theme properties will be
-        /// implemented as DependencyProperty's.
+        /// implemented as DependencyPropertys.
         /// </summary>
         public bool GenerateDependencyObject { get; set; }
 

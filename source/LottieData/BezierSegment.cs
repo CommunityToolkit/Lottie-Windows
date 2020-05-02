@@ -62,7 +62,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
                     return true;
                 }
 
-                if (x == null || y == null)
+                if (x is null || y is null)
                 {
                     return false;
                 }
@@ -76,7 +76,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
             public int GetHashCode(BezierSegment obj)
             {
-                if (obj == null)
+                if (obj is null)
                 {
                     return 0;
                 }

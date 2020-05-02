@@ -59,7 +59,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
                 return true;
             }
 
-            if (other == null)
+            if (other is null)
             {
                 return false;
             }
@@ -86,6 +86,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         public override int GetHashCode() => Value.GetHashCode() ^ Frame.GetHashCode() ^ Easing.GetHashCode();
 
         /// <inheritdoc/>
-        public override string ToString() => Easing == null ? $"{Value} @{Frame}" : $"{Value} @{Frame} using {Easing}";
+        public override string ToString() => Easing is null ? $"{Value} @{Frame}" : $"{Value} @{Frame} using {Easing}";
     }
 }

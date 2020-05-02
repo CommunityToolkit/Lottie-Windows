@@ -72,7 +72,7 @@ New-Item $outputPath -ItemType Directory >$null
 Write-Host -ForegroundColor Blue -NoNewline 'Output will be written to: '
 Write-Host -ForegroundColor Green $outputPath
 
-$lottieGenCommand = "$lottieGenExePath -input `"$CorpusDirectory\**json`" -o $outputPath -l cs -l cppcx -l lottiexml -l lottieyaml -l wincompxml -l dgml -l stats"
+$lottieGenCommand = "$lottieGenExePath -input `"$CorpusDirectory\**json`" -o $outputPath -l cs -l cppcx -l lottiexml -l lottieyaml -l wincompxml -l dgml -l stats -TestMode"
 
 # Run LottieGen over everything in the corpus.
 Write-Host -ForegroundColor Blue -NoNewline 'Executing: '

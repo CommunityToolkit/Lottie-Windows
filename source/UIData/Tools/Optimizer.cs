@@ -44,6 +44,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
             AssertGraphsAreDisjoint(result, root);
 
+            // Un-set properties that are set to their default values, and convert
+            // non-default scalar properties to Matrix properties where possible.
+            result = PropertyValueOptimizer.OptimizePropertyValues(result);
+
             // Try to optimize away redundant parts of the graph.
             result = GraphCompactor.Compact(result);
 
@@ -244,7 +248,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
         CanvasGeometry CacheCanvasGeometry(CanvasGeometry key, CanvasGeometry obj)
         {
             var node = NodeFor(key);
-            Debug.Assert(node.Copied == null, "Precondition");
+            Debug.Assert(node.Copied is null, "Precondition");
             Debug.Assert(!ReferenceEquals(key, obj), "Precondition");
             node.Copied = obj;
             return obj;
@@ -254,7 +258,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             where T : CompositionObject
         {
             var node = NodeFor(key);
-            Debug.Assert(node.Copied == null, "Precondition");
+            Debug.Assert(node.Copied is null, "Precondition");
             Debug.Assert(!ReferenceEquals(key, obj), "Precondition");
             node.Copied = obj;
             return obj;
@@ -263,7 +267,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
         CompositionPath Cache(CompositionPath key, CompositionPath obj)
         {
             var node = NodeFor(key);
-            Debug.Assert(node.Copied == null, "Precondition");
+            Debug.Assert(node.Copied is null, "Precondition");
             Debug.Assert(!ReferenceEquals(key, obj), "Precondition");
             node.Copied = obj;
             return obj;
@@ -272,7 +276,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
         LoadedImageSurface Cache(LoadedImageSurface key, LoadedImageSurface obj)
         {
             var node = NodeFor(key);
-            Debug.Assert(node.Copied == null, "Precondition");
+            Debug.Assert(node.Copied is null, "Precondition");
             Debug.Assert(!ReferenceEquals(key, obj), "Precondition");
             node.Copied = obj;
             return obj;
@@ -489,7 +493,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
             // CompositionPropertySets are usually created implicitly by CompositionObjects that own them.
             // If the CompositionPropertySet is not owned, then create it now.
-            if (obj.Owner == null)
+            if (obj.Owner is null)
             {
                 result = _c.CreatePropertySet();
             }
@@ -1297,7 +1301,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 return result;
             }
 
-            result = CacheAndInitializeCompositionGeometry(obj, _c.CreatePathGeometry(obj.Path == null ? null : GetCompositionPath(obj.Path)));
+            result = CacheAndInitializeCompositionGeometry(obj, _c.CreatePathGeometry(obj.Path is null ? null : GetCompositionPath(obj.Path)));
             StartAnimationsAndFreeze(obj, result);
             return result;
         }

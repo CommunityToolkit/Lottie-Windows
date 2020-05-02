@@ -20,9 +20,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieMetadata
         {
             Number = number;
             _context = context;
-
-            Progress = number / context.Frames;
-            Time = Progress * context.Time;
         }
 
         /// <summary>
@@ -33,12 +30,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieMetadata
         /// <summary>
         /// The location as a proportion of the Lottie composition.
         /// </summary>
-        public double Progress { get; }
+        public double Progress => Number / _context.Frames;
 
         /// <summary>
         /// The location as a time offset from the start of the Lottie composition.
         /// </summary>
-        public TimeSpan Time { get; }
+        public TimeSpan Time => Progress * _context.Time;
 
         public static Frame operator +(Frame frame, Duration duration)
         {
@@ -47,6 +44,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieMetadata
 
         public static Duration operator -(Frame frameA, Frame frameB)
         {
+            // The frames must refer to the same Duration otherwise it makes no sense
+            // to subtract them.
             if (frameA._context != frameB._context)
             {
                 throw new ArgumentException();

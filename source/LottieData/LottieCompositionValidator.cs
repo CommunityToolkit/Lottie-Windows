@@ -31,7 +31,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// <returns>A list of the issues discovered during validation.</returns>
         public static (string Code, string Description)[] Validate(LottieComposition lottieComposition)
         {
-            if (lottieComposition == null)
+            if (lottieComposition is null)
             {
                 throw new ArgumentNullException(nameof(lottieComposition));
             }
@@ -97,7 +97,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             // Divide each layer into either notIn a cycle, or maybeIn a cycle.
             foreach (var layer in layers.GetLayersBottomToTop())
             {
-                if (layer.Parent == null)
+                if (layer.Parent is null)
                 {
                     // A layer with no Parent is definitely notIn a cycle.
                     notInCycles.Add(layer);
@@ -159,7 +159,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         {
             foreach (var layer in layers.GetLayersBottomToTop())
             {
-                if (layer.Parent.HasValue && layers.GetLayerById(layer.Parent) == null)
+                if (layer.Parent.HasValue && layers.GetLayerById(layer.Parent) is null)
                 {
                     _issues.InvalidLayerParent(layer.Parent.ToString());
                 }

@@ -163,14 +163,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// </summary>
         /// <returns>The <see cref="CubicBezierFunction2"/> as a <see cref="Vector3"/> expression where
         /// the Z values are 0.</returns>
-        internal Vector3 AsVector3() => new Vector3_(this);
+        internal Vector3 AsVector3() => new CubicBezierFunctionAsVector3(this);
 
         // A Vector3-typed CubicBezierFunction2. The Z values are always 0.
-        internal sealed class Vector3_ : Vector3
+        sealed class CubicBezierFunctionAsVector3 : Vector3
         {
             readonly CubicBezierFunction2 _original;
 
-            internal Vector3_(CubicBezierFunction2 original)
+            internal CubicBezierFunctionAsVector3(CubicBezierFunction2 original)
             {
                 _original = original;
             }
@@ -184,10 +184,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 // (1-t)^3P0
                 var p0Part = Pow(oneMinusT, 3) * Vector3(Vector2(_original._p0));
 
-                // (1-t)^2t3P1
+                // 3(1-t)^2tP1
                 var p1Part = 3 * Squared(oneMinusT) * _original._t * Vector3(Vector2(_original._p1));
 
-                // (1-t)t^23P2
+                // 3(1-t)t^2P2
                 var p2Part = 3 * oneMinusT * Squared(_original._t) * Vector3(Vector2(_original._p2));
 
                 // t^3P3

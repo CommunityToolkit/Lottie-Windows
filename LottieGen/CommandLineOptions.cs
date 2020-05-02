@@ -17,7 +17,7 @@ internal enum Lang
 
     CSharp,
     Cx,
-    CppWinrt,
+    Cppwinrt,
     LottieXml,
     LottieYaml,
     WinCompXml,
@@ -29,9 +29,9 @@ sealed class CommandLineOptions
 {
     readonly List<string> _languageStrings = new List<string>();
 
-    internal bool DisableTranslationOptimizer { get; private set; }
-
     internal bool DisableCodeGenOptimizer { get; private set; }
+
+    internal bool DisableTranslationOptimizer { get; private set; }
 
     // The parse error, or null if the parse succeeded.
     // The error should be a sentence (starts with a capital letter, and ends with a period).
@@ -59,29 +59,32 @@ sealed class CommandLineOptions
 
     internal uint? TargetUapVersion { get; private set; }
 
-    // TestMode is a hidden switch that causes the output to not contain any
-    // information that would change from run to run given the same inputs.
-    // For example, the output will not contain any tool version number,
-    // any dates, or any path information.
+    // TestMode causes the output to not contain any information that would
+    // change from run to run given the same inputs. For example, the output
+    // will not contain any tool version number, any dates, or any path
+    // information.
     //
     // This mode is designed to allow testing by comparing the output of
     // a previous version of the tool.
     internal bool TestMode { get; private set; }
 
-    // Returns a command line equivalent to the current set of options, but
-    // without the InputFolder, OutputPath or Language options.
+    // Returns a command line equivalent to the current set of options. This is intended
+    // for adding to generated code so that users can regenerate the code and know that
+    // they got the set of options the same as a previous run. It does not include the
+    // InputFile, OutputFolder, or Language options.
     internal string ToConfigurationCommandLine()
     {
         var sb = new StringBuilder();
         sb.Append(ThisAssembly.AssemblyName);
-        if (DisableTranslationOptimizer)
-        {
-            sb.Append($" -{nameof(DisableTranslationOptimizer)}");
-        }
 
         if (DisableCodeGenOptimizer)
         {
             sb.Append($" -{nameof(DisableCodeGenOptimizer)}");
+        }
+
+        if (DisableTranslationOptimizer)
+        {
+            sb.Append($" -{nameof(DisableTranslationOptimizer)}");
         }
 
         if (GenerateDependencyObject)
@@ -113,7 +116,7 @@ sealed class CommandLineOptions
         {
             // Only include the target if it is greater than the minimum, because
             // if it is the same as the minimum it is redundant.
-            if (MinimumUapVersion.HasValue && MinimumUapVersion < TargetUapVersion)
+            if (!MinimumUapVersion.HasValue || MinimumUapVersion < TargetUapVersion)
             {
                 sb.Append($" -{nameof(TargetUapVersion)} {TargetUapVersion.Value}");
             }
@@ -133,10 +136,10 @@ sealed class CommandLineOptions
         Ambiguous,
         DisableCodeGenOptimizer,
         DisableTranslationOptimizer,
+        GenerateDependencyObject,
         Help,
         InputFile,
         Interface,
-        GenerateDependencyObject,
         Language,
         MinimumUapVersion,
         Namespace,
@@ -158,8 +161,8 @@ sealed class CommandLineOptions
                 .AddKeyword("csharp", Lang.CSharp)
                 .AddKeyword("cppcx", Lang.Cx)
                 .AddKeyword("cx", Lang.Cx)
-                .AddKeyword("cppwinrt", Lang.CppWinrt)
-                .AddKeyword("winrtcpp", Lang.CppWinrt)
+                .AddKeyword("cppwinrt", Lang.Cppwinrt)
+                .AddKeyword("winrtcpp", Lang.Cppwinrt)
                 .AddKeyword("lottiexml", Lang.LottieXml)
                 .AddKeyword("lottieyaml", Lang.LottieYaml)
                 .AddKeyword("wincompxml", Lang.WinCompXml)
@@ -277,7 +280,6 @@ sealed class CommandLineOptions
                     InputFile = arg;
                     previousKeyword = Keyword.None;
                     break;
-
                 case Keyword.Interface:
                     if (Interface != null)
                     {
@@ -288,7 +290,6 @@ sealed class CommandLineOptions
                     Interface = arg;
                     previousKeyword = Keyword.None;
                     break;
-
                 case Keyword.Language:
                     _languageStrings.Add(arg);
                     break;

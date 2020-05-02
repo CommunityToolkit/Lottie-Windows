@@ -16,11 +16,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         public override string PropertySet(string target, string propertyName, string value)
             => $"{target}.{propertyName}({value})";
 
-        public override string ReferenceTypeName(string value)
-            => value == "CanvasGeometry"
-                    ? "CanvasGeometry" // CanvasGeometry is a typedef for ComPtr<GeoSource>, thus no hat pointer.
-                    : $"{value}";
-
         public override string DefaultInitialize => "{ nullptr }";
 
         public override string Deref => ".";

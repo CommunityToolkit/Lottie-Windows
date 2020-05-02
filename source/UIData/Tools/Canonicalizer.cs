@@ -477,6 +477,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                                     if (thispAnimators.Count != 1)
                                     {
                                         // For now we only handle a single animator.
+                                        return false;
                                     }
 
                                     var thisAnimator = thispAnimators[0];

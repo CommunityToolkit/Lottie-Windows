@@ -65,7 +65,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         internal void NormalizeForMinimumVersion(uint minimumVersion)
         {
             // A Start of minimumVersion is the same as all versions up to End.
-            if (Start == minimumVersion && (End == null || End > minimumVersion))
+            if (Start == minimumVersion && (End is null || End > minimumVersion))
             {
                 Start = null;
             }

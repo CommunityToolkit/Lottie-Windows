@@ -139,7 +139,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal CompositionEasingFunction CreateCompositionEasingFunction(Easing easingFunction)
         {
-            if (easingFunction == null)
+            if (easingFunction is null)
             {
                 return null;
             }

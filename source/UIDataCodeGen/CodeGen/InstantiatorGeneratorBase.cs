@@ -1054,7 +1054,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 // If there is a theme property set, give it a special name and
                 // mark it as shared. The theme property set is the only unowned property set.
                 foreach (var (node, obj) in _objectGraph.CompositionObjectNodes.Where(
-                        n => n.Object is CompositionPropertySet cps && cps.Owner == null))
+                        n => n.Object is CompositionPropertySet cps && cps.Owner is null))
                 {
                     node.Name = "ThemeProperties";
                     node.IsSharedNode = true;
@@ -1351,7 +1351,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 builder.WriteComment(node.LongComment);
 
                 // Write the signature of the method.
-                builder.WriteLine($"{_owner._s.ReferenceTypeName(node.TypeName)} {node.Name}({(parameters == null ? string.Empty : string.Join(", ", parameters))})");
+                builder.WriteLine($"{_owner._s.ReferenceTypeName(node.TypeName)} {node.Name}({(parameters is null ? string.Empty : string.Join(", ", parameters))})");
                 builder.OpenScope();
             }
 
@@ -2798,7 +2798,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             bool GenerateCompositionPathGeometryFactory(CodeBuilder builder, CompositionPathGeometry obj, ObjectData node)
             {
                 WriteObjectFactoryStart(builder, node);
-                if (obj.Path == null)
+                if (obj.Path is null)
                 {
                     WriteCreateAssignment(builder, node, $"_c{Deref}CreatePathGeometry()");
                 }
@@ -3072,7 +3072,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             {
                 get
                 {
-                    if (_loadedImageSurfaceInfos == null)
+                    if (_loadedImageSurfaceInfos is null)
                     {
                         _loadedImageSurfaceInfos =
                             (from n in _nodes
@@ -3160,7 +3160,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 get
                 {
                     // Lazy initialization because not all nodes need the cache.
-                    if (_callFactoryFromForCache == null)
+                    if (_callFactoryFromForCache is null)
                     {
                         _callFactoryFromForCache = new Dictionary<ObjectData, string>();
                     }
@@ -3338,7 +3338,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             }
 
             // For debugging purposes only.
-            public override string ToString() => Name == null ? $"{TypeName} {Position}" : $"{Name} {Position}";
+            public override string ToString() => Name is null ? $"{TypeName} {Position}" : $"{Name} {Position}";
 
             // Sets the first character to lower case.
             static string CamelCase(string value) => $"_{char.ToLowerInvariant(value[0])}{value.Substring(1)}";

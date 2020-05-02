@@ -95,7 +95,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
 
         static T AssertNotNull(T item)
         {
-            if (item == null)
+            if (item is null)
             {
                 throw new ArgumentException();
             }
@@ -107,6 +107,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
         public override string ToString()
              => Count == 0
                 ? "[<none>]"
-                 : $"[{string.Join(", ", _wrapped.Select(item => item.ToString()))}]";
+                : $"[{string.Join(", ", _wrapped.Select(item => item.ToString()))}]";
     }
 }

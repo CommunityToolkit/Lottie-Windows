@@ -20,7 +20,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
     {
         protected const string Muxc = "Microsoft::UI::Xaml::Controls";
         protected const string Wuc = "Windows::UI::Composition";
-        readonly bool _isCppWinrtMode;
+        readonly bool _isCppwinrtMode;
         readonly CppStringifier _s;
         readonly string _headerFileName;
         readonly TypeNames _typeName;
@@ -37,12 +37,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                   stringifier: stringifier)
         {
             _s = stringifier;
-            _isCppWinrtMode = isCppwinrtMode;
+            _isCppwinrtMode = isCppwinrtMode;
             _headerFileName = headerFileName;
             _typeName = new TypeNames(stringifier, isCppwinrtMode);
             SourceClassName = AnimatedVisualSourceInfo.ClassName;
-            var iface = AnimatedVisualSourceInfo.InterfaceType;
-            AnimatedVisualTypeName = iface.GetQualifiedName(S);
+            AnimatedVisualTypeName = AnimatedVisualSourceInfo.InterfaceType.GetQualifiedName(S);
         }
 
         protected IAnimatedVisualSourceInfo SourceInfo => AnimatedVisualSourceInfo;
@@ -67,7 +66,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             // Returns the header text that implements IAnimatedVisualSource if loadedImageSurfacesNodes is null or empty.
             // Otherwise, return the header text that implements IDynamicAnimatedVisualSource.
             var builder = new HeaderBuilder();
-            if (!_isCppWinrtMode)
+            if (!_isCppwinrtMode)
             {
                 builder.Internal.WriteLine("internal:");
             }
@@ -131,7 +130,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 // ABI::Windows::Graphics::Effects namespace.
                 //
                 // To work around this inconsistency, when BUILD_WINDOWS is defined, we wrap the include
-                // of Windows.Grapics.Interop.h in the ABI namespace so that the types in that file
+                // of Windows.Graphics.Effects.Interop.h in the ABI namespace so that the types in that file
                 // will always be in the ABI::Windows::Graphics::Effects namespace. And in our
                 // generated code we always refer to the types in that file using the ABI:: prefix.
                 builder.WriteLine("#ifdef BUILD_WINDOWS");
@@ -168,7 +167,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 namespaces.Add(Muxc);
             }
 
-            if (!_isCppWinrtMode)
+            if (!_isCppwinrtMode)
             {
                 namespaces.Add("Platform");
             }
@@ -205,7 +204,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             // Write out each namespace using.
             foreach (var n in namespaces)
             {
-                if (_isCppWinrtMode)
+                if (_isCppwinrtMode)
                 {
                     builder.WriteLine($"using namespace winrt::{n};");
                 }
@@ -225,10 +224,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             if (SourceInfo.UsesCanvasEffects ||
                 SourceInfo.UsesCanvasGeometry)
             {
-                // Write GeoSource to allow it's use in function definitions
+                // Write GeoSource to allow it's use in function definitions.
                 builder.WriteLine($"{_s.GeoSourceClass}");
 
-                // Typedef to simplify generation
+                // Typedef to simplify generation.
                 builder.WriteLine("typedef ComPtr<GeoSource> CanvasGeometry;");
                 builder.WriteLine();
             }
@@ -265,7 +264,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             if (info.AnimatedVisualSourceInfo.UsesCanvasEffects ||
                 info.AnimatedVisualSourceInfo.UsesCanvasGeometry)
             {
-                // Utility method for D2D geometries
+                // Utility method for D2D geometries.
                 builder.WriteLine($"static {_s.ReferenceTypeName(_typeName.IGeometrySource2D)} CanvasGeometryToIGeometrySource2D(CanvasGeometry geo)");
                 builder.OpenScope();
                 builder.WriteLine($"ComPtr<ABI::Windows::Graphics::{_typeName.IGeometrySource2D}> interop = geo.Detach();");
@@ -273,7 +272,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 builder.CloseScope();
                 builder.WriteLine();
 
-                // Utility method for fail-fasting on bad HRESULTs from d2d operations
+                // Utility method for fail-fasting on bad HRESULTs from d2d operations.
                 builder.WriteLine("static void FFHR(HRESULT hr)");
                 builder.OpenScope();
                 builder.WriteLine("if (hr != S_OK)");
@@ -289,7 +288,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.WriteLine("public:");
             builder.Indent();
 
-            // Constructor
+            // Constructor.
             builder.WriteBreakableLine($"{info.ClassName}(", CommaSeparate(GetConstructorParameters(info)), ")");
             builder.Indent();
 
@@ -324,7 +323,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             // Write the destructor. This is how CX implements IClosable/IDisposable.
             builder.WriteLine();
-            if (_isCppWinrtMode)
+            if (_isCppwinrtMode)
             {
                 builder.WriteLine("void Close()");
                 builder.OpenScope();
@@ -380,7 +379,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             string propertyName,
             CodeBuilder getImplementation)
         {
-            if (_isCppWinrtMode)
+            if (_isCppwinrtMode)
             {
                 builder.WriteLine($"{returnType} {propertyName}() const");
                 builder.OpenScope();
@@ -416,10 +415,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 WriteThemePropertyImpls(builder);
             }
 
-            // Generate the method that creates an instance of the composition on the IAnimatedVisualSource
+            // Generate the method that creates an instance of the composition on the IAnimatedVisualSource.
             builder.WriteLine($"{S.Hatted(AnimatedVisualTypeName)} {_s.Namespace(SourceInfo.Namespace)}::{SourceClassName}::TryCreateAnimatedVisual(");
             builder.Indent();
-            if (_isCppWinrtMode)
+            if (_isCppwinrtMode)
             {
                 builder.WriteLine($"const {_typeName.Compositor}& compositor,");
                 builder.WriteLine($"{_typeName.Object}& diagnostics)");
@@ -602,7 +601,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         }
 
         /// <summary>
-        /// Generate the body of the TryCreateAnimatedVisual() method for the composition that do not contain LoadedImageSurfaces.
+        /// Generate the body of the TryCreateAnimatedVisual() method for a composition that does not contain LoadedImageSurfaces.
         /// </summary>
         void WriteIAnimatedVisualSource(CodeBuilder builder)
         {
@@ -615,7 +614,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         }
 
         /// <summary>
-        /// Generate the body of the TryCreateAnimatedVisual() method for the composition that contains LoadedImageSurfaces.
+        /// Generate the body of the TryCreateAnimatedVisual() method for a composition that contains LoadedImageSurfaces.
         /// </summary>
         void WriteIDynamicAnimatedVisualSource(CodeBuilder builder)
         {
@@ -835,7 +834,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             var visibility = info.Public ? "public " : string.Empty;
 
-            if (_isCppWinrtMode)
+            if (_isCppwinrtMode)
             {
                 builder.Preamble.WriteLine($"{visibility}class {SourceClassName}");
                 builder.Preamble.Indent();
@@ -860,8 +859,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         void WriteIAnimatedVisualSourceHeaderText(HeaderBuilder builder, IAnimatedVisualSourceInfo info)
         {
-            var interfaceName = SourceInfo.InterfaceType == null;
-
             if (SourceInfo.GenerateDependencyObject)
             {
                 WriteHeaderNamespaceStart(builder, info, $"Windows::UI::Xaml::DependencyObject, {AnimatedVisualTypeName}Source");
@@ -872,13 +869,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             }
 
             var returnType =
-                _isCppWinrtMode
+                _isCppwinrtMode
                     ? $"winrt::{AnimatedVisualTypeName}"
                     : S.Hatted(AnimatedVisualTypeName);
 
             builder.Public.WriteLine($"virtual {returnType} TryCreateAnimatedVisual(");
             builder.Public.Indent();
-            if (_isCppWinrtMode)
+            if (_isCppwinrtMode)
             {
                 builder.Public.WriteLine($"const winrt::{Wuc}::{_typeName.Compositor}& compositor,");
                 builder.Public.WriteLine($"winrt::{_typeName.Object}& diagnostics);");
@@ -895,8 +892,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             // the method.
             if (IsInterfaceCustom && SourceInfo.IsThemed)
             {
-                var optionalVirtual = SourceInfo.InterfaceType == null ? string.Empty : "virtual ";
-                if (_isCppWinrtMode)
+                var optionalVirtual = SourceInfo.InterfaceType is null ? string.Empty : "virtual ";
+                if (_isCppwinrtMode)
                 {
                     builder.Public.WriteLine($"{optionalVirtual}winrt::{Wuc}::{T.CompositionPropertySet} GetThemeProperties(winrt::{Wuc}::{T.Compositor} compositor);");
                 }
@@ -1154,7 +1151,7 @@ public:
     IFACEMETHODIMP_(ULONG) Release() override
     {
         ULONG cRef = InterlockedDecrement(&m_cRef);
-        if (0 == cRef)
+        if (cRef == 0)
         {
             delete this;
         }
@@ -1228,11 +1225,11 @@ private:
 
         internal readonly struct TypeNames
         {
-            internal TypeNames(Stringifier stringifier, bool isCppWinrtMode)
+            internal TypeNames(Stringifier stringifier, bool isCppwinrtMode)
             {
                 CompositionPropertySet = stringifier.ReferenceTypeName(nameof(CompositionPropertySet));
                 Compositor = stringifier.ReferenceTypeName(nameof(Compositor));
-                Object = isCppWinrtMode ? stringifier.ReferenceTypeName("IInspectable") : stringifier.ReferenceTypeName("Object");
+                Object = isCppwinrtMode ? stringifier.ReferenceTypeName("IInspectable") : stringifier.ReferenceTypeName("Object");
                 Visual = stringifier.ReferenceTypeName(nameof(Visual));
                 IGeometrySource2D = "IGeometrySource2D";
             }

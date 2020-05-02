@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Sn = System.Numerics;
 
@@ -37,15 +38,26 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
         public static IEnumerable<KeyFrame<Sequence<ColorGradientStop>>> RemoveRedundantStops(IEnumerable<KeyFrame<Sequence<ColorGradientStop>>> keyFrames)
         {
             var input = keyFrames.ToArray();
+
+            // For each key frame, get a bool[] that has an entry set if the color stop
+            // is redundant. Then aggregate all of the arrays to return a single array of bools
+            // with an entry set if that stop is redundant in every key frame.
+            // Any stops identified as redundant in the resulting bool[] can be removed
+            // without significantly changing the appearance of the gradient.
+            //
+            // NOTE: we rely on each key frame having the same number of stops. This is a reasonable
+            // expectation because it wouldn't make sense to animate between gradients with different
+            // numbers of stops.
             var redundancies = input.Select(kf => FindRedundantColorStops(kf.Value.ToArray())).Aggregate((a, b) =>
             {
-                if (a == null)
+                if (a is null)
                 {
                     return b;
                 }
 
                 for (var i = 0; i < a.Length; i++)
                 {
+                    // Set the entry in a iff it's set in both a and b.
                     a[i] &= b[i];
                 }
 
@@ -56,24 +68,27 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
             {
                 var keyFrame = input[i];
 
+                Debug.Assert(keyFrame.Value.Count() == redundancies.Length, "Invariant");
+
+                // Get just the significant (i.e. non-redundant) stops.
+                var significantStops = keyFrame.Value.Zip(redundancies).Where(item => item.Second).Select(item => item.First);
+
                 yield return new KeyFrame<Sequence<ColorGradientStop>>(
                     frame: keyFrame.Frame,
-                    value: new Sequence<ColorGradientStop>(Optimize(keyFrame.Value.ToArray(), redundancies)),
+                    value: new Sequence<ColorGradientStop>(significantStops),
                     spatialControlPoint1: keyFrame.SpatialControlPoint1,
                     spatialControlPoint2: keyFrame.SpatialControlPoint2,
                     easing: keyFrame.Easing);
             }
         }
 
+        // Filters out the stops that have entires in the redundancies list. This returns
+        // only the non-redundant stops.
         static IEnumerable<ColorGradientStop> Optimize(ColorGradientStop[] stops, bool[] redundancies)
         {
-            for (var i = 0; i < redundancies.Length; i++)
-            {
-                if (!redundancies[i])
-                {
-                    yield return stops[i];
-                }
-            }
+            Debug.Assert(stops.Length == redundancies.Length, "Precondition");
+
+            return stops.Zip(redundancies).Where(item => item.Second).Select(item => item.First);
         }
 
         /// <summary>
@@ -84,7 +99,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
         /// The color and opacity values are calculated by interpolating from the surrounding stops.
         /// The result is ordered by offset.
         /// </summary>
-        /// <returns>A list of <see cref="ColorGradientStop"/> ordered by offset.</returns>
+        /// <returns>A list of <see cref="ColorGradientStop"/>s ordered by offset.</returns>
         public static IEnumerable<ColorGradientStop> Optimize(IEnumerable<GradientStop> stops)
         {
             // Order the stops. This is necessary because we will be searching forward in offset to find
@@ -130,13 +145,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                     else
                     {
                         // Find the next opacity stop, if there is one.
-                        if (nextOpacityStop == null && !foundLastOpacityStop)
+                        if (nextOpacityStop is null && !foundLastOpacityStop)
                         {
                             nextOpacityStop = (OpacityGradientStop)FindNextStopOfKind(
                                                                         orderedStops,
                                                                         i + 1,
                                                                         GradientStop.GradientStopKind.Opacity);
-                            if (nextOpacityStop == null)
+                            if (nextOpacityStop is null)
                             {
                                 // Indicate that we should not search again.
                                 foundLastOpacityStop = true;
@@ -144,7 +159,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                         }
 
                         // Interpolate the opacity value from the surrounding stops.
-                        if (previousOpacityStop == null)
+                        if (previousOpacityStop is null)
                         {
                             // There is no previous opacity stop. Use the next opacity
                             // stop if there is one, or Opaque if there are no opacity stops.
@@ -154,7 +169,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                         {
                             // If there's a following opacity stop, interpolate between previous
                             // and next, otherwise continue using the previous opacity.
-                            opacity = nextOpacityStop == null
+                            opacity = nextOpacityStop is null
                                 ? previousOpacityStop.Opacity
                                 : InterpolateOpacity(previousOpacityStop, nextOpacityStop, currentStop.Offset);
                         }
@@ -180,13 +195,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                     else
                     {
                         // Find the next color stop, if there is one.
-                        if (nextColorStop == null && !foundLastColorStop)
+                        if (nextColorStop is null && !foundLastColorStop)
                         {
                             nextColorStop = (ColorGradientStop)FindNextStopOfKind(
                                                                     orderedStops,
                                                                     i + 1,
                                                                     GradientStop.GradientStopKind.Color);
-                            if (nextColorStop == null)
+                            if (nextColorStop is null)
                             {
                                 // Indicate that we should not search again.
                                 foundLastColorStop = true;
@@ -194,7 +209,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                         }
 
                         // Interpolate the color value from the surrounding stops.
-                        if (previousColorStop == null)
+                        if (previousColorStop is null)
                         {
                             // There is no previous color. Use the next color, or black if there are no
                             // colors. There should always be at least one color, so black is arbitrary.
@@ -204,7 +219,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                         {
                             // If there's a following color stop, interpolate between previous
                             // and next, otherwise continue using the previous color.
-                            color = nextColorStop == null
+                            color = nextColorStop is null
                                 ? previousColorStop.Color
                                 : InterpolateColor(previousColorStop, nextColorStop, currentStop.Offset);
                         }
@@ -249,7 +264,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
         /// <summary>
         /// Removes any redundant <see cref="ColorGradientStop"/>s.
         /// </summary>
-        /// <returns>A list of <see cref="ColorGradientStop"/>.</returns>
+        /// <returns>A list of <see cref="ColorGradientStop"/>s.</returns>
         public static IEnumerable<ColorGradientStop> OptimizeColorStops(IEnumerable<ColorGradientStop> stops)
         {
             var list = stops.ToArray();
@@ -290,7 +305,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
 
                     // This value can be tuned to be more or less sensitive to middle gradients
                     // that are more or less off the line formed by the outer gradients.
-                    if (angle < 0.005)
+                    if (Math.Abs(angle) < 0.005)
                     {
                         // The middle stop is redundant.
                         result[middle] = true;
@@ -307,7 +322,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
             return result;
         }
 
-        // Returns a value that indicates how significant stop b is in the sequence of stops [a,b,c]
+        // Returns a value that indicates how significant stop b is in the sequence of stops [a,b,c].
+        // A significant stop is one that should not be removed because it would noticably change
+        // the gradient.
         static double GetAngleBetweenStops(ColorGradientStop a, ColorGradientStop b, ColorGradientStop c)
         {
             var colorU = new Sn.Vector4((float)(b.Offset - a.Offset), (float)(b.Color.R - a.Color.R), (float)(b.Color.G - a.Color.G), (float)(b.Color.B - a.Color.B));

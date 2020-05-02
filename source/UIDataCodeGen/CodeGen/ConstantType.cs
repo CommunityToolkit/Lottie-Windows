@@ -9,7 +9,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         None = 0,
 
         /// <summary>
-        /// Windows.UI.Xaml color
+        /// Windows.UI.Xaml color.
         /// </summary>
         Color,
 

@@ -209,16 +209,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         // Adds the progress remapping variables and animations that are needed for spatial beziers.
         void AddRemappedProgressAnimations()
         {
-            foreach (var (name, scale, offset, keyframes) in _progressMapFactory.GetVariables())
+            foreach (var (name, scale, offset, ranges) in _progressMapFactory.GetVariables())
             {
                 _rootVisual.Properties.InsertScalar(name, 0);
                 var animation = _c.CreateScalarKeyFrameAnimation();
                 animation.Duration = _lc.Duration;
                 animation.SetReferenceParameter(RootName, _rootVisual);
-                foreach (var keyframe in keyframes)
+                foreach (var keyframe in ranges)
                 {
-                    animation.InsertKeyFrame(keyframe.rangeStart, 0, _c.CreateStepThenHoldEasingFunction());
-                    animation.InsertKeyFrame(keyframe.rangeEnd, 1, _c.CreateCompositionEasingFunction(keyframe.easing));
+                    animation.InsertKeyFrame(keyframe.Start, 0, _c.CreateStepThenHoldEasingFunction());
+                    animation.InsertKeyFrame(keyframe.End, 1, _c.CreateCompositionEasingFunction(keyframe.Easing));
                 }
 
                 StartKeyframeAnimation(_rootVisual.Properties, name, animation, scale, offset);
@@ -242,7 +242,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 foreach (var (translatedLayer, layer) in translatedLayers)
                 {
                     // Add a description if not added already.
-                    if (translatedLayer.ShortDescription == null)
+                    if (translatedLayer.ShortDescription is null)
                     {
                         Describe(translatedLayer, $"{layer.Type} layer: {layer.Name}");
                     }
@@ -254,8 +254,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             // simply returned unmodified.
             var compositionGraphs = ComposeMattedLayers(context, translatedLayers).ToArray();
 
-            // Layers are translated into either a Visual tree or a Shape tree. Convert the list of Visual and
-            // Shape roots to a list of Visual roots by wrapping the Shape trees in ShapeVisuals.
+            // Layers are translated into either a visual tree or a shape tree. Convert the list of Visual and
+            // Shape roots to a list of Visual roots by wrapping the shape trees in ShapeVisuals.
             var translatedAsVisuals = VisualsAndShapesToVisuals(context, compositionGraphs);
 
             var containerChildren = container.Children;
@@ -265,7 +265,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
         }
 
-        // Combines 1 or more CompositionSubGraphs as ComositionShape subgraphs under a ShapeVisual.
+        // Combines 1 or more CompositionSubGraphs as CompositionShape subgraphs under a ShapeVisual.
         Visual GetVisualForCompositionSubGraphs(TranslationContext context, IReadOnlyList<CompositionSubGraph> shapes)
         {
             Debug.Assert(shapes.All(s => s.IsShape), "Precondition");
@@ -274,7 +274,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             switch (compositionShapes.Length)
             {
-                case 0: return null;
+                case 0:
+                    return null;
                 case 1:
                     // There's only 1 shape. Get it to translate directly to a Visual.
                     return compositionShapes[0].subgraph.GetVisualRoot(context.Size);
@@ -830,7 +831,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         // Returns a chain with a Visual at the top and a CompositionContainerShape at the bottom.
         // The nodes in between implement the transforms for the layer.
-        // This chain is used when a Shape tree needs to be expressed as a Visual tree. We take
+        // This chain is used when a shape tree needs to be expressed as a visual tree. We take
         // advantage of this case to do layer opacity and visibility using Visual nodes rather
         // than pushing the opacity to the leaves and using Scale animations to do visibility.
         bool TryCreateShapeVisualTransformChain(
@@ -857,7 +858,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             //            ^
             //            |
             //     +-----------------+
-            //     |   ShapeVisual   |-- Start of the Shape tree.
+            //     |   ShapeVisual   |-- Start of the shape tree.
             //     +-----------------+
             //            ^
             //            |
@@ -867,7 +868,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             //            ^
             //            |
             //     + - - - - - - - - - - - - +
-            //     | other transforms nodes  |--Transform without opacity (inherited from the transform tree)
+            //     | other transforms nodes  |--Transform without opacity (inherited from the transform tree).
             //     + - - - - - - - - - - - - +
             //            ^
             //            |
@@ -1163,7 +1164,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
 
             var imageAsset = GetImageAsset(context, context.Layer.RefId);
-            if (imageAsset == null)
+            if (imageAsset is null)
             {
                 return null;
             }
@@ -1225,7 +1226,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             // TODO - the animations produced inside a PreComp need to be time-mapped.
             var referencedLayers = GetLayerCollectionByAssetId(context, context.Layer.RefId);
-            if (referencedLayers == null)
+            if (referencedLayers is null)
             {
                 return null;
             }
@@ -1265,7 +1266,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         Asset GetAssetById(TranslationContext context, string assetId, Asset.AssetType expectedAssetType)
         {
             var referencedAsset = _lc.Assets.GetAssetById(assetId);
-            if (referencedAsset == null)
+            if (referencedAsset is null)
             {
                 _issues.ReferencedAssetDoesNotExist(assetId);
             }
@@ -1353,7 +1354,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             internal void UpdateOpacityFromTransform(TranslationContext context, Transform transform)
             {
-                if (transform == null)
+                if (transform is null)
                 {
                     return;
                 }
@@ -1371,11 +1372,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             ShapeFill ComposeFills(ShapeFill a, ShapeFill b)
             {
-                if (a == null)
+                if (a is null)
                 {
                     return b;
                 }
-                else if (b == null)
+                else if (b is null)
                 {
                     return a;
                 }
@@ -1419,11 +1420,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             ShapeStroke ComposeStrokes(ShapeStroke a, ShapeStroke b)
             {
-                if (a == null)
+                if (a is null)
                 {
                     return b;
                 }
-                else if (b == null)
+                else if (b is null)
                 {
                     return a;
                 }
@@ -1505,11 +1506,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             RoundedCorner ComposeRoundedCorners(RoundedCorner a, RoundedCorner b)
             {
-                if (a == null)
+                if (a is null)
                 {
                     return b;
                 }
-                else if (b == null)
+                else if (b is null)
                 {
                     return a;
                 }
@@ -1534,11 +1535,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             TrimPath ComposeTrimPaths(TrimPath a, TrimPath b)
             {
-                if (a == null)
+                if (a is null)
                 {
                     return b;
                 }
-                else if (b == null)
+                else if (b is null)
                 {
                     return a;
                 }
@@ -1740,7 +1741,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                             {
                                 while (stack.TryPeek(out var item) && item.ContentType == ShapeContentType.Path && !((Path)item).Data.IsAnimated)
                                 {
-                                    if (paths == null)
+                                    if (paths is null)
                                     {
                                         paths = new List<Path>();
                                         paths.Add(path);
@@ -1827,7 +1828,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         CanvasGeometry MergeShapeLayerContent(TranslationContext context, ShapeContentContext shapeContext, Stack<ShapeLayerContent> stack, MergePaths.MergeMode mergeMode)
         {
-            var pathFillType = shapeContext.Fill == null ? ShapeFill.PathFillType.EvenOdd : shapeContext.Fill.FillType;
+            var pathFillType = shapeContext.Fill is null ? ShapeFill.PathFillType.EvenOdd : shapeContext.Fill.FillType;
             var geometries = CreateCanvasGeometries(context, shapeContext, stack, pathFillType).ToArray();
 
             switch (geometries.Length)
@@ -2051,7 +2052,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         static Sn.Matrix3x2 CreateMatrixFromTransform(TranslationContext context, Transform transform)
         {
-            if (transform == null)
+            if (transform is null)
             {
                 return Sn.Matrix3x2.Identity;
             }
@@ -2224,7 +2225,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var position = context.TrimAnimatable(shapeContent.Position);
             var size = context.TrimAnimatable(shapeContent.Size);
 
-            if (shapeContent.CornerRadius.AlwaysEquals(0) && shapeContext.RoundedCorner == null)
+            if (shapeContent.CornerRadius.AlwaysEquals(0) && shapeContext.RoundedCorner is null)
             {
                 CompositionGeometry geometry;
 
@@ -2548,7 +2549,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         void TranslateAndApplyTrimPath(TranslationContext context, TrimPath trimPath, CompositionGeometry geometry, double trimOffsetDegrees)
         {
-            if (trimPath == null)
+            if (trimPath is null)
             {
                 return;
             }
@@ -2671,7 +2672,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             CompositionSpriteShape sprite,
             CompositeOpacity contextOpacity)
         {
-            if (shapeStroke == null)
+            if (shapeStroke is null)
             {
                 return;
             }
@@ -2793,7 +2794,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         CompositionBrush TranslateShapeFill(TranslationContext context, ShapeFill shapeFill, CompositeOpacity opacity)
         {
-            if (shapeFill == null)
+            if (shapeFill is null)
             {
                 return null;
             }
@@ -3454,7 +3455,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 context.TrimAnimatable(transform.ScalePercent),
                 container);
 
-            // TOTO: set Skew and Skew Axis
+            // TODO: set Skew and Skew Axis
         }
 
         void TranslateAndApplyAnchorPositionRotationAndScale(
@@ -4285,7 +4286,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return (float)result;
         }
 
-        static ShapeFill.PathFillType GetPathFillType(ShapeFill fill) => fill == null ? ShapeFill.PathFillType.EvenOdd : fill.FillType;
+        static ShapeFill.PathFillType GetPathFillType(ShapeFill fill) => fill is null ? ShapeFill.PathFillType.EvenOdd : fill.FillType;
 
         CompositionPath CompositionPathFromPathGeometry(
             Sequence<BezierSegment> pathGeometry,
@@ -4680,10 +4681,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// A Composition graph that is the result of translating a Lottie subtree.
         /// The graph may be represented as a Visual or as a Shape.
         /// </summary>
-        /// <remarks>We try to keep as much of the overall translation as CompositionShapes as
-        /// that should be the most efficient. However sometimes we have to use Visuals. A Shape
-        /// graph can always be turned into a Visual (by wrapping it in a ShapeVisual) but a
-        /// Visual cannot be turned into a Shape graph.</remarks>
+        /// <remarks>We try to keep as much as possible of the overall translation as
+        /// CompositionShapes as that should be the most efficient. However sometimes we
+        /// have to use Visuals. A Shape graph can always be turned into a Visual (by
+        /// wrapping it in a ShapeVisual) but a Visual cannot be turned into a Shape graph.
+        /// </remarks>
         abstract class CompositionSubGraph : IDescribable
         {
             readonly LottieToWinCompTranslator _owner;
@@ -4912,7 +4914,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     var shapeContext = new ShapeContentContext(_owner);
 
                     // Update the opacity from the transform. This is necessary to push the opacity
-                    // to the leafs (because CompositionShape does not support opacity).
+                    // to the leaves (because CompositionShape does not support opacity).
                     shapeContext.UpdateOpacityFromTransform(_context, _context.Layer.Transform);
                     contentsNode.Shapes.Add(_owner.TranslateShapeLayerContents(_context, shapeContext, _context.Layer.Contents));
 

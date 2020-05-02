@@ -295,7 +295,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 builder.WriteLine($"CompositionPropertySet {info.ThemePropertiesFieldName};");
 
                 // Add fields for each of the theme properties.
-                // Not needed if generating a DependencyObject - the values wil be stored in DependencyProperty's.
+                // Not needed if generating a DependencyObject - the values will be stored in DependencyPropertys.
                 if (!info.GenerateDependencyObject)
                 {
                     foreach (var prop in info.SourceMetadata.PropertyBindings)
@@ -336,7 +336,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 if (info.SourceMetadata.PropertyBindings.Any(pb => pb.ExposedType == PropertySetValueType.Color))
                 {
                     // There's at least one themed color. They will need a helper method to convert to Vector4.
-                    // If we're generating a custom interface then users may want to sue GetThemeProperties
+                    // If we're generating a custom interface then users may want to use GetThemeProperties
                     // to set a property color, so in that case make the helper method available to them.
                     var visibility = isInterfaceCustom ? "internal " : string.Empty;
                     builder.WriteLine($"{visibility}static Vector4 ColorAsVector4(Color color) => new Vector4(color.R, color.G, color.B, color.A);");

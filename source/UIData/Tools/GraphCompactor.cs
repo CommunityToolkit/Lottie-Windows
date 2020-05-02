@@ -6,8 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using System.Text;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
+using static Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools.Properties;
 using Expr = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
@@ -17,7 +17,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
     /// </summary>
     sealed class GraphCompactor
     {
-        static IReadOnlyDictionary<string, PropertyId> s_propertyIdFromNameMap;
         bool _madeProgress;
 
         GraphCompactor()
@@ -45,7 +44,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
         void Compact(ObjectGraph<Node> graph)
         {
-            // Discover the parents of each container
+            // Discover the parents of each container.
             foreach (var node in graph.CompositionObjectNodes)
             {
                 switch (node.Object.Type)
@@ -68,7 +67,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 }
             }
 
-            SimplifyProperties(graph);
             OptimizeShapes(graph);
             OptimizeVisuals(graph);
         }
@@ -186,7 +184,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                     }
                     else
                     {
-                        // See if it belongs in the current group. It does if it is the same as
+                        // See if this container belongs in the current group. It does if it is the same as
                         // the first item in the group except for having different children.
                         if (IsEquivalentContainer(grouped[0], childContainer))
                         {
@@ -229,112 +227,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             if (a.Animators.Count > 0)
             {
                 // There are some animations. Compare them.
-                for (var i = 0; i < a.Animators.Count; i++)
+                // NOTE: this does a simple (non-deep) comparison of animators, however that is
+                // sufficient if we're run the canonicalizer already.
+                if (!a.Animators.SequenceEqual(b.Animators))
                 {
-                    var aAnimator = a.Animators[i];
-                    var bAnimator = b.Animators[i];
-
-                    if (!AreAnimatorsEqual((a, aAnimator), (b, bAnimator)))
-                    {
-                        return false;
-                    }
+                    return false;
                 }
             }
 
             return true;
-        }
-
-        static bool AreAnimatorsEqual(
-            (CompositionObject owner, CompositionObject.Animator animator) a,
-            (CompositionObject owner, CompositionObject.Animator animator) b)
-        {
-            if (a.animator.AnimatedProperty != b.animator.AnimatedProperty)
-            {
-                return false;
-            }
-
-            if (a.animator.AnimatedObject != a.owner || b.animator.AnimatedObject != b.owner)
-            {
-                // We only handle the case of the animated object being the owner.
-                return false;
-            }
-
-            if (a.animator.Animation.Type != b.animator.Animation.Type)
-            {
-                return false;
-            }
-
-            switch (a.animator.Animation.Type)
-            {
-                case CompositionObjectType.ExpressionAnimation:
-                    {
-                        var aAnimation = (ExpressionAnimation)a.animator.Animation;
-                        var bAnimation = (ExpressionAnimation)b.animator.Animation;
-                        if (aAnimation.Expression != bAnimation.Expression)
-                        {
-                            return false;
-                        }
-
-                        var aRefs = aAnimation.ReferenceParameters.ToArray();
-                        var bRefs = bAnimation.ReferenceParameters.ToArray();
-
-                        if (aRefs.Length != bRefs.Length)
-                        {
-                            return false;
-                        }
-
-                        for (var i = 0; i < aRefs.Length; i++)
-                        {
-                            var aRef = aRefs[i].Value;
-                            var bRef = bRefs[i].Value;
-                            if (aRef == bRef || (aRef == a.owner && bRef == b.owner))
-                            {
-                                return true;
-                            }
-                        }
-                    }
-
-                    break;
-
-                case CompositionObjectType.ScalarKeyFrameAnimation:
-                    {
-                        var aAnimation = (ScalarKeyFrameAnimation)a.animator.Animation;
-                        var bAnimation = (ScalarKeyFrameAnimation)b.animator.Animation;
-                        if (aAnimation == bAnimation)
-                        {
-                            return true;
-                        }
-                    }
-
-                    break;
-
-                case CompositionObjectType.Vector2KeyFrameAnimation:
-                    {
-                        var aAnimation = (Vector2KeyFrameAnimation)a.animator.Animation;
-                        var bAnimation = (Vector2KeyFrameAnimation)b.animator.Animation;
-                        if (aAnimation == bAnimation)
-                        {
-                            return true;
-                        }
-                    }
-
-                    break;
-
-                // For now we only handle some types of animations.
-                case CompositionObjectType.BooleanKeyFrameAnimation:
-                case CompositionObjectType.ColorKeyFrameAnimation:
-                case CompositionObjectType.PathKeyFrameAnimation:
-                case CompositionObjectType.Vector3KeyFrameAnimation:
-                case CompositionObjectType.Vector4KeyFrameAnimation:
-                    return false;
-
-                default:
-                    throw new InvalidOperationException();
-            }
-
-            // TODO - if it's an expression animation, the reference parameters have to be
-            //         pointing to the same object, or they must be pointing to the owner object.
-            return false;
         }
 
         // Finds ContainerVisual with a single ShapeVisual child where the ContainerVisual
@@ -347,17 +248,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                     // Find the ContainerVisuals that have only a Clip and Size set and have one
                     // child that is a ShapeVisual.
                     n.Object is ContainerVisual container &&
-                    container.CenterPoint is null &&
-                    container.Clip != null &&
+                    (GetNonDefaultContainerVisualProperties(container) & (PropertyId.Clip | PropertyId.Size | PropertyId.Children))
+                        == (PropertyId.Clip | PropertyId.Size | PropertyId.Children) &&
                     container.Clip.Type == CompositionObjectType.InsetClip &&
-                    container.IsVisible is null &&
-                    container.Offset is null &&
-                    container.Opacity is null &&
-                    container.RotationAngleInDegrees is null &&
-                    container.RotationAxis is null &&
-                    container.Scale is null &&
-                    container.Size != null &&
-                    container.TransformMatrix is null &&
                     container.Animators.Count == 0 &&
                     container.Properties.Names.Count == 0 &&
                     container.Children.Count == 1 &&
@@ -370,22 +263,23 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 var shapeVisual = (ShapeVisual)container.Children[0];
 
                 // Check that the clip and size on the container is the same
-                // as the size on the shape.
-                var clip = (InsetClip)container.Clip;
-                if ((!IsNullOrZero(clip.TopInset)) ||
-                    (!IsNullOrZero(clip.RightInset)) ||
-                    (!IsNullOrZero(clip.LeftInset)) ||
-                    (!IsNullOrZero(clip.BottomInset)))
+                // as the size on the shape visual.
+                var containerClip = (InsetClip)container.Clip;
+
+                var childClip = shapeVisual.Clip as InsetClip;
+
+                if (childClip is null)
                 {
                     continue;
                 }
 
-                if (!IsNullOrOne(clip.Scale))
-                {
-                    continue;
-                }
-
-                if (!IsNullOrZero(clip.CenterPoint))
+                // NOTE: we rely on the optimizer to have already removed default-valued properties.
+                if ((containerClip.TopInset != childClip.TopInset) ||
+                    (containerClip.RightInset != childClip.TopInset) ||
+                    (containerClip.LeftInset != childClip.LeftInset) ||
+                    (containerClip.BottomInset != childClip.BottomInset) ||
+                    (containerClip.Scale != childClip.Scale) ||
+                    (containerClip.CenterPoint != childClip.CenterPoint))
                 {
                     continue;
                 }
@@ -417,224 +311,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             }
         }
 
-        // Where possible, replace properties with a TransformMatrix.
-        void SimplifyProperties(ObjectGraph<Node> graph)
-        {
-            foreach (var (_, obj) in graph.CompositionObjectNodes)
-            {
-                switch (obj.Type)
-                {
-                    case CompositionObjectType.ContainerVisual:
-                    case CompositionObjectType.SpriteVisual:
-                    case CompositionObjectType.ShapeVisual:
-                        SimplifyVisualProperties((Visual)obj);
-                        break;
-
-                    case CompositionObjectType.CompositionSpriteShape:
-                        SimplifySpriteShapeProperties((CompositionSpriteShape)obj);
-                        break;
-
-                    case CompositionObjectType.CompositionContainerShape:
-                        SimplifyShapeProperties((CompositionShape)obj);
-                        break;
-                }
-            }
-        }
-
-        // Remove the CenterPoint and RotationAxis properties if they're redundant,
-        // and convert properties to TransformMatrix if possible.
-        void SimplifyVisualProperties(Visual obj)
-        {
-            var nonDefaultProperties = GetNonDefaultVisualProperties(obj);
-            if (obj.CenterPoint.HasValue &&
-                ((nonDefaultProperties & (PropertyId.RotationAngleInDegrees | PropertyId.Scale)) == PropertyId.None))
-            {
-                GraphHasChanged();
-
-                // Centerpoint and RotationAxis is not needed if Scale or Rotation are not used.
-                obj.CenterPoint = null;
-                obj.RotationAxis = null;
-            }
-
-            // Convert the properties to a transform matrix. This can reduce the
-            // number of calls needed to initialize the object, and makes finding
-            // and removing redundant containers easier.
-
-            // We currently only support rotation around the Z axis here. Check for that.
-            var hasNonStandardRotation =
-                obj.RotationAngleInDegrees.HasValue && obj.RotationAngleInDegrees.Value != 0 &&
-                obj.RotationAxis.HasValue && obj.RotationAxis != Vector3.UnitZ;
-
-            if (obj.Animators.Count == 0 && !hasNonStandardRotation)
-            {
-                // Get the values of the properties, and the defaults for properties that are not set.
-                var centerPoint = obj.CenterPoint ?? Vector3.Zero;
-                var scale = obj.Scale ?? Vector3.One;
-                var rotation = obj.RotationAngleInDegrees ?? 0;
-                var offset = obj.Offset ?? Vector3.Zero;
-                var transform = obj.TransformMatrix ?? Matrix4x4.Identity;
-
-                // Clear out the properties.
-                obj.CenterPoint = null;
-                obj.Scale = null;
-                obj.RotationAngleInDegrees = null;
-                obj.Offset = null;
-                obj.TransformMatrix = null;
-
-                // Calculate the matrix that is equivalent to the properties.
-                var combinedMatrix =
-                    Matrix4x4.CreateScale(scale, centerPoint) *
-                    Matrix4x4.CreateRotationZ(DegreesToRadians(rotation), centerPoint) *
-                    Matrix4x4.CreateTranslation(offset) *
-                    transform;
-
-                // If the matrix actually does something, set it.
-                if (!combinedMatrix.IsIdentity)
-                {
-                    if (combinedMatrix != transform)
-                    {
-                        GraphHasChanged();
-                        var transformDescription = DescribeTransform(scale, rotation, offset);
-                        AppendShortDescription(obj, transformDescription);
-                        AppendLongDescription(obj, transformDescription);
-                    }
-
-                    obj.TransformMatrix = combinedMatrix;
-                }
-            }
-        }
-
-        // Remove the centerpoint property if it's redundant, and convert properties to TransformMatrix if possible.
-        void SimplifyShapeProperties(CompositionShape obj)
-        {
-            // Remove the centerpoint if it's not used by Scale or Rotation.
-            var nonDefaultProperties = GetNonDefaultShapeProperties(obj);
-            if (obj.CenterPoint.HasValue &&
-                ((nonDefaultProperties & (PropertyId.RotationAngleInDegrees | PropertyId.Scale)) == PropertyId.None))
-            {
-                GraphHasChanged();
-
-                // Centerpoint is not needed if Scale or Rotation are not used.
-                obj.CenterPoint = null;
-            }
-
-            // Convert the properties to a transform matrix. This can reduce the
-            // number of calls needed to initialize the object, and makes finding
-            // and removing redundant containers easier.
-            if (obj.Animators.Count == 0)
-            {
-                // Get the values for the properties, and the defaults for the properties that are not set.
-                var centerPoint = obj.CenterPoint ?? Vector2.Zero;
-                var scale = obj.Scale ?? Vector2.One;
-                var rotation = obj.RotationAngleInDegrees ?? 0;
-                var offset = obj.Offset ?? Vector2.Zero;
-                var transform = obj.TransformMatrix ?? Matrix3x2.Identity;
-
-                // Clear out the properties.
-                obj.CenterPoint = null;
-                obj.Scale = null;
-                obj.RotationAngleInDegrees = null;
-                obj.Offset = null;
-                obj.TransformMatrix = null;
-
-                // Calculate the matrix that is equivalent to the properties.
-                var combinedMatrix =
-                    Matrix3x2.CreateScale(scale, centerPoint) *
-                    Matrix3x2.CreateRotation(DegreesToRadians(rotation), centerPoint) *
-                    Matrix3x2.CreateTranslation(offset) *
-                    transform;
-
-                // If the matrix actually does something, set it.
-                if (!combinedMatrix.IsIdentity)
-                {
-                    if (combinedMatrix != transform)
-                    {
-                        GraphHasChanged();
-                        var transformDescription = DescribeTransform(scale, rotation, offset);
-                        AppendShortDescription(obj, transformDescription);
-                        AppendLongDescription(obj, transformDescription);
-                    }
-
-                    obj.TransformMatrix = combinedMatrix;
-                }
-            }
-        }
-
-        void SimplifySpriteShapeProperties(CompositionSpriteShape sprite)
-        {
-            SimplifyShapeProperties(sprite);
-
-            // Unset properties that are set to their default values.
-            if (sprite.StrokeStartCap.HasValue && sprite.StrokeStartCap.Value == CompositionStrokeCap.Flat)
-            {
-                sprite.StrokeStartCap = null;
-            }
-
-            if (sprite.StrokeDashCap.HasValue && sprite.StrokeDashCap.Value == CompositionStrokeCap.Flat)
-            {
-                sprite.StrokeDashCap = null;
-            }
-
-            if (sprite.StrokeEndCap.HasValue && sprite.StrokeEndCap.Value == CompositionStrokeCap.Flat)
-            {
-                sprite.StrokeEndCap = null;
-            }
-
-            var nonDefaultProperties = GetNonDefaultSpriteShapeProperties(sprite);
-
-            var nonDefaultGeometryProperties = GetNonDefaultGeometryProperties(sprite.Geometry);
-
-            var isTrimmed = (nonDefaultGeometryProperties & (PropertyId.TrimEnd | PropertyId.TrimStart)) != PropertyId.None;
-
-            if (sprite.Geometry.Type == CompositionObjectType.CompositionEllipseGeometry)
-            {
-                // Remove the StrokeMiterLimit and StrokeLineJoin properties. These properties
-                // only apply to changes of direction in a path, and never to an ellipse.
-                if ((nonDefaultProperties & PropertyId.StrokeMiterLimit) != PropertyId.None)
-                {
-                    sprite.StrokeMiterLimit = null;
-                    sprite.StopAnimation(nameof(sprite.StrokeMiterLimit));
-                    GraphHasChanged();
-                }
-
-                if ((nonDefaultProperties & PropertyId.StrokeLineJoin) != PropertyId.None)
-                {
-                    sprite.StrokeLineJoin = null;
-                    sprite.StopAnimation(nameof(sprite.StrokeLineJoin));
-                    GraphHasChanged();
-                }
-            }
-
-            if (sprite.Geometry.Type == CompositionObjectType.CompositionRectangleGeometry ||
-                sprite.Geometry.Type == CompositionObjectType.CompositionRoundedRectangleGeometry ||
-                sprite.Geometry.Type == CompositionObjectType.CompositionEllipseGeometry)
-            {
-                // TODO - this can also be enabled for path geometries that are closed paths.
-                // The geometry is closed. If it's not trimmed then the caps are irrelavent.
-                if (!isTrimmed)
-                {
-                    if ((nonDefaultProperties & PropertyId.StrokeStartCap) != PropertyId.None)
-                    {
-                        sprite.StrokeStartCap = null;
-                        sprite.StopAnimation(nameof(sprite.StrokeStartCap));
-                        GraphHasChanged();
-                    }
-
-                    if ((nonDefaultProperties & PropertyId.StrokeEndCap) != PropertyId.None)
-                    {
-                        sprite.StrokeEndCap = null;
-                        sprite.StopAnimation(nameof(sprite.StrokeEndCap));
-                        GraphHasChanged();
-                    }
-                }
-            }
-        }
-
-        static float DegreesToRadians(float angle) => (float)(Math.PI * angle / 180.0);
-
         static bool IsBrushTransparent(CompositionBrush brush)
         {
-            return brush == null || (!brush.Animators.Any() && (brush as CompositionColorBrush)?.Color?.A == 0);
+            return brush is null || (!brush.Animators.Any() && (brush as CompositionColorBrush)?.Color?.A == 0);
         }
 
         void ElideTransparentSpriteShapes(ObjectGraph<Node> graph)
@@ -725,12 +404,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 return true;
             });
 
-            // Push the transform down to the child.
+            // Push the transform down to each child.
             foreach (var (_, container, _) in elidableContainers)
             {
                 foreach (var child in container.Shapes)
                 {
-                    // Push the transform down to the child
+                    // Push the transform down to the child.
                     if (container.TransformMatrix.HasValue)
                     {
                         child.TransformMatrix = (child.TransformMatrix ?? Matrix3x2.Identity) * container.TransformMatrix;
@@ -773,7 +452,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
         {
             // Insert the children into the parent.
             var parent = (IContainShapes)graph[container].Parent;
-            if (parent == null)
+            if (parent is null)
             {
                 // The container may have already been removed, or it might be a root.
                 return;
@@ -835,7 +514,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
         {
             // Insert the children into the parent.
             var parent = (ContainerVisual)graph[container].Parent;
-            if (parent == null)
+            if (parent is null)
             {
                 // The container may have already been removed, or it might be a root.
                 return false;
@@ -887,7 +566,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             return true;
         }
 
-        // Finds ContainerShapes that only has it's Transform set, with a single child that
+        // Finds ContainerShapes that only have their Transform set, with a single child that
         // does not have its Transform set and pulls the child into the parent. This is OK to do
         // because the Transform will still be evaluated as if it is higher in the tree.
         void CoalesceContainerShapes2(
@@ -1026,7 +705,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
         }
 
         // Find ContainerVisuals that have a single ShapeVisual child with orthongonal properties and
-        // push the properties down to the ShapeVisual
+        // push the properties down to the ShapeVisual.
         static void PushPropertiesDownToShapeVisual(ObjectGraph<Node> graph)
         {
             var shapeVisualsWithSingleParents = graph.CompositionObjectNodes.Where(n =>
@@ -1382,7 +1061,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
                 // Insert the children into the parent.
                 var parent = (ContainerVisual)node.Parent;
-                if (parent == null)
+                if (parent is null)
                 {
                     // The container may have already been removed, or it might be a root.
                     continue;
@@ -1431,184 +1110,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 // Remove the children from the container.
                 children.Clear();
             }
-        }
-
-        static PropertyId GetNonDefaultCompositionObjectProperties(CompositionObject obj)
-        {
-            var result = PropertyId.None;
-
-            foreach (var animator in obj.Animators)
-            {
-                result |= PropertyIdFromName(animator.AnimatedProperty);
-            }
-
-            return result;
-        }
-
-        static PropertyId GetNonDefaultShapeProperties(CompositionShape obj)
-        {
-            var result = PropertyId.None;
-            if (obj.CenterPoint.HasValue)
-            {
-                result |= PropertyId.CenterPoint;
-            }
-
-            if (obj.Comment != null)
-            {
-                result |= PropertyId.Comment;
-            }
-
-            if (obj.Offset.HasValue)
-            {
-                result |= PropertyId.Offset;
-            }
-
-            if (obj.Properties.Names.Count != 0)
-            {
-                result |= PropertyId.Properties;
-            }
-
-            if (obj.RotationAngleInDegrees.HasValue)
-            {
-                result |= PropertyId.RotationAngleInDegrees;
-            }
-
-            if (obj.Scale.HasValue)
-            {
-                result |= PropertyId.Scale;
-            }
-
-            if (obj.TransformMatrix.HasValue)
-            {
-                result |= PropertyId.TransformMatrix;
-            }
-
-            return result | GetNonDefaultCompositionObjectProperties((CompositionObject)obj);
-        }
-
-        static PropertyId GetNonDefaultGeometryProperties(CompositionGeometry obj)
-        {
-            var result = PropertyId.None;
-
-            if (obj.TrimStart.HasValue)
-            {
-                result |= PropertyId.TrimStart;
-            }
-
-            if (obj.TrimEnd.HasValue)
-            {
-                result |= PropertyId.TrimEnd;
-            }
-
-            if (obj.TrimOffset.HasValue)
-            {
-                result |= PropertyId.TrimOffset;
-            }
-
-            return result | GetNonDefaultCompositionObjectProperties((CompositionObject)obj);
-        }
-
-        static PropertyId GetNonDefaultSpriteShapeProperties(CompositionSpriteShape obj)
-        {
-            var result = PropertyId.None;
-
-            if (obj.StrokeDashCap.HasValue)
-            {
-                result |= PropertyId.StrokeDashCap;
-            }
-
-            if (obj.StrokeEndCap.HasValue)
-            {
-                result |= PropertyId.StrokeEndCap;
-            }
-
-            if (obj.StrokeLineJoin.HasValue)
-            {
-                result |= PropertyId.StrokeLineJoin;
-            }
-
-            if (obj.StrokeMiterLimit.HasValue)
-            {
-                result |= PropertyId.StrokeMiterLimit;
-            }
-
-            if (obj.StrokeStartCap.HasValue)
-            {
-                result |= PropertyId.StrokeStartCap;
-            }
-
-            return result | GetNonDefaultShapeProperties((CompositionShape)obj);
-        }
-
-        static PropertyId GetNonDefaultVisualProperties(Visual obj)
-        {
-            var result = PropertyId.None;
-            if (obj.BorderMode.HasValue)
-            {
-                result |= PropertyId.BorderMode;
-            }
-
-            if (obj.CenterPoint.HasValue)
-            {
-                result |= PropertyId.CenterPoint;
-            }
-
-            if (obj.Clip != null)
-            {
-                result |= PropertyId.Clip;
-            }
-
-            if (obj.Comment != null)
-            {
-                result |= PropertyId.Comment;
-            }
-
-            if (obj.Offset.HasValue)
-            {
-                result |= PropertyId.Offset;
-            }
-
-            if (obj.Opacity.HasValue)
-            {
-                result |= PropertyId.Opacity;
-            }
-
-            if (obj.Properties.Names.Count != 0)
-            {
-                result |= PropertyId.Properties;
-            }
-
-            if (obj.RotationAngleInDegrees.HasValue)
-            {
-                result |= PropertyId.RotationAngleInDegrees;
-            }
-
-            if (obj.RotationAxis.HasValue)
-            {
-                result |= PropertyId.RotationAxis;
-            }
-
-            if (obj.Scale.HasValue)
-            {
-                result |= PropertyId.Scale;
-            }
-
-            if (obj.Size.HasValue)
-            {
-                result |= PropertyId.Size;
-            }
-
-            if (obj.TransformMatrix.HasValue)
-            {
-                result |= PropertyId.TransformMatrix;
-            }
-
-            foreach (var animator in obj.Animators)
-            {
-                result |= PropertyIdFromName(animator.AnimatedProperty);
-            }
-
-            return result | GetNonDefaultCompositionObjectProperties((CompositionObject)obj);
         }
 
         // If a ContainerVisual has exactly one child that is a ContainerVisual, and each
@@ -1892,53 +1393,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             }
         }
 
-        [Flags]
-        enum PropertyId
-        {
-            None = 0,
-            Unknown = 1,
-            BorderMode = Unknown << 1,
-            CenterPoint = BorderMode << 1,
-            Clip = CenterPoint << 1,
-            Color = Clip << 1,
-            Comment = Color << 1,
-            IsVisible = Comment << 1,
-            Offset = IsVisible << 1,
-            Opacity = Offset << 1,
-            Path = Opacity << 1,
-            Position = Path << 1,
-            Progress = Position << 1,
-            Properties = Progress << 1,
-            RotationAngleInDegrees = Properties << 1,
-            RotationAxis = RotationAngleInDegrees << 1,
-            Scale = RotationAxis << 1,
-            Size = Scale << 1,
-            StrokeEndCap = Size << 1,
-            StrokeDashCap = StrokeEndCap << 1,
-            StrokeLineJoin = StrokeDashCap << 1,
-            StrokeMiterLimit = StrokeLineJoin << 1,
-            StrokeStartCap = StrokeMiterLimit << 1,
-            TransformMatrix = StrokeStartCap << 1,
-            TrimEnd = TransformMatrix << 1,
-            TrimOffset = TrimEnd << 1,
-            TrimStart = TrimOffset << 1,
-        }
-
-        static PropertyId PropertyIdFromName(string value)
-        {
-            if (s_propertyIdFromNameMap == null)
-            {
-                s_propertyIdFromNameMap =
-                    Enum.GetValues(typeof(PropertyId)).Cast<PropertyId>()
-                        .Where(p => p != PropertyId.None)
-                        .ToDictionary(p => Enum.GetName(typeof(PropertyId), p));
-            }
-
-            return s_propertyIdFromNameMap.TryGetValue(value, out var result)
-                ? result
-                : PropertyId.None;
-        }
-
         void CopyDescriptions(IDescribable from, IDescribable to)
         {
             GraphHasChanged();
@@ -1977,78 +1431,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                     to.Name = fromName;
                 }
             }
-        }
-
-        static void AppendShortDescription(IDescribable obj, string description)
-        {
-            obj.ShortDescription = $"{obj.ShortDescription} {description}";
-        }
-
-        static void AppendLongDescription(IDescribable obj, string description)
-        {
-            obj.LongDescription = $"{obj.LongDescription} {description}";
-        }
-
-        static string DescribeTransform(Vector2 scale, double rotationDegrees, Vector2 offset)
-        {
-            var sb = new StringBuilder();
-            if (scale != Vector2.One)
-            {
-                sb.Append($"Scale:{scale.X}");
-            }
-
-            if (rotationDegrees != 0)
-            {
-                if (sb.Length > 0)
-                {
-                    sb.Append(", ");
-                }
-
-                sb.Append($"RotationDegrees:{rotationDegrees}");
-            }
-
-            if (offset != Vector2.Zero)
-            {
-                if (sb.Length > 0)
-                {
-                    sb.Append(", ");
-                }
-
-                sb.Append($"Offset:{offset}");
-            }
-
-            return sb.ToString();
-        }
-
-        static string DescribeTransform(Vector3 scale, double rotationDegrees, Vector3 offset)
-        {
-            var sb = new StringBuilder();
-            if (scale != Vector3.One)
-            {
-                sb.Append($"Scale({scale.X},{scale.Y},{scale.Z})");
-            }
-
-            if (rotationDegrees != 0)
-            {
-                if (sb.Length > 0)
-                {
-                    sb.Append(", ");
-                }
-
-                sb.Append($"RotationDegrees({rotationDegrees})");
-            }
-
-            if (offset != Vector3.Zero)
-            {
-                if (sb.Length > 0)
-                {
-                    sb.Append(", ");
-                }
-
-                sb.Append($"Offset({offset.X},{offset.Y},{offset.Z})");
-            }
-
-            return sb.ToString();
         }
 
         readonly struct VisibilityDescription

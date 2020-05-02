@@ -12,11 +12,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         public Marker(
             string name,
             double frame,
-            double durationMilliseconds)
+            double durationInFrames)
             : base(name)
         {
             Frame = frame;
-            DurationInFrames = durationMilliseconds;
+            DurationInFrames = durationInFrames;
         }
 
         /// <summary>

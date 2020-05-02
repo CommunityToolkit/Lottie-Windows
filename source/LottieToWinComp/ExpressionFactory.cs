@@ -223,7 +223,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         // A property on the root property set. Used to bind to the property set that contains the Progress property.
         static string RootProperty(string propertyName) => $"{RootName}.{propertyName}";
 
-        // An property on the theming property set. Used to bind to properties that can be
+        // A property on the theming property set. Used to bind to properties that can be
         // updated for theming purposes.
         static string ThemeProperty(string propertyName) => $"{ThemePropertiesName}.{propertyName}";
     }

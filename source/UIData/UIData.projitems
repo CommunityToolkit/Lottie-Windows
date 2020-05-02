@@ -12,6 +12,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Tools\GraphCompactor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tools\ObjectGraph.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tools\Optimizer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tools\Properties.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tools\PropertyValueOptimizer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tools\PropertyId.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tools\Stats.cs" />
   </ItemGroup>
 </Project>

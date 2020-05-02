@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -19,7 +18,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         int _variableCounter;
 
-        // Returns the name of the variable that is animated from 0 to 1 from start to end.
+        // Returns a CompositionPropertySet property name that refers to a scalar value that will
+        // animate from 0..1 as the Lottie animates from start..end.
         internal string GetVariableForProgressMapping(float start, float end, Easing easing, double scale, double offset)
         {
             var range = new Range(start, end, easing);
@@ -45,22 +45,27 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return newVariable.VariableName;
         }
 
-        internal IEnumerable<(string, double scale, double offset, (float rangeStart, float rangeEnd, Easing easing)[])> GetVariables()
+        // Returns the variables that have been requested.
+        internal IEnumerable<(string, double scale, double offset, Range[])> GetVariables()
         {
             foreach (var entry in _progressVariables)
             {
-                var keyframes =
+                var ranges =
                     (from range in entry.Ranges
                      where range.Easing != null
-                     select (range.Start, range.End, range.Easing)).ToArray();
+                     select range).ToArray();
 
-                yield return (entry.VariableName, entry.Scale, entry.Offset, keyframes);
+                yield return (entry.VariableName, entry.Scale, entry.Offset, ranges);
             }
         }
 
+        /// <summary>
+        /// Represents a variable used in an animation expression. The variable has a value
+        /// that has a linear function relationship with the progress of the Lottie.
+        /// </summary>
         sealed class ProgressVariable
         {
-            Range _firstRange;
+            Range _rangesHead;
 
             internal ProgressVariable(string name, double scale, double offset)
             {
@@ -75,11 +80,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             internal double Offset { get; }
 
+            // Enumerates the linked list of ranges.
             internal IEnumerable<Range> Ranges
             {
                 get
                 {
-                    var cur = _firstRange;
+                    var cur = _rangesHead;
                     while (cur != null)
                     {
                         yield return cur;
@@ -88,15 +94,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 }
             }
 
+            // Inserts the given range into the list, or returns false
+            // if there is no room. The range will be inserted such that its
+            // start will be >= the previous end, and it's end will be <=
+            // the next start.
             internal bool TryAddRange(Range range)
             {
-                if (_firstRange == null)
+                if (_rangesHead is null)
                 {
-                    _firstRange = range;
+                    _rangesHead = range;
                     return true;
                 }
 
-                var cur = _firstRange;
+                var cur = _rangesHead;
 
                 while (cur.Start > range.Start && cur.Next != null)
                 {
@@ -150,7 +160,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         }
 
         // Describes a range over which remapping is done, and an easing.
-        sealed class Range
+        internal sealed class Range
         {
             internal Range(float start, float end, Easing easing) => (Start, End, Easing) = (start, end, easing);
 

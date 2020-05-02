@@ -92,7 +92,7 @@ sealed class LottieFileProcessor
         // Read the Lottie .json text.
         var jsonStream = TryReadTextFile(_file);
 
-        if (jsonStream == null)
+        if (jsonStream is null)
         {
             return false;
         }
@@ -111,7 +111,7 @@ sealed class LottieFileProcessor
             _reporter.WriteInfo(IssueToString(_file, issue));
         }
 
-        if (_lottieComposition == null)
+        if (_lottieComposition is null)
         {
             _reporter.WriteError($"Failed to parse Lottie file: {_file}");
             return false;
@@ -133,7 +133,7 @@ sealed class LottieFileProcessor
 
         var codeGenSucceeded = true;
 
-        var isCppwinrtAndCxRequested = _options.Languages.Where(l => l == Lang.CppWinrt || l == Lang.Cx).Count() == 2;
+        var isCppwinrtAndCxRequested = _options.Languages.Where(l => l == Lang.Cppwinrt || l == Lang.Cx).Count() == 2;
 
         foreach (var lang in _options.Languages)
         {
@@ -155,7 +155,7 @@ sealed class LottieFileProcessor
                     _profiler.OnCodeGenFinished();
                     break;
 
-                case Lang.CppWinrt:
+                case Lang.Cppwinrt:
                     codeGenSucceeded &= TryGenerateCppwinrtCode($"{outputFileBase}.h", $"{outputFileBase}.cpp");
                     _profiler.OnCodeGenFinished();
                     break;
@@ -470,7 +470,7 @@ sealed class LottieFileProcessor
 
         (string cppText, string hText, IEnumerable<Uri> assetList) =
                     CppwinrtInstantiatorGenerator.CreateFactoryCode(
-                        CreateCodeGenConfiguration("CppWinrt"),
+                        CreateCodeGenConfiguration("Cppwinrt"),
                         System.IO.Path.GetFileName(outputHeaderFilePath));
 
         if (string.IsNullOrWhiteSpace(cppText))
@@ -783,7 +783,7 @@ sealed class LottieFileProcessor
         _profiler.OnTranslateFinished();
 
         // Translation succeeded if all version produced root Visuals
-        _isTranslatedSuccessfully = !_translationResults.Any(tr => tr.RootVisual == null);
+        _isTranslatedSuccessfully = !_translationResults.Any(tr => tr.RootVisual is null);
 
         foreach (var (issue, uapVersionRange) in _translationIssues)
         {

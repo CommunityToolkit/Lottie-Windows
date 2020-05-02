@@ -102,7 +102,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         public static LottieVisualSource CreateFromString(string uri)
         {
             var uriUri = StringToUri(uri);
-            if (uriUri == null)
+            if (uriUri is null)
             {
                 return null;
             }
@@ -119,7 +119,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         public IAsyncAction SetSourceAsync(StorageFile file)
         {
             _uriSource = null;
-            return LoadAsync(file == null ? null : new Loader(this, file)).AsAsyncAction();
+            return LoadAsync(file is null ? null : new Loader(this, file)).AsAsyncAction();
         }
 
         /// <summary>
@@ -135,7 +135,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             // This will not trigger loading because it will be seen as no change
             // from the current (just set) _uriSource value.
             UriSource = sourceUri;
-            return LoadAsync(sourceUri == null ? null : new Loader(this, sourceUri)).AsAsyncAction();
+            return LoadAsync(sourceUri is null ? null : new Loader(this, sourceUri)).AsAsyncAction();
         }
 
         /// <summary>
@@ -171,7 +171,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             Compositor compositor,
             out object diagnostics)
         {
-            if (_contentFactory == null)
+            if (_contentFactory is null)
             {
                 // No content has been loaded yet.
                 // Return an IAnimatedVisual that produces nothing.
@@ -239,7 +239,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 NotifyListenersThatCompositionChanged();
             }
 
-            if (loader == null)
+            if (loader is null)
             {
                 // No loader means clear out what you previously loaded.
                 return;
@@ -263,7 +263,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 return;
             }
 
-            if (contentFactory == null)
+            if (contentFactory is null)
             {
                 // Load didn't produce anything.
                 return;
@@ -310,7 +310,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             // Asynchronously loads WinCompData from a Lottie file.
             internal async Task<ContentFactory> LoadAsync(LottieVisualOptions options)
             {
-                if (_uri == null && _storageFile == null)
+                if (_uri is null && _storageFile is null)
                 {
                     // Request to load null. Return a null ContentFactory.
                     return null;
@@ -336,7 +336,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                     sw.Restart();
                 }
 
-                if (jsonStream == null)
+                if (jsonStream is null)
                 {
                     // Failed to load ...
                     return result;
@@ -365,7 +365,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                     sw.Restart();
                 }
 
-                if (lottieComposition == null)
+                if (lottieComposition is null)
                 {
                     // Failed to load...
                     return result;
@@ -403,8 +403,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 TranslationResult translationResult;
                 await CheckedAwaitAsync(Task.Run(() =>
                 {
-                    // translatePropertyBindings is turned on so that it can detect
-                    // issue if the author is using property bindings incorrectly.
+                    // translatePropertyBindings is turned on so that it can report
+                    // an issue if the author is using property bindings incorrectly.
                     translationResult = LottieToWinCompTranslator.TryTranslateLottieComposition(
                         lottieComposition: lottieComposition,
                         targetUapVersion: GetCurrentUapVersion(),
@@ -437,7 +437,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                     }
                 }));
 
-                if (wincompDataRootVisual == null)
+                if (wincompDataRootVisual is null)
                 {
                     // Failed.
                     return result;
@@ -537,7 +537,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         // Returns an absolute URI. Relative URIs are made relative to ms-appx:///
         static Uri GetAbsoluteUri(Uri uri)
         {
-            if (uri == null)
+            if (uri is null)
             {
                 return null;
             }

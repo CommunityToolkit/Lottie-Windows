@@ -73,7 +73,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
         void Reference(T from, CompositionObject obj)
         {
-            if (obj == null)
+            if (obj is null)
             {
                 return;
             }
@@ -219,7 +219,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             // created by a CompositionObject's .Properties property).
             if (obj.Type == CompositionObjectType.CompositionPropertySet)
             {
-                if (((CompositionPropertySet)obj).Owner == null)
+                if (((CompositionPropertySet)obj).Owner is null)
                 {
                     // Unowned CompositionPropertySet - can't have animations referenced
                     // from its owner, so reference them here.
