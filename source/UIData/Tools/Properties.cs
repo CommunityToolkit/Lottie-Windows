@@ -169,6 +169,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 result |= PropertyId.Comment;
             }
 
+            if (obj.IsVisible != null)
+            {
+                result |= PropertyId.IsVisible;
+            }
+
             if (obj.Offset.HasValue)
             {
                 result |= PropertyId.Offset;

@@ -71,7 +71,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                 Debug.Assert(keyFrame.Value.Count() == redundancies.Length, "Invariant");
 
                 // Get just the significant (i.e. non-redundant) stops.
-                var significantStops = keyFrame.Value.Zip(redundancies).Where(item => item.Second).Select(item => item.First);
+                var significantStops = keyFrame.Value.Zip(redundancies, (stop, isRedundant) => (stop, isRedundant)).Where(item => !item.isRedundant).Select(item => item.stop);
 
                 yield return new KeyFrame<Sequence<ColorGradientStop>>(
                     frame: keyFrame.Frame,
@@ -80,15 +80,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                     spatialControlPoint2: keyFrame.SpatialControlPoint2,
                     easing: keyFrame.Easing);
             }
-        }
-
-        // Filters out the stops that have entires in the redundancies list. This returns
-        // only the non-redundant stops.
-        static IEnumerable<ColorGradientStop> Optimize(ColorGradientStop[] stops, bool[] redundancies)
-        {
-            Debug.Assert(stops.Length == redundancies.Length, "Precondition");
-
-            return stops.Zip(redundancies).Where(item => item.Second).Select(item => item.First);
         }
 
         /// <summary>
@@ -303,9 +294,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                     // not contribute significantly and can be safely removed.
                     var angle = GetAngleBetweenStops(stops[left], stops[middle], stops[right]);
 
+                    Debug.Assert(angle >= 0, "Invariant");
+
                     // This value can be tuned to be more or less sensitive to middle gradients
                     // that are more or less off the line formed by the outer gradients.
-                    if (Math.Abs(angle) < 0.005)
+                    if (angle < 0.005)
                     {
                         // The middle stop is redundant.
                         result[middle] = true;
@@ -325,23 +318,38 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
         // Returns a value that indicates how significant stop b is in the sequence of stops [a,b,c].
         // A significant stop is one that should not be removed because it would noticably change
         // the gradient.
+        // The value ranges from 0 (not at all significant) to 2PI.
         static double GetAngleBetweenStops(ColorGradientStop a, ColorGradientStop b, ColorGradientStop c)
         {
+            // Get the vectors from a to b and b to c that represent the RGB values in 4 dimensional space.
             var colorU = new Sn.Vector4((float)(b.Offset - a.Offset), (float)(b.Color.R - a.Color.R), (float)(b.Color.G - a.Color.G), (float)(b.Color.B - a.Color.B));
             var colorV = new Sn.Vector4((float)(c.Offset - b.Offset), (float)(c.Color.R - b.Color.R), (float)(c.Color.G - b.Color.G), (float)(c.Color.B - b.Color.B));
 
             colorU = Sn.Vector4.Normalize(colorU);
             colorV = Sn.Vector4.Normalize(colorV);
 
+            // Get the angle between the vectors.
+            // Returns a value between 0 and Pi.
             var colorAngle = Math.Acos(Sn.Vector4.Dot(colorU, colorV));
 
+            // Get the vectors from a to b and b to c that represent the alpha values in 2 dimensional space.
             var alphaU = new Sn.Vector2((float)(b.Offset - a.Offset), (float)(b.Color.A - a.Color.A));
             var alphaV = new Sn.Vector2((float)(c.Offset - b.Offset), (float)(c.Color.A - b.Color.A));
 
             alphaU = Sn.Vector2.Normalize(alphaU);
             alphaV = Sn.Vector2.Normalize(alphaV);
 
+            // Get the angle between the vectors.
+            // Returns a value between 0 and Pi.
             var alphaAngle = Math.Acos(Sn.Vector2.Dot(alphaU, alphaV));
+
+            if (double.IsNaN(colorAngle) || double.IsNaN(alphaAngle))
+            {
+                // There was an error calculating. This is caused by 0-length vectors.
+                // Any 0-length vectors indicates that all the stops are significant
+                // unless they're all the same.
+                return a == b && b == c ? 0 : Math.PI * 2;
+            }
 
             return colorAngle + alphaAngle;
         }

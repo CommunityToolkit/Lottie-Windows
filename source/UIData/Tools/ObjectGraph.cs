@@ -32,9 +32,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
         int _positionCounter;
 
-        ObjectGraph(bool includeVertices)
+        ObjectGraph(CompositionObject root, bool includeVertices)
         {
             _includeVertices = includeVertices;
+            Root = Reference(null, root);
         }
 
         /// <summary>
@@ -42,11 +43,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
         /// </summary>
         /// <returns>A <see cref="Graph"/> for the given Composition tree.</returns>
         public static new ObjectGraph<T> FromCompositionObject(CompositionObject root, bool includeVertices)
-        {
-            var result = new ObjectGraph<T>(includeVertices);
-            result.Reference(null, root);
-            return result;
-        }
+            => new ObjectGraph<T>(root, includeVertices);
+
+        /// <summary>
+        /// The root of the graph.
+        /// </summary>
+        public T Root { get; }
 
         public IEnumerable<T> Nodes =>
              _compositionObjectReferences.Values.Concat(_compositionPathReferences.Values).Concat(_canvasGeometryReferences.Values).Concat(_loadedImageSurfaceReferences.Values);
@@ -71,11 +73,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
         public T this[LoadedImageSurface obj] => _loadedImageSurfaceReferences[obj];
 
-        void Reference(T from, CompositionObject obj)
+        T Reference(T from, CompositionObject obj)
         {
             if (obj is null)
             {
-                return;
+                return null;
             }
 
             if (_compositionObjectReferences.TryGetValue(obj, out var node))
@@ -86,7 +88,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                     AddVertex(from, node);
                 }
 
-                return;
+                return node;
             }
 
             // Object has not been seen before. Register it, and visit it.
@@ -247,6 +249,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                     Reference(propertySetNode, animator.Controller);
                 }
             }
+
+            return node;
         }
 
         bool Reference(T from, ICompositionSurface obj)

@@ -46,9 +46,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         protected IAnimatedVisualSourceInfo SourceInfo => AnimatedVisualSourceInfo;
 
-        protected TypeNames T => _typeName;
+        private protected TypeNames T => _typeName;
 
-        protected CppStringifier S => _s;
+        private protected CppStringifier S => _s;
 
         // The name of the source class i.e. the class
         // that contains the TryCreateAnimatedVisual method.
@@ -447,7 +447,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             }
         }
 
-        protected abstract void WriteThemeHeader(HeaderBuilder builder);
+        private protected abstract void WriteThemeHeader(HeaderBuilder builder);
 
         protected abstract void WriteThemePropertyImpls(CodeBuilder builder);
 

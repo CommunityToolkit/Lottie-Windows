@@ -50,7 +50,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             return (cppText, hText, assetList);
         }
 
-        protected override void WriteThemeHeader(HeaderBuilder builder)
+        private protected override void WriteThemeHeader(HeaderBuilder builder)
         {
             // Add a field to hold the theme property set.
             builder.Private.WriteLine($"winrt::{Wuc}::{T.CompositionPropertySet} {SourceInfo.ThemePropertiesFieldName}{{ nullptr }};");

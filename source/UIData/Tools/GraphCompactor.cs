@@ -4,8 +4,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
+using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using static Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools.Properties;
 using Expr = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions;
@@ -17,27 +19,47 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
     /// </summary>
     sealed class GraphCompactor
     {
+        readonly Visual _root;
         bool _madeProgress;
 
-        GraphCompactor()
+        GraphCompactor(Visual root)
         {
+            _root = root;
         }
 
         internal static Visual Compact(Visual root)
         {
             // Running the optimization multiple times can improve the results.
             // Keep iterating as long as we are making progress.
-            var compactor = new GraphCompactor();
-            do
+            var compactor = new GraphCompactor(root);
+            while (compactor.CompactOnce())
             {
-                compactor._madeProgress = false;
-
-                var graph = ObjectGraph<Node>.FromCompositionObject(root, includeVertices: true);
-
-                compactor.Compact(graph);
-            } while (compactor._madeProgress);
+                // Keep compacting as long as it makes progress.
+            }
 
             return root;
+        }
+
+        bool CompactOnce()
+        {
+            _madeProgress = false;
+            var graph = ObjectGraph<Node>.FromCompositionObject(_root, includeVertices: true);
+            Compact(graph);
+            return _madeProgress;
+        }
+
+        // For debugging purposes, dump the current graph.
+        void DumpToDgml(string qualifier)
+        {
+            var dgml = CompositionObjectDgmlSerializer.ToXml(_root).ToString();
+            var fileNameBase = $"Graph_{qualifier}";
+            var counter = 0;
+            while (System.IO.File.Exists($"{fileNameBase}_{counter}.dgml"))
+            {
+                counter++;
+            }
+
+            System.IO.File.WriteAllText($"{fileNameBase}_{counter}.dgml", dgml);
         }
 
         void GraphHasChanged() => _madeProgress = true;
@@ -105,8 +127,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             PushShapeVisbilityDown(graph, containerShapes);
         }
 
-        // Finds sibling shape containers that has the same properties and combines them.
-        static void CoalesceSiblingContainerShapes(ObjectGraph<Node> graph)
+        // Finds sibling shape containers that have the same properties and combines them.
+        void CoalesceSiblingContainerShapes(ObjectGraph<Node> graph)
         {
             // Find the IContainShapes that have 1 or more children.
             var containersWith1OrMoreChildren = graph.CompositionObjectNodes.Where(n =>
@@ -209,11 +231,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
         static bool IsEquivalentContainer(CompositionContainerShape a, CompositionContainerShape b)
         {
-            if (a.Animators.Count != b.Animators.Count)
-            {
-                return false;
-            }
-
             if (a.TransformMatrix != b.TransformMatrix ||
                 a.CenterPoint != b.CenterPoint ||
                 a.Offset != b.Offset ||
@@ -224,15 +241,34 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 return false;
             }
 
-            if (a.Animators.Count > 0)
+            return AreAnimatorsEquivalent(a.Animators, b.Animators);
+        }
+
+        static bool AreAnimatorsEquivalent(IReadOnlyList<CompositionObject.Animator> a, IReadOnlyList<CompositionObject.Animator> b)
+        {
+            if (a.Count != b.Count)
             {
-                // There are some animations. Compare them.
-                // NOTE: this does a simple (non-deep) comparison of animators, however that is
-                // sufficient if we're run the canonicalizer already.
-                if (!a.Animators.SequenceEqual(b.Animators))
+                return false;
+            }
+
+            for (var i = 0; i < a.Count; i++)
+            {
+                var animatorA = a[i];
+                var animatorB = b[i];
+
+                if (animatorA.AnimatedProperty != animatorB.AnimatedProperty)
                 {
                     return false;
                 }
+
+                // Identity comparison is sufficient here as long as the Canonicalizer has already run, because
+                // that will ensure that equivalent animations have the same identity.
+                if (animatorA.Animation != animatorB.Animation)
+                {
+                    return false;
+                }
+
+                // NOTE: we do not compare the controllers here. For Lottie this is usually sufficient.
             }
 
             return true;
@@ -376,13 +412,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             var elidableContainers = containerShapes.Where(n =>
             {
                 var container = n.container;
-                var containerProperties = GetNonDefaultShapeProperties(container);
 
                 if (container.Shapes.Count == 0)
                 {
                     // Ignore empty containers.
                     return false;
                 }
+
+                var containerProperties = GetNonDefaultShapeProperties(container);
 
                 if (container.Animators.Count != 0 || (containerProperties & ~PropertyId.TransformMatrix) != PropertyId.None)
                 {
@@ -394,7 +431,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 {
                     var childProperties = GetNonDefaultShapeProperties(child);
 
-                    if (child.Animators.Where(a => a.AnimatedProperty == "TransformMatrix").Any())
+                    if (child.Animators.Where(a => a.AnimatedProperty == nameof(CompositionShape.TransformMatrix)).Any())
                     {
                         // Ignore this container if any of the children has an animated transform.
                         return false;
@@ -413,6 +450,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                     if (container.TransformMatrix.HasValue)
                     {
                         child.TransformMatrix = (child.TransformMatrix ?? Matrix3x2.Identity) * container.TransformMatrix;
+                        if (child.TransformMatrix.Value.IsIdentity)
+                        {
+                            child.TransformMatrix = null;
+                        }
                     }
                 }
 
@@ -985,16 +1026,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 var parentProperties = GetNonDefaultShapeProperties(parent);
                 var childProperties = GetNonDefaultShapeProperties(child);
 
-                // Common case is that the child has no non-default properties.
-                // We could handle more cases but it's more complicated.
-                if (childProperties == PropertyId.None)
+                if ((parentProperties & PropertyId.Properties) != PropertyId.None)
                 {
-                    if ((parentProperties & PropertyId.Properties) != PropertyId.None)
-                    {
-                        // Ignore if the parent has PropertySet propeties. We could handle it but it's more complicated.
-                        continue;
-                    }
+                    // Ignore if the parent has PropertySet properties. We could handle it but it's more complicated.
+                    continue;
+                }
 
+                if (ArePropertiesOrthogonal(parentProperties, childProperties))
+                {
                     // Copy the parent's properties onto the child and remove the parent.
                     TransferShapeProperties(parent, child);
 
@@ -1261,35 +1300,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
         static void TransferShapeProperties(CompositionShape from, CompositionShape to)
         {
-            if (from.CenterPoint.HasValue)
+            void TransferProperty<T>(Func<CompositionShape, T> get, Action<CompositionShape, T> set)
             {
-                to.CenterPoint = from.CenterPoint;
+                var fromValue = get(from);
+                if (fromValue != null)
+                {
+                    Debug.Assert(get(to) is null, "Precondition");
+                    set(to, fromValue);
+                }
             }
 
-            if (from.Comment != null)
-            {
-                to.Comment = from.Comment;
-            }
-
-            if (from.Offset.HasValue)
-            {
-                to.Offset = from.Offset;
-            }
-
-            if (from.RotationAngleInDegrees.HasValue)
-            {
-                to.RotationAngleInDegrees = from.RotationAngleInDegrees;
-            }
-
-            if (from.Scale.HasValue)
-            {
-                to.Scale = from.Scale;
-            }
-
-            if (from.TransformMatrix.HasValue)
-            {
-                to.TransformMatrix = from.TransformMatrix;
-            }
+            TransferProperty(cv => cv.CenterPoint, (cv, value) => cv.CenterPoint = value);
+            TransferProperty(cv => cv.Comment, (cv, value) => cv.Comment = value);
+            TransferProperty(cv => cv.Offset, (cv, value) => cv.Offset = value);
+            TransferProperty(cv => cv.RotationAngleInDegrees, (cv, value) => cv.RotationAngleInDegrees = value);
+            TransferProperty(cv => cv.Scale, (cv, value) => cv.Scale = value);
+            TransferProperty(cv => cv.TransformMatrix, (cv, value) => cv.TransformMatrix = value);
 
             // Start the from's animations on the to.
             foreach (var anim in from.Animators)
@@ -1313,65 +1339,28 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
         static void TransferContainerVisualProperties(ContainerVisual from, ContainerVisual to)
         {
-            if (from.BorderMode.HasValue)
+            void TransferProperty<T>(Func<ContainerVisual, T> get, Action<ContainerVisual, T> set)
             {
-                to.BorderMode = from.BorderMode;
+                var fromValue = get(from);
+                if (fromValue != null)
+                {
+                    Debug.Assert(get(to) is null, "Precondition");
+                    set(to, fromValue);
+                }
             }
 
-            if (from.CenterPoint.HasValue)
-            {
-                to.CenterPoint = from.CenterPoint;
-            }
-
-            if (from.Clip != null)
-            {
-                to.Clip = from.Clip;
-            }
-
-            if (from.Comment != null)
-            {
-                to.Comment = from.Comment;
-            }
-
-            if (from.IsVisible.HasValue)
-            {
-                to.IsVisible = from.IsVisible;
-            }
-
-            if (from.Offset.HasValue)
-            {
-                to.Offset = from.Offset;
-            }
-
-            if (from.Opacity.HasValue)
-            {
-                to.Opacity = from.Opacity;
-            }
-
-            if (from.RotationAngleInDegrees.HasValue)
-            {
-                to.RotationAngleInDegrees = from.RotationAngleInDegrees;
-            }
-
-            if (from.RotationAxis.HasValue)
-            {
-                to.RotationAxis = from.RotationAxis;
-            }
-
-            if (from.Scale.HasValue)
-            {
-                to.Scale = from.Scale;
-            }
-
-            if (from.Size.HasValue)
-            {
-                to.Size = from.Size;
-            }
-
-            if (from.TransformMatrix.HasValue)
-            {
-                to.TransformMatrix = from.TransformMatrix;
-            }
+            TransferProperty(cv => cv.BorderMode, (cv, value) => cv.BorderMode = value);
+            TransferProperty(cv => cv.CenterPoint, (cv, value) => cv.CenterPoint = value);
+            TransferProperty(cv => cv.Clip, (cv, value) => cv.Clip = value);
+            TransferProperty(cv => cv.Comment, (cv, value) => cv.Comment = value);
+            TransferProperty(cv => cv.IsVisible, (cv, value) => cv.IsVisible = value);
+            TransferProperty(cv => cv.Offset, (cv, value) => cv.Offset = value);
+            TransferProperty(cv => cv.Opacity, (cv, value) => cv.Opacity = value);
+            TransferProperty(cv => cv.RotationAngleInDegrees, (cv, value) => cv.RotationAngleInDegrees = value);
+            TransferProperty(cv => cv.RotationAxis, (cv, value) => cv.RotationAxis = value);
+            TransferProperty(cv => cv.Scale, (cv, value) => cv.Scale = value);
+            TransferProperty(cv => cv.Size, (cv, value) => cv.Size = value);
+            TransferProperty(cv => cv.TransformMatrix, (cv, value) => cv.TransformMatrix = value);
 
             // Start the from's animations on the to.
             foreach (var anim in from.Animators)

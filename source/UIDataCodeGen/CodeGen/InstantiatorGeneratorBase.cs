@@ -324,7 +324,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// <summary>
         /// Writes code that initializes a theme property value in the theme property set.
         /// </summary>
-        protected void WriteThemePropertyInitialization(
+        private protected void WriteThemePropertyInitialization(
             CodeBuilder builder,
             string propertySetVariableName,
             PropertyBinding prop)
@@ -337,7 +337,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// <summary>
         /// Writes code that initializes a theme property value in the theme property set.
         /// </summary>
-        protected void WriteThemePropertyInitialization(
+        private protected void WriteThemePropertyInitialization(
             CodeBuilder builder,
             string propertySetVariableName,
             PropertyBinding prop,
@@ -353,7 +353,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// <returns>
         /// An expression that gets a theme property value.
         /// </returns>
-        protected string GetThemePropertyAccessor(string accessor, PropertyBinding prop)
+        private protected string GetThemePropertyAccessor(string accessor, PropertyBinding prop)
             => prop.ExposedType switch
             {
                 // Colors are stored as Vector4 because Composition cannot animate
@@ -2856,6 +2856,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             bool GenerateShapeVisualFactory(CodeBuilder builder, ShapeVisual obj, ObjectData node)
             {
+                // Sanity check: A ShapeVisual's size is its clip. If it's not set, nothing will display.
+                Debug.Assert(obj.Size.HasValue && obj.Size.Value.Length() > 0, "ShapeVisuals need a size");
                 WriteObjectFactoryStart(builder, node);
                 WriteCreateAssignment(builder, node, $"_c{Deref}CreateShapeVisual()");
                 InitializeContainerVisual(builder, obj, node);
