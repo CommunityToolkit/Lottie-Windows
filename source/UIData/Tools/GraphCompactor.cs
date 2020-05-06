@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
-using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using static Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools.Properties;
 using Expr = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions;
@@ -48,10 +47,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             return _madeProgress;
         }
 
+// Do not include this code as it requires a reference to code that is not available in every
+// configuration in which this class is included.
+#if false
         // For debugging purposes, dump the current graph.
         void DumpToDgml(string qualifier)
         {
-            var dgml = CompositionObjectDgmlSerializer.ToXml(_root).ToString();
+            var dgml = Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CompositionObjectDgmlSerializer.ToXml(_root).ToString();
             var fileNameBase = $"Graph_{qualifier}";
             var counter = 0;
             while (System.IO.File.Exists($"{fileNameBase}_{counter}.dgml"))
@@ -61,6 +63,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
             System.IO.File.WriteAllText($"{fileNameBase}_{counter}.dgml", dgml);
         }
+#endif
 
         void GraphHasChanged() => _madeProgress = true;
 
