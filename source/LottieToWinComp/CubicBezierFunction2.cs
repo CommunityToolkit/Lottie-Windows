@@ -182,16 +182,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 var oneMinusT = 1 - _original._t;
 
                 // (1-t)^3P0
-                var p0Part = Pow(oneMinusT, 3) * Vector3(Vector2(_original._p0));
+                var p0Part = Pow(oneMinusT, 3) * Vector3(_original._p0);
 
                 // 3(1-t)^2tP1
-                var p1Part = 3 * Squared(oneMinusT) * _original._t * Vector3(Vector2(_original._p1));
+                var p1Part = 3 * Squared(oneMinusT) * _original._t * Vector3(_original._p1);
 
                 // 3(1-t)t^2P2
-                var p2Part = 3 * oneMinusT * Squared(_original._t) * Vector3(Vector2(_original._p2));
+                var p2Part = 3 * oneMinusT * Squared(_original._t) * Vector3(_original._p2);
 
                 // t^3P3
-                var p3Part = Pow(_original._t, 3) * Vector3(Vector2(_original._p3));
+                var p3Part = Pow(_original._t, 3) * Vector3(_original._p3);
 
                 return (p0Part + p1Part + p2Part + p3Part).Simplified;
             }

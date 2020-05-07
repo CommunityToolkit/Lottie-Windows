@@ -58,7 +58,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieMetadata
                 var result = marker;
                 if (result.Frame.Number < 0)
                 {
-                    // The marker starts before the start.
+                    // The marker starts before the start of the range.
                     if ((result.Frame + result.Duration).Number < 0)
                     {
                         // It is completely before the start of the range.
