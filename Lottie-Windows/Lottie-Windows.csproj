@@ -6,8 +6,12 @@
     <OutputType>winmdobj</OutputType>
     <IsPackable>True</IsPackable>
     
+    <Description>This library provides the LottieVisualSource which is consumed by the Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer to render Lottie JSON files.</Description>
+    <PackageTags>UWP Toolkit Windows Animations Lottie XAML</PackageTags>
+
     <RootNamespace>Microsoft.Toolkit.Uwp.UI.Lottie</RootNamespace>
     <AssemblyName>Microsoft.Toolkit.Uwp.UI.Lottie</AssemblyName>
+    
 
     <!-- Enable the latest C# language features -->
     <LangVersion>latest</LangVersion>
