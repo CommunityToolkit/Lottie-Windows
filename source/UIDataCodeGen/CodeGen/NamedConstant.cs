@@ -7,6 +7,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
     /// <summary>
     /// A named constant.
     /// </summary>
+#if PUBLIC_UIDataCodeGen
+    public
+#endif
     sealed class NamedConstant
     {
         internal NamedConstant(string name, string description, ConstantType type, object value)

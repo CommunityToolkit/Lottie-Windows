@@ -17,6 +17,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
     /// stop to ensure that the result is the same as if the <see cref="OpacityGradientStop"/>s were being
     /// used.
     /// </summary>
+#if PUBLIC_LottieData
+    public
+#endif
     static class GradientStopOptimizer
     {
         /// <summary>

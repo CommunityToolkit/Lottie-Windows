@@ -401,29 +401,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
                     yield return item;
                 }
 
-                if (!IsNullOrZero(obj.LeftInset))
-                {
-                    yield return new XAttribute("LeftInset", obj.LeftInset);
-                }
-
-                if (!IsNullOrZero(obj.TopInset))
-                {
-                    yield return new XAttribute("TopInset", obj.TopInset);
-                }
-
-                if (!IsNullOrZero(obj.RightInset))
-                {
-                    yield return new XAttribute("RightInset", obj.RightInset);
-                }
-
-                if (!IsNullOrZero(obj.BottomInset))
-                {
-                    yield return new XAttribute("BottomInset", obj.BottomInset);
-                }
+                yield return new XAttribute("LeftInset", obj.LeftInset);
+                yield return new XAttribute("TopInset", obj.TopInset);
+                yield return new XAttribute("RightInset", obj.RightInset);
+                yield return new XAttribute("BottomInset", obj.BottomInset);
             }
         }
-
-        static bool IsNullOrZero(float? value) => value is null || value == 0;
 
         XElement FromCompositionGeometricClip(CompositionGeometricClip obj)
         {

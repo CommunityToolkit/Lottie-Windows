@@ -777,10 +777,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                          PropertyId.RotationAngleInDegrees | PropertyId.Scale |
                          PropertyId.TransformMatrix)) == PropertyId.None &&
                     parent.Clip is InsetClip insetClip &&
-                    IsNullOrZero(insetClip.CenterPoint) &&
-                    IsNullOrOne(insetClip.Scale) &&
-                    IsNullOrZero(insetClip.LeftInset) && IsNullOrZero(insetClip.RightInset) &&
-                    IsNullOrZero(insetClip.TopInset) && IsNullOrZero(insetClip.BottomInset) &&
+                    insetClip.CenterPoint.HasValue &&
+                    insetClip.Scale.HasValue &&
+                    insetClip.LeftInset.HasValue && insetClip.RightInset.HasValue &&
+                    insetClip.TopInset.HasValue && insetClip.BottomInset.HasValue &&
                     insetClip.Animators.Count == 0 &&
                     parent.Size == shapeVisual.Size &&
                     !IsPropertyAnimated(parent, PropertyId.Size) &&
@@ -791,12 +791,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 }
             }
         }
-
-        static bool IsNullOrZero(float? value) => value is null || value == 0;
-
-        static bool IsNullOrOne(Vector2? value) => value is null || value == Vector2.One;
-
-        static bool IsNullOrZero(Vector2? value) => value is null || value == Vector2.Zero;
 
         static bool IsPropertyAnimated(CompositionObject obj, PropertyId property)
         {

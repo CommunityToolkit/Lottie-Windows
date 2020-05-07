@@ -834,12 +834,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             }
         }
 
-        static bool IsNullOrZero(float? value) => value is null || value == 0;
-
-        static bool IsNullOrOne(Vector2? value) => value is null || value == Vector2.One;
-
-        static bool IsNullOrZero(Vector2? value) => value is null || value == Vector2.Zero;
-
         InsetClip GetInsetClip(InsetClip obj)
         {
             if (GetExisting(obj, out InsetClip result))
@@ -850,36 +844,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             result = CacheAndInitializeCompositionObject(obj, _c.CreateInsetClip());
 
             // CompositionClip properties
-            if (!IsNullOrZero(obj.CenterPoint))
-            {
-                result.CenterPoint = obj.CenterPoint;
-            }
-
-            if (!IsNullOrOne(obj.Scale))
-            {
-                result.Scale = obj.Scale;
-            }
+            result.CenterPoint = obj.CenterPoint;
+            result.Scale = obj.Scale;
 
             // InsetClip properties
-            if (!IsNullOrZero(obj.LeftInset))
-            {
-                result.LeftInset = obj.LeftInset;
-            }
-
-            if (!IsNullOrZero(obj.RightInset))
-            {
-                result.RightInset = obj.RightInset;
-            }
-
-            if (!IsNullOrZero(obj.TopInset))
-            {
-                result.TopInset = obj.TopInset;
-            }
-
-            if (!IsNullOrZero(obj.BottomInset))
-            {
-                result.BottomInset = obj.BottomInset;
-            }
+            result.LeftInset = obj.LeftInset;
+            result.RightInset = obj.RightInset;
+            result.TopInset = obj.TopInset;
+            result.BottomInset = obj.BottomInset;
 
             StartAnimationsAndFreeze(obj, result);
             return result;
