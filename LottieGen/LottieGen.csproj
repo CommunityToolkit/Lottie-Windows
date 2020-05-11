@@ -10,7 +10,8 @@
     <Authors>Microsoft</Authors>
     <Company>Microsoft</Company>
     <Product>Lottie for Windows</Product>
-    <Description>Command line tool for generating code from a Lottie file.</Description>
+    <Description>Generates code from a Lottie file. This is the most efficient way to render Lottie files on Windows.</Description>
+    <PackageTags>Lottie UWP Animations C++ C#</PackageTags>
     <RootNamespace>LottieGen</RootNamespace>
     <AssemblyName>LottieGen</AssemblyName>
     <LangVersion>latest</LangVersion>
