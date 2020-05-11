@@ -16,6 +16,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieMetadata
     {
         internal Duration(double frames, double fps)
         {
+            if (frames < 0 || fps < 0)
+            {
+                throw new ArgumentException();
+            }
+
             Frames = frames;
             FPS = fps;
         }

@@ -401,10 +401,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
                     yield return item;
                 }
 
-                yield return new XAttribute("LeftInset", obj.LeftInset);
-                yield return new XAttribute("TopInset", obj.TopInset);
-                yield return new XAttribute("RightInset", obj.RightInset);
-                yield return new XAttribute("BottomInset", obj.BottomInset);
+                yield return new XAttribute("LeftInset", obj.LeftInset ?? 0);
+                yield return new XAttribute("TopInset", obj.TopInset ?? 0);
+                yield return new XAttribute("RightInset", obj.RightInset ?? 0);
+                yield return new XAttribute("BottomInset", obj.BottomInset ?? 0);
             }
         }
 

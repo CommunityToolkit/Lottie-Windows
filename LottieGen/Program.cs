@@ -95,7 +95,7 @@ sealed class Program
             return RunResult.Success;
         }
 
-        // Check for required args
+        // Check for required args.
         if (_options.InputFile is null)
         {
             _reporter.WriteError("Lottie file not specified.");

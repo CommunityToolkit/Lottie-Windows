@@ -13,8 +13,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
     enum PropertyId
     {
         None = 0,
-        Unknown = 1,
-        BorderMode = Unknown << 1,
+        BorderMode = 1,
         CenterPoint = BorderMode << 1,
         Children = CenterPoint << 1,
         Clip = Children << 1,

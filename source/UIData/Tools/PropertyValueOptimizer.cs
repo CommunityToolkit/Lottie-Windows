@@ -104,17 +104,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             OptimizeShapeProperties(sprite);
 
             // Unset properties that are set to their default values.
-            if (sprite.StrokeStartCap.HasValue && sprite.StrokeStartCap.Value == CompositionStrokeCap.Flat)
+            if (sprite.StrokeStartCap == CompositionStrokeCap.Flat)
             {
                 sprite.StrokeStartCap = null;
             }
 
-            if (sprite.StrokeDashCap.HasValue && sprite.StrokeDashCap.Value == CompositionStrokeCap.Flat)
+            if (sprite.StrokeDashCap == CompositionStrokeCap.Flat)
             {
                 sprite.StrokeDashCap = null;
             }
 
-            if (sprite.StrokeEndCap.HasValue && sprite.StrokeEndCap.Value == CompositionStrokeCap.Flat)
+            if (sprite.StrokeEndCap == CompositionStrokeCap.Flat)
             {
                 sprite.StrokeEndCap = null;
             }
@@ -230,7 +230,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             var sb = new StringBuilder();
             if (scale != Vector2.One)
             {
-                sb.Append($"Scale:{scale.X}");
+                sb.Append($"Scale:{scale.X},{scale.Y}");
             }
 
             if (rotationDegrees != 0)

@@ -141,12 +141,21 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
         /// <param name="target">The name of the property.</param>
         public void StopAnimation(string target)
         {
+            // We also need to stop animations on any subchannels.
+            var subTargetPrefix = $"{target}.";
+
             for (var i = 0; i < _animators.Count; i++)
             {
-                if (_animators[i].AnimatedProperty == target)
+                var animatorPropertyName = _animators[i].AnimatedProperty;
+
+                if (animatorPropertyName == target ||
+                    animatorPropertyName.StartsWith(subTargetPrefix))
                 {
                     _animators.RemoveAt(i);
-                    return;
+
+                    // Adjust the iteration variable to ensure we don't miss the
+                    // animator just after the one we just revmoed.
+                    i--;
                 }
             }
         }

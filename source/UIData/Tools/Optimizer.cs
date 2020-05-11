@@ -51,7 +51,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             // Try to optimize away redundant parts of the graph.
             result = GraphCompactor.Compact(result);
 
-            // Re=run the property value optimizer because the compactor may have set new properties.
+            // Re-run the property value optimizer because the compactor may have set new properties.
             result = PropertyValueOptimizer.OptimizePropertyValues(result);
 
             return result;

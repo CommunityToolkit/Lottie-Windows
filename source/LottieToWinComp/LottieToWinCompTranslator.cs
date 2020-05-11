@@ -2924,11 +2924,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 Color defaultColor)
         {
             // Ensure there is a property added to the theme property set.
-            var themeDefaultValue = EnsureColorThemePropertyExists(context, bindingName, defaultColor);
-
-            // Use whatever value has already been set for the theme property.
-            // This is to deal with theme properties that have been inconsistently set.
-            defaultColor = themeDefaultValue;
+            EnsureColorThemePropertyExists(context, bindingName, defaultColor);
 
             var result = _c.CreateColorBrush();
 
@@ -4407,11 +4403,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             else
             {
                 // Ensure there is a property in the theme property set for this binding name.
-                var themeDefaultValue = EnsureScalarThemePropertyExists(bindingName, defaultValue);
-
-                // Use whatever value has already been set for the theme property.
-                // This is to deal with theme properties that have been inconsistently set.
-                defaultValue = themeDefaultValue;
+                EnsureScalarThemePropertyExists(bindingName, defaultValue);
 
                 // Create an expression that binds property to the theme property set.
                 var anim = _c.CreateExpressionAnimation(ThemedScalar(bindingName));
@@ -4422,7 +4414,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         }
 
         // Ensures there is a property in the theme property set with the given name and default value.
-        Color EnsureColorThemePropertyExists(TranslationContext context, string bindingName, Color defaultValue)
+        void EnsureColorThemePropertyExists(TranslationContext context, string bindingName, Color defaultValue)
         {
             // Create a theme property set if one hasn't been created yet.
             var themeProperties = _themePropertySet ?? (_themePropertySet = _c.CreatePropertySet());
@@ -4441,7 +4433,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         actualType: PropertySetValueType.Vector4,
                         exposedType: PropertySetValueType.Color,
                         defaultValue: defaultValueAsWinUIColor);
-                    return defaultValue;
+                    break;
 
                 case CompositionGetValueStatus.Succeeded:
                     // The property has already been added.
@@ -4452,8 +4444,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         _issues.ThemePropertyValuesAreInconsistent(bindingName, existingValue.ToString(), Color(Color(defaultValueAsVector4)).ToString());
                     }
 
-                    // Return the value we have.
-                    return existingValue;
+                    break;
 
                 case CompositionGetValueStatus.TypeMismatch:
                 default:
@@ -4462,7 +4453,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         }
 
         // Ensures there is a property in the theme property set with the given name and default value.
-        float EnsureScalarThemePropertyExists(string bindingName, double defaultValue)
+        void EnsureScalarThemePropertyExists(string bindingName, double defaultValue)
         {
             // Create a theme property set if one hasn't been created yet.
             var themeProperties = _themePropertySet ?? (_themePropertySet = _c.CreatePropertySet());
@@ -4480,7 +4471,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         actualType: PropertySetValueType.Scalar,
                         exposedType: PropertySetValueType.Scalar,
                         defaultValue: Float(defaultValue));
-                    return defaultValueAsFloat;
+                    break;
 
                 case CompositionGetValueStatus.Succeeded:
                     // The property has already been added.
@@ -4489,8 +4480,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         _issues.ThemePropertyValuesAreInconsistent(bindingName, existingValueAsFloat.ToString(), defaultValueAsFloat.ToString());
                     }
 
-                    // Return the value we have.
-                    return existingValueAsFloat;
+                    break;
 
                 case CompositionGetValueStatus.TypeMismatch:
                 default:

@@ -53,10 +53,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
             // numbers of stops.
             var redundancies = input.Select(kf => FindRedundantColorStops(kf.Value.ToArray())).Aggregate((a, b) =>
             {
-                if (a is null)
-                {
-                    return b;
-                }
+                Debug.Assert(a != null & b != null, "Invariant");
 
                 for (var i = 0; i < a.Length; i++)
                 {

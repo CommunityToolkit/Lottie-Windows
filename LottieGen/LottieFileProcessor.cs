@@ -133,7 +133,7 @@ sealed class LottieFileProcessor
 
         var codeGenSucceeded = true;
 
-        var isCppwinrtAndCxRequested = _options.Languages.Where(l => l == Lang.Cppwinrt || l == Lang.Cx).Count() == 2;
+        var areBothCppwinrtAndCxRequested = _options.Languages.Where(l => l == Lang.Cppwinrt || l == Lang.Cx).Count() == 2;
 
         foreach (var lang in _options.Languages)
         {
@@ -150,7 +150,7 @@ sealed class LottieFileProcessor
                     // cppwinrt filenames. This ensures the cx doesn't overwrite the cppwinrt
                     // while still making the cx have normal-looking names in the common case
                     // where only one of the languages is specified.
-                    var cxDifferentiator = isCppwinrtAndCxRequested ? ".cx" : string.Empty;
+                    var cxDifferentiator = areBothCppwinrtAndCxRequested ? ".cx" : string.Empty;
                     codeGenSucceeded &= TryGenerateCXCode($"{outputFileBase}{cxDifferentiator}.h", $"{outputFileBase}{cxDifferentiator}.cpp");
                     _profiler.OnCodeGenFinished();
                     break;

@@ -47,16 +47,28 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieMetadata
         {
             // The frames must refer to the same Duration otherwise it makes no sense
             // to subtract them.
-            if (frameA._context != frameB._context)
-            {
-                throw new ArgumentException();
-            }
+            AssertSameContext(frameA, frameB);
 
             return new Duration(frameA.Number - frameB.Number, frameA._context);
         }
 
         public override string ToString() => $"{Number}/{Progress}/{Time}";
 
-        public int CompareTo(Frame other) => Number.CompareTo(other.Number);
+        public int CompareTo(Frame other)
+        {
+            // The frames must refer to the same Duration otherwise it makes no sense
+            // to compare them.
+            AssertSameContext(this, other);
+
+            return Number.CompareTo(other.Number);
+        }
+
+        static void AssertSameContext(Frame frameA, Frame frameB)
+        {
+            if (frameA._context != frameB._context)
+            {
+                throw new ArgumentException();
+            }
+        }
     }
 }
