@@ -112,8 +112,10 @@ namespace LottieViewer
         {
             // Insert splashBorder above the current window content.
             var originalWindowContent = Window.Current.Content;
-            var splashBorder = new Border();
-            splashBorder.Background = (SolidColorBrush)Current.Resources["LottieBasicBrush"];
+            var splashBorder = new Border
+            {
+                Background = (SolidColorBrush)Current.Resources["LottieBasicBrush"],
+            };
 
             var player = new AnimatedVisualPlayer
             {

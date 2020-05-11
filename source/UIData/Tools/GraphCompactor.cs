@@ -364,11 +364,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                  where IsBrushTransparent(shape.FillBrush) && IsBrushTransparent(shape.StrokeBrush)
                  select (Shape: shape, Parent: (IContainShapes)pair.Node.Parent)).ToArray();
 
-            foreach (var pair in transparentShapes)
+            foreach (var (shape, parent) in transparentShapes)
             {
                 GraphHasChanged();
 
-                pair.Parent.Shapes.Remove(pair.Shape);
+                parent.Shapes.Remove(shape);
             }
         }
 
@@ -846,16 +846,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                     to.IsVisible = compositeVisibility.Sequence[0].isVisible;
                 }
 
-                foreach (var keyFrame in compositeVisibility.Sequence)
+                foreach (var (isVisible, progress) in compositeVisibility.Sequence)
                 {
-                    if (keyFrame.progress == 0)
+                    if (progress == 0)
                     {
                         // The 0 progress value is already handled.
                         continue;
                     }
                     else
                     {
-                        animation.InsertKeyFrame(keyFrame.progress, keyFrame.isVisible);
+                        animation.InsertKeyFrame(progress, isVisible);
                     }
                 }
 

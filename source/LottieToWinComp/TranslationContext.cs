@@ -53,12 +53,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         internal For<T> SubContext<T>(T layer)
             where T : Layer
         {
-            var result = new For<T>(this, layer);
-
-            result.Size = Size;
-            result.StartTime = StartTime;
-            result.Layers = Layers;
-            result.DurationInFrames = DurationInFrames;
+            var result = new For<T>(this, layer)
+            {
+                Size = Size,
+                StartTime = StartTime,
+                Layers = Layers,
+                DurationInFrames = DurationInFrames,
+            };
 
             return result;
         }
@@ -67,13 +68,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         internal For<PreCompLayer> PreCompSubContext(LayerCollection layers)
         {
             var layer = (PreCompLayer)Layer;
-            var result = new For<PreCompLayer>(this, layer);
-
-            // Precomps define a new temporal and spatial space.
-            result.Size = new Sn.Vector2((float)layer.Width, (float)layer.Height);
-            result.StartTime = StartTime - layer.StartTime;
-            result.Layers = layers;
-            result.DurationInFrames = DurationInFrames;
+            var result = new For<PreCompLayer>(this, layer)
+            {
+                // Precomps define a new temporal and spatial space.
+                Size = new Sn.Vector2((float)layer.Width, (float)layer.Height),
+                StartTime = StartTime - layer.StartTime,
+                Layers = layers,
+                DurationInFrames = DurationInFrames,
+            };
 
             return result;
         }

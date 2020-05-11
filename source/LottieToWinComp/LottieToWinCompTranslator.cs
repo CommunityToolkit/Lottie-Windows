@@ -356,26 +356,26 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             // NOTE: The items appear in reverse order from how they appear in the original Lottie file.
             // This means that the layer to be matted appears right before the layer that is the matte.
-            foreach (var item in items)
+            foreach (var (translatedLayer, layer) in items)
             {
                 var layerIsMattedLayer = false;
-                layerIsMattedLayer = item.layer.LayerMatteType != Layer.MatteType.None;
+                layerIsMattedLayer = layer.LayerMatteType != Layer.MatteType.None;
 
                 Visual visual = null;
 
-                if (item.translatedLayer.IsShape)
+                if (translatedLayer.IsShape)
                 {
                     // If the layer is a shape then we need to wrap it
                     // in a shape visual so that it can be used for matte
                     // composition.
                     if (layerIsMattedLayer || mattedVisual != null)
                     {
-                        visual = item.translatedLayer.GetVisualRoot(context.Size);
+                        visual = translatedLayer.GetVisualRoot(context.Size);
                     }
                 }
                 else
                 {
-                    visual = item.translatedLayer.GetVisualRoot(context.Size);
+                    visual = translatedLayer.GetVisualRoot(context.Size);
                 }
 
                 if (visual != null)
@@ -384,7 +384,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     if (layerIsMattedLayer)
                     {
                         mattedVisual = visual;
-                        matteType = item.layer.LayerMatteType;
+                        matteType = layer.LayerMatteType;
                     }
                     else if (mattedVisual != null)
                     {
@@ -402,7 +402,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 else
                 {
                     // Return the shape which does not participate in mattes.
-                    yield return item.translatedLayer;
+                    yield return translatedLayer;
                 }
             }
         }
@@ -517,10 +517,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     // 1) Get the masks that have the same mode and are next to each other in the list of masks.
                     // 2) Translate the masks to a ShapeVisual.
                     // 3) Composite each ShapeVisual with the previous ShapeVisual.
-                    foreach (var maskSegmentWithSameMode in EnumerateMaskListSegments(layer.Masks.ToArray()))
+                    foreach (var (index, count) in EnumerateMaskListSegments(layer.Masks.ToArray()))
                     {
                         // Every mask in the segment has the same mode or None. The first mask is never None.
-                        var masksWithSameMode = layer.Masks.Slice(maskSegmentWithSameMode.index, maskSegmentWithSameMode.count);
+                        var masksWithSameMode = layer.Masks.Slice(index, count);
                         switch (masksWithSameMode[0].Mode)
                         {
                             case Mask.MaskMode.Add:
@@ -1281,8 +1281,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         sealed class ShapeContentContext
         {
-            static readonly Animatable<Opacity> s_Opaque = new Animatable<Opacity>(LottieData.Opacity.Opaque, null);
-
             readonly LottieToWinCompTranslator _owner;
 
             internal ShapeStroke Stroke { get; private set; }
@@ -2849,10 +2847,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var result = _c.CreateColorBrush();
 
             // Add a property for each opacity.
-            foreach (var a in animatableOpacities)
+            foreach (var (animatable, name) in animatableOpacities)
             {
-                var trimmed = context.TrimAnimatable(a.animatable);
-                var propertyName = a.name;
+                var trimmed = context.TrimAnimatable(animatable);
+                var propertyName = name;
                 result.Properties.InsertScalar(propertyName, Opacity(trimmed.InitialValue));
                 ApplyOpacityKeyFrameAnimation(context, trimmed, result.Properties, propertyName, propertyName, null);
             }
@@ -2945,11 +2943,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                      select (animatable: a.First, name: $"Opacity{a.Second}")).ToArray();
 
                 // Add a property for each opacity.
-                foreach (var a in animatableOpacities)
+                foreach (var (animatable, name) in animatableOpacities)
                 {
-                    var propertyName = a.name;
-                    result.Properties.InsertScalar(propertyName, Opacity(a.animatable.InitialValue));
-                    ApplyOpacityKeyFrameAnimation(context, context.TrimAnimatable(a.animatable), result.Properties, propertyName, propertyName, null);
+                    var propertyName = name;
+                    result.Properties.InsertScalar(propertyName, Opacity(animatable.InitialValue));
+                    ApplyOpacityKeyFrameAnimation(context, context.TrimAnimatable(animatable), result.Properties, propertyName, propertyName, null);
                 }
 
                 var opacityScalarExpressions = animatableOpacities.Select(a => Expr.Scalar($"my.{a.name}")).ToArray();
@@ -3124,10 +3122,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                  select (animatable: a.First, name: $"Opacity{a.Second}")).ToArray();
 
             // Add a property for each opacity.
-            foreach (var a in animatableOpacities)
+            foreach (var (animatable, name) in animatableOpacities)
             {
-                var trimmedOpacity = context.TrimAnimatable(a.animatable);
-                var propertyName = a.name;
+                var trimmedOpacity = context.TrimAnimatable(animatable);
+                var propertyName = name;
                 brush.Properties.InsertScalar(propertyName, Opacity(trimmedOpacity.InitialValue * 255));
 
                 // Pre-multiply the opacities by 255 so we can use the simpler
@@ -3275,10 +3273,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                  select (animatable: a.First, name: $"Opacity{a.Second}")).ToArray();
 
             // Add a property for each opacity.
-            foreach (var a in animatableOpacities)
+            foreach (var (animatable, name) in animatableOpacities)
             {
-                var trimmedOpacity = context.TrimAnimatable(a.animatable);
-                var propertyName = a.name;
+                var trimmedOpacity = context.TrimAnimatable(animatable);
+                var propertyName = name;
                 brush.Properties.InsertScalar(propertyName, Opacity(trimmedOpacity.InitialValue * 255));
 
                 // Pre-multiply the opacities by 255 so we can use the simpler

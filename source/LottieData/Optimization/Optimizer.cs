@@ -21,8 +21,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
 #endif
     sealed class Optimizer
     {
-        static readonly AnimatableComparer<Color> ColorComparer = new AnimatableComparer<Color>();
-        static readonly AnimatableComparer<double> FloatComparer = new AnimatableComparer<double>();
         static readonly AnimatableComparer<Sequence<BezierSegment>> PathGeometryComparer = new AnimatableComparer<Sequence<BezierSegment>>();
         readonly Dictionary<Animatable<Sequence<BezierSegment>>, Animatable<Sequence<BezierSegment>>> _animatablePathGeometriesCache;
 

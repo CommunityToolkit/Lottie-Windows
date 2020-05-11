@@ -815,7 +815,7 @@ sealed class LottieFileProcessor
     {
         foreach (var a in assetList)
         {
-            _reporter.WriteInfo($"Generated code references {a.ToString()}. Make sure your app can access this file.");
+            _reporter.WriteInfo($"Generated code references {a}. Make sure your app can access this file.");
         }
     }
 

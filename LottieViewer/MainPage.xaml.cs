@@ -290,8 +290,6 @@ namespace LottieViewer
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 #pragma warning restore SA1402 // File may only contain a single type
     {
-        static string MSecs(TimeSpan timeSpan) => $"{timeSpan.TotalMilliseconds.ToString("#,##0.0")} mSecs";
-
         object IValueConverter.Convert(object value, Type targetType, object parameter, string language)
         {
             if (parameter as string == "CollapsedIfNull" && targetType == typeof(Visibility))
@@ -359,14 +357,14 @@ namespace LottieViewer
         IEnumerable<Tuple<string, string>> DiagnosticsToProperties(LottieVisualDiagnostics diagnostics)
         {
             yield return Tuple.Create("File name", diagnostics.FileName);
-            yield return Tuple.Create("Duration", $"{diagnostics.Duration.TotalSeconds.ToString("#,##0.0##")} secs");
+            yield return Tuple.Create("Duration", $"{diagnostics.Duration.TotalSeconds:#,##0.0##} secs");
             var aspectRatio = FloatToRatio(diagnostics.LottieWidth / diagnostics.LottieHeight);
-            yield return Tuple.Create("Aspect ratio", $"{aspectRatio.Item1.ToString("0.###")}:{aspectRatio.Item2.ToString("0.###")}");
+            yield return Tuple.Create("Aspect ratio", $"{aspectRatio.Item1:0.###}:{aspectRatio.Item2:0.###}");
             yield return Tuple.Create("Size", $"{diagnostics.LottieWidth} x {diagnostics.LottieHeight}");
 
             foreach (var marker in diagnostics.Markers)
             {
-                yield return Tuple.Create("Marker", $"{marker.Key}: {marker.Value.ToString("0.0###")}");
+                yield return Tuple.Create("Marker", $"{marker.Key}: {marker.Value:0.0###}");
             }
         }
 

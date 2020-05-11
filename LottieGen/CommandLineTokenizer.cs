@@ -124,7 +124,7 @@ sealed class CommandlineTokenizer<TKeywordId>
             }
         }
 
-        id = currentNode.Keyword.HasValue ? currentNode.Keyword.Value : (currentNode == _root ? default(TKeywordId) : _ambiguousValue);
+        id = currentNode.Keyword ?? (currentNode == _root ? default(TKeywordId) : _ambiguousValue);
         return currentNode.Keyword != null;
     }
 

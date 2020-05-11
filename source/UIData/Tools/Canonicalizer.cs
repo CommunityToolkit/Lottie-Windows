@@ -657,8 +657,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                     where animator.AnimatedProperty == "Path"
                     select (Node:item.Node, Object:obj);
 
-                var them = items.ToArray();
-
                 var grouping =
                     from item in items
                     let obj = item.Object

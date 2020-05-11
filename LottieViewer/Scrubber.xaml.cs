@@ -46,7 +46,6 @@ namespace LottieViewer
         readonly CompositionPropertySet _properties;
         readonly SpriteVisual _trackbar;
         readonly ShapeVisual _thumb;
-        readonly CompositionBrush _transparentBrush;
         readonly CompositionBrush _scrubberEnabledBrush;
         readonly CompositionBrush _scrubberDisabledBrush;
 
@@ -100,7 +99,6 @@ namespace LottieViewer
             _thumb.Offset = new System.Numerics.Vector3(0, 7, 0);
             container.Children.InsertAtTop(_thumb);
 
-            _transparentBrush = c.CreateColorBrush(Colors.Transparent);
             _trackbar.Brush = _scrubberEnabledBrush;
 
             _properties.InsertScalar("Width", 0);

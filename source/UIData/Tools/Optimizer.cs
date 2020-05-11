@@ -162,7 +162,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             var stops = target.ColorStops;
             foreach (var stop in source.ColorStops)
             {
-                target.ColorStops.Add(GetCompositionColorGradientStop(stop));
+                stops.Add(GetCompositionColorGradientStop(stop));
             }
 
             target.ExtendMode = source.ExtendMode;

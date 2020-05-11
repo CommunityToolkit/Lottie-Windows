@@ -43,7 +43,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
         /// <inheritdoc/>
         public void Clear()
         {
-            var oldContents = _wrapped.ToArray();
             _wrapped.Clear();
         }
 

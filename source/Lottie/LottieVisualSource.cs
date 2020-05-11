@@ -245,7 +245,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 return;
             }
 
-            ContentFactory contentFactory = null;
+            ContentFactory contentFactory;
             try
             {
                 contentFactory = await loader.LoadAsync(Options);
