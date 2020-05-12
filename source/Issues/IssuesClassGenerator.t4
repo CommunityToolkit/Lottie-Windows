@@ -84,8 +84,20 @@ namespace <#=namespaceName#>
         var parameterList = string.Join(", ", parameters);
         var hasParameters = parameters.Any();
 
+        // Check for the issue being deprecated. Deprecated issues
+        // do not generate any code.
+        var isDeprecated = mdCommentLines.Any(content => content == "deprecated");
+
         WriteLine("");
-        WriteLine($"        internal void {name}({parameterList}) => Report(\"{issueId}\", {(hasParameters ? "$" : "")}\"{text}\");");
+        if (isDeprecated)
+        {
+            WriteLine($"        // {issueId} has been deprecated.");
+            WriteLine($"        // Was: {text}");
+        }
+        else 
+        {
+            WriteLine($"        internal void {name}({parameterList}) => Report(\"{issueId}\", {(hasParameters ? "$" : "")}\"{text}\");");
+        }
     }
 #>
 
