@@ -118,7 +118,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 new UapVersionRange { Start = translationResult.MinimumRequiredUapVersion }
                 );
 
-            if (translationResult.RootVisual == null)
+            if (translationResult.RootVisual is null)
             {
                 // Failed to translate for the target version. Give up.
                 yield break;

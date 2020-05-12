@@ -12,11 +12,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         public Marker(
             string name,
             double frame,
-            double durationMilliseconds)
+            double durationInFrames)
             : base(name)
         {
             Frame = frame;
-            DurationMilliseconds = durationMilliseconds;
+            DurationInFrames = durationInFrames;
         }
 
         /// <summary>
@@ -25,9 +25,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         public double Frame { get; }
 
         /// <summary>
-        /// Gets the duration in milliseconds.
+        /// Gets the duration in frames.
         /// </summary>
-        public double DurationMilliseconds { get; }
+        public double DurationInFrames { get; }
 
         /// <inheritdoc/>
         public override LottieObjectType ObjectType => LottieObjectType.Marker;

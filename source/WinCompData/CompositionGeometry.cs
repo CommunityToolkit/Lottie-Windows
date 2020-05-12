@@ -14,13 +14,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
         {
         }
 
-        // Default = 1
-        public float TrimEnd { get; set; } = 1;
+        // Default is 1.
+        public float? TrimEnd { get; set; }
 
-        // Default = 0
-        public float TrimOffset { get; set; }
+        // Default is 0.
+        public float? TrimOffset { get; set; }
 
-        // Default = 0
-        public float TrimStart { get; set; }
+        // Default is 0.
+        public float? TrimStart { get; set; }
     }
 }

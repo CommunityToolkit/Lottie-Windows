@@ -13,7 +13,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 #endif
     abstract class CompositionAnimation : CompositionObject
     {
-        readonly Dictionary<string, CompositionObject> _referencedParameters = new Dictionary<string, CompositionObject>();
+        readonly SortedDictionary<string, CompositionObject> _referencedParameters =
+            new SortedDictionary<string, CompositionObject>();
 
         private protected CompositionAnimation(CompositionAnimation other)
         {
@@ -59,6 +60,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
             _referencedParameters.Add(key, compositionObject);
         }
 
+        /// <summary>
+        /// Returns the reference parameters that have been set on this <see cref="CompositionAnimation"/>.
+        /// The list is returned ordered alphabetically by key.
+        /// </summary>
         public IEnumerable<KeyValuePair<string, CompositionObject>> ReferenceParameters => _referencedParameters;
 
         internal abstract CompositionAnimation Clone();

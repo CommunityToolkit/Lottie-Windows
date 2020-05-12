@@ -26,7 +26,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.YamlData
         public static implicit operator YamlScalar(string value)
         {
             var escapedValue = value;
-            if (escapedValue == null)
+            if (escapedValue is null)
             {
                 escapedValue = "~";
             }

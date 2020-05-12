@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Numerics;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.MetaData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui;
@@ -76,6 +77,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
         /// <inheritdoc/>
         public override CompositionObjectType Type => CompositionObjectType.CompositionPropertySet;
 
+        // For debugging purposes only. Show the list of names in the PropertySet.
+        public override string ToString()
+             => _names.Count == 0
+                ? "[<none>]"
+                : $"[{string.Join(", ", _names.Select(item => $"{item.Value}:{item.Key}"))}]";
+
         void Insert<T>(string propertyName, in T value, PropertySetValueType type, ref PropertyBag<T> bag)
         {
             Debug.Assert(type != PropertySetValueType.None, "Precondition");
@@ -139,7 +146,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 
             internal void SetValue(string propertyName, in T value)
             {
-                if (_dictionary == null)
+                if (_dictionary is null)
                 {
                     // CompositionPropertySet ignores the case of property names.
                     _dictionary = new Dictionary<string, T>(StringComparer.OrdinalIgnoreCase);

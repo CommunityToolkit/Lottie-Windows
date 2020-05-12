@@ -98,6 +98,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal void UapVersionNotSupported(string versionDependentFeature, string optimalUapVersion) => Report("LT0034", $"{versionDependentFeature} requires a UAP version of at least {optimalUapVersion}.");
 
+        internal void ThemePropertyValuesAreInconsistent(string themePropertyName, string chosenValue, string requestedValue) => Report("LT0035", $"Theme property \"{themePropertyName}\" has more than one value. Using {chosenValue} in place of {requestedValue}.");
+
         void Report(string code, string description)
         {
             _issues.Add((code, description));

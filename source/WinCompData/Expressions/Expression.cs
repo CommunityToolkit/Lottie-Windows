@@ -48,6 +48,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
 
         public static Vector2 Vector2(Sn.Vector2 value) => Vector2(value.X, value.Y);
 
+        public static Vector3 Vector3(Sn.Vector2 value) => Vector3(value.X, value.Y, 0);
+
         public static Vector3 Vector3(Scalar x, Scalar y, Scalar z) => new Vector3.Constructed(x, y, z);
 
         public static Vector3 Vector3(string text) => new Vector3.Asserted(text);
@@ -90,5 +92,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
         public override sealed bool Equals(object obj) => Equals(obj as Expression);
 
         public override sealed int GetHashCode() => ToText().GetHashCode();
+
+        public static bool operator ==(Expression a, Expression b) => (a is null && b is null) || a.ToText() == b.ToText();
+
+        public static bool operator !=(Expression a, Expression b) => !(a == b);
     }
 }

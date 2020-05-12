@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
+using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData;
 using Expr = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions;
@@ -72,14 +73,21 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
                 CanonicalizeExpressionAnimations();
 
+                CanonicalizeKeyFrameAnimations<CompositionPath, Expr.Void>(CompositionObjectType.PathKeyFrameAnimation, CompositionPathEqualityComparer);
+                CanonicalizeKeyFrameAnimations<bool, Expr.Boolean>(CompositionObjectType.BooleanKeyFrameAnimation);
                 CanonicalizeKeyFrameAnimations<Wui.Color, Expr.Color>(CompositionObjectType.ColorKeyFrameAnimation);
                 CanonicalizeKeyFrameAnimations<float, Expr.Scalar>(CompositionObjectType.ScalarKeyFrameAnimation);
                 CanonicalizeKeyFrameAnimations<Sn.Vector2, Expr.Vector2>(CompositionObjectType.Vector2KeyFrameAnimation);
                 CanonicalizeKeyFrameAnimations<Sn.Vector3, Expr.Vector3>(CompositionObjectType.Vector3KeyFrameAnimation);
                 CanonicalizeKeyFrameAnimations<Sn.Vector4, Expr.Vector4>(CompositionObjectType.Vector4KeyFrameAnimation);
 
+                // Now that the path animations are canonicalized, canonicalize the CompositionPathGeometries
+                // that have animated paths.
+                CanonicalizeAnimatedCompositionPathGeometries();
+
                 // ColorKeyFrameAnimations and ExpressionAnimations must be canonicalized before color brushes are canonicalized.
                 CanonicalizeColorBrushes();
+                CanonicalizeThemeBrushes();
 
                 CanonicalizeLoadedImageSurface(LoadedImageSurface.LoadedImageSurfaceType.FromStream);
                 CanonicalizeLoadedImageSurface(LoadedImageSurface.LoadedImageSurfaceType.FromUri);
@@ -136,7 +144,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 return
                     from item in items
                     let obj = item.Object
-                    where (_ignoreCommentProperties || obj.Comment == null)
+                    where (_ignoreCommentProperties || obj.Comment is null)
                        && obj.Properties.Names.Count == 0
                        && obj.Animators.Count == 0
                     select (item.Node, obj);
@@ -185,29 +193,47 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             }
 
             void CanonicalizeKeyFrameAnimations<TKFA, TExpression>(CompositionObjectType animationType)
-                where TExpression : Expr.Expression_<TExpression>
+                where TExpression : Expression_<TExpression>
+                => CanonicalizeKeyFrameAnimations<TKFA, TExpression>(animationType, SimpleEqualityComparer<TKFA>);
+
+            void CanonicalizeKeyFrameAnimations<TKFA, TExpression>(
+                CompositionObjectType animationType,
+                Func<TKFA, TKFA, bool> equalityComparer)
+                where TExpression : Expression_<TExpression>
             {
                 var items = GetCanonicalizableCompositionObjects<KeyFrameAnimation<TKFA, TExpression>>(animationType);
 
                 var grouping =
                     from item in items
-                    group item.Node by new KeyFrameAnimationKey<TKFA, TExpression>(this, item.Object)
+                    group item.Node by new KeyFrameAnimationKey<TKFA, TExpression>(this, item.Object, equalityComparer)
                     into grouped
                     select grouped;
 
                 CanonicalizeGrouping(grouping);
             }
 
+            // Returns true if the a and b are the same CompositionObject after canonicalization.
+            bool CompositionPathEqualityComparer(CompositionPath a, CompositionPath b)
+                => ReferenceEquals(NodeFor(a), NodeFor(b));
+
+            bool SimpleEqualityComparer<T>(T a, T b)
+                => a.Equals(b);
+
             sealed class KeyFrameAnimationKey<TKFA, TExpression>
-                where TExpression : Expr.Expression_<TExpression>
+                where TExpression : Expression_<TExpression>
             {
                 readonly CanonicalizerWorker<TNode> _owner;
                 readonly KeyFrameAnimation<TKFA, TExpression> _obj;
+                readonly Func<TKFA, TKFA, bool> _equalityComparer;
 
-                internal KeyFrameAnimationKey(CanonicalizerWorker<TNode> owner, KeyFrameAnimation<TKFA, TExpression> obj)
+                internal KeyFrameAnimationKey(
+                    CanonicalizerWorker<TNode> owner,
+                    KeyFrameAnimation<TKFA, TExpression> obj,
+                    Func<TKFA, TKFA, bool> equalityComparer)
                 {
                     _owner = owner;
                     _obj = obj;
+                    _equalityComparer = equalityComparer;
                 }
 
                 public override int GetHashCode()
@@ -223,13 +249,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                         return true;
                     }
 
-                    if (obj == null)
-                    {
-                        return false;
-                    }
-
                     var other = obj as KeyFrameAnimationKey<TKFA, TExpression>;
-                    if (other == null)
+                    if (other is null)
                     {
                         return false;
                     }
@@ -269,9 +290,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                             return false;
                         }
 
-                        if (_owner.NodeFor(thisKf.Easing) != _owner.NodeFor(otherKf.Easing))
+                        if (thisKf.Easing != null)
                         {
-                            return false;
+                            if (otherKf.Easing is null || _owner.NodeFor(thisKf.Easing) != _owner.NodeFor(otherKf.Easing))
+                            {
+                                return false;
+                            }
                         }
 
                         switch (thisKf.Type)
@@ -288,7 +312,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                             case KeyFrameType.Value:
                                 var thisValueKeyFrame = (KeyFrameAnimation<TKFA, TExpression>.ValueKeyFrame)thisKf;
                                 var otherValueKeyFrame = (KeyFrameAnimation<TKFA, TExpression>.ValueKeyFrame)otherKf;
-                                if (!thisValueKeyFrame.Value.Equals(otherValueKeyFrame.Value))
+                                if (!_equalityComparer(thisValueKeyFrame.Value, otherValueKeyFrame.Value))
                                 {
                                     return false;
                                 }
@@ -311,7 +335,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 var items =
                     from item in nodes
                     let obj = item.Object
-                    where (_ignoreCommentProperties || obj.Comment == null)
+                    where (_ignoreCommentProperties || obj.Comment is null)
                        && obj.Properties.Names.Count == 0
                     select (item.Node, obj);
 
@@ -321,11 +345,169 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                     let animators = obj.Animators.ToArray()
                     where animators.Length == 0 || (animators.Length == 1 && animators[0].AnimatedProperty == "Color")
                     let animator = animators.FirstOrDefault()
-                    let canonicalAnimator = animator == null ? null : CanonicalObject<CompositionAnimation>(animator.Animation)
+                    let canonicalAnimator = animator is null ? null : CanonicalObject<CompositionAnimation>(animator.Animation)
                     group item.Node by (obj.Color, canonicalAnimator) into grouped
                     select grouped;
 
                 CanonicalizeGrouping(grouping);
+            }
+
+            void CanonicalizeThemeBrushes()
+            {
+                // Canonicalize color brushes that have a single property set value. These
+                // are likely to be themed color brushes.
+                var nodes = GetCompositionObjects<CompositionColorBrush>(CompositionObjectType.CompositionColorBrush);
+
+                var items =
+                    from item in nodes
+                    let obj = item.Object
+                    where (_ignoreCommentProperties || obj.Comment is null)
+                        && obj.Color is null
+                        && obj.Properties.Names.Count == 1
+                    select (item.Node, obj);
+
+                var grouping =
+                    from item in items
+                    let obj = item.obj
+                    let animators = obj.Animators.ToArray()
+                    where animators.Length == 1
+                    let animator = animators[0]
+                    where animator.AnimatedProperty == "Color"
+                        && animator.Animation.Type == CompositionObjectType.ExpressionAnimation
+                    let key = new ThemeBrushKey(this, obj)
+                    group item.Node by key into grouped
+                    select grouped;
+
+                CanonicalizeGrouping(grouping);
+            }
+
+            sealed class ThemeBrushKey : IEquatable<ThemeBrushKey>
+            {
+                readonly CanonicalizerWorker<TNode> _owner;
+                readonly CompositionColorBrush _brush;
+                readonly ExpressionAnimation _animation;
+
+                internal ThemeBrushKey(CanonicalizerWorker<TNode> owner, CompositionColorBrush brush)
+                {
+                    _owner = owner;
+                    var animators = brush.Animators.ToArray();
+
+                    if (animators.Length != 1)
+                    {
+                        throw new InvalidOperationException();
+                    }
+
+                    var animator = animators[0];
+                    if (animator.AnimatedProperty != "Color")
+                    {
+                        throw new InvalidOperationException();
+                    }
+
+                    if (animator.Animation.Type != CompositionObjectType.ExpressionAnimation)
+                    {
+                        throw new InvalidOperationException();
+                    }
+
+                    _brush = brush;
+                    _animation = (ExpressionAnimation)animator.Animation;
+                }
+
+                public bool Equals(ThemeBrushKey other)
+                {
+                    var otherAnimation = other._animation;
+                    var thisText = _animation.Expression.ToText();
+
+                    var otherText = otherAnimation.Expression.ToText();
+                    if (thisText != otherText)
+                    {
+                        return false;
+                    }
+
+                    // The animations have the same text. Are their reference parameters the same?
+                    var thisRefs = _animation.ReferenceParameters.ToArray();
+                    var otherRefs = otherAnimation.ReferenceParameters.ToArray();
+
+                    if (thisRefs.Length != otherRefs.Length)
+                    {
+                        return false;
+                    }
+
+                    // Compare the reference parameters. They are always returned in alphabetical order.
+                    for (var i = 0; i < thisRefs.Length; i++)
+                    {
+                        var thisRef = thisRefs[i];
+                        var otherRef = otherRefs[i];
+                        if (thisRef.Key != otherRef.Key)
+                        {
+                            // The reference have different names.
+                            return false;
+                        }
+
+                        var thisRefValue = thisRef.Value;
+                        var otherRefValue = otherRef.Value;
+
+                        if (thisRefValue != otherRefValue)
+                        {
+                            // The values of the references are different, but they might be self
+                            // references (i.e. references back to the property set of the brush).
+                            // Check that.
+                            if (thisRefValue != _brush || otherRefValue != other._brush)
+                            {
+                                // They're not direct self references. They may be references to
+                                // the property set owned by the brush.
+                                if (thisRefValue is CompositionPropertySet thisPropertySet &&
+                                    otherRefValue is CompositionPropertySet otherPropertySet)
+                                {
+                                    // They're references to a property set. Is it the property set on the brush?
+                                    if (thisPropertySet.Owner != _brush ||
+                                        otherPropertySet.Owner != other._brush)
+                                    {
+                                        return false;
+                                    }
+
+                                    // They're both references to their own property set. Make sure each property set
+                                    // has the same properties and the same animations.
+                                    var thispAnimators = thisPropertySet.Animators;
+                                    var otherpAnimators = otherPropertySet.Animators;
+                                    if (thispAnimators.Count != otherpAnimators.Count)
+                                    {
+                                        return false;
+                                    }
+
+                                    if (thispAnimators.Count != 1)
+                                    {
+                                        // For now we only handle a single animator.
+                                        return false;
+                                    }
+
+                                    var thisAnimator = thispAnimators[0];
+                                    var otherAnimator = otherpAnimators[0];
+                                    if (thisAnimator.AnimatedProperty != otherAnimator.AnimatedProperty)
+                                    {
+                                        return false;
+                                    }
+
+                                    if (_owner.NodeFor(thisAnimator.Animation).Canonical != _owner.NodeFor(otherAnimator.Animation))
+                                    {
+                                        return false;
+                                    }
+                                }
+                                else
+                                {
+                                    // They're not references to a property set.
+                                    return false;
+                                }
+                            }
+                        }
+                    }
+
+                    return true;
+                }
+
+                public override int GetHashCode()
+                    => _animation.Expression.ToText().GetHashCode();
+
+                public override bool Equals(object obj) => Equals(obj as ThemeBrushKey);
             }
 
             void CanonicalizeColorGradientStops()
@@ -345,7 +527,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 var nonAnimatedStopsWithIndex =
                     from b in gradientBrushes
                     let nonAnimatedStops = from s in b.Object.ColorStops
-                                           where (_ignoreCommentProperties || s.Comment == null)
+                                           where (_ignoreCommentProperties || s.Comment is null)
                                               && s.Properties.Names.Count == 0 && !s.Animators.Any()
                                            group s by (s.Color, s.Offset) into g
                                            from s2 in g.Zip(PositiveInts, (x, y) => (Stop: x, Index: y))
@@ -372,7 +554,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 var items =
                     from item in nodes
                     let obj = item.Object
-                    where (_ignoreCommentProperties || obj.Comment == null)
+                    where (_ignoreCommentProperties || obj.Comment is null)
                        && obj.Properties.Names.Count == 0
                     select (item.Node, obj);
 
@@ -454,6 +636,33 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                     let path = CanonicalObject<CompositionPath>(obj.Path)
                     group item.Node by (
                         path,
+                        obj.TrimStart,
+                        obj.TrimEnd,
+                        obj.TrimOffset)
+                    into grouped
+                    select grouped;
+
+                CanonicalizeGrouping(grouping);
+            }
+
+            void CanonicalizeAnimatedCompositionPathGeometries()
+            {
+                var items =
+                    from item in GetCompositionObjects<CompositionPathGeometry>(CompositionObjectType.CompositionPathGeometry)
+                    let obj = item.Object
+                    where (_ignoreCommentProperties || obj.Comment is null)
+                       && obj.Properties.Names.Count == 0
+                       && obj.Animators.Count == 1
+                    let animator = obj.Animators[0]
+                    where animator.AnimatedProperty == "Path"
+                    select (Node:item.Node, Object:obj);
+
+                var grouping =
+                    from item in items
+                    let obj = item.Object
+                    let animation = CanonicalObject<PathKeyFrameAnimation>(obj.Animators[0].Animation)
+                    group item.Node by (
+                        animation,
                         obj.TrimStart,
                         obj.TrimEnd,
                         obj.TrimOffset)
@@ -585,12 +794,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                     // because, by definition, they are all equivalent, but for consistency
                     // we always pick the node that appears first in the traversal of the tree.
                     var nodes = group.ToArray();
-                    var canonical = nodes.OrderBy(n => n.Position).FirstOrDefault();
-
-                    // Point every node to the designated canonical node.
-                    foreach (var node in nodes)
+                    if (nodes.Length > 1)
                     {
-                        node.Canonical = canonical;
+                        var canonical = nodes.OrderBy(n => n.Position).FirstOrDefault();
+
+                        // Point every node to the designated canonical node.
+                        foreach (var node in nodes)
+                        {
+                            node.Canonical = canonical;
+                        }
                     }
                 }
             }

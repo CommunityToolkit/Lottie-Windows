@@ -25,6 +25,7 @@ sealed class LottieFileProcessor
     readonly Reporter _reporter;
     readonly string _file;
     readonly string _outputFolder;
+    readonly DateTime _timestamp;
     readonly uint _minimumUapVersion;
     readonly string _className;
     bool _reportedErrors;
@@ -37,12 +38,18 @@ sealed class LottieFileProcessor
     IReadOnlyList<TranslationResult> _translationResults;
     IReadOnlyList<(TranslationIssue issue, UapVersionRange versionRange)> _translationIssues;
 
-    LottieFileProcessor(CommandLineOptions options, Reporter reporter, string file, string outputFolder)
+    LottieFileProcessor(
+        CommandLineOptions options,
+        Reporter reporter,
+        string file,
+        string outputFolder,
+        DateTime timestamp)
     {
         _options = options;
         _reporter = reporter;
         _file = file;
         _outputFolder = outputFolder;
+        _timestamp = timestamp;
 
         // If no minimum UAP version is specified, use 7 as that is the lowest version that the translator supports.
         const uint defaultUapVersion = 7;
@@ -55,11 +62,16 @@ sealed class LottieFileProcessor
             InstantiatorGeneratorBase.TrySynthesizeClassName("Lottie");  // If all else fails, just call it Lottie.
     }
 
-    internal static bool ProcessFile(CommandLineOptions options, Reporter reporter, string file, string outputFolder)
+    internal static bool ProcessFile(
+        CommandLineOptions options,
+        Reporter reporter,
+        string file,
+        string outputFolder,
+        DateTime timestamp)
     {
         try
         {
-            return new LottieFileProcessor(options, reporter, file, outputFolder).Run();
+            return new LottieFileProcessor(options, reporter, file, outputFolder, timestamp).Run();
         }
         catch
         {
@@ -80,7 +92,7 @@ sealed class LottieFileProcessor
         // Read the Lottie .json text.
         var jsonStream = TryReadTextFile(_file);
 
-        if (jsonStream == null)
+        if (jsonStream is null)
         {
             return false;
         }
@@ -99,7 +111,7 @@ sealed class LottieFileProcessor
             _reporter.WriteInfo(IssueToString(_file, issue));
         }
 
-        if (_lottieComposition == null)
+        if (_lottieComposition is null)
         {
             _reporter.WriteError($"Failed to parse Lottie file: {_file}");
             return false;
@@ -120,6 +132,9 @@ sealed class LottieFileProcessor
         var outputFileBase = System.IO.Path.Combine(_outputFolder, System.IO.Path.GetFileNameWithoutExtension(_file));
 
         var codeGenSucceeded = true;
+
+        var areBothCppwinrtAndCxRequested = _options.Languages.Where(l => l == Lang.Cppwinrt || l == Lang.Cx).Count() == 2;
+
         foreach (var lang in _options.Languages)
         {
             switch (lang)
@@ -130,7 +145,18 @@ sealed class LottieFileProcessor
                     break;
 
                 case Lang.Cx:
-                    codeGenSucceeded &= TryGenerateCXCode($"{outputFileBase}.h", $"{outputFileBase}.cpp");
+                    // If both cppwinrt and cx files were requested, add a differentiator to
+                    // the filenames of the cx files to make their names distinct from the
+                    // cppwinrt filenames. This ensures the cx doesn't overwrite the cppwinrt
+                    // while still making the cx have normal-looking names in the common case
+                    // where only one of the languages is specified.
+                    var cxDifferentiator = areBothCppwinrtAndCxRequested ? ".cx" : string.Empty;
+                    codeGenSucceeded &= TryGenerateCXCode($"{outputFileBase}{cxDifferentiator}.h", $"{outputFileBase}{cxDifferentiator}.cpp");
+                    _profiler.OnCodeGenFinished();
+                    break;
+
+                case Lang.Cppwinrt:
+                    codeGenSucceeded &= TryGenerateCppwinrtCode($"{outputFileBase}.h", $"{outputFileBase}.cpp");
                     _profiler.OnCodeGenFinished();
                     break;
 
@@ -228,6 +254,8 @@ sealed class LottieFileProcessor
             new[]
             {
                     ("Path", _file),
+                    ("Animator", translationStats.AnimatorCount.ToString()),
+                    ("BooleanKeyFrameAnimation", translationStats.BooleanKeyFrameAnimationCount.ToString()),
                     ("CanvasGeometry", translationStats.CanvasGeometryCount.ToString()),
                     ("ColorBrush", translationStats.ColorBrushCount.ToString()),
                     ("ColorGradientStop", translationStats.ColorGradientStopCount.ToString()),
@@ -271,6 +299,8 @@ sealed class LottieFileProcessor
                 new[]
                 {
                     ("Path", _file),
+                    ("Animator", (_afterOptimizationStats.AnimatorCount - _beforeOptimizationStats.AnimatorCount).ToString()),
+                    ("BooleanKeyFrameAnimation", (_afterOptimizationStats.BooleanKeyFrameAnimationCount - _beforeOptimizationStats.BooleanKeyFrameAnimationCount).ToString()),
                     ("CanvasGeometry", (_afterOptimizationStats.CanvasGeometryCount - _beforeOptimizationStats.CanvasGeometryCount).ToString()),
                     ("ColorBrush", (_afterOptimizationStats.ColorBrushCount - _beforeOptimizationStats.ColorBrushCount).ToString()),
                     ("ColorGradientStop", (_afterOptimizationStats.ColorGradientStopCount - _beforeOptimizationStats.ColorGradientStopCount).ToString()),
@@ -339,9 +369,14 @@ sealed class LottieFileProcessor
 
     bool TryGenerateLottieYaml(string outputFilePath)
     {
+        // Remove the path if in TestMode so that the same file
+        // that is referenced via a different path won't produce
+        // a different output.
+        var filename = _options.TestMode ? System.IO.Path.GetFileName(_file) : _file;
+
         var result = TryWriteTextFile(
             outputFilePath,
-            writer => LottieCompositionYamlSerializer.WriteYaml(_lottieComposition, writer, _file));
+            writer => LottieCompositionYamlSerializer.WriteYaml(_lottieComposition, writer, filename));
 
         if (result)
         {
@@ -399,14 +434,8 @@ sealed class LottieFileProcessor
             return false;
         }
 
-        (string csText, IEnumerable<Uri> assetList) = CSharpInstantiatorGenerator.CreateFactoryCode(
-                _className,
-                _translationResults.Select(tr => ((CompositionObject)tr.RootVisual, tr.MinimumRequiredUapVersion)).ToArray(),
-                _translationResults[0].SourceMetadata,
-                (float)_lottieComposition.Width,
-                (float)_lottieComposition.Height,
-                _lottieComposition.Duration,
-                _options.DisableCodeGenOptimizer);
+        (string csText, IEnumerable<Uri> assetList) =
+            CSharpInstantiatorGenerator.CreateFactoryCode(CreateCodeGenConfiguration("CSharp"));
 
         if (string.IsNullOrWhiteSpace(csText))
         {
@@ -430,7 +459,7 @@ sealed class LottieFileProcessor
         return result;
     }
 
-    bool TryGenerateCXCode(
+    bool TryGenerateCppwinrtCode(
         string outputHeaderFilePath,
         string outputCppFilePath)
     {
@@ -439,15 +468,10 @@ sealed class LottieFileProcessor
             return false;
         }
 
-        (string cppText, string hText, IEnumerable<Uri> assetList) = CxInstantiatorGenerator.CreateFactoryCode(
-                _className,
-                _translationResults.Select(tr => ((CompositionObject)tr.RootVisual, tr.MinimumRequiredUapVersion)).ToArray(),
-                _translationResults[0].SourceMetadata,
-                (float)_lottieComposition.Width,
-                (float)_lottieComposition.Height,
-                _lottieComposition.Duration,
-                System.IO.Path.GetFileName(outputHeaderFilePath),
-                _options.DisableCodeGenOptimizer);
+        (string cppText, string hText, IEnumerable<Uri> assetList) =
+                    CppwinrtInstantiatorGenerator.CreateFactoryCode(
+                        CreateCodeGenConfiguration("Cppwinrt"),
+                        System.IO.Path.GetFileName(outputHeaderFilePath));
 
         if (string.IsNullOrWhiteSpace(cppText))
         {
@@ -471,8 +495,56 @@ sealed class LottieFileProcessor
             return false;
         }
 
-        _reporter.WriteInfo($"Header code for class {_className} written to {outputHeaderFilePath}");
-        _reporter.WriteInfo($"Source code for class {_className} written to {outputCppFilePath}");
+        _reporter.WriteInfo($"Cppwinrt header for class {_className} written to {outputHeaderFilePath}");
+        _reporter.WriteInfo($"Cppwinrt source for class {_className} written to {outputCppFilePath}");
+
+        if (assetList != null)
+        {
+            // Write out the list of asset files referenced by the code.
+            WriteAssetFiles(assetList);
+        }
+
+        return true;
+    }
+
+    bool TryGenerateCXCode(
+        string outputHeaderFilePath,
+        string outputCppFilePath)
+    {
+        if (!TryEnsureTranslated())
+        {
+            return false;
+        }
+
+        (string cppText, string hText, IEnumerable<Uri> assetList) =
+                    CxInstantiatorGenerator.CreateFactoryCode(
+                        CreateCodeGenConfiguration("CX"),
+                        System.IO.Path.GetFileName(outputHeaderFilePath));
+
+        if (string.IsNullOrWhiteSpace(cppText))
+        {
+            _reporter.WriteError("Failed to generate the .cpp code.");
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(hText))
+        {
+            _reporter.WriteError("Failed to generate the .h code.");
+            return false;
+        }
+
+        if (!TryWriteTextFile(outputHeaderFilePath, hText))
+        {
+            return false;
+        }
+
+        if (!TryWriteTextFile(outputCppFilePath, cppText))
+        {
+            return false;
+        }
+
+        _reporter.WriteInfo($"CX header for class {_className} written to {outputHeaderFilePath}");
+        _reporter.WriteInfo($"CX source for class {_className} written to {outputCppFilePath}");
 
         if (assetList != null)
         {
@@ -549,6 +621,75 @@ sealed class LottieFileProcessor
             _reporter.WriteError(e.Message);
             return null;
         }
+    }
+
+    CodegenConfiguration CreateCodeGenConfiguration(string languageSwitch)
+    {
+        var syntheticCommandLine =
+            $"{_options.ToConfigurationCommandLine()} -Language {languageSwitch} -InputFile {System.IO.Path.GetFileName(_file)}";
+
+        var result = new CodegenConfiguration
+        {
+            ClassName = _className,
+            DisableOptimization = _options.DisableCodeGenOptimizer,
+            Duration = _lottieComposition.Duration,
+            GenerateDependencyObject = _options.GenerateDependencyObject,
+            Height = _lottieComposition.Height,
+            ObjectGraphs = _translationResults.Select(tr => ((CompositionObject)tr.RootVisual, tr.MinimumRequiredUapVersion)).ToArray(),
+            Public = _options.Public,
+            SourceMetadata = _translationResults[0].SourceMetadata,
+            ToolInfo = GetToolInvocationInfo(languageSwitch).ToArray(),
+            Width = _lottieComposition.Width,
+        };
+
+        if (!string.IsNullOrWhiteSpace(_options.Interface))
+        {
+            result.InterfaceType = _options.Interface;
+        }
+
+        if (!string.IsNullOrWhiteSpace(_options.Namespace))
+        {
+            result.Namespace = NormalizeNamespace(_options.Namespace);
+        }
+
+        return result;
+    }
+
+    // Returns lines that describe the invocation of this tool.
+    // This information is passed to the code generator so that it can
+    // be included in the generated output.
+    IEnumerable<string> GetToolInvocationInfo(string languageSwitch)
+    {
+        var inputFile = new FileInfo(_file);
+
+        var indent = "    ";
+        if (!_options.TestMode)
+        {
+            yield return $"{ThisAssembly.AssemblyName} version:";
+            yield return $"{indent}{ThisAssembly.AssemblyInformationalVersion}";
+            yield return string.Empty;
+        }
+
+        var syntheticCommandLine =
+            $"{_options.ToConfigurationCommandLine()} -Language {languageSwitch} -InputFile {inputFile.Name}";
+
+        yield return "Command:";
+        yield return $"{indent}{syntheticCommandLine}";
+
+        yield return string.Empty;
+        yield return "Input file:";
+        yield return $"{indent}{inputFile.Name} ({inputFile.Length:g} bytes created {inputFile.CreationTimeUtc.ToLocalTime():H:mmK MMM d yyyy})";
+
+        if (!_options.TestMode)
+        {
+            yield return string.Empty;
+            yield return "Invoked on:";
+            yield return $"{indent}{Environment.MachineName} @ {_timestamp.ToLocalTime():H:mmK MMM d yyyy}";
+        }
+
+        yield return string.Empty;
+        yield return $"{ThisAssembly.AssemblyName} source:";
+        yield return $"{indent}http://aka.ms/Lottie";
     }
 
     // Outputs an error or warning message describing the error with the file path, error code, and description.
@@ -642,7 +783,7 @@ sealed class LottieFileProcessor
         _profiler.OnTranslateFinished();
 
         // Translation succeeded if all version produced root Visuals
-        _isTranslatedSuccessfully = !_translationResults.Any(tr => tr.RootVisual == null);
+        _isTranslatedSuccessfully = !_translationResults.Any(tr => tr.RootVisual is null);
 
         foreach (var (issue, uapVersionRange) in _translationIssues)
         {
@@ -674,7 +815,10 @@ sealed class LottieFileProcessor
     {
         foreach (var a in assetList)
         {
-            _reporter.WriteInfo($"Generated code references {a.ToString()}. Make sure your app can access this file.");
+            _reporter.WriteInfo($"Generated code references {a}. Make sure your app can access this file.");
         }
     }
+
+    // Convert namespaces to a normalized form: replace "::" with ".".
+    static string NormalizeNamespace(string @namespace) => @namespace?.Replace("::", ".");
 }

@@ -46,8 +46,7 @@ sealed class DataTable
         foreach (var name in columnNames)
         {
             // Return the row in the correct column order.
-            (string columnName, string columnValue) col;
-            yield return rowDictionary.TryGetValue(name, out col) ? col.columnValue : null;
+            yield return rowDictionary.TryGetValue(name, out (string columnName, string columnValue) col) ? col.columnValue : null;
         }
     }
 }

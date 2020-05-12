@@ -126,7 +126,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             var stops = target.ColorStops;
             foreach (var stop in source.ColorStops)
             {
-                target.ColorStops.Add(GetCompositionColorGradientStop(stop));
+                stops.Add(GetCompositionColorGradientStop(stop));
             }
 
             if (source.ExtendMode.HasValue)
@@ -186,6 +186,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             if (source.Clip != null)
             {
                 target.Clip = GetCompositionClip(source.Clip);
+            }
+
+            if (source.IsVisible.HasValue)
+            {
+                target.IsVisible = source.IsVisible.Value;
             }
 
             if (source.Offset.HasValue)
@@ -255,19 +260,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             where T : Wc.CompositionGeometry
         {
             CacheAndInitializeCompositionObject(source, target);
-            if (source.TrimStart != 0)
+            if (source.TrimStart.HasValue)
             {
-                target.TrimStart = source.TrimStart;
+                target.TrimStart = source.TrimStart.Value;
             }
 
-            if (source.TrimEnd != 1)
+            if (source.TrimEnd.HasValue)
             {
-                target.TrimEnd = source.TrimEnd;
+                target.TrimEnd = source.TrimEnd.Value;
             }
 
-            if (source.TrimOffset != 0)
+            if (source.TrimOffset.HasValue)
             {
-                target.TrimOffset = source.TrimOffset;
+                target.TrimOffset = source.TrimOffset.Value;
             }
 
             return target;
@@ -362,6 +367,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             }
         }
 
+        /// <summary>
+        /// Starts animations on <paramref name="target"/> that have been started on <paramref name="source"/>.
+        /// </summary>
+        /// <remarks>
+        /// This is the last stage of initializing a CompositionObject. CompositionObjects are initialized
+        /// in 3 stages: creation, setting of properties, starting of animations. Animations must be started
+        /// after properties are set because setting a property will stop a running animation.
+        /// </remarks>
         void StartAnimations(Wd.CompositionObject source, Wc.CompositionObject target)
         {
             foreach (var animator in source.Animators)
@@ -400,6 +413,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             {
                 case Wd.CompositionObjectType.AnimationController:
                     return GetAnimationController((Wd.AnimationController)obj);
+                case Wd.CompositionObjectType.BooleanKeyFrameAnimation:
+                    return GetBooleanKeyFrameAnimation((Wd.BooleanKeyFrameAnimation)obj);
                 case Wd.CompositionObjectType.ColorKeyFrameAnimation:
                     return GetColorKeyFrameAnimation((Wd.ColorKeyFrameAnimation)obj);
                 case Wd.CompositionObjectType.CompositionColorBrush:
@@ -436,10 +451,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                     return GetContainerVisual((Wd.ContainerVisual)obj);
                 case Wd.CompositionObjectType.CubicBezierEasingFunction:
                     return GetCubicBezierEasingFunction((Wd.CubicBezierEasingFunction)obj);
-                case Wd.CompositionObjectType.ExpressionAnimation:
-                    return GetExpressionAnimation((Wd.ExpressionAnimation)obj);
                 case Wd.CompositionObjectType.CompositionSurfaceBrush:
                     return GetCompositionSurfaceBrush((Wd.CompositionSurfaceBrush)obj);
+                case Wd.CompositionObjectType.ExpressionAnimation:
+                    return GetExpressionAnimation((Wd.ExpressionAnimation)obj);
                 case Wd.CompositionObjectType.InsetClip:
                     return GetInsetClip((Wd.InsetClip)obj);
                 case Wd.CompositionObjectType.LinearEasingFunction:
@@ -474,7 +489,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
 
             // CompositionPropertySets are usually created implicitly by CompositionObjects that own them.
             // If the CompositionPropertySet is not owned, then create it now.
-            if (obj.Owner == null)
+            if (obj.Owner is null)
             {
                 result = _c.CreatePropertySet();
             }
@@ -552,10 +567,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         {
             switch (obj.Type)
             {
-                case Wd.CompositionObjectType.ExpressionAnimation:
-                    return GetExpressionAnimation((Wd.ExpressionAnimation)obj);
+                case Wd.CompositionObjectType.BooleanKeyFrameAnimation:
+                    return GetBooleanKeyFrameAnimation((Wd.BooleanKeyFrameAnimation)obj);
                 case Wd.CompositionObjectType.ColorKeyFrameAnimation:
                     return GetColorKeyFrameAnimation((Wd.ColorKeyFrameAnimation)obj);
+                case Wd.CompositionObjectType.ExpressionAnimation:
+                    return GetExpressionAnimation((Wd.ExpressionAnimation)obj);
                 case Wd.CompositionObjectType.PathKeyFrameAnimation:
                     return GetPathKeyFrameAnimation((Wd.PathKeyFrameAnimation)obj);
                 case Wd.CompositionObjectType.ScalarKeyFrameAnimation:
@@ -600,6 +617,36 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             }
             result = CacheAndInitializeAnimation(obj, _c.CreateExpressionAnimation(obj.Expression));
 #endif
+            StartAnimations(obj, result);
+            return result;
+        }
+
+        Wc.BooleanKeyFrameAnimation GetBooleanKeyFrameAnimation(Wd.BooleanKeyFrameAnimation obj)
+        {
+            if (GetExisting(obj, out Wc.BooleanKeyFrameAnimation result))
+            {
+                return result;
+            }
+
+            result = CacheAndInitializeKeyFrameAnimation(obj, _c.CreateBooleanKeyFrameAnimation());
+
+            foreach (var kf in obj.KeyFrames)
+            {
+                switch (kf.Type)
+                {
+                    case Wd.KeyFrameType.Expression:
+                        var expressionKeyFrame = (Wd.KeyFrameAnimation<bool, Expr.Boolean>.ExpressionKeyFrame)kf;
+                        result.InsertExpressionKeyFrame(kf.Progress, expressionKeyFrame.Expression.ToText());
+                        break;
+                    case Wd.KeyFrameType.Value:
+                        var valueKeyFrame = (Wd.KeyFrameAnimation<bool, Expr.Boolean>.ValueKeyFrame)kf;
+                        result.InsertKeyFrame(kf.Progress, valueKeyFrame.Value);
+                        break;
+                    default:
+                        throw new InvalidOperationException();
+                }
+            }
+
             StartAnimations(obj, result);
             return result;
         }
@@ -800,6 +847,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             }
         }
 
+        static bool IsNullOrZero(float? value) => value is null || value == 0;
+
+        static bool IsNullOrOne(Vector2? value) => value is null || value == Vector2.One;
+
+        static bool IsNullOrZero(Vector2? value) => value is null || value == Vector2.Zero;
+
         Wc.InsetClip GetInsetClip(Wd.InsetClip obj)
         {
             if (GetExisting(obj, out Wc.InsetClip result))
@@ -810,35 +863,35 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             result = CacheAndInitializeCompositionObject(obj, _c.CreateInsetClip());
 
             // CompositionClip properties
-            if (obj.CenterPoint.X != 0 || obj.CenterPoint.Y != 0)
+            if (!IsNullOrZero(obj.CenterPoint))
             {
-                result.CenterPoint = obj.CenterPoint;
+                result.CenterPoint = obj.CenterPoint.Value;
             }
 
-            if (obj.Scale.X != 1 || obj.Scale.Y != 1)
+            if (!IsNullOrOne(obj.Scale))
             {
-                result.Scale = obj.Scale;
+                result.Scale = obj.Scale.Value;
             }
 
             // InsetClip properties
-            if (obj.LeftInset != 0)
+            if (!IsNullOrZero(obj.LeftInset))
             {
-                result.LeftInset = obj.LeftInset;
+                result.LeftInset = obj.LeftInset.Value;
             }
 
-            if (obj.RightInset != 0)
+            if (!IsNullOrZero(obj.RightInset))
             {
-                result.RightInset = obj.RightInset;
+                result.RightInset = obj.RightInset.Value;
             }
 
-            if (obj.TopInset != 0)
+            if (!IsNullOrZero(obj.TopInset))
             {
-                result.TopInset = obj.TopInset;
+                result.TopInset = obj.TopInset.Value;
             }
 
-            if (obj.BottomInset != 0)
+            if (!IsNullOrZero(obj.BottomInset))
             {
-                result.BottomInset = obj.BottomInset;
+                result.BottomInset = obj.BottomInset.Value;
             }
 
             StartAnimations(obj, result);
@@ -1061,34 +1114,35 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             if (obj.StrokeBrush != null)
             {
                 result.StrokeBrush = GetCompositionBrush(obj.StrokeBrush);
-                if (obj.StrokeDashCap != Wd.CompositionStrokeCap.Flat)
+
+                if (obj.StrokeDashCap.HasValue)
                 {
-                    result.StrokeDashCap = StrokeCap(obj.StrokeDashCap);
+                    result.StrokeDashCap = StrokeCap(obj.StrokeDashCap.Value);
                 }
 
-                if (obj.StrokeStartCap != Wd.CompositionStrokeCap.Flat)
+                if (obj.StrokeStartCap.HasValue)
                 {
-                    result.StrokeStartCap = StrokeCap(obj.StrokeStartCap);
+                    result.StrokeStartCap = StrokeCap(obj.StrokeStartCap.Value);
                 }
 
-                if (obj.StrokeEndCap != Wd.CompositionStrokeCap.Flat)
+                if (obj.StrokeEndCap.HasValue)
                 {
-                    result.StrokeEndCap = StrokeCap(obj.StrokeEndCap);
+                    result.StrokeEndCap = StrokeCap(obj.StrokeEndCap.Value);
                 }
 
-                if (obj.StrokeThickness != 1)
+                if (obj.StrokeThickness.HasValue)
                 {
-                    result.StrokeThickness = obj.StrokeThickness;
+                    result.StrokeThickness = obj.StrokeThickness.Value;
                 }
 
-                if (obj.StrokeMiterLimit != 1)
+                if (obj.StrokeMiterLimit.HasValue)
                 {
-                    result.StrokeMiterLimit = obj.StrokeMiterLimit;
+                    result.StrokeMiterLimit = obj.StrokeMiterLimit.Value;
                 }
 
-                if (obj.StrokeLineJoin != Wd.CompositionStrokeLineJoin.Miter)
+                if (obj.StrokeLineJoin.HasValue)
                 {
-                    result.StrokeLineJoin = StrokeLineJoin(obj.StrokeLineJoin);
+                    result.StrokeLineJoin = StrokeLineJoin(obj.StrokeLineJoin.Value);
                 }
 
                 if (obj.StrokeDashOffset != 0)
@@ -1232,7 +1286,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 return result;
             }
 
-            result = CacheAndInitializeCompositionGeometry(obj, _c.CreatePathGeometry(obj.Path == null ? null : GetCompositionPath(obj.Path)));
+            result = CacheAndInitializeCompositionGeometry(obj, _c.CreatePathGeometry(obj.Path is null ? null : GetCompositionPath(obj.Path)));
             StartAnimations(obj, result);
             return result;
         }

@@ -21,41 +21,67 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieMetadata
             double framesPerSecond,
             double inPoint,
             double outPoint,
-            IEnumerable<(string name, double frame, double durationMilliseconds)> markers)
+            IEnumerable<(string name, double frame, double durationInFrames)> markers)
         {
             CompositionName = compositionName;
-            FramesPerSecond = framesPerSecond;
-            InPoint = inPoint;
-            OutPoint = outPoint;
-            Markers = markers.Select(m => new Marker(m.name, m.frame, m.durationMilliseconds)).ToArray();
+            Duration = new Duration(outPoint - inPoint, framesPerSecond);
+            Markers = markers.Select(
+                m => new Marker(
+                    m.name,
+                    new Frame(Duration, m.frame - inPoint),
+                    new Duration(m.durationInFrames, Duration))).ToArray();
         }
 
-        public static LottieCompositionMetadata Empty => new LottieCompositionMetadata(string.Empty, 0, 0, 0, Array.Empty<(string, double, double)>());
+        public static LottieCompositionMetadata Empty { get; } =
+            new LottieCompositionMetadata(string.Empty, 0, 0, 0, Array.Empty<(string, double, double)>());
 
         public string CompositionName { get; }
 
-        public double FramesPerSecond { get; }
-
-        public double InPoint { get; }
-
-        public double OutPoint { get; }
+        public Duration Duration { get; }
 
         public IReadOnlyList<Marker> Markers { get; }
 
-        public sealed class Marker
+        /// <summary>
+        /// Gets the <see cref="Marker"/>s filtered to remove any that do not refer
+        /// to parts of the composition, and with markers that cross the start or
+        /// end of the composition adjusted so that they are contained by the composition.
+        /// </summary>
+        public IReadOnlyList<Marker> FilteredMarkers => FilterMarkers(Markers, Duration).ToArray();
+
+        // Takes a markers list and returns another list where any markers that are
+        // partially outside of the range are adjusted to be inside range, and any markers
+        // that are completely outside of the range are discarded.
+        static IEnumerable<Marker> FilterMarkers(IEnumerable<Marker> markers, Duration range)
         {
-            internal Marker(string name, double frame, double durationMilliseconds)
+            foreach (var marker in markers)
             {
-                Name = name;
-                Frame = frame;
-                DurationMilliseconds = durationMilliseconds;
+                var result = marker;
+                if (result.Frame.Number < 0)
+                {
+                    // The marker starts before the start of the range.
+                    if ((result.Frame + result.Duration).Number < 0)
+                    {
+                        // It is completely before the start of the range.
+                        continue;
+                    }
+
+                    // Adjust the start and duration so that it starts at 0.
+                    result = new Marker(result.Name, new Frame(range, 0), result.Duration - new Duration(-result.Frame.Number, range));
+                }
+                else if (result.Frame.Number > range.Frames)
+                {
+                    // It is completely after the end of the range.
+                    continue;
+                }
+
+                if ((result.Frame + result.Duration).Number > range.Frames)
+                {
+                    // The marker ends after the end of the range. Adjust the duration so that it ends at the end of the range.
+                    result = new Marker(result.Name, result.Frame, new Duration(range.Frames - result.Frame.Number, range));
+                }
+
+                yield return result;
             }
-
-            public string Name { get; }
-
-            public double Frame { get; }
-
-            public double DurationMilliseconds { get; }
         }
     }
 }

@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -15,7 +14,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
     sealed class CodeBuilder
     {
         const int IndentSize = 4;
+        const int LineBreakWidth = 83;
         readonly List<CodeLine> _lines = new List<CodeLine>();
+        readonly SortedDictionary<string, CodeBuilder> _subBuilders = new SortedDictionary<string, CodeBuilder>();
         int _indentCount = 0;
 
         internal bool IsEmpty => _lines.Count == 0;
@@ -28,6 +29,31 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         internal void WriteLine(string line)
         {
             _lines.Add(new CodeLine { Text = line, IndentCount = _indentCount });
+        }
+
+        // Writes a line, or multiple lines if the line would be too long as a single line.
+        // Typically used for writing method calls and signature.
+        internal void WriteBreakableLine(string prefix, string[] breakableParts, string postfix)
+        {
+            // See if the content fits on a single line with a space between each breakable part.
+            if (prefix.Length + /*space:*/ 1 +
+                breakableParts.Sum(s => s.Length) + /*spaces:*/ breakableParts.Length +
+                postfix.Length <= LineBreakWidth)
+            {
+                WriteLine($"{prefix}{string.Join(' ', breakableParts)}{postfix}");
+            }
+            else
+            {
+                WriteLine(prefix.TrimEnd());
+                Indent();
+                for (var i = 0; i < breakableParts.Length - 1; i++)
+                {
+                    WriteLine(breakableParts[i]);
+                }
+
+                WriteLine($"{breakableParts[breakableParts.Length - 1]}{postfix.TrimStart()}");
+                UnIndent();
+            }
         }
 
         internal void WriteCommaSeparatedLines(string initialItem, IEnumerable<string> remainingItems)
@@ -59,9 +85,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             {
                 foreach (var line in BreakUpLine(comment))
                 {
-                    WriteLine($"// {line}");
+                    WritePreformattedCommentLine(line);
                 }
             }
+        }
+
+        internal void WritePreformattedCommentLine(string line)
+        {
+            WriteLine($"// {line}");
         }
 
         internal void WriteSummaryComment(string comment)
@@ -83,6 +114,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             _lines.Add(new CodeLine { Text = builder, IndentCount = _indentCount });
         }
 
+        /// <summary>
+        /// Writes the contents of the given <see cref="CodeBuilder"/> and retains
+        /// it for later access using the given key.
+        /// </summary>
+        internal void WriteSubBuilder(string key)
+        {
+            var builder = new CodeBuilder();
+            WriteCodeBuilder(builder);
+            _subBuilders.Add(key, builder);
+        }
+
+        internal CodeBuilder GetSubBuilder(string key)
+            => _subBuilders[key];
+
         internal void OpenScope()
         {
             WriteLine("{");
@@ -95,6 +140,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             WriteLine("}");
         }
 
+        internal void CloseCppTypeScope()
+        {
+            UnIndent();
+            WriteLine("};");
+        }
+
         internal void Indent()
         {
             _indentCount++;
@@ -102,7 +153,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         internal void UnIndent()
         {
-            Debug.Assert(_indentCount > 0, "Unmatched Indent()/UnIndent() calls");
             _indentCount--;
         }
 
@@ -113,40 +163,65 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         /// <inheritdoc/>
         public override string ToString()
-        {
-            return ToString(0);
-        }
+            => ToString(0);
 
         internal string ToString(int indentCount)
         {
             var sb = new StringBuilder();
+
+            foreach (var line in ToLines(indentCount))
+            {
+                sb.AppendLine(line);
+            }
+
+            return sb.ToString();
+        }
+
+        internal IEnumerable<string> ToLines(int indentCount)
+        {
+            var indent = string.Empty;
+
             foreach (var line in _lines)
             {
                 var builder = line.Text as CodeBuilder;
                 if (builder != null)
                 {
-                    sb.Append(builder.ToString(line.IndentCount + indentCount));
+                    foreach (var subLine in builder.ToLines(line.IndentCount + indentCount))
+                    {
+                        yield return subLine;
+                    }
                 }
                 else
                 {
                     var lineText = line.Text.ToString();
                     if (string.IsNullOrWhiteSpace(lineText))
                     {
-                        sb.AppendLine();
+                        yield return string.Empty;
                     }
                     else
                     {
-                        sb.Append(new string(' ', (line.IndentCount + indentCount) * IndentSize));
-                        sb.AppendLine(lineText);
+                        var indentSpaceCount = (line.IndentCount + indentCount) * IndentSize;
+
+                        if (indentSpaceCount <= 0)
+                        {
+                            // This fixes up any mismatch of indents. It will probably result
+                            // in the output looking wrong, but that's better than crashing.
+                            indentSpaceCount = 0;
+                        }
+
+                        if (indent.Length != indentSpaceCount)
+                        {
+                            indent = new string(' ', indentSpaceCount);
+                        }
+
+                        yield return indent + lineText;
                     }
                 }
             }
-
-            return sb.ToString();
         }
 
         // Breaks up the given text into lines.
-        static IEnumerable<string> BreakUpLine(string text) => BreakUpLine(text, 83);
+        static IEnumerable<string> BreakUpLine(string text) => BreakUpLine(text, LineBreakWidth);
 
         // Breaks up the given text into lines of at most maxLineLength characters.
         static IEnumerable<string> BreakUpLine(string text, int maxLineLength)
@@ -205,7 +280,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                             if (breakLookahead + 1 < text.Length && text[breakLookahead + 1] == '\n')
                             {
                                 // CRLF pair - step over both
-                                if (breakLookahead > maxLineLength)
+                                if (breakLookahead > maxLineLength && breakAt != 0)
                                 {
                                     // Breaking at the end of the line makes the line too long. Break earlier.
                                     remainder = text.Substring(breakAt);

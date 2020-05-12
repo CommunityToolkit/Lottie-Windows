@@ -10,6 +10,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
     enum CompositionObjectType
     {
         AnimationController,
+        BooleanKeyFrameAnimation,
         ColorKeyFrameAnimation,
         CompositionColorBrush,
         CompositionColorGradientStop,

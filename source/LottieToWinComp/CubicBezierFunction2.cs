@@ -156,5 +156,48 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         /// <inheritdoc/>
         protected override string CreateExpressionText() => ToText();
+
+        /// <summary>
+        /// Returns the <see cref="CubicBezierFunction2"/> as a <see cref="Vector3"/> expression where
+        /// the Z values are 0.
+        /// </summary>
+        /// <returns>The <see cref="CubicBezierFunction2"/> as a <see cref="Vector3"/> expression where
+        /// the Z values are 0.</returns>
+        internal Vector3 AsVector3() => new CubicBezierFunctionAsVector3(this);
+
+        // A Vector3-typed CubicBezierFunction2. The Z values are always 0.
+        sealed class CubicBezierFunctionAsVector3 : Vector3
+        {
+            readonly CubicBezierFunction2 _original;
+
+            internal CubicBezierFunctionAsVector3(CubicBezierFunction2 original)
+            {
+                _original = original;
+            }
+
+            /// <inheritdoc/>
+            // (1-t)^3P0 + 3(1-t)^2tP1 + 3(1-t)t^2P2 + t^3P3
+            protected override Vector3 Simplify()
+            {
+                var oneMinusT = 1 - _original._t;
+
+                // (1-t)^3P0
+                var p0Part = Pow(oneMinusT, 3) * Vector3(_original._p0);
+
+                // 3(1-t)^2tP1
+                var p1Part = 3 * Squared(oneMinusT) * _original._t * Vector3(_original._p1);
+
+                // 3(1-t)t^2P2
+                var p2Part = 3 * oneMinusT * Squared(_original._t) * Vector3(_original._p2);
+
+                // t^3P3
+                var p3Part = Pow(_original._t, 3) * Vector3(_original._p3);
+
+                return (p0Part + p1Part + p2Part + p3Part).Simplified;
+            }
+
+            /// <inheritdoc/>
+            protected override string CreateExpressionText() => ToText();
+        }
     }
 }

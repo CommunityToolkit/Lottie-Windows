@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 sealed class Reporter
 {
@@ -18,13 +19,13 @@ sealed class Reporter
 
     internal Reporter(TextWriter infoStream, TextWriter errorStream)
     {
-        InfoStream = infoStream;
-        ErrorStream = errorStream;
+        InfoStream = new Writer(infoStream);
+        ErrorStream = new Writer(errorStream);
     }
 
-    internal TextWriter InfoStream { get; }
+    internal Writer InfoStream { get; }
 
-    internal TextWriter ErrorStream { get; }
+    internal Writer ErrorStream { get; }
 
     // Helper for writing errors to the error stream with a standard format.
     internal void WriteError(string errorMessage)
@@ -72,4 +73,18 @@ sealed class Reporter
             }
         }
     }
+
+    internal sealed class Writer
+    {
+        readonly TextWriter _wrapped;
+
+        internal Writer(TextWriter wrapped)
+        {
+            _wrapped = wrapped;
+        }
+
+        public void WriteLine() => _wrapped.WriteLine();
+
+        public void WriteLine(string value) => _wrapped.WriteLine(value);
+   }
 }

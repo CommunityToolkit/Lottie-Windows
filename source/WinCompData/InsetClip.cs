@@ -15,16 +15,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
         }
 
         // Default is 0.
-        public float LeftInset { get; set; }
+        public float? LeftInset { get; set; }
 
         // Default is 0.
-        public float RightInset { get; set; }
+        public float? RightInset { get; set; }
 
         // Default is 0.
-        public float BottomInset { get; set; }
+        public float? BottomInset { get; set; }
 
         // Default is 0.
-        public float TopInset { get; set; }
+        public float? TopInset { get; set; }
 
         /// <inheritdoc/>
         public override CompositionObjectType Type => CompositionObjectType.InsetClip;

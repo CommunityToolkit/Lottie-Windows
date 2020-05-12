@@ -7,6 +7,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)AnimationController.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BooleanKeyFrameAnimation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ColorKeyFrameAnimation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionAnimation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionBorderMode.cs" />

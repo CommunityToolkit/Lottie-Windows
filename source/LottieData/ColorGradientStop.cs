@@ -14,7 +14,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         public ColorGradientStop(double offset, Color color)
             : base(offset)
         {
-            if (color == null)
+            if (color is null)
             {
                 throw new ArgumentException("Color must be specified");
             }

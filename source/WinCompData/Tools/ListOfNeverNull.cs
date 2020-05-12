@@ -5,6 +5,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
 {
@@ -42,7 +43,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
         /// <inheritdoc/>
         public void Clear()
         {
-            var oldContents = _wrapped.ToArray();
             _wrapped.Clear();
         }
 
@@ -94,7 +94,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
 
         static T AssertNotNull(T item)
         {
-            if (item == null)
+            if (item is null)
             {
                 throw new ArgumentException();
             }
@@ -104,17 +104,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools
 
         /// <inheritdoc/>
         public override string ToString()
-        {
-            var tName = typeof(T).Name;
-            switch (Count)
-            {
-                case 0:
-                    return $"Empty List<{tName}>";
-                case 1:
-                    return $"List<{tName}> with 1 item";
-                default:
-                    return $"List<{tName}> with {Count} items";
-            }
-        }
+             => Count == 0
+                ? "[<none>]"
+                : $"[{string.Join(", ", _wrapped.Select(item => item.ToString()))}]";
     }
 }

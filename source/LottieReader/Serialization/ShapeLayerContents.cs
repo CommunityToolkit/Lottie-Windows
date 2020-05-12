@@ -48,6 +48,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     return ReadRoundedCorner(obj, in args);
                 case "rp":
                     return ReadRepeater(obj, in args);
+
+                // Is this "Offset Paths"?
+                case "op":
                 default:
                     _issues.UnexpectedValueForType("ShapeContentType", type);
                     return null;

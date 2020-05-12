@@ -19,14 +19,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
             FinalStep = steps;
         }
 
+        // Default is 1.
         public int StepCount { get; set; }
 
+        // Default is false.
         public bool IsInitialStepSingleFrame { get; set; }
 
+        // Default is 0.
         public int InitialStep { get; set; }
 
+        // Default is 1.
         public int FinalStep { get; set; }
 
+        // Default is false.
         public bool IsFinalStepSingleFrame { get; set; }
 
         /// <inheritdoc/>

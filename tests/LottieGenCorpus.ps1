@@ -24,25 +24,25 @@ Param(
 )
 
 # Find the most recently built LottieGen.dll.
-$lottieGenDll = 
-    Get-ChildItem LottieGen.dll -r -path "$PSScriptRoot\..\LottieGen\bin\" | 
+$lottieGenExe = 
+    Get-ChildItem LottieGen.exe -r -path "$PSScriptRoot\..\LottieGen\bin\" | 
     Sort-Object -Property 'CreationTime' -Desc | 
     Select-Object -first 1
 
-if (!$lottieGenDll)
+if (!$lottieGenExe)
 {
-    throw 'Could not find LottieGen.dll'
+    throw 'Could not find LottieGen.exe'
 }
 
-$lottieGenDllPath = $lottieGenDll.FullName
+$lottieGenExePath = $lottieGenExe.FullName
 
 Write-Host -ForegroundColor Blue -NoNewline 'Using LottieGen binary from: '
-Write-Host -ForegroundColor Yellow $lottieGenDll.LastWriteTime
-Write-Host -ForegroundColor Green $lottieGenDllPath
+Write-Host -ForegroundColor Yellow $lottieGenExe.LastWriteTime
+Write-Host -ForegroundColor Green $lottieGenExePath
 
 # Run LottieGen once to get its version number
 $lottieGenVersion =
-    &dotnet $lottieGenDllPath -help | 
+    &$lottieGenExePath -help | 
         select-string '^Lottie for Windows Code Generator version ' | 
         ForEach-Object {$_  -replace '^Lottie for Windows Code Generator version (\d+\.\d+\.\d+\S*).*$','$1' }
 
@@ -72,7 +72,7 @@ New-Item $outputPath -ItemType Directory >$null
 Write-Host -ForegroundColor Blue -NoNewline 'Output will be written to: '
 Write-Host -ForegroundColor Green $outputPath
 
-$lottieGenCommand = "dotnet $lottieGenDllPath -i `"$CorpusDirectory\**json`" -o $outputPath -l cs -l cppcx -l lottiexml -l lottieyaml -l wincompxml -l dgml -l stats"
+$lottieGenCommand = "$lottieGenExePath -input `"$CorpusDirectory\**json`" -o $outputPath -l cs -l cppcx -l lottiexml -l lottieyaml -l wincompxml -l dgml -l stats -TestMode"
 
 # Run LottieGen over everything in the corpus.
 Write-Host -ForegroundColor Blue -NoNewline 'Executing: '

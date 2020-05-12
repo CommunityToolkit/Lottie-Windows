@@ -73,16 +73,19 @@ namespace <#=namespaceName#>
             where line.StartsWith(textPrefix)
             select line.Substring(textPrefix.Length)).FirstOrDefault();
 
-            // Look for parameters in the string.
-            var parameterMatches = regex.Matches(text);
+        // Escape double-quotes.
+        text = text.Replace("\"", "\\\"");
 
-            // Create parameters for each of the parameters in the text.
-            var parameters = regex.Matches(text).Cast<Match>().Select(m => $"string {m.Value.Substring(1, m.Value.Length - 2)}").Distinct().ToArray();
-            var parameterList = string.Join(", ", parameters);
-            var hasParameters = parameters.Any();
+        // Look for parameters in the string.
+        var parameterMatches = regex.Matches(text);
 
-            WriteLine("");
-            WriteLine($"        internal void {name}({parameterList}) => Report(\"{issueId}\", {(hasParameters ? "$" : "")}\"{text}\");");
+        // Create parameters for each of the parameters in the text.
+        var parameters = regex.Matches(text).Cast<Match>().Select(m => $"string {m.Value.Substring(1, m.Value.Length - 2)}").Distinct().ToArray();
+        var parameterList = string.Join(", ", parameters);
+        var hasParameters = parameters.Any();
+
+        WriteLine("");
+        WriteLine($"        internal void {name}({parameterList}) => Report(\"{issueId}\", {(hasParameters ? "$" : "")}\"{text}\");");
     }
 #>
 

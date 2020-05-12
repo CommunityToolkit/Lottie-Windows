@@ -6,6 +6,9 @@
     <SharedGUID>04b43a1a-ddfb-4a61-bf36-39f5e666c702</SharedGUID>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Duration.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Frame.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LottieCompositionMetadata.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Marker.cs" />
   </ItemGroup>
 </Project>

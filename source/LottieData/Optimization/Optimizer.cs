@@ -21,8 +21,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
 #endif
     sealed class Optimizer
     {
-        static readonly AnimatableComparer<Color> ColorComparer = new AnimatableComparer<Color>();
-        static readonly AnimatableComparer<double> FloatComparer = new AnimatableComparer<double>();
         static readonly AnimatableComparer<Sequence<BezierSegment>> PathGeometryComparer = new AnimatableComparer<Sequence<BezierSegment>>();
         readonly Dictionary<Animatable<Sequence<BezierSegment>>, Animatable<Sequence<BezierSegment>>> _animatablePathGeometriesCache;
 
@@ -234,7 +232,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                         // No more redundant key frames.
                         if (redundantCount > 0)
                         {
-                            if (optimizedFrames == null)
+                            if (optimizedFrames is null)
                             {
                                 // Lazily Create an array to hold the new set of key frames.
                                 optimizedFrames = new KeyFrame<T>[keyFrames.Length - redundantCount];
@@ -268,7 +266,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
             }
 
             // All triples of frames have been checked for redundancy.
-            if (optimizedFrames == null)
+            if (optimizedFrames is null)
             {
                 // No redundant key frames found yet.
                 // If the final 2 key frames have the same value, the final key frame is redundant.
@@ -410,7 +408,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                     return true;
                 }
 
-                if (x == null || y == null)
+                if (x is null || y is null)
                 {
                     return false;
                 }
@@ -425,7 +423,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                     return true;
                 }
 
-                if (x == null || y == null)
+                if (x is null || y is null)
                 {
                     return false;
                 }
@@ -442,7 +440,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                     return true;
                 }
 
-                if (x == null || y == null)
+                if (x is null || y is null)
                 {
                     return false;
                 }
@@ -460,7 +458,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
 
             // Compares 2 IEquatable<V> for equality.
             static bool Equates<TV>(TV x, TV y)
-                where TV : class, IEquatable<TV> => x == null ? y == null : x.Equals(y);
+                where TV : class, IEquatable<TV> => x is null ? y is null : x.Equals(y);
         }
     }
 }

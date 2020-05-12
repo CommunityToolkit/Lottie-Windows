@@ -80,7 +80,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
 
             /// <inheritdoc/>
             protected override string CreateExpressionText()
-                => $"Vector4({Parenthesize(X)},{Parenthesize(Y)},{Parenthesize(Z)},{Parenthesize(W)})";
+                => $"Vector4({X},{Y},{Z},{W})";
 
             protected override bool IsAtomic => true;
         }

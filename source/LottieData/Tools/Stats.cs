@@ -18,7 +18,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Tools
         // Creates a string that describes the Lottie.
         public Stats(LottieComposition lottieComposition)
         {
-            if (lottieComposition == null) { return; }
+            if (lottieComposition is null) { return; }
 
             Name = lottieComposition.Name;
             Version = lottieComposition.Version;

@@ -50,7 +50,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             }
         }
 
-        public static bool operator ==(Easing a, Easing b) => a is Easing && a.Equals(b);
+        public static bool operator ==(Easing a, Easing b) => (a is Easing && a.Equals(b)) || (a is null && b is null);
 
         public static bool operator !=(Easing a, Easing b) => !(a == b);
 
