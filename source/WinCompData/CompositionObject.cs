@@ -149,7 +149,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
             //
             // If there's a dot in the name it is a sub-channel name.
             var firstDotIndex = propertyName.IndexOf('.');
-            var rootPropertyPrefix = firstDotIndex >= 0 ? propertyName.Substring(0, firstDotIndex + 1) : $"{propertyName}.";
+            var rootPropertyPrefix = $"{(firstDotIndex >= 0 ? propertyName.Substring(0, firstDotIndex) : propertyName)}.";
 
             for (var i = 0; i < _animators.Count; i++)
             {
