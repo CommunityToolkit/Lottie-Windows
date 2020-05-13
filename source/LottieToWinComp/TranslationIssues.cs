@@ -72,9 +72,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal void TextLayerIsNotSupported() => Report("LT0019", "Text layer is not supported.");
 
-        internal void ThreeDIsNotSupported() => Report("LT0020", "3d composition is not supported.");
+        internal void ThreeDIsNotSupported() => Report("LT0020", "3D composition is not supported.");
 
-        internal void ThreeDLayerIsNotSupported() => Report("LT0021", "3d layer is not supported.");
+        internal void ThreeDLayerIsNotSupported() => Report("LT0021", "3D layer is not supported.");
 
         internal void TimeStretchIsNotSupported() => Report("LT0022", "Time stretch is not supported.");
 

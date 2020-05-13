@@ -56,7 +56,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         // LP0013 has been deprecated.
         // Was: Gradient strokes.
 
-        internal void PolystarAnimation(string property) => Report("LP0014", $"Polystar {property} animation.");
+        // LP0014 has been deprecated.
+        // Was: Polystar {property} animation.
 
         internal void Expressions() => Report("LP0015", "Expressions.");
 
