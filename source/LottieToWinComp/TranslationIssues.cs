@@ -36,7 +36,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal void AnimatedTrimOffsetWithStaticTrimOffsetIsNotSupported() => Report("LT0002", "Animated trim offset with static trim offset is not supported.");
 
-        internal void AnimationMultiplicationIsNotSupported() => Report("LT0003", "Multiplication of two or more animated values is not supported.");
+        // LT0003 has been deprecated.
+        // Was: Multiplication of two or more animated values is not supported.
 
         internal void BlendModeNotNormal(string layer, string blendMode) => Report("LT0004", $"{layer} has {blendMode} as blend mode. Only Normal is supported.");
 
@@ -44,9 +45,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal void GradientFillIsNotSupported(string linearOrRadial, string combination) => Report("LT0006", $"{linearOrRadial} gradient fill with {combination} is not supported.");
 
-        internal void GradientStrokeIsNotSupported(string linearOrRadial, string combination) => Report("LT0007", $"{linearOrRadial} gradient stroke with {combination} is not supported.");
+        // LT0007 has been deprecated.
+        // Was: {linearOrRadial} gradient stroke with {combination} is not supported.
 
-        internal void ImageLayerIsNotSupported() => Report("LT0009", "Image layers are not supported.");
+        // LT0009 has been deprecated.
+        // Was: Image layers are not supported.
 
         internal void MergingALargeNumberOfShapesIsNotSupported() => Report("LT0010", "Merging a large number of shape is not supported.");
 
@@ -58,7 +61,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal void MultipleTrimPathsIsNotSupported() => Report("LT0014", "Multiple trim paths is not supported.");
 
-        internal void OpacityAndColorAnimatedTogetherIsNotSupported() => Report("LT0015", "Opacity and color animated at the same time is not supported.");
+        // LT0015 has been deprecated.
+        // Was: Opacity and color animated at the same time is not supported.
 
         internal void PathWithRoundedCornersIsNotSupported() => Report("LT0016", "Path with rounded corners is not supported.");
 
@@ -80,7 +84,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal void MaskWithAlphaIsNotSupported() => Report("LT0025", "Mask with alpha value other than 1 is not supported.");
 
-        internal void MultipleShapeMasksIsNotSupported() => Report("LT0026", "Mask with multiple shapes is not supported.");
+        // LT0026 has been deprecated.
+        // Was: Mask with multiple shapes is not supported.
 
         internal void CombiningMultipleShapesIsNotSupported() => Report("LT0027", "Combining multiple shapes is not supported.");
 
@@ -90,11 +95,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal void ImageFileRequired(string filePath) => Report("LT0030", $"Image file required at {filePath}.");
 
-        internal void MattesAreNotSupported() => Report("LT0031", "Mattes are not supported.");
+        // LT0031 has been deprecated.
+        // Was: Mattes are not supported.
 
-        internal void MaskModesDoNotMatch() => Report("LT0032", "A multiple shape mask is only supported if the shapes all have the same mode.");
+        // LT0032 has been deprecated.
+        // Was: A multiple shape mask is only supported if the shapes all have the same mode.
 
-        internal void MasksNotSupported() => Report("LT0033", "Masks are not supported.");
+        // LT0033 has been deprecated.
+        // Was: Masks are not supported.
 
         internal void UapVersionNotSupported(string versionDependentFeature, string optimalUapVersion) => Report("LT0034", $"{versionDependentFeature} requires a UAP version of at least {optimalUapVersion}.");
 
