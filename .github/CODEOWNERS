@@ -2,13 +2,13 @@
 
 # Default owners for everything in the repo, unless a later
 # match takes precedence.
-*       @eliezerpMS @simeoncran @sohchatt @scott-moore-ms
+*       @windows-toolkit/lottie
 
 # File types
-*.cs    @eliezerpMS @simeoncran @scott-moore-ms
-*proj   @eliezerpMS @simeoncran @scott-moore-ms
-*sln    @eliezerpMS @simeoncran @scott-moore-ms
-*.md    @sohchatt @eliezerpMS @simeoncran @scott-moore-ms
+*.cs    @windows-toolkit/lottie
+*proj   @windows-toolkit/lottie
+*sln    @windows-toolkit/lottie
+*.md    @windows-toolkit/lottie
 
 # Directories
-/build/ @eliezerpMS @simeoncran @scott-moore-ms
+/build/ @windows-toolkit/lottie
