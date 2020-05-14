@@ -64,25 +64,26 @@
             <StackPanel HorizontalAlignment="Center"
                         VerticalAlignment="Center"
                         Orientation="Horizontal">
+                <StackPanel.Resources>
+                    <animatedvisuals:LightBulb x:Key="LightBulb"/>
+                </StackPanel.Resources>
 
-                <Border x:Name="PlayerOneBorder"
+                <Border x:Name="Player1Border"
                         Style="{StaticResource LottiePlayerSmall}">
                     <!--  AnimatedVisualPlayer A  -->
-                    <winui:AnimatedVisualPlayer x:Name="PlayerOne"
+                    <winui:AnimatedVisualPlayer x:Name="Player1"
                                                 AutoPlay="False"
-                                                PointerEntered="Players_PointerEntered">
-                        <animatedvisuals:LightBulb />
-                    </winui:AnimatedVisualPlayer>
+                                                PointerEntered="Players_PointerEntered"
+                                                Source="{StaticResource LightBulb}"/>
                 </Border>
 
-                <Border x:Name="PlayerTwoBorder"
+                <Border x:Name="Player2Border"
                         Style="{StaticResource LottiePlayerSmall}">
                     <!--  AnimatedVisualPlayer B  -->
-                    <winui:AnimatedVisualPlayer x:Name="PlayerTwo"
+                    <winui:AnimatedVisualPlayer x:Name="Player2"
                                                 AutoPlay="False"
-                                                PointerEntered="Players_PointerEntered">
-                        <animatedvisuals:LightBulb />
-                    </winui:AnimatedVisualPlayer>
+                                                PointerEntered="Players_PointerEntered" 
+                                                Source="{StaticResource LightBulb}"/>
                 </Border>
             </StackPanel>
 

@@ -13,19 +13,21 @@
             <!--#region IntroText-->
             <RichTextBlock Style="{StaticResource IntroTextBlock}">
                 <Paragraph>
-                    In this bonus scenario, we progammatically customize a Lottie animation: this capability may be useful
-                    for theming, branding, high-contrast, adaptive layout, etc.
-                    Since Lottie-Windows ultimately generates a tree of
-                    <Span FontFamily="Consolas">Windows.UI.Composition</Span>
-                    visuals, shapes, brushes, and animations,
-                    it's possible to modify these objects at run-time.
-                    <LineBreak />
-                    Here,
-                    <Span FontFamily="Consolas">LottieLogo1.cs</Span>
-                    is modified into
-                    <Span FontFamily="Consolas">AnimatedVisuals/LottieLogo1_Modified.cs</Span>
-                    such that its colors are based on dynamically changing Xaml ThemeResources.
-                    We replace the CompositionColorBrushes used for Teal, Turquoise, and White with SystemBaseHighColor,
+                    Lottie animations can be updated at runtime to support
+                    theming, branding, high-contrast, adaptive layout, etc.
+                    This feature takes advantage of an annotation added to
+                    your After Effects project or Lottie file that causes
+                    LottieGen to generate code that allows particular
+                    properties to be updated in code-behind.
+                    <LineBreak />Here,
+                    <Span FontFamily="Consolas">LottieLogo1.json</Span>
+                    has been renamed and annotated as
+                    <Span FontFamily="Consolas">LottieLogo1_Modified.json</Span>
+                    to produce
+                    <Span FontFamily="Consolas">AnimatedVisuals/LottieLogo1_Modified.cs</Span>.
+                    such that its colors can be updated at runtime. Then in
+                    code behind we replace the original Teal, Turquoise,
+                    and White colors with SystemBaseHighColor,
                     SystemAccentColor, and SystemAltHighColor respectively.
                     <LineBreak />
                 </Paragraph>
@@ -35,13 +37,10 @@
             <Border Style="{StaticResource LottiePlayer}">
                 <winui:AnimatedVisualPlayer x:Name="Modified_Player">
                     <!--
-                        Codegen Source that has been modified with DependencyProperties to dynamically
-                        update color values defined in the AfterEffects file: AnimatedVisuals/LottieLogo1_Modified.cs
+                        Codegen Source that has been generated from the modified LottieLogo1_Modified.json to dynamically
+                        update color values defined in the AfterEffects file.
                     -->
-                    <animatedvisuals:LottieLogo1_Modified x:Name="Modified_Source_LottieLogo1"
-                                                          BackgroundColor="{ThemeResource SystemBaseHighColor}"
-                                                          HighlightColor="{ThemeResource SystemAccentColor}"
-                                                          TextColor="{ThemeResource SystemAltHighColor}" />
+                    <animatedvisuals:LottieLogo1_Modified x:Name="Modified_Source_LottieLogo1" />
                 </winui:AnimatedVisualPlayer>
             </Border>
 
@@ -49,8 +48,12 @@
             <RichTextBlock Style="{StaticResource OutroTextBlock}">
                 <Paragraph>
                     Check out the
+                    <Hyperlink NavigateUri="https://github.com/windows-toolkit/Lottie-Windows/blob/master/samples/LottieSamples/Assets/LottieLogo1_Modified.json">
+                        modified Lottie file
+                    </Hyperlink>
+                    +
                     <Hyperlink NavigateUri="https://github.com/windows-toolkit/Lottie-Windows/blob/master/samples/LottieSamples/AnimatedVisuals/LottieLogo1_Modified.cs">
-                        modified codegen class
+                        codegen'd class
                     </Hyperlink>
                     +
                     <Hyperlink NavigateUri="https://github.com/windows-toolkit/Lottie-Windows/blob/master/samples/LottieSamples/Scenarios/ModifyPage.xaml">
@@ -60,7 +63,7 @@
                     <Hyperlink NavigateUri="https://github.com/windows-toolkit/Lottie-Windows/blob/master/samples/LottieSamples/Scenarios/ModifyPage.xaml.cs">
                         code-behind
                     </Hyperlink>
-                    to get a sense of how DependencyProperties may be used to dynamically update Lottie animations.
+                    to get a sense of how property annotations may be used to dynamically update Lottie animations.
                     <LineBreak />
                 </Paragraph>
             </RichTextBlock>

@@ -86,7 +86,7 @@ namespace LottieSamples
             var originalWindowContent = Window.Current.Content;
 
             var splashBorder = new Border();
-            splashBorder.Background = (SolidColorBrush)Current.Resources["SystemControlHighlightAccentBrush"];       
+            splashBorder.Background = (SolidColorBrush)Current.Resources["SystemControlHighlightAccentBrush"];
 
             // Use modified LottieLogo1 animation based on user's accent color.
             var lottieSource = new LottieLogo1_Modified();

@@ -2,23 +2,32 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Microsoft.UI.Xaml.Controls;
 using System;
+using System.Linq;
+using System.Threading.Tasks;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
-using System.Threading.Tasks;
+using Windows.UI.Xaml.Media;
 
 namespace LottieSamples.Scenarios
 {
     public sealed partial class AsyncPage : Page
     {
-        private static readonly (double fromProgress, double toProgress, bool looping) s_hoveredSegment = (0, 0.35, false);
-        private static readonly (double fromProgress, double toProgress, bool looping) s_clickedSegment = (0.35, 1, false);
+        // Describes the segment of the animation to display when hovered.
+        private static readonly Segment s_hoveredSegment = new Segment(0, 0.35, false);
+
+        // Describes the segment of the animation to display when clicked.
+        private static readonly Segment s_clickedSegment = new Segment(0.35, 1, false);
+
         private bool _isPlaying;
 
         public AsyncPage()
         {
             this.InitializeComponent();
-            PlayAnimations();
+
+            // Start by playing the animation sequence.
+            PlayAnimationSequencesAsync();
         }
 
         private void Players_PointerEntered(object sender, PointerRoutedEventArgs e)
@@ -26,24 +35,24 @@ namespace LottieSamples.Scenarios
             // If the animations have completed, start playing again on user interaction.
             if (!_isPlaying)
             {
-                PlayAnimations();
+                PlayAnimationSequencesAsync();
             }
         }
 
-        private async void PlayAnimations()
+        private async void PlayAnimationSequencesAsync()
         {
             _isPlaying = true;
 
-            // Repeat playing sequences 3 times.
-            for (int i=0; i<3; i++)
+            // Play the sequence 3 times.
+            for (int i = 0; i < 3; i++)
             {
-                await PlayAnimationSequencesAsync();
+                await PlayAnimationSequenceOnceAsync();
             }
 
             _isPlaying = false;
         }
 
-        private async Task PlayAnimationSequencesAsync()
+        private async Task PlayAnimationSequenceOnceAsync()
         {
             // We await the completion of the PlayAsync method to create 
             // the following order of animation sequences: 
@@ -54,37 +63,71 @@ namespace LottieSamples.Scenarios
             // 5. P1 Hovered & P2 Hovered together, then
             // 6. P1 Clicked & P2 Clicked together.
 
-            var highlightedBrush = (Windows.UI.Xaml.Media.Brush)Resources["SystemControlHighlightAccentBrush"];
-            var disabledBrush = (Windows.UI.Xaml.Media.Brush)Resources["SystemControlDisabledBaseMediumLowBrush"];
+            // 1. P1 Hovered.
+            await PlaySegmentsAsync(s_hoveredSegment, null);
 
-            PlayerOneBorder.BorderBrush = highlightedBrush;
-            PlayerTwoBorder.BorderBrush = disabledBrush;
-            await PlayerOne.PlayAsync(s_hoveredSegment.fromProgress, s_hoveredSegment.toProgress, s_hoveredSegment.looping);
+            // 2. P2 Hovered.
+            await PlaySegmentsAsync(null, s_hoveredSegment);
 
-            PlayerOneBorder.BorderBrush = disabledBrush;
-            PlayerTwoBorder.BorderBrush = highlightedBrush;
-            await PlayerTwo.PlayAsync(s_hoveredSegment.fromProgress, s_hoveredSegment.toProgress, s_hoveredSegment.looping);
+            // 3. P1 Clicked.
+            await PlaySegmentsAsync(s_clickedSegment, null);
 
-            PlayerOneBorder.BorderBrush = highlightedBrush;
-            PlayerTwoBorder.BorderBrush = disabledBrush;
-            await PlayerOne.PlayAsync(s_clickedSegment.fromProgress, s_clickedSegment.toProgress, s_clickedSegment.looping);
+            // 4. P2 Clicked.
+            await PlaySegmentsAsync(null, s_clickedSegment);
 
-            PlayerOneBorder.BorderBrush = disabledBrush;
-            PlayerTwoBorder.BorderBrush = highlightedBrush;
-            await PlayerTwo.PlayAsync(s_clickedSegment.fromProgress, s_clickedSegment.toProgress, s_clickedSegment.looping);
+            // 5. P1 Hovered & P2 Hovered together.
+            await PlaySegmentsAsync(s_hoveredSegment, s_hoveredSegment);
 
-            PlayerOneBorder.BorderBrush = highlightedBrush;
-            PlayerTwoBorder.BorderBrush = highlightedBrush;
-            await Task.WhenAll(PlayerOne.PlayAsync(s_hoveredSegment.fromProgress, s_hoveredSegment.toProgress, s_hoveredSegment.looping).AsTask(),
-                               PlayerTwo.PlayAsync(s_hoveredSegment.fromProgress, s_hoveredSegment.toProgress, s_hoveredSegment.looping).AsTask());
+            // 6. P1 Clicked & P2 Clicked together.
+            await PlaySegmentsAsync(s_clickedSegment, s_clickedSegment);
+        }
 
-            PlayerOneBorder.BorderBrush = highlightedBrush;
-            PlayerTwoBorder.BorderBrush = highlightedBrush;
-            await Task.WhenAll(PlayerOne.PlayAsync(s_clickedSegment.fromProgress, s_clickedSegment.toProgress, s_clickedSegment.looping).AsTask(),
-                               PlayerTwo.PlayAsync(s_clickedSegment.fromProgress, s_clickedSegment.toProgress, s_clickedSegment.looping).AsTask());
+        // Plays the given segments on the players.
+        private async Task PlaySegmentsAsync(Segment? segmentForPlayer1, Segment? segmentForPlayer2)
+        {
+            // Draw a highlight around the players that are playing a segment.
+            UpdatePlayerHighlights(segmentForPlayer1.HasValue, segmentForPlayer2.HasValue);
 
-            PlayerOneBorder.BorderBrush = disabledBrush;
-            PlayerTwoBorder.BorderBrush = disabledBrush;
-        }      
+            // Start playing the segments.
+            var tasks = new[] { segmentForPlayer1?.PlayAsync(Player1), segmentForPlayer2?.PlayAsync(Player2) };
+
+            // Wait for the segments to finish.
+            await Task.WhenAll(tasks.Where(t => t != null).ToArray());
+
+            // Remove the highlight drawn around the playing players.
+            UpdatePlayerHighlights(false, false);
+        }
+
+        // Updates the highlighting border around each player.
+        private void UpdatePlayerHighlights(bool player1Highlighted, bool player2Highlighted)
+        {
+            UpdatePlayerHighlights(Player1, player1Highlighted);
+            UpdatePlayerHighlights(Player2, player2Highlighted);
+        }
+
+        // Updates the highlighting border around the given player.
+        private void UpdatePlayerHighlights(AnimatedVisualPlayer player, bool highlighted)
+        {
+            var border = player == Player1 ? Player1Border : Player2Border;
+            border.BorderBrush = highlighted
+                ? (Brush)Resources["SystemControlHighlightAccentBrush"]
+                : (Brush)Resources["SystemControlDisabledBaseMediumLowBrush"];
+        }
+
+        readonly struct Segment
+        {
+            public Segment(double fromProgress, double toProgress, bool looping)
+                => (FromProgress, ToProgress, Looping) = (fromProgress, toProgress, looping);
+
+            public double FromProgress { get; }
+
+            public double ToProgress { get; }
+
+            public bool Looping { get; }
+
+            // Plays the segment on the given player.
+            public async Task PlayAsync(AnimatedVisualPlayer player)
+                => await player.PlayAsync(FromProgress, ToProgress, Looping);
+        }
     }
 }

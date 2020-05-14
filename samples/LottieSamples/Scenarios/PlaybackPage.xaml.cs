@@ -53,13 +53,13 @@ namespace LottieSamples.Scenarios
         private void StartPlaying()
         {
             // If already playing, keep playing till PlayAsync completes or is interrupted.
-            if (Playback_Player.IsPlaying && !(bool)PauseButton.IsChecked)
+            if (Playback_Player.IsPlaying && PauseButton.IsChecked == false)
             {
                 return;
             }
 
             // Resume playing the animation, if paused.
-            if ((bool)PauseButton.IsChecked)
+            if (PauseButton.IsChecked == true)
             {
                 PauseButton.IsChecked = false;
             }
