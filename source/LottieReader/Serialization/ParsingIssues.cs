@@ -32,7 +32,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         internal (string Code, string Description)[] GetIssues() => _issues.ToArray();
 
-        internal void FailedToParseJson(string message) => Report("LP0001", $"Failed to parse JSON. {message}.");
+        // LP0001 has been deprecated.
+        // Was: Failed to parse JSON. {message}.
 
         internal void FatalError(string message) => Report("LP0002", $"Fatal error: {message}.");
 
@@ -44,15 +45,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         internal void LayerEffectsIsNotSupported(string layer) => Report("LP0008", $"{layer} has layer effects, which is not supported.");
 
-        internal void Mattes() => Report("LP0009", "Mattes.");
+        // LP0009 has been deprecated.
+        // Was: Mattes.
 
         internal void TimeRemappingOfPreComps() => Report("LP0011", "Time remapping of precomp layers.");
 
-        internal void UnexpectedShapeContentType(string type) => Report("LP0012", $"Unexpected shape content type: {type}.");
+        // LP0012 has been deprecated.
+        // Was: Unexpected shape content type: {type}.
 
-        internal void GradientStrokes() => Report("LP0013", "Gradient strokes.");
+        // LP0013 has been deprecated.
+        // Was: Gradient strokes.
 
-        internal void PolystarAnimation(string property) => Report("LP0014", $"Polystar {property} animation.");
+        // LP0014 has been deprecated.
+        // Was: Polystar {property} animation.
 
         internal void Expressions() => Report("LP0015", "Expressions.");
 

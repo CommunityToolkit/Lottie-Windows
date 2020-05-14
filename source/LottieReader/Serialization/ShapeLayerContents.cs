@@ -324,55 +324,21 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             var direction = obj.BoolPropertyOrNull("d") == true;
 
             var points = ReadAnimatableFloat(obj.ObjectPropertyOrNull("pt"));
-            if (points.IsAnimated)
-            {
-                _issues.PolystarAnimation("points");
-            }
-
             var position = ReadAnimatableVector3(obj.ObjectPropertyOrNull("p"));
-            if (position.IsAnimated)
-            {
-                _issues.PolystarAnimation("position");
-            }
-
             var rotation = ReadAnimatableFloat(obj.ObjectPropertyOrNull("r"));
-            if (rotation.IsAnimated)
-            {
-                _issues.PolystarAnimation("rotation");
-            }
-
             var outerRadius = ReadAnimatableFloat(obj.ObjectPropertyOrNull("or"));
-            if (outerRadius.IsAnimated)
-            {
-                _issues.PolystarAnimation("outer radius");
-            }
-
             var outerRoundedness = ReadAnimatableFloat(obj.ObjectPropertyOrNull("os"));
-            if (outerRoundedness.IsAnimated)
-            {
-                _issues.PolystarAnimation("outer roundedness");
-            }
+
+            var polystarType = SyToPolystarType(obj.DoublePropertyOrNull("sy")) ?? Polystar.PolyStarType.Polygon;
 
             Animatable<double> innerRadius;
             Animatable<double> innerRoundedness;
-
-            var polystarType = SyToPolystarType(obj.DoublePropertyOrNull("sy")) ?? Polystar.PolyStarType.Polygon;
 
             switch (polystarType)
             {
                 case Polystar.PolyStarType.Star:
                     innerRadius = ReadAnimatableFloat(obj.ObjectPropertyOrNull("ir"));
-                    if (innerRadius.IsAnimated)
-                    {
-                        _issues.PolystarAnimation("inner radius");
-                    }
-
                     innerRoundedness = ReadAnimatableFloat(obj.ObjectPropertyOrNull("is"));
-                    if (innerRoundedness.IsAnimated)
-                    {
-                        _issues.PolystarAnimation("inner roundedness");
-                    }
-
                     break;
 
                 default:
