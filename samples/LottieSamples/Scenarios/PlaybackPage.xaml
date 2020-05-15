@@ -14,7 +14,8 @@
             <RichTextBlock Style="{StaticResource IntroTextBlock}">
                 <Paragraph>
                     This example demonstrates how to configure
-                    <Span FontFamily="Consolas">AnimatedVisualPlayer</Span> 's playback in response to user interaction.
+                    <Span FontFamily="Consolas">AnimatedVisualPlayer</Span>'s
+                    playback in response to user interaction.
                     <Span FontWeight="SemiBold">Press</Span>
                     the buttons below to
                     play, pause, stop, and reverse the Lottie animation.

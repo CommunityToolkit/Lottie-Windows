@@ -24,9 +24,9 @@
                     has been renamed and annotated as
                     <Span FontFamily="Consolas">LottieLogo1_Modified.json</Span>
                     to produce
-                    <Span FontFamily="Consolas">AnimatedVisuals/LottieLogo1_Modified.cs</Span>.
+                    <Span FontFamily="Consolas">AnimatedVisuals/LottieLogo1_Modified.cs</Span>,
                     such that its colors can be updated at runtime. Then in
-                    code behind we replace the original Teal, Turquoise,
+                    code-behind we replace the original Teal, Turquoise,
                     and White colors with SystemBaseHighColor,
                     SystemAccentColor, and SystemAltHighColor respectively.
                     <LineBreak />

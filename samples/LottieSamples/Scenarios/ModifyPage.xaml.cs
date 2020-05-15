@@ -34,7 +34,7 @@ namespace LottieSamples.Scenarios
                     Modified_Source_LottieLogo1.HighlightColor = (Color)Resources["SystemAccentColor"];
                     Modified_Source_LottieLogo1.TextColor = (Color)Resources["SystemAltHighColor"];
                 }
-            );                                     
+            );
         }
     }
 }

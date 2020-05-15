@@ -15,7 +15,7 @@
                 <RichTextBlock>
                     <Paragraph>
                         While Lottie animations on other platforms require you to use a json file,
-                        Lottie-Windows allows you to use a codegen'ed class which provides better performance.
+                        Lottie-Windows allows you to use a codegen'd class which provides better performance.
                         You'll need to
                         <Span FontWeight="SemiBold">include</Span>:
                         <LineBreak />
