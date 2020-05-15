@@ -83,13 +83,13 @@ namespace LottieSamples.Scenarios
         }
 
         // Plays the given segments on the players.
-        private async Task PlaySegmentsAsync(Segment? segmentForPlayer1, Segment? segmentForPlayer2)
+        private async Task PlaySegmentsAsync(Segment? segmentForPlayerA, Segment? segmentForPlayerB)
         {
             // Draw a highlight around the players that are playing a segment.
-            UpdatePlayerHighlights(segmentForPlayer1.HasValue, segmentForPlayer2.HasValue);
+            UpdatePlayerHighlights(segmentForPlayerA.HasValue, segmentForPlayerB.HasValue);
 
             // Start playing the segments.
-            var tasks = new[] { segmentForPlayer1?.PlayAsync(Player1), segmentForPlayer2?.PlayAsync(Player2) };
+            var tasks = new[] { segmentForPlayerA?.PlayAsync(PlayerA), segmentForPlayerB?.PlayAsync(PlayerB) };
 
             // Wait for the segments to finish.
             await Task.WhenAll(tasks.Where(t => t != null).ToArray());
@@ -99,16 +99,16 @@ namespace LottieSamples.Scenarios
         }
 
         // Updates the highlighting border around each player.
-        private void UpdatePlayerHighlights(bool player1Highlighted, bool player2Highlighted)
+        private void UpdatePlayerHighlights(bool playerAHighlighted, bool playerBHighlighted)
         {
-            UpdatePlayerHighlights(Player1, player1Highlighted);
-            UpdatePlayerHighlights(Player2, player2Highlighted);
+            UpdatePlayerHighlights(PlayerA, playerAHighlighted);
+            UpdatePlayerHighlights(PlayerB, playerBHighlighted);
         }
 
         // Updates the highlighting border around the given player.
         private void UpdatePlayerHighlights(AnimatedVisualPlayer player, bool highlighted)
         {
-            var border = player == Player1 ? Player1Border : Player2Border;
+            var border = player == PlayerA ? PlayerBBorder : PlayerBBorder;
             border.BorderBrush = highlighted
                 ? (Brush)Resources["SystemControlHighlightAccentBrush"]
                 : (Brush)Resources["SystemControlDisabledBaseMediumLowBrush"];
