@@ -46,7 +46,7 @@ The method ColorAsVector4(…) method in generated code is to help developers se
     * Limited support for C++/winrt. This is enough support to satisfy the needs of some Microsoft teams, but should not be considered general support yet. Bug reports are welcome though and we will work towards full support. 
 
 **Metadata handling**
-* Add a general metadata facility for all CompositionObjects. This allows arbitrary data to be passed through the translator. It is used for Lottie metadata (e.g. markers), property binding, and object names, and object descriptions. 
+* Added a general metadata facility for all CompositionObjects. This allows arbitrary data to be passed through the translator. It is used for Lottie metadata (e.g. markers), property binding, and object names, and object descriptions. 
 
 **Parser performance**
 * Removed dependency on the Newtonsoft JSON parser. We now use the System.Text.Json parser. Parsing performance improved ~50%.
