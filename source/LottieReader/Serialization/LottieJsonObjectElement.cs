@@ -138,7 +138,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 {
                     if (pair.unread)
                     {
-                        _owner._issues.IgnoredField($"{memberName}.{pair.property.Name}");
+                        _owner._issues.UnexpectedField($"{memberName}.{pair.property.Name}");
                     }
                 }
             }

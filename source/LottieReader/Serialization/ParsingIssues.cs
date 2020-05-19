@@ -61,7 +61,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         internal void Expressions() => Report("LP0015", "Expressions.");
 
-        internal void IgnoredField(string field) => Report("LP0016", $"Ignored field: {field}.");
+        // LP0016 has been deprecated.
+        // Was: Ignored field: {field}.
 
         internal void UnexpectedField(string field) => Report("LP0017", $"Unexpected field: {field}.");
 
