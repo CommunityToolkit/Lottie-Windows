@@ -15,10 +15,17 @@ namespace LottieSamples.Scenarios
         public ModifyPage()
         {
             this.InitializeComponent();
+
+            // Set the colors based on system resources.
+            Modified_Source_LottieLogo1.BackgroundColor = (Color)Resources["SystemBaseHighColor"];
+            Modified_Source_LottieLogo1.HighlightColor = (Color)Resources["SystemAccentColor"];
+            Modified_Source_LottieLogo1.TextColor = (Color)Resources["SystemAltHighColor"];
+
             var settings = new UISettings();
             settings.ColorValuesChanged += ModifyPage_ColorValuesChanged;
         }
 
+        // React to system resource color changes.
         private async void ModifyPage_ColorValuesChanged(UISettings sender, object args)
         {
             await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
@@ -27,7 +34,7 @@ namespace LottieSamples.Scenarios
                     Modified_Source_LottieLogo1.HighlightColor = (Color)Resources["SystemAccentColor"];
                     Modified_Source_LottieLogo1.TextColor = (Color)Resources["SystemAltHighColor"];
                 }
-            );                                     
+            );
         }
     }
 }

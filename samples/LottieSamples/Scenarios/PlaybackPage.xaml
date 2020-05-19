@@ -14,7 +14,8 @@
             <RichTextBlock Style="{StaticResource IntroTextBlock}">
                 <Paragraph>
                     This example demonstrates how to configure
-                    <Span FontFamily="Consolas">AnimatedVisualPlayer</Span>'s playback in response to user interaction.
+                    <Span FontFamily="Consolas">AnimatedVisualPlayer</Span>'s
+                    playback in response to user interaction.
                     <Span FontWeight="SemiBold">Press</Span>
                     the buttons below to
                     play, pause, stop, and reverse the Lottie animation.
@@ -41,19 +42,23 @@
                     <ColumnDefinition />
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
+                <Grid.Resources>
+                    <Style x:Key="ButtonBaseStyle" TargetType="ButtonBase">
+                        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                        <Setter Property="Margin" Value="10"/>
+                    </Style>
+                    <Style TargetType="Button" BasedOn="{StaticResource ButtonBaseStyle}"/>
+                    <Style TargetType="ToggleButton" BasedOn="{StaticResource ButtonBaseStyle}"/>
+                </Grid.Resources>
                 <!--  Play  -->
                 <Button x:Name="PlayButton"
                         Grid.Column="0"
-                        Margin="10"
-                        HorizontalAlignment="Stretch"
                         Click="PlayButton_Click">
                     <SymbolIcon Symbol="Play" />
                 </Button>
                 <!--  Pause  -->
                 <ToggleButton x:Name="PauseButton"
                               Grid.Column="1"
-                              Margin="10"
-                              HorizontalAlignment="Stretch"
                               Checked="PauseButton_Checked"
                               IsThreeState="False"
                               Unchecked="PauseButton_Unchecked">
@@ -62,16 +67,12 @@
                 <!--  Resume  -->
                 <Button x:Name="StopButton"
                         Grid.Column="2"
-                        Margin="10"
-                        HorizontalAlignment="Stretch"
                         Click="StopButton_Click">
                     <SymbolIcon Symbol="Stop" />
                 </Button>
                 <!--  Reverse  -->
                 <Button x:Name="ReverseButton"
                         Grid.Column="3"
-                        Margin="10"
-                        HorizontalAlignment="Stretch"
                         Click="ReverseButton_Click">
                     <SymbolIcon Symbol="Previous" />
                 </Button>
