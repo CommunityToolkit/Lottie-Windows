@@ -11,8 +11,10 @@ Lottie-Windows consists of 3 related products:
 * **[LottieGen](/LottieGen)** command-line tool for generating C# or C++ code to be used instead of JSON
 * **[Lottie Viewer](/LottieViewer)** application for previewing JSON and also generating code 
 
+This repo also contains source code for **[samples](/LottieViewer)**.
+
 ## <a name="supported"></a> Supported SDKs
-* May 2019 Update (18362)
+* May 2019 Update (18362) and later
 
 ## <a name="documentation"></a> Getting Started
 * [Documentation and Tutorials](https://aka.ms/lottiedocs)
@@ -22,7 +24,7 @@ Lottie-Windows consists of 3 related products:
 ## Build Status
 | Target | Branch | Status | Recommended NuGet package |
 | ------ | ------ | ------ | ------ |
-| 6.0.0 release | master | [![Build Status](https://dev.azure.com/dotnet/WindowsCommunityToolkit/_apis/build/status/Microsoft.Toolkit.Uwp.UI.Lottie?branchName=master)](https://dev.azure.com/dotnet/WindowsCommunityToolkit/_build/latest?definitionId=61&branchName=master) | [![NuGet](https://img.shields.io/nuget/v/Microsoft.Toolkit.Uwp.UI.Lottie.svg)](https://www.nuget.org/packages/Microsoft.Toolkit.Uwp.UI.Lottie/) |
+| 6.1.0 release | master | [![Build Status](https://dev.azure.com/dotnet/WindowsCommunityToolkit/_apis/build/status/Microsoft.Toolkit.Uwp.UI.Lottie?branchName=master)](https://dev.azure.com/dotnet/WindowsCommunityToolkit/_build/latest?definitionId=61&branchName=master) | [![NuGet](https://img.shields.io/nuget/v/Microsoft.Toolkit.Uwp.UI.Lottie.svg)](https://www.nuget.org/packages/Microsoft.Toolkit.Uwp.UI.Lottie/) |
 
 ## Feedback and Requests
 Please use [GitHub Issues](https://github.com/windows-toolkit/Lottie-Windows/issues) for bug reports and feature requests.
