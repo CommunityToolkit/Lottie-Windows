@@ -39,7 +39,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                                 frame = reader.ParseDouble();
                                 break;
                             default:
-                                _issues.IgnoredField(currentProperty);
+                                _issues.UnexpectedField(currentProperty);
                                 reader.Skip();
                                 break;
                         }
