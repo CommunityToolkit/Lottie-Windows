@@ -108,7 +108,7 @@ namespace LottieSamples.Scenarios
         // Updates the highlighting border around the given player.
         private void UpdatePlayerHighlights(AnimatedVisualPlayer player, bool highlighted)
         {
-            var border = player == PlayerA ? PlayerBBorder : PlayerBBorder;
+            var border = player == PlayerA ? PlayerABorder : PlayerBBorder;
             border.BorderBrush = highlighted
                 ? (Brush)Resources["SystemControlHighlightAccentBrush"]
                 : (Brush)Resources["SystemControlDisabledBaseMediumLowBrush"];
