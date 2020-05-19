@@ -123,7 +123,7 @@
                                        Text="8" />
                             <TextBlock>
                                 <Run>Dynamically</Run>
-                                <Run FontWeight="SemiBold">Modifying</Run>
+                                <Run FontWeight="SemiBold">Modified</Run>
                                 <Run>Animations</Run>
                             </TextBlock>
                         </StackPanel>

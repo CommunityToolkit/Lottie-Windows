@@ -53,7 +53,8 @@
                     <Paragraph>
                         <LineBreak />
                         x 3 times
-                        (<Span FontWeight="SemiBold">interact</Span>
+                        (
+                        <Span FontWeight="SemiBold">interact</Span>
                         to restart sequence)
                         <LineBreak />
                     </Paragraph>
@@ -64,25 +65,26 @@
             <StackPanel HorizontalAlignment="Center"
                         VerticalAlignment="Center"
                         Orientation="Horizontal">
+                <StackPanel.Resources>
+                    <animatedvisuals:LightBulb x:Key="LightBulb"/>
+                </StackPanel.Resources>
 
-                <Border x:Name="PlayerOneBorder"
+                <Border x:Name="PlayerABorder"
                         Style="{StaticResource LottiePlayerSmall}">
                     <!--  AnimatedVisualPlayer A  -->
-                    <winui:AnimatedVisualPlayer x:Name="PlayerOne"
+                    <winui:AnimatedVisualPlayer x:Name="PlayerA"
                                                 AutoPlay="False"
-                                                PointerEntered="Players_PointerEntered">
-                        <animatedvisuals:LightBulb />
-                    </winui:AnimatedVisualPlayer>
+                                                PointerEntered="Players_PointerEntered"
+                                                Source="{StaticResource LightBulb}"/>
                 </Border>
 
-                <Border x:Name="PlayerTwoBorder"
+                <Border x:Name="PlayerBBorder"
                         Style="{StaticResource LottiePlayerSmall}">
                     <!--  AnimatedVisualPlayer B  -->
-                    <winui:AnimatedVisualPlayer x:Name="PlayerTwo"
+                    <winui:AnimatedVisualPlayer x:Name="PlayerB"
                                                 AutoPlay="False"
-                                                PointerEntered="Players_PointerEntered">
-                        <animatedvisuals:LightBulb />
-                    </winui:AnimatedVisualPlayer>
+                                                PointerEntered="Players_PointerEntered"
+                                                Source="{StaticResource LightBulb}"/>
                 </Border>
             </StackPanel>
 
@@ -91,16 +93,13 @@
                     <ColumnDefinition />
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
-                <TextBlock x:Name="PlayerOneText"
-                           Grid.Column="0"
-                           HorizontalAlignment="Center">
-                    A
-                </TextBlock>
-                <TextBlock x:Name="PlayerTwoText"
-                           Grid.Column="1"
-                           HorizontalAlignment="Center">
-                    B
-                </TextBlock>
+                <Grid.Resources>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="HorizontalAlignment" Value="Center"/>
+                    </Style>
+                </Grid.Resources>
+                <TextBlock Grid.Column="0">A</TextBlock>
+                <TextBlock Grid.Column="1">B</TextBlock>
             </Grid>
 
             <!--#region OutroText-->
