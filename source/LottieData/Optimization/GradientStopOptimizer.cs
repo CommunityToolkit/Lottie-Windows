@@ -273,7 +273,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
 
         // Returns a bool for each stop, set to true if the stop is redundant.
         // This is particularly useful for eliminating the default "midpoint" stop
-        // that AfterEffects creates between any 2 stops that the user adds.
+        // that After Effects creates between any 2 stops that the user adds.
         static bool[] FindRedundantColorStops(ColorGradientStop[] stops)
         {
             var result = new bool[stops.Length];

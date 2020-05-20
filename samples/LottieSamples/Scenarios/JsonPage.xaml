@@ -16,7 +16,7 @@
                     <Paragraph>
                         <Span>To render our first Lottie animation, we use</Span>
                         <Span FontFamily="Consolas">Assets/LottieLogo1.json</Span>
-                        which was generated from Adobe AfterEffects using
+                        which was generated from Adobe After Effects using
                         <Hyperlink NavigateUri="http://aescripts.com/bodymovin/">Bodymovin</Hyperlink>.
                         You'll need to
                         <Span FontWeight="SemiBold">include</Span>:
