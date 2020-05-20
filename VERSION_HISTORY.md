@@ -32,8 +32,8 @@ The ColorAsVector4(…) method in generated code is to help developers set color
 
 * Code quality improvements.
     * Abstracted common patterns (e.g. creating a shape and setting its fill) into methods. This results in smaller code that is easier to read.
-    * Canonicalize progress remapping variables. These are the "t1", "t2", etc variables that are used to support spatial Beziers. Canonicalizing can reduce the number of variables (and their associated costs).
-    * Use "Visual.IsVisible" property for visibility control. This was previously not possible due to requirements to run downlevel (where this property was not available). 
+    * Canonicalize progress remapping variables. These are the "t1", "t2", etc. variables that are used to support spatial Beziers. Canonicalizing can reduce the number of variables (and their associated costs).
+    * Use "Visual.IsVisible" property for visibility control. This was previously not possible due to requirements to run downlevel (where this property was not available).
     * Use "CompositionShape.Scale" for visibility on shapes instead of TransformMatrix. This generates more efficient code and enables more optimizations.
     * Gradient stop optimization. After Effects does not remove redundant gradient stops, and simple gradients often have a redundant "middle" gradient stop. We can now detect and remove redundant gradient stops.
     * Eliminate redundant "Position" animations.
