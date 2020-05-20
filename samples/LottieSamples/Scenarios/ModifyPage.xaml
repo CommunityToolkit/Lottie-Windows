@@ -38,7 +38,7 @@
                 <winui:AnimatedVisualPlayer x:Name="Modified_Player">
                     <!--
                         Codegen Source that has been generated from the modified LottieLogo1_Modified.json to dynamically
-                        update color values defined in the AfterEffects file.
+                        update color values defined in the After Effects file.
                     -->
                     <animatedvisuals:LottieLogo1_Modified x:Name="Modified_Source_LottieLogo1" />
                 </winui:AnimatedVisualPlayer>
