@@ -70,7 +70,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         readonly Dictionary<Color, CompositionColorBrush> _nonAnimatedColorBrushes = new Dictionary<Color, CompositionColorBrush>();
 
         // Paths are shareable.
-        readonly Dictionary<(Sequence<BezierSegment>, ShapeFill.PathFillType, bool), CompositionPath> _compositionPaths = new Dictionary<(Sequence<BezierSegment>, ShapeFill.PathFillType, bool), CompositionPath>();
+        readonly Dictionary<(Sequence<BezierSegment>, ShapeFill.PathFillType, bool), CompositionPath> _compositionPaths
+            = new Dictionary<(Sequence<BezierSegment>, ShapeFill.PathFillType, bool), CompositionPath>();
 
         // The names that are bound to properties (such as the Color of a SolidColorFill).
         // Keep track of them here so that codegen can generate properties for them.
@@ -455,7 +456,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
                 var compositionPathGeometry = _c.CreatePathGeometry();
 
-                ApplyPath(context, compositionPathGeometry, mask.Points, ShapeFill.PathFillType.EvenOdd);
+                var path = context.TrimAnimatable(_lottieDataOptimizer.GetOptimized(mask.Points));
+
+                ApplyPath(context, compositionPathGeometry, path, ShapeFill.PathFillType.EvenOdd);
 
                 var maskSpriteShape = _c.CreateSpriteShape();
                 maskSpriteShape.Geometry = compositionPathGeometry;
@@ -1732,33 +1735,38 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         break;
                     case ShapeContentType.Path:
                         {
-                            var path = (Path)shapeContent;
-                            List<Path> paths = null;
+                            var paths = new List<Path>();
+                            paths.Add(context.OptimizePath((Path)shapeContent));
 
-                            if (!path.Data.IsAnimated)
+                            // Get all the paths that are part of the same group.
+                            while (stack.TryPeek(out var item) && item.ContentType == ShapeContentType.Path)
                             {
-                                while (stack.TryPeek(out var item) && item.ContentType == ShapeContentType.Path && !((Path)item).Data.IsAnimated)
-                                {
-                                    if (paths is null)
-                                    {
-                                        paths = new List<Path>();
-                                        paths.Add(path);
-                                    }
-
-                                    paths.Add((Path)stack.Pop());
-                                }
+                                // Optimize the paths as they are added. Optimized paths have redundant keyframes
+                                // removed. Optimizing here increases the chances that an animated path will be
+                                // turned into a non-animated path which will allow us to group the paths.
+                                paths.Add(context.OptimizePath((Path)stack.Pop()));
                             }
 
-                            if (paths != null)
+                            if (paths.Count == 1)
                             {
-                                // There are multiple paths that are all non-animated. Group them.
-                                // Note that we should be grouping paths and other shapes even if they're animated
-                                // but we currently only support paths, and only if they're non-animated.
-                                container.Shapes.Add(TranslatePathGroupContent(context, shapeContext, paths));
+                                // There's a single path.
+                                container.Shapes.Add(TranslatePathContent(context, shapeContext, paths[0]));
                             }
                             else
                             {
-                                container.Shapes.Add(TranslatePathContent(context, shapeContext, path));
+                                // There are multiple paths. They need to be grouped.
+                                if (paths.Any(p => p.Data.IsAnimated))
+                                {
+                                    // We currrently don't support grouping of animated paths.
+                                    // Issue a warning and just add the first path.
+                                    _issues.CombiningMultipleAnimatedPathsIsNotSupported();
+
+                                    container.Shapes.Add(TranslatePathContent(context, shapeContext, paths[0]));
+                                }
+                                else
+                                {
+                                    container.Shapes.Add(TranslatePathGroupContent(context, shapeContext, paths));
+                                }
                             }
                         }
 
@@ -2401,22 +2409,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         // Groups multiple Shapes into a D2D geometry group.
         CompositionShape TranslatePathGroupContent(TranslationContext context, ShapeContentContext shapeContext, IEnumerable<Path> paths)
         {
-            Debug.Assert(paths.All(sh => !sh.Data.IsAnimated), "Precondition");
-
             CheckForRoundedCornersOnPath(context, shapeContext);
 
             var fillType = GetPathFillType(shapeContext.Fill);
 
             // A path is represented as a SpriteShape with a CompositionPathGeometry.
-            var compositionPathGeometry = _c.CreatePathGeometry();
+            var compositionPath = CompositionPathFromPathGeometryGroup(paths.Select(p => p.Data.InitialValue), fillType, optimizeLines: true);
 
-            var compositionPath = new CompositionPath(
-                CanvasGeometry.CreateGroup(
-                    null,
-                    paths.Select(p => CreateWin2dPathGeometry(p, fillType)).ToArray(),
-                    FilledRegionDetermination(fillType)));
-
-            compositionPathGeometry.Path = compositionPath;
+            var compositionPathGeometry = _c.CreatePathGeometry(compositionPath);
 
             var compositionSpriteShape = _c.CreateSpriteShape();
             compositionSpriteShape.Geometry = compositionPathGeometry;
@@ -2443,7 +2443,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var compositionSpriteShape = _c.CreateSpriteShape();
             compositionSpriteShape.Geometry = geometry;
 
-            ApplyPath(context, geometry, path.Data, GetPathFillType(shapeContext.Fill));
+            var pathData = context.TrimAnimatable(_lottieDataOptimizer.GetOptimized(path.Data));
+
+            ApplyPath(context, geometry, pathData, GetPathFillType(shapeContext.Fill));
 
             if (_addDescriptions)
             {
@@ -3759,20 +3761,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         void ApplyPath(
             TranslationContext context,
             CompositionPathGeometry targetGeometry,
-            Animatable<Sequence<BezierSegment>> path,
+            in TrimmedAnimatable<Sequence<BezierSegment>> path,
             ShapeFill.PathFillType fillType)
         {
-            var optimizedPathAnimatable = context.TrimAnimatable(_lottieDataOptimizer.GetOptimized(path));
-
             // PathKeyFrameAnimation was introduced in 6 but was unreliable until 11.
-            if (optimizedPathAnimatable.IsAnimated && IsUapApiAvailable(nameof(PathKeyFrameAnimation), versionDependentFeatureDescription: "Path animation"))
+            if (path.IsAnimated && IsUapApiAvailable(nameof(PathKeyFrameAnimation), versionDependentFeatureDescription: "Path animation"))
             {
-                ApplyPathKeyFrameAnimation(context, optimizedPathAnimatable, fillType, targetGeometry, nameof(targetGeometry.Path), nameof(targetGeometry.Path));
+                ApplyPathKeyFrameAnimation(context, path, fillType, targetGeometry, nameof(targetGeometry.Path), nameof(targetGeometry.Path));
             }
             else
             {
                 targetGeometry.Path = CompositionPathFromPathGeometry(
-                    optimizedPathAnimatable.InitialValue,
+                    path.InitialValue,
                     fillType,
                     optimizeLines: true);
             }
@@ -4282,17 +4282,41 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         static ShapeFill.PathFillType GetPathFillType(ShapeFill fill) => fill is null ? ShapeFill.PathFillType.EvenOdd : fill.FillType;
 
+        // Creates a CompositionPath from a single path.
         CompositionPath CompositionPathFromPathGeometry(
             Sequence<BezierSegment> pathGeometry,
             ShapeFill.PathFillType fillType,
             bool optimizeLines)
         {
-            // CompositionPaths can be shared by many SpriteShapes.
+            // CompositionPaths can be shared by many SpriteShapes so we cache them here.
+            // Note that an optimizer that ran over the result could do the same job,
+            // but paths are typically very large so it's preferable to cache them here.
             if (!_compositionPaths.TryGetValue((pathGeometry, fillType, optimizeLines), out var result))
             {
                 result = new CompositionPath(CreateWin2dPathGeometry(pathGeometry, fillType, Sn.Matrix3x2.Identity, optimizeLines));
                 _compositionPaths.Add((pathGeometry, fillType, optimizeLines), result);
             }
+
+            return result;
+        }
+
+        // Creates a CompositionPath from a group of paths.
+        CompositionPath CompositionPathFromPathGeometryGroup(
+            IEnumerable<Sequence<BezierSegment>> paths,
+            ShapeFill.PathFillType fillType,
+            bool optimizeLines)
+        {
+            var compositionPaths = paths.Select(p => CompositionPathFromPathGeometry(p, fillType, optimizeLines)).ToArray();
+
+            CompositionPath result;
+
+            result = compositionPaths.Length == 1
+                ? compositionPaths[0]
+                : new CompositionPath(
+                    CanvasGeometry.CreateGroup(
+                        device: null,
+                        compositionPaths.Select(p => (CanvasGeometry)p.Source).ToArray(),
+                        FilledRegionDetermination(fillType)));
 
             return result;
         }

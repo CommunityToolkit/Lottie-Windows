@@ -80,6 +80,23 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return result;
         }
 
+        internal Path OptimizePath(Path path)
+        {
+            var optimizedPathData = TrimAnimatable(path.Data);
+
+            return new Path(
+                new ShapeLayerContent.ShapeLayerContentArgs
+                {
+                    BlendMode = path.BlendMode,
+                    MatchName = path.MatchName,
+                    Name = path.Name,
+                },
+                path.Direction,
+                optimizedPathData.IsAnimated
+                    ? new Animatable<Sequence<BezierSegment>>(optimizedPathData.KeyFrames.ToArray(), path.Data.PropertyIndex)
+                    : new Animatable<Sequence<BezierSegment>>(optimizedPathData.InitialValue, path.Data.PropertyIndex));
+        }
+
         internal TrimmedAnimatable<Vector3> TrimAnimatable(IAnimatableVector3 animatable)
         {
             return TrimAnimatable<Vector3>((AnimatableVector3)animatable);
