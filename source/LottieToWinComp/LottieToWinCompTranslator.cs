@@ -1758,15 +1758,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                                 if (paths.Any(p => p.Data.IsAnimated))
                                 {
                                     // We currrently don't support grouping of animated paths.
-                                    // Issue a warning and just add the first path.
+                                    // Issue a warning and strip the animations from the paths before adding them.
                                     _issues.CombiningMultipleAnimatedPathsIsNotSupported();
 
-                                    container.Shapes.Add(TranslatePathContent(context, shapeContext, paths[0]));
+                                    paths = paths.Select(p => UnanimatePath(p)).ToList();
                                 }
-                                else
-                                {
-                                    container.Shapes.Add(TranslatePathGroupContent(context, shapeContext, paths));
-                                }
+
+                                container.Shapes.Add(TranslatePathGroupContent(context, shapeContext, paths));
                             }
                         }
 
@@ -1812,6 +1810,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
 
             return result;
+        }
+
+        // Returns a path the same as the given path, but with any animations replaced
+        // by the first keyframe in the animation.
+        Path UnanimatePath(Path path)
+        {
+            var pathData = path.Data;
+
+            return pathData.IsAnimated
+                ? path.CloneWithNewGeometry(new Animatable<Sequence<BezierSegment>>(pathData.InitialValue, pathData.PropertyIndex))
+                : path;
         }
 
         // Merge the stack into a single shape. Merging is done recursively - the top geometry on the
@@ -4308,17 +4317,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         {
             var compositionPaths = paths.Select(p => CompositionPathFromPathGeometry(p, fillType, optimizeLines)).ToArray();
 
-            CompositionPath result;
-
-            result = compositionPaths.Length == 1
+            return compositionPaths.Length == 1
                 ? compositionPaths[0]
                 : new CompositionPath(
                     CanvasGeometry.CreateGroup(
                         device: null,
                         compositionPaths.Select(p => (CanvasGeometry)p.Source).ToArray(),
                         FilledRegionDetermination(fillType)));
-
-            return result;
         }
 
         TrimmedAnimatable<Color> MultiplyAnimatableColorByOpacity(

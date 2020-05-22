@@ -82,16 +82,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal Path OptimizePath(Path path)
         {
+            // Optimize the path data. This may result in a previously animated path
+            // becoming non-animated.
             var optimizedPathData = TrimAnimatable(path.Data);
 
-            return new Path(
-                new ShapeLayerContent.ShapeLayerContentArgs
-                {
-                    BlendMode = path.BlendMode,
-                    MatchName = path.MatchName,
-                    Name = path.Name,
-                },
-                path.Direction,
+            return path.CloneWithNewGeometry(
                 optimizedPathData.IsAnimated
                     ? new Animatable<Sequence<BezierSegment>>(optimizedPathData.KeyFrames.ToArray(), path.Data.PropertyIndex)
                     : new Animatable<Sequence<BezierSegment>>(optimizedPathData.InitialValue, path.Data.PropertyIndex));
