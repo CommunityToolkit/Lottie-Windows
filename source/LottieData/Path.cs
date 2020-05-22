@@ -31,7 +31,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
         /// <summary>
         /// Returns a path with the same properties except with the given
-        /// <paramref name="geometryData"/> in palse of <see cref="Data"/>.
+        /// <paramref name="geometryData"/> in place of <see cref="Data"/>.
         /// </summary>
         /// <param name="geometryData">The geometry to use in place of <see cref="Data"/>.</param>
         /// <returns>The cloned path.</returns>
