@@ -28,5 +28,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
         /// <inheritdoc/>
         public override LottieObjectType ObjectType => LottieObjectType.Shape;
+
+        /// <summary>
+        /// Returns a path with the same properties except with the given
+        /// <paramref name="geometryData"/> in place of <see cref="Data"/>.
+        /// </summary>
+        /// <param name="geometryData">The geometry to use in place of <see cref="Data"/>.</param>
+        /// <returns>The cloned path.</returns>
+        public Path CloneWithNewGeometry(Animatable<Sequence<BezierSegment>> geometryData)
+            => new Path(
+                    new ShapeLayerContent.ShapeLayerContentArgs
+                    {
+                        BlendMode = BlendMode,
+                        MatchName = MatchName,
+                        Name = Name,
+                    },
+                    Direction,
+                    geometryData);
     }
 }

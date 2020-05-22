@@ -108,6 +108,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal void ThemePropertyValuesAreInconsistent(string themePropertyName, string chosenValue, string requestedValue) => Report("LT0035", $"Theme property \"{themePropertyName}\" has more than one value. Using {chosenValue} in place of {requestedValue}.");
 
+        internal void CombiningMultipleAnimatedPathsIsNotSupported() => Report("LT0036", "Combining multiple animated paths is not supported.");
+
         void Report(string code, string description)
         {
             _issues.Add((code, description));
