@@ -70,8 +70,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         readonly Dictionary<Color, CompositionColorBrush> _nonAnimatedColorBrushes = new Dictionary<Color, CompositionColorBrush>();
 
         // Paths are shareable.
-        readonly Dictionary<(Sequence<BezierSegment>, ShapeFill.PathFillType, bool), CompositionPath> _compositionPaths
-            = new Dictionary<(Sequence<BezierSegment>, ShapeFill.PathFillType, bool), CompositionPath>();
+        readonly Dictionary<(PathGeometry, ShapeFill.PathFillType, bool), CompositionPath> _compositionPaths
+            = new Dictionary<(PathGeometry, ShapeFill.PathFillType, bool), CompositionPath>();
 
         // The names that are bound to properties (such as the Color of a SolidColorFill).
         // Keep track of them here so that codegen can generate properties for them.
@@ -1819,7 +1819,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var pathData = path.Data;
 
             return pathData.IsAnimated
-                ? path.CloneWithNewGeometry(new Animatable<Sequence<BezierSegment>>(pathData.InitialValue, pathData.PropertyIndex))
+                ? path.CloneWithNewGeometry(new Animatable<PathGeometry>(pathData.InitialValue, pathData.PropertyIndex))
                 : path;
         }
 
@@ -2015,12 +2015,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         }
 
         CanvasGeometry CreateWin2dPathGeometry(
-            Sequence<BezierSegment> figure,
+            PathGeometry figure,
             ShapeFill.PathFillType fillType,
             Sn.Matrix3x2 transformMatrix,
             bool optimizeLines)
         {
-            var beziers = figure.Items;
+            var beziers = figure.BezierSegments.Items;
             using (var builder = new CanvasPathBuilder(null))
             {
                 if (beziers.Length == 0)
@@ -2055,10 +2055,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         }
                     }
 
-                    // Leave the figure open. If Lottie wanted it closed it will have defined
-                    // a final bezier segment back to the start.
-                    // Closed simply tells D2D to synthesize a final segment.
-                    builder.EndFigure(CanvasFigureLoop.Open);
+                    // Closed tells D2D to synthesize a final segment. In many cases Closed
+                    // will have no effect because After Effects will have included the final
+                    // segment however it can make a difference, for example if the figure is
+                    // closed then mitering will be applied where the start and end meet, whereas
+                    // if it is open an end cap will be used instead.
+                    builder.EndFigure(figure.IsClosed ? CanvasFigureLoop.Closed : CanvasFigureLoop.Open);
                 }
 
                 return CanvasGeometry.CreatePath(builder);
@@ -3770,7 +3772,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         void ApplyPath(
             TranslationContext context,
             CompositionPathGeometry targetGeometry,
-            in TrimmedAnimatable<Sequence<BezierSegment>> path,
+            in TrimmedAnimatable<PathGeometry> path,
             ShapeFill.PathFillType fillType)
         {
             // PathKeyFrameAnimation was introduced in 6 but was unreliable until 11.
@@ -3987,7 +3989,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         void ApplyPathKeyFrameAnimation(
                 TranslationContext context,
-                in TrimmedAnimatable<Sequence<BezierSegment>> value,
+                in TrimmedAnimatable<PathGeometry> value,
                 ShapeFill.PathFillType fillType,
                 CompositionObject targetObject,
                 string targetPropertyName,
@@ -4293,7 +4295,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         // Creates a CompositionPath from a single path.
         CompositionPath CompositionPathFromPathGeometry(
-            Sequence<BezierSegment> pathGeometry,
+            PathGeometry pathGeometry,
             ShapeFill.PathFillType fillType,
             bool optimizeLines)
         {
@@ -4311,7 +4313,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         // Creates a CompositionPath from a group of paths.
         CompositionPath CompositionPathFromPathGeometryGroup(
-            IEnumerable<Sequence<BezierSegment>> paths,
+            IEnumerable<PathGeometry> paths,
             ShapeFill.PathFillType fillType,
             bool optimizeLines)
         {

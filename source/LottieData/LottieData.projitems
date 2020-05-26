@@ -51,6 +51,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)\Optimization\GradientStopOptimizer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Optimization\Optimizer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Path.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\PathGeometry.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Polystar.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\PreCompLayer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\RadialGradientFill.cs" />

@@ -7,8 +7,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 
-using PathGeometry = Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Sequence<Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.BezierSegment>;
-
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 {
 #pragma warning disable SA1205 // Partial elements should declare access
@@ -21,7 +19,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         static readonly Animatable<double> s_animatableDoubleZero = CreateNonAnimatedAnimatable(0.0);
         static readonly Animatable<Color> s_animatableColorBlack = CreateNonAnimatedAnimatable(Color.Black);
         static readonly Animatable<Opacity> s_animatableOpacityOpaque = CreateNonAnimatedAnimatable(Opacity.Opaque);
-        static readonly Animatable<PathGeometry> s_animatableGeometryEmpty = CreateNonAnimatedAnimatable(Sequence<BezierSegment>.Empty);
+        static readonly Animatable<PathGeometry> s_animatableGeometryEmpty = CreateNonAnimatedAnimatable(PathGeometry.Empty);
         static readonly Animatable<Rotation> s_animatableRotationNone = CreateNonAnimatedAnimatable(Rotation.None);
         static readonly Animatable<Sequence<GradientStop>> s_animatableGradientStopsSingle = CreateNonAnimatedAnimatable(s_defaultGradientStops);
         static readonly Animatable<Trim> s_animatableTrimNone = CreateNonAnimatedAnimatable(Trim.None);

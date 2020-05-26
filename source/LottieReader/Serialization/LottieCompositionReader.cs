@@ -10,8 +10,6 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.Toolkit.Uwp.UI.Lottie.GenericData;
 
-using PathGeometry = Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Sequence<Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.BezierSegment>;
-
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 {
     // See: https://github.com/airbnb/lottie-web/tree/master/docs/json for the (usually out-of-date) schema.
@@ -370,7 +368,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 }
             }
 
-            return new PathGeometry(beziers);
+            return new PathGeometry(new Sequence<BezierSegment>(beziers), isClosed);
         }
 
         static Vector2[] ReadArrayOfVector2(in LottieJsonArrayElement array)

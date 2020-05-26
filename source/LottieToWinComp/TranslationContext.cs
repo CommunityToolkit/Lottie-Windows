@@ -88,8 +88,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             return path.CloneWithNewGeometry(
                 optimizedPathData.IsAnimated
-                    ? new Animatable<Sequence<BezierSegment>>(optimizedPathData.KeyFrames.ToArray(), path.Data.PropertyIndex)
-                    : new Animatable<Sequence<BezierSegment>>(optimizedPathData.InitialValue, path.Data.PropertyIndex));
+                    ? new Animatable<PathGeometry>(optimizedPathData.KeyFrames.ToArray(), path.Data.PropertyIndex)
+                    : new Animatable<PathGeometry>(optimizedPathData.InitialValue, path.Data.PropertyIndex));
         }
 
         internal TrimmedAnimatable<Vector3> TrimAnimatable(IAnimatableVector3 animatable)
