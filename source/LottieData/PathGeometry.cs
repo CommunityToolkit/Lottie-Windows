@@ -8,7 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 {
     /// <summary>
-    /// A sequence of <see cref="BezierSegment"/> that describes the shape of a path.
+    /// A sequence of <see cref="BezierSegment"/>s that describes the shape of a path.
     /// </summary>
 #if PUBLIC_LottieData
     public

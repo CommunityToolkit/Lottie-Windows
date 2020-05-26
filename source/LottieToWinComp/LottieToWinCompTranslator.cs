@@ -80,8 +80,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         readonly uint _targetUapVersion;
 
         // Factory used for creating properties that map from the Progress value of the animated visual
-        // to another value. These are used to create properties that are required by cubic bezier
-        // expressions used for spatial beziers.
+        // to another value. These are used to create properties that are required by cubic Bezier
+        // expressions used for spatial Beziers.
         readonly ProgressMapFactory _progressMapFactory = new ProgressMapFactory();
 
         // Property set used for property bindings for themed Lotties.
@@ -207,7 +207,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
         }
 
-        // Adds the progress remapping variables and animations that are needed for spatial beziers.
+        // Adds the progress remapping variables and animations that are needed for spatial Beziers.
         void AddRemappedProgressAnimations()
         {
             foreach (var (name, scale, offset, ranges) in _progressMapFactory.GetVariables())
@@ -2040,7 +2040,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         var cp2 = Sn.Vector2.Transform(Vector2(segment.ControlPoint2), transformMatrix);
                         var cp3 = Sn.Vector2.Transform(Vector2(segment.ControlPoint3), transformMatrix);
 
-                        // Add a line rather than a cubic bezier if the segment is a straight line.
+                        // Add a line rather than a cubic Bezier if the segment is a straight line.
                         if (optimizeLines && segment.IsALine)
                         {
                             // Ignore 0-length lines.
@@ -2057,9 +2057,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
                     // Closed tells D2D to synthesize a final segment. In many cases Closed
                     // will have no effect because After Effects will have included the final
-                    // segment however it can make a difference, for example if the figure is
-                    // closed then mitering will be applied where the start and end meet, whereas
-                    // if it is open an end cap will be used instead.
+                    // segment however it can make a difference because it determines whether
+                    // mitering or end caps will be used to join the end back to the start.
                     builder.EndFigure(figure.IsClosed ? CanvasFigureLoop.Closed : CanvasFigureLoop.Open);
                 }
 
@@ -2411,7 +2410,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 var trimmedRadius = context.TrimAnimatable(shapeContext.RoundedCorner.Radius);
                 if (trimmedRadius.IsAnimated || trimmedRadius.InitialValue != 0)
                 {
-                    // TODO - can rounded corners be implemented by composing cubic beziers?
+                    // TODO - can rounded corners be implemented by composing cubic Beziers?
                     _issues.PathWithRoundedCornersIsNotSupported();
                 }
             }
@@ -3613,7 +3612,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     }
                     else
                     {
-                        // TODO - when we support spatial bezier CubicBezierFunction3, we can enable this. For now this
+                        // TODO - when we support spatial Bezier CubicBezierFunction3, we can enable this. For now this
                         //        may result in a CubicBezierFunction2 being applied to the Vector3 Offset property.
                         //ApplyVector3KeyFrameAnimation(context, (AnimatableVector3)position, container, "Offset");
                         offsetExpression = _c.CreateExpressionAnimation(container.IsShape
@@ -4008,7 +4007,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         val,
                         fillType,
 
-                        // Turn off the optimization that replaces cubic beziers with
+                        // Turn off the optimization that replaces cubic Beziers with
                         // segments because it may result in different numbers of
                         // control points in each path in the keyframes.
                         optimizeLines: false),
@@ -4176,7 +4175,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                                 Expr.Scalar("dummy"));
                             break;
                         case Easing.EasingType.Hold:
-                            // Holds should never have interesting cubic beziers, so replace with one that is definitely colinear.
+                            // Holds should never have interesting cubic Beziers, so replace with one that is definitely colinear.
                             cb = CubicBezierFunction2.ZeroBezier;
                             break;
                         default:
@@ -4185,8 +4184,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
                     if (cb.IsEquivalentToLinear || adjustedProgress == 0)
                     {
-                        // The cubic bezier function is equivalent to a line, or its value starts at the start of the animation, so no need
-                        // for an expression to do spatial beziers on it. Just use a regular key frame.
+                        // The cubic Bezier function is equivalent to a line, or its value starts at the start of the animation, so no need
+                        // for an expression to do spatial Beziers on it. Just use a regular key frame.
                         if (previousKeyFrameWasExpression)
                         {
                             // Ensure the previous expression doesn't continue being evaluated during the current keyframe.
@@ -4202,7 +4201,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     }
                     else
                     {
-                        // Expression key frame needed for a spatial bezier.
+                        // Expression key frame needed for a spatial Bezier.
 
                         // Make the progress value just before the requested progress value
                         // so that there is room to add a key frame just after this to hold
@@ -4218,7 +4217,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                             previousProgress = Float32.NextLargerThan((float)previousProgress);
                         }
 
-                        // Re-create the cubic bezier using the real variable name (it was created previously just to
+                        // Re-create the cubic Bezier using the real variable name (it was created previously just to
                         // see if it was linear).
                         cb = CubicBezierFunction2.Create(
                             cp0,
@@ -4227,7 +4226,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                             cp3,
                             RootScalar(_progressMapFactory.GetVariableForProgressMapping((float)previousProgress, (float)adjustedProgress, keyFrame.Easing, scale, offset)));
 
-                        // Insert the cubic bezier expression. The easing has to be a StepThenHold because otherwise
+                        // Insert the cubic Bezier expression. The easing has to be a StepThenHold because otherwise
                         // the value will be interpolated between the result of the expression, and the previous
                         // key frame value. The StepThenHold will make it just evaluate the expression.
                         insertExpressionKeyFrame(

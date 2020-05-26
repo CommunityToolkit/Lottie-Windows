@@ -106,8 +106,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
             return new Animatable<PathGeometry>(hacked[0].Value, hacked, optimized.PropertyIndex);
         }
 
-        // Returns a KeyFrame<PathGeometry> that contains only the first bezier segment of the given
-        // KeyFrame<PathGeometry>
+        // Returns a KeyFrame<PathGeometry> that contains only the first Bezier segment of the given
+        // KeyFrame<PathGeometry>.
         static KeyFrame<PathGeometry> HackPathGeometry(KeyFrame<PathGeometry> value)
             => new KeyFrame<PathGeometry>(
                 value.Frame,

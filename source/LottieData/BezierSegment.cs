@@ -8,7 +8,7 @@ using System.Collections.Generic;
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 {
     /// <summary>
-    /// A segment defined as a cubic bezier curve from <see cref="ControlPoint0"/> to <see cref="ControlPoint3"/>.
+    /// A segment defined as a cubic Bezier curve from <see cref="ControlPoint0"/> to <see cref="ControlPoint3"/>.
     /// </summary>
 #if PUBLIC_LottieData
     public
@@ -133,7 +133,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
                 return false;
             }
 
-            // The points are on the same line. The cubic bezier is a line if
+            // The points are on the same line. The cubic Bezier is a line if
             // p1 and p2 are between p0..p3.
             if (!IsBetween(ControlPoint0.X, ControlPoint1.X, ControlPoint2.X, ControlPoint3.X))
             {

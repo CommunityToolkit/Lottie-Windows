@@ -334,7 +334,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 // The vertices for the figure.
                 var verticesAsVector2 = ReadArrayOfVector2(vertices.Value);
 
-                // The control points that define the cubic beziers between the vertices.
+                // The control points that define the cubic Beziers between the vertices.
                 var inTangentsAsVector2 = ReadArrayOfVector2(inTangents.Value);
                 var outTangentsAsVector2 = ReadArrayOfVector2(outTangents.Value);
 

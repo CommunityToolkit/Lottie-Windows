@@ -563,7 +563,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 var cp2 = v3kf.SpatialControlPoint2;
                 if (cp1 != Vector3.Zero || cp2 != Vector3.Zero)
                 {
-                    // Spatial bezier
+                    // Spatial Bezier
                     result.Add(nameof(v3kf.SpatialControlPoint1), FromVector3(cp1));
                     result.Add(nameof(v3kf.SpatialControlPoint2), FromVector3(cp2));
                 }
