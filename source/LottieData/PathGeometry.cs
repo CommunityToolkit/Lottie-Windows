@@ -38,7 +38,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// </summary>
         public static PathGeometry Empty { get; } = new PathGeometry(Sequence<BezierSegment>.Empty, false);
 
-        public bool Equals([AllowNull] PathGeometry other) =>
+        public bool Equals(PathGeometry other) =>
             other != null && other.IsClosed == IsClosed && other.BezierSegments.Equals(BezierSegments);
     }
 }
