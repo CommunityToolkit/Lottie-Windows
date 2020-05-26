@@ -9,7 +9,7 @@ using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 {
-    // Creates progress mapping variables and animations. This is used by spatial bezier
+    // Creates progress mapping variables and animations. This is used by spatial Bezier
     // animations to remap the Progress value of the animation to a smaller range so
     // that there is a value that progresses linearly from 0 to 1 between 2 key frames.
     sealed class ProgressMapFactory

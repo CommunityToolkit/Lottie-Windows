@@ -12,7 +12,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         public Path(
             in ShapeLayerContentArgs args,
             bool direction,
-            Animatable<Sequence<BezierSegment>> geometryData)
+            Animatable<PathGeometry> geometryData)
             : base(in args)
         {
             Direction = direction;
@@ -21,7 +21,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
         public bool Direction { get; }
 
-        public Animatable<Sequence<BezierSegment>> Data { get; }
+        public Animatable<PathGeometry> Data { get; }
 
         /// <inheritdoc/>
         public override ShapeContentType ContentType => ShapeContentType.Path;
@@ -35,7 +35,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// </summary>
         /// <param name="geometryData">The geometry to use in place of <see cref="Data"/>.</param>
         /// <returns>The cloned path.</returns>
-        public Path CloneWithNewGeometry(Animatable<Sequence<BezierSegment>> geometryData)
+        public Path CloneWithNewGeometry(Animatable<PathGeometry> geometryData)
             => new Path(
                     new ShapeLayerContent.ShapeLayerContentArgs
                     {

@@ -9,7 +9,7 @@ using SnVector2 = System.Numerics.Vector2;
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 {
     /// <summary>
-    /// A cubic bezier function with type Vector2.
+    /// A cubic Bezier function with type Vector2.
     /// </summary>
     sealed class CubicBezierFunction2 : Vector2
     {
@@ -39,7 +39,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         public static CubicBezierFunction2 ZeroBezier { get; } = Create(SnVector2.Zero, SnVector2.Zero, SnVector2.Zero, SnVector2.Zero, 0);
 
         /// <summary>
-        /// Gets a value indicating whether the cubic bezier is equivalent to a line drawn from point 0 to point 3.
+        /// Gets a value indicating whether the cubic Bezier is equivalent to a line drawn from point 0 to point 3.
         /// </summary>
         public bool IsEquivalentToLinear
         {
@@ -50,7 +50,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     return false;
                 }
 
-                // The points are on the same line. The cubic bezier is a line if
+                // The points are on the same line. The cubic Bezier is a line if
                 // p1 and p2 are between p0..p3.
                 if (!IsBetween(_p0.X, _p1.X, _p2.X, _p3.X))
                 {

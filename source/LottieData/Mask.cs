@@ -15,7 +15,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         public Mask(
             bool inverted,
             string name,
-            Animatable<Sequence<BezierSegment>> points,
+            Animatable<PathGeometry> points,
             Animatable<Opacity> opacity,
             MaskMode mode
         )
@@ -31,7 +31,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
         public string Name { get; }
 
-        public Animatable<Sequence<BezierSegment>> Points { get; }
+        public Animatable<PathGeometry> Points { get; }
 
         public Animatable<Opacity> Opacity { get; }
 

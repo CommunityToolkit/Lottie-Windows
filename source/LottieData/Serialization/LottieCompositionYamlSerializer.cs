@@ -379,7 +379,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 { nameof(mask.Inverted), mask.Inverted },
                 { nameof(mask.Mode), Scalar(mask.Mode) },
                 { nameof(mask.Opacity), FromAnimatable(mask.Opacity) },
-                { nameof(mask.Points), FromAnimatable(mask.Points, p => FromSequence(p, FromBezierSegment)) },
+                { nameof(mask.Points), FromAnimatable(mask.Points, p => FromPathGeometry(p)) },
             };
 
         YamlObject FromShapeGroup(ShapeGroup content, YamlMap superclassContent)
@@ -563,7 +563,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 var cp2 = v3kf.SpatialControlPoint2;
                 if (cp1 != Vector3.Zero || cp2 != Vector3.Zero)
                 {
-                    // Spatial bezier
+                    // Spatial Bezier
                     result.Add(nameof(v3kf.SpatialControlPoint1), FromVector3(cp1));
                     result.Add(nameof(v3kf.SpatialControlPoint2), FromVector3(cp2));
                 }
@@ -576,7 +576,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         {
             var result = superclassContent;
             result.Add(nameof(content.Direction), content.Direction);
-            result.Add(nameof(content.Data), FromAnimatable(content.Data, p => FromSequence(p, FromBezierSegment)));
+            result.Add(nameof(content.Data), FromAnimatable(content.Data, p => FromPathGeometry(p)));
+            return result;
+        }
+
+        YamlObject FromPathGeometry(PathGeometry content)
+        {
+            var result = new YamlMap()
+            {
+                { nameof(content.IsClosed), content.IsClosed },
+                { nameof(content.BezierSegments), FromSequence(content.BezierSegments, FromBezierSegment) },
+            };
+
             return result;
         }
 

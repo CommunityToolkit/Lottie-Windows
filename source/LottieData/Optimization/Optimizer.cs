@@ -21,22 +21,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
 #endif
     sealed class Optimizer
     {
-        static readonly AnimatableComparer<Sequence<BezierSegment>> PathGeometryComparer = new AnimatableComparer<Sequence<BezierSegment>>();
-        readonly Dictionary<Animatable<Sequence<BezierSegment>>, Animatable<Sequence<BezierSegment>>> _animatablePathGeometriesCache;
+        static readonly AnimatableComparer<PathGeometry> PathGeometryComparer = new AnimatableComparer<PathGeometry>();
+        readonly Dictionary<Animatable<PathGeometry>, Animatable<PathGeometry>> _animatablePathGeometriesCache;
 
         public Optimizer()
         {
-            _animatablePathGeometriesCache = new Dictionary<Animatable<Sequence<BezierSegment>>, Animatable<Sequence<BezierSegment>>>(PathGeometryComparer);
+            _animatablePathGeometriesCache = new Dictionary<Animatable<PathGeometry>, Animatable<PathGeometry>>(PathGeometryComparer);
         }
 
-        public Animatable<Sequence<BezierSegment>> GetOptimized(Animatable<Sequence<BezierSegment>> value)
+        public Animatable<PathGeometry> GetOptimized(Animatable<PathGeometry> value)
         {
             var optimized = GetOptimized(value, _animatablePathGeometriesCache);
 
             // If the geometries have different numbers of segments they can't be animated. However
             // in one specific case we can fix that.
-            var geometries = value.KeyFrames.SelectToArray(kf => kf.Value.Items.ToArray());
-            var distinctSegmentCounts = geometries.Select(g => g.Length).Distinct().Count();
+            var geometries = value.KeyFrames.SelectToArray(kf => kf.Value);
+            var distinctSegmentCounts = geometries.Select(g => g.BezierSegments.Items.Length).Distinct().Count();
 
             if (distinctSegmentCounts != 2)
             {
@@ -50,7 +50,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
             //  * If there are 2 segments, the second segment draws back over the first.
             foreach (var g in geometries)
             {
-                foreach (var segment in g)
+                var segments = g.BezierSegments;
+
+                foreach (var segment in segments)
                 {
                     if (!segment.IsALine)
                     {
@@ -58,31 +60,31 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                     }
                 }
 
-                switch (g.Length)
+                switch (segments.Items.Length)
                 {
                     default:
                         return optimized;
                     case 1:
-                        if (!g[0].IsALine)
+                        if (!segments.Items[0].IsALine)
                         {
                             return optimized;
                         }
 
                         break;
                     case 2:
-                        if (!g[0].IsALine || !g[1].IsALine)
+                        if (!segments.Items[0].IsALine || !segments.Items[1].IsALine)
                         {
                             return optimized;
                         }
 
                         // Start of line 0
-                        var a = g[0].ControlPoint0;
+                        var a = segments.Items[0].ControlPoint0;
 
                         // End of line 0
-                        var b = g[0].ControlPoint3;
+                        var b = segments.Items[0].ControlPoint3;
 
                         // End of line 1
-                        var c = g[1].ControlPoint3;
+                        var c = segments.Items[1].ControlPoint3;
 
                         if (!BezierSegment.ArePointsColinear(0, a, b, c))
                         {
@@ -101,13 +103,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
 
             // Create a new Animatable<PathGeometry> which has only one segment in each keyframe.
             var hacked = optimized.KeyFrames.SelectToSpan(pg => HackPathGeometry(pg));
-            return new Animatable<Sequence<BezierSegment>>(hacked[0].Value, hacked, optimized.PropertyIndex);
+            return new Animatable<PathGeometry>(hacked[0].Value, hacked, optimized.PropertyIndex);
         }
 
-        static KeyFrame<Sequence<BezierSegment>> HackPathGeometry(KeyFrame<Sequence<BezierSegment>> value)
-        {
-            return new KeyFrame<Sequence<BezierSegment>>(value.Frame, new Sequence<BezierSegment>(new[] { value.Value.Items[0] }), Vector3.Zero, Vector3.Zero, value.Easing);
-        }
+        // Returns a KeyFrame<PathGeometry> that contains only the first Bezier segment of the given
+        // KeyFrame<PathGeometry>.
+        static KeyFrame<PathGeometry> HackPathGeometry(KeyFrame<PathGeometry> value)
+            => new KeyFrame<PathGeometry>(
+                value.Frame,
+                new PathGeometry(new Sequence<BezierSegment>(new[] { value.Value.BezierSegments.Items[0] }), isClosed: false),
+                Vector3.Zero,
+                Vector3.Zero,
+                value.Easing);
 
         // True iff b is between and c.
         static bool IsBetween(Vector2 a, Vector2 b, Vector2 c)

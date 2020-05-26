@@ -76,7 +76,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             void Win2D.ICanvasPathReceiver.AddQuadraticBezier(System.Numerics.Vector2 controlPoint, System.Numerics.Vector2 endPoint)
             {
-                // Should never be called because we never add quadratic beziers.
+                // Should never be called because we never add quadratic Beziers.
                 throw new InvalidOperationException();
             }
 
