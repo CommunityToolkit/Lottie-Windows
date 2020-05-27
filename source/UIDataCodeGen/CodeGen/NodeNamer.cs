@@ -77,7 +77,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 else
                 {
                     // Use only as many digits as necessary to express the largest count.
-                    var digitsRequired = (int)Math.Ceiling(Math.Log10(nodeList.Count + 1));
+                    var digitsRequired = (int)Math.Ceiling(Math.Log10(nodeList.Count));
                     var counterFormat = new string('0', digitsRequired);
 
                     for (var i = 0; i < nodeList.Count; i++)
