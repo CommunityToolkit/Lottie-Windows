@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 
 sealed class Reporter
 {
@@ -28,15 +27,39 @@ sealed class Reporter
     internal Writer ErrorStream { get; }
 
     // Helper for writing errors to the error stream with a standard format.
-    internal void WriteError(string errorMessage)
-    {
-        ErrorStream.WriteLine($"Error: {errorMessage}");
-    }
+    internal void WriteError(string errorMessage) =>
+        WriteError(errorMessage, ConsoleColor.Red, ConsoleColor.Black);
 
     // Helper for writing info lines to the info stream.
-    internal void WriteInfo(string infoMessage)
+    internal void WriteInfo(string infoMessage) => WriteInfo(InfoType.Default, infoMessage);
+
+    // Helper for writing info lines to the info stream.
+    internal void WriteInfo(InfoType type, string infoMessage)
     {
-        InfoStream.WriteLine(infoMessage);
+        ConsoleColor foreground, background = ConsoleColor.Black;
+
+        switch (type)
+        {
+            case InfoType.Default:
+                foreground = ConsoleColor.Gray;
+                break;
+            case InfoType.Advice:
+                foreground = ConsoleColor.Green;
+                break;
+            case InfoType.FilePath:
+                foreground = ConsoleColor.Cyan;
+                break;
+            case InfoType.Issue:
+                foreground = ConsoleColor.Yellow;
+                break;
+            case InfoType.Signon:
+                foreground = ConsoleColor.White;
+                break;
+            default:
+                throw new ArgumentException();
+        }
+
+        WriteInfo(infoMessage, foreground, background);
     }
 
     // Writes a new line to the info stream.
@@ -74,6 +97,26 @@ sealed class Reporter
         }
     }
 
+    // Helper for writing errors to the error stream with a standard format.
+    void WriteError(
+        string errorMessage,
+        ConsoleColor foregroundColor,
+        ConsoleColor backgroundColor)
+    {
+        ErrorStream.Color(foregroundColor, backgroundColor);
+        ErrorStream.WriteLine($"Error: {errorMessage}");
+    }
+
+    // Helper for writing info lines to the info stream.
+    void WriteInfo(
+        string infoMessage,
+        ConsoleColor foregroundColor = ConsoleColor.White,
+        ConsoleColor backgroundColor = ConsoleColor.Black)
+    {
+        InfoStream.Color(foregroundColor, backgroundColor);
+        InfoStream.WriteLine(infoMessage);
+    }
+
     internal sealed class Writer
     {
         readonly TextWriter _wrapped;
@@ -83,8 +126,25 @@ sealed class Reporter
             _wrapped = wrapped;
         }
 
-        public void WriteLine() => _wrapped.WriteLine();
+        public void WriteLine()
+        {
+            _wrapped.WriteLine();
+            Console.ResetColor();
+        }
 
-        public void WriteLine(string value) => _wrapped.WriteLine(value);
-   }
+        public void WriteLine(string value)
+        {
+            _wrapped.WriteLine(value);
+            Console.ResetColor();
+        }
+
+        /// <summary>
+        /// Sets the color until the next line is output.
+        /// </summary>
+        public void Color(ConsoleColor foregroundColor, ConsoleColor backgroundColor)
+        {
+            Console.ForegroundColor = foregroundColor;
+            Console.BackgroundColor = backgroundColor;
+        }
+    }
 }
