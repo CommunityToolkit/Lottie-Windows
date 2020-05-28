@@ -11,7 +11,7 @@
 /errorendlocation
 /preferreduilang:en-US
 /highentropyva+
-/lib:"C:\Program Files (x86)\Microsoft SDKs\UWPNuGetPackages\microsoft.netcore.universalwindowsplatform\6.2.9\ref\uap10.0.15138"
+/lib:"C:\Program Files (x86)\Microsoft SDKs\UWPNuGetPackages\microsoft.netcore.universalwindowsplatform\6.2.10\ref\uap10.0.15138"
 /reference:"Microsoft.CSharp.dll"
 /reference:"C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\XamlCompiler\Microsoft.UI.Xaml.Markup.winmd"
 /reference:"Microsoft.VisualBasic.dll"
