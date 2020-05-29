@@ -26,6 +26,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             Easing = easing;
         }
 
+        public KeyFrame(double frame, T value, Easing easing)
+            : this(frame, value, Vector3.Zero, Vector3.Zero, easing)
+        {
+        }
+
         /// <summary>
         /// Gets the value.
         /// </summary>
