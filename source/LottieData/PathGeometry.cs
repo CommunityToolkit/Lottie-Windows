@@ -40,5 +40,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
         public bool Equals(PathGeometry other) =>
             other != null && other.IsClosed == IsClosed && other.BezierSegments.Equals(BezierSegments);
+
+        public override bool Equals(object obj) => Equals(obj as PathGeometry);
+
+        public override int GetHashCode() => BezierSegments.GetHashCode();
     }
 }
