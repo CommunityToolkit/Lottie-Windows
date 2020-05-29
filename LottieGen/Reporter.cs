@@ -110,8 +110,8 @@ sealed class Reporter
     // Helper for writing info lines to the info stream.
     void WriteInfo(
         string infoMessage,
-        ConsoleColor foregroundColor = ConsoleColor.White,
-        ConsoleColor backgroundColor = ConsoleColor.Black)
+        ConsoleColor foregroundColor,
+        ConsoleColor backgroundColor)
     {
         InfoStream.Color(foregroundColor, backgroundColor);
         InfoStream.WriteLine(infoMessage);
