@@ -31,7 +31,8 @@ sealed class Reporter
         WriteError(errorMessage, ConsoleColor.Red, ConsoleColor.Black);
 
     // Helper for writing info lines to the info stream.
-    internal void WriteInfo(string infoMessage) => WriteInfo(InfoType.Default, infoMessage);
+    internal void WriteInfo(string infoMessage) =>
+        WriteInfo(InfoType.Default, infoMessage);
 
     // Helper for writing info lines to the info stream.
     internal void WriteInfo(InfoType type, string infoMessage)
