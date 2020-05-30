@@ -57,7 +57,7 @@ sealed class Program
         var assemblyVersion = ThisAssembly.AssemblyInformationalVersion;
 
         var toolNameAndVersion = $"Lottie for Windows Code Generator version {assemblyVersion}";
-        _reporter.WriteInfo(toolNameAndVersion);
+        _reporter.WriteInfo(InfoType.Signon, toolNameAndVersion);
         _reporter.WriteInfoNewLine();
 
         if (_options.ErrorDescription != null)
@@ -180,7 +180,8 @@ sealed class Program
             foreach (var (dataTableName, columnNames, rows) in _reporter.GetDataTables())
             {
                 var tsvFilePath = System.IO.Path.Combine(outputFolder, $"LottieGen_{dataTableName}.tsv");
-                _reporter.WriteInfo($"Writing stats to {tsvFilePath}");
+                _reporter.WriteInfo("Writing stats to:");
+                _reporter.WriteInfo(InfoType.FilePath, $" {tsvFilePath}");
                 using (var tsvFile = File.CreateText(tsvFilePath))
                 {
                     tsvFile.WriteLine(string.Join("\t", columnNames));
