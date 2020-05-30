@@ -108,7 +108,7 @@ sealed class LottieFileProcessor
 
         foreach (var issue in _readerIssues)
         {
-            _reporter.WriteInfo(IssueToString(_file, issue));
+            _reporter.WriteInfo(InfoType.Issue, IssueToString(_file, issue));
         }
 
         if (_lottieComposition is null)
@@ -362,7 +362,8 @@ sealed class LottieFileProcessor
             outputFilePath,
             LottieCompositionXmlSerializer.ToXml(_lottieComposition).ToString());
 
-        _reporter.WriteInfo($"Lottie XML written to {outputFilePath}");
+        _reporter.WriteInfo("Lottie XML written to:");
+        _reporter.WriteInfo(InfoType.FilePath, $" {outputFilePath}");
 
         return result;
     }
@@ -380,7 +381,8 @@ sealed class LottieFileProcessor
 
         if (result)
         {
-            _reporter.WriteInfo($"Lottie YAML written to {outputFilePath}");
+            _reporter.WriteInfo("Lottie YAML written to:");
+            _reporter.WriteInfo(InfoType.FilePath, $" {outputFilePath}");
         }
 
         return result;
@@ -401,7 +403,8 @@ sealed class LottieFileProcessor
 
         if (result)
         {
-            _reporter.WriteInfo($"WinComp XML written to {outputFilePath}");
+            _reporter.WriteInfo("WinComp XML written to:");
+            _reporter.WriteInfo(InfoType.FilePath, $" {outputFilePath}");
         }
 
         return result;
@@ -421,7 +424,8 @@ sealed class LottieFileProcessor
 
         if (result)
         {
-            _reporter.WriteInfo($"WinComp DGML written to {outputFilePath}");
+            _reporter.WriteInfo("WinComp DGML written to:");
+            _reporter.WriteInfo(InfoType.FilePath, $" {outputFilePath}");
         }
 
         return result;
@@ -447,7 +451,8 @@ sealed class LottieFileProcessor
 
         if (result)
         {
-            _reporter.WriteInfo($"C# code for class {_className} written to {outputFilePath}");
+            _reporter.WriteInfo($"C# code for class {_className} written to:");
+            _reporter.WriteInfo(InfoType.FilePath, $" {outputFilePath}");
 
             if (assetList != null)
             {
@@ -495,8 +500,11 @@ sealed class LottieFileProcessor
             return false;
         }
 
-        _reporter.WriteInfo($"Cppwinrt header for class {_className} written to {outputHeaderFilePath}");
-        _reporter.WriteInfo($"Cppwinrt source for class {_className} written to {outputCppFilePath}");
+        _reporter.WriteInfo($"Cppwinrt header for class {_className} written to:");
+        _reporter.WriteInfo(InfoType.FilePath, $" {outputHeaderFilePath}");
+
+        _reporter.WriteInfo($"Cppwinrt source for class {_className} written to:");
+        _reporter.WriteInfo(InfoType.FilePath, $" {outputCppFilePath}");
 
         if (assetList != null)
         {
@@ -543,8 +551,11 @@ sealed class LottieFileProcessor
             return false;
         }
 
-        _reporter.WriteInfo($"CX header for class {_className} written to {outputHeaderFilePath}");
-        _reporter.WriteInfo($"CX source for class {_className} written to {outputCppFilePath}");
+        _reporter.WriteInfo($"CX header for class {_className} written to:");
+        _reporter.WriteInfo(InfoType.FilePath, $" {outputHeaderFilePath}");
+
+        _reporter.WriteInfo($"CX source for class {_className} written to:");
+        _reporter.WriteInfo(InfoType.FilePath, $" {outputCppFilePath}");
 
         if (assetList != null)
         {
@@ -609,7 +620,8 @@ sealed class LottieFileProcessor
 
     Stream TryReadTextFile(string filePath)
     {
-        _reporter.WriteInfo($"Reading file: {_file}");
+        _reporter.WriteInfo($"Reading file:");
+        _reporter.WriteInfo(InfoType.FilePath, $" {_file}");
 
         try
         {
@@ -787,7 +799,7 @@ sealed class LottieFileProcessor
 
         foreach (var (issue, uapVersionRange) in _translationIssues)
         {
-            _reporter.WriteInfo(IssueToString(_file, issue, uapVersionRange));
+            _reporter.WriteInfo(InfoType.Issue, IssueToString(_file, issue, uapVersionRange));
         }
 
         // NOTE: this is only reporting on the latest version in a multi-version translation.
@@ -815,7 +827,7 @@ sealed class LottieFileProcessor
     {
         foreach (var a in assetList)
         {
-            _reporter.WriteInfo($"Generated code references {a}. Make sure your app can access this file.");
+            _reporter.WriteInfo(InfoType.Advice, $"Generated code references {a}. Make sure your app can access this file.");
         }
     }
 
