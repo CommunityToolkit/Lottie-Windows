@@ -1747,6 +1747,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                                 paths.Add(context.OptimizePath((Path)stack.Pop()));
                             }
 
+                            CheckForRoundedCornersOnPath(context, shapeContext);
+
                             if (paths.Count == 1)
                             {
                                 // There's a single path.
@@ -1755,15 +1757,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                             else
                             {
                                 // There are multiple paths. They need to be grouped.
-                                if (paths.Any(p => p.Data.IsAnimated))
-                                {
-                                    // We currrently don't support grouping of animated paths.
-                                    // Issue a warning and strip the animations from the paths before adding them.
-                                    _issues.CombiningMultipleAnimatedPathsIsNotSupported();
-
-                                    paths = paths.Select(p => UnanimatePath(p)).ToList();
-                                }
-
                                 container.Shapes.Add(TranslatePathGroupContent(context, shapeContext, paths));
                             }
                         }
@@ -1810,17 +1803,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
 
             return result;
-        }
-
-        // Returns a path the same as the given path, but with any animations replaced
-        // by the first keyframe in the animation.
-        Path UnanimatePath(Path path)
-        {
-            var pathData = path.Data;
-
-            return pathData.IsAnimated
-                ? path.CloneWithNewGeometry(new Animatable<PathGeometry>(pathData.InitialValue, pathData.PropertyIndex))
-                : path;
         }
 
         // Merge the stack into a single shape. Merging is done recursively - the top geometry on the
@@ -2419,17 +2401,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         // Groups multiple Shapes into a D2D geometry group.
         CompositionShape TranslatePathGroupContent(TranslationContext context, ShapeContentContext shapeContext, IEnumerable<Path> paths)
         {
-            CheckForRoundedCornersOnPath(context, shapeContext);
+            var groupingSucceeded = PathGeometryGroup.TryGroupPaths(paths, out var grouped);
 
-            var fillType = GetPathFillType(shapeContext.Fill);
+            if (!groupingSucceeded)
+            {
+                _issues.CombiningMultipleAnimatedPathsIsNotSupported();
+            }
 
             // A path is represented as a SpriteShape with a CompositionPathGeometry.
-            var compositionPath = CompositionPathFromPathGeometryGroup(paths.Select(p => p.Data.InitialValue), fillType, optimizeLines: true);
-
-            var compositionPathGeometry = _c.CreatePathGeometry(compositionPath);
+            var compositionPathGeometry = _c.CreatePathGeometry();
 
             var compositionSpriteShape = _c.CreateSpriteShape();
             compositionSpriteShape.Geometry = compositionPathGeometry;
+
+            var pathGroupData = context.TrimAnimatable(grouped);
+
+            ApplyPathGroup(context, compositionPathGeometry, pathGroupData, GetPathFillType(shapeContext.Fill));
 
             if (_addDescriptions)
             {
@@ -2445,8 +2432,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         CompositionShape TranslatePathContent(TranslationContext context, ShapeContentContext shapeContext, Path path)
         {
-            CheckForRoundedCornersOnPath(context, shapeContext);
-
             // A path is represented as a SpriteShape with a CompositionPathGeometry.
             var geometry = _c.CreatePathGeometry();
 
@@ -3788,6 +3773,26 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
         }
 
+        void ApplyPathGroup(
+            TranslationContext context,
+            CompositionPathGeometry targetGeometry,
+            in TrimmedAnimatable<PathGeometryGroup> path,
+            ShapeFill.PathFillType fillType)
+        {
+            // PathKeyFrameAnimation was introduced in 6 but was unreliable until 11.
+            if (path.IsAnimated && IsUapApiAvailable(nameof(PathKeyFrameAnimation), versionDependentFeatureDescription: "Path animation"))
+            {
+                ApplyPathGroupKeyFrameAnimation(context, path, fillType, targetGeometry, nameof(targetGeometry.Path), nameof(targetGeometry.Path));
+            }
+            else
+            {
+                targetGeometry.Path = CompositionPathFromPathGeometryGroup(
+                    path.InitialValue.Data,
+                    fillType,
+                    optimizeLines: true);
+            }
+        }
+
         void ApplyRotationKeyFrameAnimation(
             TranslationContext context,
             in TrimmedAnimatable<Rotation> value,
@@ -4005,6 +4010,39 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     progress,
                     CompositionPathFromPathGeometry(
                         val,
+                        fillType,
+
+                        // Turn off the optimization that replaces cubic Beziers with
+                        // segments because it may result in different numbers of
+                        // control points in each path in the keyframes.
+                        optimizeLines: false),
+                    easing),
+                null,
+                targetObject,
+                targetPropertyName,
+                longDescription,
+                shortDescription);
+        }
+
+        void ApplyPathGroupKeyFrameAnimation(
+            TranslationContext context,
+            in TrimmedAnimatable<PathGeometryGroup> value,
+            ShapeFill.PathFillType fillType,
+            CompositionObject targetObject,
+            string targetPropertyName,
+            string longDescription = null,
+            string shortDescription = null)
+        {
+            Debug.Assert(value.IsAnimated, "Precondition");
+
+            GenericCreateCompositionKeyFrameAnimation(
+                context,
+                value,
+                _c.CreatePathKeyFrameAnimation,
+                (ca, progress, val, easing) => ca.InsertKeyFrame(
+                    progress,
+                    CompositionPathFromPathGeometryGroup(
+                        val.Data,
                         fillType,
 
                         // Turn off the optimization that replaces cubic Beziers with
