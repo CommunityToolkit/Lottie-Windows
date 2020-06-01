@@ -108,13 +108,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
 
         // Returns a KeyFrame<PathGeometry> that contains only the first Bezier segment of the given
         // KeyFrame<PathGeometry>.
-        static KeyFrame<PathGeometry> HackPathGeometry(KeyFrame<PathGeometry> value)
-            => new KeyFrame<PathGeometry>(
-                value.Frame,
-                new PathGeometry(new Sequence<BezierSegment>(new[] { value.Value.BezierSegments.Items[0] }), isClosed: false),
-                Vector3.Zero,
-                Vector3.Zero,
-                value.Easing);
+        static KeyFrame<PathGeometry> HackPathGeometry(KeyFrame<PathGeometry> value) =>
+            value.CloneWithNewValue(new PathGeometry(new Sequence<BezierSegment>(new[] { value.Value.BezierSegments.Items[0] }), isClosed: false));
 
         // True iff b is between and c.
         static bool IsBetween(Vector2 a, Vector2 b, Vector2 c)
@@ -310,12 +305,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
         {
             return keyFrame.Easing.Type == Easing.EasingType.Hold
                 ? keyFrame
-                : new KeyFrame<T>(
-                        keyFrame.Frame,
-                        keyFrame.Value,
-                        keyFrame.SpatialControlPoint1,
-                        keyFrame.SpatialControlPoint2,
-                        HoldEasing.Instance);
+                : keyFrame.CloneWithNewEasing(HoldEasing.Instance);
         }
 
         /// <summary>

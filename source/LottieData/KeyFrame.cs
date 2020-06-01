@@ -32,6 +32,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         }
 
         /// <summary>
+        /// Returns a <see cref="KeyFrame{T}"/> that is the same as this, but with a new value.
+        /// </summary>
+        /// <typeparam name="Tnew">The type of the new value.</typeparam>
+        /// <returns>A new <see cref="KeyFrame{T}"/>.</returns>
+        public KeyFrame<Tnew> CloneWithNewValue<Tnew>(Tnew newValue)
+            where Tnew : IEquatable<Tnew> =>
+            new KeyFrame<Tnew>(Frame, newValue, SpatialControlPoint1, SpatialControlPoint2, Easing);
+
+        /// <summary>
+        /// Returns a <see cref="KeyFrame{T}"/> that is the same as this, but with a new easing.
+        /// </summary>
+        /// <returns>A new <see cref="KeyFrame{T}"/>.</returns>
+        public KeyFrame<T> CloneWithNewEasing(Easing newEasing) =>
+            new KeyFrame<T>(Frame, Value, SpatialControlPoint1, SpatialControlPoint2, newEasing);
+
+        /// <summary>
         /// Gets the value.
         /// </summary>
         public T Value { get; }
