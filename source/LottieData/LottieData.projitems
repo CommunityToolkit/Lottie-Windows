@@ -6,8 +6,6 @@
     <SharedGUID>b3db16ee-a821-4474-a188-e64926529bbd</SharedGUID>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)DrawingDirection.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Shape.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Animatable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\ExtensionMethods.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\AnimatableVector3.cs" />
@@ -20,6 +18,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)\Color.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\ColorGradientStop.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\CubicBezierEasing.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\DrawingDirection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Easing.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Ellipse.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\EmbeddedImageAsset.cs" />
@@ -66,6 +65,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)\Sequence.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Serialization\LottieCompositionXmlSerializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Serialization\LottieCompositionYamlSerializer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Shape.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\ShapeContentType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\ShapeFill.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\ShapeGroup.cs" />
