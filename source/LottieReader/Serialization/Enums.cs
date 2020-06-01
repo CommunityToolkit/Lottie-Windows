@@ -41,6 +41,27 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             return BlendMode.Normal;
         }
 
+        DrawingDirection DToDrawingDirection(double? d)
+        {
+            if (d.HasValue)
+            {
+                if (TryAsExactInt(d.Value, out var intValue))
+                {
+                    switch (intValue)
+                    {
+                        case 0: return DrawingDirection.Forward;
+                        case 1: return DrawingDirection.Unknown1;
+                        case 2: return DrawingDirection.Unknown2;
+                        case 3: return DrawingDirection.Unknown3;
+                    }
+                }
+
+                _issues.UnexpectedValueForType("DrawingDirection", d.ToString());
+            }
+
+            return DrawingDirection.Forward;
+        }
+
         ShapeStroke.LineCapType LcToLineCapType(double? lc)
         {
             if (lc.HasValue)

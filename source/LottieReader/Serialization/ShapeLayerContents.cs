@@ -309,9 +309,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
             var position = ReadAnimatableVector3(obj.ObjectPropertyOrNull("p"));
             var diameter = ReadAnimatableVector3(obj.ObjectPropertyOrNull("s"));
-            var direction = obj.BoolPropertyOrNull("d") == true;
+            var drawingDirection = DToDrawingDirection(obj.DoublePropertyOrNull("d"));
             obj.AssertAllPropertiesRead();
-            return new Ellipse(in shapeLayerContentArgs, direction, position, diameter);
+            return new Ellipse(in shapeLayerContentArgs, drawingDirection, position, diameter);
         }
 
         Polystar ReadPolystar(
@@ -321,8 +321,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             // Not clear whether we need to read these properties.
             obj.IgnorePropertyThatIsNotYetSupported("ix");
 
-            var direction = obj.BoolPropertyOrNull("d") == true;
-
+            var drawingDirection = DToDrawingDirection(obj.DoublePropertyOrNull("d"));
             var points = ReadAnimatableFloat(obj.ObjectPropertyOrNull("pt"));
             var position = ReadAnimatableVector3(obj.ObjectPropertyOrNull("p"));
             var rotation = ReadAnimatableFloat(obj.ObjectPropertyOrNull("r"));
@@ -350,7 +349,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             obj.AssertAllPropertiesRead();
             return new Polystar(
                 in shapeLayerContentArgs,
-                direction,
+                drawingDirection,
                 polystarType,
                 points,
                 position,
@@ -368,13 +367,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             // Not clear whether we need to read these properties.
             obj.IgnorePropertyThatIsNotYetSupported("hd");
 
-            var direction = obj.BoolPropertyOrNull("d") == true;
+            var drawingDirection = DToDrawingDirection(obj.DoublePropertyOrNull("d"));
             var position = ReadAnimatableVector3(obj.ObjectPropertyOrNull("p"));
             var size = ReadAnimatableVector3(obj.ObjectPropertyOrNull("s"));
             var cornerRadius = ReadAnimatableFloat(obj.ObjectPropertyOrNull("r"));
 
             obj.AssertAllPropertiesRead();
-            return new Rectangle(in shapeLayerContentArgs, direction, position, size, cornerRadius);
+            return new Rectangle(in shapeLayerContentArgs, drawingDirection, position, size, cornerRadius);
         }
 
         Path ReadPath(
@@ -385,9 +384,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             obj.IgnorePropertyThatIsNotYetSupported("ind", "ix", "hd", "cl", "closed");
 
             var geometry = ReadAnimatableGeometry(obj.ObjectPropertyOrNull("ks"));
-            var direction = obj.BoolPropertyOrNull("d") == true;
+            var drawingDirection = DToDrawingDirection(obj.DoublePropertyOrNull("d"));
             obj.AssertAllPropertiesRead();
-            return new Path(in shapeLayerContentArgs, direction, geometry);
+            return new Path(in shapeLayerContentArgs, drawingDirection, geometry);
         }
 
         TrimPath ReadTrimPath(

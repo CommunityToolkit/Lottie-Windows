@@ -7,11 +7,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 #if PUBLIC_LottieData
     public
 #endif
-    sealed class Polystar : ShapeLayerContent
+    sealed class Polystar : Shape
     {
         public Polystar(
             in ShapeLayerContentArgs args,
-            bool direction,
+            DrawingDirection drawingDirection,
             PolyStarType starType,
             Animatable<double> points,
             IAnimatableVector3 position,
@@ -20,9 +20,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             Animatable<double> outerRadius,
             Animatable<double> innerRoundedness,
             Animatable<double> outerRoundedness)
-            : base(in args)
+            : base(in args, drawingDirection)
         {
-            Direction = direction;
             StarType = starType;
             Points = points;
             Position = position;
@@ -32,8 +31,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             InnerRoundedness = innerRoundedness;
             OuterRoundedness = outerRoundedness;
         }
-
-        internal bool Direction { get; }
 
         internal PolyStarType StarType { get; }
 
