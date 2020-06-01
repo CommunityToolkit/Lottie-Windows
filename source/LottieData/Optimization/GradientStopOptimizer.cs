@@ -27,12 +27,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
         /// of <see cref="ColorGradientStop"/>s.</summary>
         /// <returns>An equivalent <see cref="KeyFrame{T}"/> of <see cref="ColorGradientStop"/>s.</returns>
         public static KeyFrame<Sequence<ColorGradientStop>> Optimize(KeyFrame<Sequence<GradientStop>> keyFrame)
-            => new KeyFrame<Sequence<ColorGradientStop>>(
-                frame: keyFrame.Frame,
-                value: new Sequence<ColorGradientStop>(Optimize(keyFrame.Value)),
-                spatialControlPoint1: keyFrame.SpatialControlPoint1,
-                spatialControlPoint2: keyFrame.SpatialControlPoint2,
-                easing: keyFrame.Easing);
+            => keyFrame.CloneWithNewValue(new Sequence<ColorGradientStop>(Optimize(keyFrame.Value)));
 
         /// <summary>
         /// Returns an equivalent list of keyframes with any redundant color stops removed.
@@ -73,12 +68,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                 // Get just the significant (i.e. non-redundant) stops.
                 var significantStops = keyFrame.Value.Zip(redundancies, (stop, isRedundant) => (stop, isRedundant)).Where(item => !item.isRedundant).Select(item => item.stop);
 
-                yield return new KeyFrame<Sequence<ColorGradientStop>>(
-                    frame: keyFrame.Frame,
-                    value: new Sequence<ColorGradientStop>(significantStops),
-                    spatialControlPoint1: keyFrame.SpatialControlPoint1,
-                    spatialControlPoint2: keyFrame.SpatialControlPoint2,
-                    easing: keyFrame.Easing);
+                yield return keyFrame.CloneWithNewValue(new Sequence<ColorGradientStop>(significantStops));
             }
         }
 

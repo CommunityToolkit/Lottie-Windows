@@ -147,12 +147,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 : new TrimmedAnimatable<Opacity>(
                     context: animatable.Context,
                     initialValue: animatable.InitialValue * opacity,
-                    keyFrames: animatable.KeyFrames.SelectToSpan(kf => new KeyFrame<Opacity>(
-                                kf.Frame,
-                                kf.Value * opacity,
-                                kf.SpatialControlPoint1,
-                                kf.SpatialControlPoint2,
-                                kf.Easing)));
+                    keyFrames: animatable.KeyFrames.SelectToSpan(kf => kf.CloneWithNewValue(kf.Value * opacity)));
         }
 
         // Composes 2 animated opacity values where the frames in first come before second.
@@ -189,14 +184,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 new ReadOnlySpan<KeyFrame<Opacity>>(resultFrames, 0, resultCount));
         }
 
-        static KeyFrame<Opacity> ScaleKeyFrame(KeyFrame<Opacity> keyFrame, Opacity scale)
-        {
-            return new KeyFrame<Opacity>(
-                            keyFrame.Frame,
-                            keyFrame.Value * scale,
-                            keyFrame.SpatialControlPoint1,
-                            keyFrame.SpatialControlPoint2,
-                            keyFrame.Easing);
-        }
+        static KeyFrame<Opacity> ScaleKeyFrame(KeyFrame<Opacity> keyFrame, Opacity scale) =>
+            keyFrame.CloneWithNewValue(keyFrame.Value * scale);
     }
 }

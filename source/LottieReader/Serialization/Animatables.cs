@@ -177,12 +177,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                         "Opacity gradient stop key frame does not match color gradient stop key frame.");
                 }
 
-                yield return new KeyFrame<Sequence<GradientStop>>(
-                    aKeyFrame.Frame,
-                    new Sequence<GradientStop>(aKeyFrame.Value.Concat(bKeyFrame.Value)),
-                    aKeyFrame.SpatialControlPoint1,
-                    aKeyFrame.SpatialControlPoint2,
-                    aKeyFrame.Easing);
+                yield return aKeyFrame.CloneWithNewValue(new Sequence<GradientStop>(aKeyFrame.Value.Concat(bKeyFrame.Value)));
             }
         }
 

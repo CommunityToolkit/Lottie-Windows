@@ -3325,7 +3325,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 var value = kf.Value.Items[stopIndex];
                 var selected = selector(value);
 
-                yield return new KeyFrame<TKeyFrame>(kf.Frame, selected, kf.SpatialControlPoint1, kf.SpatialControlPoint2, kf.Easing);
+                yield return kf.CloneWithNewValue(selected);
             }
         }
 
@@ -3700,7 +3700,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             for (var i = 0; i < animation.KeyFrames.Length; i++)
             {
                 var kf = animation.KeyFrames[i];
-                keyframes[i] = new KeyFrame<Vector3>(kf.Frame, kf.Value - anchor, kf.SpatialControlPoint1, kf.SpatialControlPoint2, kf.Easing);
+                keyframes[i] = kf.CloneWithNewValue(kf.Value - anchor);
             }
 
             return new TrimmedAnimatable<Vector3>(context, keyframes[0].Value, keyframes);
@@ -4377,13 +4377,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 return new TrimmedAnimatable<Color>(
                     color.Context,
                     initialValue: initialColorValue,
-                    keyFrames: color.KeyFrames.SelectToSpan(kf =>
-                        new KeyFrame<Color>(
-                            kf.Frame,
-                            kf.Value * opacity,
-                            kf.SpatialControlPoint1,
-                            kf.SpatialControlPoint2,
-                            kf.Easing)));
+                    keyFrames: color.KeyFrames.SelectToSpan(kf => kf.CloneWithNewValue(kf.Value * opacity)));
             }
             else
             {
@@ -4405,13 +4399,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 return new TrimmedAnimatable<Color>(
                     opacity.Context,
                     initialValue: color * opacity.InitialValue,
-                    keyFrames: opacity.KeyFrames.SelectToSpan(kf =>
-                        new KeyFrame<Color>(
-                            kf.Frame,
-                            color * kf.Value,
-                            kf.SpatialControlPoint1,
-                            kf.SpatialControlPoint2,
-                            kf.Easing)));
+                    keyFrames: opacity.KeyFrames.SelectToSpan(kf => kf.CloneWithNewValue(color * kf.Value)));
             }
         }
 
