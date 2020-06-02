@@ -2797,20 +2797,27 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             bool GenerateCompositionPathGeometryFactory(CodeBuilder builder, CompositionPathGeometry obj, ObjectData node)
             {
-                WriteObjectFactoryStart(builder, node);
-                if (obj.Path is null)
+                var path = obj.Path is null ? null : _objectGraph[obj.Path];
+                var createCallText = path is null ? string.Empty : CallFactoryFromFor(node, path);
+
+                if (obj.Animators.Count == 0 &&
+                    obj.Properties.Names.Count == 0 &&
+                    !obj.TrimEnd.HasValue &&
+                    !obj.TrimOffset.HasValue &&
+                    !obj.TrimStart.HasValue &&
+                    !node.IsReachableFrom(path))
                 {
-                    WriteCreateAssignment(builder, node, $"_c{Deref}CreatePathGeometry()");
+                    WriteSimpleObjectFactory(builder, node, createCallText);
                 }
                 else
                 {
-                    var path = _objectGraph[obj.Path];
-                    WriteCreateAssignment(builder, node, $"_c{Deref}CreatePathGeometry({CallFactoryFromFor(node, path)})");
+                    WriteObjectFactoryStart(builder, node);
+                    WriteCreateAssignment(builder, node, $"_c{Deref}CreatePathGeometry({createCallText})");
+                    InitializeCompositionGeometry(builder, obj, node);
+                    StartAnimationsOnResult(builder, obj, node);
+                    WriteObjectFactoryEnd(builder);
                 }
 
-                InitializeCompositionGeometry(builder, obj, node);
-                StartAnimationsOnResult(builder, obj, node);
-                WriteObjectFactoryEnd(builder);
                 return true;
             }
 
@@ -3009,27 +3016,51 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             bool GenerateCompositionSurfaceBrushFactory(CodeBuilder builder, CompositionSurfaceBrush obj, ObjectData node)
             {
-                WriteObjectFactoryStart(builder, node);
-                WriteCreateAssignment(builder, node, $"_c{Deref}CreateSurfaceBrush()");
-                InitializeCompositionBrush(builder, obj, node);
-
-                if (obj.Surface != null)
+                var surfaceNode = obj.Surface switch
                 {
-                    switch (obj.Surface)
+                    CompositionObject compositionObject => NodeFor(compositionObject),
+                    Wmd.LoadedImageSurface loadedImageSurface => NodeFor(loadedImageSurface),
+                    _ => null,
+                };
+
+                // Create the code that initializes the Surface.
+                var surfaceInitializationText = obj.Surface switch
+                {
+                    CompositionObject compositionObject => CallFactoryFromFor(node, compositionObject),
+                    Wmd.LoadedImageSurface _ => surfaceNode.FieldName,
+                    null => string.Empty,
+                    _ => throw new InvalidOperationException(),
+                };
+
+                var isReachableFromSurfaceNode = node.IsReachableFrom(surfaceNode);
+
+                if (obj.Animators.Count == 0 &&
+                    obj.Properties.Names.Count == 0 &&
+                    !isReachableFromSurfaceNode)
+                {
+                    WriteSimpleObjectFactory(builder, node, $"_c{Deref}CreateSurfaceBrush({surfaceInitializationText})");
+                }
+                else
+                {
+                    WriteObjectFactoryStart(builder, node);
+
+                    if (isReachableFromSurfaceNode)
                     {
-                        case CompositionObject compositionObject:
-                            WriteSetPropertyStatement(builder, "Surface", CallFactoryFromFor(node, compositionObject));
-                            break;
-                        case Wmd.LoadedImageSurface loadedImageSurface:
-                            WriteSetPropertyStatement(builder, "Surface", NodeFor(loadedImageSurface).FieldName);
-                            break;
-                        default:
-                            throw new InvalidOperationException();
+                        // The Surface depends on the brush, so the brush needs to be created and assigned
+                        // before the Surface.
+                        WriteCreateAssignment(builder, node, $"_c{Deref}CreateSurfaceBrush()");
+                        WriteSetPropertyStatement(builder, "Surface", surfaceInitializationText);
                     }
+                    else
+                    {
+                        WriteCreateAssignment(builder, node, $"_c{Deref}CreateSurfaceBrush({surfaceInitializationText})");
+                    }
+
+                    InitializeCompositionBrush(builder, obj, node);
+                    StartAnimationsOnResult(builder, obj, node);
+                    WriteObjectFactoryEnd(builder);
                 }
 
-                StartAnimationsOnResult(builder, obj, node);
-                WriteObjectFactoryEnd(builder);
                 return true;
             }
 
