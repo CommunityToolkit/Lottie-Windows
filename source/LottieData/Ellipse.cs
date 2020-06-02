@@ -7,21 +7,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 #if PUBLIC_LottieData
     public
 #endif
-    sealed class Ellipse : ShapeLayerContent
+    sealed class Ellipse : Shape
     {
         public Ellipse(
             in ShapeLayerContentArgs args,
-            bool direction,
+            DrawingDirection drawingDirection,
             IAnimatableVector3 position,
             IAnimatableVector3 diameter)
-            : base(in args)
+            : base(in args, drawingDirection)
         {
-            Direction = direction;
             Position = position;
             Diameter = diameter;
         }
-
-        public bool Direction { get; }
 
         public IAnimatableVector3 Position { get; }
 

@@ -7,19 +7,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 #if PUBLIC_LottieData
     public
 #endif
-    sealed class Path : ShapeLayerContent
+    sealed class Path : Shape
     {
         public Path(
             in ShapeLayerContentArgs args,
-            bool direction,
+            DrawingDirection drawingDirection,
             Animatable<PathGeometry> geometryData)
-            : base(in args)
+            : base(in args, drawingDirection)
         {
-            Direction = direction;
             Data = geometryData;
         }
-
-        public bool Direction { get; }
 
         public Animatable<PathGeometry> Data { get; }
 
@@ -43,7 +40,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
                         MatchName = MatchName,
                         Name = Name,
                     },
-                    Direction,
+                    DrawingDirection,
                     geometryData);
     }
 }

@@ -7,23 +7,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 #if PUBLIC_LottieData
     public
 #endif
-    sealed class Rectangle : ShapeLayerContent
+    sealed class Rectangle : Shape
     {
         public Rectangle(
             in ShapeLayerContentArgs args,
-            bool direction,
+            DrawingDirection drawingDirection,
             IAnimatableVector3 position,
             IAnimatableVector3 size,
             Animatable<double> cornerRadius)
-            : base(in args)
+            : base(in args, drawingDirection)
         {
-            Direction = direction;
             Position = position;
             Size = size;
             CornerRadius = cornerRadius;
         }
-
-        public bool Direction { get; }
 
         public Animatable<double> CornerRadius { get; }
 
