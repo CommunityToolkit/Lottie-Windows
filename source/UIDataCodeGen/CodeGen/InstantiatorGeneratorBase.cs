@@ -2798,7 +2798,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             bool GenerateCompositionPathGeometryFactory(CodeBuilder builder, CompositionPathGeometry obj, ObjectData node)
             {
                 var path = obj.Path is null ? null : _objectGraph[obj.Path];
-                var createCallText = path is null ? string.Empty : CallFactoryFromFor(node, path);
+                var createPathText = path is null ? string.Empty : CallFactoryFromFor(node, path);
+                var createPathGeometryText = $"_c{Deref}CreatePathGeometry({createPathText})";
 
                 if (obj.Animators.Count == 0 &&
                     obj.Properties.Names.Count == 0 &&
@@ -2807,12 +2808,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     !obj.TrimStart.HasValue &&
                     !node.IsReachableFrom(path))
                 {
-                    WriteSimpleObjectFactory(builder, node, createCallText);
+                    WriteSimpleObjectFactory(builder, node, createPathGeometryText);
                 }
                 else
                 {
                     WriteObjectFactoryStart(builder, node);
-                    WriteCreateAssignment(builder, node, $"_c{Deref}CreatePathGeometry({createCallText})");
+                    WriteCreateAssignment(builder, node, createPathGeometryText);
                     InitializeCompositionGeometry(builder, obj, node);
                     StartAnimationsOnResult(builder, obj, node);
                     WriteObjectFactoryEnd(builder);
