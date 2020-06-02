@@ -314,14 +314,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     return FromShapeFill((ShapeFill)content, superclassContent);
                 case ShapeContentType.Transform:
                     return FromTransform((Transform)content, superclassContent);
-                case ShapeContentType.Path:
-                    return FromPath((Path)content, superclassContent);
                 case ShapeContentType.Ellipse:
-                    return FromEllipse((Ellipse)content, superclassContent);
-                case ShapeContentType.Rectangle:
-                    return FromRectangle((Rectangle)content, superclassContent);
+                case ShapeContentType.Path:
                 case ShapeContentType.Polystar:
-                    return FromPolystar((Polystar)content, superclassContent);
+                case ShapeContentType.Rectangle:
+                    return FromShape((Shape)content, superclassContent);
                 case ShapeContentType.TrimPath:
                     return FromTrimPath((TrimPath)content, superclassContent);
                 case ShapeContentType.MergePaths:
@@ -330,6 +327,25 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     return FromRepeater((Repeater)content, superclassContent);
                 case ShapeContentType.RoundedCorner:
                     return FromRoundedCorner((RoundedCorner)content, superclassContent);
+                default:
+                    throw Unreachable;
+            }
+        }
+
+        YamlObject FromShape(Shape content, YamlMap superclassContent)
+        {
+            superclassContent.Add(nameof(content.DrawingDirection), Scalar(content.DrawingDirection));
+
+            switch (content.ContentType)
+            {
+                case ShapeContentType.Path:
+                    return FromPath((Path)content, superclassContent);
+                case ShapeContentType.Ellipse:
+                    return FromEllipse((Ellipse)content, superclassContent);
+                case ShapeContentType.Rectangle:
+                    return FromRectangle((Rectangle)content, superclassContent);
+                case ShapeContentType.Polystar:
+                    return FromPolystar((Polystar)content, superclassContent);
                 default:
                     throw Unreachable;
             }
@@ -575,7 +591,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         YamlObject FromPath(Path content, YamlMap superclassContent)
         {
             var result = superclassContent;
-            result.Add(nameof(content.Direction), content.Direction);
             result.Add(nameof(content.Data), FromAnimatable(content.Data, p => FromPathGeometry(p)));
             return result;
         }

@@ -2,6 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+// Uncomment this to give each element a unique name. This is useful
+// for debugging how an element gets translated.
+//#define UniqueifyNames
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -23,6 +26,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
     {
         readonly ParsingIssues _issues;
         readonly Options _options;
+#if UniqueifyNames
+        // The names discovered so far, and their counts.
+        // This is used to give each element a unique name. This helps
+        // when trying to debug how an element gets translated.
+        readonly Dictionary<string, int> _names = new Dictionary<string, int>();
+#endif // UniqueifyNames
 
         /// <summary>
         /// Specifies optional behavior for the reader.
@@ -276,7 +285,21 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             }
             else
             {
-                return obj.StringPropertyOrNull("nm") ?? string.Empty;
+                var result = obj.StringPropertyOrNull("nm") ?? string.Empty;
+
+#if UniqueifyNames
+                if (!_names.TryGetValue(result, out var count))
+                {
+                    count = 0;
+                    _names.Add(result, count);
+                }
+
+                count++;
+                _names[result] = count;
+                result = $"{result} #{count:000}";
+#endif // UniqueifyNames
+
+                return result;
             }
         }
 
