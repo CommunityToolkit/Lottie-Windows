@@ -4,7 +4,7 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:lottie="using:Microsoft.Toolkit.Uwp.UI.Lottie"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-      xmlns:winui="using:Microsoft.UI.Xaml.Controls"
+      xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
       Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
       mc:Ignorable="d">
 
@@ -43,11 +43,11 @@
 
             <Border Style="{StaticResource LottiePlayer}">
                 <!--  AnimatedVisualPlayer with AutoPlay  -->
-                <winui:AnimatedVisualPlayer x:Name="Json_Player">
+                <muxc:AnimatedVisualPlayer x:Name="Json_Player">
                     <!--  LottieVisualSource that parses a JSON Uri at run-time  -->
                     <lottie:LottieVisualSource x:Name="Json_Source"
                                                UriSource="ms-appx:///Assets/LottieLogo1.json" />
-                </winui:AnimatedVisualPlayer>
+                </muxc:AnimatedVisualPlayer>
             </Border>
 
             <!--#region OutroText-->
