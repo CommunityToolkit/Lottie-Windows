@@ -1545,28 +1545,28 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     return a;
                 }
 
-                if (!a.StartTrim.IsAnimated && !a.StartTrim.IsAnimated && !a.Offset.IsAnimated)
+                if (!a.Start.IsAnimated && !a.Start.IsAnimated && !a.Offset.IsAnimated)
                 {
                     // a is not animated.
-                    if (!b.StartTrim.IsAnimated && !b.StartTrim.IsAnimated && !b.Offset.IsAnimated)
+                    if (!b.Start.IsAnimated && !b.Start.IsAnimated && !b.Offset.IsAnimated)
                     {
                         // Both are not animated.
-                        if (a.StartTrim.InitialValue == b.EndTrim.InitialValue)
+                        if (a.Start.InitialValue == b.End.InitialValue)
                         {
                             // a trims out everything. b is unnecessary.
                             return a;
                         }
-                        else if (b.StartTrim.InitialValue == b.EndTrim.InitialValue)
+                        else if (b.Start.InitialValue == b.End.InitialValue)
                         {
                             // b trims out everything. a is unnecessary.
                             return b;
                         }
-                        else if (a.StartTrim.InitialValue.Value == 0 && a.EndTrim.InitialValue.Value == 1 && a.Offset.InitialValue.Degrees == 0)
+                        else if (a.Start.InitialValue.Value == 0 && a.End.InitialValue.Value == 1 && a.Offset.InitialValue.Degrees == 0)
                         {
                             // a is trimming nothing. a is unnecessary.
                             return b;
                         }
-                        else if (b.StartTrim.InitialValue.Value == 0 && b.EndTrim.InitialValue.Value == 1 && b.Offset.InitialValue.Degrees == 0)
+                        else if (b.Start.InitialValue.Value == 0 && b.End.InitialValue.Value == 1 && b.Offset.InitialValue.Degrees == 0)
                         {
                             // b is trimming nothing. b is unnecessary.
                             return a;
@@ -1814,7 +1814,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             {
                 var result = _c.CreateSpriteShape();
                 result.Geometry = _c.CreatePathGeometry(new CompositionPath(mergedGeometry));
-                TranslateAndApplyShapeContentContext(context, shapeContext, result);
+                TranslateAndApplyShapeContentContext(context, shapeContext, result, reverseDirection: false, trimOffsetDegrees: 0);
                 return result;
             }
             else
@@ -2212,7 +2212,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 compositionEllipseGeometry.Radius = Vector2(diameter.InitialValue) * 0.5F;
             }
 
-            TranslateAndApplyShapeContentContext(context, shapeContext, compositionSpriteShape);
+            TranslateAndApplyShapeContentContext(
+                context,
+                shapeContext,
+                compositionSpriteShape,
+                reverseDirection: shapeContent.DrawingDirection == DrawingDirection.Reverse,
+                trimOffsetDegrees: 0);
 
             return compositionSpriteShape;
         }
@@ -2362,8 +2367,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             // TODO - this only works correctly if Size and TrimOffset are not animated. A complete solution requires
             //        adding another property.
             var isPartialTrimPath = shapeContext.TrimPath != null &&
-                (shapeContext.TrimPath.StartTrim.IsAnimated || shapeContext.TrimPath.EndTrim.IsAnimated || shapeContext.TrimPath.Offset.IsAnimated ||
-                shapeContext.TrimPath.StartTrim.InitialValue.Value != 0 || shapeContext.TrimPath.EndTrim.InitialValue.Value != 1);
+                (shapeContext.TrimPath.Start.IsAnimated || shapeContext.TrimPath.End.IsAnimated || shapeContext.TrimPath.Offset.IsAnimated ||
+                shapeContext.TrimPath.Start.InitialValue.Value != 0 || shapeContext.TrimPath.End.InitialValue.Value != 1);
 
             if (size.IsAnimated && isPartialTrimPath)
             {
@@ -2374,7 +2379,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var width = size.InitialValue.X;
             var height = size.InitialValue.Y;
             var trimOffsetDegrees = (width / (2 * (width + height))) * 360;
-            TranslateAndApplyShapeContentContext(context, shapeContext, compositionRectangle, trimOffsetDegrees: trimOffsetDegrees);
+            TranslateAndApplyShapeContentContext(
+                context,
+                shapeContext,
+                compositionRectangle,
+                shapeContent.DrawingDirection == DrawingDirection.Reverse,
+                trimOffsetDegrees: trimOffsetDegrees);
 
             if (_addDescriptions)
             {
@@ -2403,7 +2413,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         {
             var groupingSucceeded = PathGeometryGroup.TryGroupPaths(paths, out var grouped);
 
-            if (!groupingSucceeded)
+            // If any of the paths have different directions we may not get the translation
+            // right, so check that case and warn the user.
+            var directions = paths.Select(p => p.DrawingDirection).Distinct().ToArray();
+
+            if (!groupingSucceeded || directions.Length > 1)
             {
                 _issues.CombiningMultipleAnimatedPathsIsNotSupported();
             }
@@ -2425,7 +2439,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 Describe(compositionPathGeometry, $"{shapeContentName}.PathGeometry");
             }
 
-            TranslateAndApplyShapeContentContext(context, shapeContext, compositionSpriteShape, 0);
+            TranslateAndApplyShapeContentContext(
+                context,
+                shapeContext,
+                compositionSpriteShape,
+                reverseDirection: directions[0] == DrawingDirection.Reverse,
+                trimOffsetDegrees: 0);
 
             return compositionSpriteShape;
         }
@@ -2448,16 +2467,31 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 Describe(geometry, $"{path.Name}.PathGeometry");
             }
 
-            TranslateAndApplyShapeContentContext(context, shapeContext, compositionSpriteShape, 0);
+            TranslateAndApplyShapeContentContext(
+                context,
+                shapeContext,
+                compositionSpriteShape,
+                path.DrawingDirection == DrawingDirection.Reverse,
+                trimOffsetDegrees: 0);
 
             return compositionSpriteShape;
         }
 
-        void TranslateAndApplyShapeContentContext(TranslationContext context, ShapeContentContext shapeContext, CompositionSpriteShape shape, double trimOffsetDegrees = 0)
+        void TranslateAndApplyShapeContentContext(
+            TranslationContext context,
+            ShapeContentContext shapeContext,
+            CompositionSpriteShape shape,
+            bool reverseDirection,
+            double trimOffsetDegrees)
         {
             shape.FillBrush = TranslateShapeFill(context, shapeContext.Fill, shapeContext.Opacity);
             TranslateAndApplyStroke(context, shapeContext.Stroke, shape, shapeContext.Opacity);
-            TranslateAndApplyTrimPath(context, shapeContext.TrimPath, shape.Geometry, trimOffsetDegrees);
+            TranslateAndApplyTrimPath(
+                context,
+                shapeContext.TrimPath,
+                shape.Geometry,
+                reverseDirection,
+                trimOffsetDegrees);
         }
 
         enum AnimatableOrder
@@ -2542,15 +2576,25 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
         }
 
-        void TranslateAndApplyTrimPath(TranslationContext context, TrimPath trimPath, CompositionGeometry geometry, double trimOffsetDegrees)
+        void TranslateAndApplyTrimPath(
+            TranslationContext context,
+            TrimPath trimPath,
+            CompositionGeometry geometry,
+            bool reverseDirection,
+            double trimOffsetDegrees)
         {
             if (trimPath is null)
             {
                 return;
             }
 
-            var startTrim = context.TrimAnimatable(trimPath.StartTrim);
-            var endTrim = context.TrimAnimatable(trimPath.EndTrim);
+            if (reverseDirection)
+            {
+                trimPath = trimPath.CloneWithReversedDirection();
+            }
+
+            var startTrim = context.TrimAnimatable(trimPath.Start);
+            var endTrim = context.TrimAnimatable(trimPath.End);
             var trimPathOffset = context.TrimAnimatable(trimPath.Offset);
 
             if (!startTrim.IsAnimated && !endTrim.IsAnimated)

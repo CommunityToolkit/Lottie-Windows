@@ -2,8 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.Linq;
+
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 {
+    /// <summary>
+    /// Describes how a path is to be trimmed.
+    /// </summary>
 #if PUBLIC_LottieData
     public
 #endif
@@ -12,20 +18,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         public TrimPath(
             in ShapeLayerContentArgs args,
             TrimType trimPathType,
-            Animatable<Trim> startTrim,
-            Animatable<Trim> endTrim,
+            Animatable<Trim> start,
+            Animatable<Trim> end,
             Animatable<Rotation> offset)
             : base(in args)
         {
             TrimPathType = trimPathType;
-            StartTrim = startTrim;
-            EndTrim = endTrim;
+            Start = start;
+            End = end;
             Offset = offset;
         }
 
-        public Animatable<Trim> StartTrim { get; }
+        public Animatable<Trim> Start { get; }
 
-        public Animatable<Trim> EndTrim { get; }
+        public Animatable<Trim> End { get; }
 
         public Animatable<Rotation> Offset { get; }
 
@@ -36,6 +42,30 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
         /// <inheritdoc/>
         public override LottieObjectType ObjectType => LottieObjectType.TrimPath;
+
+        /// <summary>
+        /// Returns a new <see cref="TrimPath"/> that trims in the reverse direction of this
+        /// <see cref="TrimPath"/>.
+        /// </summary>
+        /// <returns>A new <see cref="TrimPath"/> that trims in the reverse direction.</returns>
+        public TrimPath CloneWithReversedDirection()
+        {
+            // Start = 1 - end
+            var start = End.CloneWithSelectedValue(trim => Trim.FromPercent(100 - trim.Percent));
+
+            // End = 1 - start
+            var end = Start.CloneWithSelectedValue(trim => Trim.FromPercent(100 - trim.Percent));
+
+            // Offset = offset * -1
+            var offset = Offset.CloneWithSelectedValue(rotation => Rotation.FromDegrees(rotation.Degrees * -1));
+
+            return new TrimPath(
+                new ShapeLayerContentArgs { BlendMode = BlendMode, MatchName = MatchName, Name = Name },
+                TrimPathType,
+                start,
+                end,
+                offset);
+        }
 
         public enum TrimType
         {

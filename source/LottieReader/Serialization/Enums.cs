@@ -49,10 +49,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 {
                     switch (intValue)
                     {
-                        case 0: return DrawingDirection.Forward;
-                        case 1: return DrawingDirection.Unknown1;
-                        case 2: return DrawingDirection.Unknown2;
-                        case 3: return DrawingDirection.Unknown3;
+                        case 1: return DrawingDirection.Forward;
+                        case 3: return DrawingDirection.Reverse;
                     }
                 }
 
