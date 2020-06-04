@@ -4,9 +4,8 @@
              xmlns:animatedVisuals="using:AnimatedVisuals"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="using:LottieViewer"
-             xmlns:lottie="using:Microsoft.Toolkit.Uwp.UI.Lottie"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:winui="using:Microsoft.UI.Xaml.Controls"
+             xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
              d:DesignHeight="300"
              d:DesignWidth="400"
              mc:Ignorable="d">
@@ -20,9 +19,9 @@
         </Storyboard>
     </UserControl.Resources>
     <Grid x:Name="_dragNDropHintContainer">
-        <winui:AnimatedVisualPlayer x:Name="_dragNDropHint"
+        <muxc:AnimatedVisualPlayer x:Name="_dragNDropHint"
                                     AutoPlay="False">
             <animatedVisuals:UiFeedbackAnimations />
-        </winui:AnimatedVisualPlayer>
+        </muxc:AnimatedVisualPlayer>
     </Grid>
 </UserControl>

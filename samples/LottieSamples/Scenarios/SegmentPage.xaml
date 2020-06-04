@@ -4,7 +4,7 @@
       xmlns:animatedvisuals="using:AnimatedVisuals"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-      xmlns:winui="using:Microsoft.UI.Xaml.Controls"
+      xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
       Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
       mc:Ignorable="d">
 
@@ -53,14 +53,14 @@
 
             <Border Style="{StaticResource LottiePlayer}">
                 <!--  AnimatedVisualPlayer with Pointer Event Handlers  -->
-                <winui:AnimatedVisualPlayer x:Name="Segments_Player"
+                <muxc:AnimatedVisualPlayer x:Name="Segments_Player"
                                             AutoPlay="False"
                                             PointerEntered="Segments_Player_PointerEntered"
                                             PointerExited="Segments_Player_PointerExited"
                                             PointerPressed="Segments_Player_PointerPressed">
                     <!--  Codegen Source  -->
                     <animatedvisuals:LightBulb />
-                </winui:AnimatedVisualPlayer>
+                </muxc:AnimatedVisualPlayer>
             </Border>
 
             <!--#region OutroText-->
