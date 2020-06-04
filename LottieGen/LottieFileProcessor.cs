@@ -362,8 +362,14 @@ sealed class LottieFileProcessor
             outputFilePath,
             LottieCompositionXmlSerializer.ToXml(_lottieComposition).ToString());
 
-        _reporter.WriteInfo("Lottie XML written to:");
-        _reporter.WriteInfo(InfoType.FilePath, $" {outputFilePath}");
+        if (result)
+        {
+            using (_reporter.InfoStream.Lock())
+            {
+                _reporter.WriteInfo("Lottie XML written to:");
+                _reporter.WriteInfo(InfoType.FilePath, $" {outputFilePath}");
+            }
+        }
 
         return result;
     }
@@ -381,8 +387,11 @@ sealed class LottieFileProcessor
 
         if (result)
         {
-            _reporter.WriteInfo("Lottie YAML written to:");
-            _reporter.WriteInfo(InfoType.FilePath, $" {outputFilePath}");
+            using (_reporter.InfoStream.Lock())
+            {
+                _reporter.WriteInfo("Lottie YAML written to:");
+                _reporter.WriteInfo(InfoType.FilePath, $" {outputFilePath}");
+            }
         }
 
         return result;
@@ -403,8 +412,11 @@ sealed class LottieFileProcessor
 
         if (result)
         {
-            _reporter.WriteInfo("WinComp XML written to:");
-            _reporter.WriteInfo(InfoType.FilePath, $" {outputFilePath}");
+            using (_reporter.InfoStream.Lock())
+            {
+                _reporter.WriteInfo("WinComp XML written to:");
+                _reporter.WriteInfo(InfoType.FilePath, $" {outputFilePath}");
+            }
         }
 
         return result;
@@ -424,8 +436,11 @@ sealed class LottieFileProcessor
 
         if (result)
         {
-            _reporter.WriteInfo("WinComp DGML written to:");
-            _reporter.WriteInfo(InfoType.FilePath, $" {outputFilePath}");
+            using (_reporter.InfoStream.Lock())
+            {
+                _reporter.WriteInfo("WinComp DGML written to:");
+                _reporter.WriteInfo(InfoType.FilePath, $" {outputFilePath}");
+            }
         }
 
         return result;
@@ -451,8 +466,11 @@ sealed class LottieFileProcessor
 
         if (result)
         {
-            _reporter.WriteInfo($"C# code for class {_className} written to:");
-            _reporter.WriteInfo(InfoType.FilePath, $" {outputFilePath}");
+            using (_reporter.InfoStream.Lock())
+            {
+                _reporter.WriteInfo($"C# code for class {_className} written to:");
+                _reporter.WriteInfo(InfoType.FilePath, $" {outputFilePath}");
+            }
 
             if (assetList != null)
             {
@@ -500,16 +518,19 @@ sealed class LottieFileProcessor
             return false;
         }
 
-        _reporter.WriteInfo($"Cppwinrt header for class {_className} written to:");
-        _reporter.WriteInfo(InfoType.FilePath, $" {outputHeaderFilePath}");
-
-        _reporter.WriteInfo($"Cppwinrt source for class {_className} written to:");
-        _reporter.WriteInfo(InfoType.FilePath, $" {outputCppFilePath}");
-
-        if (assetList != null)
+        using (_reporter.InfoStream.Lock())
         {
-            // Write out the list of asset files referenced by the code.
-            WriteAssetFiles(assetList);
+            _reporter.WriteInfo($"Cppwinrt header for class {_className} written to:");
+            _reporter.WriteInfo(InfoType.FilePath, $" {outputHeaderFilePath}");
+
+            _reporter.WriteInfo($"Cppwinrt source for class {_className} written to:");
+            _reporter.WriteInfo(InfoType.FilePath, $" {outputCppFilePath}");
+
+            if (assetList != null)
+            {
+                // Write out the list of asset files referenced by the code.
+                WriteAssetFiles(assetList);
+            }
         }
 
         return true;
@@ -551,16 +572,19 @@ sealed class LottieFileProcessor
             return false;
         }
 
-        _reporter.WriteInfo($"CX header for class {_className} written to:");
-        _reporter.WriteInfo(InfoType.FilePath, $" {outputHeaderFilePath}");
-
-        _reporter.WriteInfo($"CX source for class {_className} written to:");
-        _reporter.WriteInfo(InfoType.FilePath, $" {outputCppFilePath}");
-
-        if (assetList != null)
+        using (_reporter.InfoStream.Lock())
         {
-            // Write out the list of asset files referenced by the code.
-            WriteAssetFiles(assetList);
+            _reporter.WriteInfo($"CX header for class {_className} written to:");
+            _reporter.WriteInfo(InfoType.FilePath, $" {outputHeaderFilePath}");
+
+            _reporter.WriteInfo($"CX source for class {_className} written to:");
+            _reporter.WriteInfo(InfoType.FilePath, $" {outputCppFilePath}");
+
+            if (assetList != null)
+            {
+                // Write out the list of asset files referenced by the code.
+                WriteAssetFiles(assetList);
+            }
         }
 
         return true;
@@ -580,8 +604,12 @@ sealed class LottieFileProcessor
         }
         catch (Exception e)
         {
-            _reporter.WriteError($"Failed to write to {filePath}");
-            _reporter.WriteError(e.Message);
+            using (_reporter.ErrorStream.Lock())
+            {
+                _reporter.WriteError($"Failed to write to {filePath}");
+                _reporter.WriteError(e.Message);
+            }
+
             return false;
         }
     }
@@ -595,8 +623,12 @@ sealed class LottieFileProcessor
         }
         catch (Exception e)
         {
-            _reporter.WriteError($"Failed to write to {filePath}");
-            _reporter.WriteError(e.Message);
+            using (_reporter.ErrorStream.Lock())
+            {
+                _reporter.WriteError($"Failed to write to {filePath}");
+                _reporter.WriteError(e.Message);
+            }
+
             return false;
         }
     }
@@ -620,8 +652,11 @@ sealed class LottieFileProcessor
 
     Stream TryReadTextFile(string filePath)
     {
-        _reporter.WriteInfo($"Reading file:");
-        _reporter.WriteInfo(InfoType.FilePath, $" {_file}");
+        using (_reporter.InfoStream.Lock())
+        {
+            _reporter.WriteInfo($"Reading file:");
+            _reporter.WriteInfo(InfoType.FilePath, $" {_file}");
+        }
 
         try
         {
@@ -629,8 +664,12 @@ sealed class LottieFileProcessor
         }
         catch (Exception e)
         {
-            _reporter.WriteError($"Failed to read from {filePath}");
-            _reporter.WriteError(e.Message);
+            using (_reporter.ErrorStream.Lock())
+            {
+                _reporter.WriteError($"Failed to read from {filePath}");
+                _reporter.WriteError(e.Message);
+            }
+
             return null;
         }
     }
