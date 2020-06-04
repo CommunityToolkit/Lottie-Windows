@@ -105,8 +105,11 @@ sealed class Reporter
         ConsoleColor foregroundColor,
         ConsoleColor backgroundColor)
     {
-        ErrorStream.Color(foregroundColor, backgroundColor);
-        ErrorStream.WriteLine($"Error: {errorMessage}");
+        using (ErrorStream.Lock())
+        {
+            ErrorStream.Color(foregroundColor, backgroundColor);
+            ErrorStream.WriteLine($"Error: {errorMessage}");
+        }
     }
 
     // Helper for writing info lines to the info stream.
@@ -115,8 +118,11 @@ sealed class Reporter
         ConsoleColor foregroundColor,
         ConsoleColor backgroundColor)
     {
-        InfoStream.Color(foregroundColor, backgroundColor);
-        InfoStream.WriteLine(infoMessage);
+        using (InfoStream.Lock())
+        {
+            InfoStream.Color(foregroundColor, backgroundColor);
+            InfoStream.WriteLine(infoMessage);
+        }
     }
 
     internal sealed class Writer
