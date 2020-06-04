@@ -19,12 +19,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// The path is to be drawn in the forward direction. For rectangles and
         /// ellipses the forward direction is clockwise.
         /// </summary>
-        Forward = 1,
+        Forward,
 
         /// <summary>
         /// The path is to be drawn in the reverse direction. For rectangles and
         /// ellipses the reverse direction is counter-clockwise.
         /// </summary>
-        Reverse = 3,
+        Reverse,
     }
 }
