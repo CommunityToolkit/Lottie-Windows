@@ -4,7 +4,7 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:lottie="using:Microsoft.Toolkit.Uwp.UI.Lottie"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-      xmlns:winui="using:Microsoft.UI.Xaml.Controls"
+      xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
       Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
       mc:Ignorable="d">
 
@@ -27,14 +27,14 @@
 
             <Border Style="{StaticResource LottiePlayer}">
                 <!--  AnimatedVisualPlayer  -->
-                <winui:AnimatedVisualPlayer x:Name="Progress_Player"
+                <muxc:AnimatedVisualPlayer x:Name="Progress_Player"
                                             AutoPlay="False">
                     <!--
                         LottieVisualSource that parses a JSON Uri at run-time
                         NOTE: The UriSource is set asynchronously in code-behind
                     -->
                     <lottie:LottieVisualSource x:Name="Progress_Source" />
-                </winui:AnimatedVisualPlayer>
+                </muxc:AnimatedVisualPlayer>
             </Border>
 
             <!--  Light Switch and Progress Slider  -->
