@@ -51,6 +51,39 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             /// </summary>
             public int Position { get; private set; }
 
+            /// <summary>
+            /// Returns <c>True</c> iff this node is reachable from the given node.
+            /// </summary>
+            /// <param name="node">The node to test.</param>
+            /// <returns><c>True</c> if this node is reachable from the given node.</returns>
+            public bool IsReachableFrom(Node<T> node) => node is null ? false : IsReachableFrom(node, new HashSet<Node<T>>());
+
+            bool IsReachableFrom(Node<T> targetNode, HashSet<Node<T>> alreadyVisited)
+            {
+                // Walk the tree of references to this node, ignoring any that have already
+                // been visited.
+                foreach (var vertex in targetNode.InReferences)
+                {
+                    // inRef is a node that directly references this node.
+                    var inRef = vertex.Node;
+
+                    if (alreadyVisited.Add(inRef))
+                    {
+                        // We haven't examined the inRef node yet.
+                        if (inRef == targetNode || inRef.IsReachableFrom(targetNode, alreadyVisited))
+                        {
+                            // inRef is the targetNode, or it's reachable from targetNode.
+                            return true;
+                        }
+
+                        // This node is not reachable from the targetNode.
+                    }
+                }
+
+                // Not reachable from targetNode.
+                return false;
+            }
+
             public struct Vertex
             {
                 /// <summary>
