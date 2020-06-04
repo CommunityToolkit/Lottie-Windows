@@ -4,7 +4,7 @@
       xmlns:animatedvisuals="using:AnimatedVisuals"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-      xmlns:winui="using:Microsoft.UI.Xaml.Controls"
+      xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
       Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
       mc:Ignorable="d">
 
@@ -26,11 +26,11 @@
 
             <Border Style="{StaticResource LottiePlayer}">
                 <!--  AnimatedVisualPlayer  -->
-                <winui:AnimatedVisualPlayer x:Name="Playback_Player"
+                <muxc:AnimatedVisualPlayer x:Name="Playback_Player"
                                             AutoPlay="False">
                     <!--  Codegen LottieVisualSource  -->
                     <animatedvisuals:LottieLogo1 />
-                </winui:AnimatedVisualPlayer>
+                </muxc:AnimatedVisualPlayer>
             </Border>
 
             <!--  Playback Buttons  -->

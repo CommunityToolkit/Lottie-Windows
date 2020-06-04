@@ -4,7 +4,7 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:lottie="using:Microsoft.Toolkit.Uwp.UI.Lottie"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-      xmlns:winui="using:Microsoft.UI.Xaml.Controls"
+      xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
       Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
       mc:Ignorable="d">
 
@@ -29,7 +29,7 @@
             <Border Style="{StaticResource LottiePlayer}">
 
                 <!--  AnimatedVisualPlayer  -->
-                <winui:AnimatedVisualPlayer x:Name="Fallback_Player">
+                <muxc:AnimatedVisualPlayer x:Name="Fallback_Player">
                     <!--  LottieVisualSource with invalid UriSource to cause fallback  -->
                     <lottie:LottieVisualSource x:Name="Json_Source"
                                                UriSource="http://dots.microsoft.com/notarealfile.json" />
@@ -37,7 +37,7 @@
                         Fallback Content: Custom XAML content that is rendered if Source fails to load
                         or if app is on Windows 10 verion < 1809
                     -->
-                    <winui:AnimatedVisualPlayer.FallbackContent>
+                    <muxc:AnimatedVisualPlayer.FallbackContent>
                         <DataTemplate>
                             <!--
                                 Static Image for Fallback.
@@ -45,8 +45,8 @@
                             -->
                             <Image Source="/Assets/LottieLogo1.png" />
                         </DataTemplate>
-                    </winui:AnimatedVisualPlayer.FallbackContent>
-                </winui:AnimatedVisualPlayer>
+                    </muxc:AnimatedVisualPlayer.FallbackContent>
+                </muxc:AnimatedVisualPlayer>
             </Border>
 
             <!--#region OutroText-->
