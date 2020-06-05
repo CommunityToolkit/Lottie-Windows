@@ -570,7 +570,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             {
                 { nameof(keyFrame.Frame), keyFrame.Frame },
                 { nameof(keyFrame.Value), valueSelector(keyFrame.Value) },
-                { nameof(keyFrame.Easing), Scalar(keyFrame.Easing.Type) },
+                { nameof(keyFrame.Easing), FromEasing(keyFrame.Easing) },
             };
 
             if (keyFrame is KeyFrame<Vector3> v3kf)
@@ -585,6 +585,31 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 }
             }
 
+            return result;
+        }
+
+        YamlObject FromEasing(Easing value)
+        {
+            var result = new YamlMap
+            {
+                { nameof(value.Type), Scalar(value.Type) },
+            };
+
+            switch (value.Type)
+            {
+                case Easing.EasingType.CubicBezier:
+                    // CubicBezierEasing is the only easing that has parameters.
+                    return FromCubicBezierEasing((CubicBezierEasing)value, result);
+                default:
+                    return result;
+            }
+        }
+
+        YamlObject FromCubicBezierEasing(CubicBezierEasing content, YamlMap superclassContent)
+        {
+            var result = superclassContent;
+            result.Add(nameof(content.ControlPoint1), FromVector3(content.ControlPoint1));
+            result.Add(nameof(content.ControlPoint2), FromVector3(content.ControlPoint2));
             return result;
         }
 
