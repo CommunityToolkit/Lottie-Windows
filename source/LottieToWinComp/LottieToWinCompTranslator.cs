@@ -1814,7 +1814,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             {
                 var result = _c.CreateSpriteShape();
                 result.Geometry = _c.CreatePathGeometry(new CompositionPath(mergedGeometry));
-                TranslateAndApplyShapeContentContext(context, shapeContext, result, reverseDirection: false, trimOffsetDegrees: 0);
+
+                TranslateAndApplyShapeContentContext(
+                    context,
+                    shapeContext,
+                    result,
+                    reverseDirection: false,
+                    trimOffsetDegrees: 0);
+
                 return result;
             }
             else
