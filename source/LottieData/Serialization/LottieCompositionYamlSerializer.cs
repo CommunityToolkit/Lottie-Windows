@@ -657,8 +657,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         YamlObject FromTrimPath(TrimPath content, YamlMap superclassContent)
         {
             var result = superclassContent;
-            result.Add(nameof(content.StartTrim), FromAnimatable(content.StartTrim));
-            result.Add(nameof(content.EndTrim), FromAnimatable(content.EndTrim));
+            result.Add(nameof(content.Start), FromAnimatable(content.Start));
+            result.Add(nameof(content.End), FromAnimatable(content.End));
             result.Add(nameof(content.Offset), FromAnimatable(content.Offset));
             return result;
         }

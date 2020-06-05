@@ -5,16 +5,26 @@
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 {
     /// <summary>
-    /// A rotation value.
+    /// The direction in which a path is to be drawn. This affects
+    /// trims, and non-zero winding fills.
     /// </summary>
 #if PUBLIC_LottieData
     public
 #endif
     enum DrawingDirection
     {
-        Forward = 0,
-        Unknown1 = 1,
-        Unknown2 = 2,
-        Unknown3 = 3,
+        Unknown = 0,
+
+        /// <summary>
+        /// The path is to be drawn in the forward direction. For rectangles and
+        /// ellipses the forward direction is clockwise.
+        /// </summary>
+        Forward,
+
+        /// <summary>
+        /// The path is to be drawn in the reverse direction. For rectangles and
+        /// ellipses the reverse direction is counter-clockwise.
+        /// </summary>
+        Reverse,
     }
 }
