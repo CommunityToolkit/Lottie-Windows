@@ -34,7 +34,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
             // Parses an array of Vector2 stored as 2 arrays of equal-length
             // "x" and "y" values.
-            // If "x" or "y" properties are missing or are not arrays, returns an empty array.
+            // If "x" or "y" properties are missing, returns an empty array.
+            // If "x" or "y" properties are not arrays, tries to parse as double properties
+            // and returns a single Vector2 in an array.
             // The length of the array is the shorter of the "x" and "y" lengths.
             // Any values in the array that are not parseable as doubles are returned as 0.
             public Vector2[] AsVector2Array()
@@ -44,14 +46,36 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
                 var length = Math.Min(xs?.Count ?? 0, ys?.Count ?? 0);
 
-                var result = new Vector2[length];
+                Vector2[] result;
 
-                for (var i = 0; i < length; i++)
+                if (length == 0)
                 {
-                    result[i] = new Vector2(xs.Value[i].AsDouble() ?? 0.0, ys.Value[i].AsDouble() ?? 0.0);
+                    // Try again assuming the values are not arrays.
+                    var singleValue = AsVector2();
+                    result = singleValue.HasValue
+                        ? new[] { singleValue.Value }
+                        : Array.Empty<Vector2>();
+                }
+                else
+                {
+                    result = new Vector2[length];
+
+                    for (var i = 0; i < length; i++)
+                    {
+                        result[i] = new Vector2(xs.Value[i].AsDouble() ?? 0.0, ys.Value[i].AsDouble() ?? 0.0);
+                    }
                 }
 
                 return result;
+            }
+
+            public Vector2? AsVector2()
+            {
+                var x = DoublePropertyOrNull("x");
+                var y = DoublePropertyOrNull("y");
+                return x is null
+                    ? (Vector2?)null
+                    : new Vector2(x.Value, y ?? 0);
             }
 
             public Vector3? AsVector3()
