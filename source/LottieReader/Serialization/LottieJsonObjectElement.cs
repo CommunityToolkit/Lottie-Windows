@@ -32,17 +32,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 Array.Sort(_properties, Comparer.Instance);
             }
 
-            public Vector2? AsVector2()
-            {
-                var x = DoublePropertyOrNull("x");
-                var y = DoublePropertyOrNull("y");
-                return x is null
-                    ? (Vector2?)null
-                    : new Vector2(x.Value, y ?? 0);
-            }
-
-            // An array of Vector2 stored as 2 arrays of equal-length
+            // Parses an array of Vector2 stored as 2 arrays of equal-length
             // "x" and "y" values.
+            // If "x" or "y" properties are missing or are not arrays, returns an empty array.
+            // The length of the array is the shorter of the "x" and "y" lengths.
+            // Any values in the array that are not parseable as doubles are returned as 0.
             public Vector2[] AsVector2Array()
             {
                 var xs = ArrayPropertyOrNull("x");
