@@ -33,14 +33,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         public bool Equals(CubicBezierEasing other) =>
                ReferenceEquals(this, other) ||
                 (other is CubicBezierEasing &&
-                Beziers.Equals(other.Beziers));
+                Enumerable.SequenceEqual(Beziers, other.Beziers));
 
         /// <inheritdoc/>
         public override int GetHashCode() => Beziers.GetHashCode();
 
-        public static bool operator ==(CubicBezierEasing a, CubicBezierEasing b) => (a is CubicBezierEasing && a.Equals(b)) || (a is null && b is null);
+        public static bool operator ==(CubicBezierEasing a, CubicBezierEasing b) =>
+            (a is CubicBezierEasing && a.Equals(b)) || (a is null && b is null);
 
-        public static bool operator !=(CubicBezierEasing a, CubicBezierEasing b) => !(a == b);
+        public static bool operator !=(CubicBezierEasing a, CubicBezierEasing b) =>
+            !(a == b);
 
         /// <inheritdoc/>
         public override string ToString() => nameof(CubicBezierEasing);
