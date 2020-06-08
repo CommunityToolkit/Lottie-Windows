@@ -41,6 +41,25 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     : new Vector2(x.Value, y ?? 0);
             }
 
+            // An array of Vector2 stored as 2 arrays of equal-length
+            // "x" and "y" values.
+            public Vector2[] AsVector2Array()
+            {
+                var xs = ArrayPropertyOrNull("x");
+                var ys = ArrayPropertyOrNull("y");
+
+                var length = Math.Min(xs?.Count ?? 0, ys?.Count ?? 0);
+
+                var result = new Vector2[length];
+
+                for (var i = 0; i < length; i++)
+                {
+                    result[i] = new Vector2(xs.Value[i].AsDouble() ?? 0.0, ys.Value[i].AsDouble() ?? 0.0);
+                }
+
+                return result;
+            }
+
             public Vector3? AsVector3()
             {
                 var x = DoublePropertyOrNull("x");
@@ -141,7 +160,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 }
             }
 
-            internal void AssertAllPropertiesRead([CallerMemberName]string memberName = "")
+            internal void AssertAllPropertiesRead([CallerMemberName] string memberName = "")
             {
                 foreach (var pair in _properties)
                 {

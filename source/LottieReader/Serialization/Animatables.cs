@@ -633,9 +633,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                         var cp2Json = lottieKeyFrameObj.ObjectPropertyOrNull("i");
                         if (cp1Json != null && cp2Json != null)
                         {
-                            var cp1 = cp1Json.Value.AsVector2();
-                            var cp2 = cp2Json.Value.AsVector2();
-                            easing = new CubicBezierEasing(new[] { new CubicBezier(cp1 ?? Vector2.Zero, cp2 ?? Vector2.Zero) });
+                            var cp1s = cp1Json.Value.AsVector2Array();
+                            var cp2s = cp2Json.Value.AsVector2Array();
+                            var cubicBeziers = cp1s.Zip(cp2s, (cp1, cp2) => new CubicBezier(cp1, cp2));
+                            easing = new CubicBezierEasing(cubicBeziers);
                         }
                         else
                         {

@@ -585,7 +585,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
             if (keyFrame is KeyFrame<Vector3> v3kf)
             {
-                if (v3kf.SpatialBezier.HasValue)
+                if (v3kf.SpatialBezier?.IsLinear == false)
                 {
                     // Spatial Bezier
                     result.Add(nameof(v3kf.SpatialBezier), FromCubicBezier(v3kf.SpatialBezier.Value));
