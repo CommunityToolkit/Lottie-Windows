@@ -3814,9 +3814,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return new TrimmedAnimatable<Vector3>(context, keyframes[0].Value, keyframes);
         }
 
-        static bool ContainsSpatialControlPoints(in TrimmedAnimatable<Vector3> animation)
-             => animation.KeyFrames.Any(kf => kf.SpatialControlPoint1 != LottieData.Vector3.Zero || kf.SpatialControlPoint2 != LottieData.Vector3.Zero);
-
         void StartExpressionAnimation(CompositionObject compObject, string target, ExpressionAnimation animation)
         {
             // Start the animation.
@@ -4298,7 +4295,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 // Convert the frame number to a progress value for the current key frame.
                 var currentProgress = (float)((keyFrame.Frame - animationStartTime) / animationDuration);
 
-                if (keyFrame.SpatialControlPoint1 != default(Vector3) || keyFrame.SpatialControlPoint2 != default(Vector3))
+                if (keyFrame.SpatialBezier?.IsLinear == false)
                 {
                     // TODO - should only be on Vector3. In which case, should they be on Animatable, or on something else?
                     if (typeof(T) != typeof(Vector3))
@@ -4306,9 +4303,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         Debug.WriteLine("Spatial control point on non-Vector3 type");
                     }
 
+                    var spatialBezier = keyFrame.SpatialBezier.Value;
+
                     var cp0 = Vector2((Vector3)(object)previousValue);
-                    var cp1 = Vector2(keyFrame.SpatialControlPoint1);
-                    var cp2 = Vector2(keyFrame.SpatialControlPoint2);
+                    var cp1 = Vector2(spatialBezier.ControlPoint1);
+                    var cp2 = Vector2(spatialBezier.ControlPoint2);
                     var cp3 = Vector2((Vector3)(object)keyFrame.Value);
                     CubicBezierFunction2 cb;
 

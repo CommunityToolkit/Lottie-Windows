@@ -169,8 +169,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 var bKeyFrame = bArray[i];
 
                 if (aKeyFrame.Frame != bKeyFrame.Frame ||
-                    aKeyFrame.SpatialControlPoint1 != bKeyFrame.SpatialControlPoint1 ||
-                    aKeyFrame.SpatialControlPoint2 != bKeyFrame.SpatialControlPoint2 ||
+                    aKeyFrame.SpatialBezier != bKeyFrame.SpatialBezier ||
                     aKeyFrame.Easing != bKeyFrame.Easing)
                 {
                     throw new LottieCompositionReaderException(
@@ -560,8 +559,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 Easing easing = HoldEasing.Instance;
 
                 // SpatialBeziers.
-                var ti = default(Vector3);
-                var to = default(Vector3);
+                var ti = default(Vector2);
+                var to = default(Vector2);
 
                 // NOTE: indexing an array with GetObjectAt is faster than enumerating.
                 for (int i = 0; i < count; i++)
@@ -580,6 +579,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     // Read the start frame.
                     var startFrame = lottieKeyFrameObj.DoublePropertyOrNull("t") ?? 0;
 
+                    var spatialBezier = new CubicBezier(to, ti);
+
                     if (i == count - 1)
                     {
                         // This is the final key frame.
@@ -588,12 +589,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                         if (!lottieKeyFrameObj.TryGetProperty("s", out var finalStartValue))
                         {
                             // Old format.
-                            yield return new KeyFrame<T>(startFrame, endValue, to, ti, easing);
+                            yield return new KeyFrame<T>(startFrame, endValue, spatialBezier, easing);
                         }
                         else
                         {
                             // New format.
-                            yield return new KeyFrame<T>(startFrame, ReadValue(finalStartValue), to, ti, easing);
+                            yield return new KeyFrame<T>(startFrame, ReadValue(finalStartValue), spatialBezier, easing);
                         }
 
                         // No more key frames to read.
@@ -606,13 +607,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
                     // Output a keyframe that describes how to interpolate to this start value. The easing information
                     // comes from the previous Lottie keyframe.
-                    yield return new KeyFrame<T>(startFrame, startValue, to, ti, easing);
+                    yield return new KeyFrame<T>(startFrame, startValue, spatialBezier, easing);
 
                     // Spatial control points.
                     if (lottieKeyFrameObj.ContainsProperty("ti"))
                     {
-                        ti = lottieKeyFrameObj.ArrayPropertyOrNull("ti")?.AsVector3() ?? Vector3.Zero;
-                        to = lottieKeyFrameObj.ArrayPropertyOrNull("to")?.AsVector3() ?? Vector3.Zero;
+                        ti = lottieKeyFrameObj.ArrayPropertyOrNull("ti")?.AsVector2() ?? Vector2.Zero;
+                        to = lottieKeyFrameObj.ArrayPropertyOrNull("to")?.AsVector2() ?? Vector2.Zero;
                     }
 
                     // Get the easing to the end value, and get the end value.
@@ -632,9 +633,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                         var cp2Json = lottieKeyFrameObj.ObjectPropertyOrNull("i");
                         if (cp1Json != null && cp2Json != null)
                         {
-                            var cp1 = cp1Json.Value.AsVector3();
-                            var cp2 = cp2Json.Value.AsVector3();
-                            easing = new CubicBezierEasing(cp1 ?? Vector3.Zero, cp2 ?? Vector3.Zero);
+                            var cp1 = cp1Json.Value.AsVector2();
+                            var cp2 = cp2Json.Value.AsVector2();
+                            easing = new CubicBezierEasing(new[] { new CubicBezier(cp1 ?? Vector2.Zero, cp2 ?? Vector2.Zero) });
                         }
                         else
                         {

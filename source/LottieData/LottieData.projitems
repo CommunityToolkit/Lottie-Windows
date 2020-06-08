@@ -6,6 +6,7 @@
     <SharedGUID>b3db16ee-a821-4474-a188-e64926529bbd</SharedGUID>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)CubicBezier.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Animatable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\ExtensionMethods.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\AnimatableVector3.cs" />

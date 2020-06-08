@@ -17,17 +17,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
     sealed class KeyFrame<T> : IEquatable<KeyFrame<T>>
         where T : IEquatable<T>
     {
-        public KeyFrame(double frame, T value, Vector3 spatialControlPoint1, Vector3 spatialControlPoint2, Easing easing)
+        public KeyFrame(double frame, T value, CubicBezier? spatialBezier, Easing easing)
         {
             Frame = frame;
             Value = value;
-            SpatialControlPoint1 = spatialControlPoint1;
-            SpatialControlPoint2 = spatialControlPoint2;
+            SpatialBezier = spatialBezier;
             Easing = easing;
         }
 
         public KeyFrame(double frame, T value, Easing easing)
-            : this(frame, value, Vector3.Zero, Vector3.Zero, easing)
+            : this(frame, value, spatialBezier: null, easing)
         {
         }
 
@@ -38,14 +37,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// <returns>A new <see cref="KeyFrame{T}"/>.</returns>
         public KeyFrame<Tnew> CloneWithNewValue<Tnew>(Tnew newValue)
             where Tnew : IEquatable<Tnew> =>
-            new KeyFrame<Tnew>(Frame, newValue, SpatialControlPoint1, SpatialControlPoint2, Easing);
+            new KeyFrame<Tnew>(Frame, newValue, SpatialBezier, Easing);
 
         /// <summary>
         /// Returns a <see cref="KeyFrame{T}"/> that is the same as this, but with a new easing.
         /// </summary>
         /// <returns>A new <see cref="KeyFrame{T}"/>.</returns>
         public KeyFrame<T> CloneWithNewEasing(Easing newEasing) =>
-            new KeyFrame<T>(Frame, Value, SpatialControlPoint1, SpatialControlPoint2, newEasing);
+            new KeyFrame<T>(Frame, Value, SpatialBezier, newEasing);
 
         /// <summary>
         /// Gets the value.
@@ -58,14 +57,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         public double Frame { get; }
 
         /// <summary>
-        /// Gets the path that the animation follows. Only valid on Vector3 keyframes.
+        /// Describes the path that the animation follows. Only valid on Vector3 and Vector2 keyframes.
         /// </summary>
-        public Vector3 SpatialControlPoint1 { get; }
-
-        /// <summary>
-        /// Gets the path that the animation follows. Only valid on Vector3 keyframes.
-        /// </summary>
-        public Vector3 SpatialControlPoint2 { get; }
+        public CubicBezier? SpatialBezier { get; }
 
         /// <summary>
         /// Gets the easing function used to interpolate from the previous value.

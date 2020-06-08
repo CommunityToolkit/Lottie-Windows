@@ -32,6 +32,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 Array.Sort(_properties, Comparer.Instance);
             }
 
+            public Vector2? AsVector2()
+            {
+                var x = DoublePropertyOrNull("x");
+                var y = DoublePropertyOrNull("y");
+                return x is null
+                    ? (Vector2?)null
+                    : new Vector2(x.Value, y ?? 0);
+            }
+
             public Vector3? AsVector3()
             {
                 var x = DoublePropertyOrNull("x");

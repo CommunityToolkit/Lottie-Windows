@@ -497,6 +497,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         YamlObject FromAnimatable(Animatable<Trim> animatable) => FromAnimatable(animatable, Scalar);
 
+        static YamlObject FromCubicBezier(CubicBezier value)
+        {
+            var result = new YamlMap
+            {
+                { nameof(value.ControlPoint1), FromVector2(value.ControlPoint1) },
+                { nameof(value.ControlPoint2), FromVector2(value.ControlPoint2) },
+            };
+            return result;
+        }
+
         static YamlObject FromVector3(Vector3 value)
         {
             var result = new YamlMap
@@ -575,13 +585,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
             if (keyFrame is KeyFrame<Vector3> v3kf)
             {
-                var cp1 = v3kf.SpatialControlPoint1;
-                var cp2 = v3kf.SpatialControlPoint2;
-                if (cp1 != Vector3.Zero || cp2 != Vector3.Zero)
+                if (v3kf.SpatialBezier.HasValue)
                 {
                     // Spatial Bezier
-                    result.Add(nameof(v3kf.SpatialControlPoint1), FromVector3(cp1));
-                    result.Add(nameof(v3kf.SpatialControlPoint2), FromVector3(cp2));
+                    result.Add(nameof(v3kf.SpatialBezier), FromCubicBezier(v3kf.SpatialBezier.Value));
                 }
             }
 
@@ -608,8 +615,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         YamlObject FromCubicBezierEasing(CubicBezierEasing content, YamlMap superclassContent)
         {
             var result = superclassContent;
-            result.Add(nameof(content.ControlPoint1), FromVector3(content.ControlPoint1));
-            result.Add(nameof(content.ControlPoint2), FromVector3(content.ControlPoint2));
+            result.Add(nameof(content.Beziers), FromEnumerable(content.Beziers, FromCubicBezier));
             return result;
         }
 

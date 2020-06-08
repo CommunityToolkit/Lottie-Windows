@@ -164,8 +164,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             if (!_cubicBezierEasingFunctions.TryGetValue(cubicBezierEasing, out var result))
             {
                 // WinComp does not support control points with components > 1. Clamp the values to 1.
-                var controlPoint1 = ClampedVector2(cubicBezierEasing.ControlPoint1);
-                var controlPoint2 = ClampedVector2(cubicBezierEasing.ControlPoint2);
+                var controlPoint1 = ClampedVector2(cubicBezierEasing.Beziers[0].ControlPoint1);
+                var controlPoint2 = ClampedVector2(cubicBezierEasing.Beziers[0].ControlPoint2);
 
                 result = _compositor.CreateCubicBezierEasingFunction(controlPoint1, controlPoint2);
                 _cubicBezierEasingFunctions.Add(cubicBezierEasing, result);
@@ -261,7 +261,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return Math.Min(Math.Max(min, value), max);
         }
 
-        static Sn.Vector2 ClampedVector2(LottieData.Vector3 vector3) => ClampedVector2((float)vector3.X, (float)vector3.Y);
+        static Sn.Vector2 ClampedVector2(LottieData.Vector2 vector2) => ClampedVector2((float)vector2.X, (float)vector2.Y);
 
         static Sn.Vector2 ClampedVector2(float x, float y) => Vector2(Clamp(x, 0, 1), Clamp(y, 0, 1));
 

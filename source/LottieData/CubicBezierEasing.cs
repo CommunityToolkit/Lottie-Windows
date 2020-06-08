@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 {
@@ -11,15 +13,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 #endif
     sealed class CubicBezierEasing : Easing, IEquatable<CubicBezierEasing>
     {
-        public CubicBezierEasing(Vector3 controlPoint1, Vector3 controlPoint2)
+        public CubicBezierEasing(IEnumerable<CubicBezier> beziers)
         {
-            ControlPoint1 = controlPoint1;
-            ControlPoint2 = controlPoint2;
+            Beziers = beziers.ToArray();
         }
 
-        public Vector3 ControlPoint1 { get; }
-
-        public Vector3 ControlPoint2 { get; }
+        /// <summary>
+        /// The cubic Beziers for each component of the animatable value.
+        /// </summary>
+        public IReadOnlyList<CubicBezier> Beziers { get; }
 
         /// <inheritdoc/>
         public override EasingType Type => EasingType.CubicBezier;
@@ -31,11 +33,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         public bool Equals(CubicBezierEasing other) =>
                ReferenceEquals(this, other) ||
                 (other is CubicBezierEasing &&
-                ControlPoint1.Equals(other.ControlPoint1) &&
-                ControlPoint2.Equals(other.ControlPoint2));
+                Beziers.Equals(other.Beziers));
 
         /// <inheritdoc/>
-        public override int GetHashCode() => ControlPoint1.GetHashCode() ^ ControlPoint2.GetHashCode();
+        public override int GetHashCode() => Beziers.GetHashCode();
 
         public static bool operator ==(CubicBezierEasing a, CubicBezierEasing b) => (a is CubicBezierEasing && a.Equals(b)) || (a is null && b is null);
 
