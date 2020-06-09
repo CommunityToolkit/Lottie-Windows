@@ -326,23 +326,23 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             var position = ReadAnimatableVector3(obj.ObjectPropertyOrNull("p"));
             var rotation = ReadAnimatableFloat(obj.ObjectPropertyOrNull("r"));
             var outerRadius = ReadAnimatableFloat(obj.ObjectPropertyOrNull("or"));
-            var outerRoundedness = ReadAnimatableFloat(obj.ObjectPropertyOrNull("os"));
+            var outerRoundness = ReadAnimatableFloat(obj.ObjectPropertyOrNull("os"));
 
             var polystarType = SyToPolystarType(obj.DoublePropertyOrNull("sy")) ?? Polystar.PolyStarType.Polygon;
 
             Animatable<double> innerRadius;
-            Animatable<double> innerRoundedness;
+            Animatable<double> innerRoundness;
 
             switch (polystarType)
             {
                 case Polystar.PolyStarType.Star:
                     innerRadius = ReadAnimatableFloat(obj.ObjectPropertyOrNull("ir"));
-                    innerRoundedness = ReadAnimatableFloat(obj.ObjectPropertyOrNull("is"));
+                    innerRoundness = ReadAnimatableFloat(obj.ObjectPropertyOrNull("is"));
                     break;
 
                 default:
                     innerRadius = null;
-                    innerRoundedness = null;
+                    innerRoundness = null;
                     break;
             }
 
@@ -356,8 +356,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 rotation,
                 innerRadius,
                 outerRadius,
-                innerRoundedness,
-                outerRoundedness);
+                innerRoundness,
+                outerRoundness);
         }
 
         Rectangle ReadRectangle(
@@ -370,10 +370,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             var drawingDirection = DToDrawingDirection(obj.DoublePropertyOrNull("d"));
             var position = ReadAnimatableVector3(obj.ObjectPropertyOrNull("p"));
             var size = ReadAnimatableVector3(obj.ObjectPropertyOrNull("s"));
-            var cornerRadius = ReadAnimatableFloat(obj.ObjectPropertyOrNull("r"));
+            var roundness = ReadAnimatableFloat(obj.ObjectPropertyOrNull("r"));
 
             obj.AssertAllPropertiesRead();
-            return new Rectangle(in shapeLayerContentArgs, drawingDirection, position, size, cornerRadius);
+            return new Rectangle(in shapeLayerContentArgs, drawingDirection, position, size, roundness);
         }
 
         Path ReadPath(

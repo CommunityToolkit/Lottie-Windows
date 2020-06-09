@@ -18,8 +18,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             Animatable<double> rotation,
             Animatable<double> innerRadius,
             Animatable<double> outerRadius,
-            Animatable<double> innerRoundedness,
-            Animatable<double> outerRoundedness)
+            Animatable<double> innerRoundness,
+            Animatable<double> outerRoundness)
             : base(in args, drawingDirection)
         {
             StarType = starType;
@@ -28,8 +28,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             Rotation = rotation;
             InnerRadius = innerRadius;
             OuterRadius = outerRadius;
-            InnerRoundedness = innerRoundedness;
-            OuterRoundedness = outerRoundedness;
+            InnerRoundness = innerRoundness;
+            OuterRoundness = outerRoundness;
         }
 
         internal PolyStarType StarType { get; }
@@ -44,9 +44,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
         internal Animatable<double> OuterRadius { get; }
 
-        internal Animatable<double> InnerRoundedness { get; }
+        internal Animatable<double> InnerRoundness { get; }
 
-        internal Animatable<double> OuterRoundedness { get; }
+        internal Animatable<double> OuterRoundness { get; }
 
         /// <inheritdoc/>
         public override ShapeContentType ContentType => ShapeContentType.Polystar;

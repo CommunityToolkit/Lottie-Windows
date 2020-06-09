@@ -14,15 +14,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             DrawingDirection drawingDirection,
             IAnimatableVector3 position,
             IAnimatableVector3 size,
-            Animatable<double> cornerRadius)
+            Animatable<double> roundness)
             : base(in args, drawingDirection)
         {
             Position = position;
             Size = size;
-            CornerRadius = cornerRadius;
+            Roundness = roundness;
         }
 
-        public Animatable<double> CornerRadius { get; }
+        /// <summary>
+        /// Determines how round the corners of the rectangle are. If the rectangle
+        /// is a square and the roundness is equal to half of the width then the
+        /// rectangle will be rendered as a circle. Once the roundness value reaches
+        /// half of the minimum of the shortest dimension, increasing it has no
+        /// further effect.
+        /// </summary>
+        public Animatable<double> Roundness { get; }
 
         public IAnimatableVector3 Size { get; }
 

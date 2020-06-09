@@ -616,7 +616,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
                 yield return FromAnimatable(nameof(content.Size), content.Size);
                 yield return FromAnimatable(nameof(content.Position), content.Position);
-                yield return FromAnimatable(nameof(content.CornerRadius), content.CornerRadius);
+                yield return FromAnimatable(nameof(content.Roundness), content.Roundness);
             }
         }
 
