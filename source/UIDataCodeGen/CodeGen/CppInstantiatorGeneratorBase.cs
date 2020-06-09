@@ -58,7 +58,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         // from the TryCreateAnimatedVisual method.
         protected string AnimatedVisualTypeName { get; }
 
-        protected bool IsInterfaceCustom => SourceInfo.InterfaceType.NormalizedQualifiedName != "Microsoft.UI.Xaml.Controls.IAnimatedVisual";
+        protected bool IsInterfaceCustom => SourceInfo.InterfaceType.NormalizedQualifiedName != "winrt::Microsoft.UI.Xaml.Controls.IAnimatedVisual";
 
         // Generates the .h file contents.
         protected string GenerateHeaderText(IAnimatedVisualSourceInfo info)
