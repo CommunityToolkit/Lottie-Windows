@@ -99,7 +99,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         {
             var propertyBindings = SourceInfo.SourceMetadata.PropertyBindings;
 
-            var sourceClassQualifier = $"{T.CompositionPropertySet} {S.Namespace(SourceInfo.Namespace)}::{SourceClassName}::";
+            var sourceClassQualifier = $"{S.Namespace(SourceInfo.Namespace)}::{SourceClassName}::";
 
             if (propertyBindings.Any(pb => pb.ExposedType == PropertySetValueType.Color))
             {
