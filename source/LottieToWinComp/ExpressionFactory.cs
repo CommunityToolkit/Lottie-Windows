@@ -22,11 +22,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         internal static readonly Vector2 MyAnchor = MyVector2("Anchor");
         internal static readonly Vector3 MyAnchor3 = Vector3(MyAnchor.X, MyAnchor.Y, 0);
         internal static readonly Vector4 MyColor = MyVector4("Color");
+        internal static readonly Scalar MyCornerRadiusX = MyScalar("CornerRadius.X");
         internal static readonly Scalar MyInheritedOpacity = MyScalar("InheritedOpacity");
         internal static readonly Scalar MyOpacity = MyScalar("Opacity");
         internal static readonly Vector2 MyPosition = MyVector2("Position");
         internal static readonly Vector2 MySize = MyVector2("Size");
         internal static readonly Matrix3x2 MyTransformMatrix = MyMatrix3x2("TransformMatrix");
+        static readonly Scalar MyRoundness = MyScalar("Roundness");
         static readonly Scalar MyTStart = MyScalar("TStart");
         static readonly Scalar MyTEnd = MyScalar("TEnd");
 
@@ -66,6 +68,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         internal static Vector2 PositionToOffsetExpression(Sn.Vector2 position) => Vector2(position) - HalfMySize;
 
         internal static Scalar RootScalar(string propertyName) => Scalar(RootProperty(propertyName));
+
+        internal static Scalar ConstrainedCornerRadiusScalar(double roundness) => Min(roundness, Min(MySize.X, MySize.Y) / 2);
+
+        internal static Scalar ConstrainedCornerRadiusScalar() => Min(MyRoundness, Min(MySize.X, MySize.Y) / 2);
+
+        internal static Scalar ConstrainedCornerRadiusScalar(Sn.Vector2 size) => Min(MyRoundness, Math.Min(size.X, size.Y) / 2);
 
         // The value of a Color property stored as a Vector4 on the theming property set.
         static Vector4 ThemedColor4Property(string propertyName) => Vector4(ThemeProperty(propertyName));

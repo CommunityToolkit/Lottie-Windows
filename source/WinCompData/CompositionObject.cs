@@ -141,15 +141,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
         /// <param name="propertyName">The name of the property.</param>
         public void StopAnimation(string propertyName)
         {
-            // We also need to stop animations on any sub-channels and super-channels.
+            // We also need to stop animations on any sub-channels.
             // For example, if the property is TransformMatrix we must also stop animations
-            // on TransformMatrix.M11, TransformMatrix.M12, etc; and if the property is
-            // TransformMatrix.M11 we must also stop animations on TransformMatrix,
-            // TransformMatrix.M12, etc.
-            //
-            // If there's a dot in the name it is a sub-channel name.
-            var firstDotIndex = propertyName.IndexOf('.');
-            var rootPropertyPrefix = $"{(firstDotIndex >= 0 ? propertyName.Substring(0, firstDotIndex) : propertyName)}.";
+            // on TransformMatrix.M11, TransformMatrix.M12, etc..
+            var rootPropertyPrefix = $"{propertyName}.";
 
             for (var i = 0; i < _animators.Count; i++)
             {

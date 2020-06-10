@@ -23,7 +23,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.InteropServices;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieMetadata;
@@ -2331,22 +2330,43 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     ? shapeContext.RoundedCorner.Radius
                     : shapeContent.Roundness);
 
-            // In After Effects, the corner radius has no further affect once it reaches min(Size.X, Size.Y)/2.
-            // If size or corner radius are animated, do this with an expression.
+            // In After Effects, the rectangle Roundness has no further affect once it reaches min(Size.X, Size.Y)/2.
+            // In Composition, the cornerRadius continues to affect the shape even beyond min(Size.X, Size.Y)/2.
+            // If size or corner radius are animated, handle this with an expression.
             if (cornerRadius.IsAnimated || size.IsAnimated)
             {
                 if (cornerRadius.IsAnimated)
                 {
-                    // Needs an expression to prevent corner radius from getting larger than min(Size.X, Size.Y)/2. TODO.
-                    // TODO - this should be doable with a single Vector2 animation rather than 2 scalar animations.
-                    ApplyScalarKeyFrameAnimation(context, cornerRadius, geometry, "CornerRadius.X");
-                    ApplyScalarKeyFrameAnimation(context, cornerRadius, geometry, "CornerRadius.Y");
+                    geometry.Properties.InsertScalar("Roundness", Float(cornerRadius.InitialValue));
+                    ApplyScalarKeyFrameAnimation(context, cornerRadius, geometry.Properties, "Roundness");
+
+                    if (size.IsAnimated)
+                    {
+                        // Both size and cornerRadius are animated.
+                        var cornerRadiusExpression = _c.CreateExpressionAnimation(ExpressionFactory.ConstrainedCornerRadiusScalar());
+                        cornerRadiusExpression.SetReferenceParameter("my", geometry);
+                        StartExpressionAnimation(geometry, "CornerRadius.X", cornerRadiusExpression);
+                    }
+                    else
+                    {
+                        // Only the cornerRadius is animated.
+                        var cornerRadiusExpression = _c.CreateExpressionAnimation(ExpressionFactory.ConstrainedCornerRadiusScalar(Vector2(size.InitialValue)));
+                        cornerRadiusExpression.SetReferenceParameter("my", geometry);
+                        StartExpressionAnimation(geometry, "CornerRadius.X", cornerRadiusExpression);
+                    }
                 }
                 else
                 {
-                    // Needs an expression to prevent corner radius from getting larger than min(Size.X, Size.Y)/2. TODO.
-                    geometry.CornerRadius = Vector2((float)cornerRadius.InitialValue);
+                    // Only the size is animated.
+                    var cornerRadiusExpression = _c.CreateExpressionAnimation(ExpressionFactory.ConstrainedCornerRadiusScalar(cornerRadius.InitialValue));
+                    cornerRadiusExpression.SetReferenceParameter("my", geometry);
+                    StartExpressionAnimation(geometry, "CornerRadius.X", cornerRadiusExpression);
                 }
+
+                // Tie the CornerRadius.Y value to the CornerRadius.X value.
+                var yEqualsXExpression = _c.CreateExpressionAnimation(ExpressionFactory.MyCornerRadiusX);
+                yEqualsXExpression.SetReferenceParameter("my", geometry);
+                StartExpressionAnimation(geometry, "CornerRadius.Y", yEqualsXExpression);
             }
             else
             {
