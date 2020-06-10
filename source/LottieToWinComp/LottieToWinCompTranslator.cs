@@ -2282,9 +2282,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 // NOTE: magic tiny corner radius number - do not change!
                 roundedRectangleGeometry.CornerRadius = new Sn.Vector2(0.000001F);
 
-                // Convert size and position into offset. This is necessary because a geometry's offset is for
-                // its top left corner, whereas a Lottie position is for its centerpoint.
-                roundedRectangleGeometry.Offset = Vector2(position.InitialValue - (size.InitialValue / 2));
+                roundedRectangleGeometry.Offset = InitialOffset(size: size, position: position);
 
                 if (!size.IsAnimated)
                 {
@@ -2299,7 +2297,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
                 // Convert size and position into offset. This is necessary because a geometry's offset is for
                 // its top left corner, whereas a Lottie position is for its centerpoint.
-                rectangleGeometry.Offset = Vector2(position.InitialValue - (size.InitialValue / 2));
+                rectangleGeometry.Offset = InitialOffset(size: size, position: position);
 
                 if (!size.IsAnimated)
                 {
@@ -2330,7 +2328,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     ? shapeContext.RoundedCorner.Radius
                     : shapeContent.Roundness);
 
-            // In After Effects, the rectangle Roundness has no further affect once it reaches min(Size.X, Size.Y)/2.
+            // In After Effects, the rectangle Roundness has no further effect once it reaches min(Size.X, Size.Y)/2.
             // In Composition, the cornerRadius continues to affect the shape even beyond min(Size.X, Size.Y)/2.
             // If size or corner radius are animated, handle this with an expression.
             if (cornerRadius.IsAnimated || size.IsAnimated)
@@ -2375,9 +2373,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 geometry.CornerRadius = Vector2((float)cornerRadiusValue);
             }
 
-            // Convert size and position into offset. This is necessary because a geometry's offset is for
-            // its top left corner, whereas a Lottie position is for its centerpoint.
-            geometry.Offset = Vector2(position.InitialValue - (size.InitialValue / 2));
+            geometry.Offset = InitialOffset(size:size, position:position);
 
             if (!size.IsAnimated)
             {
@@ -2386,6 +2382,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             ApplyRectangleContentCommon(context, shapeContext, shapeContent, compositionShape, size, position, geometry);
         }
+
+        // Convert the size and position for a geometry into an offset.
+        // This is necessary because a geometry's offset describes its
+        // top left corner, whereas a Lottie position describes its centerpoint.
+        static Sn.Vector2 InitialOffset(
+            in TrimmedAnimatable<Vector3> size,
+            in TrimmedAnimatable<Vector3> position)
+            => Vector2(position.InitialValue - (size.InitialValue / 2));
 
         void ApplyRectangleContentCommon(
             TranslationContext context,
