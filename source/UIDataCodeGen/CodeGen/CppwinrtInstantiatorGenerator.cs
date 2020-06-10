@@ -111,7 +111,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 builder.WriteLine();
             }
 
-            builder.WriteLine($"{T.CompositionPropertySet} {sourceClassQualifier}EnsureThemeProperties({T.Compositor} compositor)");
+            builder.WriteLine($"winrt::{T.CompositionPropertySet} {sourceClassQualifier}EnsureThemeProperties({T.Compositor} compositor)");
             builder.OpenScope();
             builder.WriteLine($"if ({SourceInfo.ThemePropertiesFieldName} == nullptr)");
             builder.OpenScope();
@@ -129,7 +129,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.CloseScope();
             builder.WriteLine();
 
-            builder.WriteLine($"{T.CompositionPropertySet} {sourceClassQualifier}GetThemeProperties({T.Compositor} compositor)");
+            builder.WriteLine($"winrt::{T.CompositionPropertySet} {sourceClassQualifier}GetThemeProperties({T.Compositor} compositor)");
             builder.OpenScope();
             builder.WriteLine("return EnsureThemeProperties(compositor);");
             builder.CloseScope();

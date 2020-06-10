@@ -18,7 +18,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 #endif
     abstract class CppInstantiatorGeneratorBase : InstantiatorGeneratorBase
     {
-        protected const string Muxc = "Microsoft::UI::Xaml::Controls";
+        protected const string Muxc = "winrt::Microsoft::UI::Xaml::Controls";
         protected const string Wuc = "Windows::UI::Composition";
         readonly bool _isCppwinrtMode;
         readonly CppStringifier _s;
@@ -246,7 +246,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             if (info.AnimatedVisualSourceInfo.IsThemed)
             {
-                yield return $"{_typeName.CompositionPropertySet} themeProperties";
+                yield return $"winrt::{_typeName.CompositionPropertySet} themeProperties";
             }
 
             foreach (var loadedImageSurfaceNode in info.LoadedImageSurfaceNodes)
@@ -1208,7 +1208,7 @@ private:
         protected static string QualifiedTypeName(PropertySetValueType propertySetValueType)
             => propertySetValueType switch
             {
-                PropertySetValueType.Color => "Windows::UI::Color",
+                PropertySetValueType.Color => "winrt::Windows::UI::Color",
                 _ => TypeName(propertySetValueType),
             };
 
