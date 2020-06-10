@@ -18,7 +18,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 #endif
     abstract class CppInstantiatorGeneratorBase : InstantiatorGeneratorBase
     {
-        protected const string Muxc = "winrt::Microsoft::UI::Xaml::Controls";
+        protected const string Muxc = "Microsoft::UI::Xaml::Controls";
         protected const string Wuc = "Windows::UI::Composition";
         readonly bool _isCppwinrtMode;
         readonly CppStringifier _s;
