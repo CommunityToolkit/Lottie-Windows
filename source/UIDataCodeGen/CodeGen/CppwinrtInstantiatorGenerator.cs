@@ -82,6 +82,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             }
 
             builder.Private.WriteLine();
+            builder.Private.WriteLine($"winrt::float4 ColorAsVector4(winrt::Windows::UI::Color color);");
+            builder.Private.WriteLine();
             builder.Private.WriteLine($"winrt::{Wuc}::{T.CompositionPropertySet} EnsureThemeProperties(winrt::{Wuc}::{T.Compositor} compositor);");
             builder.Private.WriteLine();
 

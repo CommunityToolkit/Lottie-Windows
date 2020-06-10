@@ -58,7 +58,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         // from the TryCreateAnimatedVisual method.
         protected string AnimatedVisualTypeName { get; }
 
-        protected bool IsInterfaceCustom => SourceInfo.InterfaceType.NormalizedQualifiedName != "winrt::Microsoft.UI.Xaml.Controls.IAnimatedVisual";
+        protected bool IsInterfaceCustom => SourceInfo.InterfaceType.NormalizedQualifiedName != "Microsoft.UI.Xaml.Controls.IAnimatedVisual";
 
         // Generates the .h file contents.
         protected string GenerateHeaderText(IAnimatedVisualSourceInfo info)
@@ -416,7 +416,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             }
 
             // Generate the method that creates an instance of the composition on the IAnimatedVisualSource.
-            builder.WriteLine($"{S.Hatted(AnimatedVisualTypeName)} {_s.Namespace(SourceInfo.Namespace)}::{SourceClassName}::TryCreateAnimatedVisual(");
+            builder.WriteLine($"winrt::{S.Hatted(AnimatedVisualTypeName)} {_s.Namespace(SourceInfo.Namespace)}::{SourceClassName}::TryCreateAnimatedVisual(");
             builder.Indent();
             if (_isCppwinrtMode)
             {
