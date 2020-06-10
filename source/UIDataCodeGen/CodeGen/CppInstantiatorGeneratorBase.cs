@@ -808,7 +808,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 switch (c.Type)
                 {
                     case ConstantType.Color:
-                        builder.WriteLine($"static inline const Windows::UI::Color {c.Name}{S.Color((WinCompData.Wui.Color)c.Value)};");
+                        builder.WriteLine($"static inline const winrt::Windows::UI::Color {c.Name}{S.Color((WinCompData.Wui.Color)c.Value)};");
                         break;
                     case ConstantType.Int64:
                         builder.WriteLine($"static constexpr int64_t {c.Name}{{ {S.Int64((long)c.Value)} }};");
