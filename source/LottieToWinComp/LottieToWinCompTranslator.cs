@@ -2232,23 +2232,43 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         CompositionShape TranslateRectangleContent(TranslationContext context, ShapeContentContext shapeContext, Rectangle shapeContent)
         {
+            var result = _c.CreateSpriteShape();
+            var position = context.TrimAnimatable(shapeContent.Position);
+            var size = context.TrimAnimatable(shapeContent.Size);
+
             if (shapeContent.Roundness.AlwaysEquals(0) && shapeContext.RoundedCorner is null)
             {
-                return TranslateNonRoundedRectangleContent(context, shapeContext, shapeContent);
+                TranslateAndApplyNonRoundedRectangleContent(
+                    context,
+                    shapeContext,
+                    shapeContent,
+                    position,
+                    size,
+                    result);
             }
             else
             {
-                return TranslateRoundedRectangleContent(context, shapeContext, shapeContent);
+                TranslateAndApplyRoundedRectangleContent(
+                    context,
+                    shapeContext,
+                    shapeContent,
+                    position,
+                    size,
+                    result);
             }
+
+            return result;
         }
 
-        CompositionShape TranslateNonRoundedRectangleContent(TranslationContext context, ShapeContentContext shapeContext, Rectangle shapeContent)
+        void TranslateAndApplyNonRoundedRectangleContent(
+            TranslationContext context,
+            ShapeContentContext shapeContext,
+            Rectangle shapeContent,
+            in TrimmedAnimatable<Vector3> position,
+            in TrimmedAnimatable<Vector3> size,
+            CompositionSpriteShape compositionShape)
         {
             Debug.Assert(shapeContent.Roundness.AlwaysEquals(0) && shapeContext.RoundedCorner is null, "Precondition");
-
-            var compositionRectangle = _c.CreateSpriteShape();
-            var position = context.TrimAnimatable(shapeContent.Position);
-            var size = context.TrimAnimatable(shapeContent.Size);
 
             CompositionGeometry geometry;
 
@@ -2264,7 +2284,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 roundedRectangleGeometry.CornerRadius = new Sn.Vector2(0.000001F);
 
                 // Convert size and position into offset. This is necessary because a geometry's offset is for
-                // its top left corner, wherease a Lottie position is for its centerpoint.
+                // its top left corner, whereas a Lottie position is for its centerpoint.
                 roundedRectangleGeometry.Offset = Vector2(position.InitialValue - (size.InitialValue / 2));
 
                 if (!size.IsAnimated)
@@ -2279,7 +2299,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 geometry = rectangleGeometry;
 
                 // Convert size and position into offset. This is necessary because a geometry's offset is for
-                // its top left corner, wherease a Lottie position is for its centerpoint.
+                // its top left corner, whereas a Lottie position is for its centerpoint.
                 rectangleGeometry.Offset = Vector2(position.InitialValue - (size.InitialValue / 2));
 
                 if (!size.IsAnimated)
@@ -2288,37 +2308,55 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 }
             }
 
-            compositionRectangle.Geometry = geometry;
+            compositionShape.Geometry = geometry;
 
-            ApplyRectangleContentCommon(context, shapeContext, shapeContent, compositionRectangle, size, position, geometry);
-
-            return compositionRectangle;
+            ApplyRectangleContentCommon(context, shapeContext, shapeContent, compositionShape, size, position, geometry);
         }
 
-        CompositionShape TranslateRoundedRectangleContent(TranslationContext context, ShapeContentContext shapeContext, Rectangle shapeContent)
+        void TranslateAndApplyRoundedRectangleContent(
+            TranslationContext context,
+            ShapeContentContext shapeContext,
+            Rectangle shapeContent,
+            in TrimmedAnimatable<Vector3> position,
+            in TrimmedAnimatable<Vector3> size,
+            CompositionSpriteShape compositionShape)
         {
-            var compositionRectangle = _c.CreateSpriteShape();
-            var position = context.TrimAnimatable(shapeContent.Position);
-            var size = context.TrimAnimatable(shapeContent.Size);
-
             // Use a rounded rectangle geometry.
             var geometry = _c.CreateRoundedRectangleGeometry();
-            compositionRectangle.Geometry = geometry;
+            compositionShape.Geometry = geometry;
 
-            // If a RoundedRectangle is in the context, use it to override the corner radius.
-            var cornerRadius = context.TrimAnimatable(shapeContext.RoundedCorner != null ? shapeContext.RoundedCorner.Radius : shapeContent.Roundness);
-            if (cornerRadius.IsAnimated)
+            // If a RoundedRectangle is in the context, use it to override the roundness unless the roundness is non-0.
+            var cornerRadius = context.TrimAnimatable(
+                shapeContext.RoundedCorner != null && shapeContent.Roundness.AlwaysEquals(0)
+                    ? shapeContext.RoundedCorner.Radius
+                    : shapeContent.Roundness);
+
+            // In After Effects, the corner radius has no further affect once it reaches min(Size.X, Size.Y)/2.
+            // If size or corner radius are animated, do this with an expression.
+            if (cornerRadius.IsAnimated || size.IsAnimated)
             {
-                ApplyScalarKeyFrameAnimation(context, cornerRadius, geometry, "CornerRadius.X");
-                ApplyScalarKeyFrameAnimation(context, cornerRadius, geometry, "CornerRadius.Y");
+                if (cornerRadius.IsAnimated)
+                {
+                    // Needs an expression to prevent corner radius from getting larger than min(Size.X, Size.Y)/2. TODO.
+                    // TODO - this should be doable with a single Vector2 animation rather than 2 scalar animations.
+                    ApplyScalarKeyFrameAnimation(context, cornerRadius, geometry, "CornerRadius.X");
+                    ApplyScalarKeyFrameAnimation(context, cornerRadius, geometry, "CornerRadius.Y");
+                }
+                else
+                {
+                    // Needs an expression to prevent corner radius from getting larger than min(Size.X, Size.Y)/2. TODO.
+                    geometry.CornerRadius = Vector2((float)cornerRadius.InitialValue);
+                }
             }
             else
             {
-                geometry.CornerRadius = Vector2((float)cornerRadius.InitialValue);
+                // Static size and corner radius.
+                var cornerRadiusValue = Math.Min(cornerRadius.InitialValue, Math.Min(size.InitialValue.X, size.InitialValue.Y) / 2);
+                geometry.CornerRadius = Vector2((float)cornerRadiusValue);
             }
 
             // Convert size and position into offset. This is necessary because a geometry's offset is for
-            // its top left corner, wherease a Lottie position is for its centerpoint.
+            // its top left corner, whereas a Lottie position is for its centerpoint.
             geometry.Offset = Vector2(position.InitialValue - (size.InitialValue / 2));
 
             if (!size.IsAnimated)
@@ -2326,9 +2364,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 geometry.Size = Vector2(size.InitialValue);
             }
 
-            ApplyRectangleContentCommon(context, shapeContext, shapeContent, compositionRectangle, size, position, geometry);
-
-            return compositionRectangle;
+            ApplyRectangleContentCommon(context, shapeContext, shapeContent, compositionShape, size, position, geometry);
         }
 
         void ApplyRectangleContentCommon(
@@ -2336,8 +2372,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             ShapeContentContext shapeContext,
             Rectangle shapeContent,
             CompositionSpriteShape compositionRectangle,
-            TrimmedAnimatable<Vector3> size,
-            TrimmedAnimatable<Vector3> position,
+            in TrimmedAnimatable<Vector3> size,
+            in TrimmedAnimatable<Vector3> position,
             CompositionGeometry geometry)
         {
             if (position.IsAnimated || size.IsAnimated)
@@ -2389,6 +2425,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var width = size.InitialValue.X;
             var height = size.InitialValue.Y;
             var trimOffsetDegrees = (width / (2 * (width + height))) * 360;
+
             TranslateAndApplyShapeContentContext(
                 context,
                 shapeContext,

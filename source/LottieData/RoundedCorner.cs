@@ -18,12 +18,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         }
 
         /// <summary>
-        /// The radius of the rounding. If the shape to which this applies is a rectangle
-        /// the rounding will only apply if the rectangle a non-0 roundess value.
+        /// The radius of the rounding.
+        /// </summary>
+        /// <remarks>
+        /// If the shape to which this applies is a rectangle
+        /// the rounding will only apply if the rectangle has a 0 roundess value.
         /// Once the radius value reaches half of the largest dimension of the
         /// rectangle, the result will be equivalent to an ellipse of the same size, and
         /// increasing the radius further will have no further effect.
-        /// </summary>
+        /// </remarks>
         public Animatable<double> Radius { get; }
 
         /// <inheritdoc/>
