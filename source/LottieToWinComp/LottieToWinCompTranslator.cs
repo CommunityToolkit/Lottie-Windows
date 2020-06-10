@@ -2341,30 +2341,25 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     if (size.IsAnimated)
                     {
                         // Both size and cornerRadius are animated.
-                        var cornerRadiusExpression = _c.CreateExpressionAnimation(ExpressionFactory.ConstrainedCornerRadiusScalar());
+                        var cornerRadiusExpression = _c.CreateExpressionAnimation(ConstrainedCornerRadiusScalar());
                         cornerRadiusExpression.SetReferenceParameter("my", geometry);
-                        StartExpressionAnimation(geometry, "CornerRadius.X", cornerRadiusExpression);
+                        StartExpressionAnimation(geometry, "CornerRadius", cornerRadiusExpression);
                     }
                     else
                     {
                         // Only the cornerRadius is animated.
-                        var cornerRadiusExpression = _c.CreateExpressionAnimation(ExpressionFactory.ConstrainedCornerRadiusScalar(Vector2(size.InitialValue)));
+                        var cornerRadiusExpression = _c.CreateExpressionAnimation(ConstrainedCornerRadiusScalar(Vector2(size.InitialValue)));
                         cornerRadiusExpression.SetReferenceParameter("my", geometry);
-                        StartExpressionAnimation(geometry, "CornerRadius.X", cornerRadiusExpression);
+                        StartExpressionAnimation(geometry, "CornerRadius", cornerRadiusExpression);
                     }
                 }
                 else
                 {
                     // Only the size is animated.
-                    var cornerRadiusExpression = _c.CreateExpressionAnimation(ExpressionFactory.ConstrainedCornerRadiusScalar(cornerRadius.InitialValue));
+                    var cornerRadiusExpression = _c.CreateExpressionAnimation(ConstrainedCornerRadiusScalar(cornerRadius.InitialValue));
                     cornerRadiusExpression.SetReferenceParameter("my", geometry);
-                    StartExpressionAnimation(geometry, "CornerRadius.X", cornerRadiusExpression);
+                    StartExpressionAnimation(geometry, "CornerRadius", cornerRadiusExpression);
                 }
-
-                // Tie the CornerRadius.Y value to the CornerRadius.X value.
-                var yEqualsXExpression = _c.CreateExpressionAnimation(ExpressionFactory.MyCornerRadiusX);
-                yEqualsXExpression.SetReferenceParameter("my", geometry);
-                StartExpressionAnimation(geometry, "CornerRadius.Y", yEqualsXExpression);
             }
             else
             {

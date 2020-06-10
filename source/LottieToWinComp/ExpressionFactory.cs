@@ -69,11 +69,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal static Scalar RootScalar(string propertyName) => Scalar(RootProperty(propertyName));
 
-        internal static Scalar ConstrainedCornerRadiusScalar(double roundness) => Min(roundness, Min(MySize.X, MySize.Y) / 2);
+        internal static Vector2 ConstrainedCornerRadiusScalar(double roundness)
+            => Vector2(Min(roundness, Min(MySize.X, MySize.Y) / 2), Min(roundness, Min(MySize.X, MySize.Y) / 2));
 
-        internal static Scalar ConstrainedCornerRadiusScalar() => Min(MyRoundness, Min(MySize.X, MySize.Y) / 2);
+        internal static Vector2 ConstrainedCornerRadiusScalar()
+            => Vector2(Min(MyRoundness, Min(MySize.X, MySize.Y) / 2), Min(MyRoundness, Min(MySize.X, MySize.Y) / 2));
 
-        internal static Scalar ConstrainedCornerRadiusScalar(Sn.Vector2 size) => Min(MyRoundness, Math.Min(size.X, size.Y) / 2);
+        internal static Vector2 ConstrainedCornerRadiusScalar(Sn.Vector2 size)
+            => Vector2(Min(MyRoundness, Math.Min(size.X, size.Y) / 2), Min(MyRoundness, Math.Min(size.X, size.Y) / 2));
 
         // The value of a Color property stored as a Vector4 on the theming property set.
         static Vector4 ThemedColor4Property(string propertyName) => Vector4(ThemeProperty(propertyName));
