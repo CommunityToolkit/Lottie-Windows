@@ -890,8 +890,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             // type of the IAnimatedVisualSource is not known. It relies on a custom interface that declares
             // it, so if we're not generating code for a custom interface, there's no reason to generate
             // the method.
-            if (IsInterfaceCustom && SourceInfo.IsThemed)
+            if (SourceInfo.IsThemed)
             {
+                builder.Public.UnIndent();
+                builder.Public.WriteLine();
+
                 var optionalVirtual = SourceInfo.InterfaceType is null ? string.Empty : "virtual ";
                 if (_isCppwinrtMode)
                 {
