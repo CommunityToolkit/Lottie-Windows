@@ -123,154 +123,162 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             var markers = Array.Empty<Marker>();
             Dictionary<string, GenericDataObject> extraData = null;
 
-            reader.ConsumeToken();
-
-            while (reader.Read())
+            try
             {
-                switch (reader.TokenType)
+                reader.ConsumeToken();
+
+                while (reader.Read())
                 {
-                    case JsonTokenType.Comment:
-                        // Ignore comments.
-                        reader.ConsumeToken();
-                        break;
+                    switch (reader.TokenType)
+                    {
+                        case JsonTokenType.Comment:
+                            // Ignore comments.
+                            reader.ConsumeToken();
+                            break;
 
-                    case JsonTokenType.PropertyName:
-                        var currentProperty = reader.GetString();
+                        case JsonTokenType.PropertyName:
+                            var currentProperty = reader.GetString();
 
-                        reader.ConsumeToken();
+                            reader.ConsumeToken();
 
-                        switch (currentProperty)
-                        {
-                            case "assets":
-                                assets = ParseArray(ref reader, ParseAsset);
-                                break;
-                            case "chars":
-                                chars = ParseArray(ref reader, ParseChar);
-                                break;
-                            case "ddd":
-                                is3d = reader.ParseBool();
-                                break;
-                            case "fr":
-                                framesPerSecond = reader.ParseDouble();
-                                break;
-                            case "fonts":
-                                fonts = ParseFonts(ref reader);
-                                break;
-                            case "layers":
-                                layers = ParseArray(ref reader, ParseLayer);
-                                break;
-                            case "h":
-                                height = reader.ParseDouble();
-                                break;
-                            case "ip":
-                                inPoint = reader.ParseDouble();
-                                break;
-                            case "op":
-                                outPoint = reader.ParseDouble();
-                                break;
-                            case "markers":
-                                markers = ParseArray(ref reader, ParseMarker);
-                                break;
-                            case "nm":
-                                name = reader.GetString();
-                                break;
-                            case "v":
-                                version = reader.GetString();
-                                break;
-                            case "w":
-                                width = reader.ParseDouble();
-                                break;
+                            switch (currentProperty)
+                            {
+                                case "assets":
+                                    assets = ParseArray(ref reader, ParseAsset);
+                                    break;
+                                case "chars":
+                                    chars = ParseArray(ref reader, ParseChar);
+                                    break;
+                                case "ddd":
+                                    is3d = reader.ParseBool();
+                                    break;
+                                case "fr":
+                                    framesPerSecond = reader.ParseDouble();
+                                    break;
+                                case "fonts":
+                                    fonts = ParseFonts(ref reader);
+                                    break;
+                                case "layers":
+                                    layers = ParseArray(ref reader, ParseLayer);
+                                    break;
+                                case "h":
+                                    height = reader.ParseDouble();
+                                    break;
+                                case "ip":
+                                    inPoint = reader.ParseDouble();
+                                    break;
+                                case "op":
+                                    outPoint = reader.ParseDouble();
+                                    break;
+                                case "markers":
+                                    markers = ParseArray(ref reader, ParseMarker);
+                                    break;
+                                case "nm":
+                                    name = reader.GetString();
+                                    break;
+                                case "v":
+                                    version = reader.GetString();
+                                    break;
+                                case "w":
+                                    width = reader.ParseDouble();
+                                    break;
 
-                            // Treat any other property as an extension of the BodyMovin format.
-                            default:
-                                {
-                                    _issues.UnexpectedField(currentProperty);
-                                    if (extraData is null)
+                                // Treat any other property as an extension of the BodyMovin format.
+                                default:
                                     {
-                                        extraData = new Dictionary<string, GenericDataObject>();
+                                        _issues.UnexpectedField(currentProperty);
+                                        if (extraData is null)
+                                        {
+                                            extraData = new Dictionary<string, GenericDataObject>();
+                                        }
+
+                                        using var subDocument = reader.ParseElement();
+                                        extraData.Add(currentProperty, subDocument.RootElement.ToGenericDataObject());
                                     }
 
-                                    using var subDocument = reader.ParseElement();
-                                    extraData.Add(currentProperty, subDocument.RootElement.ToGenericDataObject());
+                                    break;
+                            }
+
+                            break;
+
+                        case JsonTokenType.EndObject:
+                            {
+                                // Check that the required properties were found. If any are missing, throw.
+                                if (version is null)
+                                {
+                                    throw reader.Throw("Version parameter not found.");
                                 }
 
-                                break;
-                        }
+                                if (!width.HasValue)
+                                {
+                                    throw reader.Throw("Width parameter not found.");
+                                }
 
-                        break;
+                                if (!height.HasValue)
+                                {
+                                    throw reader.Throw("Height parameter not found.");
+                                }
 
-                    case JsonTokenType.EndObject:
-                        {
-                            // Check that the required properties were found. If any are missing, throw.
-                            if (version is null)
-                            {
-                                throw reader.Throw("Version parameter not found.");
+                                if (!inPoint.HasValue)
+                                {
+                                    throw reader.Throw("Start frame parameter not found.");
+                                }
+
+                                if (!outPoint.HasValue)
+                                {
+                                    throw reader.Throw("End frame parameter not found.");
+                                }
+
+                                if (layers is null)
+                                {
+                                    throw reader.Throw("No layers found.");
+                                }
+
+                                int[] versions;
+                                try
+                                {
+                                    versions = version.Split('.').Select(int.Parse).ToArray();
+                                }
+                                catch (FormatException)
+                                {
+                                    // Ignore
+                                    versions = new[] { 0, 0, 0 };
+                                }
+                                catch (OverflowException)
+                                {
+                                    // Ignore
+                                    versions = new[] { 0, 0, 0 };
+                                }
+
+                                var result = new LottieComposition(
+                                                    name: name ?? string.Empty,
+                                                    width: width ?? 0.0,
+                                                    height: height ?? 0.0,
+                                                    inPoint: inPoint ?? 0.0,
+                                                    outPoint: outPoint ?? 0.0,
+                                                    framesPerSecond: framesPerSecond ?? 0.0,
+                                                    is3d: false,
+                                                    version: new Version(versions[0], versions[1], versions[2]),
+                                                    assets: new AssetCollection(assets),
+                                                    chars: chars,
+                                                    extraData: extraData is null ? GenericDataMap.Empty : GenericDataMap.Create(extraData),
+                                                    fonts: fonts,
+                                                    layers: new LayerCollection(layers),
+                                                    markers: markers);
+                                return result;
                             }
 
-                            if (!width.HasValue)
-                            {
-                                throw reader.Throw("Width parameter not found.");
-                            }
-
-                            if (!height.HasValue)
-                            {
-                                throw reader.Throw("Height parameter not found.");
-                            }
-
-                            if (!inPoint.HasValue)
-                            {
-                                throw reader.Throw("Start frame parameter not found.");
-                            }
-
-                            if (!outPoint.HasValue)
-                            {
-                                throw reader.Throw("End frame parameter not found.");
-                            }
-
-                            if (layers is null)
-                            {
-                                throw reader.Throw("No layers found.");
-                            }
-
-                            int[] versions;
-                            try
-                            {
-                                versions = version.Split('.').Select(int.Parse).ToArray();
-                            }
-                            catch (FormatException)
-                            {
-                                // Ignore
-                                versions = new[] { 0, 0, 0 };
-                            }
-                            catch (OverflowException)
-                            {
-                                // Ignore
-                                versions = new[] { 0, 0, 0 };
-                            }
-
-                            var result = new LottieComposition(
-                                                name: name ?? string.Empty,
-                                                width: width ?? 0.0,
-                                                height: height ?? 0.0,
-                                                inPoint: inPoint ?? 0.0,
-                                                outPoint: outPoint ?? 0.0,
-                                                framesPerSecond: framesPerSecond ?? 0.0,
-                                                is3d: false,
-                                                version: new Version(versions[0], versions[1], versions[2]),
-                                                assets: new AssetCollection(assets),
-                                                chars: chars,
-                                                extraData: extraData is null ? GenericDataMap.Empty : GenericDataMap.Create(extraData),
-                                                fonts: fonts,
-                                                layers: new LayerCollection(layers),
-                                                markers: markers);
-                            return result;
-                        }
-
-                    // Here means the JSON was invalid or our parser got confused. There is no way to
-                    // recover from this, so throw.
-                    default:
-                        throw reader.ThrowUnexpectedToken();
+                        // Here means the JSON was invalid or our parser got confused. There is no way to
+                        // recover from this, so throw.
+                        default:
+                            throw reader.ThrowUnexpectedToken();
+                    }
                 }
+            }
+            catch (JsonException e)
+            {
+                // Re-throw errors from the JSON parser using our own exception.
+                throw Exception(e.Message);
             }
 
             throw EofException;

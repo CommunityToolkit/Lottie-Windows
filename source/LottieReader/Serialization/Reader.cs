@@ -49,16 +49,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             // Consumes a token from the stream.
             internal void ConsumeToken()
             {
-                try
+                if (!_jsonReader.Read())
                 {
-                    if (!_jsonReader.Read())
-                    {
-                        throw EofException;
-                    }
-                }
-                catch (JsonException e)
-                {
-                    throw Exception(e.Message);
+                    throw EofException;
                 }
             }
 
