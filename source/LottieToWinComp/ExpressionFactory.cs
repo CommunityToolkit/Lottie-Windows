@@ -22,7 +22,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         internal static readonly Vector2 MyAnchor = MyVector2("Anchor");
         internal static readonly Vector3 MyAnchor3 = Vector3(MyAnchor.X, MyAnchor.Y, 0);
         internal static readonly Vector4 MyColor = MyVector4("Color");
-        internal static readonly Scalar MyCornerRadiusX = MyScalar("CornerRadius.X");
         internal static readonly Scalar MyInheritedOpacity = MyScalar("InheritedOpacity");
         internal static readonly Scalar MyOpacity = MyScalar("Opacity");
         internal static readonly Vector2 MyPosition = MyVector2("Position");
