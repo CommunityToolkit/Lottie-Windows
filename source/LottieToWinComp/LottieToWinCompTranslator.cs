@@ -2152,7 +2152,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var size = context.TrimAnimatable(rectangle.Size);
 
             // If a Rectangle is in the context, use it to override the corner radius.
-            var cornerRadius = context.TrimAnimatable(shapeContext.RoundedCorner != null ? shapeContext.RoundedCorner.Radius : rectangle.CornerRadius);
+            var cornerRadius = context.TrimAnimatable(shapeContext.RoundedCorner != null ? shapeContext.RoundedCorner.Radius : rectangle.Roundness);
 
             if (position.IsAnimated || size.IsAnimated || cornerRadius.IsAnimated)
             {
@@ -2231,141 +2231,199 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         CompositionShape TranslateRectangleContent(TranslationContext context, ShapeContentContext shapeContext, Rectangle shapeContent)
         {
-            var compositionRectangle = _c.CreateSpriteShape();
+            var result = _c.CreateSpriteShape();
             var position = context.TrimAnimatable(shapeContent.Position);
             var size = context.TrimAnimatable(shapeContent.Size);
 
-            if (shapeContent.CornerRadius.AlwaysEquals(0) && shapeContext.RoundedCorner is null)
+            if (shapeContent.Roundness.AlwaysEquals(0) && shapeContext.RoundedCorner is null)
             {
-                CompositionGeometry geometry;
+                TranslateAndApplyNonRoundedRectangleContent(
+                    context,
+                    shapeContext,
+                    shapeContent,
+                    position,
+                    size,
+                    result);
+            }
+            else
+            {
+                TranslateAndApplyRoundedRectangleContent(
+                    context,
+                    shapeContext,
+                    shapeContent,
+                    position,
+                    size,
+                    result);
+            }
 
-                // Use a non-rounded rectangle geometry.
-                if (_targetUapVersion <= 7)
+            return result;
+        }
+
+        void TranslateAndApplyNonRoundedRectangleContent(
+            TranslationContext context,
+            ShapeContentContext shapeContext,
+            Rectangle shapeContent,
+            in TrimmedAnimatable<Vector3> position,
+            in TrimmedAnimatable<Vector3> size,
+            CompositionSpriteShape compositionShape)
+        {
+            Debug.Assert(shapeContent.Roundness.AlwaysEquals(0) && shapeContext.RoundedCorner is null, "Precondition");
+
+            CompositionGeometry geometry;
+
+            // Use a non-rounded rectangle geometry.
+            if (_targetUapVersion <= 7)
+            {
+                // V7 did not reliably draw non-rounded rectangles.
+                // Work around the problem by using a rounded rectangle with a tiny corner radius.
+                var roundedRectangleGeometry = _c.CreateRoundedRectangleGeometry();
+                geometry = roundedRectangleGeometry;
+
+                // NOTE: magic tiny corner radius number - do not change!
+                roundedRectangleGeometry.CornerRadius = new Sn.Vector2(0.000001F);
+
+                roundedRectangleGeometry.Offset = InitialOffset(size: size, position: position);
+
+                if (!size.IsAnimated)
                 {
-                    // V7 did not reliably draw non-rounded rectangles.
-                    // Work around the problem by using a rounded rectangle with a tiny corner radius.
-                    var roundedRectangleGeometry = _c.CreateRoundedRectangleGeometry();
-                    geometry = roundedRectangleGeometry;
-
-                    // NOTE: magic tiny corner radius number - do not change!
-                    roundedRectangleGeometry.CornerRadius = new Sn.Vector2(0.000001F);
-
-                    // Convert size and position into offset. This is necessary because a geometry's offset is for
-                    // its top left corner, wherease a Lottie position is for its centerpoint.
-                    roundedRectangleGeometry.Offset = Vector2(position.InitialValue - (size.InitialValue / 2));
-
-                    if (!size.IsAnimated)
-                    {
-                        roundedRectangleGeometry.Size = Vector2(size.InitialValue);
-                    }
-                }
-                else
-                {
-                    // V8 and beyond doesn't need the rounded rectangle workaround.
-                    var rectangleGeometry = _c.CreateRectangleGeometry();
-                    geometry = rectangleGeometry;
-
-                    // Convert size and position into offset. This is necessary because a geometry's offset is for
-                    // its top left corner, wherease a Lottie position is for its centerpoint.
-                    rectangleGeometry.Offset = Vector2(position.InitialValue - (size.InitialValue / 2));
-
-                    if (!size.IsAnimated)
-                    {
-                        rectangleGeometry.Size = Vector2(size.InitialValue);
-                    }
-                }
-
-                compositionRectangle.Geometry = geometry;
-
-                if (position.IsAnimated || size.IsAnimated)
-                {
-                    Expr offsetExpression;
-                    if (position.IsAnimated)
-                    {
-                        ApplyVector2KeyFrameAnimation(context, position, geometry, nameof(Rectangle.Position));
-                        geometry.Properties.InsertVector2(nameof(Rectangle.Position), Vector2(position.InitialValue));
-                        if (size.IsAnimated)
-                        {
-                            // Size AND position are animated.
-                            offsetExpression = ExpressionFactory.PositionAndSizeToOffsetExpression;
-                            ApplyVector2KeyFrameAnimation(context, size, geometry, nameof(Rectangle.Size));
-                        }
-                        else
-                        {
-                            // Only Position is animated
-                            offsetExpression = ExpressionFactory.HalfSizeToOffsetExpression(Vector2(size.InitialValue / 2));
-                        }
-                    }
-                    else
-                    {
-                        // Only Size is animated.
-                        offsetExpression = ExpressionFactory.PositionToOffsetExpression(Vector2(position.InitialValue));
-                        ApplyVector2KeyFrameAnimation(context, size, geometry, nameof(Rectangle.Size));
-                    }
-
-                    var offsetExpressionAnimation = _c.CreateExpressionAnimation(offsetExpression);
-                    offsetExpressionAnimation.SetReferenceParameter("my", geometry);
-                    StartExpressionAnimation(geometry, "Offset", offsetExpressionAnimation);
+                    roundedRectangleGeometry.Size = Vector2(size.InitialValue);
                 }
             }
             else
             {
-                // Use a rounded rectangle geometry.
-                var geometry = _c.CreateRoundedRectangleGeometry();
-                compositionRectangle.Geometry = geometry;
-
-                // If a RoundedRectangle is in the context, use it to override the corner radius.
-                var cornerRadius = context.TrimAnimatable(shapeContext.RoundedCorner != null ? shapeContext.RoundedCorner.Radius : shapeContent.CornerRadius);
-                if (cornerRadius.IsAnimated)
-                {
-                    ApplyScalarKeyFrameAnimation(context, cornerRadius, geometry, "CornerRadius.X");
-                    ApplyScalarKeyFrameAnimation(context, cornerRadius, geometry, "CornerRadius.Y");
-                }
-                else
-                {
-                    geometry.CornerRadius = Vector2((float)cornerRadius.InitialValue);
-                }
+                // V8 and beyond doesn't need the rounded rectangle workaround.
+                var rectangleGeometry = _c.CreateRectangleGeometry();
+                geometry = rectangleGeometry;
 
                 // Convert size and position into offset. This is necessary because a geometry's offset is for
-                // its top left corner, wherease a Lottie position is for its centerpoint.
-                geometry.Offset = Vector2(position.InitialValue - (size.InitialValue / 2));
+                // its top left corner, whereas a Lottie position is for its centerpoint.
+                rectangleGeometry.Offset = InitialOffset(size: size, position: position);
 
                 if (!size.IsAnimated)
                 {
-                    geometry.Size = Vector2(size.InitialValue);
+                    rectangleGeometry.Size = Vector2(size.InitialValue);
                 }
+            }
 
-                if (position.IsAnimated || size.IsAnimated)
+            compositionShape.Geometry = geometry;
+
+            ApplyRectangleContentCommon(context, shapeContext, shapeContent, compositionShape, size, position, geometry);
+        }
+
+        void TranslateAndApplyRoundedRectangleContent(
+            TranslationContext context,
+            ShapeContentContext shapeContext,
+            Rectangle shapeContent,
+            in TrimmedAnimatable<Vector3> position,
+            in TrimmedAnimatable<Vector3> size,
+            CompositionSpriteShape compositionShape)
+        {
+            // Use a rounded rectangle geometry.
+            var geometry = _c.CreateRoundedRectangleGeometry();
+            compositionShape.Geometry = geometry;
+
+            // If a RoundedRectangle is in the context, use it to override the roundness unless the roundness is non-0.
+            var cornerRadius = context.TrimAnimatable(
+                shapeContext.RoundedCorner != null && shapeContent.Roundness.AlwaysEquals(0)
+                    ? shapeContext.RoundedCorner.Radius
+                    : shapeContent.Roundness);
+
+            // In After Effects, the rectangle Roundness has no further effect once it reaches min(Size.X, Size.Y)/2.
+            // In Composition, the cornerRadius continues to affect the shape even beyond min(Size.X, Size.Y)/2.
+            // If size or corner radius are animated, handle this with an expression.
+            if (cornerRadius.IsAnimated || size.IsAnimated)
+            {
+                if (cornerRadius.IsAnimated)
                 {
-                    Expr offsetExpression;
-                    if (position.IsAnimated)
-                    {
-                        ApplyVector2KeyFrameAnimation(context, position, geometry, nameof(Rectangle.Position));
+                    geometry.Properties.InsertScalar("Roundness", Float(cornerRadius.InitialValue));
+                    ApplyScalarKeyFrameAnimation(context, cornerRadius, geometry.Properties, "Roundness");
 
-                        geometry.Properties.InsertVector2(nameof(Rectangle.Position), Vector2(position.InitialValue));
-                        if (size.IsAnimated)
-                        {
-                            // Size AND position are animated.
-                            offsetExpression = ExpressionFactory.PositionAndSizeToOffsetExpression;
-                            ApplyVector2KeyFrameAnimation(context, size, geometry, nameof(Rectangle.Size));
-                        }
-                        else
-                        {
-                            // Only Position is animated
-                            offsetExpression = ExpressionFactory.HalfSizeToOffsetExpression(Vector2(size.InitialValue / 2));
-                        }
+                    if (size.IsAnimated)
+                    {
+                        // Both size and cornerRadius are animated.
+                        var cornerRadiusExpression = _c.CreateExpressionAnimation(ConstrainedCornerRadiusScalar());
+                        cornerRadiusExpression.SetReferenceParameter("my", geometry);
+                        StartExpressionAnimation(geometry, "CornerRadius", cornerRadiusExpression);
                     }
                     else
                     {
-                        // Only Size is animated.
-                        offsetExpression = ExpressionFactory.PositionToOffsetExpression(Vector2(position.InitialValue));
+                        // Only the cornerRadius is animated.
+                        var cornerRadiusExpression = _c.CreateExpressionAnimation(ConstrainedCornerRadiusScalar(Vector2(size.InitialValue)));
+                        cornerRadiusExpression.SetReferenceParameter("my", geometry);
+                        StartExpressionAnimation(geometry, "CornerRadius", cornerRadiusExpression);
+                    }
+                }
+                else
+                {
+                    // Only the size is animated.
+                    var cornerRadiusExpression = _c.CreateExpressionAnimation(ConstrainedCornerRadiusScalar(cornerRadius.InitialValue));
+                    cornerRadiusExpression.SetReferenceParameter("my", geometry);
+                    StartExpressionAnimation(geometry, "CornerRadius", cornerRadiusExpression);
+                }
+            }
+            else
+            {
+                // Static size and corner radius.
+                var cornerRadiusValue = Math.Min(cornerRadius.InitialValue, Math.Min(size.InitialValue.X, size.InitialValue.Y) / 2);
+                geometry.CornerRadius = Vector2((float)cornerRadiusValue);
+            }
+
+            geometry.Offset = InitialOffset(size:size, position:position);
+
+            if (!size.IsAnimated)
+            {
+                geometry.Size = Vector2(size.InitialValue);
+            }
+
+            ApplyRectangleContentCommon(context, shapeContext, shapeContent, compositionShape, size, position, geometry);
+        }
+
+        // Convert the size and position for a geometry into an offset.
+        // This is necessary because a geometry's offset describes its
+        // top left corner, whereas a Lottie position describes its centerpoint.
+        static Sn.Vector2 InitialOffset(
+            in TrimmedAnimatable<Vector3> size,
+            in TrimmedAnimatable<Vector3> position)
+            => Vector2(position.InitialValue - (size.InitialValue / 2));
+
+        void ApplyRectangleContentCommon(
+            TranslationContext context,
+            ShapeContentContext shapeContext,
+            Rectangle shapeContent,
+            CompositionSpriteShape compositionRectangle,
+            in TrimmedAnimatable<Vector3> size,
+            in TrimmedAnimatable<Vector3> position,
+            CompositionGeometry geometry)
+        {
+            if (position.IsAnimated || size.IsAnimated)
+            {
+                Expr offsetExpression;
+                if (position.IsAnimated)
+                {
+                    ApplyVector2KeyFrameAnimation(context, position, geometry, nameof(Rectangle.Position));
+                    geometry.Properties.InsertVector2(nameof(Rectangle.Position), Vector2(position.InitialValue));
+                    if (size.IsAnimated)
+                    {
+                        // Size AND position are animated.
+                        offsetExpression = ExpressionFactory.PositionAndSizeToOffsetExpression;
                         ApplyVector2KeyFrameAnimation(context, size, geometry, nameof(Rectangle.Size));
                     }
-
-                    var offsetExpressionAnimation = _c.CreateExpressionAnimation(offsetExpression);
-                    offsetExpressionAnimation.SetReferenceParameter("my", geometry);
-                    StartExpressionAnimation(geometry, nameof(geometry.Offset), offsetExpressionAnimation);
+                    else
+                    {
+                        // Only Position is animated
+                        offsetExpression = ExpressionFactory.HalfSizeToOffsetExpression(Vector2(size.InitialValue / 2));
+                    }
                 }
+                else
+                {
+                    // Only Size is animated.
+                    offsetExpression = ExpressionFactory.PositionToOffsetExpression(Vector2(position.InitialValue));
+                    ApplyVector2KeyFrameAnimation(context, size, geometry, nameof(Rectangle.Size));
+                }
+
+                var offsetExpressionAnimation = _c.CreateExpressionAnimation(offsetExpression);
+                offsetExpressionAnimation.SetReferenceParameter("my", geometry);
+                StartExpressionAnimation(geometry, "Offset", offsetExpressionAnimation);
             }
 
             // Lottie rectangles have 0,0 at top right. That causes problems for TrimPath which expects 0,0 to be top left.
@@ -2386,6 +2444,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var width = size.InitialValue.X;
             var height = size.InitialValue.Y;
             var trimOffsetDegrees = (width / (2 * (width + height))) * 360;
+
             TranslateAndApplyShapeContentContext(
                 context,
                 shapeContext,
@@ -2398,8 +2457,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 Describe(compositionRectangle, shapeContent.Name);
                 Describe(compositionRectangle.Geometry, $"{shapeContent.Name}.RectangleGeometry");
             }
-
-            return compositionRectangle;
         }
 
         void CheckForRoundedCornersOnPath(TranslationContext context, ShapeContentContext shapeContext)

@@ -644,7 +644,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             var result = superclassContent;
             result.Add(nameof(content.Size), FromAnimatable(content.Size));
             result.Add(nameof(content.Position), FromAnimatable(content.Position));
-            result.Add(nameof(content.CornerRadius), FromAnimatable(content.CornerRadius));
+            result.Add(nameof(content.Roundness), FromAnimatable(content.Roundness));
             return result;
         }
 
