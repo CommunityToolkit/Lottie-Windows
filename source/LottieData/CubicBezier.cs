@@ -34,7 +34,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// <summary>
         /// True if the <see cref="CubicBezier"/> represents a linear function from
         /// 0,0 to 1,1. A linear function requires that <see cref="ControlPoint1"/>
-        /// and <see cref="ControlPoint2"/> line on the line that passes through 0,0, and 1,1.
+        /// and <see cref="ControlPoint2"/> lie on the line that passes through 0,0, and 1,1.
         /// </summary>
         public bool IsLinear => ControlPoint1.X == ControlPoint1.Y && ControlPoint2.X == ControlPoint2.Y;
 

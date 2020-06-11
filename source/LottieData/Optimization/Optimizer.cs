@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Transactions;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
 {
@@ -403,19 +404,24 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
         static IEnumerable<KeyFrame<T>> RemoveRedundantKeyFrames<T>(KeyFrame<T>[] keyFrames)
             where T : IEquatable<T>
         {
-            for (var i = 0; i < keyFrames.Length - 1; i++)
+            if (keyFrames.Length > 0)
             {
-                // Only include the key frame if it has a frame value that is different
-                // from the next key frame's frame or if it has a non-linear cubic Bezier easing
-                // function.
-                if (keyFrames[i].Frame != keyFrames[i + 1].Frame ||
-                    HasNonLinearCubicBezierEasing(keyFrames[i + 1]))
+                yield return keyFrames[0];
+
+                for (var i = 1; i < keyFrames.Length; i++)
                 {
-                    yield return keyFrames[i];
+                    var previous = keyFrames[i - 1];
+                    var current = keyFrames[i];
+
+                    // If the current and previous key frames are at the same frame number and
+                    // the same value, the current frame will have no effect.
+                    if (current.Frame != previous.Frame ||
+                        !current.Value.Equals(previous.Value))
+                    {
+                        yield return keyFrames[i];
+                    }
                 }
             }
-
-            yield return keyFrames[keyFrames.Length - 1];
         }
 
         sealed class AnimatableComparer<T>
