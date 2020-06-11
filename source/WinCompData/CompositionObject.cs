@@ -143,10 +143,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
         {
             // We also need to stop animations on any sub-channels and the root property.
             // Examples:
-            //  Sub-channels: stopping TransformMatrix must also stop
-            //    TransformMatrix.M11, TransformMatrix.M12, etc..
-            //  Root property: stopping TransformMatrix.M11 must also
-            //    stop TransformMatrix.
+            //  Sub-channels: stopping CornerRadius must also stop
+            //    CornerRadius.X, CornerRadius.Y, etc..
+            //  Root property: stopping CornerRadius.X must also
+            //    stop CornerRadius.
             // If there's a dot in the name it is a sub-channel name.
             var subChannelPrefix = $"{propertyName}.";
             var firstDotIndex = propertyName.IndexOf('.');
