@@ -146,7 +146,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
             //  Sub-channels: stopping Offset must also stop
             //    Offset.X, Offset.Y, etc..
             //  Root property: stopping Offset.X must also
-            //    stop OFfset.
+            //    stop Offset.
             // If there's a dot in the name it is a sub-channel name.
             var subChannelPrefix = $"{propertyName}.";
             var firstDotIndex = propertyName.IndexOf('.');
