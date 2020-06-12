@@ -73,9 +73,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             {
                 var x = DoublePropertyOrNull("x");
                 var y = DoublePropertyOrNull("y");
-                return x is null
+                return x is null || y is null
                     ? (Vector2?)null
-                    : new Vector2(x.Value, y ?? 0);
+                    : new Vector2(x ?? 0, y ?? 0);
             }
 
             public Vector3? AsVector3()
@@ -83,9 +83,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 var x = DoublePropertyOrNull("x");
                 var y = DoublePropertyOrNull("y");
                 var z = DoublePropertyOrNull("z");
-                return x is null
+
+                // Don't check for z being null - most of the uses of Vector3 actually only need
+                // a Vector2, so if the z value wasn't provided it's unsurprising.
+                return x is null || y is null
                     ? (Vector3?)null
-                    : new Vector3(x.Value, y ?? 0, z ?? 0);
+                    : new Vector3(x ?? 0, y ?? 0, z ?? 0);
             }
 
             internal LottieJsonArrayElement? ArrayPropertyOrNull(string propertyName)
