@@ -77,7 +77,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                         _ => throw new InvalidOperationException(),
                     };
 
-                    WriteInitializedField(builder.Private, exposedTypeName, $"_theme{prop.Name}", S.VariableInitialization(initialValue));
+                    WriteInitializedField(builder.Private, $"winrt::{exposedTypeName}", $"_theme{prop.Name}", S.VariableInitialization(initialValue));
                 }
             }
 
@@ -90,8 +90,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             // Write properties declarations for each themed property.
             foreach (var prop in SourceInfo.SourceMetadata.PropertyBindings)
             {
-                builder.Internal.WriteLine($"{QualifiedTypeName(prop.ExposedType)} {prop.Name}();");
-                builder.Internal.WriteLine($"void {prop.Name}({QualifiedTypeName(prop.ExposedType)} value);");
+                builder.Internal.WriteLine($"winrt::{QualifiedTypeName(prop.ExposedType)} {prop.Name}();");
+                builder.Internal.WriteLine($"void {prop.Name}(winrt::{QualifiedTypeName(prop.ExposedType)} value);");
             }
 
             builder.Internal.WriteLine();
@@ -113,7 +113,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 builder.WriteLine();
             }
 
-            builder.WriteLine($"winrt::{T.CompositionPropertySet} {sourceClassQualifier}EnsureThemeProperties({T.Compositor} compositor)");
+            builder.WriteLine($"{T.CompositionPropertySet} {sourceClassQualifier}EnsureThemeProperties({T.Compositor} compositor)");
             builder.OpenScope();
             builder.WriteLine($"if ({SourceInfo.ThemePropertiesFieldName} == nullptr)");
             builder.OpenScope();
@@ -131,7 +131,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.CloseScope();
             builder.WriteLine();
 
-            builder.WriteLine($"winrt::{T.CompositionPropertySet} {sourceClassQualifier}GetThemeProperties({T.Compositor} compositor)");
+            builder.WriteLine($"{T.CompositionPropertySet} {sourceClassQualifier}GetThemeProperties({T.Compositor} compositor)");
             builder.OpenScope();
             builder.WriteLine("return EnsureThemeProperties(compositor);");
             builder.CloseScope();

@@ -246,7 +246,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             if (info.AnimatedVisualSourceInfo.IsThemed)
             {
-                yield return $"winrt::{_typeName.CompositionPropertySet} themeProperties";
+                if (_isCppwinrtMode)
+                {
+                    yield return $"winrt::{_typeName.CompositionPropertySet} themeProperties";
+                }
+                else
+                {
+                    yield return $"{_typeName.CompositionPropertySet} themeProperties";
+                }
             }
 
             foreach (var loadedImageSurfaceNode in info.LoadedImageSurfaceNodes)
@@ -365,7 +372,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             // Write the IsRuntimeCompatible static method.
             builder.WriteLine("static bool IsRuntimeCompatible()");
             builder.OpenScope();
-            builder.WriteLine($"return winrt::Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent({_s.String("Windows.Foundation.UniversalApiContract")}, {info.RequiredUapVersion});");
+            if (_isCppwinrtMode)
+            {
+                builder.WriteLine($"return winrt::Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent({_s.String("Windows.Foundation.UniversalApiContract")}, {info.RequiredUapVersion});");
+            }
+            else
+            {
+                builder.WriteLine($"return Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent({_s.String("Windows.Foundation.UniversalApiContract")}, {info.RequiredUapVersion});");
+            }
+
             builder.CloseScope();
 
             // Close the scope for the instantiator class.
@@ -416,15 +431,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             }
 
             // Generate the method that creates an instance of the composition on the IAnimatedVisualSource.
-            builder.WriteLine($"winrt::{S.Hatted(AnimatedVisualTypeName)} {_s.Namespace(SourceInfo.Namespace)}::{SourceClassName}::TryCreateAnimatedVisual(");
-            builder.Indent();
             if (_isCppwinrtMode)
             {
+                builder.WriteLine($"winrt::{S.Hatted(AnimatedVisualTypeName)} {_s.Namespace(SourceInfo.Namespace)}::{SourceClassName}::TryCreateAnimatedVisual(");
+                builder.Indent();
                 builder.WriteLine($"const {_typeName.Compositor}& compositor,");
                 builder.WriteLine($"{_typeName.Object}& diagnostics)");
             }
             else
             {
+                builder.WriteLine($"{S.Hatted(AnimatedVisualTypeName)} {_s.Namespace(SourceInfo.Namespace)}::{SourceClassName}::TryCreateAnimatedVisual(");
+                builder.Indent();
                 builder.WriteLine($"{_typeName.Compositor} compositor,");
                 builder.WriteLine($"{_typeName.Object}* diagnostics)");
             }
@@ -801,6 +818,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         void WriteInternalHeaderConstants(CodeBuilder builder)
         {
+            var nameSpace = _isCppwinrtMode ? "winrt::" : string.Empty;
+
             // Add any internal constants.
             foreach (var c in SourceInfo.InternalConstants)
             {
@@ -808,7 +827,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 switch (c.Type)
                 {
                     case ConstantType.Color:
-                        builder.WriteLine($"static inline const winrt::Windows::UI::Color {c.Name}{S.Color((WinCompData.Wui.Color)c.Value)};");
+                        builder.WriteLine($"static inline const {nameSpace}Windows::UI::Color {c.Name}{S.Color((WinCompData.Wui.Color)c.Value)};");
                         break;
                     case ConstantType.Int64:
                         builder.WriteLine($"static constexpr int64_t {c.Name}{{ {S.Int64((long)c.Value)} }};");
@@ -1211,7 +1230,7 @@ private:
         protected static string QualifiedTypeName(PropertySetValueType propertySetValueType)
             => propertySetValueType switch
             {
-                PropertySetValueType.Color => "winrt::Windows::UI::Color",
+                PropertySetValueType.Color => $"Windows::UI::Color",
                 _ => TypeName(propertySetValueType),
             };
 
