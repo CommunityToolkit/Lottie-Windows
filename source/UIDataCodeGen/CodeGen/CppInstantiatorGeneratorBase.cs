@@ -1230,7 +1230,7 @@ private:
         protected static string QualifiedTypeName(PropertySetValueType propertySetValueType)
             => propertySetValueType switch
             {
-                PropertySetValueType.Color => $"Windows::UI::Color",
+                PropertySetValueType.Color => "Windows::UI::Color",
                 _ => TypeName(propertySetValueType),
             };
 
