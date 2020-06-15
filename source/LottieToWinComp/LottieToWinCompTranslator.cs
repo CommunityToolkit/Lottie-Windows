@@ -889,8 +889,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var layerOpacity = context.TrimAnimatable(context.Layer.Transform.Opacity);
 
             // Convert the layer's in point and out point into absolute progress (0..1) values.
-            var inProgress = GetInPointProgress(context);
-            var outProgress = GetOutPointProgress(context);
+            var inProgress = context.InPointAsProgress;
+            var outProgress = context.OutPointAsProgress;
 
             if (inProgress > 1 || outProgress <= 0 || inProgress >= outProgress || layerOpacity.AlwaysEquals(LottieData.Opacity.Transparent))
             {
@@ -970,8 +970,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var layerOpacity = context.TrimAnimatable(context.Layer.Transform.Opacity);
 
             // Convert the layer's in point and out point into absolute progress (0..1) values.
-            var inProgress = GetInPointProgress(context);
-            var outProgress = GetOutPointProgress(context);
+            var inProgress = context.InPointAsProgress;
+            var outProgress = context.OutPointAsProgress;
 
             if (inProgress > 1 || outProgress <= 0 || inProgress >= outProgress || layerOpacity.AlwaysEquals(LottieData.Opacity.Transparent))
             {
@@ -1072,8 +1072,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var layerOpacity = context.TrimAnimatable(context.Layer.Transform.Opacity);
 
             // Convert the layer's in point and out point into absolute progress (0..1) values.
-            var inProgress = GetInPointProgress(context);
-            var outProgress = GetOutPointProgress(context);
+            var inProgress = context.InPointAsProgress;
+            var outProgress = context.OutPointAsProgress;
 
             if (inProgress > 1 || outProgress <= 0 || inProgress >= outProgress || layerOpacity.AlwaysEquals(LottieData.Opacity.Transparent))
             {
@@ -4437,20 +4437,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             // Start the animation scaled and offset.
             StartKeyframeAnimation(targetObject, targetPropertyName, compositionAnimation, scale, offset);
-        }
-
-        float GetInPointProgress(TranslationContext context)
-        {
-            var result = (context.Layer.InPoint - context.StartTime) / context.DurationInFrames;
-
-            return (float)result;
-        }
-
-        float GetOutPointProgress(TranslationContext context)
-        {
-            var result = (context.Layer.OutPoint - context.StartTime) / context.DurationInFrames;
-
-            return (float)result;
         }
 
         static ShapeFill.PathFillType GetPathFillType(ShapeFill fill) => fill is null ? ShapeFill.PathFillType.EvenOdd : fill.FillType;

@@ -49,6 +49,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         public override string ToString() => Layer.Name ?? Layer.Type.ToString();
 
+        /// <summary>
+        /// The <see cref="Layer"/>'s in point as a progress value.
+        /// </summary>
+        internal float InPointAsProgress =>
+            (float)((Layer.InPoint - StartTime) / DurationInFrames);
+
+        /// <summary>
+        /// The <see cref="Layer"/>'s out point as a progress value.
+        /// </summary>
+        internal float OutPointAsProgress =>
+            (float)((Layer.OutPoint - StartTime) / DurationInFrames);
+
         // Constructs a context for the given layer that is a child of this context.
         internal For<T> SubContext<T>(T layer)
             where T : Layer
