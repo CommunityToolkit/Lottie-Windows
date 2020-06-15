@@ -41,7 +41,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             // Store the keyframes in a dictionary, keyed by frame.
             var ps = paths.ToArray();
 
-            var groupsByFrame = new Dictionary<double, GeometryKeyFrame[]>(new FrameComparer(context))
+            var groupsByFrame = new Dictionary<double, GeometryKeyFrame[]>(context.FrameNumberComparer)
             {
                 { 0, new GeometryKeyFrame[ps.Length] },
             };
@@ -140,24 +140,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             internal Easing Easing { get; }
 
             internal PathGeometry Geometry { get; }
-        }
-
-        sealed class FrameComparer : IEqualityComparer<double>
-        {
-            readonly TranslationContext _context;
-
-            internal FrameComparer(TranslationContext context)
-            {
-                _context = context;
-            }
-
-            public bool Equals(double x, double y) => ProgressOf(x) == ProgressOf(y);
-
-            public int GetHashCode(double obj) => ProgressOf(obj).GetHashCode();
-
-            // Converts a frame number into a progress value.
-            float ProgressOf(double value) =>
-                (float)((value - _context.StartTime) / _context.DurationInFrames);
         }
     }
 }
