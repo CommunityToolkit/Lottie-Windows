@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 
@@ -32,12 +33,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         // Takes a group of possibly-animated paths and returns an animatable
         // of PathGeometryGroups. Returns true if it succeeds without issues.
         // Even if false is returned a best-effort animatable is returned.
-        internal static bool TryGroupPaths(IEnumerable<Path> paths, out Animatable<PathGeometryGroup> result)
+        internal static bool TryGroupPaths(
+            TranslationContext context,
+            IEnumerable<Path> paths,
+            out Animatable<PathGeometryGroup> result)
         {
             // Store the keyframes in a dictionary, keyed by frame.
             var ps = paths.ToArray();
 
-            var groupsByFrame = new Dictionary<double, GeometryKeyFrame[]>
+            var groupsByFrame = new Dictionary<double, GeometryKeyFrame[]>(new FrameComparer(context))
             {
                 { 0, new GeometryKeyFrame[ps.Length] },
             };
@@ -52,6 +56,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 // Add any keyframes.
                 foreach (var kf in p.Data.KeyFrames.ToArray().Skip(1))
                 {
+                    // See if there's a key frame at the frame number already.
                     if (!groupsByFrame.TryGetValue(kf.Frame, out var array))
                     {
                         array = new GeometryKeyFrame[ps.Length];
@@ -135,6 +140,24 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             internal Easing Easing { get; }
 
             internal PathGeometry Geometry { get; }
+        }
+
+        sealed class FrameComparer : IEqualityComparer<double>
+        {
+            readonly TranslationContext _context;
+
+            internal FrameComparer(TranslationContext context)
+            {
+                _context = context;
+            }
+
+            public bool Equals(double x, double y) => ProgressOf(x) == ProgressOf(y);
+
+            public int GetHashCode(double obj) => ProgressOf(obj).GetHashCode();
+
+            // Converts a frame number into a progress value.
+            float ProgressOf(double value) =>
+                (float)((value - _context.StartTime) / _context.DurationInFrames);
         }
     }
 }

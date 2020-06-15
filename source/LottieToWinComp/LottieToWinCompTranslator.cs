@@ -2475,7 +2475,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         // Groups multiple Shapes into a D2D geometry group.
         CompositionShape TranslatePathGroupContent(TranslationContext context, ShapeContentContext shapeContext, IEnumerable<Path> paths)
         {
-            var groupingSucceeded = PathGeometryGroup.TryGroupPaths(paths, out var grouped);
+            var groupingSucceeded = PathGeometryGroup.TryGroupPaths(context, paths, out var grouped);
 
             // If any of the paths have different directions we may not get the translation
             // right, so check that case and warn the user.
@@ -4293,7 +4293,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             foreach (var keyFrame in trimmedKeyFrames)
             {
+                // The progress of the current key frame, but adjusted as extra key frames
+                // are added to ensure we never add a key frame with the same frame number twice.
                 var adjustedProgress = (keyFrame.Frame - animationStartTime) / animationDuration;
+
+                if ((float)adjustedProgress <= previousProgress)
+                {
+                    // Prevent the next key frame from being inserted at the same progress value
+                    // as the one we just inserted.
+                    adjustedProgress = Float32.NextLargerThan(previousProgress);
+                }
 
                 if (keyFrame.SpatialControlPoint1 != default(Vector3) || keyFrame.SpatialControlPoint2 != default(Vector3))
                 {
@@ -4392,7 +4401,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     if (previousKeyFrameWasExpression)
                     {
                         // Ensure the previous expression doesn't continue being evaluated during the current keyframe.
-                        insertKeyFrame(compositionAnimation, Float32.NextLargerThan(previousProgress), previousValue, _c.CreateStepThenHoldEasingFunction());
+                        var nextLargerThanPrevious = Float32.NextLargerThan(previousProgress);
+                        insertKeyFrame(compositionAnimation, nextLargerThanPrevious, previousValue, _c.CreateStepThenHoldEasingFunction());
+
+                        if ((float)adjustedProgress <= nextLargerThanPrevious)
+                        {
+                            // Prevent the next key frame from being inserted at the same progress value
+                            // as the one we just inserted.
+                            adjustedProgress = Float32.NextLargerThan(nextLargerThanPrevious);
+                        }
                     }
 
                     insertKeyFrame(compositionAnimation, (float)adjustedProgress, keyFrame.Value, _c.CreateCompositionEasingFunction(keyFrame.Easing));
