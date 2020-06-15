@@ -47,8 +47,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             return _madeProgress;
         }
 
-// Do not include this code as it requires a reference to code that is not available in every
-// configuration in which this class is included.
+        // Do not include this code as it requires a reference to code that is not available in every
+        // configuration in which this class is included.
 #if false
         // For debugging purposes, dump the current graph.
         void DumpToDgml(string qualifier)
@@ -867,6 +867,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             }
         }
 
+        // Returns a description of the visibility over time of the given visual.
         static VisibilityDescription GetVisiblityAnimationDescription(Visual visual)
         {
             // Get the visibility animation.
@@ -897,17 +898,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                     if (!firstSeen)
                     {
                         firstSeen = true;
-                        if (kf.Progress != 0 && visual.IsVisible.HasValue && !visual.IsVisible.Value)
+
+                        // If the first keyframe is not at 0, and its target is initially non-visible,
+                        // add a non-visible state at 0.
+                        if (kf.Progress != 0 && visual.IsVisible == false)
                         {
+                            // Output an initial keyframe.
                             yield return (false, 0);
                         }
-
-                        yield return (kf.Value, kf.Progress);
                     }
+
+                    yield return (kf.Value, kf.Progress);
                 }
             }
         }
 
+        // Returns a description of the visibility over time of the given shape.
         static VisibilityDescription GetVisiblityAnimationDescription(CompositionShape shape)
         {
             var scaleValue = shape.Scale;
@@ -950,13 +956,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                     if (!firstSeen)
                     {
                         firstSeen = true;
-                        if (kf.Progress != 0 && shape.Scale.HasValue && shape.Scale.Value != Vector2.One)
+
+                        // If the first keyframe is not at 0, and its target is initially non-visible,
+                        // add a non-visible state at 0.
+                        if (kf.Progress != 0 && shape.Scale == Vector2.Zero)
                         {
                             yield return (false, 0);
                         }
-
-                        yield return (kf.Value == Vector2.One, kf.Progress);
                     }
+
+                    yield return (kf.Value == Vector2.One, kf.Progress);
                 }
             }
         }

@@ -4,7 +4,7 @@
       xmlns:animatedvisuals="using:AnimatedVisuals"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-      xmlns:winui="using:Microsoft.UI.Xaml.Controls"
+      xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
       Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
       mc:Ignorable="d">
 
@@ -72,7 +72,7 @@
                 <Border x:Name="PlayerABorder"
                         Style="{StaticResource LottiePlayerSmall}">
                     <!--  AnimatedVisualPlayer A  -->
-                    <winui:AnimatedVisualPlayer x:Name="PlayerA"
+                    <muxc:AnimatedVisualPlayer x:Name="PlayerA"
                                                 AutoPlay="False"
                                                 PointerEntered="Players_PointerEntered"
                                                 Source="{StaticResource LightBulb}"/>
@@ -81,7 +81,7 @@
                 <Border x:Name="PlayerBBorder"
                         Style="{StaticResource LottiePlayerSmall}">
                     <!--  AnimatedVisualPlayer B  -->
-                    <winui:AnimatedVisualPlayer x:Name="PlayerB"
+                    <muxc:AnimatedVisualPlayer x:Name="PlayerB"
                                                 AutoPlay="False"
                                                 PointerEntered="Players_PointerEntered"
                                                 Source="{StaticResource LightBulb}"/>

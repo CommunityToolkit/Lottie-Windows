@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 
 sealed class Reporter
 {
@@ -104,8 +105,11 @@ sealed class Reporter
         ConsoleColor foregroundColor,
         ConsoleColor backgroundColor)
     {
-        ErrorStream.Color(foregroundColor, backgroundColor);
-        ErrorStream.WriteLine($"Error: {errorMessage}");
+        using (ErrorStream.Lock())
+        {
+            ErrorStream.Color(foregroundColor, backgroundColor);
+            ErrorStream.WriteLine($"Error: {errorMessage}");
+        }
     }
 
     // Helper for writing info lines to the info stream.
@@ -114,13 +118,17 @@ sealed class Reporter
         ConsoleColor foregroundColor,
         ConsoleColor backgroundColor)
     {
-        InfoStream.Color(foregroundColor, backgroundColor);
-        InfoStream.WriteLine(infoMessage);
+        using (InfoStream.Lock())
+        {
+            InfoStream.Color(foregroundColor, backgroundColor);
+            InfoStream.WriteLine(infoMessage);
+        }
     }
 
     internal sealed class Writer
     {
         readonly TextWriter _wrapped;
+        readonly object _lock = new object();
 
         internal Writer(TextWriter wrapped)
         {
@@ -129,14 +137,20 @@ sealed class Reporter
 
         public void WriteLine()
         {
-            _wrapped.WriteLine();
-            Console.ResetColor();
+            lock (_lock)
+            {
+                _wrapped.WriteLine();
+                Console.ResetColor();
+            }
         }
 
         public void WriteLine(string value)
         {
-            _wrapped.WriteLine(value);
-            Console.ResetColor();
+            lock (_lock)
+            {
+                _wrapped.WriteLine(value);
+                Console.ResetColor();
+            }
         }
 
         /// <summary>
@@ -144,8 +158,29 @@ sealed class Reporter
         /// </summary>
         public void Color(ConsoleColor foregroundColor, ConsoleColor backgroundColor)
         {
-            Console.ForegroundColor = foregroundColor;
-            Console.BackgroundColor = backgroundColor;
+            lock (_lock)
+            {
+                Console.ForegroundColor = foregroundColor;
+                Console.BackgroundColor = backgroundColor;
+            }
+        }
+
+        public IDisposable Lock() => new LockGuard(this);
+
+        sealed class LockGuard : IDisposable
+        {
+            readonly Writer _owner;
+
+            internal LockGuard(Writer owner)
+            {
+                _owner = owner;
+                Monitor.Enter(_owner._lock);
+            }
+
+            public void Dispose()
+            {
+                Monitor.Exit(_owner._lock);
+            }
         }
     }
 }

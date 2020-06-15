@@ -4,7 +4,7 @@
       xmlns:animatedvisuals="using:AnimatedVisuals"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-      xmlns:winui="using:Microsoft.UI.Xaml.Controls"
+      xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
       Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
       mc:Ignorable="d">
 
@@ -35,13 +35,13 @@
             <!--#endregion-->
 
             <Border Style="{StaticResource LottiePlayer}">
-                <winui:AnimatedVisualPlayer x:Name="Modified_Player">
+                <muxc:AnimatedVisualPlayer x:Name="Modified_Player">
                     <!--
                         Codegen Source that has been generated from the modified LottieLogo1_Modified.json to dynamically
                         update color values defined in the After Effects file.
                     -->
                     <animatedvisuals:LottieLogo1_Modified x:Name="Modified_Source_LottieLogo1" />
-                </winui:AnimatedVisualPlayer>
+                </muxc:AnimatedVisualPlayer>
             </Border>
 
             <!--#region OutroText-->

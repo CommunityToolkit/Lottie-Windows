@@ -10,7 +10,7 @@
   <Import Project="..\..\source\LottieReader\LottieReader.projitems" Label="Shared" />
 
   <ItemGroup>
-    <PackageReference Include="System.Text.Json" Version="4.7.1" />
+    <PackageReference Include="System.Text.Json" Version="4.7.2" />
   </ItemGroup>
 
   <ItemGroup>
