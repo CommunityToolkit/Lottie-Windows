@@ -23,13 +23,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
         /// Gets a simplified form of the expression. May be the same as this.
         /// </summary>
         // Expressions are immutable, so it's always safe to return a cached version.
-        public T Simplified => _simplifiedExpressionCache ?? (_simplifiedExpressionCache = Simplify());
+        public T Simplified => _simplifiedExpressionCache ??= Simplify();
 
         /// <inheritdoc/>
         // Expressions are immutable, so it's always safe to return a cached version.
         // Always return the simplified version.
-        public override string ToText()
-            => _expressionTextCache ?? (_expressionTextCache = Simplified.CreateExpressionText());
+        public override string ToText() => _expressionTextCache ??= Simplified.CreateExpressionText();
 
         protected virtual T Simplify() => (T)this;
 
