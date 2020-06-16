@@ -159,7 +159,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         /// <summary>
         /// Compares frame numbers for equality. This takes into account the lossiness of the conversion
-        /// that is done from <see cref="float"/> frame numbers to <see cref="double"/> progress values.
+        /// that is done from <see cref="double"/> frame numbers to <see cref="float"/> progress values.
         /// </summary>
         sealed class FrameNumberEqualityComparer : IEqualityComparer<double>
         {
