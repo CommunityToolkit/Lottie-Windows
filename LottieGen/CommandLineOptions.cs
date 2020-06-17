@@ -18,9 +18,7 @@ internal enum Lang
     CSharp,
     Cx,
     Cppwinrt,
-    LottieXml,
     LottieYaml,
-    WinCompXml,
     WinCompDgml,
     Stats,
 }
@@ -163,9 +161,7 @@ sealed class CommandLineOptions
                 .AddKeyword("cx", Lang.Cx)
                 .AddKeyword("cppwinrt", Lang.Cppwinrt)
                 .AddKeyword("winrtcpp", Lang.Cppwinrt)
-                .AddKeyword("lottiexml", Lang.LottieXml)
                 .AddKeyword("lottieyaml", Lang.LottieYaml)
-                .AddKeyword("wincompxml", Lang.WinCompXml)
                 .AddKeyword("dgml", Lang.WinCompDgml)
                 .AddKeyword("stats", Lang.Stats);
 

@@ -81,7 +81,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Mgc\CanvasDevice.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PathKeyFrameAnimation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ScalarKeyFrameAnimation.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Serialization\CompositionObjectXmlSerializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ShapeVisual.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SpriteVisual.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)StepEasingFunction.cs" />
@@ -93,5 +92,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Wg\IGeometrySource2D.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Wui\Color.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Wui\Colors.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)Serialization\" />
   </ItemGroup>
 </Project>
