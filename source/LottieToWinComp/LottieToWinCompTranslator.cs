@@ -4454,12 +4454,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             {
                 AdjustProgress(ref progress);
 
-                if (progress > 1)
-                {
-                    // We ran out of room. The key frame will be ignored.
-                    Debug.Fail("Progress > 1");
-                }
-                else
+                // If progress is > 1 then we have no more room to add key frames.
+                // This can happen as a result of extra key frames being added for
+                // various reasons. The dropped key frames shouldn't matter as they
+                // would only affect a very small amount of time at the end of the
+                // animation.
+                if (progress <= 1)
                 {
                     keyFrameInserter(animation, progress, value, easing);
                 }
@@ -4473,12 +4473,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             {
                 AdjustProgress(ref progress);
 
-                if (progress > 1)
-                {
-                    // We ran out of room. The key frame will be ignored.
-                    Debug.Fail("Progress > 1");
-                }
-                else
+                // If progress is > 1 then we have no more room to add key frames.
+                // This can happen as a result of extra key frames being added for
+                // various reasons. The dropped key frames shouldn't matter as they
+                // would only affect a very small amount of time at the end of the
+                // animation.
+                if (progress <= 1)
                 {
                     expressionKeyFrameInserter(animation, progress, expression, easing);
                 }
