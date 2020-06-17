@@ -4628,7 +4628,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         void EnsureColorThemePropertyExists(TranslationContext context, string bindingName, Color defaultValue)
         {
             // Create a theme property set if one hasn't been created yet.
-            var themeProperties = _themePropertySet ?? (_themePropertySet = _c.CreatePropertySet());
+            var themeProperties = _themePropertySet ??= _c.CreatePropertySet();
 
             var defaultValueAsWinUIColor = Color(defaultValue);
             var defaultValueAsVector4 = Vector4(defaultValueAsWinUIColor);
@@ -4667,7 +4667,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         void EnsureScalarThemePropertyExists(string bindingName, double defaultValue)
         {
             // Create a theme property set if one hasn't been created yet.
-            var themeProperties = _themePropertySet ?? (_themePropertySet = _c.CreatePropertySet());
+            var themeProperties = _themePropertySet ??= _c.CreatePropertySet();
 
             var defaultValueAsFloat = Float(defaultValue);
 
