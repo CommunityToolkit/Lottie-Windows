@@ -30,7 +30,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.GenericData
                     : result;
         }
 
-        public static GenericDataList Empty => s_empty ?? (s_empty = new GenericDataList(Array.Empty<GenericDataObject>()));
+        public static GenericDataList Empty => s_empty ??= new GenericDataList(Array.Empty<GenericDataObject>());
 
         public GenericDataObject this[int index] => _items[index];
 

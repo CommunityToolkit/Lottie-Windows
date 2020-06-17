@@ -26,7 +26,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.GenericData
                 ? Empty
                 : new GenericDataMap(items);
 
-        public static GenericDataMap Empty => s_empty ?? (s_empty = new GenericDataMap(new Dictionary<string, GenericDataObject>(0)));
+        public static GenericDataMap Empty => s_empty ??= new GenericDataMap(new Dictionary<string, GenericDataObject>(0));
 
         public GenericDataObject this[string key] => _items[key];
 
