@@ -889,8 +889,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var layerOpacity = context.TrimAnimatable(context.Layer.Transform.Opacity);
 
             // Convert the layer's in point and out point into absolute progress (0..1) values.
-            var inProgress = GetInPointProgress(context);
-            var outProgress = GetOutPointProgress(context);
+            var inProgress = context.InPointAsProgress;
+            var outProgress = context.OutPointAsProgress;
 
             if (inProgress > 1 || outProgress <= 0 || inProgress >= outProgress || layerOpacity.AlwaysEquals(LottieData.Opacity.Transparent))
             {
@@ -970,8 +970,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var layerOpacity = context.TrimAnimatable(context.Layer.Transform.Opacity);
 
             // Convert the layer's in point and out point into absolute progress (0..1) values.
-            var inProgress = GetInPointProgress(context);
-            var outProgress = GetOutPointProgress(context);
+            var inProgress = context.InPointAsProgress;
+            var outProgress = context.OutPointAsProgress;
 
             if (inProgress > 1 || outProgress <= 0 || inProgress >= outProgress || layerOpacity.AlwaysEquals(LottieData.Opacity.Transparent))
             {
@@ -1072,8 +1072,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var layerOpacity = context.TrimAnimatable(context.Layer.Transform.Opacity);
 
             // Convert the layer's in point and out point into absolute progress (0..1) values.
-            var inProgress = GetInPointProgress(context);
-            var outProgress = GetOutPointProgress(context);
+            var inProgress = context.InPointAsProgress;
+            var outProgress = context.OutPointAsProgress;
 
             if (inProgress > 1 || outProgress <= 0 || inProgress >= outProgress || layerOpacity.AlwaysEquals(LottieData.Opacity.Transparent))
             {
@@ -2368,7 +2368,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 geometry.CornerRadius = Vector2((float)cornerRadiusValue);
             }
 
-            geometry.Offset = InitialOffset(size:size, position:position);
+            geometry.Offset = InitialOffset(size: size, position: position);
 
             if (!size.IsAnimated)
             {
@@ -2475,7 +2475,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         // Groups multiple Shapes into a D2D geometry group.
         CompositionShape TranslatePathGroupContent(TranslationContext context, ShapeContentContext shapeContext, IEnumerable<Path> paths)
         {
-            var groupingSucceeded = PathGeometryGroup.TryGroupPaths(paths, out var grouped);
+            var groupingSucceeded = PathGeometryGroup.TryGroupPaths(context, paths, out var grouped);
 
             // If any of the paths have different directions we may not get the translation
             // right, so check that case and warn the user.
@@ -4231,8 +4231,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             TranslationContext context,
             in TrimmedAnimatable<T> value,
             Func<TCA> compositionAnimationFactory,
-            Action<TCA, float, T, CompositionEasingFunction> insertKeyFrame,
-            Action<TCA, float, CubicBezierFunction2, CompositionEasingFunction> insertExpressionKeyFrame,
+            Action<TCA, float, T, CompositionEasingFunction> keyFrameInserter,
+            Action<TCA, float, CubicBezierFunction2, CompositionEasingFunction> expressionKeyFrameInserter,
             CompositionObject targetObject,
             string targetPropertyName,
             string longDescription,
@@ -4260,6 +4260,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var animationStartTime = firstKeyFrame.Frame;
             var animationEndTime = lastKeyFrame.Frame;
 
+            var highestProgressValueSoFar = Float32.PreviousSmallerThan(0);
+
             if (firstKeyFrame.Frame > context.StartTime)
             {
                 // The first key frame is after the start of the animation. Create an extra keyframe at 0 to
@@ -4267,7 +4269,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 // Note that we could set an initial value for the property instead of using a key frame,
                 // but seeing as we're creating key frames anyway, it will be fewer operations to
                 // just use a first key frame and not set an initial value
-                insertKeyFrame(compositionAnimation, 0 /* progress */, firstKeyFrame.Value, _c.CreateStepThenHoldEasingFunction() /*easing*/);
+                InsertKeyFrame(compositionAnimation, 0 /* progress */, firstKeyFrame.Value, _c.CreateStepThenHoldEasingFunction() /*easing*/);
 
                 animationStartTime = context.StartTime;
             }
@@ -4293,7 +4295,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             foreach (var keyFrame in trimmedKeyFrames)
             {
-                var adjustedProgress = (keyFrame.Frame - animationStartTime) / animationDuration;
+                // Convert the frame number to a progress value for the current key frame.
+                var currentProgress = (float)((keyFrame.Frame - animationStartTime) / animationDuration);
 
                 if (keyFrame.SpatialControlPoint1 != default(Vector3) || keyFrame.SpatialControlPoint2 != default(Vector3))
                 {
@@ -4328,7 +4331,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                             throw new InvalidOperationException();
                     }
 
-                    if (cb.IsEquivalentToLinear || adjustedProgress == 0)
+                    if (cb.IsEquivalentToLinear || currentProgress == 0)
                     {
                         // The cubic Bezier function is equivalent to a line, or its value starts at the start of the animation, so no need
                         // for an expression to do spatial Beziers on it. Just use a regular key frame.
@@ -4336,13 +4339,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         {
                             // Ensure the previous expression doesn't continue being evaluated during the current keyframe.
                             // This is necessary because the expression is only defined from the previous progress to the current progress.
-                            insertKeyFrame(compositionAnimation, Float32.NextLargerThan(previousProgress), previousValue, _c.CreateStepThenHoldEasingFunction());
+                            InsertKeyFrame(compositionAnimation, currentProgress, previousValue, _c.CreateStepThenHoldEasingFunction());
                         }
 
                         // The easing for a keyframe at 0 is unimportant, so always use Hold.
-                        var easing = adjustedProgress == 0 ? HoldEasing.Instance : keyFrame.Easing;
+                        var easing = currentProgress == 0 ? HoldEasing.Instance : keyFrame.Easing;
 
-                        insertKeyFrame(compositionAnimation, (float)adjustedProgress, keyFrame.Value, _c.CreateCompositionEasingFunction(easing));
+                        InsertKeyFrame(compositionAnimation, currentProgress, keyFrame.Value, _c.CreateCompositionEasingFunction(easing));
                         previousKeyFrameWasExpression = false;
                     }
                     else
@@ -4353,14 +4356,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         // so that there is room to add a key frame just after this to hold
                         // the final value. This is necessary so that the expression we're about
                         // to add won't get evaluated during the following segment.
-                        if ((float)adjustedProgress > 0)
+                        if (currentProgress > 0)
                         {
-                            adjustedProgress = Float32.PreviousSmallerThan((float)adjustedProgress);
+                            currentProgress = Float32.PreviousSmallerThan(currentProgress);
                         }
 
-                        if ((float)previousProgress > 0)
+                        if (previousProgress > 0)
                         {
-                            previousProgress = Float32.NextLargerThan((float)previousProgress);
+                            previousProgress = Float32.NextLargerThan(previousProgress);
                         }
 
                         // Re-create the cubic Bezier using the real variable name (it was created previously just to
@@ -4370,14 +4373,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                             cp0 + cp1,
                             cp2 + cp3,
                             cp3,
-                            RootScalar(_progressMapFactory.GetVariableForProgressMapping((float)previousProgress, (float)adjustedProgress, keyFrame.Easing, scale, offset)));
+                            RootScalar(_progressMapFactory.GetVariableForProgressMapping(previousProgress, currentProgress, keyFrame.Easing, scale, offset)));
 
                         // Insert the cubic Bezier expression. The easing has to be a StepThenHold because otherwise
                         // the value will be interpolated between the result of the expression, and the previous
                         // key frame value. The StepThenHold will make it just evaluate the expression.
-                        insertExpressionKeyFrame(
+                        InsertExpressionKeyFrame(
                             compositionAnimation,
-                            (float)adjustedProgress,
+                            currentProgress,
                             cb,                                 // Expression.
                             _c.CreateStepThenHoldEasingFunction());    // Jump to the final value so the expression is evaluated all the way through.
 
@@ -4392,22 +4395,30 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     if (previousKeyFrameWasExpression)
                     {
                         // Ensure the previous expression doesn't continue being evaluated during the current keyframe.
-                        insertKeyFrame(compositionAnimation, Float32.NextLargerThan(previousProgress), previousValue, _c.CreateStepThenHoldEasingFunction());
+                        var nextLargerThanPrevious = Float32.NextLargerThan(previousProgress);
+                        InsertKeyFrame(compositionAnimation, nextLargerThanPrevious, previousValue, _c.CreateStepThenHoldEasingFunction());
+
+                        if (currentProgress <= nextLargerThanPrevious)
+                        {
+                            // Prevent the next key frame from being inserted at the same progress value
+                            // as the one we just inserted.
+                            currentProgress = Float32.NextLargerThan(nextLargerThanPrevious);
+                        }
                     }
 
-                    insertKeyFrame(compositionAnimation, (float)adjustedProgress, keyFrame.Value, _c.CreateCompositionEasingFunction(keyFrame.Easing));
+                    InsertKeyFrame(compositionAnimation, currentProgress, keyFrame.Value, _c.CreateCompositionEasingFunction(keyFrame.Easing));
                     previousKeyFrameWasExpression = false;
                 }
 
                 previousValue = keyFrame.Value;
-                previousProgress = (float)adjustedProgress;
+                previousProgress = currentProgress;
             }
 
             if (previousKeyFrameWasExpression && previousProgress < 1)
             {
                 // Add a keyframe to hold the final value. Otherwise the expression on the last keyframe
                 // will get evaluated outside the bounds of its keyframe.
-                insertKeyFrame(compositionAnimation, Float32.NextLargerThan(previousProgress), (T)(object)previousValue, _c.CreateStepThenHoldEasingFunction());
+                InsertKeyFrame(compositionAnimation, Float32.NextLargerThan(previousProgress), (T)(object)previousValue, _c.CreateStepThenHoldEasingFunction());
             }
 
             // Add a reference to the root Visual if needed (i.e. if an expression keyframe was added).
@@ -4420,20 +4431,58 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             // Start the animation scaled and offset.
             StartKeyframeAnimation(targetObject, targetPropertyName, compositionAnimation, scale, offset);
-        }
 
-        float GetInPointProgress(TranslationContext context)
-        {
-            var result = (context.Layer.InPoint - context.StartTime) / context.DurationInFrames;
+            // If the given progress value is equal to a progress value that was already
+            // inserted into the animation, adjust it up to ensure we never try to
+            // insert a key frame on top of an existing key frame. This relies on the
+            // key frames being inserted in order.
+            void AdjustProgress(ref float progress)
+            {
+                if (progress == highestProgressValueSoFar)
+                {
+                    progress = Float32.NextLargerThan(highestProgressValueSoFar);
+                }
 
-            return (float)result;
-        }
+                highestProgressValueSoFar = progress;
+            }
 
-        float GetOutPointProgress(TranslationContext context)
-        {
-            var result = (context.Layer.OutPoint - context.StartTime) / context.DurationInFrames;
+            // Local method to ensure we never insert more than 1 key frame with
+            // the same progress value. This relies on the key frames being inserted
+            // in order, so if we get a key frame with the same progress value as
+            // the previous one we'll just adjust the progress value up slightly.
+            void InsertKeyFrame(TCA animation, float progress, T value, CompositionEasingFunction easing)
+            {
+                AdjustProgress(ref progress);
 
-            return (float)result;
+                // If progress is > 1 then we have no more room to add key frames.
+                // This can happen as a result of extra key frames being added for
+                // various reasons. The dropped key frames shouldn't matter as they
+                // would only affect a very small amount of time at the end of the
+                // animation.
+                if (progress <= 1)
+                {
+                    keyFrameInserter(animation, progress, value, easing);
+                }
+            }
+
+            // Local method to ensure we never insert more than 1 key frame with
+            // the same progress value. This relies on the key frames being inserted
+            // in order, so if we get a key frame with the same progress value as
+            // the previous one we'll just adjust the progress value up slightly.
+            void InsertExpressionKeyFrame(TCA animation, float progress, CubicBezierFunction2 expression, CompositionEasingFunction easing)
+            {
+                AdjustProgress(ref progress);
+
+                // If progress is > 1 then we have no more room to add key frames.
+                // This can happen as a result of extra key frames being added for
+                // various reasons. The dropped key frames shouldn't matter as they
+                // would only affect a very small amount of time at the end of the
+                // animation.
+                if (progress <= 1)
+                {
+                    expressionKeyFrameInserter(animation, progress, expression, easing);
+                }
+            }
         }
 
         static ShapeFill.PathFillType GetPathFillType(ShapeFill fill) => fill is null ? ShapeFill.PathFillType.EvenOdd : fill.FillType;

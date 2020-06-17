@@ -58,7 +58,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
                 throw new ArgumentException($"Progress must be >=0 and <=1. Value: {progress}");
             }
 
-            _keyFrames.Add(progress, new ValueKeyFrame { Progress = progress, Value = value, Easing = easing });
+            // It is legal to insert a key frame at a progress value that already has
+            // a key frame. Last one wins.
+            _keyFrames[progress] = new ValueKeyFrame { Progress = progress, Value = value, Easing = easing };
         }
 
         public IEnumerable<KeyFrame> KeyFrames => _keyFrames.Values;
