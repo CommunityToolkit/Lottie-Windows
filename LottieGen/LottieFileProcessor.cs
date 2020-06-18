@@ -13,7 +13,6 @@ using Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp;
 using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen;
 using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools;
 
 /// <summary>
 /// Processes a single Lottie file to produce various generated outputs.
@@ -160,18 +159,8 @@ sealed class LottieFileProcessor
                     _profiler.OnCodeGenFinished();
                     break;
 
-                case Lang.LottieXml:
-                    codeGenSucceeded &= TryGenerateLottieXml($"{outputFileBase}-Lottie.xml");
-                    _profiler.OnSerializationFinished();
-                    break;
-
                 case Lang.LottieYaml:
                     codeGenSucceeded &= TryGenerateLottieYaml($"{outputFileBase}-Lottie.yaml");
-                    _profiler.OnSerializationFinished();
-                    break;
-
-                case Lang.WinCompXml:
-                    codeGenSucceeded &= TryGenerateWincompXml($"{outputFileBase}-wincomp.xml");
                     _profiler.OnSerializationFinished();
                     break;
 
@@ -355,25 +344,6 @@ sealed class LottieFileProcessor
         return true;
     }
 
-    bool TryGenerateLottieXml(
-        string outputFilePath)
-    {
-        var result = TryWriteTextFile(
-            outputFilePath,
-            LottieCompositionXmlSerializer.ToXml(_lottieComposition).ToString());
-
-        if (result)
-        {
-            using (_reporter.InfoStream.Lock())
-            {
-                _reporter.WriteInfo("Lottie XML written to:");
-                _reporter.WriteInfo(InfoType.FilePath, $" {outputFilePath}");
-            }
-        }
-
-        return result;
-    }
-
     bool TryGenerateLottieYaml(string outputFilePath)
     {
         // Remove the path if in TestMode so that the same file
@@ -390,31 +360,6 @@ sealed class LottieFileProcessor
             using (_reporter.InfoStream.Lock())
             {
                 _reporter.WriteInfo("Lottie YAML written to:");
-                _reporter.WriteInfo(InfoType.FilePath, $" {outputFilePath}");
-            }
-        }
-
-        return result;
-    }
-
-    bool TryGenerateWincompXml(
-        string outputFilePath)
-    {
-        if (!TryEnsureTranslated())
-        {
-            return false;
-        }
-
-        // NOTE: this only writes the latest version of a multi-version translation.
-        var result = TryWriteTextFile(
-            outputFilePath,
-            CompositionObjectXmlSerializer.ToXml(_translationResults[0].RootVisual).ToString());
-
-        if (result)
-        {
-            using (_reporter.InfoStream.Lock())
-            {
-                _reporter.WriteInfo("WinComp XML written to:");
                 _reporter.WriteInfo(InfoType.FilePath, $" {outputFilePath}");
             }
         }
