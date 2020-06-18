@@ -83,6 +83,5 @@
     <Compile Include="$(MSBuildThisFileDirectory)ValidationIssues.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Vector2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Vector3.cs" />
->>>>>>> Fix alphabetization.
   </ItemGroup>
 </Project>
