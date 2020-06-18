@@ -93,7 +93,4 @@
     <Compile Include="$(MSBuildThisFileDirectory)Wui\Color.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Wui\Colors.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="$(MSBuildThisFileDirectory)Serialization\" />
-  </ItemGroup>
 </Project>
