@@ -186,7 +186,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                                 // Treat any other property as an extension of the BodyMovin format.
                                 default:
                                     {
-                                        // Report the extension as an issue, unless it is well-known
+                                        // Report the extension as an issue, unless it is a well-known
                                         // extension to the BodyMovin format.
                                         switch (currentProperty)
                                         {
