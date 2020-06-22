@@ -161,23 +161,27 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         static NodeName NameCompositionColorGradientStop(CompositionColorGradientStop obj)
         {
+            var offsetId = FloatAsId1(obj.Offset);
+
             if (obj.Animators.Count > 0)
             {
+                var baseName = $"AnimatedGradientStop_{offsetId}";
+
                 // Gradient stop is animated. Give it a name based on the colors in the animation.
                 var colorAnimation = obj.Animators.Where(a => a.AnimatedProperty == "Color").First().Animation;
                 if (colorAnimation is ColorKeyFrameAnimation colorKeyFrameAnimation)
                 {
-                    return NodeName.FromNameAndDescription("AnimatedGradientStop", DescribeAnimationRange(colorKeyFrameAnimation));
+                    return NodeName.FromNameAndDescription(baseName, DescribeAnimationRange(colorKeyFrameAnimation));
                 }
                 else
                 {
-                    return NodeName.FromNonTypeName("AnimatedGradientStop");
+                    return NodeName.FromNonTypeName(baseName);
                 }
             }
             else
             {
                 // Gradient stop is not animated. Give it a name based on the color.
-                return NodeName.FromNameAndDescription("GradientStop", obj.Color.Name);
+                return NodeName.FromNameAndDescription($"GradientStop_{offsetId}", obj.Color.Name);
             }
         }
 
@@ -304,6 +308,23 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         // A float for use in an id.
         static string FloatAsId(float value)
             => value.ToString("0.###", CultureInfo.InvariantCulture).Replace('.', 'p').Replace('-', 'm');
+
+        // A float for use in an id where the float is always in the range of [0..1].
+        static string FloatAsId1(float value)
+        {
+            if (value < 0 || value > 1)
+            {
+                throw new ArgumentException();
+            }
+
+            // Return "0" or "1" or "pNM" where N and M are the first and second
+            // digits after the decimal point.
+            return value == 0
+                    ? "0"
+                    : (value == 1)
+                        ? "1"
+                        : value.ToString("0.##", CultureInfo.InvariantCulture).Substring(1).Replace('.', 'p');
+        }
 
         static string NameOf(IDescribable obj) => obj.Name;
 
