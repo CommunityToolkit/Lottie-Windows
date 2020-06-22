@@ -1,3 +1,4 @@
+
 trigger:
 - master
 - rel/*
@@ -15,25 +16,25 @@ variables:
 steps:
 # Set up a VS build environment.
 - task: BatchScript@1
+  displayName: Setup Environment Variables
   inputs:
     filename: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\Common7\\Tools\\VsDevCmd.bat"
     arguments: -no_logo
     modifyEnvironment: true
-  displayName: Setup Environment Variables
 
 # Install NuGet tools.  
-- task: NuGetToolInstaller@0
-  displayName: Use NuGet 5.0.0
+- task: NuGetToolInstaller@1
+  displayName: Use NuGet 5.5.1
   inputs:
-    versionSpec: 5.0.0
+    versionSpec: 5.5.1
 
 # Install Nerbank.GitVersioning.
 - task: DotNetCoreCLI@2  
+  displayName: Install NBGV tool
   inputs:
     command: custom
     custom: tool
     arguments: install --tool-path . nbgv
-  displayName: Install NBGV tool
 
 # .NET Core SDK Installer.
 # 2.2.x is needed to build the UWP code.
