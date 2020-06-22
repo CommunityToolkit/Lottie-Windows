@@ -186,7 +186,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                                 // Treat any other property as an extension of the BodyMovin format.
                                 default:
                                     {
-                                        _issues.UnexpectedField(currentProperty);
+                                        // Report the extension as an issue, unless it is well-known
+                                        // extension to the BodyMovin format.
+                                        switch (currentProperty)
+                                        {
+                                            // "meta" is an extension created by the LottieFiles.com Lottie
+                                            // plugin.
+                                            case "meta":
+                                                break;
+
+                                            default:
+                                                _issues.UnexpectedField(currentProperty);
+                                                break;
+                                        }
+
                                         if (extraData is null)
                                         {
                                             extraData = new Dictionary<string, GenericDataObject>();
