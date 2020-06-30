@@ -1255,7 +1255,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 result.Offset = obj.Offset.Value;
             }
 
-            result.Size = obj.Size;
+            if (obj.Size.HasValue)
+            {
+                result.Size = obj.Size.Value;
+            }
+
             StartAnimations(obj, result);
             return result;
         }
@@ -1273,7 +1277,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 result.Offset = obj.Offset.Value;
             }
 
-            result.Size = obj.Size;
+            if (obj.Size.HasValue)
+            {
+                result.Size = obj.Size.Value;
+            }
+
             result.CornerRadius = obj.CornerRadius;
             StartAnimations(obj, result);
             return result;

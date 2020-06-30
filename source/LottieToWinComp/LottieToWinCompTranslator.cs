@@ -2269,41 +2269,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         {
             Debug.Assert(shapeContent.Roundness.AlwaysEquals(0) && shapeContext.RoundedCorner is null, "Precondition");
 
-            CompositionGeometry geometry;
-
-            // Use a non-rounded rectangle geometry.
-            if (_targetUapVersion <= 7)
-            {
-                // V7 did not reliably draw non-rounded rectangles.
-                // Work around the problem by using a rounded rectangle with a tiny corner radius.
-                var roundedRectangleGeometry = _c.CreateRoundedRectangleGeometry();
-                geometry = roundedRectangleGeometry;
-
-                // NOTE: magic tiny corner radius number - do not change!
-                roundedRectangleGeometry.CornerRadius = new Sn.Vector2(0.000001F);
-
-                roundedRectangleGeometry.Offset = InitialOffset(size: size, position: position);
-
-                if (!size.IsAnimated)
-                {
-                    roundedRectangleGeometry.Size = Vector2(size.InitialValue);
-                }
-            }
-            else
-            {
-                // V8 and beyond doesn't need the rounded rectangle workaround.
-                var rectangleGeometry = _c.CreateRectangleGeometry();
-                geometry = rectangleGeometry;
-
-                // Convert size and position into offset. This is necessary because a geometry's offset is for
-                // its top left corner, whereas a Lottie position is for its centerpoint.
-                rectangleGeometry.Offset = InitialOffset(size: size, position: position);
-
-                if (!size.IsAnimated)
-                {
-                    rectangleGeometry.Size = Vector2(size.InitialValue);
-                }
-            }
+            var geometry = _c.CreateRectangleGeometry(
+                                size: size.IsAnimated ? (Sn.Vector2?)null : Vector2(size.InitialValue),
+                                offset: InitialOffset(size: size, position: position));
 
             compositionShape.Geometry = geometry;
 
@@ -5005,24 +4973,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
                     var rectangle = _owner._c.CreateSpriteShape();
 
-                    if (_owner._targetUapVersion <= 7)
-                    {
-                        // V7 did not reliably draw non-rounded rectangles.
-                        // Work around the problem by using a rounded rectangle with a tiny corner radius.
-                        var roundedRectangleGeometry = _owner._c.CreateRoundedRectangleGeometry();
-
-                        // NOTE: magic tiny corner radius number - do not change!
-                        roundedRectangleGeometry.CornerRadius = new Sn.Vector2(0.000001F);
-                        roundedRectangleGeometry.Size = Vector2(_context.Layer.Width, _context.Layer.Height);
-                        rectangle.Geometry = roundedRectangleGeometry;
-                    }
-                    else
-                    {
-                        // V8 and beyond doesn't need the rounded rectangle workaround.
-                        var rectangleGeometry = _owner._c.CreateRectangleGeometry();
-                        rectangleGeometry.Size = Vector2(_context.Layer.Width, _context.Layer.Height);
-                        rectangle.Geometry = rectangleGeometry;
-                    }
+                    rectangle.Geometry = _owner._c.CreateRectangleGeometry(
+                                            size: new Sn.Vector2(_context.Layer.Width, _context.Layer.Height),
+                                            offset: null);
 
                     containerContentNode.Shapes.Add(rectangle);
 
