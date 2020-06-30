@@ -161,7 +161,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         static NodeName NameCompositionColorGradientStop(CompositionColorGradientStop obj)
         {
-            var offsetId = FloatAsId1(obj.Offset);
+            var offsetId = FloatAsId(obj.Offset);
 
             if (obj.Animators.Count > 0)
             {
@@ -308,23 +308,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         // A float for use in an id.
         static string FloatAsId(float value)
             => value.ToString("0.###", CultureInfo.InvariantCulture).Replace('.', 'p').Replace('-', 'm');
-
-        // A float for use in an id where the float is always in the range of [0..1].
-        static string FloatAsId1(float value)
-        {
-            if (value < 0 || value > 1)
-            {
-                throw new ArgumentException();
-            }
-
-            // Return "0" or "1" or "pNM" where N and M are the first and second
-            // digits after the decimal point.
-            return value == 0
-                    ? "0"
-                    : (value == 1)
-                        ? "1"
-                        : value.ToString("0.##", CultureInfo.InvariantCulture).Substring(1).Replace('.', 'p');
-        }
 
         static string NameOf(IDescribable obj) => obj.Name;
 

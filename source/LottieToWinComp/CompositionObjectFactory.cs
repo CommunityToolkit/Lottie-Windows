@@ -112,16 +112,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 roundedRectangleGeometry.CornerRadius = new Sn.Vector2(0.000001F);
                 roundedRectangleGeometry.Size = size;
                 roundedRectangleGeometry.Offset = offset;
+
                 result = roundedRectangleGeometry;
             }
             else
             {
                 // Later versions do not need the rounded rectangle workaround.
+                ConsumeVersionFeature(c_rectangleGeometryIsUnreliableUntil);
+
                 var rectangleGeometry = _compositor.CreateRectangleGeometry();
                 rectangleGeometry.Size = size;
                 rectangleGeometry.Offset = offset;
+
                 result = rectangleGeometry;
-                ConsumeVersionFeature(c_rectangleGeometryIsUnreliableUntil);
             }
 
             return result;
