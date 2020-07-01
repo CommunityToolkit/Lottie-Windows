@@ -35,46 +35,45 @@
 
             <!--  Playback Buttons  -->
             <Grid Width="400"
-                  VerticalAlignment="Center">
+                      VerticalAlignment="Center">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition />
                     <ColumnDefinition />
                     <ColumnDefinition />
-                    <ColumnDefinition />
                 </Grid.ColumnDefinitions>
-                <Grid.Resources>
-                    <Style x:Key="ButtonBaseStyle" TargetType="ButtonBase">
-                        <Setter Property="HorizontalAlignment" Value="Stretch"/>
-                        <Setter Property="Margin" Value="10"/>
-                    </Style>
-                    <Style TargetType="Button" BasedOn="{StaticResource ButtonBaseStyle}"/>
-                    <Style TargetType="ToggleButton" BasedOn="{StaticResource ButtonBaseStyle}"/>
-                </Grid.Resources>
-                <!--  Play  -->
-                <Button x:Name="PlayButton"
-                        Grid.Column="0"
-                        Click="PlayButton_Click">
-                    <SymbolIcon Symbol="Play" />
+
+                <!-- Play/Pause -->
+                <Button x:Name="PlayPauseButton"
+                                Grid.Column="0"
+                                Margin="10"
+                                HorizontalAlignment="Stretch"
+                                Click="PlayPauseButton_Click">
+                    <StackPanel>
+                        <SymbolIcon x:Name="PlayIcon" Symbol="Play"/>
+                        <SymbolIcon x:Name="PauseIcon" Symbol="Pause" Visibility="Collapsed"/>
+                    </StackPanel>
                 </Button>
-                <!--  Pause  -->
-                <ToggleButton x:Name="PauseButton"
-                              Grid.Column="1"
-                              Checked="PauseButton_Checked"
-                              IsThreeState="False"
-                              Unchecked="PauseButton_Unchecked">
-                    <SymbolIcon Symbol="Pause" />
-                </ToggleButton>
-                <!--  Resume  -->
+
+                <!--  Stop/Reset -->
                 <Button x:Name="StopButton"
-                        Grid.Column="2"
-                        Click="StopButton_Click">
-                    <SymbolIcon Symbol="Stop" />
+                            Grid.Column="1"
+                            Margin="10"
+                            HorizontalAlignment="Stretch"
+                            Click="StopButton_Click"
+                            ToolTipService.ToolTip="Stop"
+                            AutomationProperties.Name="Stop">
+                    <SymbolIcon Symbol="Previous" />
                 </Button>
+
                 <!--  Reverse  -->
                 <Button x:Name="ReverseButton"
-                        Grid.Column="3"
-                        Click="ReverseButton_Click">
-                    <SymbolIcon Symbol="Previous" />
+                            Grid.Column="2"
+                            Margin="10"
+                            HorizontalAlignment="Stretch"
+                            Click="ReverseButton_Click"
+                            ToolTipService.ToolTip="Reverse"
+                            AutomationProperties.Name="Reverse">
+                    <FontIcon Glyph="&#xEB9E;" />
                 </Button>
             </Grid>
 
