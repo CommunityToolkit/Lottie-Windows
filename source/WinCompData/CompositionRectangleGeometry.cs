@@ -18,7 +18,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 
         public Vector2? Offset { get; set; }
 
-        public Vector2 Size { get; set; }
+        public Vector2? Size { get; set; }
 
         /// <inheritdoc/>
         public override CompositionObjectType Type => CompositionObjectType.CompositionRectangleGeometry;
