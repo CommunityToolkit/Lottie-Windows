@@ -94,12 +94,39 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal CompositionPropertySet CreatePropertySet() => _compositor.CreatePropertySet();
 
-        internal CompositionRectangleGeometry CreateRectangleGeometry()
+        internal CompositionGeometry CreateRectangleGeometry(Sn.Vector2? size, Sn.Vector2? offset)
         {
-            // Rectangle geometries exist in version 7, but they are unreliable (they
-            // sometimes only half draw), so create them as being version 8.
-            ConsumeVersionFeature(8);
-            return _compositor.CreateRectangleGeometry();
+            const int c_rectangleGeometryIsUnreliableUntil = 12;
+
+            CompositionGeometry result;
+
+            if (_targetUapVersion < c_rectangleGeometryIsUnreliableUntil)
+            {
+                // <= V7 did not reliably draw non-rounded rectangles.
+                // <= V11 draws non-rounded rectangles with aliased edges.
+                // Work around the problem by using a rounded rectangle with a tiny corner radius.
+                var roundedRectangleGeometry = _compositor.CreateRoundedRectangleGeometry();
+
+                // NOTE: magic tiny corner radius number - do not change!
+                roundedRectangleGeometry.CornerRadius = new Sn.Vector2(0.000001F);
+                roundedRectangleGeometry.Size = size;
+                roundedRectangleGeometry.Offset = offset;
+
+                result = roundedRectangleGeometry;
+            }
+            else
+            {
+                // Later versions do not need the rounded rectangle workaround.
+                ConsumeVersionFeature(c_rectangleGeometryIsUnreliableUntil);
+
+                var rectangleGeometry = _compositor.CreateRectangleGeometry();
+                rectangleGeometry.Size = size;
+                rectangleGeometry.Offset = offset;
+
+                result = rectangleGeometry;
+            }
+
+            return result;
         }
 
         internal CompositionRoundedRectangleGeometry CreateRoundedRectangleGeometry() => _compositor.CreateRoundedRectangleGeometry();
