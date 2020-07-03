@@ -407,10 +407,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                     // an issue if the author is using property bindings incorrectly.
                     translationResult = LottieToWinCompTranslator.TryTranslateLottieComposition(
                         lottieComposition: lottieComposition,
+                        options: new TranslationOptions { TranslatePropertyBindings = true },
                         targetUapVersion: GetCurrentUapVersion(),
-                        strictTranslation: false,
-                        addCodegenDescriptions: false,
-                        translatePropertyBindings: true);
+                        strictTranslation: false);
 
                     wincompDataRootVisual = translationResult.RootVisual;
                     requiredUapVersion = translationResult.MinimumRequiredUapVersion;

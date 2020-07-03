@@ -765,13 +765,19 @@ sealed class LottieFileProcessor
             return _isTranslatedSuccessfully.Value;
         }
 
+        var options = new TranslationOptions
+        {
+            AddCodegenDescriptions = true,
+            TranslatePropertyBindings = true,
+            GenerateColorBindings = _options.GenerateColorBindings,
+        };
+
         var translationResult = LottieToMultiVersionWinCompTranslator.TryTranslateLottieComposition(
             lottieComposition: _lottieComposition,
+            options: options,
             targetUapVersion: _options.TargetUapVersion ?? uint.MaxValue,
             minimumUapVersion: _minimumUapVersion,
-            strictTranslation: false,
-            addCodegenDescriptions: true,
-            translatePropertyBindings: true);
+            strictTranslation: false);
 
         _translationResults = translationResult.TranslationResults;
         _translationIssues = translationResult.Issues;

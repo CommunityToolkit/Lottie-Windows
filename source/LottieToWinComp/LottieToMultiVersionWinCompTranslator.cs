@@ -23,22 +23,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// producing one or more translations.
         /// </summary>
         /// <param name="lottieComposition">The <see cref="LottieComposition"/> to translate.</param>
+        /// <param name="options">Controls optional features of the translator.</param>
         /// <param name="targetUapVersion">The version of UAP that the translator will ensure compatibility with.
         /// Must be >= 7.</param>
         /// <param name="minimumUapVersion">The lowest version of UAP on which the result must run.
         /// Must be >= 7 and &lt;= targetUapVersion.</param>
         /// <param name="strictTranslation">If true, throw an exception if translation issues are found.</param>
-        /// <param name="addCodegenDescriptions">Add descriptions to objects for comments on generated code.</param>
-        /// <param name="translatePropertyBindings">Translate the special property binding language in Lottie object
-        /// names and create bindings to <see cref="WinCompData.CompositionPropertySet"/> values.</param>
         /// <returns>The results of the translation and the issues.</returns>
         public static MultiVersionTranslationResult TryTranslateLottieComposition(
             LottieComposition lottieComposition,
+            TranslationOptions options,
             uint targetUapVersion,
             uint minimumUapVersion,
-            bool strictTranslation,
-            bool addCodegenDescriptions,
-            bool translatePropertyBindings)
+            bool strictTranslation)
         {
             if (targetUapVersion < LowestValidUapVersion)
             {
@@ -52,11 +49,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             var translations = Translate(
                 lottieComposition: lottieComposition,
+                options: options,
                 targetUapVersion: targetUapVersion,
                 minimumUapVersion: minimumUapVersion,
-                strictTranslation: strictTranslation,
-                addCodegenDescriptions: addCodegenDescriptions,
-                translatePropertyBindings: translatePropertyBindings).ToArray();
+                strictTranslation: strictTranslation).ToArray();
 
             // Combine the issues that are the same in multiple versions into issues with a version range.
             var dict = new Dictionary<TranslationIssue, UapVersionRange>();
@@ -98,20 +94,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         static IEnumerable<(TranslationResult translationResult, UapVersionRange versionRange)> Translate(
             LottieComposition lottieComposition,
+            TranslationOptions options,
             uint targetUapVersion,
             uint minimumUapVersion,
-            bool strictTranslation,
-            bool addCodegenDescriptions,
-            bool translatePropertyBindings)
+            bool strictTranslation)
         {
             // First, generate code for the target version.
             var translationResult =
                 LottieToWinCompTranslator.TryTranslateLottieComposition(
                     lottieComposition,
+                    options: options,
                     targetUapVersion: targetUapVersion,
-                    strictTranslation,
-                    addCodegenDescriptions,
-                    translatePropertyBindings);
+                    strictTranslation);
 
             yield return (
                 translationResult,
@@ -132,10 +126,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 translationResult =
                     LottieToWinCompTranslator.TryTranslateLottieComposition(
                         lottieComposition,
+                        options:options,
                         targetUapVersion: nextLowerTarget,
-                        strictTranslation: strictTranslation,
-                        addCodegenDescriptions: addCodegenDescriptions,
-                        translatePropertyBindings: translatePropertyBindings);
+                        strictTranslation: strictTranslation);
 
                 yield return (
                     translationResult,

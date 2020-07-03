@@ -63,6 +63,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         readonly Dictionary<ScaleAndOffset, ExpressionAnimation> _progressBindingAnimations = new Dictionary<ScaleAndOffset, ExpressionAnimation>();
         readonly Optimizer _lottieDataOptimizer = new Optimizer();
 
+        // The palette of colors in fills and strokes. Null if color bindings are not enabled.
+        readonly Dictionary<Color, string> _colorPalette;
+
         // Holds CubicBezierEasingFunctions for reuse when they have the same parameters.
         readonly Dictionary<CubicBezierEasing, CubicBezierEasingFunction> _cubicBezierEasingFunctions = new Dictionary<CubicBezierEasing, CubicBezierEasingFunction>();
 
@@ -104,17 +107,21 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         LottieToWinCompTranslator(
             LottieComposition lottieComposition,
             Compositor compositor,
+            TranslationOptions options,
             bool strictTranslation,
-            bool addDescriptions,
-            bool translatePropertyBindings,
             uint targetUapVersion)
         {
             _lc = lottieComposition;
             _targetUapVersion = targetUapVersion;
             _c = new CompositionObjectFactory(compositor, targetUapVersion);
             _issues = new TranslationIssues(strictTranslation);
-            _addDescriptions = addDescriptions;
-            _translatePropertyBindings = translatePropertyBindings;
+            _addDescriptions = options.AddCodegenDescriptions;
+            _translatePropertyBindings = options.TranslatePropertyBindings;
+
+            if (options.GenerateColorBindings)
+            {
+                _colorPalette = new Dictionary<Color, string>();
+            }
 
             // Create the root.
             _rootVisual = _c.CreateContainerVisual();
@@ -132,26 +139,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// Attempts to translates the given <see cref="LottieComposition"/>.
         /// </summary>
         /// <param name="lottieComposition">The <see cref="LottieComposition"/> to translate.</param>
+        /// <param name="options">Controls optional features of the translator.</param>
         /// <param name="targetUapVersion">The version of UAP that the translator will ensure compatibility with. Must be >= 7.</param>
         /// <param name="strictTranslation">If true, throw an exception if translation issues are found.</param>
-        /// <param name="addCodegenDescriptions">Add descriptions to objects for comments on generated code.</param>
-        /// <param name="translatePropertyBindings">Translate the special property binding language in Lottie object
-        /// names and create bindings to <see cref="CompositionPropertySet"/> values.</param>
         /// <returns>The result of the translation.</returns>
         public static TranslationResult TryTranslateLottieComposition(
             LottieComposition lottieComposition,
+            TranslationOptions options,
             uint targetUapVersion,
-            bool strictTranslation,
-            bool addCodegenDescriptions,
-            bool translatePropertyBindings)
+            bool strictTranslation)
         {
             // Set up the translator.
             using (var translator = new LottieToWinCompTranslator(
                 lottieComposition,
                 new Compositor(),
+                options: options,
                 strictTranslation: strictTranslation,
-                addDescriptions: addCodegenDescriptions,
-                translatePropertyBindings: translatePropertyBindings,
                 targetUapVersion))
             {
                 // Translate the Lottie content to a Composition graph.
@@ -2979,12 +2982,33 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             CompositeOpacity opacity,
             string bindingSpec)
         {
-            // Read property bindings embedded into the name of the fill.
+            // Look for a color binding embedded into the name of the fill or stroke.
             var bindingName = GetThemeBindingNameForLottieProperty(bindingSpec, "Color");
 
-            return bindingName is null
-                ? CreateAnimatedColorBrush(context, context.TrimAnimatable(color), opacity)
-                : TranslateBoundSolidColor(context, opacity, bindingName, DefaultValueOf(color));
+            if (bindingName != null)
+            {
+                // A color binding string was found. Bind the color to a property with the
+                // name described by the binding string.
+                return TranslateBoundSolidColor(context, opacity, bindingName, DefaultValueOf(color));
+            }
+
+            if (_colorPalette != null && !color.IsAnimated)
+            {
+                // Color palette binding is enabled. Bind the color to a property with
+                // the name of the color in the palette.
+                var paletteColor = color.InitialValue;
+
+                if (!_colorPalette.TryGetValue(paletteColor, out bindingName))
+                {
+                    bindingName = $"Color{Color(paletteColor).Name}";
+                    _colorPalette.Add(paletteColor, bindingName);
+                }
+
+                return TranslateBoundSolidColor(context, opacity, bindingName, paletteColor);
+            }
+
+            // Do not generate a binding for this color.
+            return CreateAnimatedColorBrush(context, context.TrimAnimatable(color), opacity);
         }
 
         // Translates a SolidColorFill that gets its color value from a property set value with the given name.

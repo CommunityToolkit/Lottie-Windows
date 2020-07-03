@@ -32,9 +32,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui
 
         /// <summary>
         /// Gets a string that describes the color for human consumption. This either returns
-        /// the well known name for the color, or 8 hex digits (with no prefix). The name
-        /// is guaranteed to be unique for a particular ARGB value, and contains only characters
-        /// suitable for use in C# identifiers.
+        /// the well known name for the color, or a name that describes the color as the color
+        /// it is nearest to along with the hex value. The name is guaranteed to be unique for
+        /// any particular ARGB value, and contains only characters suitable for use in C#
+        /// identifiers.
         /// </summary>
         public string Name
         {
