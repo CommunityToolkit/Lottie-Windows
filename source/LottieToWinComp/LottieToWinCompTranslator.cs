@@ -2928,7 +2928,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 var trimmed = context.TrimAnimatable(animatable);
                 var propertyName = name;
                 result.Properties.InsertScalar(propertyName, Opacity(trimmed.InitialValue));
-                ApplyOpacityKeyFrameAnimation(context, trimmed, result.Properties, propertyName, propertyName, null);
+
+                // The opacity is animated, but it might be non-animated after trimming.
+                if (trimmed.IsAnimated)
+                {
+                    ApplyOpacityKeyFrameAnimation(context, trimmed, result.Properties, propertyName, propertyName, null);
+                }
             }
 
             result.Properties.InsertVector4("Color", Vector4(Color(color.InitialValue)));
@@ -3042,9 +3047,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 // Add a property for each opacity.
                 foreach (var (animatable, name) in animatableOpacities)
                 {
+                    var trimmed = context.TrimAnimatable(animatable);
                     var propertyName = name;
-                    result.Properties.InsertScalar(propertyName, Opacity(animatable.InitialValue));
-                    ApplyOpacityKeyFrameAnimation(context, context.TrimAnimatable(animatable), result.Properties, propertyName, propertyName, null);
+                    result.Properties.InsertScalar(propertyName, Opacity(trimmed.InitialValue));
+
+                    // The opacity is animated, but it might be non-animated after trimming.
+                    if (trimmed.IsAnimated)
+                    {
+                        ApplyOpacityKeyFrameAnimation(context, context.TrimAnimatable(animatable), result.Properties, propertyName, propertyName, null);
+                    }
                 }
 
                 var opacityScalarExpressions = animatableOpacities.Select(a => Expr.Scalar($"my.{a.name}")).ToArray();
@@ -3053,16 +3064,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 anim.SetReferenceParameter(ThemePropertiesName, _themePropertySet);
 
                 StartExpressionAnimation(result, nameof(result.Color), anim);
-                return result;
             }
             else
             {
-                // Opacity isn't animated. Multiply the alpha channel of the color by the non-animated opacity value.
+                // Opacity isn't animated.
+                // Create an expression that multiples the alpha channel of the color by the opacity value.
                 var anim = _c.CreateExpressionAnimation(ThemedColorMultipliedByOpacity(bindingName, opacity.NonAnimatedValue));
                 anim.SetReferenceParameter(ThemePropertiesName, _themePropertySet);
                 StartExpressionAnimation(result, nameof(result.Color), anim);
-                return result;
             }
+
+            return result;
         }
 
         CompositionLinearGradientBrush TranslateLinearGradient(
@@ -3376,9 +3388,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 var propertyName = name;
                 brush.Properties.InsertScalar(propertyName, Opacity(trimmedOpacity.InitialValue * 255));
 
-                // Pre-multiply the opacities by 255 so we can use the simpler
-                // expression for multiplying color by opacity.
-                ApplyScaledOpacityKeyFrameAnimation(context, trimmedOpacity, 255, brush.Properties, propertyName, propertyName, null);
+                // The opacity is animated, but it might be non-animated after trimming.
+                if (trimmedOpacity.IsAnimated)
+                {
+                    // Pre-multiply the opacities by 255 so we can use the simpler
+                    // expression for multiplying color by opacity.
+                    ApplyScaledOpacityKeyFrameAnimation(context, trimmedOpacity, 255, brush.Properties, propertyName, propertyName, null);
+                }
             }
 
             var opacityExpressions = animatableOpacities.Select(ao => Expr.Scalar($"my.{ao.name}")).ToArray();

@@ -12,17 +12,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// <summary>
         /// Add descriptions that can be used by code generators to make code more readable.
         /// </summary>
-        public bool AddCodegenDescriptions { get; set; }
+        public bool AddCodegenDescriptions;
 
         /// <summary>
         /// Make the colors used by fills and strokes bindable so that they can be altered at runtime.
         /// </summary>
-        public bool GenerateColorBindings { get; set; }
+        public bool GenerateColorBindings;
 
         /// <summary>
         /// Translate the special property binding language in Lottie object
         /// names and create bindings to <see cref="WinCompData.CompositionPropertySet"/> values.
         /// </summary>
-        public bool TranslatePropertyBindings { get; set; }
+        public bool TranslatePropertyBindings;
     }
 }
