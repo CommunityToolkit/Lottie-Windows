@@ -86,7 +86,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         {
             // Not clear whether we need to read these properties.
             // "ml2" is some sort of extra miter limit value that does not seem to be supported by
-            // BodyMovin. It's a mystery as to what it means or how hit is getting into the file,
+            // BodyMovin. It's a mystery as to what it means or how it is getting into the file,
             // but quite a few files have it.
             obj.IgnorePropertyThatIsNotYetSupported("fillEnabled", "hd", "ml2");
 
