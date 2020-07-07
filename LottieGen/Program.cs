@@ -249,6 +249,10 @@ OVERVIEW:
          -DisableCodeGenOptimizer
                        Disables optimization done by the code generator. This is
                        useful when the generated code is going to be hacked on.
+         -GenerateColorBindings
+                       Generates properties for each distinct color of fills and
+                       strokes so that the colors in the animation can be modified
+                       at runtime.
          -GenerateDependencyObject
                        Generates code that extends DependencyObject. This is useful
                        to allow XAML binding to properties in the Lottie source.
