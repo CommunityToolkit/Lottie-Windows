@@ -28,7 +28,8 @@
             <Border Style="{StaticResource LottiePlayer}">
                 <!--  AnimatedVisualPlayer  -->
                 <muxc:AnimatedVisualPlayer x:Name="Progress_Player"
-                                            AutoPlay="False">
+                                           AutomationProperties.Name="Lottie animation"
+                                           AutoPlay="False">
                     <!--
                         LottieVisualSource that parses a JSON Uri at run-time
                         NOTE: The UriSource is set asynchronously in code-behind
@@ -56,11 +57,12 @@
                 <!--  Progress Slider: Scrub animation frames  -->
                 <Grid Grid.Column="1">
                     <StackPanel>
-                        <TextBlock Margin="40,20,0,5">Progress Slider</TextBlock>
+                        <TextBlock x:Name="ProgressSliderLabel" Margin="40,20,0,5">Progress Slider</TextBlock>
                         <Slider x:Name="ProgressSlider"
                                 Grid.Column="1"
                                 Maximum="1"
                                 Minimum="0"
+                                AutomationProperties.LabeledBy="{x:Bind ProgressSliderLabel}"
                                 StepFrequency="0.01"
                                 ValueChanged="ProgressSlider_ValueChanged" />
                     </StackPanel>

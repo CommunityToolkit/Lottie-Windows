@@ -43,7 +43,8 @@
 
             <Border Style="{StaticResource LottiePlayer}">
                 <!--  AnimatedVisualPlayer with AutoPlay  -->
-                <muxc:AnimatedVisualPlayer x:Name="Json_Player">
+                <muxc:AnimatedVisualPlayer x:Name="Json_Player"
+                                           AutomationProperties.Name="Lottie animation">
                     <!--  LottieVisualSource that parses a JSON Uri at run-time  -->
                     <lottie:LottieVisualSource x:Name="Json_Source"
                                                UriSource="ms-appx:///Assets/LottieLogo1.json" />

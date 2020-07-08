@@ -27,7 +27,8 @@
             <Border Style="{StaticResource LottiePlayer}">
                 <!--  AnimatedVisualPlayer  -->
                 <muxc:AnimatedVisualPlayer x:Name="Playback_Player"
-                                            AutoPlay="False">
+                                           AutoPlay="False"
+                                           AutomationProperties.Name="Lottie animation">
                     <!--  Codegen LottieVisualSource  -->
                     <animatedvisuals:LottieLogo1 />
                 </muxc:AnimatedVisualPlayer>
@@ -53,12 +54,14 @@
                 <!--  Play  -->
                 <Button x:Name="PlayButton"
                         Grid.Column="0"
+                        AutomationProperties.Name="Play animation"
                         Click="PlayButton_Click">
                     <SymbolIcon Symbol="Play" />
                 </Button>
                 <!--  Pause  -->
                 <ToggleButton x:Name="PauseButton"
                               Grid.Column="1"
+                              AutomationProperties.Name="Pause animation"
                               Checked="PauseButton_Checked"
                               IsThreeState="False"
                               Unchecked="PauseButton_Unchecked">
@@ -67,12 +70,14 @@
                 <!--  Resume  -->
                 <Button x:Name="StopButton"
                         Grid.Column="2"
+                        AutomationProperties.Name="Stop animation"
                         Click="StopButton_Click">
                     <SymbolIcon Symbol="Stop" />
                 </Button>
                 <!--  Reverse  -->
                 <Button x:Name="ReverseButton"
                         Grid.Column="3"
+                        AutomationProperties.Name="Play animation in reverse"
                         Click="ReverseButton_Click">
                     <SymbolIcon Symbol="Previous" />
                 </Button>
