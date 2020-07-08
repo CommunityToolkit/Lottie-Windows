@@ -5,9 +5,9 @@
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 {
     /// <summary>
-    /// Describes options to use when translating a Lottie file.
+    /// Describes a configuration of the <see cref="LottieToWinCompTranslator"/>.
     /// </summary>
-    public struct TranslationOptions
+    public struct TranslatorConfiguration
     {
         /// <summary>
         /// Add descriptions that can be used by code generators to make code more readable.
@@ -18,6 +18,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// Make the colors used by fills and strokes bindable so that they can be altered at runtime.
         /// </summary>
         public bool GenerateColorBindings;
+
+        /// <summary>
+        /// If true, throw an exception if translation issues are found.
+        /// </summary>
+        public bool StrictTranslation;
 
         /// <summary>
         /// The version of UAP for which the translator will ensure code compatibility. This

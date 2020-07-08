@@ -107,17 +107,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         LottieToWinCompTranslator(
             LottieComposition lottieComposition,
             Compositor compositor,
-            TranslationOptions options,
-            bool strictTranslation)
+            TranslatorConfiguration configuration)
         {
             _lc = lottieComposition;
-            _targetUapVersion = options.TargetUapVersion;
-            _c = new CompositionObjectFactory(compositor, options.TargetUapVersion);
-            _issues = new TranslationIssues(strictTranslation);
-            _addDescriptions = options.AddCodegenDescriptions;
-            _translatePropertyBindings = options.TranslatePropertyBindings;
+            _targetUapVersion = configuration.TargetUapVersion;
+            _c = new CompositionObjectFactory(compositor, configuration.TargetUapVersion);
+            _issues = new TranslationIssues(configuration.StrictTranslation);
+            _addDescriptions = configuration.AddCodegenDescriptions;
+            _translatePropertyBindings = configuration.TranslatePropertyBindings;
 
-            if (options.GenerateColorBindings)
+            if (configuration.GenerateColorBindings)
             {
                 _colorPalette = new Dictionary<Color, string>();
             }
@@ -138,20 +137,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// Attempts to translates the given <see cref="LottieComposition"/>.
         /// </summary>
         /// <param name="lottieComposition">The <see cref="LottieComposition"/> to translate.</param>
-        /// <param name="options">Controls optional features of the translator.</param>
-        /// <param name="strictTranslation">If true, throw an exception if translation issues are found.</param>
+        /// <param name="configuration">Controls the configuration of the translator.</param>
         /// <returns>The result of the translation.</returns>
         public static TranslationResult TryTranslateLottieComposition(
             LottieComposition lottieComposition,
-            TranslationOptions options,
-            bool strictTranslation)
+            TranslatorConfiguration configuration)
         {
             // Set up the translator.
             using (var translator = new LottieToWinCompTranslator(
                 lottieComposition,
                 new Compositor(),
-                options: options,
-                strictTranslation: strictTranslation))
+                configuration: configuration))
             {
                 // Translate the Lottie content to a Composition graph.
                 translator.Translate();
@@ -161,7 +157,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 var resultRequiredUapVersion = translator._c.HighestUapVersionUsed;
 
                 // See if the version is compatible with what the caller requested.
-                if (options.TargetUapVersion < resultRequiredUapVersion)
+                if (configuration.TargetUapVersion < resultRequiredUapVersion)
                 {
                     // We couldn't translate it and meet the requirement for the requested minimum version.
                     rootVisual = null;
@@ -3050,7 +3046,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     // The opacity is animated, but it might be non-animated after trimming.
                     if (trimmed.IsAnimated)
                     {
-                        ApplyOpacityKeyFrameAnimation(context, context.TrimAnimatable(animatable), result.Properties, propertyName, propertyName, null);
+                        ApplyOpacityKeyFrameAnimation(context, trimmed, result.Properties, propertyName, propertyName, null);
                     }
                 }
 

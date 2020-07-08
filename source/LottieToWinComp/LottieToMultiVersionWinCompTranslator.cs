@@ -23,23 +23,21 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// producing one or more translations.
         /// </summary>
         /// <param name="lottieComposition">The <see cref="LottieComposition"/> to translate.</param>
-        /// <param name="options">Controls optional features of the translator.</param>
+        /// <param name="configuration">Controls optional features of the translator.</param>
         /// <param name="minimumUapVersion">The lowest version of UAP on which the result must run.
         /// Must be &gt;= 7 and &lt;= the target UAP version.</param>
-        /// <param name="strictTranslation">If true, throw an exception if translation issues are found.</param>
         /// <returns>The results of the translation and the issues.</returns>
         public static MultiVersionTranslationResult TryTranslateLottieComposition(
             LottieComposition lottieComposition,
-            TranslationOptions options,
-            uint minimumUapVersion,
-            bool strictTranslation)
+            TranslatorConfiguration configuration,
+            uint minimumUapVersion)
         {
-            if (options.TargetUapVersion < LowestValidUapVersion)
+            if (configuration.TargetUapVersion < LowestValidUapVersion)
             {
-                throw new ArgumentException(nameof(options.TargetUapVersion));
+                throw new ArgumentException(nameof(configuration.TargetUapVersion));
             }
 
-            if (minimumUapVersion > options.TargetUapVersion ||
+            if (minimumUapVersion > configuration.TargetUapVersion ||
                 minimumUapVersion < LowestValidUapVersion)
             {
                 throw new ArgumentException(nameof(minimumUapVersion));
@@ -47,9 +45,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             var translations = Translate(
                 lottieComposition: lottieComposition,
-                options: options,
-                minimumUapVersion: minimumUapVersion,
-                strictTranslation: strictTranslation).ToArray();
+                configuration: configuration,
+                minimumUapVersion: minimumUapVersion).ToArray();
 
             // Combine the issues that are the same in multiple versions into issues with a version range.
             var dict = new Dictionary<TranslationIssue, UapVersionRange>();
@@ -91,16 +88,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         static IEnumerable<(TranslationResult translationResult, UapVersionRange versionRange)> Translate(
             LottieComposition lottieComposition,
-            TranslationOptions options,
-            uint minimumUapVersion,
-            bool strictTranslation)
+            TranslatorConfiguration configuration,
+            uint minimumUapVersion)
         {
             // First, generate code for the target version.
             var translationResult =
                 LottieToWinCompTranslator.TryTranslateLottieComposition(
                     lottieComposition,
-                    options: options,
-                    strictTranslation);
+                    configuration: configuration);
 
             yield return (
                 translationResult,
@@ -117,21 +112,23 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             // that satisfies minimumUapVersion.
             while (translationResult.MinimumRequiredUapVersion > minimumUapVersion)
             {
-                // Copy the options and change the target version to the next value less than
+                // Copy the configuration but change the target version to the next value less than
                 // the version supported by the previous translation.
-                var nextLowerTargetOptions = options;
-                nextLowerTargetOptions.TargetUapVersion = translationResult.MinimumRequiredUapVersion - 1;
+                var nextLowerTargetConfiguration = configuration;
+                nextLowerTargetConfiguration.TargetUapVersion = translationResult.MinimumRequiredUapVersion - 1;
 
                 translationResult =
                     LottieToWinCompTranslator.TryTranslateLottieComposition(
                         lottieComposition,
-                        options: nextLowerTargetOptions,
-                        strictTranslation: strictTranslation);
+                        configuration: nextLowerTargetConfiguration);
 
                 yield return (
                     translationResult,
-                    new UapVersionRange { Start = translationResult.MinimumRequiredUapVersion, End = nextLowerTargetOptions.TargetUapVersion }
-                    );
+                    new UapVersionRange
+                    {
+                        Start = translationResult.MinimumRequiredUapVersion,
+                        End = nextLowerTargetConfiguration.TargetUapVersion,
+                    });
             }
         }
     }

@@ -765,7 +765,7 @@ sealed class LottieFileProcessor
             return _isTranslatedSuccessfully.Value;
         }
 
-        var options = new TranslationOptions
+        var configuration = new TranslatorConfiguration
         {
             AddCodegenDescriptions = true,
             TranslatePropertyBindings = true,
@@ -775,9 +775,8 @@ sealed class LottieFileProcessor
 
         var translationResult = LottieToMultiVersionWinCompTranslator.TryTranslateLottieComposition(
             lottieComposition: _lottieComposition,
-            options: options,
-            minimumUapVersion: _minimumUapVersion,
-            strictTranslation: false);
+            configuration: configuration,
+            minimumUapVersion: _minimumUapVersion);
 
         _translationResults = translationResult.TranslationResults;
         _translationIssues = translationResult.Issues;
