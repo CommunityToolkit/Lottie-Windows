@@ -454,14 +454,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         break;
                 }
 
-                var compositionPathGeometry = _c.CreatePathGeometry();
-
                 var path = context.TrimAnimatable(_lottieDataOptimizer.GetOptimized(mask.Points));
 
-                ApplyPath(context, compositionPathGeometry, path, ShapeFill.PathFillType.EvenOdd);
-
-                var maskSpriteShape = _c.CreateSpriteShape();
-                maskSpriteShape.Geometry = compositionPathGeometry;
+                var maskSpriteShape = TranslatePath(context, path, ShapeFill.PathFillType.EvenOdd);
 
                 // The mask geometry needs to be colored with something so that it can be used
                 // as a mask.
@@ -2486,12 +2481,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             // A path is represented as a SpriteShape with a CompositionPathGeometry.
             var geometry = _c.CreatePathGeometry();
 
-            var compositionSpriteShape = _c.CreateSpriteShape();
-            compositionSpriteShape.Geometry = geometry;
-
             var pathData = context.TrimAnimatable(_lottieDataOptimizer.GetOptimized(path.Data));
 
-            ApplyPath(context, geometry, pathData, GetPathFillType(shapeContext.Fill));
+            var compositionSpriteShape = TranslatePath(context, pathData, GetPathFillType(shapeContext.Fill));
 
             if (_addDescriptions)
             {
@@ -3826,24 +3818,134 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             controller.StartAnimation("Progress", bindingAnimation);
         }
 
-        void ApplyPath(
+        // If the given path is equivalent to a static path with an animated offset, convert
+        // the path to that form and apply it to the given geometry and shape.
+        bool TryApplyPathAsStaticPathWithAnimatedOffset(
             TranslationContext context,
-            CompositionPathGeometry targetGeometry,
+            in TrimmedAnimatable<PathGeometry> path,
+            CompositionPathGeometry geometry,
+            CompositionSpriteShape shape,
+            ShapeFill.PathFillType fillType)
+        {
+            Debug.Assert(path.IsAnimated, "Precondition");
+
+            var offsets = new Vector2[path.KeyFrames.Length];
+            for (var i = 1; i < path.KeyFrames.Length; i++)
+            {
+                if (!TryGetPathTranslation(path.KeyFrames[0].Value.BezierSegments, path.KeyFrames[i].Value.BezierSegments, out offsets[i]))
+                {
+                    // The animation is not equivalent to a translation.
+                    return false;
+                }
+            }
+
+            // The path is equivalent to a translation. Apply the path described by the initial key frame
+            // and apply an offset translation to the CompositionSpriteShape that contains it.
+            geometry.Path = CompositionPathFromPathGeometry(
+                path.InitialValue,
+                fillType,
+                optimizeLines: true);
+
+            // Create the offsets key frames.
+            var keyFrames = new KeyFrame<Vector3>[offsets.Length];
+
+            for (var i = 0; i < path.KeyFrames.Length; i++)
+            {
+                ref var offset = ref offsets[i];
+                var pathKeyFrame = path.KeyFrames[i];
+                keyFrames[i] = new KeyFrame<Vector3>(pathKeyFrame.Frame, new Vector3(offset.X, offset.Y, 0), pathKeyFrame.Easing);
+            }
+
+            var offsetAnimatable = new TrimmedAnimatable<Vector3>(context, new Vector3(offsets[0].X, offsets[0].Y, 0), keyFrames);
+
+            // Apply the offset animation.
+            ApplyVector2KeyFrameAnimation(context, offsetAnimatable, shape, nameof(shape.Offset), "Path animation as a translation.");
+
+            return true;
+        }
+
+        // Iff the given paths are offsets translations of each other, gets the translation offset and returns true.
+        static bool TryGetPathTranslation(Sequence<BezierSegment> a, Sequence<BezierSegment> b, out Vector2 offset)
+        {
+            if (a.Items.Length != b.Items.Length)
+            {
+                // We could never animate this anyway.
+                offset = default;
+                return false;
+            }
+
+            offset = b.Items[0].ControlPoint0 - a.Items[0].ControlPoint0;
+            for (var i = 1; i < a.Items.Length; i++)
+            {
+                var cp0Offset = b.Items[i].ControlPoint0 - a.Items[i].ControlPoint0;
+                var cp1Offset = b.Items[i].ControlPoint1 - a.Items[i].ControlPoint1;
+                var cp2Offset = b.Items[i].ControlPoint2 - a.Items[i].ControlPoint2;
+                var cp3Offset = b.Items[i].ControlPoint3 - a.Items[i].ControlPoint3;
+
+                // Don't compare the values directly - there could be some rounding errors that
+                // are acceptable. This value is just a guess about what is acceptable. We could
+                // do something a lot more sophisticated (e.g. take into consideration the size
+                // of the path) but this is probably good enough.
+                const double acceptableError = 0.005;
+
+                if (!IsFuzzyEqual(cp0Offset, offset, acceptableError) ||
+                    !IsFuzzyEqual(cp1Offset, offset, acceptableError) ||
+                    !IsFuzzyEqual(cp2Offset, offset, acceptableError) ||
+                    !IsFuzzyEqual(cp3Offset, offset, acceptableError))
+                {
+                    offset = default;
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        static bool IsFuzzyEqual(in Vector2 a, in Vector2 b, in double acceptableError)
+        {
+            var delta = a - b;
+            return Math.Abs(delta.X) < acceptableError && Math.Abs(delta.Y) < acceptableError;
+        }
+
+        // Translates a Lottie PathGeometry to a CompositionSpriteShape.
+        CompositionSpriteShape TranslatePath(
+            TranslationContext context,
             in TrimmedAnimatable<PathGeometry> path,
             ShapeFill.PathFillType fillType)
         {
-            // PathKeyFrameAnimation was introduced in 6 but was unreliable until 11.
-            if (path.IsAnimated && IsUapApiAvailable(nameof(PathKeyFrameAnimation), versionDependentFeatureDescription: "Path animation"))
+            var result = _c.CreateSpriteShape();
+            var geometry = _c.CreatePathGeometry();
+            result.Geometry = geometry;
+
+            var isPathApplied = false;
+            if (path.IsAnimated)
             {
-                ApplyPathKeyFrameAnimation(context, path, fillType, targetGeometry, nameof(targetGeometry.Path), nameof(targetGeometry.Path));
+                // In cases where the animated path is just being moved in position we can convert
+                // to a static path with an offset animation. This is more efficient because it
+                // results in fewer paths, and it works around the inability to support animated
+                // paths before version 11.
+                if (TryApplyPathAsStaticPathWithAnimatedOffset(context, path, geometry, result, fillType))
+                {
+                    isPathApplied = true;
+                }
+                else if (IsUapApiAvailable(nameof(PathKeyFrameAnimation), versionDependentFeatureDescription: "Path animation"))
+                {
+                    // PathKeyFrameAnimation was introduced in 6 but was unreliable until 11.
+                    ApplyPathKeyFrameAnimation(context, path, fillType, geometry, nameof(geometry.Path), nameof(geometry.Path));
+                    isPathApplied = true;
+                }
             }
-            else
+
+            if (!isPathApplied)
             {
-                targetGeometry.Path = CompositionPathFromPathGeometry(
+                // The Path is not animated, or it is animated but we failed to animate it.
+                geometry.Path = CompositionPathFromPathGeometry(
                     path.InitialValue,
                     fillType,
                     optimizeLines: true);
             }
+
+            return result;
         }
 
         void ApplyPathGroup(
