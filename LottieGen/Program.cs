@@ -274,10 +274,9 @@ OVERVIEW:
                        issues will be reported to STDOUT.
          -TargetUapVersion
                        The target UAP version on which the result will run. Must be 7
-                       or higher and >= MinimumUapVersion. Code will be generated
-                       that may take advantage of features in this version in order
-                       to produce a better result. If not specified, defaults to
-                       the latest UAP version.
+                       or higher and >= MinimumUapVersion. This value determines the
+                       minimum SDK version required to compile the generated code.
+                       If not specified, defaults to the latest UAP version.
          -TestMode     Prevents any information from being included that could change
                        from run to run with the same inputs, for example tool version
                        numbers, file paths, and dates. This is designed to enable

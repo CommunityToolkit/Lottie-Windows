@@ -108,12 +108,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             LottieComposition lottieComposition,
             Compositor compositor,
             TranslationOptions options,
-            bool strictTranslation,
-            uint targetUapVersion)
+            bool strictTranslation)
         {
             _lc = lottieComposition;
-            _targetUapVersion = targetUapVersion;
-            _c = new CompositionObjectFactory(compositor, targetUapVersion);
+            _targetUapVersion = options.TargetUapVersion;
+            _c = new CompositionObjectFactory(compositor, options.TargetUapVersion);
             _issues = new TranslationIssues(strictTranslation);
             _addDescriptions = options.AddCodegenDescriptions;
             _translatePropertyBindings = options.TranslatePropertyBindings;
@@ -140,13 +139,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// </summary>
         /// <param name="lottieComposition">The <see cref="LottieComposition"/> to translate.</param>
         /// <param name="options">Controls optional features of the translator.</param>
-        /// <param name="targetUapVersion">The version of UAP that the translator will ensure compatibility with. Must be >= 7.</param>
         /// <param name="strictTranslation">If true, throw an exception if translation issues are found.</param>
         /// <returns>The result of the translation.</returns>
         public static TranslationResult TryTranslateLottieComposition(
             LottieComposition lottieComposition,
             TranslationOptions options,
-            uint targetUapVersion,
             bool strictTranslation)
         {
             // Set up the translator.
@@ -154,8 +151,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 lottieComposition,
                 new Compositor(),
                 options: options,
-                strictTranslation: strictTranslation,
-                targetUapVersion))
+                strictTranslation: strictTranslation))
             {
                 // Translate the Lottie content to a Composition graph.
                 translator.Translate();
@@ -165,7 +161,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 var resultRequiredUapVersion = translator._c.HighestUapVersionUsed;
 
                 // See if the version is compatible with what the caller requested.
-                if (targetUapVersion < resultRequiredUapVersion)
+                if (options.TargetUapVersion < resultRequiredUapVersion)
                 {
                     // We couldn't translate it and meet the requirement for the requested minimum version.
                     rootVisual = null;

@@ -20,6 +20,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         public bool GenerateColorBindings;
 
         /// <summary>
+        /// The version of UAP for which the translator will ensure code compatibility. This
+        /// value determines the minimum required SDK version required to build the generated
+        /// code. Must be &gt;= 7.
+        /// </summary>
+        public uint TargetUapVersion;
+
+        /// <summary>
         /// Translate the special property binding language in Lottie object
         /// names and create bindings to <see cref="WinCompData.CompositionPropertySet"/> values.
         /// </summary>
