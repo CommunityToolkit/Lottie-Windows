@@ -51,7 +51,8 @@
 
             <Border Style="{StaticResource LottiePlayer}">
                 <!--  AnimatedVisualPlayer with AutoPlay  -->
-                <muxc:AnimatedVisualPlayer x:Name="Codegen_Player">
+                <muxc:AnimatedVisualPlayer x:Name="Codegen_Player"
+                                           AutomationProperties.Name="Lottie animation">
                     <!--  Codegen source with C# class: AnimatedVisuals/LottieLogo1.cs  -->
                     <animatedvisuals:LottieLogo1 />
                 </muxc:AnimatedVisualPlayer>
