@@ -200,11 +200,11 @@ sealed class CommandLineOptions
     {
         // Define the keywords accepted on the command line.
         var tokenizer = new CommandlineTokenizer<Keyword>(Keyword.Ambiguous)
-            .AddPrefixedKeyword(Keyword.Help, "?")
             .AddPrefixedKeyword(Keyword.DisableCodeGenOptimizer)
             .AddPrefixedKeyword(Keyword.DisableTranslationOptimizer)
             .AddPrefixedKeyword(Keyword.GenerateColorBindings)
             .AddPrefixedKeyword(Keyword.GenerateDependencyObject)
+            .AddPrefixedKeyword(Keyword.Help, "?")
             .AddPrefixedKeyword(Keyword.Help)
             .AddPrefixedKeyword(Keyword.InputFile)
             .AddPrefixedKeyword(Keyword.Interface)

@@ -141,7 +141,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// <returns>The result of the translation.</returns>
         public static TranslationResult TryTranslateLottieComposition(
             LottieComposition lottieComposition,
-            TranslatorConfiguration configuration)
+            in TranslatorConfiguration configuration)
         {
             // Set up the translator.
             using (var translator = new LottieToWinCompTranslator(
@@ -3052,7 +3052,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             else
             {
                 // Opacity isn't animated.
-                // Create an expression that multiples the alpha channel of the color by the opacity value.
+                // Create an expression that multiplies the alpha channel of the color by the opacity value.
                 var anim = _c.CreateExpressionAnimation(ThemedColorMultipliedByOpacity(bindingName, opacity.NonAnimatedValue));
                 anim.SetReferenceParameter(ThemePropertiesName, _themePropertySet);
                 StartExpressionAnimation(result, nameof(result.Color), anim);
