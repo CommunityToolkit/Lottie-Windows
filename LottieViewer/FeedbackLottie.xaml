@@ -20,7 +20,7 @@
     </UserControl.Resources>
     <Grid x:Name="_dragNDropHintContainer">
         <muxc:AnimatedVisualPlayer x:Name="_dragNDropHint"
-                                    AutomationProperties.Name="Drag animation on app image"
+                                    AutomationProperties.Name="Drop your JSON file here"
                                     AutoPlay="False">
             <animatedVisuals:UiFeedbackAnimations />
         </muxc:AnimatedVisualPlayer>
