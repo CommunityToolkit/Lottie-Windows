@@ -20,6 +20,7 @@
     </UserControl.Resources>
     <Grid x:Name="_dragNDropHintContainer">
         <muxc:AnimatedVisualPlayer x:Name="_dragNDropHint"
+                                    AutomationProperties.Name="Drag animation on app image"
                                     AutoPlay="False">
             <animatedVisuals:UiFeedbackAnimations />
         </muxc:AnimatedVisualPlayer>
