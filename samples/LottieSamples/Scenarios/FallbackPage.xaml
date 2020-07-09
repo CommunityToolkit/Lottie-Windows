@@ -29,7 +29,8 @@
             <Border Style="{StaticResource LottiePlayer}">
 
                 <!--  AnimatedVisualPlayer  -->
-                <muxc:AnimatedVisualPlayer x:Name="Fallback_Player">
+                <muxc:AnimatedVisualPlayer x:Name="Fallback_Player"
+                                           AutomationProperties.Name="Lottie animation">
                     <!--  LottieVisualSource with invalid UriSource to cause fallback  -->
                     <lottie:LottieVisualSource x:Name="Json_Source"
                                                UriSource="http://dots.microsoft.com/notarealfile.json" />
@@ -43,7 +44,8 @@
                                 Static Image for Fallback.
                                 Because this is in a DataTemplate, the Image is only instantiated when in the fallback case.
                             -->
-                            <Image Source="/Assets/LottieLogo1.png" />
+                            <Image Source="/Assets/LottieLogo1.png"
+                                   AutomationProperties.Name="Fallback image for animation"/>
                         </DataTemplate>
                     </muxc:AnimatedVisualPlayer.FallbackContent>
                 </muxc:AnimatedVisualPlayer>

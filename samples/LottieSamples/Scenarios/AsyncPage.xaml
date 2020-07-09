@@ -74,6 +74,7 @@
                     <!--  AnimatedVisualPlayer A  -->
                     <muxc:AnimatedVisualPlayer x:Name="PlayerA"
                                                 AutoPlay="False"
+                                                AutomationProperties.Name="Lottie animation A"
                                                 PointerEntered="Players_PointerEntered"
                                                 Source="{StaticResource LightBulb}"/>
                 </Border>
@@ -84,6 +85,7 @@
                     <muxc:AnimatedVisualPlayer x:Name="PlayerB"
                                                 AutoPlay="False"
                                                 PointerEntered="Players_PointerEntered"
+                                                AutomationProperties.Name="Lottie animation B"
                                                 Source="{StaticResource LightBulb}"/>
                 </Border>
             </StackPanel>
@@ -98,8 +100,11 @@
                         <Setter Property="HorizontalAlignment" Value="Center"/>
                     </Style>
                 </Grid.Resources>
-                <TextBlock Grid.Column="0">A</TextBlock>
-                <TextBlock Grid.Column="1">B</TextBlock>
+                
+                <!-- The labels are relevant from a visual perspective as they are labeling the animations
+                     However, from a UIA perspective, those are only confusing -->
+                <TextBlock Grid.Column="0" AutomationProperties.AccessibilityView="Raw">A</TextBlock>
+                <TextBlock Grid.Column="1" AutomationProperties.AccessibilityView="Raw">B</TextBlock>
             </Grid>
 
             <!--#region OutroText-->
