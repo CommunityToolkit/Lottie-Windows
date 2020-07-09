@@ -107,7 +107,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         LottieToWinCompTranslator(
             LottieComposition lottieComposition,
             Compositor compositor,
-            TranslatorConfiguration configuration)
+            in TranslatorConfiguration configuration)
         {
             _lc = lottieComposition;
             _targetUapVersion = configuration.TargetUapVersion;

@@ -29,7 +29,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// <returns>The results of the translation and the issues.</returns>
         public static MultiVersionTranslationResult TryTranslateLottieComposition(
             LottieComposition lottieComposition,
-            TranslatorConfiguration configuration,
+            in TranslatorConfiguration configuration,
             uint minimumUapVersion)
         {
             if (configuration.TargetUapVersion < LowestValidUapVersion)
