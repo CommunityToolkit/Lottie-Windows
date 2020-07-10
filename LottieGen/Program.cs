@@ -249,6 +249,10 @@ OVERVIEW:
          -DisableCodeGenOptimizer
                        Disables optimization done by the code generator. This is
                        useful when the generated code is going to be hacked on.
+         -GenerateColorBindings
+                       Generates properties for each distinct color of fills and
+                       strokes so that the colors in the animation can be modified
+                       at runtime.
          -GenerateDependencyObject
                        Generates code that extends DependencyObject. This is useful
                        to allow XAML binding to properties in the Lottie source.
@@ -270,10 +274,9 @@ OVERVIEW:
                        issues will be reported to STDOUT.
          -TargetUapVersion
                        The target UAP version on which the result will run. Must be 7
-                       or higher and >= MinimumUapVersion. Code will be generated
-                       that may take advantage of features in this version in order
-                       to produce a better result. If not specified, defaults to
-                       the latest UAP version.
+                       or higher and >= MinimumUapVersion. This value determines the
+                       minimum SDK version required to compile the generated code.
+                       If not specified, defaults to the latest UAP version.
          -TestMode     Prevents any information from being included that could change
                        from run to run with the same inputs, for example tool version
                        numbers, file paths, and dates. This is designed to enable

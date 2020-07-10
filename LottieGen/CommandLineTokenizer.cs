@@ -18,14 +18,20 @@ sealed class CommandlineTokenizer<TKeywordId>
         _ambiguousValue = ambiguousValue;
     }
 
-    internal CommandlineTokenizer<TKeywordId> AddPrefixedKeyword(string keyword, TKeywordId id)
+    internal CommandlineTokenizer<TKeywordId> AddPrefixedKeyword(TKeywordId id) =>
+        AddPrefixedKeyword(id, Enum.GetName(typeof(TKeywordId), id));
+
+    internal CommandlineTokenizer<TKeywordId> AddPrefixedKeyword(TKeywordId id, string keyword)
     {
-        AddKeyword($"-{keyword}", id);
-        return AddKeyword($"/{keyword}", id);
+        AddKeyword(id, $"-{keyword}");
+        return AddKeyword(id, $"/{keyword}");
     }
 
+    internal CommandlineTokenizer<TKeywordId> AddKeyword(TKeywordId id) =>
+        AddKeyword(id, Enum.GetName(typeof(TKeywordId), id));
+
     // Add a keyword to the recognizer.
-    internal CommandlineTokenizer<TKeywordId> AddKeyword(string keyword, TKeywordId id)
+    internal CommandlineTokenizer<TKeywordId> AddKeyword(TKeywordId id, string keyword)
     {
         TrieNode currrentNode = _root;
 

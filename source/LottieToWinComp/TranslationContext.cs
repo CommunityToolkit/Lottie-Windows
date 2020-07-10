@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization;
-using Microsoft.Toolkit.Uwp.UI.Lottie.LottieMetadata;
 using Sn = System.Numerics;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
