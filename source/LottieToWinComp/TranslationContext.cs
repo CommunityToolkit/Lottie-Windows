@@ -113,6 +113,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal TrimmedAnimatable<Vector3> TrimAnimatable(IAnimatableVector3 animatable)
         {
+            AnimatableVector3ToAnimatableXYZ.AssertSingleEasing(animatable);
             return TrimAnimatable<Vector3>((AnimatableVector3)animatable);
         }
 
