@@ -251,6 +251,7 @@
 
     <Slider x:Name="_slider"
             HorizontalAlignment="Stretch"
+            AutomationProperties.Name="Progress slider"
             VerticalAlignment="Center"
             LargeChange="0.001"
             Maximum="1"
