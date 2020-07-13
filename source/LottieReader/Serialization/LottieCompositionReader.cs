@@ -412,7 +412,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 }
             }
 
-            return new PathGeometry(new Sequence<BezierSegment>(beziers), isClosed);
+            return new PathGeometry(new Sequence<BezierSegment>(beziers, takeOwnership: true), isClosed);
         }
 
         static Vector2[] ReadArrayOfVector2(in LottieJsonArrayElement array)

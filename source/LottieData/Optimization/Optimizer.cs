@@ -37,7 +37,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
             // If the geometries have different numbers of segments they can't be animated. However
             // in one specific case we can fix that.
             var geometries = value.KeyFrames.SelectToArray(kf => kf.Value);
-            var distinctSegmentCounts = geometries.Select(g => g.BezierSegments.Items.Length).Distinct().Count();
+            var distinctSegmentCounts = geometries.Select(g => g.BezierSegments.Count).Distinct().Count();
 
             if (distinctSegmentCounts != 2)
             {
@@ -61,31 +61,31 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                     }
                 }
 
-                switch (segments.Items.Length)
+                switch (segments.Count)
                 {
                     default:
                         return optimized;
                     case 1:
-                        if (!segments.Items[0].IsALine)
+                        if (!segments[0].IsALine)
                         {
                             return optimized;
                         }
 
                         break;
                     case 2:
-                        if (!segments.Items[0].IsALine || !segments.Items[1].IsALine)
+                        if (!segments[0].IsALine || !segments[1].IsALine)
                         {
                             return optimized;
                         }
 
                         // Start of line 0
-                        var a = segments.Items[0].ControlPoint0;
+                        var a = segments[0].ControlPoint0;
 
                         // End of line 0
-                        var b = segments.Items[0].ControlPoint3;
+                        var b = segments[0].ControlPoint3;
 
                         // End of line 1
-                        var c = segments.Items[1].ControlPoint3;
+                        var c = segments[1].ControlPoint3;
 
                         if (!BezierSegment.ArePointsColinear(0, a, b, c))
                         {
@@ -110,7 +110,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
         // Returns a KeyFrame<PathGeometry> that contains only the first Bezier segment of the given
         // KeyFrame<PathGeometry>.
         static KeyFrame<PathGeometry> HackPathGeometry(KeyFrame<PathGeometry> value) =>
-            value.CloneWithNewValue(new PathGeometry(new Sequence<BezierSegment>(new[] { value.Value.BezierSegments.Items[0] }), isClosed: false));
+            value.CloneWithNewValue(new PathGeometry(new Sequence<BezierSegment>(value.Value.BezierSegments[0]), isClosed: false));
 
         static bool HasNonLinearCubicBezierEasing<T>(KeyFrame<T> keyFrame)
             where T : IEquatable<T>
