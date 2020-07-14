@@ -161,23 +161,27 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         static NodeName NameCompositionColorGradientStop(CompositionColorGradientStop obj)
         {
+            var offsetId = FloatAsId(obj.Offset);
+
             if (obj.Animators.Count > 0)
             {
+                var baseName = $"AnimatedGradientStop_{offsetId}";
+
                 // Gradient stop is animated. Give it a name based on the colors in the animation.
                 var colorAnimation = obj.Animators.Where(a => a.AnimatedProperty == "Color").First().Animation;
                 if (colorAnimation is ColorKeyFrameAnimation colorKeyFrameAnimation)
                 {
-                    return NodeName.FromNameAndDescription("AnimatedGradientStop", DescribeAnimationRange(colorKeyFrameAnimation));
+                    return NodeName.FromNameAndDescription(baseName, DescribeAnimationRange(colorKeyFrameAnimation));
                 }
                 else
                 {
-                    return NodeName.FromNonTypeName("AnimatedGradientStop");
+                    return NodeName.FromNonTypeName(baseName);
                 }
             }
             else
             {
                 // Gradient stop is not animated. Give it a name based on the color.
-                return NodeName.FromNameAndDescription("GradientStop", obj.Color.Name);
+                return NodeName.FromNameAndDescription($"GradientStop_{offsetId}", obj.Color.Name);
             }
         }
 
@@ -308,8 +312,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         static string NameOf(IDescribable obj) => obj.Name;
 
         // A Vector2 for use in an id.
-        static string Vector2AsId(Vector2 size)
-            => size.X == size.Y ? FloatAsId(size.X) : $"{FloatAsId(size.X)}x{FloatAsId(size.Y)}";
+        static string Vector2AsId(Vector2? size)
+            => size.HasValue
+                ? (size.Value.X == size.Value.Y ? FloatAsId(size.Value.X) : $"{FloatAsId(size.Value.X)}x{FloatAsId(size.Value.Y)}")
+                : string.Empty;
 
         // The code we hit is supposed to be unreachable. This indicates a bug.
         static Exception Unreachable => new InvalidOperationException("Unreachable code executed");

@@ -32,14 +32,63 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 Array.Sort(_properties, Comparer.Instance);
             }
 
+            // Parses an array of Vector2 stored as 2 arrays of equal-length
+            // "x" and "y" values.
+            // If "x" or "y" properties are missing, returns an empty array.
+            // If "x" or "y" properties are not arrays, tries to parse as double properties
+            // and returns a single Vector2 in an array.
+            // The length of the array is the shorter of the "x" and "y" lengths.
+            // Any values in the array that are not parseable as doubles are returned as 0.
+            public Vector2[] AsVector2Array()
+            {
+                var xs = ArrayPropertyOrNull("x");
+                var ys = ArrayPropertyOrNull("y");
+
+                var length = Math.Min(xs?.Count ?? 0, ys?.Count ?? 0);
+
+                Vector2[] result;
+
+                if (length == 0)
+                {
+                    // Try again assuming the values are not arrays.
+                    var singleValue = AsVector2();
+                    result = singleValue.HasValue
+                        ? new[] { singleValue.Value }
+                        : Array.Empty<Vector2>();
+                }
+                else
+                {
+                    result = new Vector2[length];
+
+                    for (var i = 0; i < length; i++)
+                    {
+                        result[i] = new Vector2(xs.Value[i].AsDouble() ?? 0.0, ys.Value[i].AsDouble() ?? 0.0);
+                    }
+                }
+
+                return result;
+            }
+
+            public Vector2? AsVector2()
+            {
+                var x = DoublePropertyOrNull("x");
+                var y = DoublePropertyOrNull("y");
+                return x is null || y is null
+                    ? (Vector2?)null
+                    : new Vector2(x ?? 0, y ?? 0);
+            }
+
             public Vector3? AsVector3()
             {
                 var x = DoublePropertyOrNull("x");
                 var y = DoublePropertyOrNull("y");
                 var z = DoublePropertyOrNull("z");
-                return x is null
+
+                // Don't check for z being null - most of the uses of Vector3 actually only need
+                // a Vector2, so if the z value wasn't provided it's unsurprising.
+                return x is null || y is null
                     ? (Vector3?)null
-                    : new Vector3(x.Value, y ?? 0, z ?? 0);
+                    : new Vector3(x ?? 0, y ?? 0, z ?? 0);
             }
 
             internal LottieJsonArrayElement? ArrayPropertyOrNull(string propertyName)
@@ -132,7 +181,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 }
             }
 
-            internal void AssertAllPropertiesRead([CallerMemberName]string memberName = "")
+            internal void AssertAllPropertiesRead([CallerMemberName] string memberName = "")
             {
                 foreach (var pair in _properties)
                 {

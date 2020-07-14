@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization;
 using Sn = System.Numerics;
@@ -16,6 +17,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
     /// </summary>
     abstract class TranslationContext
     {
+        FrameNumberEqualityComparer _frameNumberEqualityComparer;
+
         TranslationContext(TranslationContext containingContext, Layer layer)
         {
             ContainingContext = containingContext;
@@ -48,6 +51,21 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         internal double DurationInFrames { get; private set; }
 
         public override string ToString() => Layer.Name ?? Layer.Type.ToString();
+
+        /// <summary>
+        /// The <see cref="Layer"/>'s in point as a progress value.
+        /// </summary>
+        internal float InPointAsProgress =>
+            (float)((Layer.InPoint - StartTime) / DurationInFrames);
+
+        /// <summary>
+        /// The <see cref="Layer"/>'s out point as a progress value.
+        /// </summary>
+        internal float OutPointAsProgress =>
+            (float)((Layer.OutPoint - StartTime) / DurationInFrames);
+
+        internal IEqualityComparer<double> FrameNumberComparer =>
+            _frameNumberEqualityComparer ??= new FrameNumberEqualityComparer(this);
 
         // Constructs a context for the given layer that is a child of this context.
         internal For<T> SubContext<T>(T layer)
@@ -136,6 +154,28 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 : base(lottieComposition)
             {
             }
+        }
+
+        /// <summary>
+        /// Compares frame numbers for equality. This takes into account the lossiness of the conversion
+        /// that is done from <see cref="double"/> frame numbers to <see cref="float"/> progress values.
+        /// </summary>
+        sealed class FrameNumberEqualityComparer : IEqualityComparer<double>
+        {
+            readonly TranslationContext _context;
+
+            internal FrameNumberEqualityComparer(TranslationContext context)
+            {
+                _context = context;
+            }
+
+            public bool Equals(double x, double y) => ProgressOf(x) == ProgressOf(y);
+
+            public int GetHashCode(double obj) => ProgressOf(obj).GetHashCode();
+
+            // Converts a frame number into a progress value.
+            float ProgressOf(double value) =>
+                (float)((value - _context.StartTime) / _context.DurationInFrames);
         }
     }
 }

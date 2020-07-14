@@ -63,6 +63,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         readonly Dictionary<ScaleAndOffset, ExpressionAnimation> _progressBindingAnimations = new Dictionary<ScaleAndOffset, ExpressionAnimation>();
         readonly Optimizer _lottieDataOptimizer = new Optimizer();
 
+        // The palette of colors in fills and strokes. Null if color bindings are not enabled.
+        readonly Dictionary<Color, string> _colorPalette;
+
         // Holds CubicBezierEasingFunctions for reuse when they have the same parameters.
         readonly Dictionary<CubicBezierEasing, CubicBezierEasingFunction> _cubicBezierEasingFunctions = new Dictionary<CubicBezierEasing, CubicBezierEasingFunction>();
 
@@ -104,17 +107,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         LottieToWinCompTranslator(
             LottieComposition lottieComposition,
             Compositor compositor,
-            bool strictTranslation,
-            bool addDescriptions,
-            bool translatePropertyBindings,
-            uint targetUapVersion)
+            in TranslatorConfiguration configuration)
         {
             _lc = lottieComposition;
-            _targetUapVersion = targetUapVersion;
-            _c = new CompositionObjectFactory(compositor, targetUapVersion);
-            _issues = new TranslationIssues(strictTranslation);
-            _addDescriptions = addDescriptions;
-            _translatePropertyBindings = translatePropertyBindings;
+            _targetUapVersion = configuration.TargetUapVersion;
+            _c = new CompositionObjectFactory(compositor, configuration.TargetUapVersion);
+            _issues = new TranslationIssues(configuration.StrictTranslation);
+            _addDescriptions = configuration.AddCodegenDescriptions;
+            _translatePropertyBindings = configuration.TranslatePropertyBindings;
+
+            if (configuration.GenerateColorBindings)
+            {
+                _colorPalette = new Dictionary<Color, string>();
+            }
 
             // Create the root.
             _rootVisual = _c.CreateContainerVisual();
@@ -132,27 +137,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// Attempts to translates the given <see cref="LottieComposition"/>.
         /// </summary>
         /// <param name="lottieComposition">The <see cref="LottieComposition"/> to translate.</param>
-        /// <param name="targetUapVersion">The version of UAP that the translator will ensure compatibility with. Must be >= 7.</param>
-        /// <param name="strictTranslation">If true, throw an exception if translation issues are found.</param>
-        /// <param name="addCodegenDescriptions">Add descriptions to objects for comments on generated code.</param>
-        /// <param name="translatePropertyBindings">Translate the special property binding language in Lottie object
-        /// names and create bindings to <see cref="CompositionPropertySet"/> values.</param>
+        /// <param name="configuration">Controls the configuration of the translator.</param>
         /// <returns>The result of the translation.</returns>
         public static TranslationResult TryTranslateLottieComposition(
             LottieComposition lottieComposition,
-            uint targetUapVersion,
-            bool strictTranslation,
-            bool addCodegenDescriptions,
-            bool translatePropertyBindings)
+            in TranslatorConfiguration configuration)
         {
             // Set up the translator.
             using (var translator = new LottieToWinCompTranslator(
                 lottieComposition,
                 new Compositor(),
-                strictTranslation: strictTranslation,
-                addDescriptions: addCodegenDescriptions,
-                translatePropertyBindings: translatePropertyBindings,
-                targetUapVersion))
+                configuration: configuration))
             {
                 // Translate the Lottie content to a Composition graph.
                 translator.Translate();
@@ -162,7 +157,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 var resultRequiredUapVersion = translator._c.HighestUapVersionUsed;
 
                 // See if the version is compatible with what the caller requested.
-                if (targetUapVersion < resultRequiredUapVersion)
+                if (configuration.TargetUapVersion < resultRequiredUapVersion)
                 {
                     // We couldn't translate it and meet the requirement for the requested minimum version.
                     rootVisual = null;
@@ -454,14 +449,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         break;
                 }
 
-                var compositionPathGeometry = _c.CreatePathGeometry();
-
                 var path = context.TrimAnimatable(_lottieDataOptimizer.GetOptimized(mask.Points));
 
-                ApplyPath(context, compositionPathGeometry, path, ShapeFill.PathFillType.EvenOdd);
-
-                var maskSpriteShape = _c.CreateSpriteShape();
-                maskSpriteShape.Geometry = compositionPathGeometry;
+                var maskSpriteShape = TranslatePath(context, path, ShapeFill.PathFillType.EvenOdd);
 
                 // The mask geometry needs to be colored with something so that it can be used
                 // as a mask.
@@ -889,8 +879,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var layerOpacity = context.TrimAnimatable(context.Layer.Transform.Opacity);
 
             // Convert the layer's in point and out point into absolute progress (0..1) values.
-            var inProgress = GetInPointProgress(context);
-            var outProgress = GetOutPointProgress(context);
+            var inProgress = context.InPointAsProgress;
+            var outProgress = context.OutPointAsProgress;
 
             if (inProgress > 1 || outProgress <= 0 || inProgress >= outProgress || layerOpacity.AlwaysEquals(LottieData.Opacity.Transparent))
             {
@@ -970,8 +960,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var layerOpacity = context.TrimAnimatable(context.Layer.Transform.Opacity);
 
             // Convert the layer's in point and out point into absolute progress (0..1) values.
-            var inProgress = GetInPointProgress(context);
-            var outProgress = GetOutPointProgress(context);
+            var inProgress = context.InPointAsProgress;
+            var outProgress = context.OutPointAsProgress;
 
             if (inProgress > 1 || outProgress <= 0 || inProgress >= outProgress || layerOpacity.AlwaysEquals(LottieData.Opacity.Transparent))
             {
@@ -1072,8 +1062,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var layerOpacity = context.TrimAnimatable(context.Layer.Transform.Opacity);
 
             // Convert the layer's in point and out point into absolute progress (0..1) values.
-            var inProgress = GetInPointProgress(context);
-            var outProgress = GetOutPointProgress(context);
+            var inProgress = context.InPointAsProgress;
+            var outProgress = context.OutPointAsProgress;
 
             if (inProgress > 1 || outProgress <= 0 || inProgress >= outProgress || layerOpacity.AlwaysEquals(LottieData.Opacity.Transparent))
             {
@@ -2269,41 +2259,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         {
             Debug.Assert(shapeContent.Roundness.AlwaysEquals(0) && shapeContext.RoundedCorner is null, "Precondition");
 
-            CompositionGeometry geometry;
-
-            // Use a non-rounded rectangle geometry.
-            if (_targetUapVersion <= 7)
-            {
-                // V7 did not reliably draw non-rounded rectangles.
-                // Work around the problem by using a rounded rectangle with a tiny corner radius.
-                var roundedRectangleGeometry = _c.CreateRoundedRectangleGeometry();
-                geometry = roundedRectangleGeometry;
-
-                // NOTE: magic tiny corner radius number - do not change!
-                roundedRectangleGeometry.CornerRadius = new Sn.Vector2(0.000001F);
-
-                roundedRectangleGeometry.Offset = InitialOffset(size: size, position: position);
-
-                if (!size.IsAnimated)
-                {
-                    roundedRectangleGeometry.Size = Vector2(size.InitialValue);
-                }
-            }
-            else
-            {
-                // V8 and beyond doesn't need the rounded rectangle workaround.
-                var rectangleGeometry = _c.CreateRectangleGeometry();
-                geometry = rectangleGeometry;
-
-                // Convert size and position into offset. This is necessary because a geometry's offset is for
-                // its top left corner, whereas a Lottie position is for its centerpoint.
-                rectangleGeometry.Offset = InitialOffset(size: size, position: position);
-
-                if (!size.IsAnimated)
-                {
-                    rectangleGeometry.Size = Vector2(size.InitialValue);
-                }
-            }
+            var geometry = _c.CreateRectangleGeometry(
+                                size: size.IsAnimated ? (Sn.Vector2?)null : Vector2(size.InitialValue),
+                                offset: InitialOffset(size: size, position: position));
 
             compositionShape.Geometry = geometry;
 
@@ -2368,7 +2326,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 geometry.CornerRadius = Vector2((float)cornerRadiusValue);
             }
 
-            geometry.Offset = InitialOffset(size:size, position:position);
+            geometry.Offset = InitialOffset(size: size, position: position);
 
             if (!size.IsAnimated)
             {
@@ -2475,7 +2433,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         // Groups multiple Shapes into a D2D geometry group.
         CompositionShape TranslatePathGroupContent(TranslationContext context, ShapeContentContext shapeContext, IEnumerable<Path> paths)
         {
-            var groupingSucceeded = PathGeometryGroup.TryGroupPaths(paths, out var grouped);
+            var groupingSucceeded = PathGeometryGroup.TryGroupPaths(context, paths, out var grouped);
 
             // If any of the paths have different directions we may not get the translation
             // right, so check that case and warn the user.
@@ -2518,12 +2476,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             // A path is represented as a SpriteShape with a CompositionPathGeometry.
             var geometry = _c.CreatePathGeometry();
 
-            var compositionSpriteShape = _c.CreateSpriteShape();
-            compositionSpriteShape.Geometry = geometry;
-
             var pathData = context.TrimAnimatable(_lottieDataOptimizer.GetOptimized(path.Data));
 
-            ApplyPath(context, geometry, pathData, GetPathFillType(shapeContext.Fill));
+            var compositionSpriteShape = TranslatePath(context, pathData, GetPathFillType(shapeContext.Fill));
 
             if (_addDescriptions)
             {
@@ -2957,7 +2912,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 var trimmed = context.TrimAnimatable(animatable);
                 var propertyName = name;
                 result.Properties.InsertScalar(propertyName, Opacity(trimmed.InitialValue));
-                ApplyOpacityKeyFrameAnimation(context, trimmed, result.Properties, propertyName, propertyName, null);
+
+                // The opacity is animated, but it might be non-animated after trimming.
+                if (trimmed.IsAnimated)
+                {
+                    ApplyOpacityKeyFrameAnimation(context, trimmed, result.Properties, propertyName, propertyName, null);
+                }
             }
 
             result.Properties.InsertVector4("Color", Vector4(Color(color.InitialValue)));
@@ -3011,12 +2971,33 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             CompositeOpacity opacity,
             string bindingSpec)
         {
-            // Read property bindings embedded into the name of the fill.
+            // Look for a color binding embedded into the name of the fill or stroke.
             var bindingName = GetThemeBindingNameForLottieProperty(bindingSpec, "Color");
 
-            return bindingName is null
-                ? CreateAnimatedColorBrush(context, context.TrimAnimatable(color), opacity)
-                : TranslateBoundSolidColor(context, opacity, bindingName, DefaultValueOf(color));
+            if (bindingName != null)
+            {
+                // A color binding string was found. Bind the color to a property with the
+                // name described by the binding string.
+                return TranslateBoundSolidColor(context, opacity, bindingName, DefaultValueOf(color));
+            }
+
+            if (_colorPalette != null && !color.IsAnimated)
+            {
+                // Color palette binding is enabled. Bind the color to a property with
+                // the name of the color in the palette.
+                var paletteColor = color.InitialValue;
+
+                if (!_colorPalette.TryGetValue(paletteColor, out bindingName))
+                {
+                    bindingName = $"Color{Color(paletteColor).Name}";
+                    _colorPalette.Add(paletteColor, bindingName);
+                }
+
+                return TranslateBoundSolidColor(context, opacity, bindingName, paletteColor);
+            }
+
+            // Do not generate a binding for this color.
+            return CreateAnimatedColorBrush(context, context.TrimAnimatable(color), opacity);
         }
 
         // Translates a SolidColorFill that gets its color value from a property set value with the given name.
@@ -3050,9 +3031,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 // Add a property for each opacity.
                 foreach (var (animatable, name) in animatableOpacities)
                 {
+                    var trimmed = context.TrimAnimatable(animatable);
                     var propertyName = name;
-                    result.Properties.InsertScalar(propertyName, Opacity(animatable.InitialValue));
-                    ApplyOpacityKeyFrameAnimation(context, context.TrimAnimatable(animatable), result.Properties, propertyName, propertyName, null);
+                    result.Properties.InsertScalar(propertyName, Opacity(trimmed.InitialValue));
+
+                    // The opacity is animated, but it might be non-animated after trimming.
+                    if (trimmed.IsAnimated)
+                    {
+                        ApplyOpacityKeyFrameAnimation(context, trimmed, result.Properties, propertyName, propertyName, null);
+                    }
                 }
 
                 var opacityScalarExpressions = animatableOpacities.Select(a => Expr.Scalar($"my.{a.name}")).ToArray();
@@ -3061,16 +3048,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 anim.SetReferenceParameter(ThemePropertiesName, _themePropertySet);
 
                 StartExpressionAnimation(result, nameof(result.Color), anim);
-                return result;
             }
             else
             {
-                // Opacity isn't animated. Multiply the alpha channel of the color by the non-animated opacity value.
+                // Opacity isn't animated.
+                // Create an expression that multiplies the alpha channel of the color by the opacity value.
                 var anim = _c.CreateExpressionAnimation(ThemedColorMultipliedByOpacity(bindingName, opacity.NonAnimatedValue));
                 anim.SetReferenceParameter(ThemePropertiesName, _themePropertySet);
                 StartExpressionAnimation(result, nameof(result.Color), anim);
-                return result;
             }
+
+            return result;
         }
 
         CompositionLinearGradientBrush TranslateLinearGradient(
@@ -3384,9 +3372,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 var propertyName = name;
                 brush.Properties.InsertScalar(propertyName, Opacity(trimmedOpacity.InitialValue * 255));
 
-                // Pre-multiply the opacities by 255 so we can use the simpler
-                // expression for multiplying color by opacity.
-                ApplyScaledOpacityKeyFrameAnimation(context, trimmedOpacity, 255, brush.Properties, propertyName, propertyName, null);
+                // The opacity is animated, but it might be non-animated after trimming.
+                if (trimmedOpacity.IsAnimated)
+                {
+                    // Pre-multiply the opacities by 255 so we can use the simpler
+                    // expression for multiplying color by opacity.
+                    ApplyScaledOpacityKeyFrameAnimation(context, trimmedOpacity, 255, brush.Properties, propertyName, propertyName, null);
+                }
             }
 
             var opacityExpressions = animatableOpacities.Select(ao => Expr.Scalar($"my.{ao.name}")).ToArray();
@@ -3814,9 +3806,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return new TrimmedAnimatable<Vector3>(context, keyframes[0].Value, keyframes);
         }
 
-        static bool ContainsSpatialControlPoints(in TrimmedAnimatable<Vector3> animation)
-             => animation.KeyFrames.Any(kf => kf.SpatialControlPoint1 != LottieData.Vector3.Zero || kf.SpatialControlPoint2 != LottieData.Vector3.Zero);
-
         void StartExpressionAnimation(CompositionObject compObject, string target, ExpressionAnimation animation)
         {
             // Start the animation.
@@ -3861,24 +3850,134 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             controller.StartAnimation("Progress", bindingAnimation);
         }
 
-        void ApplyPath(
+        // If the given path is equivalent to a static path with an animated offset, convert
+        // the path to that form and apply it to the given geometry and shape.
+        bool TryApplyPathAsStaticPathWithAnimatedOffset(
             TranslationContext context,
-            CompositionPathGeometry targetGeometry,
+            in TrimmedAnimatable<PathGeometry> path,
+            CompositionPathGeometry geometry,
+            CompositionSpriteShape shape,
+            ShapeFill.PathFillType fillType)
+        {
+            Debug.Assert(path.IsAnimated, "Precondition");
+
+            var offsets = new Vector2[path.KeyFrames.Length];
+            for (var i = 1; i < path.KeyFrames.Length; i++)
+            {
+                if (!TryGetPathTranslation(path.KeyFrames[0].Value.BezierSegments, path.KeyFrames[i].Value.BezierSegments, out offsets[i]))
+                {
+                    // The animation is not equivalent to a translation.
+                    return false;
+                }
+            }
+
+            // The path is equivalent to a translation. Apply the path described by the initial key frame
+            // and apply an offset translation to the CompositionSpriteShape that contains it.
+            geometry.Path = CompositionPathFromPathGeometry(
+                path.InitialValue,
+                fillType,
+                optimizeLines: true);
+
+            // Create the offsets key frames.
+            var keyFrames = new KeyFrame<Vector3>[offsets.Length];
+
+            for (var i = 0; i < path.KeyFrames.Length; i++)
+            {
+                ref var offset = ref offsets[i];
+                var pathKeyFrame = path.KeyFrames[i];
+                keyFrames[i] = new KeyFrame<Vector3>(pathKeyFrame.Frame, new Vector3(offset.X, offset.Y, 0), pathKeyFrame.Easing);
+            }
+
+            var offsetAnimatable = new TrimmedAnimatable<Vector3>(context, new Vector3(offsets[0].X, offsets[0].Y, 0), keyFrames);
+
+            // Apply the offset animation.
+            ApplyVector2KeyFrameAnimation(context, offsetAnimatable, shape, nameof(shape.Offset), "Path animation as a translation.");
+
+            return true;
+        }
+
+        // Iff the given paths are offsets translations of each other, gets the translation offset and returns true.
+        static bool TryGetPathTranslation(Sequence<BezierSegment> a, Sequence<BezierSegment> b, out Vector2 offset)
+        {
+            if (a.Items.Length != b.Items.Length)
+            {
+                // We could never animate this anyway.
+                offset = default;
+                return false;
+            }
+
+            offset = b.Items[0].ControlPoint0 - a.Items[0].ControlPoint0;
+            for (var i = 1; i < a.Items.Length; i++)
+            {
+                var cp0Offset = b.Items[i].ControlPoint0 - a.Items[i].ControlPoint0;
+                var cp1Offset = b.Items[i].ControlPoint1 - a.Items[i].ControlPoint1;
+                var cp2Offset = b.Items[i].ControlPoint2 - a.Items[i].ControlPoint2;
+                var cp3Offset = b.Items[i].ControlPoint3 - a.Items[i].ControlPoint3;
+
+                // Don't compare the values directly - there could be some rounding errors that
+                // are acceptable. This value is just a guess about what is acceptable. We could
+                // do something a lot more sophisticated (e.g. take into consideration the size
+                // of the path) but this is probably good enough.
+                const double acceptableError = 0.005;
+
+                if (!IsFuzzyEqual(cp0Offset, offset, acceptableError) ||
+                    !IsFuzzyEqual(cp1Offset, offset, acceptableError) ||
+                    !IsFuzzyEqual(cp2Offset, offset, acceptableError) ||
+                    !IsFuzzyEqual(cp3Offset, offset, acceptableError))
+                {
+                    offset = default;
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        static bool IsFuzzyEqual(in Vector2 a, in Vector2 b, in double acceptableError)
+        {
+            var delta = a - b;
+            return Math.Abs(delta.X) < acceptableError && Math.Abs(delta.Y) < acceptableError;
+        }
+
+        // Translates a Lottie PathGeometry to a CompositionSpriteShape.
+        CompositionSpriteShape TranslatePath(
+            TranslationContext context,
             in TrimmedAnimatable<PathGeometry> path,
             ShapeFill.PathFillType fillType)
         {
-            // PathKeyFrameAnimation was introduced in 6 but was unreliable until 11.
-            if (path.IsAnimated && IsUapApiAvailable(nameof(PathKeyFrameAnimation), versionDependentFeatureDescription: "Path animation"))
+            var result = _c.CreateSpriteShape();
+            var geometry = _c.CreatePathGeometry();
+            result.Geometry = geometry;
+
+            var isPathApplied = false;
+            if (path.IsAnimated)
             {
-                ApplyPathKeyFrameAnimation(context, path, fillType, targetGeometry, nameof(targetGeometry.Path), nameof(targetGeometry.Path));
+                // In cases where the animated path is just being moved in position we can convert
+                // to a static path with an offset animation. This is more efficient because it
+                // results in fewer paths, and it works around the inability to support animated
+                // paths before version 11.
+                if (TryApplyPathAsStaticPathWithAnimatedOffset(context, path, geometry, result, fillType))
+                {
+                    isPathApplied = true;
+                }
+                else if (IsUapApiAvailable(nameof(PathKeyFrameAnimation), versionDependentFeatureDescription: "Path animation"))
+                {
+                    // PathKeyFrameAnimation was introduced in 6 but was unreliable until 11.
+                    ApplyPathKeyFrameAnimation(context, path, fillType, geometry, nameof(geometry.Path), nameof(geometry.Path));
+                    isPathApplied = true;
+                }
             }
-            else
+
+            if (!isPathApplied)
             {
-                targetGeometry.Path = CompositionPathFromPathGeometry(
+                // The Path is not animated, or it is animated but we failed to animate it.
+                geometry.Path = CompositionPathFromPathGeometry(
                     path.InitialValue,
                     fillType,
                     optimizeLines: true);
             }
+
+            return result;
         }
 
         void ApplyPathGroup(
@@ -4231,8 +4330,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             TranslationContext context,
             in TrimmedAnimatable<T> value,
             Func<TCA> compositionAnimationFactory,
-            Action<TCA, float, T, CompositionEasingFunction> insertKeyFrame,
-            Action<TCA, float, CubicBezierFunction2, CompositionEasingFunction> insertExpressionKeyFrame,
+            Action<TCA, float, T, CompositionEasingFunction> keyFrameInserter,
+            Action<TCA, float, CubicBezierFunction2, CompositionEasingFunction> expressionKeyFrameInserter,
             CompositionObject targetObject,
             string targetPropertyName,
             string longDescription,
@@ -4260,6 +4359,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var animationStartTime = firstKeyFrame.Frame;
             var animationEndTime = lastKeyFrame.Frame;
 
+            var highestProgressValueSoFar = Float32.PreviousSmallerThan(0);
+
             if (firstKeyFrame.Frame > context.StartTime)
             {
                 // The first key frame is after the start of the animation. Create an extra keyframe at 0 to
@@ -4267,7 +4368,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 // Note that we could set an initial value for the property instead of using a key frame,
                 // but seeing as we're creating key frames anyway, it will be fewer operations to
                 // just use a first key frame and not set an initial value
-                insertKeyFrame(compositionAnimation, 0 /* progress */, firstKeyFrame.Value, _c.CreateStepThenHoldEasingFunction() /*easing*/);
+                InsertKeyFrame(compositionAnimation, 0 /* progress */, firstKeyFrame.Value, _c.CreateStepThenHoldEasingFunction() /*easing*/);
 
                 animationStartTime = context.StartTime;
             }
@@ -4293,9 +4394,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             foreach (var keyFrame in trimmedKeyFrames)
             {
-                var adjustedProgress = (keyFrame.Frame - animationStartTime) / animationDuration;
+                // Convert the frame number to a progress value for the current key frame.
+                var currentProgress = (float)((keyFrame.Frame - animationStartTime) / animationDuration);
 
-                if (keyFrame.SpatialControlPoint1 != default(Vector3) || keyFrame.SpatialControlPoint2 != default(Vector3))
+                if (keyFrame.SpatialBezier?.IsLinear == false)
                 {
                     // TODO - should only be on Vector3. In which case, should they be on Animatable, or on something else?
                     if (typeof(T) != typeof(Vector3))
@@ -4303,9 +4405,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         Debug.WriteLine("Spatial control point on non-Vector3 type");
                     }
 
+                    var spatialBezier = keyFrame.SpatialBezier.Value;
+
                     var cp0 = Vector2((Vector3)(object)previousValue);
-                    var cp1 = Vector2(keyFrame.SpatialControlPoint1);
-                    var cp2 = Vector2(keyFrame.SpatialControlPoint2);
+                    var cp1 = Vector2(spatialBezier.ControlPoint1);
+                    var cp2 = Vector2(spatialBezier.ControlPoint2);
                     var cp3 = Vector2((Vector3)(object)keyFrame.Value);
                     CubicBezierFunction2 cb;
 
@@ -4328,7 +4432,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                             throw new InvalidOperationException();
                     }
 
-                    if (cb.IsEquivalentToLinear || adjustedProgress == 0)
+                    if (cb.IsEquivalentToLinear || currentProgress == 0)
                     {
                         // The cubic Bezier function is equivalent to a line, or its value starts at the start of the animation, so no need
                         // for an expression to do spatial Beziers on it. Just use a regular key frame.
@@ -4336,13 +4440,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         {
                             // Ensure the previous expression doesn't continue being evaluated during the current keyframe.
                             // This is necessary because the expression is only defined from the previous progress to the current progress.
-                            insertKeyFrame(compositionAnimation, Float32.NextLargerThan(previousProgress), previousValue, _c.CreateStepThenHoldEasingFunction());
+                            InsertKeyFrame(compositionAnimation, currentProgress, previousValue, _c.CreateStepThenHoldEasingFunction());
                         }
 
                         // The easing for a keyframe at 0 is unimportant, so always use Hold.
-                        var easing = adjustedProgress == 0 ? HoldEasing.Instance : keyFrame.Easing;
+                        var easing = currentProgress == 0 ? HoldEasing.Instance : keyFrame.Easing;
 
-                        insertKeyFrame(compositionAnimation, (float)adjustedProgress, keyFrame.Value, _c.CreateCompositionEasingFunction(easing));
+                        InsertKeyFrame(compositionAnimation, currentProgress, keyFrame.Value, _c.CreateCompositionEasingFunction(easing));
                         previousKeyFrameWasExpression = false;
                     }
                     else
@@ -4353,14 +4457,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         // so that there is room to add a key frame just after this to hold
                         // the final value. This is necessary so that the expression we're about
                         // to add won't get evaluated during the following segment.
-                        if ((float)adjustedProgress > 0)
+                        if (currentProgress > 0)
                         {
-                            adjustedProgress = Float32.PreviousSmallerThan((float)adjustedProgress);
+                            currentProgress = Float32.PreviousSmallerThan(currentProgress);
                         }
 
-                        if ((float)previousProgress > 0)
+                        if (previousProgress > 0)
                         {
-                            previousProgress = Float32.NextLargerThan((float)previousProgress);
+                            previousProgress = Float32.NextLargerThan(previousProgress);
                         }
 
                         // Re-create the cubic Bezier using the real variable name (it was created previously just to
@@ -4370,14 +4474,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                             cp0 + cp1,
                             cp2 + cp3,
                             cp3,
-                            RootScalar(_progressMapFactory.GetVariableForProgressMapping((float)previousProgress, (float)adjustedProgress, keyFrame.Easing, scale, offset)));
+                            RootScalar(_progressMapFactory.GetVariableForProgressMapping(previousProgress, currentProgress, keyFrame.Easing, scale, offset)));
 
                         // Insert the cubic Bezier expression. The easing has to be a StepThenHold because otherwise
                         // the value will be interpolated between the result of the expression, and the previous
                         // key frame value. The StepThenHold will make it just evaluate the expression.
-                        insertExpressionKeyFrame(
+                        InsertExpressionKeyFrame(
                             compositionAnimation,
-                            (float)adjustedProgress,
+                            currentProgress,
                             cb,                                 // Expression.
                             _c.CreateStepThenHoldEasingFunction());    // Jump to the final value so the expression is evaluated all the way through.
 
@@ -4392,22 +4496,30 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     if (previousKeyFrameWasExpression)
                     {
                         // Ensure the previous expression doesn't continue being evaluated during the current keyframe.
-                        insertKeyFrame(compositionAnimation, Float32.NextLargerThan(previousProgress), previousValue, _c.CreateStepThenHoldEasingFunction());
+                        var nextLargerThanPrevious = Float32.NextLargerThan(previousProgress);
+                        InsertKeyFrame(compositionAnimation, nextLargerThanPrevious, previousValue, _c.CreateStepThenHoldEasingFunction());
+
+                        if (currentProgress <= nextLargerThanPrevious)
+                        {
+                            // Prevent the next key frame from being inserted at the same progress value
+                            // as the one we just inserted.
+                            currentProgress = Float32.NextLargerThan(nextLargerThanPrevious);
+                        }
                     }
 
-                    insertKeyFrame(compositionAnimation, (float)adjustedProgress, keyFrame.Value, _c.CreateCompositionEasingFunction(keyFrame.Easing));
+                    InsertKeyFrame(compositionAnimation, currentProgress, keyFrame.Value, _c.CreateCompositionEasingFunction(keyFrame.Easing));
                     previousKeyFrameWasExpression = false;
                 }
 
                 previousValue = keyFrame.Value;
-                previousProgress = (float)adjustedProgress;
+                previousProgress = currentProgress;
             }
 
             if (previousKeyFrameWasExpression && previousProgress < 1)
             {
                 // Add a keyframe to hold the final value. Otherwise the expression on the last keyframe
                 // will get evaluated outside the bounds of its keyframe.
-                insertKeyFrame(compositionAnimation, Float32.NextLargerThan(previousProgress), (T)(object)previousValue, _c.CreateStepThenHoldEasingFunction());
+                InsertKeyFrame(compositionAnimation, Float32.NextLargerThan(previousProgress), (T)(object)previousValue, _c.CreateStepThenHoldEasingFunction());
             }
 
             // Add a reference to the root Visual if needed (i.e. if an expression keyframe was added).
@@ -4420,20 +4532,58 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             // Start the animation scaled and offset.
             StartKeyframeAnimation(targetObject, targetPropertyName, compositionAnimation, scale, offset);
-        }
 
-        float GetInPointProgress(TranslationContext context)
-        {
-            var result = (context.Layer.InPoint - context.StartTime) / context.DurationInFrames;
+            // If the given progress value is equal to a progress value that was already
+            // inserted into the animation, adjust it up to ensure we never try to
+            // insert a key frame on top of an existing key frame. This relies on the
+            // key frames being inserted in order.
+            void AdjustProgress(ref float progress)
+            {
+                if (progress == highestProgressValueSoFar)
+                {
+                    progress = Float32.NextLargerThan(highestProgressValueSoFar);
+                }
 
-            return (float)result;
-        }
+                highestProgressValueSoFar = progress;
+            }
 
-        float GetOutPointProgress(TranslationContext context)
-        {
-            var result = (context.Layer.OutPoint - context.StartTime) / context.DurationInFrames;
+            // Local method to ensure we never insert more than 1 key frame with
+            // the same progress value. This relies on the key frames being inserted
+            // in order, so if we get a key frame with the same progress value as
+            // the previous one we'll just adjust the progress value up slightly.
+            void InsertKeyFrame(TCA animation, float progress, T value, CompositionEasingFunction easing)
+            {
+                AdjustProgress(ref progress);
 
-            return (float)result;
+                // If progress is > 1 then we have no more room to add key frames.
+                // This can happen as a result of extra key frames being added for
+                // various reasons. The dropped key frames shouldn't matter as they
+                // would only affect a very small amount of time at the end of the
+                // animation.
+                if (progress <= 1)
+                {
+                    keyFrameInserter(animation, progress, value, easing);
+                }
+            }
+
+            // Local method to ensure we never insert more than 1 key frame with
+            // the same progress value. This relies on the key frames being inserted
+            // in order, so if we get a key frame with the same progress value as
+            // the previous one we'll just adjust the progress value up slightly.
+            void InsertExpressionKeyFrame(TCA animation, float progress, CubicBezierFunction2 expression, CompositionEasingFunction easing)
+            {
+                AdjustProgress(ref progress);
+
+                // If progress is > 1 then we have no more room to add key frames.
+                // This can happen as a result of extra key frames being added for
+                // various reasons. The dropped key frames shouldn't matter as they
+                // would only affect a very small amount of time at the end of the
+                // animation.
+                if (progress <= 1)
+                {
+                    expressionKeyFrameInserter(animation, progress, expression, easing);
+                }
+            }
         }
 
         static ShapeFill.PathFillType GetPathFillType(ShapeFill fill) => fill is null ? ShapeFill.PathFillType.EvenOdd : fill.FillType;
@@ -4579,7 +4729,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         void EnsureColorThemePropertyExists(TranslationContext context, string bindingName, Color defaultValue)
         {
             // Create a theme property set if one hasn't been created yet.
-            var themeProperties = _themePropertySet ?? (_themePropertySet = _c.CreatePropertySet());
+            var themeProperties = _themePropertySet ??= _c.CreatePropertySet();
 
             var defaultValueAsWinUIColor = Color(defaultValue);
             var defaultValueAsVector4 = Vector4(defaultValueAsWinUIColor);
@@ -4618,7 +4768,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         void EnsureScalarThemePropertyExists(string bindingName, double defaultValue)
         {
             // Create a theme property set if one hasn't been created yet.
-            var themeProperties = _themePropertySet ?? (_themePropertySet = _c.CreatePropertySet());
+            var themeProperties = _themePropertySet ??= _c.CreatePropertySet();
 
             var defaultValueAsFloat = Float(defaultValue);
 
@@ -4957,24 +5107,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
                     var rectangle = _owner._c.CreateSpriteShape();
 
-                    if (_owner._targetUapVersion <= 7)
-                    {
-                        // V7 did not reliably draw non-rounded rectangles.
-                        // Work around the problem by using a rounded rectangle with a tiny corner radius.
-                        var roundedRectangleGeometry = _owner._c.CreateRoundedRectangleGeometry();
-
-                        // NOTE: magic tiny corner radius number - do not change!
-                        roundedRectangleGeometry.CornerRadius = new Sn.Vector2(0.000001F);
-                        roundedRectangleGeometry.Size = Vector2(_context.Layer.Width, _context.Layer.Height);
-                        rectangle.Geometry = roundedRectangleGeometry;
-                    }
-                    else
-                    {
-                        // V8 and beyond doesn't need the rounded rectangle workaround.
-                        var rectangleGeometry = _owner._c.CreateRectangleGeometry();
-                        rectangleGeometry.Size = Vector2(_context.Layer.Width, _context.Layer.Height);
-                        rectangle.Geometry = rectangleGeometry;
-                    }
+                    rectangle.Geometry = _owner._c.CreateRectangleGeometry(
+                                            size: new Sn.Vector2(_context.Layer.Width, _context.Layer.Height),
+                                            offset: null);
 
                     containerContentNode.Shapes.Add(rectangle);
 

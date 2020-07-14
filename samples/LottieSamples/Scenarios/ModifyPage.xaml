@@ -35,7 +35,8 @@
             <!--#endregion-->
 
             <Border Style="{StaticResource LottiePlayer}">
-                <muxc:AnimatedVisualPlayer x:Name="Modified_Player">
+                <muxc:AnimatedVisualPlayer x:Name="Modified_Player"
+                                           AutomationProperties.Name="Lottie animation">
                     <!--
                         Codegen Source that has been generated from the modified LottieLogo1_Modified.json to dynamically
                         update color values defined in the After Effects file.

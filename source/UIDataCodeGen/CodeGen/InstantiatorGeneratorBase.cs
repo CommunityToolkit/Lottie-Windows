@@ -405,6 +405,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                         yield return new NamedConstant($"c_theme{themeProperty.Name}", $"Theme property: {themeProperty.Name}.", ConstantType.Color, (Wui.Color)themeProperty.DefaultValue);
                         break;
                     case PropertySetValueType.Scalar:
+                        yield return new NamedConstant($"c_theme{themeProperty.Name}", $"Theme property: {themeProperty.Name}.", ConstantType.Float, (float)themeProperty.DefaultValue);
+                        break;
                     case PropertySetValueType.Vector2:
                     case PropertySetValueType.Vector3:
                     case PropertySetValueType.Vector4:

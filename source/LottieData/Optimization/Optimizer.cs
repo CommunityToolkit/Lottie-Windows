@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Transactions;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
 {
@@ -111,6 +112,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
         static KeyFrame<PathGeometry> HackPathGeometry(KeyFrame<PathGeometry> value) =>
             value.CloneWithNewValue(new PathGeometry(new Sequence<BezierSegment>(new[] { value.Value.BezierSegments.Items[0] }), isClosed: false));
 
+        static bool HasNonLinearCubicBezierEasing<T>(KeyFrame<T> keyFrame)
+            where T : IEquatable<T>
+        {
+            var easing = keyFrame.Easing;
+
+            return easing.Type == Easing.EasingType.CubicBezier && !((CubicBezierEasing)easing).Beziers[0].IsLinear;
+        }
+
         // True iff b is between and c.
         static bool IsBetween(Vector2 a, Vector2 b, Vector2 c)
         {
@@ -209,13 +218,25 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                     if (keyFrame0.Value.Equals(keyFrame1.Value))
                     {
                         // First 2 key frames have the same value. If the next has the same
-                        // value then the one in between is redundant.
+                        // value then the one in between is redundant unless there is a
+                        // non-linear cubic Bezier easing between them.
                         while (true)
                         {
                             var keyFrame2 = keyFrames[i + 1];
 
                             if (!keyFrame0.Value.Equals(keyFrame2.Value))
                             {
+                                // Not redundant.
+                                break;
+                            }
+
+                            // Check for a non-linear cubic Bezier easing. A non-linear cubic Bezier
+                            // easing between frames will result in the value changing even though
+                            // the frames have the same values.
+                            if (HasNonLinearCubicBezierEasing(keyFrame1) ||
+                                HasNonLinearCubicBezierEasing(keyFrame2))
+                            {
+                                // Not redundant.
                                 break;
                             }
 
@@ -271,9 +292,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
             if (optimizedFrames is null)
             {
                 // No redundant key frames found yet.
-                // If the final 2 key frames have the same value, the final key frame is redundant.
-                if (keyFrames[keyFrames.Length - 1].Value.Equals(keyFrames[keyFrames.Length - 2].Value))
+                // If the final 2 key frames have the same value, the final key frame is redundant,
+                // unless it has a non-linear cubic Bezier easing.
+                if (keyFrames[keyFrames.Length - 1].Value.Equals(keyFrames[keyFrames.Length - 2].Value) &&
+                    !HasNonLinearCubicBezierEasing(keyFrames[keyFrames.Length - 1]))
                 {
+                    // Final keyframe is redundant.
                     return keyFrames.Slice(0, keyFrames.Length - 1);
                 }
                 else
@@ -284,8 +308,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
             else
             {
                 // Some redundant key frames found.
-                // If the final 2 key frames have the same value, the final key frame is redundant.
-                if (optimizedFrames[optimizedCount - 1].Value.Equals(optimizedFrames[optimizedCount - 2].Value))
+                // If the final 2 key frames have the same value, the final key frame is redundant,
+                // unless it has a non-linear cubic Bezier easing.
+                if (optimizedFrames[optimizedCount - 1].Value.Equals(optimizedFrames[optimizedCount - 2].Value) &&
+                    !HasNonLinearCubicBezierEasing(optimizedFrames[optimizedCount - 1]))
                 {
                     optimizedCount--;
                 }
@@ -378,17 +404,24 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
         static IEnumerable<KeyFrame<T>> RemoveRedundantKeyFrames<T>(KeyFrame<T>[] keyFrames)
             where T : IEquatable<T>
         {
-            for (var i = 0; i < keyFrames.Length - 1; i++)
+            if (keyFrames.Length > 0)
             {
-                // Only include the key frame if it has a frame value that is different
-                // from the next key frame's frame.
-                if (keyFrames[i].Frame != keyFrames[i + 1].Frame)
+                yield return keyFrames[0];
+
+                for (var i = 1; i < keyFrames.Length; i++)
                 {
-                    yield return keyFrames[i];
+                    var previous = keyFrames[i - 1];
+                    var current = keyFrames[i];
+
+                    // If the current and previous key frames are at the same frame number and
+                    // the same value, the current frame will have no effect.
+                    if (current.Frame != previous.Frame ||
+                        !current.Value.Equals(previous.Value))
+                    {
+                        yield return keyFrames[i];
+                    }
                 }
             }
-
-            yield return keyFrames[keyFrames.Length - 1];
         }
 
         sealed class AnimatableComparer<T>

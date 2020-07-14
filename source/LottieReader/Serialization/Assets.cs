@@ -112,9 +112,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         static ImageAsset CreateImageAsset(string id, double width, double height, string imagePath, string fileName)
         {
-            // Colon is never valid for a file name. If fileName contains a colon it is probably a URL.
+            // Colon is never valid for a file name. Any embedded file will have a colon to delimit
+            // the url scheme.
             var colonIndex = fileName.IndexOf(':');
-            return string.IsNullOrWhiteSpace(imagePath) && colonIndex > 0
+            return colonIndex > 0
                 ? (ImageAsset)CreateEmbeddedImageAsset(id, width, height, dataUrl: fileName)
                 : new ExternalImageAsset(id, width, height, imagePath, fileName);
         }

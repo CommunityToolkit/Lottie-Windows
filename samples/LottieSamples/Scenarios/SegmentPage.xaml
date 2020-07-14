@@ -55,6 +55,7 @@
                 <!--  AnimatedVisualPlayer with Pointer Event Handlers  -->
                 <muxc:AnimatedVisualPlayer x:Name="Segments_Player"
                                             AutoPlay="False"
+                                            AutomationProperties.Name="Lottie animation"
                                             PointerEntered="Segments_Player_PointerEntered"
                                             PointerExited="Segments_Player_PointerExited"
                                             PointerPressed="Segments_Player_PointerPressed">

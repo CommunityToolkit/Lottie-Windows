@@ -18,9 +18,7 @@ internal enum Lang
     CSharp,
     Cx,
     Cppwinrt,
-    LottieXml,
     LottieYaml,
-    WinCompXml,
     WinCompDgml,
     Stats,
 }
@@ -36,6 +34,8 @@ sealed class CommandLineOptions
     // The parse error, or null if the parse succeeded.
     // The error should be a sentence (starts with a capital letter, and ends with a period).
     internal string ErrorDescription { get; private set; }
+
+    internal bool GenerateColorBindings { get; private set; }
 
     internal bool GenerateDependencyObject { get; private set; }
 
@@ -87,6 +87,11 @@ sealed class CommandLineOptions
             sb.Append($" -{nameof(DisableTranslationOptimizer)}");
         }
 
+        if (GenerateColorBindings)
+        {
+            sb.Append($" -{nameof(GenerateColorBindings)}");
+        }
+
         if (GenerateDependencyObject)
         {
             sb.Append($" -{nameof(GenerateDependencyObject)}");
@@ -136,6 +141,7 @@ sealed class CommandLineOptions
         Ambiguous,
         DisableCodeGenOptimizer,
         DisableTranslationOptimizer,
+        GenerateColorBindings,
         GenerateDependencyObject,
         Help,
         InputFile,
@@ -158,16 +164,14 @@ sealed class CommandLineOptions
 
         // Convert the language strings to language values.
         var languageTokenizer = new CommandlineTokenizer<Lang>(Lang.Ambiguous)
-                .AddKeyword("csharp", Lang.CSharp)
-                .AddKeyword("cppcx", Lang.Cx)
-                .AddKeyword("cx", Lang.Cx)
-                .AddKeyword("cppwinrt", Lang.Cppwinrt)
-                .AddKeyword("winrtcpp", Lang.Cppwinrt)
-                .AddKeyword("lottiexml", Lang.LottieXml)
-                .AddKeyword("lottieyaml", Lang.LottieYaml)
-                .AddKeyword("wincompxml", Lang.WinCompXml)
-                .AddKeyword("dgml", Lang.WinCompDgml)
-                .AddKeyword("stats", Lang.Stats);
+                .AddKeyword(Lang.CSharp)
+                .AddKeyword(Lang.Cx, "cppcx")
+                .AddKeyword(Lang.Cx)
+                .AddKeyword(Lang.Cppwinrt)
+                .AddKeyword(Lang.Cppwinrt, "winrtcpp")
+                .AddKeyword(Lang.LottieYaml)
+                .AddKeyword(Lang.WinCompDgml, "dgml")
+                .AddKeyword(Lang.Stats);
 
         var languages = new List<Lang>();
 
@@ -196,21 +200,22 @@ sealed class CommandLineOptions
     {
         // Define the keywords accepted on the command line.
         var tokenizer = new CommandlineTokenizer<Keyword>(Keyword.Ambiguous)
-            .AddPrefixedKeyword("?", Keyword.Help)
-            .AddPrefixedKeyword("disablecodegenoptimizer", Keyword.DisableCodeGenOptimizer)
-            .AddPrefixedKeyword("disabletranslationoptimizer", Keyword.DisableTranslationOptimizer)
-            .AddPrefixedKeyword("generatedependencyobject", Keyword.GenerateDependencyObject)
-            .AddPrefixedKeyword("help", Keyword.Help)
-            .AddPrefixedKeyword("inputfile", Keyword.InputFile)
-            .AddPrefixedKeyword("interface", Keyword.Interface)
-            .AddPrefixedKeyword("language", Keyword.Language)
-            .AddPrefixedKeyword("minimumuapversion", Keyword.MinimumUapVersion)
-            .AddPrefixedKeyword("namespace", Keyword.Namespace)
-            .AddPrefixedKeyword("outputfolder", Keyword.OutputFolder)
-            .AddPrefixedKeyword("public", Keyword.Public)
-            .AddPrefixedKeyword("strict", Keyword.Strict)
-            .AddPrefixedKeyword("targetuapversion", Keyword.TargetUapVersion)
-            .AddPrefixedKeyword("testmode", Keyword.TestMode);
+            .AddPrefixedKeyword(Keyword.DisableCodeGenOptimizer)
+            .AddPrefixedKeyword(Keyword.DisableTranslationOptimizer)
+            .AddPrefixedKeyword(Keyword.GenerateColorBindings)
+            .AddPrefixedKeyword(Keyword.GenerateDependencyObject)
+            .AddPrefixedKeyword(Keyword.Help, "?")
+            .AddPrefixedKeyword(Keyword.Help)
+            .AddPrefixedKeyword(Keyword.InputFile)
+            .AddPrefixedKeyword(Keyword.Interface)
+            .AddPrefixedKeyword(Keyword.Language)
+            .AddPrefixedKeyword(Keyword.MinimumUapVersion)
+            .AddPrefixedKeyword(Keyword.Namespace)
+            .AddPrefixedKeyword(Keyword.OutputFolder)
+            .AddPrefixedKeyword(Keyword.Public)
+            .AddPrefixedKeyword(Keyword.Strict)
+            .AddPrefixedKeyword(Keyword.TargetUapVersion)
+            .AddPrefixedKeyword(Keyword.TestMode);
 
         // The last keyword recognized. This defines what the following parameter value is for,
         // or None if not expecting a parameter value.
@@ -232,6 +237,9 @@ sealed class CommandLineOptions
                         case Keyword.None:
                             ErrorDescription = $"Unexpected: \"{arg}\".";
                             return;
+                        case Keyword.GenerateColorBindings:
+                            GenerateColorBindings = true;
+                            break;
                         case Keyword.GenerateDependencyObject:
                             GenerateDependencyObject = true;
                             break;

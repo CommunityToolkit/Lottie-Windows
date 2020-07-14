@@ -4,6 +4,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 
@@ -32,12 +34,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         // Takes a group of possibly-animated paths and returns an animatable
         // of PathGeometryGroups. Returns true if it succeeds without issues.
         // Even if false is returned a best-effort animatable is returned.
-        internal static bool TryGroupPaths(IEnumerable<Path> paths, out Animatable<PathGeometryGroup> result)
+        internal static bool TryGroupPaths(
+            TranslationContext context,
+            IEnumerable<Path> paths,
+            out Animatable<PathGeometryGroup> result)
         {
             // Store the keyframes in a dictionary, keyed by frame.
             var ps = paths.ToArray();
 
-            var groupsByFrame = new Dictionary<double, GeometryKeyFrame[]>
+            var groupsByFrame = new Dictionary<double, GeometryKeyFrame[]>(context.FrameNumberComparer)
             {
                 { 0, new GeometryKeyFrame[ps.Length] },
             };
@@ -52,11 +57,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 // Add any keyframes.
                 foreach (var kf in p.Data.KeyFrames.ToArray().Skip(1))
                 {
+                    // See if there's a key frame at the frame number already.
                     if (!groupsByFrame.TryGetValue(kf.Frame, out var array))
                     {
                         array = new GeometryKeyFrame[ps.Length];
                         groupsByFrame.Add(kf.Frame, array);
                     }
+
+                    // NOTE: this could result in a key frame being overwritten and
+                    // lost if the frame numbers are very close together. This seems
+                    // to be extremely rare, so rather than trying to be too clever
+                    // here we'll just let it happen. The assert should help us find
+                    // any cases where this happens to determine if we should be trying
+                    // harder.
+                    Debug.Assert(array[i] is null, "Path key frames very close together");
 
                     array[i] = new GeometryKeyFrame(p, kf.Value, kf.Easing);
                 }

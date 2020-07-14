@@ -30,6 +30,7 @@
                         Orientation="Horizontal">
                 <!--  Open file (alternative: 0xe8e5)  -->
                 <Button Click="PickFile_Click"
+                        AutomationProperties.Name="Pick a Lottie file"
                         Style="{StaticResource ControlsButtonStyle}"
                         ToolTipService.ToolTip="Pick a Lottie file">
                     &#xf12b;
@@ -40,6 +41,7 @@
                         Orientation="Horizontal">
                 <!--  Paint palette  -->
                 <Button IsEnabled="{x:Bind _stage.Player.IsAnimatedVisualLoaded, Mode=OneWay}"
+                        AutomationProperties.Name="Pick background color"
                         Style="{StaticResource ControlsButtonStyle}"
                         ToolTipService.ToolTip="Background color">
                     <Button.Flyout>
@@ -60,6 +62,7 @@
                 <!--  Play speed  -->
                 <Button IsEnabled="{x:Bind _stage.Player.IsAnimatedVisualLoaded, Mode=OneWay}"
                         Style="{StaticResource ControlsButtonStyle}"
+                        AutomationProperties.Name="Pick play speed"
                         ToolTipService.ToolTip="Play speed">
                     <Button.Flyout>
                         <Flyout FlyoutPresenterStyle="{StaticResource AcrylicFlyoutPresenter}">
@@ -87,6 +90,7 @@
                 <Button Foreground="Orange"
                         IsEnabled="{x:Bind _stage.PlayerHasIssues, Mode=OneWay}"
                         Style="{StaticResource ControlsButtonStyle}"
+                        AutomationProperties.Name="View issues"
                         ToolTipService.ToolTip="View issues">
                     <Button.Flyout>
                         <Flyout>
@@ -194,18 +198,25 @@
                               RelativePanel.AlignTopWithPanel="True"
                               Style="{StaticResource ControlsToggleButtonStyle}"
                               ToolTipService.ToolTip="Play/Stop"
+                              AutomationProperties.Name="Toggle play/stop"
                               Unchecked="_playControl_Toggled">
                     <Grid>
+                        <!-- Those TextBlocks are just for visual purposes, but are confusinng for accessibility,
+                             so we remove them from UIA -->
+                        
                         <!--  Play  -->
-                        <TextBlock Visibility="{x:Bind _playStopButton.IsChecked, Converter={StaticResource VisibilityConverter}, ConverterParameter=not, Mode=OneWay}">&#xedb5;</TextBlock>
+                        <TextBlock Visibility="{x:Bind _playStopButton.IsChecked, Converter={StaticResource VisibilityConverter}, ConverterParameter=not, Mode=OneWay}"
+                                   AutomationProperties.AccessibilityView="Raw">&#xedb5;</TextBlock>
                         <!--  Stop  -->
-                        <TextBlock Visibility="{x:Bind _playStopButton.IsChecked, Converter={StaticResource VisibilityConverter}, Mode=OneWay}">&#xe71a;</TextBlock>
+                        <TextBlock Visibility="{x:Bind _playStopButton.IsChecked, Converter={StaticResource VisibilityConverter}, Mode=OneWay}"
+                                   AutomationProperties.AccessibilityView="Raw">&#xe71a;</TextBlock>
                     </Grid>
                 </ToggleButton>
 
                 <!--  Scrubber  -->
                 <!--  IsEnabled="{x:Bind _playStopButton.IsChecked, Mode=OneWay}"  -->
                 <local:Scrubber x:Name="_scrubber"
+                                AutomationProperties.Name="Animation progress"
                                 Margin="0,5,0,0"
                                 VerticalAlignment="Center"
                                 IsEnabled="{x:Bind _stage.Player.IsAnimatedVisualLoaded, Mode=OneWay}"

@@ -94,12 +94,39 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal CompositionPropertySet CreatePropertySet() => _compositor.CreatePropertySet();
 
-        internal CompositionRectangleGeometry CreateRectangleGeometry()
+        internal CompositionGeometry CreateRectangleGeometry(Sn.Vector2? size, Sn.Vector2? offset)
         {
-            // Rectangle geometries exist in version 7, but they are unreliable (they
-            // sometimes only half draw), so create them as being version 8.
-            ConsumeVersionFeature(8);
-            return _compositor.CreateRectangleGeometry();
+            const int c_rectangleGeometryIsUnreliableUntil = 12;
+
+            CompositionGeometry result;
+
+            if (_targetUapVersion < c_rectangleGeometryIsUnreliableUntil)
+            {
+                // <= V7 did not reliably draw non-rounded rectangles.
+                // <= V11 draws non-rounded rectangles with aliased edges.
+                // Work around the problem by using a rounded rectangle with a tiny corner radius.
+                var roundedRectangleGeometry = _compositor.CreateRoundedRectangleGeometry();
+
+                // NOTE: magic tiny corner radius number - do not change!
+                roundedRectangleGeometry.CornerRadius = new Sn.Vector2(0.000001F);
+                roundedRectangleGeometry.Size = size;
+                roundedRectangleGeometry.Offset = offset;
+
+                result = roundedRectangleGeometry;
+            }
+            else
+            {
+                // Later versions do not need the rounded rectangle workaround.
+                ConsumeVersionFeature(c_rectangleGeometryIsUnreliableUntil);
+
+                var rectangleGeometry = _compositor.CreateRectangleGeometry();
+                rectangleGeometry.Size = size;
+                rectangleGeometry.Offset = offset;
+
+                result = rectangleGeometry;
+            }
+
+            return result;
         }
 
         internal CompositionRoundedRectangleGeometry CreateRoundedRectangleGeometry() => _compositor.CreateRoundedRectangleGeometry();
@@ -164,8 +191,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             if (!_cubicBezierEasingFunctions.TryGetValue(cubicBezierEasing, out var result))
             {
                 // WinComp does not support control points with components > 1. Clamp the values to 1.
-                var controlPoint1 = ClampedVector2(cubicBezierEasing.ControlPoint1);
-                var controlPoint2 = ClampedVector2(cubicBezierEasing.ControlPoint2);
+                var controlPoint1 = ClampedVector2(cubicBezierEasing.Beziers[0].ControlPoint1);
+                var controlPoint2 = ClampedVector2(cubicBezierEasing.Beziers[0].ControlPoint2);
 
                 result = _compositor.CreateCubicBezierEasingFunction(controlPoint1, controlPoint2);
                 _cubicBezierEasingFunctions.Add(cubicBezierEasing, result);
@@ -261,7 +288,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return Math.Min(Math.Max(min, value), max);
         }
 
-        static Sn.Vector2 ClampedVector2(LottieData.Vector3 vector3) => ClampedVector2((float)vector3.X, (float)vector3.Y);
+        static Sn.Vector2 ClampedVector2(LottieData.Vector2 vector2) => ClampedVector2((float)vector2.X, (float)vector2.Y);
 
         static Sn.Vector2 ClampedVector2(float x, float y) => Vector2(Clamp(x, 0, 1), Clamp(y, 0, 1));
 
