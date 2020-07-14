@@ -56,12 +56,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             }
 
             // Set the names on each node.
-            foreach (var entry in nodesByName)
-            {
-                var nodeName = entry.Key;
-                var nodeList = entry.Value;
+            var uniqueNames = new HashSet<string>();
 
-                // Append a counter suffix.
+            // First deal with names that we know are unique.
+            foreach (var (nodeName, nodeList) in nodesByName)
+            {
                 // NOTE: For C# there is no need for a suffix if there is only one node with this name,
                 //       however this can break C++ which cannot distinguish between a method name and
                 //       a type name. For example, if a single CompositionPath node produced a method
@@ -72,17 +71,47 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 if (nodeList.Count == 1 && nodeName.IsNotATypeName)
                 {
                     // The name is unique and is not a type name, so no need for a suffix.
-                    yield return (nodeList[0], nodeName.Name);
+                    var name = nodeName.Name;
+                    uniqueNames.Add(name);
+                    yield return (nodeList[0], name);
                 }
-                else
+            }
+
+            // Now deal with the names that are not unique by appending a counter suffix.
+            foreach (var (nodeName, nodeList) in nodesByName)
+            {
+                if (nodeList.Count > 1 || !nodeName.IsNotATypeName)
                 {
                     // Use only as many digits as necessary to express the largest count.
                     var digitsRequired = (int)Math.Ceiling(Math.Log10(nodeList.Count));
                     var counterFormat = new string('0', digitsRequired);
 
+                    var suffixOffset = 0;
                     for (var i = 0; i < nodeList.Count; i++)
                     {
-                        yield return (nodeList[i], $"{nodeName.Name}_{i.ToString(counterFormat)}");
+                        // Create a unique name by appending a suffix.
+                        // If the name already exists then increment the suffix until a unique
+                        // name is found. This is necessary to deal with collisions with the
+                        // names that were known to be unique but that have names that look
+                        // like they have counter suffixes, for example Rectangle_15 could
+                        // be a 15x15 rectangle, or it could be the 15th rectangle with an
+                        // animated size.
+                        string name;
+                        while (true)
+                        {
+                            var counter = i + suffixOffset;
+                            name = $"{nodeName.Name}_{counter.ToString(counterFormat)}";
+                            if (uniqueNames.Add(name))
+                            {
+                                // The name was unique.
+                                break;
+                            }
+
+                            // Try the next suffix value.
+                            suffixOffset++;
+                        }
+
+                        yield return (nodeList[i], name);
                     }
                 }
             }
