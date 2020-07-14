@@ -4329,7 +4329,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 null,
                 targetObject,
                 targetPropertyName,
-                longDescription ?? targetPropertyName,
+                longDescription,
                 shortDescription);
         }
 

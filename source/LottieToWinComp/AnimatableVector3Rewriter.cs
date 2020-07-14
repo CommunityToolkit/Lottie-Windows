@@ -28,7 +28,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         {
             // CubicBezierEasings can have multiple easings - one for each channel (X, Y, Z).
             // See if there are any CubicBezierEasings that have different easing for
-            // each channel. It there aren't any, there's nothing to do.
+            // each channel. If there aren't any, there's nothing to do.
             if (!HasMultipleEasings(animatableVector3))
             {
                 return animatableVector3;
@@ -39,6 +39,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var xKeyFrames = ExtractKeyFrames(animatableVector3.KeyFrames, v => v.X, 0);
             var yKeyFrames = ExtractKeyFrames(animatableVector3.KeyFrames, v => v.Y, 1);
             var zKeyFrames = ExtractKeyFrames(animatableVector3.KeyFrames, v => v.Z, 2);
+
             return new AnimatableXYZ(
                 new Animatable<double>(xKeyFrames, animatableVector3.PropertyIndex),
                 new Animatable<double>(yKeyFrames, animatableVector3.PropertyIndex),
@@ -48,19 +49,27 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         // Extracts the key frames from a single channel of a Vector3.
         static KeyFrame<double>[] ExtractKeyFrames(
             ReadOnlySpan<KeyFrame<Vector3>> keyFrames,
-            Func<Vector3, double> valueExtractor,
-            int valueIndex)
+            Func<Vector3, double> channelValueSelector,
+            int channelIndex)
         {
             var result = new KeyFrame<double>[keyFrames.Length];
 
             for (var i = 0; i < keyFrames.Length; i++)
             {
                 var kf = keyFrames[i];
-                var value = valueExtractor(kf.Value);
+                var value = channelValueSelector(kf.Value);
                 var easing = kf.Easing;
                 if (easing is CubicBezierEasing cubicBezierEasing)
                 {
-                    var bezier = cubicBezierEasing.Beziers.Count > valueIndex ? cubicBezierEasing.Beziers[valueIndex] : cubicBezierEasing.Beziers[0];
+                    // Get the bezier for the channel, if there is one, otherwise
+                    // use the easing from the X channel. Not all Vector3s have
+                    // multiple easings, and some are really representing Vector2s
+                    // and might have easings for X and Y but probably not for Z,
+                    // so for those cases the X easing will do well enough.
+                    var bezier = cubicBezierEasing.Beziers.Count > channelIndex
+                                        ? cubicBezierEasing.Beziers[channelIndex]
+                                        : cubicBezierEasing.Beziers[0];
+
                     easing = new CubicBezierEasing(new[] { bezier });
                 }
 
