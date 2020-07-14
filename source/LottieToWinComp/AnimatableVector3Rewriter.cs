@@ -61,7 +61,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 var easing = kf.Easing;
                 if (easing is CubicBezierEasing cubicBezierEasing)
                 {
-                    // Get the bezier for the channel, if there is one, otherwise
+                    // Get the Bezier for the channel, if there is one, otherwise
                     // use the easing from the X channel. Not all Vector3s have
                     // multiple easings, and some are really representing Vector2s
                     // and might have easings for X and Y but probably not for Z,
