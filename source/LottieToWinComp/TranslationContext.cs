@@ -111,9 +111,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         }
 
         internal TrimmedAnimatable<Vector3> TrimAnimatable(IAnimatableVector3 animatable)
-        {
-            return TrimAnimatable<Vector3>((AnimatableVector3)animatable);
-        }
+            => TrimAnimatable<Vector3>((AnimatableVector3)animatable);
 
         internal TrimmedAnimatable<T> TrimAnimatable<T>(Animatable<T> animatable)
             where T : IEquatable<T>
