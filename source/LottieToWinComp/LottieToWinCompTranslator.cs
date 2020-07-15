@@ -1999,10 +1999,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             Sn.Matrix3x2 transformMatrix,
             bool optimizeLines)
         {
-            var beziers = figure.BezierSegments.Items;
+            var beziers = figure.BezierSegments;
             using (var builder = new CanvasPathBuilder(null))
             {
-                if (beziers.Length == 0)
+                if (beziers.Count == 0)
                 {
                     builder.BeginFigure(Vector2(0));
                     builder.EndFigure(CanvasFigureLoop.Closed);
@@ -3287,7 +3287,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             var gradientStops = context.TrimAnimatable(linearGradient.GradientStops);
 
-            if (gradientStops.InitialValue.Items.IsEmpty)
+            if (gradientStops.InitialValue.IsEmpty)
             {
                 // If there are no gradient stops then we can't create a brush.
                 return null;
@@ -3344,7 +3344,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             var gradientStops = context.TrimAnimatable(gradient.GradientStops);
 
-            if (gradientStops.InitialValue.Items.IsEmpty)
+            if (gradientStops.InitialValue.IsEmpty)
             {
                 // If there are no gradient stops then we can't create a brush.
                 return null;
@@ -3512,7 +3512,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             Sequence<GradientStop> gradientStops,
             CompositeOpacity opacity)
         {
-            var optimizedGradientStops = GradientStopOptimizer.OptimizeColorStops(GradientStopOptimizer.Optimize(gradientStops.Items.ToArray()));
+            var optimizedGradientStops = GradientStopOptimizer.OptimizeColorStops(GradientStopOptimizer.Optimize(gradientStops));
 
             if (opacity.IsAnimated)
             {
@@ -3615,7 +3615,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             for (var i = 0; i < stops.Length; i++)
             {
                 var kf = stops[i];
-                var value = kf.Value.Items[stopIndex];
+                var value = kf.Value[stopIndex];
                 var selected = selector(value);
 
                 yield return kf.CloneWithNewValue(selected);
@@ -4121,20 +4121,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         // Iff the given paths are offsets translations of each other, gets the translation offset and returns true.
         static bool TryGetPathTranslation(Sequence<BezierSegment> a, Sequence<BezierSegment> b, out Vector2 offset)
         {
-            if (a.Items.Length != b.Items.Length)
+            if (a.Count != b.Count)
             {
                 // We could never animate this anyway.
                 offset = default;
                 return false;
             }
 
-            offset = b.Items[0].ControlPoint0 - a.Items[0].ControlPoint0;
-            for (var i = 1; i < a.Items.Length; i++)
+            offset = b[0].ControlPoint0 - a[0].ControlPoint0;
+            for (var i = 1; i < a.Count; i++)
             {
-                var cp0Offset = b.Items[i].ControlPoint0 - a.Items[i].ControlPoint0;
-                var cp1Offset = b.Items[i].ControlPoint1 - a.Items[i].ControlPoint1;
-                var cp2Offset = b.Items[i].ControlPoint2 - a.Items[i].ControlPoint2;
-                var cp3Offset = b.Items[i].ControlPoint3 - a.Items[i].ControlPoint3;
+                var cp0Offset = b[i].ControlPoint0 - a[i].ControlPoint0;
+                var cp1Offset = b[i].ControlPoint1 - a[i].ControlPoint1;
+                var cp2Offset = b[i].ControlPoint2 - a[i].ControlPoint2;
+                var cp3Offset = b[i].ControlPoint3 - a[i].ControlPoint3;
 
                 // Don't compare the values directly - there could be some rounding errors that
                 // are acceptable. This value is just a guess about what is acceptable. We could

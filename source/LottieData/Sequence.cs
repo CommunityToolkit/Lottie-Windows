@@ -16,26 +16,55 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 #if PUBLIC_LottieData
     public
 #endif
-    sealed class Sequence<T> : IEquatable<Sequence<T>>, IEnumerable<T>
+    sealed class Sequence<T> : IEquatable<Sequence<T>>, IEnumerable<T>, IReadOnlyList<T>
     {
         static readonly string ItemTypeName = typeof(T).Name;
         readonly T[] _items;
         int _hashcode;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Sequence{T}"/> class.
+        /// </summary>
+        /// <param name="items">The items in the sequence.</param>
         public Sequence(IEnumerable<T> items)
         {
             _items = items.ToArray();
         }
 
         /// <summary>
-        /// Gets the items in the sequence.
+        /// Initializes a new instance of the <see cref="Sequence{T}"/> class.
         /// </summary>
-        public ReadOnlySpan<T> Items => _items;
+        /// <param name="items">The items in the sequence.</param>
+        /// <param name="takeOwnership">If true, the sequence will take ownership
+        /// of the array.</param>
+        public Sequence(T[] items, bool takeOwnership)
+        {
+            _items = takeOwnership ? items : items.ToArray();
+        }
 
         /// <summary>
-        /// And empty sequence.
+        /// Initializes a new instance of the <see cref="Sequence{T}"/> class.
+        /// Creates a sequence with one item.
         /// </summary>
-        public static Sequence<T> Empty { get; } = new Sequence<T>(Array.Empty<T>());
+        /// <param name="item">The one item in the sequence.</param>
+        public Sequence(T item)
+        {
+            _items = new[] { item };
+        }
+
+        /// <summary>
+        /// An empty sequence.
+        /// </summary>
+        public static Sequence<T> Empty { get; } = new Sequence<T>(Array.Empty<T>(), takeOwnership: true);
+
+        /// <summary>
+        /// True iff there are no items in the sequence.
+        /// </summary>
+        public bool IsEmpty => _items.Length == 0;
+
+        public int Count => ((IReadOnlyCollection<T>)_items).Count;
+
+        public T this[int index] => ((IReadOnlyList<T>)_items)[index];
 
         /// <inheritdoc/>
         public bool Equals(Sequence<T> other) =>

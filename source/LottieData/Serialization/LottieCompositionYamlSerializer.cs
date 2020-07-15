@@ -125,7 +125,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         YamlSequence FromSequence<T>(Sequence<T> collection, Func<T, YamlObject> selector)
         {
             var result = new YamlSequence();
-            foreach (var item in collection.Items)
+            foreach (var item in collection)
             {
                 result.Add(selector(item));
             }

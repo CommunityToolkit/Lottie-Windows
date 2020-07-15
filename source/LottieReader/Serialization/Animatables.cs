@@ -14,7 +14,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
     sealed partial class LottieCompositionReader
     {
         static readonly Sequence<GradientStop> s_defaultGradientStops =
-            new Sequence<GradientStop>(new[] { new ColorGradientStop(0, Color.Black) });
+            new Sequence<GradientStop>(new ColorGradientStop(0, Color.Black));
 
         static readonly Animatable<double> s_animatableDoubleZero = CreateNonAnimatedAnimatable(0.0);
         static readonly Animatable<Color> s_animatableColorBlack = CreateNonAnimatedAnimatable(Color.Black);
@@ -384,7 +384,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     }
                 }
 
-                return new Sequence<GradientStop>(colorStops);
+                return new Sequence<GradientStop>(colorStops, takeOwnership: true);
             }
         }
 
@@ -434,7 +434,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     }
                 }
 
-                return new Sequence<GradientStop>(gradientStops);
+                return new Sequence<GradientStop>(gradientStops, takeOwnership : true);
             }
         }
 
