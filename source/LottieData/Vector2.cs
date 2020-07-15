@@ -27,6 +27,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         public static Vector2 operator *(Vector2 left, double right) =>
             new Vector2(left.X * right, left.Y * right);
 
+        public static Vector2 operator /(Vector2 left, double right) =>
+            new Vector2(left.X / right, left.Y / right);
+
         public static Vector2 operator +(Vector2 left, Vector2 right) =>
             new Vector2(left.X + right.X, left.Y + right.Y);
 
