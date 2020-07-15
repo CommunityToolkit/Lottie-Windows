@@ -2199,14 +2199,38 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 compositionEllipseGeometry.Center = Vector2(position.InitialValue);
             }
 
-            var diameter = context.TrimAnimatable(shapeContent.Diameter);
-            if (diameter.IsAnimated)
+            // Ensure that the diameter is expressed in a form that has only one easing per channel.
+            var diameter = AnimatableVector3Rewriter.EnsureOneEasingPerChannel(shapeContent.Diameter);
+            if (diameter is AnimatableXYZ diameterXYZ)
             {
-                ApplyScaledVector2KeyFrameAnimation(context, diameter, 0.5, compositionEllipseGeometry, "Radius");
+                var diameterX = context.TrimAnimatable(diameterXYZ.X);
+                var diameterY = context.TrimAnimatable(diameterXYZ.Y);
+                if (diameterX.IsAnimated)
+                {
+                    ApplyScaledScalarKeyFrameAnimation(context, diameterX, 0.5, compositionEllipseGeometry, $"{nameof(CompositionEllipseGeometry.Radius)}.X");
+                }
+
+                if (diameterY.IsAnimated)
+                {
+                    ApplyScaledScalarKeyFrameAnimation(context, diameterY, 0.5, compositionEllipseGeometry, $"{nameof(CompositionEllipseGeometry.Radius)}.Y");
+                }
+
+                if (!diameterX.IsAnimated || !diameterY.IsAnimated)
+                {
+                    compositionEllipseGeometry.Radius = Vector2(diameter.InitialValue) * 0.5F;
+                }
             }
             else
             {
-                compositionEllipseGeometry.Radius = Vector2(diameter.InitialValue) * 0.5F;
+                var diameter3 = context.TrimAnimatable<Vector3>((AnimatableVector3)diameter);
+                if (diameter3.IsAnimated)
+                {
+                    ApplyScaledVector2KeyFrameAnimation(context, diameter3, 0.5, compositionEllipseGeometry, nameof(CompositionEllipseGeometry.Radius));
+                }
+                else
+                {
+                    compositionEllipseGeometry.Radius = Vector2(diameter.InitialValue) * 0.5F;
+                }
             }
 
             TranslateAndApplyShapeContentContext(
@@ -2223,7 +2247,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         {
             var result = _c.CreateSpriteShape();
             var position = context.TrimAnimatable(shapeContent.Position);
-            var size = context.TrimAnimatable(shapeContent.Size);
 
             if (shapeContent.Roundness.AlwaysEquals(0) && shapeContext.RoundedCorner is null)
             {
@@ -2232,7 +2255,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     shapeContext,
                     shapeContent,
                     position,
-                    size,
                     result);
             }
             else
@@ -2242,7 +2264,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     shapeContext,
                     shapeContent,
                     position,
-                    size,
                     result);
             }
 
@@ -2254,18 +2275,36 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             ShapeContentContext shapeContext,
             Rectangle shapeContent,
             in TrimmedAnimatable<Vector3> position,
-            in TrimmedAnimatable<Vector3> size,
             CompositionSpriteShape compositionShape)
         {
             Debug.Assert(shapeContent.Roundness.AlwaysEquals(0) && shapeContext.RoundedCorner is null, "Precondition");
 
-            var geometry = _c.CreateRectangleGeometry(
-                                size: size.IsAnimated ? (Sn.Vector2?)null : Vector2(size.InitialValue),
-                                offset: InitialOffset(size: size, position: position));
+            var size = AnimatableVector3Rewriter.EnsureOneEasingPerChannel(shapeContent.Size);
+            if (size is AnimatableXYZ sizeXYZ)
+            {
+                var width = context.TrimAnimatable(sizeXYZ.X);
+                var height = context.TrimAnimatable(sizeXYZ.Y);
 
-            compositionShape.Geometry = geometry;
+                var geometry = _c.CreateRectangleGeometry(
+                                    size: (width.IsAnimated || height.IsAnimated) ? (Sn.Vector2?)null : Vector2(width.InitialValue, height.InitialValue),
+                                    offset: InitialOffset(width, height, position: position));
 
-            ApplyRectangleContentCommon(context, shapeContext, shapeContent, compositionShape, size, position, geometry);
+                compositionShape.Geometry = geometry;
+
+                ApplyRectangleContentCommonXY(context, shapeContext, shapeContent, compositionShape, width, height, position, geometry);
+            }
+            else
+            {
+                var size3 = context.TrimAnimatable<Vector3>((AnimatableVector3)size);
+
+                var geometry = _c.CreateRectangleGeometry(
+                                    size: size3.IsAnimated ? (Sn.Vector2?)null : Vector2(size3.InitialValue),
+                                    offset: InitialOffset(size: size3, position: position));
+
+                compositionShape.Geometry = geometry;
+
+                ApplyRectangleContentCommon(context, shapeContext, shapeContent, compositionShape, size3, position, geometry);
+            }
         }
 
         void TranslateAndApplyRoundedRectangleContent(
@@ -2273,7 +2312,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             ShapeContentContext shapeContext,
             Rectangle shapeContent,
             in TrimmedAnimatable<Vector3> position,
-            in TrimmedAnimatable<Vector3> size,
             CompositionSpriteShape compositionShape)
         {
             // Use a rounded rectangle geometry.
@@ -2286,54 +2324,113 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     ? shapeContext.RoundedCorner.Radius
                     : shapeContent.Roundness);
 
-            // In After Effects, the rectangle Roundness has no further effect once it reaches min(Size.X, Size.Y)/2.
-            // In Composition, the cornerRadius continues to affect the shape even beyond min(Size.X, Size.Y)/2.
-            // If size or corner radius are animated, handle this with an expression.
-            if (cornerRadius.IsAnimated || size.IsAnimated)
+            var size = AnimatableVector3Rewriter.EnsureOneEasingPerChannel(shapeContent.Size);
+            if (size is AnimatableXYZ sizeXYZ)
             {
-                if (cornerRadius.IsAnimated)
-                {
-                    geometry.Properties.InsertScalar("Roundness", Float(cornerRadius.InitialValue));
-                    ApplyScalarKeyFrameAnimation(context, cornerRadius, geometry.Properties, "Roundness");
+                var width = context.TrimAnimatable(sizeXYZ.X);
+                var height = context.TrimAnimatable(sizeXYZ.Y);
 
-                    if (size.IsAnimated)
+                // In After Effects, the rectangle Roundness has no further effect once it reaches min(Size.X, Size.Y)/2.
+                // In Composition, the cornerRadius continues to affect the shape even beyond min(Size.X, Size.Y)/2.
+                // If size or corner radius are animated, handle this with an expression.
+                if (cornerRadius.IsAnimated || width.IsAnimated || height.IsAnimated)
+                {
+                    WinCompData.Expressions.Vector2 cornerRadiusExpression;
+                    if (cornerRadius.IsAnimated)
                     {
-                        // Both size and cornerRadius are animated.
-                        var cornerRadiusExpression = _c.CreateExpressionAnimation(ConstrainedCornerRadiusScalar());
-                        cornerRadiusExpression.SetReferenceParameter("my", geometry);
-                        StartExpressionAnimation(geometry, "CornerRadius", cornerRadiusExpression);
+                        geometry.Properties.InsertScalar("Roundness", Float(cornerRadius.InitialValue));
+                        ApplyScalarKeyFrameAnimation(context, cornerRadius, geometry.Properties, "Roundness");
+
+                        if (width.IsAnimated || height.IsAnimated)
+                        {
+                            // Both size and cornerRadius are animated.
+                            cornerRadiusExpression = ConstrainedCornerRadiusScalar();
+                        }
+                        else
+                        {
+                            // Only the cornerRadius is animated.
+                            cornerRadiusExpression = ConstrainedCornerRadiusScalar(Vector2(width.InitialValue, height.InitialValue));
+                        }
                     }
                     else
                     {
-                        // Only the cornerRadius is animated.
-                        var cornerRadiusExpression = _c.CreateExpressionAnimation(ConstrainedCornerRadiusScalar(Vector2(size.InitialValue)));
-                        cornerRadiusExpression.SetReferenceParameter("my", geometry);
-                        StartExpressionAnimation(geometry, "CornerRadius", cornerRadiusExpression);
+                        // Only the size is animated.
+                        cornerRadiusExpression = ConstrainedCornerRadiusScalar(cornerRadius.InitialValue);
                     }
+
+                    var cornerRadiusAnimation = _c.CreateExpressionAnimation(cornerRadiusExpression);
+                    cornerRadiusAnimation.SetReferenceParameter("my", geometry);
+                    StartExpressionAnimation(geometry, nameof(CompositionRoundedRectangleGeometry.CornerRadius), cornerRadiusAnimation);
                 }
                 else
                 {
-                    // Only the size is animated.
-                    var cornerRadiusExpression = _c.CreateExpressionAnimation(ConstrainedCornerRadiusScalar(cornerRadius.InitialValue));
-                    cornerRadiusExpression.SetReferenceParameter("my", geometry);
-                    StartExpressionAnimation(geometry, "CornerRadius", cornerRadiusExpression);
+                    // Static size and corner radius.
+                    var cornerRadiusValue = Math.Min(cornerRadius.InitialValue, Math.Min(width.InitialValue, height.InitialValue) / 2);
+                    geometry.CornerRadius = Vector2((float)cornerRadiusValue);
                 }
+
+                geometry.Offset = InitialOffset(width, height, position: position);
+
+                if (!width.IsAnimated || !height.IsAnimated)
+                {
+                    geometry.Size = Vector2(width.InitialValue, height.InitialValue);
+                }
+
+                ApplyRectangleContentCommonXY(context, shapeContext, shapeContent, compositionShape, width, height, position, geometry);
             }
             else
             {
-                // Static size and corner radius.
-                var cornerRadiusValue = Math.Min(cornerRadius.InitialValue, Math.Min(size.InitialValue.X, size.InitialValue.Y) / 2);
-                geometry.CornerRadius = Vector2((float)cornerRadiusValue);
+                var size3 = context.TrimAnimatable<Vector3>((AnimatableVector3)size);
+
+                // In After Effects, the rectangle Roundness has no further effect once it reaches min(Size.X, Size.Y)/2.
+                // In Composition, the cornerRadius continues to affect the shape even beyond min(Size.X, Size.Y)/2.
+                // If size or corner radius are animated, handle this with an expression.
+                if (cornerRadius.IsAnimated || size3.IsAnimated)
+                {
+                    WinCompData.Expressions.Vector2 cornerRadiusExpression;
+
+                    if (cornerRadius.IsAnimated)
+                    {
+                        geometry.Properties.InsertScalar("Roundness", Float(cornerRadius.InitialValue));
+                        ApplyScalarKeyFrameAnimation(context, cornerRadius, geometry.Properties, "Roundness");
+
+                        if (size3.IsAnimated)
+                        {
+                            // Both size and cornerRadius are animated.
+                            cornerRadiusExpression = ConstrainedCornerRadiusScalar();
+                        }
+                        else
+                        {
+                            // Only the cornerRadius is animated.
+                            cornerRadiusExpression = ConstrainedCornerRadiusScalar(Vector2(size3.InitialValue));
+                        }
+                    }
+                    else
+                    {
+                        // Only the size is animated.
+                        cornerRadiusExpression = ConstrainedCornerRadiusScalar(cornerRadius.InitialValue);
+                    }
+
+                    var cornerRadiusAnimation = _c.CreateExpressionAnimation(cornerRadiusExpression);
+                    cornerRadiusAnimation.SetReferenceParameter("my", geometry);
+                    StartExpressionAnimation(geometry, "CornerRadius", cornerRadiusAnimation);
+                }
+                else
+                {
+                    // Static size and corner radius.
+                    var cornerRadiusValue = Math.Min(cornerRadius.InitialValue, Math.Min(size3.InitialValue.X, size3.InitialValue.Y) / 2);
+                    geometry.CornerRadius = Vector2((float)cornerRadiusValue);
+                }
+
+                geometry.Offset = InitialOffset(size: size3, position: position);
+
+                if (!size3.IsAnimated)
+                {
+                    geometry.Size = Vector2(size3.InitialValue);
+                }
+
+                ApplyRectangleContentCommon(context, shapeContext, shapeContent, compositionShape, size3, position, geometry);
             }
-
-            geometry.Offset = InitialOffset(size: size, position: position);
-
-            if (!size.IsAnimated)
-            {
-                geometry.Size = Vector2(size.InitialValue);
-            }
-
-            ApplyRectangleContentCommon(context, shapeContext, shapeContent, compositionShape, size, position, geometry);
         }
 
         // Convert the size and position for a geometry into an offset.
@@ -2343,6 +2440,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             in TrimmedAnimatable<Vector3> size,
             in TrimmedAnimatable<Vector3> position)
             => Vector2(position.InitialValue - (size.InitialValue / 2));
+
+        static Sn.Vector2 InitialOffset(
+            in TrimmedAnimatable<double> width,
+            in TrimmedAnimatable<double> height,
+            in TrimmedAnimatable<Vector3> position)
+            => Vector2(position.InitialValue - (new Vector3(width.InitialValue, height.InitialValue, 0) / 2));
 
         void ApplyRectangleContentCommon(
             TranslationContext context,
@@ -2402,6 +2505,96 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var width = size.InitialValue.X;
             var height = size.InitialValue.Y;
             var trimOffsetDegrees = (width / (2 * (width + height))) * 360;
+
+            TranslateAndApplyShapeContentContext(
+                context,
+                shapeContext,
+                compositionRectangle,
+                shapeContent.DrawingDirection == DrawingDirection.Reverse,
+                trimOffsetDegrees: trimOffsetDegrees);
+
+            if (_addDescriptions)
+            {
+                Describe(compositionRectangle, shapeContent.Name);
+                Describe(compositionRectangle.Geometry, $"{shapeContent.Name}.RectangleGeometry");
+            }
+        }
+
+        void ApplyRectangleContentCommonXY(
+            TranslationContext context,
+            ShapeContentContext shapeContext,
+            Rectangle shapeContent,
+            CompositionSpriteShape compositionRectangle,
+            in TrimmedAnimatable<double> width,
+            in TrimmedAnimatable<double> height,
+            in TrimmedAnimatable<Vector3> position,
+            CompositionGeometry geometry)
+        {
+            if (position.IsAnimated || width.IsAnimated || height.IsAnimated)
+            {
+                Expr offsetExpression;
+                if (position.IsAnimated)
+                {
+                    ApplyVector2KeyFrameAnimation(context, position, geometry, nameof(Rectangle.Position));
+                    geometry.Properties.InsertVector2(nameof(Rectangle.Position), Vector2(position.InitialValue));
+                    if (width.IsAnimated || height.IsAnimated)
+                    {
+                        // Size AND position are animated.
+                        offsetExpression = ExpressionFactory.PositionAndSizeToOffsetExpression;
+                        if (width.IsAnimated)
+                        {
+                            ApplyScalarKeyFrameAnimation(context, width, geometry, $"{nameof(Rectangle.Size)}.X");
+                        }
+
+                        if (height.IsAnimated)
+                        {
+                            ApplyScalarKeyFrameAnimation(context, height, geometry, $"{nameof(Rectangle.Size)}.Y");
+                        }
+                    }
+                    else
+                    {
+                        // Only Position is animated.
+                        offsetExpression = ExpressionFactory.HalfSizeToOffsetExpression(Vector2(new Vector2(width.InitialValue, height.InitialValue) / 2));
+                    }
+                }
+                else
+                {
+                    // Only Size is animated.
+                    offsetExpression = ExpressionFactory.PositionToOffsetExpression(Vector2(position.InitialValue));
+                    if (width.IsAnimated)
+                    {
+                        ApplyScalarKeyFrameAnimation(context, width, geometry, $"{nameof(Rectangle.Size)}.X");
+                    }
+
+                    if (height.IsAnimated)
+                    {
+                        ApplyScalarKeyFrameAnimation(context, height, geometry, $"{nameof(Rectangle.Size)}.Y");
+                    }
+                }
+
+                var offsetExpressionAnimation = _c.CreateExpressionAnimation(offsetExpression);
+                offsetExpressionAnimation.SetReferenceParameter("my", geometry);
+                StartExpressionAnimation(geometry, "Offset", offsetExpressionAnimation);
+            }
+
+            // Lottie rectangles have 0,0 at top right. That causes problems for TrimPath which expects 0,0 to be top left.
+            // Add an offset to the trim path.
+
+            // TODO - this only works correctly if Size and TrimOffset are not animated. A complete solution requires
+            //        adding another property.
+            var isPartialTrimPath = shapeContext.TrimPath != null &&
+                (shapeContext.TrimPath.Start.IsAnimated || shapeContext.TrimPath.End.IsAnimated || shapeContext.TrimPath.Offset.IsAnimated ||
+                shapeContext.TrimPath.Start.InitialValue.Value != 0 || shapeContext.TrimPath.End.InitialValue.Value != 1);
+
+            if ((width.IsAnimated || height.IsAnimated) && isPartialTrimPath)
+            {
+                // Warn that we might be getting things wrong.
+                _issues.AnimatedRectangleWithTrimPathIsNotSupported();
+            }
+
+            var initialWidth = width.InitialValue;
+            var initialHeight = height.InitialValue;
+            var trimOffsetDegrees = (initialWidth / (2 * (initialWidth + initialHeight))) * 360;
 
             TranslateAndApplyShapeContentContext(
                 context,
@@ -3543,7 +3736,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 transform.Anchor,
                 transform.Position,
                 context.TrimAnimatable(transform.Rotation),
-                context.TrimAnimatable(transform.ScalePercent),
+                transform.ScalePercent,
                 container);
 
             // TODO: set Skew and Skew Axis
@@ -3554,7 +3747,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             IAnimatableVector3 anchor,
             IAnimatableVector3 position,
             in TrimmedAnimatable<Rotation> rotation,
-            in TrimmedAnimatable<Vector3> scalePercent,
+            IAnimatableVector3 scalePercent,
             ContainerShapeOrVisual container)
         {
             // There are many different cases to consider in order to do this optimally:
@@ -3579,20 +3772,48 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
 
 #if !NoScaling
-            if (scalePercent.IsAnimated)
+            // If the channels have separate easings, convert to an AnimatableXYZ.
+            var scale = AnimatableVector3Rewriter.EnsureOneEasingPerChannel(scalePercent);
+
+            if (scale is AnimatableXYZ scaleXYZ)
             {
-                if (container.IsShape)
+                var trimmedX = context.TrimAnimatable(scaleXYZ.X);
+                var trimmedY = context.TrimAnimatable(scaleXYZ.Y);
+
+                if (trimmedX.IsAnimated)
                 {
-                    ApplyScaledVector2KeyFrameAnimation(context, scalePercent, 1 / 100.0, container, nameof(container.Scale), "Scale");
+                    ApplyScaledScalarKeyFrameAnimation(context, trimmedX, 1 / 100.0, container, $"{nameof(container.Scale)}.X", nameof(container.Scale));
                 }
-                else
+
+                if (trimmedY.IsAnimated)
                 {
-                    ApplyScaledVector3KeyFrameAnimation(context, scalePercent, 1 / 100.0, container, nameof(container.Scale), "Scale");
+                    ApplyScaledScalarKeyFrameAnimation(context, trimmedY, 1 / 100.0, container, $"{nameof(container.Scale)}.Y", nameof(container.Scale));
+                }
+
+                if (!trimmedX.IsAnimated || !trimmedY.IsAnimated)
+                {
+                    container.Scale = Vector2DefaultIsOne(new Vector3(trimmedX.InitialValue, trimmedY.InitialValue, 0) * (1 / 100.0));
                 }
             }
             else
             {
-                container.Scale = Vector2DefaultIsOne(scalePercent.InitialValue * (1 / 100.0));
+                var trimmedScale = context.TrimAnimatable<Vector3>((AnimatableVector3)scale);
+
+                if (trimmedScale.IsAnimated)
+                {
+                    if (container.IsShape)
+                    {
+                        ApplyScaledVector2KeyFrameAnimation(context, trimmedScale, 1 / 100.0, container, nameof(container.Scale), nameof(container.Scale));
+                    }
+                    else
+                    {
+                        ApplyScaledVector3KeyFrameAnimation(context, trimmedScale, 1 / 100.0, container, nameof(container.Scale), nameof(container.Scale));
+                    }
+                }
+                else
+                {
+                    container.Scale = Vector2DefaultIsOne(trimmedScale.InitialValue * (1 / 100.0));
+                }
             }
 #endif
 
@@ -3614,8 +3835,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var positionX = default(TrimmedAnimatable<double>);
             var positionY = default(TrimmedAnimatable<double>);
             var position3 = default(TrimmedAnimatable<Vector3>);
+            var positionWithSeparateEasings = AnimatableVector3Rewriter.EnsureOneEasingPerChannel(position);
 
-            var xyzPosition = position as AnimatableXYZ;
+            var xyzPosition = positionWithSeparateEasings as AnimatableXYZ;
             if (xyzPosition != null)
             {
                 positionX = context.TrimAnimatable(xyzPosition.X);
@@ -3623,7 +3845,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
             else
             {
-                position3 = context.TrimAnimatable(position);
+                position3 = context.TrimAnimatable<Vector3>((AnimatableVector3)positionWithSeparateEasings);
             }
 
             var anchorIsAnimated = anchorX.IsAnimated || anchorY.IsAnimated || anchor3.IsAnimated;
@@ -4095,8 +4317,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             double scale,
             CompositionObject targetObject,
             string targetPropertyName,
-            string longDescription,
-            string shortDescription)
+            string longDescription = null,
+            string shortDescription = null)
         {
             Debug.Assert(value.IsAnimated, "Precondition");
             GenericCreateCompositionKeyFrameAnimation(
