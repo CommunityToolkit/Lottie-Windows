@@ -127,7 +127,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             PushContainerShapeTransformsDown(graph, containerShapes);
             CoalesceContainerShapes2(graph, containerShapes);
             PushPropertiesDownToSpriteShape(graph, containerShapes);
-            PushShapeVisbilityDown(graph, containerShapes);
+
+            //PushShapeVisbilityDown(graph, containerShapes);
         }
 
         // Finds sibling shape containers that have the same properties and combines them.
@@ -434,7 +435,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 {
                     var childProperties = GetNonDefaultShapeProperties(child);
 
-                    if (child.Animators.Where(a => a.AnimatedProperty == nameof(CompositionShape.TransformMatrix)).Any())
+                    if (TryGetAnimatorByPropertyName(child, nameof(CompositionShape.TransformMatrix)) != null)
                     {
                         // Ignore this container if any of the children has an animated transform.
                         return false;
@@ -666,7 +667,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 var visibilityController = visual.TryGetAnimationController("IsVisible");
                 if (visibilityController != null)
                 {
-                    ApplyVisibility((Visual)node.Parent, GetVisiblityAnimationDescription(visual), visibilityController.Animators.Where(anim => anim.AnimatedProperty == "Progress").FirstOrDefault().Animation);
+                    ApplyVisibility((Visual)node.Parent, GetVisiblityAnimationDescription(visual), TryGetAnimatorByPropertyName(visibilityController, "Progress").Animation);
 
                     // Clear out the visibility property and animation from the visual.
                     visual.IsVisible = null;
@@ -817,7 +818,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 var visibilityController = shape.TryGetAnimationController("Scale");
                 if (visibilityController != null)
                 {
-                    ApplyVisibility(visual, GetVisiblityAnimationDescription(shape), visibilityController.Animators.Where(anim => anim.AnimatedProperty == "Progress").FirstOrDefault().Animation);
+                    ApplyVisibility(visual, GetVisiblityAnimationDescription(shape), TryGetAnimatorByPropertyName(visibilityController, "Progress").Animation);
 
                     // Clear out the Scale properties and animations from the shape.
                     shape.Scale = null;
@@ -872,7 +873,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
         {
             // Get the visibility animation.
             // TODO - this needs to take the controller's Progress expression into account.
-            var animator = visual.Animators.Where(anim => anim.AnimatedProperty == "IsVisible").FirstOrDefault();
+            var animator = TryGetAnimatorByPropertyName(visual, nameof(visual.IsVisible));
 
             if (animator is null)
             {
@@ -918,13 +919,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
         {
             var scaleValue = shape.Scale;
 
-            if (scaleValue.HasValue && scaleValue.Value != Vector2.One && scaleValue.Value != Vector2.Zero)
+            if (scaleValue.HasValue && scaleValue != Vector2.One && scaleValue != Vector2.Zero)
             {
                 // The animation is not used for visibility. Precondition.
                 throw new InvalidOperationException();
             }
 
-            var scaleAnimator = shape.Animators.Where(anim => anim.AnimatedProperty == "Scale").FirstOrDefault();
+            var scaleAnimator = TryGetAnimatorByPropertyName(shape, nameof(shape.Scale));
 
             if (scaleAnimator is null)
             {
@@ -1002,6 +1003,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                         // The child does not use Scale. Move the Scale down to the child.
                         TransferShapeProperties(parent, child);
 
+                        // Remove the parent as it's not needed any more.
                         ElideContainerShape(graph, parent);
                     }
                 }
@@ -1048,17 +1050,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             }
         }
 
+        // Returns true iff the Scale property on the given shape is used for visibility.
         static bool IsScaleUsedForVisibility(CompositionShape shape)
         {
             var scaleValue = shape.Scale;
 
-            if (scaleValue.HasValue && scaleValue.Value != Vector2.One && scaleValue.Value != Vector2.Zero)
+            if (scaleValue.HasValue && scaleValue != Vector2.One && scaleValue != Vector2.Zero)
             {
                 // Scale has a value that is not invisible (0,0) and it's not identity (1,1).
                 return false;
             }
 
-            var scaleAnimator = shape.Animators.Where(anim => anim.AnimatedProperty == "Scale").FirstOrDefault();
+            var scaleAnimator = TryGetAnimatorByPropertyName(shape, nameof(shape.Scale));
 
             if (scaleAnimator is null)
             {
@@ -1427,6 +1430,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 }
             }
         }
+
+        // Gets the animator targeting the given named property, or null if not found.
+        static CompositionObject.Animator TryGetAnimatorByPropertyName(CompositionObject obj, string name) =>
+            obj.Animators.Where(anim => anim.AnimatedProperty == name).FirstOrDefault();
 
         readonly struct VisibilityDescription
         {

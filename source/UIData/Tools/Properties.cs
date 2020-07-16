@@ -34,7 +34,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
             foreach (var animator in obj.Animators)
             {
-                result |= PropertyIdFromName(animator.AnimatedProperty);
+                var animatedPropertyName = animator.AnimatedProperty;
+
+                // The property name may contain subchannels. Trim those off.
+                var dotIndex = animatedPropertyName.IndexOf('.');
+                if (dotIndex > 0)
+                {
+                    animatedPropertyName = animatedPropertyName.Substring(0, dotIndex);
+                }
+
+                result |= PropertyIdFromName(animatedPropertyName);
             }
 
             return result;
@@ -70,7 +79,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 result |= PropertyId.TrimOffset;
             }
 
-            return result | GetNonDefaultCompositionObjectProperties((CompositionObject)obj);
+            return result | GetNonDefaultCompositionObjectProperties(obj);
         }
 
         internal static PropertyId GetNonDefaultShapeProperties(CompositionShape obj)
@@ -111,7 +120,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 result |= PropertyId.TransformMatrix;
             }
 
-            return result | GetNonDefaultCompositionObjectProperties((CompositionObject)obj);
+            return result | GetNonDefaultCompositionObjectProperties(obj);
         }
 
         internal static PropertyId GetNonDefaultSpriteShapeProperties(CompositionSpriteShape obj)
@@ -214,7 +223,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 result |= PropertyId.TransformMatrix;
             }
 
-            return result | GetNonDefaultCompositionObjectProperties((CompositionObject)obj);
+            return result | GetNonDefaultCompositionObjectProperties(obj);
         }
     }
 }
