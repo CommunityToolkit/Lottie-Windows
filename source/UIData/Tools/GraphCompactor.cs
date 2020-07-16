@@ -127,8 +127,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             PushContainerShapeTransformsDown(graph, containerShapes);
             CoalesceContainerShapes2(graph, containerShapes);
             PushPropertiesDownToSpriteShape(graph, containerShapes);
-
-            //PushShapeVisbilityDown(graph, containerShapes);
+            PushShapeVisbilityDown(graph, containerShapes);
         }
 
         // Finds sibling shape containers that have the same properties and combines them.
