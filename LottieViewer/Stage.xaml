@@ -9,6 +9,10 @@
              d:DesignHeight="300"
              d:DesignWidth="400"
              mc:Ignorable="d">
+    <UserControl.Resources>
+        <local:LottieVisualDiagnosticsViewModel x:Name="_diagnostics" DiagnosticsObject="{x:Bind _player.Diagnostics, Mode=OneWay}"/>
+    </UserControl.Resources>
+   
     <Grid>
         <Grid>
             <Grid.RowDefinitions>
@@ -64,9 +68,10 @@
 
         <StackPanel Margin="24"
                     VerticalAlignment="Bottom">
-            <TextBlock x:Name="_txtFileName" />
-            <TextBlock x:Name="_txtSize" />
-            <TextBlock x:Name="_txtDuration" />
+            <TextBlock Text="{x:Bind Diagnostics.FileName, Mode=OneWay}" />
+            <TextBlock Text="{x:Bind Diagnostics.SizeText, Mode=OneWay}" />
+            <TextBlock Text="{x:Bind Diagnostics.DurationText, Mode=OneWay}" />
+            <TextBlock Text="{x:Bind Diagnostics.MarkersText, Mode=OneWay}" />
         </StackPanel>
     </Grid>
 </UserControl>
