@@ -99,6 +99,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 
             /// <inheritdoc/>
             public override KeyFrameType Type => KeyFrameType.Value;
+
+            // For debugging only.
+            public override string ToString() => $"ValueKeyFrame: {Value}@{Progress} {Easing}";
         }
 
         public sealed class ExpressionKeyFrame : KeyFrame
