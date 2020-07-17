@@ -96,8 +96,8 @@ namespace LottieViewer
 
             // Start with an estimate of the numerator and denominator. We will iterate to
             // improve the estimate until we either get it exactly right or the numerator and
-            // denominator is so big as integers that we'll give up trying to express the result
-            // as an integer ratio and will return an integer and a floating point value.
+            // denominator are so big that we'll give up trying to express the result as
+            // an integer ratio and will return an integer and a floating point value.
             var candidateN = 1.0;
 
             // NOTE: if value is 0, candidateD will be infinity. This is not a problem - we'll
@@ -107,7 +107,7 @@ namespace LottieViewer
             // See how close our estimate is.
             var error = Math.Abs(value - (candidateN / candidateD));
 
-            // Interate until we get sufficiently close.
+            // Iterate until we get sufficiently close.
             for (double n = candidateN, d = candidateD; n * d <= maxRatioProduct && error != 0;)
             {
                 if (value > n / d)
