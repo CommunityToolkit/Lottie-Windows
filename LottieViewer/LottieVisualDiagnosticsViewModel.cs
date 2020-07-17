@@ -85,13 +85,29 @@ namespace LottieViewer
         }
 
         // Returns a pleasantly simplified ratio for the given value.
-        internal static (double, double) FloatToRatio(double value)
+        // For example an aspect ratio of 800 x 600 will result in a call to here
+        // as value = 800/600 = 1.333, and will be simplified to 4 x 3.
+        internal static (double numerator, double denominator) FloatToRatio(double value)
         {
+            // This value determines how large we will let the numerator or denominator get.
+            // If we didn't set a maximum, non-rational values would end up with an infinite
+            // numerator or denominator.
             const int maxRatioProduct = 200;
+
+            // Start with an estimate of the numerator and denominator. We will iterate to
+            // improve the estimate until we either get it exactly right or the numerator and
+            // denominator is so big as integers that we'll give up trying to express the result
+            // as an integer ratio and will return an integer and a floating point value.
             var candidateN = 1.0;
+
+            // NOTE: if value is 0, candidateD will be infinity. This is not a problem - we'll
+            //       end up returning 1 x infinity, which is the correct result.
             var candidateD = Math.Round(1 / value);
+
+            // See how close our estimate is.
             var error = Math.Abs(value - (candidateN / candidateD));
 
+            // Interate until we get sufficiently close.
             for (double n = candidateN, d = candidateD; n * d <= maxRatioProduct && error != 0;)
             {
                 if (value > n / d)
