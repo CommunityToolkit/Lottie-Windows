@@ -141,6 +141,7 @@
     <Compile Include="FeedbackLottie.xaml.cs">
       <DependentUpon>FeedbackLottie.xaml</DependentUpon>
     </Compile>
+    <Compile Include="LottieVisualDiagnosticsViewModel.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>

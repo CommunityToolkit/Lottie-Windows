@@ -16,6 +16,7 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization;
+using Microsoft.Toolkit.Uwp.UI.Lottie.LottieMetadata;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Foundation;
@@ -382,7 +383,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                         lottieComposition.Markers.Select(m =>
                             new KeyValuePair<string, double>(
                                 m.Name,
-                                m.Frame * lottieComposition.FramesPerSecond / lottieComposition.Duration.TotalSeconds)).ToArray();
+                                m.Frame / (lottieComposition.FramesPerSecond * lottieComposition.Duration.TotalSeconds))).ToArray();
 
                     // Validate the composition and report if issues are found.
                     diagnostics.LottieValidationIssues = ToIssues(LottieCompositionValidator.Validate(lottieComposition));

@@ -82,13 +82,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// </summary>
         public double OutPoint { get; }
 
-        public IEnumerable<Char> Chars { get; }
+        public IReadOnlyList<Char> Chars { get; }
 
         public GenericDataMap ExtraData { get; }
 
-        public IEnumerable<Font> Fonts { get; }
+        public IReadOnlyList<Font> Fonts { get; }
 
-        public IEnumerable<Marker> Markers { get; }
+        public IReadOnlyList<Marker> Markers { get; }
 
         public TimeSpan Duration { get; }
 

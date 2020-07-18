@@ -9,7 +9,6 @@
       mc:Ignorable="d">
     <Page.Resources>
         <local:VisiblityConverter x:Key="VisibilityConverter" />
-        <local:LottieVisualDiagnosticsFormatter x:Key="formatter" />
         <local:FloatFormatter x:Key="floatFormatter" />
         <SolidColorBrush x:Key="ArtboardBrush"
                          Color="White" />
@@ -88,7 +87,7 @@
                 </Button>
                 <!--  Issues  -->
                 <Button Foreground="Orange"
-                        IsEnabled="{x:Bind _stage.PlayerHasIssues, Mode=OneWay}"
+                        IsEnabled="{x:Bind _stage.Diagnostics.PlayerHasIssues, Mode=OneWay}"
                         Style="{StaticResource ControlsButtonStyle}"
                         AutomationProperties.Name="View issues"
                         ToolTipService.ToolTip="View issues">
@@ -100,7 +99,7 @@
                                     This Lottie has some issues ...
                                 </TextBlock>
                                 <ItemsControl Margin="12"
-                                              ItemsSource="{x:Bind _stage.PlayerIssues, Mode=OneWay}">
+                                              ItemsSource="{x:Bind _stage.Diagnostics.PlayerIssues, Mode=OneWay}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
                                             <StackPanel Orientation="Horizontal">
