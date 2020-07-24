@@ -144,17 +144,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             return result;
         }
 
-        YamlSequence FromSpan<T>(ReadOnlySpan<T> collection, Func<T, YamlObject> selector)
-        {
-            var result = new YamlSequence();
-            foreach (var item in collection)
-            {
-                result.Add(selector(item));
-            }
-
-            return result;
-        }
-
         YamlObject FromAsset(Asset asset)
         {
             var superclassContent = new YamlMap
@@ -228,7 +217,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             superclassContent.Add(nameof(layer.OutPoint), layer.OutPoint);
             superclassContent.Add(nameof(layer.TimeStretch), layer.TimeStretch);
             superclassContent.Add(nameof(layer.Transform), FromShapeLayerContent(layer.Transform));
-            superclassContent.Add(nameof(layer.Masks), FromSpan(layer.Masks, FromMask));
+            superclassContent.Add(nameof(layer.Masks), FromEnumerable(layer.Masks, FromMask));
             superclassContent.Add(nameof(layer.LayerMatteType), Scalar(layer.LayerMatteType));
 
             switch (layer.Type)
@@ -284,7 +273,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         YamlObject FromShapeLayer(ShapeLayer layer, YamlMap superclassContent)
         {
             var result = superclassContent;
-            result.Add(nameof(layer.Contents), FromSpan(layer.Contents, FromShapeLayerContent));
+            result.Add(nameof(layer.Contents), FromEnumerable(layer.Contents, FromShapeLayerContent));
             return result;
         }
 
@@ -401,7 +390,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         YamlObject FromShapeGroup(ShapeGroup content, YamlMap superclassContent)
         {
             var result = superclassContent;
-            result.Add(nameof(content.Contents), FromSpan(content.Contents, FromShapeLayerContent));
+            result.Add(nameof(content.Contents), FromEnumerable(content.Contents, FromShapeLayerContent));
             return result;
         }
 
@@ -484,7 +473,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         YamlObject FromAnimatable<T>(Animatable<T> animatable, Func<T, YamlObject> valueSelector)
             where T : IEquatable<T>
             => animatable.IsAnimated
-                ? FromSpan<KeyFrame<T>>(animatable.KeyFrames, kf => FromKeyFrame(kf, valueSelector))
+                ? FromEnumerable(animatable.KeyFrames, kf => FromKeyFrame(kf, valueSelector))
                 : valueSelector(animatable.InitialValue);
 
         YamlObject FromAnimatable(Animatable<Color> animatable) => FromAnimatable(animatable, Scalar);

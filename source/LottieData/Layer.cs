@@ -20,8 +20,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 #endif
     abstract class Layer : LottieObject
     {
-        static readonly Mask[] s_emptyMasks = { };
-        readonly Mask[] _masks = s_emptyMasks;
+        readonly IReadOnlyList<Mask> _masks = Array.Empty<Mask>();
 
         private protected Layer(in LayerArgs args)
             : base(args.Name)
@@ -89,7 +88,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// <summary>
         /// Gets the list of masks appplied to the layer.
         /// </summary>
-        public ReadOnlySpan<Mask> Masks => _masks;
+        public IReadOnlyList<Mask> Masks => _masks;
 
         public MatteType LayerMatteType { get; }
 

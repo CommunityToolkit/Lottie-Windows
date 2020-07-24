@@ -23,7 +23,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             _contents = contents.ToArray();
         }
 
-        public ReadOnlySpan<ShapeLayerContent> Contents => _contents;
+        public IReadOnlyList<ShapeLayerContent> Contents => _contents;
 
         /// <inheritdoc/>
         public override LayerType Type => LayerType.Shape;

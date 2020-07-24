@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
@@ -48,13 +49,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         // Extracts the key frames from a single channel of a Vector3.
         static KeyFrame<double>[] ExtractKeyFrames(
-            ReadOnlySpan<KeyFrame<Vector3>> keyFrames,
+            IReadOnlyList<KeyFrame<Vector3>> keyFrames,
             Func<Vector3, double> channelValueSelector,
             int channelIndex)
         {
-            var result = new KeyFrame<double>[keyFrames.Length];
+            var result = new KeyFrame<double>[keyFrames.Count];
 
-            for (var i = 0; i < keyFrames.Length; i++)
+            for (var i = 0; i < keyFrames.Count; i++)
             {
                 var kf = keyFrames[i];
                 var value = channelValueSelector(kf.Value);

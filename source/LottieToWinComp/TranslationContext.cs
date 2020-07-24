@@ -106,7 +106,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             return path.CloneWithNewGeometry(
                 optimizedPathData.IsAnimated
-                    ? new Animatable<PathGeometry>(optimizedPathData.KeyFrames.ToArray(), path.Data.PropertyIndex)
+                    ? new Animatable<PathGeometry>(optimizedPathData.KeyFrames, path.Data.PropertyIndex)
                     : new Animatable<PathGeometry>(optimizedPathData.InitialValue, path.Data.PropertyIndex));
         }
 
@@ -121,7 +121,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 var trimmedKeyFrames = Optimizer.RemoveRedundantKeyFrames(Optimizer.TrimKeyFrames(animatable, StartTime, EndTime));
                 return new TrimmedAnimatable<T>(
                     this,
-                    trimmedKeyFrames.Length == 0
+                    trimmedKeyFrames.Count == 0
                         ? animatable.InitialValue
                         : trimmedKeyFrames[0].Value,
                     trimmedKeyFrames);

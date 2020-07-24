@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
@@ -15,7 +16,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
     readonly ref struct TrimmedAnimatable<T>
         where T : IEquatable<T>
     {
-        internal TrimmedAnimatable(TranslationContext context, T initialValue, ReadOnlySpan<KeyFrame<T>> keyFrames)
+        internal TrimmedAnimatable(TranslationContext context, T initialValue, IReadOnlyList<KeyFrame<T>> keyFrames)
         {
             Context = context;
             InitialValue = initialValue;
@@ -26,7 +27,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         {
             Context = context;
             InitialValue = initialValue;
-            KeyFrames = default(ReadOnlySpan<KeyFrame<T>>);
+            KeyFrames = Array.Empty<KeyFrame<T>>();
         }
 
         /// <summary>
@@ -37,12 +38,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// <summary>
         /// Gets the keyframes that describe how the value should be animated.
         /// </summary>
-        internal ReadOnlySpan<KeyFrame<T>> KeyFrames { get; }
+        internal IReadOnlyList<KeyFrame<T>> KeyFrames { get; }
 
         /// <summary>
         /// Gets a value indicating whether the <see cref="Animatable{T}"/> has any key frames.
         /// </summary>
-        internal bool IsAnimated => KeyFrames.Length > 1;
+        internal bool IsAnimated => KeyFrames.Count > 1;
 
         /// <summary>
         /// Returns <c>true</c> if this value is always equal to the given value.

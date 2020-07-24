@@ -407,10 +407,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         // Requires at least one Mask.
         void TranslateAndAddMaskPaths(
             TranslationContext context,
-            ReadOnlySpan<Mask> masks,
+            IReadOnlyList<Mask> masks,
             CompositionContainerShape resultContainer)
         {
-            Debug.Assert(masks.Length > 0, "Precondition");
+            Debug.Assert(masks.Count > 0, "Precondition");
 
             var maskMode = masks[0].Mode;
 
@@ -473,9 +473,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var result = visualToMask;
             var layer = context.Layer;
 
-            if (layer.Masks.Length > 0)
+            if (layer.Masks.Count > 0)
             {
-                if (layer.Masks.Length == 1)
+                if (layer.Masks.Count == 1)
                 {
                     // Common case for masks: exactly one mask.
                     var masks = layer.Masks.Slice(0, 1);
@@ -577,9 +577,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         }
 
         // Translates a list of masks to a Visual which can be used to mask another Visual.
-        Visual TranslateMasks(TranslationContext context, ReadOnlySpan<Mask> masks)
+        Visual TranslateMasks(TranslationContext context, IReadOnlyList<Mask> masks)
         {
-            Debug.Assert(!masks.IsEmpty, "Precondition");
+            Debug.Assert(masks.Count > 0, "Precondition");
 
             // Duplicate the transform chain used on the Layer being masked so
             // that the mask correctly overlays the Layer.
@@ -605,9 +605,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return result;
         }
 
-        Visual TranslateAndApplyMasks(TranslationContext context, ReadOnlySpan<Mask> masks, Visual visualToMask, CanvasComposite compositeMode)
+        Visual TranslateAndApplyMasks(TranslationContext context, IReadOnlyList<Mask> masks, Visual visualToMask, CanvasComposite compositeMode)
         {
-            Debug.Assert(!masks.IsEmpty, "Precondition");
+            Debug.Assert(masks.Count > 0, "Precondition");
 
             if (IsUapApiAvailable(nameof(CompositionVisualSurface), versionDependentFeatureDescription: "Mask"))
             {
@@ -1588,14 +1588,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         }
 
         // Discover patterns that we don't yet support and report any issues.
-        void CheckForUnsupportedShapeGroup(in ReadOnlySpan<ShapeLayerContent> contents)
+        void CheckForUnsupportedShapeGroup(IReadOnlyList<ShapeLayerContent> contents)
         {
             // Count the number of geometries. More than 1 geometry is currently not properly supported
             // unless they're all paths.
             var pathCount = 0;
             var geometryCount = 0;
 
-            for (var i = 0; i < contents.Length; i++)
+            for (var i = 0; i < contents.Count; i++)
             {
                 switch (contents[i].ContentType)
                 {
@@ -1622,7 +1622,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         CompositionShape TranslateShapeLayerContents(
             TranslationContext.For<ShapeLayer> context,
             ShapeContentContext shapeContext,
-            in ReadOnlySpan<ShapeLayerContent> contents)
+            IReadOnlyList<ShapeLayerContent> contents)
         {
             // The Contents of a ShapeLayer is a list of instructions for a stack machine.
 
@@ -1687,7 +1687,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 }
             }
 
-            CheckForUnsupportedShapeGroup(in contents);
+            CheckForUnsupportedShapeGroup(contents);
 
             var stack = new Stack<ShapeLayerContent>(contents.ToArray());
 
@@ -4017,9 +4017,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         static TrimmedAnimatable<Vector3> PositionAndAnchorToOffset(TranslationContext context, in TrimmedAnimatable<Vector3> animation, Vector3 anchor)
         {
-            var keyframes = new KeyFrame<Vector3>[animation.KeyFrames.Length];
+            var keyframes = new KeyFrame<Vector3>[animation.KeyFrames.Count];
 
-            for (var i = 0; i < animation.KeyFrames.Length; i++)
+            for (var i = 0; i < animation.KeyFrames.Count; i++)
             {
                 var kf = animation.KeyFrames[i];
                 keyframes[i] = kf.CloneWithNewValue(kf.Value - anchor);
@@ -4083,8 +4083,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         {
             Debug.Assert(path.IsAnimated, "Precondition");
 
-            var offsets = new Vector2[path.KeyFrames.Length];
-            for (var i = 1; i < path.KeyFrames.Length; i++)
+            var offsets = new Vector2[path.KeyFrames.Count];
+            for (var i = 1; i < path.KeyFrames.Count; i++)
             {
                 if (!TryGetPathTranslation(path.KeyFrames[0].Value.BezierSegments, path.KeyFrames[i].Value.BezierSegments, out offsets[i]))
                 {
@@ -4103,7 +4103,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             // Create the offsets key frames.
             var keyFrames = new KeyFrame<Vector3>[offsets.Length];
 
-            for (var i = 0; i < path.KeyFrames.Length; i++)
+            for (var i = 0; i < path.KeyFrames.Count; i++)
             {
                 ref var offset = ref offsets[i];
                 var pathKeyFrame = path.KeyFrames[i];
@@ -4576,7 +4576,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var trimmedKeyFrames = value.KeyFrames;
 
             var firstKeyFrame = trimmedKeyFrames[0];
-            var lastKeyFrame = trimmedKeyFrames[trimmedKeyFrames.Length - 1];
+            var lastKeyFrame = trimmedKeyFrames[trimmedKeyFrames.Count - 1];
 
             var animationStartTime = firstKeyFrame.Frame;
             var animationEndTime = lastKeyFrame.Frame;
@@ -4857,7 +4857,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 return new TrimmedAnimatable<Color>(
                     color.Context,
                     initialValue: initialColorValue,
-                    keyFrames: color.KeyFrames.SelectToSpan(kf => kf.CloneWithNewValue(kf.Value * opacity)));
+                    keyFrames: color.KeyFrames.SelectToArray(kf => kf.CloneWithNewValue(kf.Value * opacity)));
             }
             else
             {
@@ -4879,7 +4879,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 return new TrimmedAnimatable<Color>(
                     opacity.Context,
                     initialValue: color * opacity.InitialValue,
-                    keyFrames: opacity.KeyFrames.SelectToSpan(kf => kf.CloneWithNewValue(color * kf.Value)));
+                    keyFrames: opacity.KeyFrames.SelectToArray(kf => kf.CloneWithNewValue(color * kf.Value)));
             }
         }
 
