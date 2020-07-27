@@ -34,7 +34,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
         public Animatable<Color> Color { get; }
 
-        public ReadOnlySpan<double> DashPattern => _dashPattern;
+        public IReadOnlyList<double> DashPattern => _dashPattern;
 
         public Animatable<double> DashOffset { get; }
 
