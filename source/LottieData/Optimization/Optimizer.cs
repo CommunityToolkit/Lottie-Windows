@@ -102,8 +102,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
             }
 
             // Create a new Animatable<PathGeometry> which has only one segment in each keyframe.
-            var hacked = optimized.KeyFrames.SelectToSpan(pg => HackPathGeometry(pg));
-            return new Animatable<PathGeometry>(hacked[0].Value, hacked, optimized.PropertyIndex);
+            return new Animatable<PathGeometry>(optimized.KeyFrames.Select(pg => HackPathGeometry(pg)), optimized.PropertyIndex);
         }
 
         // Returns a KeyFrame<PathGeometry> that contains only the first Bezier segment of the given
@@ -160,7 +159,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                 {
                     var keyFrames = RemoveRedundantKeyFrames(value.KeyFrames);
 
-                    if (keyFrames.Length == value.KeyFrames.Length)
+                    if (keyFrames.Count == value.KeyFrames.Count)
                     {
                         // Optimization didn't achieve anything.
                         result = value;
@@ -187,13 +186,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
         /// <returns>An equivalent list of <see cref="KeyFrame{T}"/>s but with any redundant
         /// <see cref="KeyFrame{T}"/>s removed.
         /// </returns>
-        public static ReadOnlySpan<KeyFrame<T>> RemoveRedundantKeyFrames<T>(in ReadOnlySpan<KeyFrame<T>> keyFrames)
+        public static IReadOnlyList<KeyFrame<T>> RemoveRedundantKeyFrames<T>(IReadOnlyList<KeyFrame<T>> keyFrames)
             where T : IEquatable<T>
         {
 #if DisableKeyFrameOptimization
             return keyFrames;
 #else
-            if (keyFrames.Length <= 1)
+            if (keyFrames.Count <= 1)
             {
                 // None of the key frames is redundant.
                 return keyFrames;
@@ -205,13 +204,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
             // There's at least 2 key frames.
             var keyFrame0 = keyFrames[0];
 
-            for (var i = 1; i < keyFrames.Length; i++)
+            for (var i = 1; i < keyFrames.Count; i++)
             {
                 var keyFrame1 = keyFrames[i];
                 var redundantCount = 0;
 
                 // Is there at least one more key frame to look at?
-                if (i < keyFrames.Length - 1)
+                if (i < keyFrames.Count - 1)
                 {
                     // Do the first 2 key frames have the same value?
                     if (keyFrame0.Value.Equals(keyFrame1.Value))
@@ -244,7 +243,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                             keyFrame1 = keyFrame2;
 
                             i++;
-                            if (i == keyFrames.Length - 1)
+                            if (i == keyFrames.Count - 1)
                             {
                                 // No more to look at.
                                 break;
@@ -257,7 +256,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                             if (optimizedFrames is null)
                             {
                                 // Lazily Create an array to hold the new set of key frames.
-                                optimizedFrames = new KeyFrame<T>[keyFrames.Length - redundantCount];
+                                optimizedFrames = new KeyFrame<T>[keyFrames.Count - redundantCount];
 
                                 // Fill the destination with the key frames so far.
                                 for (optimizedCount = 0; optimizedCount < i - redundantCount; optimizedCount++)
@@ -293,11 +292,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                 // No redundant key frames found yet.
                 // If the final 2 key frames have the same value, the final key frame is redundant,
                 // unless it has a non-linear cubic Bezier easing.
-                if (keyFrames[keyFrames.Length - 1].Value.Equals(keyFrames[keyFrames.Length - 2].Value) &&
-                    !HasNonLinearCubicBezierEasing(keyFrames[keyFrames.Length - 1]))
+                if (keyFrames[keyFrames.Count - 1].Value.Equals(keyFrames[keyFrames.Count - 2].Value) &&
+                    !HasNonLinearCubicBezierEasing(keyFrames[keyFrames.Count - 1]))
                 {
                     // Final keyframe is redundant.
-                    return keyFrames.Slice(0, keyFrames.Length - 1);
+                    return keyFrames.Slice(0, keyFrames.Count - 1);
                 }
                 else
                 {
@@ -315,8 +314,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                     optimizedCount--;
                 }
 
-                var result = new ReadOnlySpan<KeyFrame<T>>(optimizedFrames, 0, optimizedCount);
-                return result;
+                return optimizedFrames.Slice(0, optimizedCount);
             }
 #endif // DisableKeyFrameOptimization
         }
@@ -345,7 +343,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
         /// The key frames that are visible for rendering between <paramref name="startTime"/>
         /// and <paramref name="endTime"/>, with other key frames removed.
         /// </returns>
-        public static ReadOnlySpan<KeyFrame<T>> TrimKeyFrames<T>(Animatable<T> animatable, double startTime, double endTime)
+        public static IReadOnlyList<KeyFrame<T>> TrimKeyFrames<T>(Animatable<T> animatable, double startTime, double endTime)
             where T : IEquatable<T>
         {
 #if DisableKeyFrameTrimming
@@ -353,14 +351,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
 #else
             if (!animatable.IsAnimated)
             {
-                return default(ReadOnlySpan<KeyFrame<T>>);
+                return Array.Empty<KeyFrame<T>>();
             }
 
             var keyFrames = animatable.KeyFrames;
 
             // Find the key frame preceding the first frame > startTime.
             var inFrame = 0;
-            for (var i = inFrame; i < keyFrames.Length; i++)
+            for (var i = inFrame; i < keyFrames.Count; i++)
             {
                 if (keyFrames[i].Frame > startTime)
                 {
@@ -371,7 +369,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
             }
 
             // Find the key frame following the last frame < endTime.
-            var outFrame = keyFrames.Length - 1;
+            var outFrame = keyFrames.Count - 1;
             for (var i = outFrame; i >= 0; i--)
             {
                 if (keyFrames[i].Frame < endTime)

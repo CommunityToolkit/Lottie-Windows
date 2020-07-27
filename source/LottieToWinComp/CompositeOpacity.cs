@@ -16,15 +16,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
     {
         readonly CompositeOpacity _previous;
         readonly Opacity _initialValue;
-        readonly KeyFrame<Opacity>[] _keyFrames;
+        readonly IReadOnlyList<KeyFrame<Opacity>> _keyFrames;
 
-        CompositeOpacity(CompositeOpacity previous, Opacity initialValue, in ReadOnlySpan<KeyFrame<Opacity>> keyFrames)
+        CompositeOpacity(CompositeOpacity previous, Opacity initialValue, IReadOnlyList<KeyFrame<Opacity>> keyFrames)
         {
-            Debug.Assert(previous is null || keyFrames.Length > 1, "Precondition");
+            Debug.Assert(previous is null || keyFrames.Count > 1, "Precondition");
 
             _previous = previous;
 
-            _keyFrames = keyFrames.Length > 1 ? keyFrames.ToArray() : Array.Empty<KeyFrame<Opacity>>();
+            _keyFrames = keyFrames.Count > 1 ? keyFrames : Array.Empty<KeyFrame<Opacity>>();
             _initialValue = initialValue;
         }
 
@@ -60,7 +60,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         // Checking for whether the current opacity is animated is sufficient because if it
         // wasn't animated it would have been multiplied into the previous animations.
-        internal bool IsAnimated => _keyFrames.Length > 1;
+        internal bool IsAnimated => _keyFrames.Count > 1;
 
         internal IEnumerable<Animatable<Opacity>> GetAnimatables()
         {
@@ -104,11 +104,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 if (isBAnimated)
                 {
                     // Both are animated.
-                    if (a.KeyFrames[0].Frame >= b.KeyFrames[b.KeyFrames.Length - 1].Frame ||
-                        b.KeyFrames[0].Frame >= a.KeyFrames[a.KeyFrames.Length - 1].Frame)
+                    if (a.KeyFrames[0].Frame >= b.KeyFrames[b.KeyFrames.Count - 1].Frame ||
+                        b.KeyFrames[0].Frame >= a.KeyFrames[a.KeyFrames.Count - 1].Frame)
                     {
                         // The animations are non-overlapping.
-                        if (a.KeyFrames[0].Frame >= b.KeyFrames[b.KeyFrames.Length - 1].Frame)
+                        if (a.KeyFrames[0].Frame >= b.KeyFrames[b.KeyFrames.Count - 1].Frame)
                         {
                             result = ComposeNonOverlappingAnimatedOpacities(in b, in a);
                             return true;
@@ -147,7 +147,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 : new TrimmedAnimatable<Opacity>(
                     context: animatable.Context,
                     initialValue: animatable.InitialValue * opacity,
-                    keyFrames: animatable.KeyFrames.SelectToSpan(kf => kf.CloneWithNewValue(kf.Value * opacity)));
+                    keyFrames: animatable.KeyFrames.SelectToArray(kf => kf.CloneWithNewValue(kf.Value * opacity)));
         }
 
         // Composes 2 animated opacity values where the frames in first come before second.
@@ -155,12 +155,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         {
             Debug.Assert(first.IsAnimated, "Precondition");
             Debug.Assert(second.IsAnimated, "Precondition");
-            Debug.Assert(first.KeyFrames[first.KeyFrames.Length - 1].Frame <= second.KeyFrames[0].Frame, "Precondition");
+            Debug.Assert(first.KeyFrames[first.KeyFrames.Count - 1].Frame <= second.KeyFrames[0].Frame, "Precondition");
 
-            var resultFrames = new KeyFrame<Opacity>[first.KeyFrames.Length + second.KeyFrames.Length];
+            var resultFrames = new KeyFrame<Opacity>[first.KeyFrames.Count + second.KeyFrames.Count];
             var resultCount = 0;
             var initialValueOfSecondAnimation = second.InitialValue;
-            var finalValueOfFirstAnimation = first.KeyFrames[first.KeyFrames.Length - 1].Value;
+            var finalValueOfFirstAnimation = first.KeyFrames[first.KeyFrames.Count - 1].Value;
 
             // Multiply the opacity of the keyframes in the first animatable by the initial
             // opacity value of the second animatable.
@@ -181,7 +181,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return new TrimmedAnimatable<Opacity>(
                 first.Context,
                 first.InitialValue,
-                new ReadOnlySpan<KeyFrame<Opacity>>(resultFrames, 0, resultCount));
+                resultFrames.Slice(0, resultCount));
         }
 
         static KeyFrame<Opacity> ScaleKeyFrame(KeyFrame<Opacity> keyFrame, Opacity scale) =>

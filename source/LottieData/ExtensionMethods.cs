@@ -3,54 +3,23 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 {
     /// <summary>
-    /// Extension methods for <see cref="ReadOnlySpan{T}"/> to make it easier to treat them
-    /// like IEnumerables.
+    /// Extension methods for <see cref="IReadOnlyList{T}"/>.
     /// </summary>
 #if PUBLIC_LottieData
     public
 #endif
     static class ExtensionMethods
     {
-        public static bool Any<TSource>(this ReadOnlySpan<TSource> source)
+        public static TResult[] SelectToArray<TSource, TResult>(this IReadOnlyList<TSource> source, Func<TSource, TResult> selector)
         {
-            return source.Length > 0;
-        }
-
-        public static bool Any<TSource>(this ReadOnlySpan<TSource> source, Func<TSource, bool> predicate)
-        {
-            for (var i = 0; i < source.Length; i++)
-            {
-                if (predicate(source[i]))
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        public static double Max(this ReadOnlySpan<double> source)
-        {
-            var result = double.MinValue;
-            for (var i = 0; i < source.Length; i++)
-            {
-                if (source[i] > result)
-                {
-                    result = source[i];
-                }
-            }
-
-            return result;
-        }
-
-        public static TResult[] SelectToArray<TSource, TResult>(this ReadOnlySpan<TSource> source, Func<TSource, TResult> selector)
-        {
-            var result = new TResult[source.Length];
-            for (var i = 0; i < source.Length; i++)
+            var result = new TResult[source.Count];
+            for (var i = 0; i < source.Count; i++)
             {
                 result[i] = selector(source[i]);
             }
@@ -58,63 +27,73 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             return result;
         }
 
-        public static ReadOnlySpan<TResult> SelectToSpan<TSource, TResult>(this ReadOnlySpan<TSource> source, Func<TSource, TResult> selector)
-        {
-            var result = new TResult[source.Length];
-            for (var i = 0; i < source.Length; i++)
-            {
-                result[i] = selector(source[i]);
-            }
+        public static IReadOnlyList<T> Slice<T>(this IReadOnlyList<T> source, int start) => Slice(source, start, source.Count - start);
 
-            return new ReadOnlySpan<TResult>(result);
+        public static IReadOnlyList<T> Slice<T>(this IReadOnlyList<T> source, int start, int length)
+        {
+            if (start == 0 && length == source.Count)
+            {
+                return source;
+            }
+            else if (length == 0)
+            {
+                return Array.Empty<T>();
+            }
+            else
+            {
+                return new ListSlice<T>(source, start, length);
+            }
         }
 
-        public static double Max<TSource>(this ReadOnlySpan<TSource> source, Func<TSource, double> selector)
+        sealed class ListSlice<T> : IReadOnlyList<T>
         {
-            var result = double.NegativeInfinity;
+            readonly IReadOnlyList<T> _wrapped;
+            readonly int _start;
 
-            foreach (var item in source)
+            internal ListSlice(IReadOnlyList<T> source, int start, int length)
             {
-                var candidate = selector(item);
-                if (candidate > result)
-                {
-                    result = candidate;
-                }
+                _wrapped = source;
+                _start = start;
+                Count = length;
             }
 
-            return result;
-        }
+            public T this[int index] => _wrapped[index + _start];
 
-        public static double Min<TSource>(this ReadOnlySpan<TSource> source, Func<TSource, double> selector)
-        {
-            var result = double.PositiveInfinity;
+            public int Count { get; }
 
-            foreach (var item in source)
+            public IEnumerator<T> GetEnumerator()
             {
-                var candidate = selector(item);
-                if (candidate < result)
-                {
-                    result = candidate;
-                }
+                throw new NotImplementedException();
             }
 
-            return result;
-        }
-
-        public static Opacity Max<TSource>(this ReadOnlySpan<TSource> source, Func<TSource, Opacity> selector)
-        {
-            var result = Opacity.Transparent;
-
-            foreach (var item in source)
+            IEnumerator IEnumerable.GetEnumerator()
             {
-                var candidate = selector(item);
-                if (candidate > result)
-                {
-                    result = candidate;
-                }
+                throw new NotImplementedException();
             }
 
-            return result;
+            sealed class Enumerator : IEnumerator<T>
+            {
+                readonly ListSlice<T> _owner;
+                int _index = -1;
+
+                internal Enumerator(ListSlice<T> owner) => _owner = owner;
+
+                public T Current => _owner[_index];
+
+                object IEnumerator.Current => Current;
+
+                public void Dispose()
+                {
+                }
+
+                public bool MoveNext()
+                {
+                    _index++;
+                    return _index >= _owner.Count;
+                }
+
+                void IEnumerator.Reset() => _index = -1;
+            }
         }
     }
 }

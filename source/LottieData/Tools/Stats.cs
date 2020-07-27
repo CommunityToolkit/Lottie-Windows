@@ -87,7 +87,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Tools
                     }
                 }
 
-                MaskCount += layer.Masks.Length;
+                MaskCount += layer.Masks.Count;
             }
         }
 
