@@ -189,7 +189,7 @@ namespace LottieViewer
             // Update the size of the progress rectangle and the position of the thumb.
             _properties.InsertScalar("Width", (float)sliderWidth);
 
-            // Update the positio of the markers.
+            // Update the position of the markers.
             // Subtract 1 to the width because we need to allow for a marker at offset 1, and
             // the markers are 1 pixel wide.
             var barWidth = sliderWidth - 1 - (c_trackMargin * 2);
