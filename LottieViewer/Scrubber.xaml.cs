@@ -284,7 +284,7 @@ namespace LottieViewer
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    // Add rectangles to display each marker. There are 2 rectangle - one
+                    // Add rectangles to display each marker. There are 2 rectangles - one
                     // that sits above the track, and one that sits below the track.
                     _markersTop.Children.Add(CreateMarkerRectangle());
                     _markersBottom.Children.Add(CreateMarkerRectangle());
