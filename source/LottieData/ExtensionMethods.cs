@@ -61,15 +61,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
             public int Count { get; }
 
-            public IEnumerator<T> GetEnumerator()
-            {
-                throw new NotImplementedException();
-            }
+            public IEnumerator<T> GetEnumerator() => new Enumerator(this);
 
-            IEnumerator IEnumerable.GetEnumerator()
-            {
-                throw new NotImplementedException();
-            }
+            IEnumerator IEnumerable.GetEnumerator() => new Enumerator(this);
 
             sealed class Enumerator : IEnumerator<T>
             {
@@ -89,7 +83,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
                 public bool MoveNext()
                 {
                     _index++;
-                    return _index >= _owner.Count;
+                    return _index < _owner.Count;
                 }
 
                 void IEnumerator.Reset() => _index = -1;

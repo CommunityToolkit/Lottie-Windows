@@ -90,6 +90,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui
         /// </summary>
         public string Hex => $"{ToHex(A)}{ToHex(R)}{ToHex(G)}{ToHex(B)}";
 
+        /// <summary>
+        /// Gets the hex representation of the RGB values of this color.
+        /// </summary>
+        public string HexWithoutAlpha => $"{ToHex(R)}{ToHex(G)}{ToHex(B)}";
+
         // Gets the friendly name if one exists, or null.
         // The same name will not be returned for more than one ARGB value.
         // The result is slightly different from GetWellKnownName in that it will
