@@ -3182,7 +3182,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
                 if (!_colorPalette.TryGetValue(paletteColor, out bindingName))
                 {
-                    bindingName = $"Color{Color(paletteColor).Name}";
+                    bindingName = $"Color_{Color(paletteColor).HexWithoutAlpha}";
                     _colorPalette.Add(paletteColor, bindingName);
                 }
 
