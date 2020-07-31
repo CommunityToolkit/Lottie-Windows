@@ -663,9 +663,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 builder.OpenScope();
                 builder.WriteBreakableLine($"return {_s.New(info.ClassName)}(", CommaSeparate(GetConstructorArguments(info)), ");");
                 builder.CloseScope();
-                builder.WriteLine();
-                builder.WriteLine("return nullptr;");
             }
+
+            builder.WriteLine();
+            builder.WriteLine("return nullptr;");
         }
 
         void WriteIsAnimatedVisualSourceDynamicGetSet(CodeBuilder builder)
