@@ -16,18 +16,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
     readonly ref struct TrimmedAnimatable<T>
         where T : IEquatable<T>
     {
+        readonly IReadOnlyList<KeyFrame<T>> _keyFrames;
+
         internal TrimmedAnimatable(TranslationContext context, T initialValue, IReadOnlyList<KeyFrame<T>> keyFrames)
         {
             Context = context;
             InitialValue = initialValue;
-            KeyFrames = keyFrames;
+            _keyFrames = keyFrames;
         }
 
         internal TrimmedAnimatable(TranslationContext context, T initialValue)
         {
             Context = context;
             InitialValue = initialValue;
-            KeyFrames = Array.Empty<KeyFrame<T>>();
+            _keyFrames = Array.Empty<KeyFrame<T>>();
         }
 
         /// <summary>
@@ -38,12 +40,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// <summary>
         /// Gets the keyframes that describe how the value should be animated.
         /// </summary>
-        internal IReadOnlyList<KeyFrame<T>> KeyFrames { get; }
+        internal IReadOnlyList<KeyFrame<T>> KeyFrames => _keyFrames ?? Array.Empty<KeyFrame<T>>();
 
         /// <summary>
         /// Gets a value indicating whether the <see cref="Animatable{T}"/> has any key frames.
         /// </summary>
-        internal bool IsAnimated => KeyFrames.Count > 1;
+        internal bool IsAnimated => _keyFrames?.Count > 1;
 
         /// <summary>
         /// Returns <c>true</c> if this value is always equal to the given value.
