@@ -27,6 +27,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         internal static readonly Vector2 MyPosition = MyVector2("Position");
         internal static readonly Vector2 MySize = MyVector2("Size");
         internal static readonly Matrix3x2 MyTransformMatrix = MyMatrix3x2("TransformMatrix");
+        static readonly Scalar MyRadius = MyScalar("Radius");
         static readonly Scalar MyRoundness = MyScalar("Roundness");
         static readonly Scalar MyTStart = MyScalar("TStart");
         static readonly Scalar MyTEnd = MyScalar("TEnd");
@@ -68,13 +69,34 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal static Scalar RootScalar(string propertyName) => Scalar(RootProperty(propertyName));
 
-        internal static Vector2 ConstrainedCornerRadiusScalar(double roundness)
+        // Converts a RoundCorners.Radius value to CompositionRoundedRectangleGeometry.CornerRadius.
+        // RoundCorners corner radii are constrained to half of the coresponding side.
+        internal static Vector2 RadiusToCornerRadius(double radius)
+            => Vector2(Min(radius, MySize.X / 2), Min(radius, MySize.Y / 2));
+
+        // Converts a RoundCorners.Radius value to CompositionRoundedRectangleGeometry.CornerRadius.
+        // RoundCorners corner radii are constrained to half of the coresponding side.
+        internal static Vector2 RadiusToCornerRadius()
+            => Vector2(Min(MyRadius, MySize.X / 2), Min(MyRadius, MySize.Y / 2));
+
+        // Converts a RoundCorners.Radius value to CompositionRoundedRectangleGeometry.CornerRadius.
+        // RoundCorners corner radii are constrained to half of the coresponding side.
+        internal static Vector2 RadiusToCornerRadius(Sn.Vector2 size)
+            => Vector2(Min(MyRadius, size.X / 2), Min(MyRadius, size.Y / 2));
+
+        // Converts a Rectangle.Roundness value to CompositionRoundedRectangleGeometry.CornerRadius.
+        // Rectangle.Roundness corner radius is constrained to half of the smaller side.
+        internal static Vector2 RoundnessToCornerRadius(double roundness)
             => Vector2(Min(roundness, Min(MySize.X, MySize.Y) / 2), Min(roundness, Min(MySize.X, MySize.Y) / 2));
 
-        internal static Vector2 ConstrainedCornerRadiusScalar()
+        // Converts a Rectangle.Roundness value to CompositionRoundedRectangleGeometry.CornerRadius.
+        // Rectangle.Roundness corner radius is constrained to half of the smaller side.
+        internal static Vector2 RoundessToCornerRadius()
             => Vector2(Min(MyRoundness, Min(MySize.X, MySize.Y) / 2), Min(MyRoundness, Min(MySize.X, MySize.Y) / 2));
 
-        internal static Vector2 ConstrainedCornerRadiusScalar(Sn.Vector2 size)
+        // Converts a Rectangle.Roundness value to CompositionRoundedRectangleGeometry.CornerRadius.
+        // Rectangle.Roundness corner radius is constrained to half of the smaller side.
+        internal static Vector2 RoundnessToCornerRadius(Sn.Vector2 size)
             => Vector2(Min(MyRoundness, Math.Min(size.X, size.Y) / 2), Min(MyRoundness, Math.Min(size.X, size.Y) / 2));
 
         // The value of a Color property stored as a Vector4 on the theming property set.

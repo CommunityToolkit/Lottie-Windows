@@ -182,7 +182,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Tools
                     break;
                 case ShapeContentType.Repeater:
                     break;
-                case ShapeContentType.RoundedCorner:
+                case ShapeContentType.RoundCorners:
                     break;
                 case ShapeContentType.SolidColorFill:
                     break;

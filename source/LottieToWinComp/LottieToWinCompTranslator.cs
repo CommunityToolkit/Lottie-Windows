@@ -23,6 +23,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieMetadata;
@@ -46,7 +47,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 #if PUBLIC
     public
 #endif
-    sealed class LottieToWinCompTranslator : IDisposable
+#pragma warning disable SA1205 // Partial elements should declare access
+    sealed partial class LottieToWinCompTranslator : IDisposable
     {
         // Identifies the Lottie metadata in TranslationResult.SourceMetadata.
         static readonly Guid s_lottieMetadataKey = new Guid("EA3D6538-361A-4B1C-960D-50A6C35563A5");
@@ -882,7 +884,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var inProgress = context.InPointAsProgress;
             var outProgress = context.OutPointAsProgress;
 
-            if (inProgress > 1 || outProgress <= 0 || inProgress >= outProgress || layerOpacity.AlwaysEquals(LottieData.Opacity.Transparent))
+            if (inProgress > 1 || outProgress <= 0 || inProgress >= outProgress || layerOpacity.Always(LottieData.Opacity.Transparent))
             {
                 // The layer is never visible. Don't create anything.
                 rootNode = null;
@@ -963,7 +965,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var inProgress = context.InPointAsProgress;
             var outProgress = context.OutPointAsProgress;
 
-            if (inProgress > 1 || outProgress <= 0 || inProgress >= outProgress || layerOpacity.AlwaysEquals(LottieData.Opacity.Transparent))
+            if (inProgress > 1 || outProgress <= 0 || inProgress >= outProgress || layerOpacity.Always(LottieData.Opacity.Transparent))
             {
                 // The layer is never visible. Don't create anything.
                 rootNode = null;
@@ -1065,7 +1067,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var inProgress = context.InPointAsProgress;
             var outProgress = context.OutPointAsProgress;
 
-            if (inProgress > 1 || outProgress <= 0 || inProgress >= outProgress || layerOpacity.AlwaysEquals(LottieData.Opacity.Transparent))
+            if (inProgress > 1 || outProgress <= 0 || inProgress >= outProgress || layerOpacity.Always(LottieData.Opacity.Transparent))
             {
                 // The layer is never visible. Don't create anything.
                 rootNode = null;
@@ -1272,310 +1274,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return referencedAsset;
         }
 
-        sealed class ShapeContentContext
-        {
-            readonly LottieToWinCompTranslator _owner;
-
-            internal ShapeStroke Stroke { get; private set; }
-
-            internal ShapeFill Fill { get; private set; }
-
-            internal TrimPath TrimPath { get; private set; }
-
-            internal RoundedCorner RoundedCorner { get; private set; }
-
-            internal Transform Transform { get; private set; }
-
-            // Opacity is not part of the Lottie context for shapes. But because WinComp
-            // doesn't support opacity on shapes, the opacity is inherited from
-            // the Transform and passed through to the brushes here.
-            internal CompositeOpacity Opacity { get; private set; } = CompositeOpacity.Opaque;
-
-            internal ShapeContentContext(LottieToWinCompTranslator owner)
-            {
-                _owner = owner;
-            }
-
-            internal void UpdateFromStack(Stack<ShapeLayerContent> stack)
-            {
-                while (stack.Count > 0)
-                {
-                    var popped = stack.Peek();
-                    switch (popped.ContentType)
-                    {
-                        case ShapeContentType.LinearGradientFill:
-                        case ShapeContentType.RadialGradientFill:
-                        case ShapeContentType.SolidColorFill:
-                            Fill = ComposeFills(Fill, (ShapeFill)popped);
-                            break;
-
-                        case ShapeContentType.LinearGradientStroke:
-                        case ShapeContentType.RadialGradientStroke:
-                        case ShapeContentType.SolidColorStroke:
-                            Stroke = ComposeStrokes(Stroke, (ShapeStroke)popped);
-                            break;
-
-                        case ShapeContentType.RoundedCorner:
-                            RoundedCorner = ComposeRoundedCorners(RoundedCorner, (RoundedCorner)popped);
-                            break;
-
-                        case ShapeContentType.TrimPath:
-                            TrimPath = ComposeTrimPaths(TrimPath, (TrimPath)popped);
-                            break;
-
-                        default: return;
-                    }
-
-                    stack.Pop();
-                }
-            }
-
-            internal ShapeContentContext Clone()
-            {
-                return new ShapeContentContext(_owner)
-                {
-                    Fill = Fill,
-                    Stroke = Stroke,
-                    TrimPath = TrimPath,
-                    RoundedCorner = RoundedCorner,
-                    Opacity = Opacity,
-                    Transform = Transform,
-                };
-            }
-
-            internal void UpdateOpacityFromTransform(TranslationContext context, Transform transform)
-            {
-                if (transform is null)
-                {
-                    return;
-                }
-
-                Opacity = Opacity.ComposedWith(context.TrimAnimatable(transform.Opacity));
-            }
-
-            // Only used when translating geometries. Layers use an extra Shape or Visual to
-            // apply the transform, but geometries need to take the transform into account when
-            // they're created.
-            internal void SetTransform(Transform transform)
-            {
-                Transform = transform;
-            }
-
-            ShapeFill ComposeFills(ShapeFill a, ShapeFill b)
-            {
-                if (a is null)
-                {
-                    return b;
-                }
-                else if (b is null)
-                {
-                    return a;
-                }
-
-                if (a.FillKind != b.FillKind)
-                {
-                    _owner._issues.MultipleFillsIsNotSupported();
-                    return b;
-                }
-
-                switch (a.FillKind)
-                {
-                    case ShapeFill.ShapeFillKind.SolidColor:
-                        return ComposeSolidColorFills((SolidColorFill)a, (SolidColorFill)b);
-                }
-
-                _owner._issues.MultipleFillsIsNotSupported();
-                return b;
-            }
-
-            SolidColorFill ComposeSolidColorFills(SolidColorFill a, SolidColorFill b)
-            {
-                if (!b.Color.IsAnimated && !b.Opacity.IsAnimated)
-                {
-                    if (b.Opacity.InitialValue == LottieData.Opacity.Opaque &&
-                        b.Color.InitialValue.A == 1)
-                    {
-                        // b overrides a.
-                        return b;
-                    }
-                    else if (b.Opacity.InitialValue.IsTransparent || b.Color.InitialValue.A == 0)
-                    {
-                        // b is transparent, so a wins.
-                        return a;
-                    }
-                }
-
-                _owner._issues.MultipleFillsIsNotSupported();
-                return b;
-            }
-
-            ShapeStroke ComposeStrokes(ShapeStroke a, ShapeStroke b)
-            {
-                if (a is null)
-                {
-                    return b;
-                }
-                else if (b is null)
-                {
-                    return a;
-                }
-
-                if (a.StrokeKind != b.StrokeKind)
-                {
-                    _owner._issues.MultipleStrokesIsNotSupported();
-                    return b;
-                }
-
-                switch (a.StrokeKind)
-                {
-                    case ShapeStroke.ShapeStrokeKind.SolidColor:
-                        return ComposeSolidColorStrokes((SolidColorStroke)a, (SolidColorStroke)b);
-                    case ShapeStroke.ShapeStrokeKind.LinearGradient:
-                        return ComposeLinearGradientStrokes((LinearGradientStroke)a, (LinearGradientStroke)b);
-                    case ShapeStroke.ShapeStrokeKind.RadialGradient:
-                        return ComposeRadialGradientStrokes((RadialGradientStroke)a, (RadialGradientStroke)b);
-                    default:
-                        throw new InvalidOperationException();
-                }
-            }
-
-            LinearGradientStroke ComposeLinearGradientStrokes(LinearGradientStroke a, LinearGradientStroke b)
-            {
-                Debug.Assert(a != null && b != null, "Precondition");
-
-                if (!a.StrokeWidth.IsAnimated && !b.StrokeWidth.IsAnimated &&
-                    a.Opacity.AlwaysEquals(LottieData.Opacity.Opaque) && b.Opacity.AlwaysEquals(LottieData.Opacity.Opaque))
-                {
-                    if (a.StrokeWidth.InitialValue >= b.StrokeWidth.InitialValue)
-                    {
-                        // a occludes b, so b can be ignored.
-                        return a;
-                    }
-                }
-
-                _owner._issues.MultipleStrokesIsNotSupported();
-                return a;
-            }
-
-            RadialGradientStroke ComposeRadialGradientStrokes(RadialGradientStroke a, RadialGradientStroke b)
-            {
-                Debug.Assert(a != null && b != null, "Precondition");
-
-                if (!a.StrokeWidth.IsAnimated && !b.StrokeWidth.IsAnimated &&
-                    a.Opacity.AlwaysEquals(LottieData.Opacity.Opaque) && b.Opacity.AlwaysEquals(LottieData.Opacity.Opaque))
-                {
-                    if (a.StrokeWidth.InitialValue >= b.StrokeWidth.InitialValue)
-                    {
-                        // a occludes b, so b can be ignored.
-                        return a;
-                    }
-                }
-
-                _owner._issues.MultipleStrokesIsNotSupported();
-                return a;
-            }
-
-            SolidColorStroke ComposeSolidColorStrokes(SolidColorStroke a, SolidColorStroke b)
-            {
-                Debug.Assert(a != null && b != null, "Precondition");
-
-                if (!a.StrokeWidth.IsAnimated && !b.StrokeWidth.IsAnimated &&
-                    !a.DashPattern.Any() && !b.DashPattern.Any() &&
-                    a.Opacity.AlwaysEquals(LottieData.Opacity.Opaque) && b.Opacity.AlwaysEquals(LottieData.Opacity.Opaque))
-                {
-                    if (a.StrokeWidth.InitialValue >= b.StrokeWidth.InitialValue)
-                    {
-                        // a occludes b, so b can be ignored.
-                        return a;
-                    }
-                }
-
-                // The new stroke should be in addition to the existing stroke. And colors should blend.
-                _owner._issues.MultipleStrokesIsNotSupported();
-                return b;
-            }
-
-            RoundedCorner ComposeRoundedCorners(RoundedCorner a, RoundedCorner b)
-            {
-                if (a is null)
-                {
-                    return b;
-                }
-                else if (b is null)
-                {
-                    return a;
-                }
-
-                if (!b.Radius.IsAnimated)
-                {
-                    if (b.Radius.InitialValue >= 0)
-                    {
-                        // If b has a non-0 value, it wins.
-                        return b;
-                    }
-                    else
-                    {
-                        // b is always 0. A wins.
-                        return a;
-                    }
-                }
-
-                _owner._issues.MultipleAnimatedRoundedCornersIsNotSupported();
-                return b;
-            }
-
-            TrimPath ComposeTrimPaths(TrimPath a, TrimPath b)
-            {
-                if (a is null)
-                {
-                    return b;
-                }
-                else if (b is null)
-                {
-                    return a;
-                }
-
-                if (!a.Start.IsAnimated && !a.Start.IsAnimated && !a.Offset.IsAnimated)
-                {
-                    // a is not animated.
-                    if (!b.Start.IsAnimated && !b.Start.IsAnimated && !b.Offset.IsAnimated)
-                    {
-                        // Both are not animated.
-                        if (a.Start.InitialValue == b.End.InitialValue)
-                        {
-                            // a trims out everything. b is unnecessary.
-                            return a;
-                        }
-                        else if (b.Start.InitialValue == b.End.InitialValue)
-                        {
-                            // b trims out everything. a is unnecessary.
-                            return b;
-                        }
-                        else if (a.Start.InitialValue.Value == 0 && a.End.InitialValue.Value == 1 && a.Offset.InitialValue.Degrees == 0)
-                        {
-                            // a is trimming nothing. a is unnecessary.
-                            return b;
-                        }
-                        else if (b.Start.InitialValue.Value == 0 && b.End.InitialValue.Value == 1 && b.Offset.InitialValue.Degrees == 0)
-                        {
-                            // b is trimming nothing. b is unnecessary.
-                            return a;
-                        }
-                    }
-                }
-
-                _owner._issues.MultipleTrimPathsIsNotSupported();
-                return b;
-            }
-        }
-
         // May return null if the layer does not produce any renderable content.
         CompositionSubGraph TranslateShapeLayer(TranslationContext.For<ShapeLayer> context)
         {
             return new CompositionSubGraph.FromShapeLayer(this, context);
         }
 
-        CompositionShape TranslateGroupShapeContent(TranslationContext.For<ShapeLayer> context, ShapeContentContext shapeContext, ShapeGroup group)
+        CompositionShape TranslateGroupShapeContent(TranslationContext.For<ShapeLayer> context, ShapeContext shapeContext, ShapeGroup group)
         {
             var result = TranslateShapeLayerContents(context, shapeContext, group.Contents);
 
@@ -1621,7 +1326,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         CompositionShape TranslateShapeLayerContents(
             TranslationContext.For<ShapeLayer> context,
-            ShapeContentContext shapeContext,
+            ShapeContext shapeContext,
             IReadOnlyList<ShapeLayerContent> contents)
         {
             // The Contents of a ShapeLayer is a list of instructions for a stack machine.
@@ -1737,7 +1442,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                                 paths.Add(context.OptimizePath((Path)stack.Pop()));
                             }
 
-                            CheckForRoundedCornersOnPath(context, shapeContext);
+                            CheckForRoundCornersOnPath(context, shapeContext);
 
                             if (paths.Count == 1)
                             {
@@ -1787,7 +1492,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     case ShapeContentType.LinearGradientFill:
                     case ShapeContentType.RadialGradientFill:
                     case ShapeContentType.TrimPath:
-                    case ShapeContentType.RoundedCorner:
+                    case ShapeContentType.RoundCorners:
                         throw new InvalidOperationException();
                 }
             }
@@ -1797,7 +1502,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         // Merge the stack into a single shape. Merging is done recursively - the top geometry on the
         // stack is merged with the merge of the remainder of the stack.
-        CompositionShape TranslateMergePathsContent(TranslationContext context, ShapeContentContext shapeContext, Stack<ShapeLayerContent> stack, MergePaths.MergeMode mergeMode)
+        CompositionShape TranslateMergePathsContent(TranslationContext context, ShapeContext shapeContext, Stack<ShapeLayerContent> stack, MergePaths.MergeMode mergeMode)
         {
             var mergedGeometry = MergeShapeLayerContent(context, shapeContext, stack, mergeMode);
             if (mergedGeometry != null)
@@ -1805,7 +1510,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 var result = _c.CreateSpriteShape();
                 result.Geometry = _c.CreatePathGeometry(new CompositionPath(mergedGeometry));
 
-                TranslateAndApplyShapeContentContext(
+                TranslateAndApplyShapeContext(
                     context,
                     shapeContext,
                     result,
@@ -1820,7 +1525,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
         }
 
-        CanvasGeometry MergeShapeLayerContent(TranslationContext context, ShapeContentContext shapeContext, Stack<ShapeLayerContent> stack, MergePaths.MergeMode mergeMode)
+        CanvasGeometry MergeShapeLayerContent(TranslationContext context, ShapeContext shapeContext, Stack<ShapeLayerContent> stack, MergePaths.MergeMode mergeMode)
         {
             var pathFillType = shapeContext.Fill is null ? ShapeFill.PathFillType.EvenOdd : shapeContext.Fill.FillType;
             var geometries = CreateCanvasGeometries(context, shapeContext, stack, pathFillType).ToArray();
@@ -1919,7 +1624,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         IEnumerable<CanvasGeometry> CreateCanvasGeometries(
             TranslationContext context,
-            ShapeContentContext shapeContext,
+            ShapeContext shapeContext,
             Stack<ShapeLayerContent> stack,
             ShapeFill.PathFillType pathFillType)
         {
@@ -1959,7 +1664,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     case ShapeContentType.RadialGradientFill:
                     case ShapeContentType.LinearGradientFill:
                     case ShapeContentType.TrimPath:
-                    case ShapeContentType.RoundedCorner:
+                    case ShapeContentType.RoundCorners:
                         // Ignore commands that set the context - we only want geometries.
                         break;
 
@@ -2074,7 +1779,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         CanvasGeometry CreateWin2dPathGeometryFromShape(
             TranslationContext context,
-            ShapeContentContext shapeContext,
+            ShapeContext shapeContext,
             Path path,
             ShapeFill.PathFillType fillType,
             bool optimizeLines)
@@ -2102,7 +1807,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return result;
         }
 
-        CanvasGeometry CreateWin2dEllipseGeometry(TranslationContext context, ShapeContentContext shapeContext, Ellipse ellipse)
+        CanvasGeometry CreateWin2dEllipseGeometry(TranslationContext context, ShapeContext shapeContext, Ellipse ellipse)
         {
             var ellipsePosition = context.TrimAnimatable(ellipse.Position);
             var ellipseDiameter = context.TrimAnimatable(ellipse.Diameter);
@@ -2136,47 +1841,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return result;
         }
 
-        CanvasGeometry CreateWin2dRectangleGeometry(TranslationContext context, ShapeContentContext shapeContext, Rectangle rectangle)
-        {
-            var position = context.TrimAnimatable(rectangle.Position);
-            var size = context.TrimAnimatable(rectangle.Size);
-
-            // If a Rectangle is in the context, use it to override the corner radius.
-            var cornerRadius = context.TrimAnimatable(shapeContext.RoundedCorner != null ? shapeContext.RoundedCorner.Radius : rectangle.Roundness);
-
-            if (position.IsAnimated || size.IsAnimated || cornerRadius.IsAnimated)
-            {
-                _issues.CombiningAnimatedShapesIsNotSupported();
-            }
-
-            var width = size.InitialValue.X;
-            var height = size.InitialValue.Y;
-            var radius = cornerRadius.InitialValue;
-
-            var result = CanvasGeometry.CreateRoundedRectangle(
-                null,
-                (float)(position.InitialValue.X - (width / 2)),
-                (float)(position.InitialValue.Y - (height / 2)),
-                (float)width,
-                (float)height,
-                (float)radius,
-                (float)radius);
-
-            var transformMatrix = CreateMatrixFromTransform(context, shapeContext.Transform);
-            if (!transformMatrix.IsIdentity)
-            {
-                result = result.Transform(transformMatrix);
-            }
-
-            if (_addDescriptions)
-            {
-                Describe(result, rectangle.Name);
-            }
-
-            return result;
-        }
-
-        CompositionShape TranslateEllipseContent(TranslationContext context, ShapeContentContext shapeContext, Ellipse shapeContent)
+        CompositionShape TranslateEllipseContent(TranslationContext context, ShapeContext shapeContext, Ellipse shapeContent)
         {
             // An ellipse is represented as a SpriteShape with a CompositionEllipseGeometry.
             var compositionSpriteShape = _c.CreateSpriteShape();
@@ -2233,7 +1898,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 }
             }
 
-            TranslateAndApplyShapeContentContext(
+            TranslateAndApplyShapeContext(
                 context,
                 shapeContext,
                 compositionSpriteShape,
@@ -2243,388 +1908,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return compositionSpriteShape;
         }
 
-        CompositionShape TranslateRectangleContent(TranslationContext context, ShapeContentContext shapeContext, Rectangle shapeContent)
+        void CheckForRoundCornersOnPath(TranslationContext context, ShapeContext shapeContext)
         {
-            var result = _c.CreateSpriteShape();
-            var position = context.TrimAnimatable(shapeContent.Position);
-
-            if (shapeContent.Roundness.AlwaysEquals(0) && shapeContext.RoundedCorner is null)
+            if (!context.TrimAnimatable(shapeContext.RoundCorners.Radius).Always(0))
             {
-                TranslateAndApplyNonRoundedRectangleContent(
-                    context,
-                    shapeContext,
-                    shapeContent,
-                    position,
-                    result);
-            }
-            else
-            {
-                TranslateAndApplyRoundedRectangleContent(
-                    context,
-                    shapeContext,
-                    shapeContent,
-                    position,
-                    result);
-            }
-
-            return result;
-        }
-
-        void TranslateAndApplyNonRoundedRectangleContent(
-            TranslationContext context,
-            ShapeContentContext shapeContext,
-            Rectangle shapeContent,
-            in TrimmedAnimatable<Vector3> position,
-            CompositionSpriteShape compositionShape)
-        {
-            Debug.Assert(shapeContent.Roundness.AlwaysEquals(0) && shapeContext.RoundedCorner is null, "Precondition");
-
-            var size = AnimatableVector3Rewriter.EnsureOneEasingPerChannel(shapeContent.Size);
-            if (size is AnimatableXYZ sizeXYZ)
-            {
-                var width = context.TrimAnimatable(sizeXYZ.X);
-                var height = context.TrimAnimatable(sizeXYZ.Y);
-
-                var geometry = _c.CreateRectangleGeometry(
-                                    size: (width.IsAnimated || height.IsAnimated) ? (Sn.Vector2?)null : Vector2(width.InitialValue, height.InitialValue),
-                                    offset: InitialOffset(width, height, position: position));
-
-                compositionShape.Geometry = geometry;
-
-                ApplyRectangleContentCommonXY(context, shapeContext, shapeContent, compositionShape, width, height, position, geometry);
-            }
-            else
-            {
-                var size3 = context.TrimAnimatable<Vector3>((AnimatableVector3)size);
-
-                var geometry = _c.CreateRectangleGeometry(
-                                    size: size3.IsAnimated ? (Sn.Vector2?)null : Vector2(size3.InitialValue),
-                                    offset: InitialOffset(size: size3, position: position));
-
-                compositionShape.Geometry = geometry;
-
-                ApplyRectangleContentCommon(context, shapeContext, shapeContent, compositionShape, size3, position, geometry);
-            }
-        }
-
-        void TranslateAndApplyRoundedRectangleContent(
-            TranslationContext context,
-            ShapeContentContext shapeContext,
-            Rectangle shapeContent,
-            in TrimmedAnimatable<Vector3> position,
-            CompositionSpriteShape compositionShape)
-        {
-            // Use a rounded rectangle geometry.
-            var geometry = _c.CreateRoundedRectangleGeometry();
-            compositionShape.Geometry = geometry;
-
-            // If a RoundedRectangle is in the context, use it to override the roundness unless the roundness is non-0.
-            var cornerRadius = context.TrimAnimatable(
-                shapeContext.RoundedCorner != null && shapeContent.Roundness.AlwaysEquals(0)
-                    ? shapeContext.RoundedCorner.Radius
-                    : shapeContent.Roundness);
-
-            var size = AnimatableVector3Rewriter.EnsureOneEasingPerChannel(shapeContent.Size);
-            if (size is AnimatableXYZ sizeXYZ)
-            {
-                var width = context.TrimAnimatable(sizeXYZ.X);
-                var height = context.TrimAnimatable(sizeXYZ.Y);
-
-                // In After Effects, the rectangle Roundness has no further effect once it reaches min(Size.X, Size.Y)/2.
-                // In Composition, the cornerRadius continues to affect the shape even beyond min(Size.X, Size.Y)/2.
-                // If size or corner radius are animated, handle this with an expression.
-                if (cornerRadius.IsAnimated || width.IsAnimated || height.IsAnimated)
-                {
-                    WinCompData.Expressions.Vector2 cornerRadiusExpression;
-                    if (cornerRadius.IsAnimated)
-                    {
-                        geometry.Properties.InsertScalar("Roundness", Float(cornerRadius.InitialValue));
-                        ApplyScalarKeyFrameAnimation(context, cornerRadius, geometry.Properties, "Roundness");
-
-                        if (width.IsAnimated || height.IsAnimated)
-                        {
-                            // Both size and cornerRadius are animated.
-                            cornerRadiusExpression = ConstrainedCornerRadiusScalar();
-                        }
-                        else
-                        {
-                            // Only the cornerRadius is animated.
-                            cornerRadiusExpression = ConstrainedCornerRadiusScalar(Vector2(width.InitialValue, height.InitialValue));
-                        }
-                    }
-                    else
-                    {
-                        // Only the size is animated.
-                        cornerRadiusExpression = ConstrainedCornerRadiusScalar(cornerRadius.InitialValue);
-                    }
-
-                    var cornerRadiusAnimation = _c.CreateExpressionAnimation(cornerRadiusExpression);
-                    cornerRadiusAnimation.SetReferenceParameter("my", geometry);
-                    StartExpressionAnimation(geometry, nameof(CompositionRoundedRectangleGeometry.CornerRadius), cornerRadiusAnimation);
-                }
-                else
-                {
-                    // Static size and corner radius.
-                    var cornerRadiusValue = Math.Min(cornerRadius.InitialValue, Math.Min(width.InitialValue, height.InitialValue) / 2);
-                    geometry.CornerRadius = Vector2((float)cornerRadiusValue);
-                }
-
-                geometry.Offset = InitialOffset(width, height, position: position);
-
-                if (!width.IsAnimated || !height.IsAnimated)
-                {
-                    geometry.Size = Vector2(width.InitialValue, height.InitialValue);
-                }
-
-                ApplyRectangleContentCommonXY(context, shapeContext, shapeContent, compositionShape, width, height, position, geometry);
-            }
-            else
-            {
-                var size3 = context.TrimAnimatable<Vector3>((AnimatableVector3)size);
-
-                // In After Effects, the rectangle Roundness has no further effect once it reaches min(Size.X, Size.Y)/2.
-                // In Composition, the cornerRadius continues to affect the shape even beyond min(Size.X, Size.Y)/2.
-                // If size or corner radius are animated, handle this with an expression.
-                if (cornerRadius.IsAnimated || size3.IsAnimated)
-                {
-                    WinCompData.Expressions.Vector2 cornerRadiusExpression;
-
-                    if (cornerRadius.IsAnimated)
-                    {
-                        geometry.Properties.InsertScalar("Roundness", Float(cornerRadius.InitialValue));
-                        ApplyScalarKeyFrameAnimation(context, cornerRadius, geometry.Properties, "Roundness");
-
-                        if (size3.IsAnimated)
-                        {
-                            // Both size and cornerRadius are animated.
-                            cornerRadiusExpression = ConstrainedCornerRadiusScalar();
-                        }
-                        else
-                        {
-                            // Only the cornerRadius is animated.
-                            cornerRadiusExpression = ConstrainedCornerRadiusScalar(Vector2(size3.InitialValue));
-                        }
-                    }
-                    else
-                    {
-                        // Only the size is animated.
-                        cornerRadiusExpression = ConstrainedCornerRadiusScalar(cornerRadius.InitialValue);
-                    }
-
-                    var cornerRadiusAnimation = _c.CreateExpressionAnimation(cornerRadiusExpression);
-                    cornerRadiusAnimation.SetReferenceParameter("my", geometry);
-                    StartExpressionAnimation(geometry, "CornerRadius", cornerRadiusAnimation);
-                }
-                else
-                {
-                    // Static size and corner radius.
-                    var cornerRadiusValue = Math.Min(cornerRadius.InitialValue, Math.Min(size3.InitialValue.X, size3.InitialValue.Y) / 2);
-                    geometry.CornerRadius = Vector2((float)cornerRadiusValue);
-                }
-
-                geometry.Offset = InitialOffset(size: size3, position: position);
-
-                if (!size3.IsAnimated)
-                {
-                    geometry.Size = Vector2(size3.InitialValue);
-                }
-
-                ApplyRectangleContentCommon(context, shapeContext, shapeContent, compositionShape, size3, position, geometry);
-            }
-        }
-
-        // Convert the size and position for a geometry into an offset.
-        // This is necessary because a geometry's offset describes its
-        // top left corner, whereas a Lottie position describes its centerpoint.
-        static Sn.Vector2 InitialOffset(
-            in TrimmedAnimatable<Vector3> size,
-            in TrimmedAnimatable<Vector3> position)
-            => Vector2(position.InitialValue - (size.InitialValue / 2));
-
-        static Sn.Vector2 InitialOffset(
-            in TrimmedAnimatable<double> width,
-            in TrimmedAnimatable<double> height,
-            in TrimmedAnimatable<Vector3> position)
-            => Vector2(position.InitialValue - (new Vector3(width.InitialValue, height.InitialValue, 0) / 2));
-
-        void ApplyRectangleContentCommon(
-            TranslationContext context,
-            ShapeContentContext shapeContext,
-            Rectangle shapeContent,
-            CompositionSpriteShape compositionRectangle,
-            in TrimmedAnimatable<Vector3> size,
-            in TrimmedAnimatable<Vector3> position,
-            CompositionGeometry geometry)
-        {
-            if (position.IsAnimated || size.IsAnimated)
-            {
-                Expr offsetExpression;
-                if (position.IsAnimated)
-                {
-                    ApplyVector2KeyFrameAnimation(context, position, geometry, nameof(Rectangle.Position));
-                    geometry.Properties.InsertVector2(nameof(Rectangle.Position), Vector2(position.InitialValue));
-                    if (size.IsAnimated)
-                    {
-                        // Size AND position are animated.
-                        offsetExpression = ExpressionFactory.PositionAndSizeToOffsetExpression;
-                        ApplyVector2KeyFrameAnimation(context, size, geometry, nameof(Rectangle.Size));
-                    }
-                    else
-                    {
-                        // Only Position is animated
-                        offsetExpression = ExpressionFactory.HalfSizeToOffsetExpression(Vector2(size.InitialValue / 2));
-                    }
-                }
-                else
-                {
-                    // Only Size is animated.
-                    offsetExpression = ExpressionFactory.PositionToOffsetExpression(Vector2(position.InitialValue));
-                    ApplyVector2KeyFrameAnimation(context, size, geometry, nameof(Rectangle.Size));
-                }
-
-                var offsetExpressionAnimation = _c.CreateExpressionAnimation(offsetExpression);
-                offsetExpressionAnimation.SetReferenceParameter("my", geometry);
-                StartExpressionAnimation(geometry, "Offset", offsetExpressionAnimation);
-            }
-
-            // Lottie rectangles have 0,0 at top right. That causes problems for TrimPath which expects 0,0 to be top left.
-            // Add an offset to the trim path.
-
-            // TODO - this only works correctly if Size and TrimOffset are not animated. A complete solution requires
-            //        adding another property.
-            var isPartialTrimPath = shapeContext.TrimPath != null &&
-                (shapeContext.TrimPath.Start.IsAnimated || shapeContext.TrimPath.End.IsAnimated || shapeContext.TrimPath.Offset.IsAnimated ||
-                shapeContext.TrimPath.Start.InitialValue.Value != 0 || shapeContext.TrimPath.End.InitialValue.Value != 1);
-
-            if (size.IsAnimated && isPartialTrimPath)
-            {
-                // Warn that we might be getting things wrong
-                _issues.AnimatedRectangleWithTrimPathIsNotSupported();
-            }
-
-            var width = size.InitialValue.X;
-            var height = size.InitialValue.Y;
-            var trimOffsetDegrees = (width / (2 * (width + height))) * 360;
-
-            TranslateAndApplyShapeContentContext(
-                context,
-                shapeContext,
-                compositionRectangle,
-                shapeContent.DrawingDirection == DrawingDirection.Reverse,
-                trimOffsetDegrees: trimOffsetDegrees);
-
-            if (_addDescriptions)
-            {
-                Describe(compositionRectangle, shapeContent.Name);
-                Describe(compositionRectangle.Geometry, $"{shapeContent.Name}.RectangleGeometry");
-            }
-        }
-
-        void ApplyRectangleContentCommonXY(
-            TranslationContext context,
-            ShapeContentContext shapeContext,
-            Rectangle shapeContent,
-            CompositionSpriteShape compositionRectangle,
-            in TrimmedAnimatable<double> width,
-            in TrimmedAnimatable<double> height,
-            in TrimmedAnimatable<Vector3> position,
-            CompositionGeometry geometry)
-        {
-            if (position.IsAnimated || width.IsAnimated || height.IsAnimated)
-            {
-                Expr offsetExpression;
-                if (position.IsAnimated)
-                {
-                    ApplyVector2KeyFrameAnimation(context, position, geometry, nameof(Rectangle.Position));
-                    geometry.Properties.InsertVector2(nameof(Rectangle.Position), Vector2(position.InitialValue));
-                    if (width.IsAnimated || height.IsAnimated)
-                    {
-                        // Size AND position are animated.
-                        offsetExpression = ExpressionFactory.PositionAndSizeToOffsetExpression;
-                        if (width.IsAnimated)
-                        {
-                            ApplyScalarKeyFrameAnimation(context, width, geometry, $"{nameof(Rectangle.Size)}.X");
-                        }
-
-                        if (height.IsAnimated)
-                        {
-                            ApplyScalarKeyFrameAnimation(context, height, geometry, $"{nameof(Rectangle.Size)}.Y");
-                        }
-                    }
-                    else
-                    {
-                        // Only Position is animated.
-                        offsetExpression = ExpressionFactory.HalfSizeToOffsetExpression(Vector2(new Vector2(width.InitialValue, height.InitialValue) / 2));
-                    }
-                }
-                else
-                {
-                    // Only Size is animated.
-                    offsetExpression = ExpressionFactory.PositionToOffsetExpression(Vector2(position.InitialValue));
-                    if (width.IsAnimated)
-                    {
-                        ApplyScalarKeyFrameAnimation(context, width, geometry, $"{nameof(Rectangle.Size)}.X");
-                    }
-
-                    if (height.IsAnimated)
-                    {
-                        ApplyScalarKeyFrameAnimation(context, height, geometry, $"{nameof(Rectangle.Size)}.Y");
-                    }
-                }
-
-                var offsetExpressionAnimation = _c.CreateExpressionAnimation(offsetExpression);
-                offsetExpressionAnimation.SetReferenceParameter("my", geometry);
-                StartExpressionAnimation(geometry, "Offset", offsetExpressionAnimation);
-            }
-
-            // Lottie rectangles have 0,0 at top right. That causes problems for TrimPath which expects 0,0 to be top left.
-            // Add an offset to the trim path.
-
-            // TODO - this only works correctly if Size and TrimOffset are not animated. A complete solution requires
-            //        adding another property.
-            var isPartialTrimPath = shapeContext.TrimPath != null &&
-                (shapeContext.TrimPath.Start.IsAnimated || shapeContext.TrimPath.End.IsAnimated || shapeContext.TrimPath.Offset.IsAnimated ||
-                shapeContext.TrimPath.Start.InitialValue.Value != 0 || shapeContext.TrimPath.End.InitialValue.Value != 1);
-
-            if ((width.IsAnimated || height.IsAnimated) && isPartialTrimPath)
-            {
-                // Warn that we might be getting things wrong.
-                _issues.AnimatedRectangleWithTrimPathIsNotSupported();
-            }
-
-            var initialWidth = width.InitialValue;
-            var initialHeight = height.InitialValue;
-            var trimOffsetDegrees = (initialWidth / (2 * (initialWidth + initialHeight))) * 360;
-
-            TranslateAndApplyShapeContentContext(
-                context,
-                shapeContext,
-                compositionRectangle,
-                shapeContent.DrawingDirection == DrawingDirection.Reverse,
-                trimOffsetDegrees: trimOffsetDegrees);
-
-            if (_addDescriptions)
-            {
-                Describe(compositionRectangle, shapeContent.Name);
-                Describe(compositionRectangle.Geometry, $"{shapeContent.Name}.RectangleGeometry");
-            }
-        }
-
-        void CheckForRoundedCornersOnPath(TranslationContext context, ShapeContentContext shapeContext)
-        {
-            if (shapeContext.RoundedCorner != null)
-            {
-                var trimmedRadius = context.TrimAnimatable(shapeContext.RoundedCorner.Radius);
-                if (trimmedRadius.IsAnimated || trimmedRadius.InitialValue != 0)
-                {
-                    // TODO - can rounded corners be implemented by composing cubic Beziers?
-                    _issues.PathWithRoundedCornersIsNotSupported();
-                }
+                // TODO - can round corners be implemented by composing cubic Beziers?
+                _issues.PathWithRoundCornersIsNotSupported();
             }
         }
 
         // Groups multiple Shapes into a D2D geometry group.
-        CompositionShape TranslatePathGroupContent(TranslationContext context, ShapeContentContext shapeContext, IEnumerable<Path> paths)
+        CompositionShape TranslatePathGroupContent(TranslationContext context, ShapeContext shapeContext, IEnumerable<Path> paths)
         {
             var groupingSucceeded = PathGeometryGroup.TryGroupPaths(context, paths, out var grouped);
 
@@ -2654,7 +1948,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 Describe(compositionPathGeometry, $"{shapeContentName}.PathGeometry");
             }
 
-            TranslateAndApplyShapeContentContext(
+            TranslateAndApplyShapeContext(
                 context,
                 shapeContext,
                 compositionSpriteShape,
@@ -2664,7 +1958,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return compositionSpriteShape;
         }
 
-        CompositionShape TranslatePathContent(TranslationContext context, ShapeContentContext shapeContext, Path path)
+        CompositionShape TranslatePathContent(TranslationContext context, ShapeContext shapeContext, Path path)
         {
             // A path is represented as a SpriteShape with a CompositionPathGeometry.
             var geometry = _c.CreatePathGeometry();
@@ -2679,7 +1973,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 Describe(geometry, $"{path.Name}.PathGeometry");
             }
 
-            TranslateAndApplyShapeContentContext(
+            TranslateAndApplyShapeContext(
                 context,
                 shapeContext,
                 compositionSpriteShape,
@@ -2689,9 +1983,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return compositionSpriteShape;
         }
 
-        void TranslateAndApplyShapeContentContext(
+        void TranslateAndApplyShapeContext(
             TranslationContext context,
-            ShapeContentContext shapeContext,
+            ShapeContext shapeContext,
             CompositionSpriteShape shape,
             bool reverseDirection,
             double trimOffsetDegrees)
@@ -2849,22 +2143,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             {
                 // Add properties that will be animated. The TrimStart and TrimEnd properties
                 // will be set by these values through an expression.
-                geometry.Properties.InsertScalar("TStart", Float(startTrim.InitialValue));
-                if (startTrim.IsAnimated)
-                {
-                    ApplyTrimKeyFrameAnimation(context, startTrim, geometry.Properties, "TStart", "TStart", null);
-                }
-
+                InsertAndApplyTrimKeyFramePropertySetAnimation(context, startTrim, geometry, "TStart");
                 var trimStartExpression = _c.CreateExpressionAnimation(ExpressionFactory.MinTStartTEnd);
                 trimStartExpression.SetReferenceParameter("my", geometry);
                 StartExpressionAnimation(geometry, nameof(geometry.TrimStart), trimStartExpression);
 
-                geometry.Properties.InsertScalar("TEnd", Float(endTrim.InitialValue));
-                if (endTrim.IsAnimated)
-                {
-                    ApplyTrimKeyFrameAnimation(context, endTrim, geometry.Properties, "TEnd", "TEnd", null);
-                }
-
+                InsertAndApplyTrimKeyFramePropertySetAnimation(context, endTrim, geometry, "TEnd");
                 var trimEndExpression = _c.CreateExpressionAnimation(ExpressionFactory.MaxTStartTEnd);
                 trimEndExpression.SetReferenceParameter("my", geometry);
                 StartExpressionAnimation(geometry, nameof(geometry.TrimEnd), trimEndExpression);
@@ -2928,7 +2212,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 return;
             }
 
-            if (shapeStroke.StrokeWidth.AlwaysEquals(0))
+            if (shapeStroke.StrokeWidth.Always(0))
             {
                 return;
             }
@@ -4222,6 +3506,49 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
         }
 
+        // Adds and animates a CompositionPropertySet value on the target object.
+        void InsertAndApplyScalarKeyFramePropertySetAnimation(
+            TranslationContext context,
+            in TrimmedAnimatable<double> value,
+            CompositionObject targetObject,
+            string targetPropertyName,
+            string longDescription = null,
+            string shortDescription = null)
+        {
+            if (targetObject.Properties == targetObject)
+            {
+                throw new ArgumentException("targetObject must not be a CompositionPropertySet");
+            }
+
+            targetObject.Properties.InsertScalar(targetPropertyName, Float(value.InitialValue));
+
+            if (value.IsAnimated)
+            {
+                ApplyScaledScalarKeyFrameAnimation(context, value, 1, targetObject, targetPropertyName, longDescription, shortDescription);
+            }
+        }
+
+        void InsertAndApplyTrimKeyFramePropertySetAnimation(
+            TranslationContext context,
+            in TrimmedAnimatable<Trim> value,
+            CompositionObject targetObject,
+            string targetPropertyName,
+            string longDescription = null,
+            string shortDescription = null)
+        {
+            if (targetObject.Properties == targetObject)
+            {
+                throw new ArgumentException("targetObject must not be a CompositionPropertySet");
+            }
+
+            targetObject.Properties.InsertScalar(targetPropertyName, Float(value.InitialValue));
+
+            if (value.IsAnimated)
+            {
+                ApplyTrimKeyFrameAnimation(context, value, targetObject, targetPropertyName, longDescription, shortDescription);
+            }
+        }
+
         void ApplyRotationKeyFrameAnimation(
             TranslationContext context,
             in TrimmedAnimatable<Rotation> value,
@@ -5310,11 +4637,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 }
 
                 internal override bool IsShape =>
-                    !_context.Layer.Masks.Any() || _context.Layer.IsHidden || _context.Layer.Transform.Opacity.AlwaysEquals(LottieData.Opacity.Transparent);
+                    !_context.Layer.Masks.Any() || _context.Layer.IsHidden || _context.Layer.Transform.Opacity.Always(LottieData.Opacity.Transparent);
 
                 internal override CompositionShape GetShapeRoot()
                 {
-                    if (_context.Layer.IsHidden || _context.Layer.Transform.Opacity.AlwaysEquals(LottieData.Opacity.Transparent))
+                    if (_context.Layer.IsHidden || _context.Layer.Transform.Opacity.Always(LottieData.Opacity.Transparent))
                     {
                         // The layer does not render anything. Nothing to translate. This can happen when someone
                         // creates a solid layer to act like a Null layer.
@@ -5329,9 +4656,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
                     var rectangle = _owner._c.CreateSpriteShape();
 
-                    rectangle.Geometry = _owner._c.CreateRectangleGeometry(
-                                            size: new Sn.Vector2(_context.Layer.Width, _context.Layer.Height),
-                                            offset: null);
+                    var rectangleGeometry = _owner._c.CreateRectangleGeometry();
+
+                    rectangleGeometry.Size = new Sn.Vector2(_context.Layer.Width, _context.Layer.Height);
+
+                    rectangle.Geometry = rectangleGeometry;
 
                     containerContentNode.Shapes.Add(rectangle);
 
@@ -5352,7 +4681,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 internal override Visual GetVisualRoot(Sn.Vector2 maximumSize)
                 {
                     // Translate the SolidLayer to a Visual.
-                    if (_context.Layer.IsHidden || _context.Layer.Transform.Opacity.AlwaysEquals(LottieData.Opacity.Transparent))
+                    if (_context.Layer.IsHidden || _context.Layer.Transform.Opacity.Always(LottieData.Opacity.Transparent))
                     {
                         // The layer does not render anything. Nothing to translate. This can happen when someone
                         // creates a solid layer to act like a Null layer.
@@ -5420,7 +4749,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         return null;
                     }
 
-                    var shapeContext = new ShapeContentContext(_owner);
+                    var shapeContext = new ShapeContext(_owner._issues);
 
                     // Update the opacity from the transform. This is necessary to push the opacity
                     // to the leaves (because CompositionShape does not support opacity).
@@ -5443,7 +4772,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         return null;
                     }
 
-                    var shapeContext = new ShapeContentContext(_owner);
+                    var shapeContext = new ShapeContext(_owner._issues);
 
                     contentsNode.Shapes.Add(_owner.TranslateShapeLayerContents(_context, shapeContext, _context.Layer.Contents));
 

@@ -23,7 +23,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         RadialGradientStroke,
         Rectangle,
         Repeater,
-        RoundedCorner,
+        RoundCorners,
         SolidColorFill,
         SolidColorStroke,
         Transform,
