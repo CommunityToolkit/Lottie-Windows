@@ -346,14 +346,12 @@ sealed class LottieFileProcessor
 
     bool TryGenerateLottieYaml(string outputFilePath)
     {
-        // Remove the path if in TestMode so that the same file
-        // that is referenced via a different path won't produce
-        // a different output.
-        var filename = _options.TestMode ? System.IO.Path.GetFileName(_file) : _file;
-
         var result = TryWriteTextFile(
             outputFilePath,
-            writer => LottieCompositionYamlSerializer.WriteYaml(_lottieComposition, writer, filename));
+            writer => LottieCompositionYamlSerializer.WriteYaml(
+                            _lottieComposition,
+                            writer,
+                            System.IO.Path.GetFileName(_file)));
 
         if (result)
         {
@@ -659,6 +657,7 @@ sealed class LottieFileProcessor
         var inputFile = new FileInfo(_file);
 
         var indent = "    ";
+
         if (!_options.TestMode)
         {
             yield return $"{ThisAssembly.AssemblyName} version:";
@@ -675,13 +674,6 @@ sealed class LottieFileProcessor
         yield return string.Empty;
         yield return "Input file:";
         yield return $"{indent}{inputFile.Name} ({inputFile.Length:g} bytes created {inputFile.CreationTimeUtc.ToLocalTime():H:mmK MMM d yyyy})";
-
-        if (!_options.TestMode)
-        {
-            yield return string.Empty;
-            yield return "Invoked on:";
-            yield return $"{indent}{Environment.MachineName} @ {_timestamp.ToLocalTime():H:mmK MMM d yyyy}";
-        }
 
         yield return string.Empty;
         yield return $"{ThisAssembly.AssemblyName} source:";
