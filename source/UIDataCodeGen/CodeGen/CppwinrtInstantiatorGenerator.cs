@@ -52,7 +52,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         private protected override void WriteHeaderClassStart(HeaderBuilder builder, IAnimatedVisualSourceInfo info, string inherits)
         {
-            builder.Preamble.WriteLine($"{(info.Public ? "public" : string.Empty)}class {SourceClassName}");
+            builder.Preamble.WriteLine($"{(info.Public ? "public " : string.Empty)}class {SourceClassName}");
             builder.Preamble.Indent();
             builder.Preamble.WriteLine($": public winrt::implements<{SourceClassName}, winrt::{inherits}>");
             builder.Preamble.UnIndent();
