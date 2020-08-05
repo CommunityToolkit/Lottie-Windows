@@ -68,6 +68,12 @@ sealed class CommandLineOptions
     // a previous version of the tool.
     internal bool TestMode { get; private set; }
 
+    // Experimental feature to control code generation for WinUI3. Eventually there
+    // will be separate versions of LottieGen for WinUI3 and system APIs so there will
+    // be no need for this switch. For now, if you're using LottieGen to generate
+    // code for WinUI3, set this switch and the codegen will need less hand fixing.
+    internal bool WinUI3Mode { get; private set; }
+
     // Returns a command line equivalent to the current set of options. This is intended
     // for adding to generated code so that users can regenerate the code and know that
     // they got the set of options the same as a previous run. It does not include the
@@ -95,6 +101,11 @@ sealed class CommandLineOptions
         if (GenerateDependencyObject)
         {
             sb.Append($" -{nameof(GenerateDependencyObject)}");
+        }
+
+        if (!string.IsNullOrWhiteSpace(Interface))
+        {
+            sb.Append($" -{nameof(Interface)} {Interface}");
         }
 
         if (MinimumUapVersion.HasValue)
@@ -127,9 +138,9 @@ sealed class CommandLineOptions
             }
         }
 
-        if (!string.IsNullOrWhiteSpace(Interface))
+        if (WinUI3Mode)
         {
-            sb.Append($" -{nameof(Interface)} {Interface}");
+            sb.Append($" -{nameof(WinUI3Mode)}");
         }
 
         return sb.ToString();
@@ -154,6 +165,7 @@ sealed class CommandLineOptions
         Strict,
         TargetUapVersion,
         TestMode,
+        WinUI3Mode,
     }
 
     // Returns the parsed command line. If ErrorDescription is non-null, then the parse failed.
@@ -215,7 +227,8 @@ sealed class CommandLineOptions
             .AddPrefixedKeyword(Keyword.Public)
             .AddPrefixedKeyword(Keyword.Strict)
             .AddPrefixedKeyword(Keyword.TargetUapVersion)
-            .AddPrefixedKeyword(Keyword.TestMode);
+            .AddPrefixedKeyword(Keyword.TestMode)
+            .AddPrefixedKeyword(Keyword.WinUI3Mode);
 
         // The last keyword recognized. This defines what the following parameter value is for,
         // or None if not expecting a parameter value.
@@ -251,6 +264,9 @@ sealed class CommandLineOptions
                             break;
                         case Keyword.TestMode:
                             TestMode = true;
+                            break;
+                        case Keyword.WinUI3Mode:
+                            WinUI3Mode = true;
                             break;
                         case Keyword.DisableCodeGenOptimizer:
                             DisableCodeGenOptimizer = true;

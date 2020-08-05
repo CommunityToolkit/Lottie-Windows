@@ -281,6 +281,8 @@ OVERVIEW:
                        from run to run with the same inputs, for example tool version
                        numbers, file paths, and dates. This is designed to enable
                        testing of the tool by diffing the outputs.
+         -WinUI3Mode   Generates code that is compatible with WinUI3. This is currently
+                       an experimental feature.
 
 EXAMPLES:
 

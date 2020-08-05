@@ -60,8 +60,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             {
                 if (SourceInfo.GenerateDependencyObject)
                 {
-                    builder.Private.WriteLine($"static Windows::UI::Xaml::DependencyProperty^ _{prop.Name}Property;");
-                    builder.Private.WriteLine($"static void On{prop.Name}Changed(Windows::UI::Xaml::DependencyObject^ d, Windows::UI::Xaml::DependencyPropertyChangedEventArgs^ e);");
+                    builder.Private.WriteLine($"static {WinUINamespace}::Xaml::DependencyProperty^ _{prop.Name}Property;");
+                    builder.Private.WriteLine($"static void On{prop.Name}Changed({WinUINamespace}::Xaml::DependencyObject^ d, {WinUINamespace}::Xaml::DependencyPropertyChangedEventArgs^ e);");
                 }
                 else
                 {

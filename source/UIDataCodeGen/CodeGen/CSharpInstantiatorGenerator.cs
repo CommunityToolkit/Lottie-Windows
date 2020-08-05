@@ -22,6 +22,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         readonly Stringifier _s;
         readonly string _interface;
         readonly string _sourceInterface;
+        readonly string _winUiNamespace;
 
         CSharpInstantiatorGenerator(
             CodegenConfiguration configuration,
@@ -34,6 +35,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             _s = stringifier;
             _interface = AnimatedVisualSourceInfo.InterfaceType.GetQualifiedName(stringifier);
             _sourceInterface = _interface + "Source";
+            _winUiNamespace = Info.WinUi3 ? "Microsoft.UI" : "Windows.UI";
         }
 
         IAnimatedVisualSourceInfo Info => AnimatedVisualSourceInfo;
@@ -83,12 +85,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 namespaces.Add("System.ComponentModel");
                 namespaces.Add("System.Runtime.InteropServices.WindowsRuntime");
                 namespaces.Add("Windows.Foundation");
-                namespaces.Add("Windows.UI.Xaml.Media");
+                namespaces.Add($"{_winUiNamespace}.Xaml.Media");
             }
 
             if (Info.GenerateDependencyObject)
             {
-                namespaces.Add("Windows.UI.Xaml");
+                namespaces.Add($"{_winUiNamespace}.Xaml");
             }
 
             if (Info.UsesStreams)
@@ -99,7 +101,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             namespaces.Add("System");
             namespaces.Add("System.Numerics");
             namespaces.Add("Windows.UI");
-            namespaces.Add("Windows.UI.Composition");
+            namespaces.Add($"{_winUiNamespace}.Composition");
 
             // Write out each namespace using.
             foreach (var n in namespaces)
@@ -371,8 +373,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
              {
                  PropertySetValueType.Color => _s.Color((WinCompData.Wui.Color)prop.DefaultValue),
 
-                 // Scalars are stored as floats, but exposed as doubles as XAML markup prefers doubles.
-                 PropertySetValueType.Scalar => _s.Double((float)prop.DefaultValue),
+             // Scalars are stored as floats, but exposed as doubles as XAML markup prefers doubles.
+             PropertySetValueType.Scalar => _s.Double((float)prop.DefaultValue),
                  PropertySetValueType.Vector2 => _s.Vector2((Vector2)prop.DefaultValue),
                  PropertySetValueType.Vector3 => _s.Vector3((Vector3)prop.DefaultValue),
                  PropertySetValueType.Vector4 => _s.Vector4((Vector4)prop.DefaultValue),
