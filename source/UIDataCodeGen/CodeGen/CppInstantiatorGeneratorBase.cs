@@ -827,7 +827,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             }
         }
 
-        // Wrties the start of the namespace, the start of the class, internal constants, and the theming interface.
+        // Writes the start of the namespace, the start of the class, internal constants, and the theming interface.
         void WriteHeaderNamespaceStart(HeaderBuilder builder, IAnimatedVisualSourceInfo info, string inherits)
         {
             builder.Preamble.WriteLine();
