@@ -367,11 +367,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 WritePropertyImpl(builder, isVirtual: true, "float2", "Size", propertyImplBuilder);
             }
 
-            // Write the IsRuntimeCompatible static method.
-            builder.WriteLine("static bool IsRuntimeCompatible()");
-            builder.OpenScope();
-            builder.WriteLine($"return Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent({_s.String("Windows.Foundation.UniversalApiContract")}, {info.RequiredUapVersion});");
-            builder.CloseScope();
+            // WinUI3 doesn't ever do a version check. It's up to the user to make sure
+            // the version they're using is compatible.
+            if (!SourceInfo.WinUi3)
+            {
+                // Write the IsRuntimeCompatible static method.
+                builder.WriteLine("static bool IsRuntimeCompatible()");
+                builder.OpenScope();
+                builder.WriteLine($"return Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent({_s.String("Windows.Foundation.UniversalApiContract")}, {info.RequiredUapVersion});");
+                builder.CloseScope();
+            }
 
             // Close the scope for the instantiator class.
             builder.CloseCppTypeScope();
@@ -629,10 +634,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             // Check whether the runtime will support the lowest UAP version required.
             var animatedVisualInfos = SourceInfo.AnimatedVisualInfos.OrderByDescending(avi => avi.RequiredUapVersion).ToArray();
-            builder.WriteLine($"if (!{animatedVisualInfos[animatedVisualInfos.Length - 1].ClassName}::IsRuntimeCompatible())");
-            builder.OpenScope();
-            builder.WriteLine("return nullptr;");
-            builder.CloseScope();
+
+            // WinUI3 doesn't ever do a version check. It's up to the user to make sure
+            // the version they're using is compatible.
+            if (!SourceInfo.WinUi3)
+            {
+                builder.WriteLine($"if (!{animatedVisualInfos[animatedVisualInfos.Length - 1].ClassName}::IsRuntimeCompatible())");
+                builder.OpenScope();
+                builder.WriteLine("return nullptr;");
+                builder.CloseScope();
+            }
+
             builder.WriteLine();
             builder.WriteLine("EnsureImageLoadingStarted();");
             builder.WriteLine();
@@ -661,17 +673,27 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 CodeBuilder builder,
                 IReadOnlyList<IAnimatedVisualInfo> animatedVisualInfos)
         {
-            foreach (var info in animatedVisualInfos.OrderByDescending(avi => avi.RequiredUapVersion))
+            // WinUI3 doesn't ever do a version check. It's up to the user to make sure
+            // the version they're using is compatible.
+            if (SourceInfo.WinUi3)
             {
-                builder.WriteLine();
-                builder.WriteLine($"if ({info.ClassName}::IsRuntimeCompatible())");
-                builder.OpenScope();
+                var info = animatedVisualInfos.First();
                 builder.WriteBreakableLine($"return {_s.New(info.ClassName)}(", CommaSeparate(GetConstructorArguments(info)), ");");
-                builder.CloseScope();
             }
+            else
+            {
+                foreach (var info in animatedVisualInfos.OrderByDescending(avi => avi.RequiredUapVersion))
+                {
+                    builder.WriteLine();
+                    builder.WriteLine($"if ({info.ClassName}::IsRuntimeCompatible())");
+                    builder.OpenScope();
+                    builder.WriteBreakableLine($"return {_s.New(info.ClassName)}(", CommaSeparate(GetConstructorArguments(info)), ");");
+                    builder.CloseScope();
+                }
 
-            builder.WriteLine();
-            builder.WriteLine("return nullptr;");
+                builder.WriteLine();
+                builder.WriteLine("return nullptr;");
+            }
         }
 
         void WriteIsAnimatedVisualSourceDynamicGetSet(CodeBuilder builder)

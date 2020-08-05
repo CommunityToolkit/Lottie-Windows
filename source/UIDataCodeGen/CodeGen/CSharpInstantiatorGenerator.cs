@@ -35,7 +35,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             _s = stringifier;
             _interface = AnimatedVisualSourceInfo.InterfaceType.GetQualifiedName(stringifier);
             _sourceInterface = _interface + "Source";
-            _winUiNamespace = Info.WinUi3 ? "Microsoft.UI" : "Windows.UI";
+            _winUiNamespace = AnimatedVisualSourceInfo.WinUi3 ? "Microsoft.UI" : "Windows.UI";
         }
 
         IAnimatedVisualSourceInfo Info => AnimatedVisualSourceInfo;
@@ -124,11 +124,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             // Otherwise, implement the IAnimatedVisualSource interface.
             if (Info.LoadedImageSurfaces.Count > 0)
             {
-                WriteIDynamicAnimatedVisualSource(builder, Info);
+                WriteIDynamicAnimatedVisualSource(builder);
             }
             else
             {
-                WriteIAnimatedVisualSource(builder, Info);
+                WriteIAnimatedVisualSource(builder);
             }
 
             builder.CloseScope();
@@ -146,13 +146,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 _ => throw new InvalidOperationException(),
             };
 
-        void WriteThemeProperties(
-            CodeBuilder builder,
-            IAnimatedVisualSourceInfo info)
+        void WriteThemeProperties(CodeBuilder builder)
         {
-            foreach (var prop in info.SourceMetadata.PropertyBindings)
+            foreach (var prop in Info.SourceMetadata.PropertyBindings)
             {
-                if (info.GenerateDependencyObject)
+                if (Info.GenerateDependencyObject)
                 {
                     builder.WriteLine($"public {ExposedType(prop)} {prop.Name}");
                     builder.OpenScope();
@@ -167,9 +165,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     builder.WriteLine("set");
                     builder.OpenScope();
                     builder.WriteLine($"_theme{prop.Name} = value;");
-                    builder.WriteLine($"if ({info.ThemePropertiesFieldName} != null)");
+                    builder.WriteLine($"if ({Info.ThemePropertiesFieldName} != null)");
                     builder.OpenScope();
-                    WriteThemePropertyInitialization(builder, info.ThemePropertiesFieldName, prop);
+                    WriteThemePropertyInitialization(builder, Info.ThemePropertiesFieldName, prop);
                     builder.CloseScope();
                     builder.CloseScope();
                 }
@@ -180,18 +178,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         }
 
         // Writes the static dependency property fields and their initializers.
-        void WriteDependencyPropertyFields(
-            CodeBuilder builder,
-            IAnimatedVisualSourceInfo info)
+        void WriteDependencyPropertyFields(CodeBuilder builder)
         {
-            if (info.GenerateDependencyObject)
+            if (Info.GenerateDependencyObject)
             {
-                foreach (var prop in info.SourceMetadata.PropertyBindings)
+                foreach (var prop in Info.SourceMetadata.PropertyBindings)
                 {
                     builder.WriteComment($"Dependency property for {prop.Name}.");
                     builder.WriteLine($"public static readonly DependencyProperty {prop.Name}Property =");
                     builder.Indent();
-                    builder.WriteLine($"DependencyProperty.Register({String(prop.Name)}, typeof({ExposedType(prop)}), typeof({info.ClassName}),");
+                    builder.WriteLine($"DependencyProperty.Register({String(prop.Name)}, typeof({ExposedType(prop)}), typeof({Info.ClassName}),");
                     builder.Indent();
                     builder.WriteLine($"new PropertyMetadata({GetDefaultPropertyBindingValue(prop)}, On{prop.Name}Changed));");
                     builder.UnIndent();
@@ -202,18 +198,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         }
 
         // Writes the methods that handle dependency property changes.
-        void WriteDependencyPropertyChangeHandlers(
-            CodeBuilder builder,
-            IAnimatedVisualSourceInfo info)
+        void WriteDependencyPropertyChangeHandlers(CodeBuilder builder)
         {
             // Add the dependency property change handler methods.
-            if (info.GenerateDependencyObject)
+            if (Info.GenerateDependencyObject)
             {
-                foreach (var prop in info.SourceMetadata.PropertyBindings)
+                foreach (var prop in Info.SourceMetadata.PropertyBindings)
                 {
                     builder.WriteLine($"static void On{prop.Name}Changed(DependencyObject d, DependencyPropertyChangedEventArgs args)");
                     builder.OpenScope();
-                    WriteThemePropertyInitialization(builder, $"(({info.ClassName})d)._themeProperties?", prop, $"({ExposedType(prop)})args.NewValue");
+                    WriteThemePropertyInitialization(builder, $"(({Info.ClassName})d)._themeProperties?", prop, $"({ExposedType(prop)})args.NewValue");
                     builder.CloseScope();
                     builder.WriteLine();
                 }
@@ -223,23 +217,23 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// <summary>
         /// Writes a class that implements the IAnimatedVisualSource interface.
         /// </summary>
-        void WriteIAnimatedVisualSource(CodeBuilder builder, IAnimatedVisualSourceInfo info)
+        void WriteIAnimatedVisualSource(CodeBuilder builder)
         {
-            var visibility = info.Public ? "public " : string.Empty;
+            var visibility = Info.Public ? "public " : string.Empty;
 
-            if (info.GenerateDependencyObject)
+            if (Info.GenerateDependencyObject)
             {
-                builder.WriteLine($"{visibility}sealed class {info.ClassName} : DependencyObject, {_sourceInterface}");
+                builder.WriteLine($"{visibility}sealed class {Info.ClassName} : DependencyObject, {_sourceInterface}");
             }
             else
             {
-                builder.WriteLine($"{visibility}sealed class {info.ClassName} : {_sourceInterface}");
+                builder.WriteLine($"{visibility}sealed class {Info.ClassName} : {_sourceInterface}");
             }
 
             builder.OpenScope();
 
             // Add any internal constants.
-            foreach (var c in info.InternalConstants)
+            foreach (var c in Info.InternalConstants)
             {
                 builder.WriteComment(c.Description);
                 switch (c.Type)
@@ -262,45 +256,63 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             }
 
             // Add the methods and fields needed for theming.
-            WriteThemeMethodsAndFields(builder, info);
+            WriteThemeMethodsAndFields(builder);
 
             // Generate the method that creates an instance of the animated visual.
             builder.WriteLine($"public {_interface} TryCreateAnimatedVisual(Compositor compositor, out object diagnostics)");
             builder.OpenScope();
             builder.WriteLine("diagnostics = null;");
-            if (info.IsThemed)
+            if (Info.IsThemed)
             {
                 builder.WriteLine("EnsureThemeProperties(compositor);");
             }
 
             builder.WriteLine();
 
-            // Check the runtime version and instantiate the highest compatible IAnimatedVisual class.
-            var animatedVisualInfos = info.AnimatedVisualInfos.OrderByDescending(avi => avi.RequiredUapVersion).ToArray();
-            for (var i = 0; i < animatedVisualInfos.Length; i++)
+            // WinUI3 doesn't ever do a version check. It's up to the user to make sure
+            // the version they're using is compatible.
+            if (Info.WinUi3)
             {
-                var current = animatedVisualInfos[i];
-                builder.WriteLine($"if ({current.ClassName}.IsRuntimeCompatible())");
-                builder.OpenScope();
-                WriteInstantiateAndReturnAnimatedVisual(builder, current);
-                builder.CloseScope();
-                builder.WriteLine();
+                WriteInstantiateAndReturnAnimatedVisual(builder, Info.AnimatedVisualInfos.First());
             }
+            else
+            {
+                // WinUI3 doesn't ever do a version check. It's up to the user to make sure
+                // the version they're using is compatible.
+                if (Info.WinUi3)
+                {
+                    WriteInstantiateAndReturnAnimatedVisual(builder, Info.AnimatedVisualInfos.First());
+                }
+                else
+                {
+                    // Check the runtime version and instantiate the highest compatible IAnimatedVisual class.
+                    var animatedVisualInfos = Info.AnimatedVisualInfos.OrderByDescending(avi => avi.RequiredUapVersion).ToArray();
+                    for (var i = 0; i < animatedVisualInfos.Length; i++)
+                    {
+                        var current = animatedVisualInfos[i];
+                        builder.WriteLine($"if ({current.ClassName}.IsRuntimeCompatible())");
+                        builder.OpenScope();
+                        WriteInstantiateAndReturnAnimatedVisual(builder, current);
+                        builder.CloseScope();
+                        builder.WriteLine();
+                    }
 
-            builder.WriteLine("return null;");
+                    builder.WriteLine("return null;");
+                }
+            }
         }
 
-        void WriteThemeMethodsAndFields(CodeBuilder builder, IAnimatedVisualSourceInfo info)
+        void WriteThemeMethodsAndFields(CodeBuilder builder)
         {
-            if (info.IsThemed)
+            if (Info.IsThemed)
             {
-                builder.WriteLine($"CompositionPropertySet {info.ThemePropertiesFieldName};");
+                builder.WriteLine($"CompositionPropertySet {Info.ThemePropertiesFieldName};");
 
                 // Add fields for each of the theme properties.
                 // Not needed if generating a DependencyObject - the values will be stored in DependencyPropertys.
-                if (!info.GenerateDependencyObject)
+                if (!Info.GenerateDependencyObject)
                 {
-                    foreach (var prop in info.SourceMetadata.PropertyBindings)
+                    foreach (var prop in Info.SourceMetadata.PropertyBindings)
                     {
                         var defaultValue = GetDefaultPropertyBindingValue(prop);
 
@@ -311,22 +323,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 builder.WriteLine();
 
                 // Add the public static dependency property fields for each theme property.
-                WriteDependencyPropertyFields(builder, info);
+                WriteDependencyPropertyFields(builder);
 
                 // Add properties for each of the theme properties.
-                if (info.IsThemed)
+                if (Info.IsThemed)
                 {
                     builder.WriteComment("Theme properties.");
-                    WriteThemeProperties(builder, info);
+                    WriteThemeProperties(builder);
                 }
 
-                var isInterfaceCustom = info.InterfaceType.NormalizedQualifiedName != "Microsoft.UI.Xaml.Controls.IAnimatedVisual";
+                var isInterfaceCustom = Info.InterfaceType.NormalizedQualifiedName != "Microsoft.UI.Xaml.Controls.IAnimatedVisual";
 
                 // The GetThemeProperties method is designed to allow setting of properties when the actual
                 // type of the IAnimatedVisualSource is not known. It relies on a custom interface that declares
                 // it, so if we're not generating code for a custom interface, there's no reason to generate
                 // the method.
-                if (info.InterfaceType.NormalizedQualifiedName != "Microsoft.UI.Xaml.Controls.IAnimatedVisual")
+                if (Info.InterfaceType.NormalizedQualifiedName != "Microsoft.UI.Xaml.Controls.IAnimatedVisual")
                 {
                     builder.WriteLine("public CompositionPropertySet GetThemeProperties(Compositor compositor)");
                     builder.OpenScope();
@@ -335,7 +347,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     builder.WriteLine();
                 }
 
-                if (info.SourceMetadata.PropertyBindings.Any(pb => pb.ExposedType == PropertySetValueType.Color))
+                if (Info.SourceMetadata.PropertyBindings.Any(pb => pb.ExposedType == PropertySetValueType.Color))
                 {
                     // There's at least one themed color. They will need a helper method to convert to Vector4.
                     // If we're generating a custom interface then users may want to use GetThemeProperties
@@ -346,19 +358,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 }
 
                 // Add the dependency property change handler methods.
-                WriteDependencyPropertyChangeHandlers(builder, info);
+                WriteDependencyPropertyChangeHandlers(builder);
 
                 // EnsureThemeProperties(...) method implementation.
                 builder.WriteLine("CompositionPropertySet EnsureThemeProperties(Compositor compositor)");
                 builder.OpenScope();
-                builder.WriteLine($"if ({info.ThemePropertiesFieldName} is null)");
+                builder.WriteLine($"if ({Info.ThemePropertiesFieldName} is null)");
                 builder.OpenScope();
-                builder.WriteLine($"{info.ThemePropertiesFieldName} = compositor.CreatePropertySet();");
+                builder.WriteLine($"{Info.ThemePropertiesFieldName} = compositor.CreatePropertySet();");
 
                 // Initialize the values in the property set.
-                foreach (var prop in info.SourceMetadata.PropertyBindings)
+                foreach (var prop in Info.SourceMetadata.PropertyBindings)
                 {
-                    WriteThemePropertyInitialization(builder, info.ThemePropertiesFieldName, prop, prop.Name);
+                    WriteThemePropertyInitialization(builder, Info.ThemePropertiesFieldName, prop, prop.Name);
                 }
 
                 builder.CloseScope();
@@ -373,8 +385,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
              {
                  PropertySetValueType.Color => _s.Color((WinCompData.Wui.Color)prop.DefaultValue),
 
-             // Scalars are stored as floats, but exposed as doubles as XAML markup prefers doubles.
-             PropertySetValueType.Scalar => _s.Double((float)prop.DefaultValue),
+                 // Scalars are stored as floats, but exposed as doubles as XAML markup prefers doubles.
+                 PropertySetValueType.Scalar => _s.Double((float)prop.DefaultValue),
                  PropertySetValueType.Vector2 => _s.Vector2((Vector2)prop.DefaultValue),
                  PropertySetValueType.Vector3 => _s.Vector3((Vector3)prop.DefaultValue),
                  PropertySetValueType.Vector4 => _s.Vector4((Vector4)prop.DefaultValue),
@@ -384,14 +396,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// <summary>
         /// Write a class that implements the IDynamicAnimatedVisualSource interface.
         /// </summary>
-        void WriteIDynamicAnimatedVisualSource(CodeBuilder builder, IAnimatedVisualSourceInfo info)
+        void WriteIDynamicAnimatedVisualSource(CodeBuilder builder)
         {
-            builder.WriteLine($"sealed class {info.ClassName} : {(info.GenerateDependencyObject ? "DependencyObject, " : string.Empty)}Microsoft.UI.Xaml.Controls.IDynamicAnimatedVisualSource, INotifyPropertyChanged");
+            builder.WriteLine($"sealed class {Info.ClassName} : {(Info.GenerateDependencyObject ? "DependencyObject, " : string.Empty)}Microsoft.UI.Xaml.Controls.IDynamicAnimatedVisualSource, INotifyPropertyChanged");
 
             builder.OpenScope();
 
             // Declare variables.
-            builder.WriteLine($"{_s.Const(_s.TypeInt32)} c_loadedImageSurfaceCount = {info.LoadedImageSurfaces.Count};");
+            builder.WriteLine($"{_s.Const(_s.TypeInt32)} c_loadedImageSurfaceCount = {Info.LoadedImageSurfaces.Count};");
             builder.WriteLine($"{_s.TypeInt32} _loadCompleteEventCount;");
             builder.WriteLine("bool _isAnimatedVisualSourceDynamic = true;");
             builder.WriteLine("bool _isTryCreateAnimatedVisualCalled;");
@@ -399,7 +411,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.WriteLine("EventRegistrationTokenTable<TypedEventHandler<Microsoft.UI.Xaml.Controls.IDynamicAnimatedVisualSource, object>> _animatedVisualInvalidatedEventTokenTable;");
 
             // Declare the variables to hold the LoadedImageSurfaces.
-            foreach (var n in info.LoadedImageSurfaces)
+            foreach (var n in Info.LoadedImageSurfaces)
             {
                 builder.WriteLine($"{_s.ReferenceTypeName(n.TypeName)} {n.FieldName};");
             }
@@ -407,7 +419,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.WriteLine();
 
             // Add the methods and fields needed for theming.
-            WriteThemeMethodsAndFields(builder, info);
+            WriteThemeMethodsAndFields(builder);
 
             // Implement the INotifyPropertyChanged.PropertyChanged event.
             builder.WriteSummaryComment("This implementation of the INotifyPropertyChanged.PropertyChanged event is specific to C# and does not work on WinRT.");
@@ -448,13 +460,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.WriteLine("diagnostics = null;");
             builder.WriteLine();
 
-            // Check whether the runtime will support the lowest UAP version required.
-            var animatedVisualInfos = info.AnimatedVisualInfos.OrderByDescending(avi => avi.RequiredUapVersion).ToArray();
-            builder.WriteLine($"if (!{animatedVisualInfos[^1].ClassName}.IsRuntimeCompatible())");
-            builder.OpenScope();
-            builder.WriteLine("return null;");
-            builder.CloseScope();
-            builder.WriteLine();
+            var animatedVisualInfos = Info.AnimatedVisualInfos.OrderByDescending(avi => avi.RequiredUapVersion).ToArray();
+
+            // WinUI3 doesn't ever do a version check. It's up to the user to make sure
+            // the version they're using is compatible.
+            if (!Info.WinUi3)
+            {
+                // Check whether the runtime will support the lowest UAP version required.
+                builder.WriteLine($"if (!{animatedVisualInfos[^1].ClassName}.IsRuntimeCompatible())");
+                builder.OpenScope();
+                builder.WriteLine("return null;");
+                builder.CloseScope();
+                builder.WriteLine();
+            }
+
             builder.WriteLine("EnsureImageLoadingStarted();");
             builder.WriteLine();
             builder.WriteLine("if (_isAnimatedVisualSourceDynamic && _loadCompleteEventCount != c_loadedImageSurfaceCount)");
@@ -492,7 +511,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.WriteLine();
 
             // Generate the method that load all the LoadedImageSurfaces.
-            WriteEnsureImageLoadingStarted(builder, info);
+            WriteEnsureImageLoadingStarted(builder);
 
             // Generate the method that handle the LoadCompleted event of the LoadedImageSurface objects.
             WriteHandleLoadCompleted(builder);
@@ -574,11 +593,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.WriteLine("void IDisposable.Dispose() => _root?.Dispose();");
             builder.WriteLine();
 
-            // Write the IsRuntimeCompatible static method.
-            builder.WriteLine("internal static bool IsRuntimeCompatible()");
-            builder.OpenScope();
-            builder.WriteLine($"return Windows.Foundation.Metadata.ApiInformation.IsApiContractPresent(\"Windows.Foundation.UniversalApiContract\", {info.RequiredUapVersion});");
-            builder.CloseScope();
+            // WinUI3 doesn't ever do a version check. It's up to the user to make sure
+            // the version they're using is compatible.
+            if (!Info.WinUi3)
+            {
+                // Write the IsRuntimeCompatible static method.
+                builder.WriteLine("internal static bool IsRuntimeCompatible()");
+                builder.OpenScope();
+                builder.WriteLine($"return Windows.Foundation.Metadata.ApiInformation.IsApiContractPresent(\"Windows.Foundation.UniversalApiContract\", {info.RequiredUapVersion});");
+                builder.CloseScope();
+            }
 
             // Close the scope for the instantiator class.
             builder.CloseScope();
@@ -723,7 +747,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.WriteLine();
         }
 
-        void WriteEnsureImageLoadingStarted(CodeBuilder builder, IAnimatedVisualSourceInfo info)
+        void WriteEnsureImageLoadingStarted(CodeBuilder builder)
         {
             builder.WriteLine("void EnsureImageLoadingStarted()");
             builder.OpenScope();
@@ -731,7 +755,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.OpenScope();
             builder.WriteLine("var eventHandler = new TypedEventHandler<LoadedImageSurface, LoadedImageSourceLoadCompletedEventArgs>(HandleLoadCompleted);");
 
-            foreach (var n in info.LoadedImageSurfaces)
+            foreach (var n in Info.LoadedImageSurfaces)
             {
                 switch (n.LoadedImageSurfaceType)
                 {
