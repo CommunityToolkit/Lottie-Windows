@@ -141,21 +141,11 @@ sealed class Program
         {
 #if DO_NOT_PROCESS_IN_PARALLEL
             foreach (var (file, relativePath) in matchingInputFiles)
-            {
-                if (!LottieFileProcessor.ProcessFile(
-                    _options,
-                    _reporter,
-                    file,
-                    System.IO.Path.Combine(outputFolder, relativePath),
-                    timestamp))
-                {
-                    succeeded = false;
-                }
-            }
 #else
             Parallel.ForEach(matchingInputFiles, ((string path, string relativePath) inputFile) =>
+#endif // DO_NOT_PROCESS_IN_PARALLEL
             {
-                if (!LottieFileProcessor.ProcessFile(
+                if (!LottieFileProcessor.ProcessLottieFile(
                     _options,
                     _reporter,
                     inputFile.path,
@@ -165,7 +155,6 @@ sealed class Program
                     succeeded = false;
                 }
             });
-#endif
         }
         catch (Exception e)
         {
