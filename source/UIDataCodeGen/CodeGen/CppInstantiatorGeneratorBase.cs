@@ -449,6 +449,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         private protected abstract void WriteThemeHeader(HeaderBuilder builder);
 
+        private protected abstract void WriteHeaderClassStart(HeaderBuilder builder, IAnimatedVisualSourceInfo info, string inherits);
+
         protected abstract void WriteThemePropertyImpls(CodeBuilder builder);
 
         /// <inheritdoc/>
@@ -825,6 +827,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             }
         }
 
+        // Writes the start of the namespace, the start of the class, internal constants, and the theming interface.
         void WriteHeaderNamespaceStart(HeaderBuilder builder, IAnimatedVisualSourceInfo info, string inherits)
         {
             builder.Preamble.WriteLine();
@@ -833,22 +836,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             WriteSourceDescriptionComments(builder.Preamble);
 
-            var visibility = info.Public ? "public " : string.Empty;
-
-            if (_isCppwinrtMode)
-            {
-                builder.Preamble.WriteLine($"{visibility}class {SourceClassName}");
-                builder.Preamble.Indent();
-                builder.Preamble.WriteLine($": public winrt::implements<{SourceClassName}, winrt::{inherits}>");
-                builder.Preamble.UnIndent();
-            }
-            else
-            {
-                builder.Preamble.WriteLine($"{visibility}ref class {SourceClassName} sealed");
-                builder.Preamble.Indent();
-                builder.Preamble.WriteLine($": public {inherits}");
-                builder.Preamble.UnIndent();
-            }
+            WriteHeaderClassStart(builder, info, inherits);
 
             WriteInternalHeaderConstants(builder.Internal);
 
