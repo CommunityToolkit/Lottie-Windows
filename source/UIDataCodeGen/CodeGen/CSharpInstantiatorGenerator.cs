@@ -23,6 +23,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         readonly string _interface;
         readonly string _sourceInterface;
         readonly string _winUiNamespace;
+        readonly string _winui3CastHack;
 
         CSharpInstantiatorGenerator(
             CodegenConfiguration configuration,
@@ -36,6 +37,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             _interface = AnimatedVisualSourceInfo.InterfaceType.GetQualifiedName(stringifier);
             _sourceInterface = _interface + "Source";
             _winUiNamespace = AnimatedVisualSourceInfo.WinUi3 ? "Microsoft.UI" : "Windows.UI";
+
+            // This is a hack that is required to use Win2D with WinUI3 as of August 2020. It
+            // will not be necessary when an official Win2D for WinUI3 is released.
+            _winui3CastHack = AnimatedVisualSourceInfo.WinUi3 ? "(IGeometrySource2D)(object)" : string.Empty;
         }
 
         IAnimatedVisualSourceInfo Info => AnimatedVisualSourceInfo;
@@ -77,6 +82,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             if (Info.UsesCanvasGeometry)
             {
+                // Microsoft.Graphics is needed for IGeometrySource2D.
+                namespaces.Add("Microsoft.Graphics");
                 namespaces.Add("Microsoft.Graphics.Canvas.Geometry");
             }
 
@@ -100,7 +107,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             namespaces.Add("System");
             namespaces.Add("System.Numerics");
-            namespaces.Add(_winUiNamespace);
+
+            // Windows.UI is needed for Color.
+            namespaces.Add("Windows.UI");
             namespaces.Add($"{_winUiNamespace}.Composition");
 
             // Write out each namespace using.
@@ -641,7 +650,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// <inheritdoc/>
         protected override void WriteCanvasGeometryEllipseFactory(CodeBuilder builder, CanvasGeometry.Ellipse obj, string typeName, string fieldName)
         {
-            builder.WriteLine($"var result = {FieldAssignment(fieldName)}CanvasGeometry.CreateEllipse(");
+            builder.WriteLine($"var result = {FieldAssignment(fieldName)}{_winui3CastHack}CanvasGeometry.CreateEllipse(");
             builder.Indent();
             builder.WriteLine($"null,");
             builder.WriteLine($"{Float(obj.X)}, {Float(obj.Y)}, {Float(obj.RadiusX)}, {Float(obj.RadiusY)});");
@@ -651,7 +660,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// <inheritdoc/>
         protected override void WriteCanvasGeometryGroupFactory(CodeBuilder builder, CanvasGeometry.Group obj, string typeName, string fieldName)
         {
-            builder.WriteLine($"var result = {FieldAssignment(fieldName)}CanvasGeometry.CreateGroup(");
+            builder.WriteLine($"var result = {FieldAssignment(fieldName)}{_winui3CastHack}CanvasGeometry.CreateGroup(");
             builder.Indent();
             builder.WriteLine($"null,");
             builder.WriteLine($"new CanvasGeometry[] {{ {string.Join(", ", obj.Geometries.Select(g => CallFactoryFor(g))) } }},");
@@ -692,14 +701,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 }
             }
 
-            builder.WriteLine($"result = {FieldAssignment(fieldName)}CanvasGeometry.CreatePath(builder);");
+            builder.WriteLine($"result = {FieldAssignment(fieldName)}{_winui3CastHack}CanvasGeometry.CreatePath(builder);");
             builder.CloseScope();
         }
 
         /// <inheritdoc/>
         protected override void WriteCanvasGeometryRoundedRectangleFactory(CodeBuilder builder, CanvasGeometry.RoundedRectangle obj, string typeName, string fieldName)
         {
-            builder.WriteLine($"var result = {FieldAssignment(fieldName)}CanvasGeometry.CreateRoundedRectangle(");
+            builder.WriteLine($"var result = {FieldAssignment(fieldName)}{_winui3CastHack}CanvasGeometry.CreateRoundedRectangle(");
             builder.Indent();
             builder.WriteLine("null,");
             builder.WriteLine($"{Float(obj.X)},");

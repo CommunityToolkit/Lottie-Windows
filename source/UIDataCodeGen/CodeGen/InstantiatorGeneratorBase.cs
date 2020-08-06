@@ -86,7 +86,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             _animatedVisualGenerators = graphs.Select(g => new AnimatedVisualGenerator(this, g.graphRoot, g.requiredUapVersion, graphs.Count > 1)).ToArray();
 
-            // Determined whether theming is enabled.
+            // Determine whether theming is enabled.
             _isThemed = _animatedVisualGenerators.Any(avg => avg.IsThemed);
 
             // Deal with the nodes that are shared between multiple AnimatedVisual classes.
@@ -3332,9 +3332,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             internal string TypeName
                 => Type switch
                 {
+                    // Return the interface type for CanvasGeometry. Nobody consumes the class type.
+                    Graph.NodeType.CanvasGeometry => "IGeometrySource2D",
                     Graph.NodeType.CompositionObject => ((CompositionObject)Object).Type.ToString(),
                     Graph.NodeType.CompositionPath => "CompositionPath",
-                    Graph.NodeType.CanvasGeometry => "CanvasGeometry",
                     Graph.NodeType.LoadedImageSurface => "LoadedImageSurface",
                     _ => throw new InvalidOperationException(),
                 };
