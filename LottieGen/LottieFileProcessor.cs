@@ -634,6 +634,7 @@ sealed class LottieFileProcessor
             SourceMetadata = _translationResults[0].SourceMetadata,
             ToolInfo = GetToolInvocationInfo(languageSwitch).ToArray(),
             Width = _lottieComposition.Width,
+            WinUI3 = _options.WinUI3Mode,
         };
 
         if (!string.IsNullOrWhiteSpace(_options.Interface))
@@ -768,7 +769,7 @@ sealed class LottieFileProcessor
         var translationResult = LottieToMultiVersionWinCompTranslator.TryTranslateLottieComposition(
             lottieComposition: _lottieComposition,
             configuration: configuration,
-            minimumUapVersion: _minimumUapVersion);
+            minimumUapVersion: _options.WinUI3Mode ? uint.MaxValue : _minimumUapVersion);
 
         _translationResults = translationResult.TranslationResults;
         _translationIssues = translationResult.Issues;

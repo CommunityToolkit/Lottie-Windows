@@ -100,7 +100,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             namespaces.Add("System");
             namespaces.Add("System.Numerics");
-            namespaces.Add("Windows.UI");
+            namespaces.Add(_winUiNamespace);
             namespaces.Add($"{_winUiNamespace}.Composition");
 
             // Write out each namespace using.

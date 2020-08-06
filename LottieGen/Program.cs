@@ -67,6 +67,13 @@ sealed class Program
             _reporter.ErrorStream.WriteLine(_options.ErrorDescription);
             return RunResult.InvalidUsage;
         }
+        else if (_options.WinUI3Mode && (_options.MinimumUapVersion.HasValue || _options.TargetUapVersion.HasValue))
+        {
+            // WinUI3 does not permit setting a minimum or target version because WinUI3 implies
+            // the latest version only.
+            _reporter.WriteError($"{nameof(_options.WinUI3Mode)} cannot be used with {nameof(_options.MinimumUapVersion)} or {nameof(_options.TargetUapVersion)}.");
+            return RunResult.InvalidUsage;
+        }
         else if (_options.MinimumUapVersion.HasValue && _options.MinimumUapVersion < LottieToWinCompTranslator.MinimumTargetUapVersion)
         {
             // Unacceptable version.
