@@ -45,7 +45,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 case "mm":
                     return ReadMergePaths(obj, in args);
                 case "rd":
-                    return ReadRoundedCorner(obj, in args);
+                    return ReadRoundCorners(obj, in args);
                 case "rp":
                     return ReadRepeater(obj, in args);
 
@@ -436,7 +436,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 mergeMode);
         }
 
-        RoundedCorner ReadRoundedCorner(
+        RoundCorners ReadRoundCorners(
             in LottieJsonObjectElement obj,
             in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
         {
@@ -445,7 +445,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
             var radius = ReadAnimatableFloat(obj.ObjectPropertyOrNull("r"));
             obj.AssertAllPropertiesRead();
-            return new RoundedCorner(
+            return new RoundCorners(
                 in shapeLayerContentArgs,
                 radius);
         }

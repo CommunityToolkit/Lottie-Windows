@@ -94,11 +94,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal CompositionPropertySet CreatePropertySet() => _compositor.CreatePropertySet();
 
-        internal CompositionGeometry CreateRectangleGeometry(Sn.Vector2? size, Sn.Vector2? offset)
+        // Returns either a CompositionRectangleGeometry or a CompositionRoundedRectangleGeometry.
+        internal RectangleOrRoundedRectangleGeometry CreateRectangleGeometry()
         {
             const int c_rectangleGeometryIsUnreliableUntil = 12;
 
-            CompositionGeometry result;
+            RectangleOrRoundedRectangleGeometry result;
 
             if (_targetUapVersion < c_rectangleGeometryIsUnreliableUntil)
             {
@@ -109,8 +110,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
                 // NOTE: magic tiny corner radius number - do not change!
                 roundedRectangleGeometry.CornerRadius = new Sn.Vector2(0.000001F);
-                roundedRectangleGeometry.Size = size;
-                roundedRectangleGeometry.Offset = offset;
 
                 result = roundedRectangleGeometry;
             }
@@ -119,11 +118,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 // Later versions do not need the rounded rectangle workaround.
                 ConsumeVersionFeature(c_rectangleGeometryIsUnreliableUntil);
 
-                var rectangleGeometry = _compositor.CreateRectangleGeometry();
-                rectangleGeometry.Size = size;
-                rectangleGeometry.Offset = offset;
-
-                result = rectangleGeometry;
+                result = _compositor.CreateRectangleGeometry();
             }
 
             return result;

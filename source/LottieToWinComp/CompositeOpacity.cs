@@ -38,7 +38,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// this <see cref="CompositeOpacity"/>.</returns>
         internal CompositeOpacity ComposedWith(in TrimmedAnimatable<Opacity> opacity)
         {
-            if (opacity.AlwaysEquals(Opacity.Opaque))
+            if (opacity.Always(Opacity.Opaque))
             {
                 // Nothing to do.
                 return this;

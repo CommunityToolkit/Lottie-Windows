@@ -93,7 +93,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 case LottieObjectType.RadialGradientStroke:
                 case LottieObjectType.Rectangle:
                 case LottieObjectType.Repeater:
-                case LottieObjectType.RoundedCorner:
+                case LottieObjectType.RoundCorners:
                 case LottieObjectType.Shape:
                 case LottieObjectType.ShapeGroup:
                 case LottieObjectType.SolidColorFill:
@@ -314,8 +314,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     return FromMergePaths((MergePaths)content, superclassContent);
                 case ShapeContentType.Repeater:
                     return FromRepeater((Repeater)content, superclassContent);
-                case ShapeContentType.RoundedCorner:
-                    return FromRoundedCorner((RoundedCorner)content, superclassContent);
+                case ShapeContentType.RoundCorners:
+                    return FromRoundCorners((RoundCorners)content, superclassContent);
                 default:
                     throw Unreachable;
             }
@@ -674,7 +674,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             return result;
         }
 
-        YamlObject FromRoundedCorner(RoundedCorner content, YamlMap superclassContent)
+        YamlObject FromRoundCorners(RoundCorners content, YamlMap superclassContent)
         {
             var result = superclassContent;
             result.Add(nameof(content.Radius), FromAnimatable(content.Radius));

@@ -53,7 +53,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal void MergingALargeNumberOfShapesIsNotSupported() => Report("LT0010", "Merging a large number of shape is not supported.");
 
-        internal void MultipleAnimatedRoundedCornersIsNotSupported() => Report("LT0011", "Multiple animated rounded corners is not supported.");
+        internal void MultipleAnimatedRoundCornersIsNotSupported() => Report("LT0011", "Multiple animated round corners is not supported.");
 
         internal void MultipleFillsIsNotSupported() => Report("LT0012", "Multiple fills is not supported.");
 
@@ -64,7 +64,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         // LT0015 has been deprecated.
         // Was: Opacity and color animated at the same time is not supported.
 
-        internal void PathWithRoundedCornersIsNotSupported() => Report("LT0016", "Path with rounded corners is not supported.");
+        internal void PathWithRoundCornersIsNotSupported() => Report("LT0016", "Path with round corners is not supported.");
 
         internal void PolystarIsNotSupported() => Report("LT0017", "Polystar is not supported.");
 
@@ -109,6 +109,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         internal void ThemePropertyValuesAreInconsistent(string themePropertyName, string chosenValue, string requestedValue) => Report("LT0035", $"Theme property \"{themePropertyName}\" has more than one value. Using {chosenValue} in place of {requestedValue}.");
 
         internal void CombiningMultipleAnimatedPathsIsNotSupported() => Report("LT0036", "Combining multiple animated paths is not supported.");
+
+        internal void ConflictingRoundnessAndRadiusIsNotSupported() => Report("LT0037", "Rectangle roundness with round corners is not supported.");
 
         void Report(string code, string description)
         {
