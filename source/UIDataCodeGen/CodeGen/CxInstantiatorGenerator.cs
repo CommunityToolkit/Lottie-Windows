@@ -50,6 +50,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             return (cppText, hText, assetList);
         }
 
+        private protected override void WriteHeaderClassStart(HeaderBuilder builder, IAnimatedVisualSourceInfo info, string inherits)
+        {
+            // NOTE: the CX class is always made public. This is necessary to allow CX
+            // XAML projects to compile (the XAML compiler can't find the metadata for the
+            // class if it isn't made public).
+            builder.Preamble.WriteLine($"public ref class {SourceClassName} sealed");
+            builder.Preamble.Indent();
+            builder.Preamble.WriteLine($": public {inherits}");
+            builder.Preamble.UnIndent();
+        }
+
         private protected override void WriteThemeHeader(HeaderBuilder builder)
         {
             // Add a field to hold the theme property set.

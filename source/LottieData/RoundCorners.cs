@@ -7,9 +7,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 #if PUBLIC_LottieData
     public
 #endif
-    sealed class RoundedCorner : ShapeLayerContent
+    sealed class RoundCorners : ShapeLayerContent
     {
-        public RoundedCorner(
+        public RoundCorners(
             in ShapeLayerContentArgs args,
             Animatable<double> radius)
             : base(in args)
@@ -30,9 +30,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         public Animatable<double> Radius { get; }
 
         /// <inheritdoc/>
-        public override ShapeContentType ContentType => ShapeContentType.RoundedCorner;
+        public override ShapeContentType ContentType => ShapeContentType.RoundCorners;
 
         /// <inheritdoc/>
-        public override LottieObjectType ObjectType => LottieObjectType.RoundedCorner;
+        public override LottieObjectType ObjectType => LottieObjectType.RoundCorners;
     }
 }

@@ -223,7 +223,8 @@
                                 RelativePanel.AlignRightWithPanel="True"
                                 RelativePanel.AlignTopWithPanel="True"
                                 RelativePanel.RightOf="_playStopButton"
-                                ValueChanged="ProgressSliderChanged" />
+                                ValueChanged="ProgressSliderChanged"
+                                DiagnosticsObject="{x:Bind _stage.Player.Diagnostics, Mode=OneWay}" />
             </RelativePanel>
         </Grid>
     </RelativePanel>

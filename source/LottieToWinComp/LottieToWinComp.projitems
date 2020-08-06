@@ -11,11 +11,14 @@
     <Compile Include="$(MSBuildThisFileDirectory)CompositeOpacity.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionObjectFactory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ContainerShapeOrVisual.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RectangleOrRoundedRectangleGeometry.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ShapeContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CubicBezierFunction2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ExpressionFactory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Float32.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LottieToMultiVersionWinCompTranslator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LottieToWinCompTranslator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LottieToWinCompTranslator.Rectangles.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MultiVersionTranslationResult.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PathGeometryGroup.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ProgressMapFactory.cs" />

@@ -15,31 +15,29 @@ namespace LottieViewer
     /// </summary>
     sealed class LottieVisualDiagnosticsViewModel : INotifyPropertyChanged
     {
-        LottieVisualDiagnostics _wrapped;
-
         public event PropertyChangedEventHandler PropertyChanged;
 
         public object DiagnosticsObject
         {
-            get => _wrapped;
+            get => LottieVisualDiagnostics;
 
             set
             {
-                _wrapped = (LottieVisualDiagnostics)value;
+                LottieVisualDiagnostics = (LottieVisualDiagnostics)value;
                 PlayerIssues.Clear();
                 Markers.Clear();
                 if (value != null)
                 {
-                    foreach (var issue in _wrapped.JsonParsingIssues.
-                                            Concat(_wrapped.LottieValidationIssues).
-                                            Concat(_wrapped.TranslationIssues).
+                    foreach (var issue in LottieVisualDiagnostics.JsonParsingIssues.
+                                            Concat(LottieVisualDiagnostics.LottieValidationIssues).
+                                            Concat(LottieVisualDiagnostics.TranslationIssues).
                                             OrderBy(a => a.Code).
                                             ThenBy(a => a.Description))
                     {
                         PlayerIssues.Add(issue);
                     }
 
-                    foreach (var marker in _wrapped.Markers)
+                    foreach (var marker in LottieVisualDiagnostics.Markers)
                     {
                         Markers.Add((marker.Key, marker.Value));
                     }
@@ -57,14 +55,16 @@ namespace LottieViewer
             }
         }
 
-        public string DurationText => _wrapped is null ? string.Empty : $"{_wrapped.Duration.TotalSeconds} secs";
+        public LottieVisualDiagnostics LottieVisualDiagnostics { get; private set; }
 
-        public string FileName => _wrapped?.FileName ?? string.Empty;
+        public string DurationText => LottieVisualDiagnostics is null ? string.Empty : $"{LottieVisualDiagnostics.Duration.TotalSeconds} secs";
+
+        public string FileName => LottieVisualDiagnostics?.FileName ?? string.Empty;
 
         public ObservableCollection<(string Name, double Offset)> Markers { get; } = new ObservableCollection<(string, double)>();
 
         public string MarkersText =>
-            _wrapped is null ? string.Empty : string.Join(", ", Markers.Select(value => $"{value.Name}={value.Offset:0.###}"));
+            LottieVisualDiagnostics is null ? string.Empty : string.Join(", ", Markers.Select(value => $"{value.Name}={value.Offset:0.###}"));
 
         public bool PlayerHasIssues => PlayerIssues.Count > 0;
 
@@ -74,13 +74,13 @@ namespace LottieViewer
         {
             get
             {
-                if (_wrapped is null)
+                if (LottieVisualDiagnostics is null)
                 {
                     return string.Empty;
                 }
 
-                var aspectRatio = FloatToRatio(_wrapped.LottieWidth / _wrapped.LottieHeight);
-                return $"{_wrapped.LottieWidth}x{_wrapped.LottieHeight} ({aspectRatio.Item1:0.##}:{aspectRatio.Item2:0.##})";
+                var aspectRatio = FloatToRatio(LottieVisualDiagnostics.LottieWidth / LottieVisualDiagnostics.LottieHeight);
+                return $"{LottieVisualDiagnostics.LottieWidth}x{LottieVisualDiagnostics.LottieHeight} ({aspectRatio.Item1:0.##}:{aspectRatio.Item2:0.##})";
             }
         }
 

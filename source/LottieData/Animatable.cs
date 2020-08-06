@@ -101,7 +101,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// Returns <c>true</c> if this value is always equal to the given value.
         /// </summary>
         /// <returns><c>true</c> if this value is always equal to the given value.</returns>
-        public bool AlwaysEquals(T value) => !IsAnimated && value.Equals(InitialValue);
+        public bool Always(T value) => !IsAnimated && value.Equals(InitialValue);
+
+        /// <summary>
+        /// Returns <c>true</c> if this value is ever equal to the given value.
+        /// </summary>
+        /// <returns><c>true</c> if this value is ever equal to the given value.</returns>
+        public bool Ever(T value) => value.Equals(InitialValue) || KeyFrames.Any(kf => value.Equals(kf.Value));
+
+        /// <summary>
+        /// Returns <c>true</c> if this value is ever not equal to the given value.
+        /// </summary>
+        /// <returns><c>true</c> if this value is ever not equal to the given value.</returns>
+        public bool EverNot(T value) => !Always(value);
 
         /// <inheritdoc/>
         // Not a great hash code because it ignore the KeyFrames, but quick.

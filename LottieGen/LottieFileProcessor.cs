@@ -22,7 +22,7 @@ sealed class LottieFileProcessor
     readonly CommandLineOptions _options;
     readonly Profiler _profiler = new Profiler();
     readonly Reporter _reporter;
-    readonly string _file;
+    readonly string _lottieFilePath;
     readonly string _outputFolder;
     readonly DateTime _timestamp;
     readonly uint _minimumUapVersion;
@@ -40,13 +40,13 @@ sealed class LottieFileProcessor
     LottieFileProcessor(
         CommandLineOptions options,
         Reporter reporter,
-        string file,
+        string lottieFilePath,
         string outputFolder,
         DateTime timestamp)
     {
         _options = options;
         _reporter = reporter;
-        _file = file;
+        _lottieFilePath = lottieFilePath;
         _outputFolder = outputFolder;
         _timestamp = timestamp;
 
@@ -57,24 +57,24 @@ sealed class LottieFileProcessor
 
         // Get an appropriate name for a generated class.
         _className =
-            InstantiatorGeneratorBase.TrySynthesizeClassName(System.IO.Path.GetFileNameWithoutExtension(_file)) ??
+            InstantiatorGeneratorBase.TrySynthesizeClassName(System.IO.Path.GetFileNameWithoutExtension(_lottieFilePath)) ??
             InstantiatorGeneratorBase.TrySynthesizeClassName("Lottie");  // If all else fails, just call it Lottie.
     }
 
-    internal static bool ProcessFile(
+    internal static bool ProcessLottieFile(
         CommandLineOptions options,
         Reporter reporter,
-        string file,
+        string lottieFilePath,
         string outputFolder,
         DateTime timestamp)
     {
         try
         {
-            return new LottieFileProcessor(options, reporter, file, outputFolder, timestamp).Run();
+            return new LottieFileProcessor(options, reporter, lottieFilePath, outputFolder, timestamp).Run();
         }
         catch
         {
-            reporter.WriteError($"Unhandled exception processing: {file}");
+            reporter.WriteError($"Unhandled exception processing: {lottieFilePath}");
             throw;
         }
     }
@@ -89,7 +89,7 @@ sealed class LottieFileProcessor
         }
 
         // Read the Lottie .json text.
-        var jsonStream = TryReadTextFile(_file);
+        var jsonStream = TryReadTextFile(_lottieFilePath);
 
         if (jsonStream is null)
         {
@@ -107,12 +107,12 @@ sealed class LottieFileProcessor
 
         foreach (var issue in _readerIssues)
         {
-            _reporter.WriteInfo(InfoType.Issue, IssueToString(_file, issue));
+            _reporter.WriteInfo(InfoType.Issue, IssueToString(_lottieFilePath, issue));
         }
 
         if (_lottieComposition is null)
         {
-            _reporter.WriteError($"Failed to parse Lottie file: {_file}");
+            _reporter.WriteError($"Failed to parse Lottie file: {_lottieFilePath}");
             return false;
         }
 
@@ -128,7 +128,7 @@ sealed class LottieFileProcessor
 
     bool TryGenerateCode()
     {
-        var outputFileBase = System.IO.Path.Combine(_outputFolder, System.IO.Path.GetFileNameWithoutExtension(_file));
+        var outputFileBase = System.IO.Path.Combine(_outputFolder, System.IO.Path.GetFileNameWithoutExtension(_lottieFilePath));
 
         var codeGenSucceeded = true;
 
@@ -197,7 +197,7 @@ sealed class LottieFileProcessor
             "Timing",
             new[]
             {
-                ("Path", _file),
+                ("Path", _lottieFilePath),
                 ("TotalSeconds", (_profiler.ParseTime +
                                   _profiler.TranslateTime +
                                   _profiler.OptimizationTime +
@@ -215,7 +215,7 @@ sealed class LottieFileProcessor
             "Lottie",
             new[]
             {
-                    ("Path", _file),
+                    ("Path", _lottieFilePath),
                     ("Name", _lottieStats.Name),
                     ("BodyMovinVersion", _lottieStats.Version.ToString()),
                     ("DurationSeconds", _lottieStats.Duration.TotalSeconds.ToString()),
@@ -242,7 +242,7 @@ sealed class LottieFileProcessor
             "WinComp",
             new[]
             {
-                    ("Path", _file),
+                    ("Path", _lottieFilePath),
                     ("Animator", translationStats.AnimatorCount.ToString()),
                     ("BooleanKeyFrameAnimation", translationStats.BooleanKeyFrameAnimationCount.ToString()),
                     ("CanvasGeometry", translationStats.CanvasGeometryCount.ToString()),
@@ -287,7 +287,7 @@ sealed class LottieFileProcessor
                 "WinCompOptimization",
                 new[]
                 {
-                    ("Path", _file),
+                    ("Path", _lottieFilePath),
                     ("Animator", (_afterOptimizationStats.AnimatorCount - _beforeOptimizationStats.AnimatorCount).ToString()),
                     ("BooleanKeyFrameAnimation", (_afterOptimizationStats.BooleanKeyFrameAnimationCount - _beforeOptimizationStats.BooleanKeyFrameAnimationCount).ToString()),
                     ("CanvasGeometry", (_afterOptimizationStats.CanvasGeometryCount - _beforeOptimizationStats.CanvasGeometryCount).ToString()),
@@ -335,7 +335,7 @@ sealed class LottieFileProcessor
                 "Errors",
                 new[]
                 {
-                    ("Path", _file),
+                    ("Path", _lottieFilePath),
                     ("ErrorCode", code),
                     ("Description", description),
                 });
@@ -351,7 +351,7 @@ sealed class LottieFileProcessor
             writer => LottieCompositionYamlSerializer.WriteYaml(
                             _lottieComposition,
                             writer,
-                            System.IO.Path.GetFileName(_file)));
+                            System.IO.Path.GetFileName(_lottieFilePath)));
 
         if (result)
         {
@@ -598,7 +598,7 @@ sealed class LottieFileProcessor
         using (_reporter.InfoStream.Lock())
         {
             _reporter.WriteInfo($"Reading file:");
-            _reporter.WriteInfo(InfoType.FilePath, $" {_file}");
+            _reporter.WriteInfo(InfoType.FilePath, $" {_lottieFilePath}");
         }
 
         try
@@ -620,7 +620,7 @@ sealed class LottieFileProcessor
     CodegenConfiguration CreateCodeGenConfiguration(string languageSwitch)
     {
         var syntheticCommandLine =
-            $"{_options.ToConfigurationCommandLine()} -Language {languageSwitch} -InputFile {System.IO.Path.GetFileName(_file)}";
+            $"{_options.ToConfigurationCommandLine()} -Language {languageSwitch} -InputFile {System.IO.Path.GetFileName(_lottieFilePath)}";
 
         var result = new CodegenConfiguration
         {
@@ -655,7 +655,7 @@ sealed class LottieFileProcessor
     // be included in the generated output.
     IEnumerable<string> GetToolInvocationInfo(string languageSwitch)
     {
-        var inputFile = new FileInfo(_file);
+        var inputFile = new FileInfo(_lottieFilePath);
 
         var indent = "    ";
 
@@ -781,7 +781,7 @@ sealed class LottieFileProcessor
 
         foreach (var (issue, uapVersionRange) in _translationIssues)
         {
-            _reporter.WriteInfo(InfoType.Issue, IssueToString(_file, issue, uapVersionRange));
+            _reporter.WriteInfo(InfoType.Issue, IssueToString(_lottieFilePath, issue, uapVersionRange));
         }
 
         // NOTE: this is only reporting on the latest version in a multi-version translation.
@@ -816,5 +816,5 @@ sealed class LottieFileProcessor
     // Convert namespaces to a normalized form: replace "::" with ".".
     static string NormalizeNamespace(string @namespace) => @namespace?.Replace("::", ".");
 
-    public override string ToString() => $"{nameof(LottieFileProcessor)} {_file}";
+    public override string ToString() => $"{nameof(LottieFileProcessor)} {_lottieFilePath}";
 }
