@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using Microsoft.Toolkit.Uwp.UI.Lottie;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Storage;
 using Windows.UI;
@@ -12,15 +11,19 @@ using Windows.UI.Xaml.Controls;
 
 namespace LottieViewer
 {
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+
     /// <summary>
-    /// Stage.
+    /// This is where the Lottie file is displayed. This is a wrapper around the
+    /// AnimatedVisualPlayer that plays a loading animation and exposes the
+    /// diagnostics object as a view model.
     /// </summary>
     public sealed partial class Stage : UserControl
     {
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+        // The color of the artboard is a dependency property so that it can be the
+        // target of binding.
         public static readonly DependencyProperty ArtboardColorProperty =
-            DependencyProperty.Register(nameof(ArtboardColor), typeof(Color), typeof(Stage), new PropertyMetadata(Colors.White));
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
+            DependencyProperty.Register("ArtboardColor", typeof(Color), typeof(Stage), new PropertyMetadata(Colors.Black));
 
         public Stage()
         {
@@ -29,18 +32,17 @@ namespace LottieViewer
             Reset();
         }
 
-        internal LottieVisualDiagnosticsViewModel Diagnostics => _diagnostics;
+        // The DiagnosticsViewModel contains information about the currently playing
+        // Lottie file. This information is consumed by other controls such as the
+        // color picker and scrubber.
+        internal LottieVisualDiagnosticsViewModel DiagnosticsViewModel => _diagnosticsViewModel;
 
         internal AnimatedVisualPlayer Player => _player;
 
-        internal LottieVisualSource Source => _playerSource;
-
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public Color ArtboardColor
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
-            get => (Color)GetValue(ArtboardColorProperty);
-            set => SetValue(ArtboardColorProperty, value);
+            get { return (Color)GetValue(ArtboardColorProperty); }
+            set { SetValue(ArtboardColorProperty, value); }
         }
 
         // Avoid "async void" method. Not valid here because we handle all async exceptions.
@@ -58,7 +60,7 @@ namespace LottieViewer
             try
             {
                 // Load the Lottie composition.
-                await Source.SetSourceAsync(file);
+                await _playerSource.SetSourceAsync(file);
             }
             catch (Exception)
             {
@@ -82,7 +84,7 @@ namespace LottieViewer
             _player.Opacity = 1;
             try
             {
-                await Player.PlayAsync(0, 1, true);
+                await _player.PlayAsync(0, 1, true);
             }
             catch
             {

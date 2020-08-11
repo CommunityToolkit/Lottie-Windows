@@ -14,10 +14,11 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
+using Microsoft.Toolkit.Uwp.UI.Lottie.CompMetadata;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization;
-using Microsoft.Toolkit.Uwp.UI.Lottie.LottieMetadata;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp;
+using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Foundation;
 using Windows.Foundation.Metadata;
@@ -33,6 +34,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
     /// </summary>
     public sealed class LottieVisualSource : DependencyObject, IDynamicAnimatedVisualSource
     {
+        // Identifies the bound property names in SourceMetadata.
+        static readonly Guid s_propertyBindingNamesKey = new Guid("A115C46A-254C-43E6-A3C7-9DE516C3C3C8");
+
         readonly StorageFile _storageFile;
         EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource, object>> _compositionInvalidatedEventTokenTable;
         int _loadVersion;
@@ -374,16 +378,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
 
                 if (diagnostics != null)
                 {
-                    // Save the LottieComposition in the diagnostics so that the xml and codegen
-                    // code can be derived from it.
                     diagnostics.LottieComposition = lottieComposition;
-
-                    // Create the marker info.
-                    diagnostics.Markers =
-                        lottieComposition.Markers.Select(m =>
-                            new KeyValuePair<string, double>(
-                                m.Name,
-                                m.Frame / (lottieComposition.FramesPerSecond * lottieComposition.Duration.TotalSeconds))).ToArray();
 
                     // Validate the composition and report if issues are found.
                     diagnostics.LottieValidationIssues = ToIssues(LottieCompositionValidator.Validate(lottieComposition));
@@ -404,11 +399,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 TranslationResult translationResult;
                 await CheckedAwaitAsync(Task.Run(() =>
                 {
-                    // translatePropertyBindings is turned on so that it can report
-                    // an issue if the author is using property bindings incorrectly.
+                    // Generate property bindings only if the diagnostics object was requested.
+                    // This is because the binding information is output in the diagnostics object
+                    // so there's no point translating bindings if the diagnostics object
+                    // isn't available.
+                    var makeColorsBindable = diagnostics != null && options.HasFlag(LottieVisualOptions.BindableColors);
                     translationResult = LottieToWinCompTranslator.TryTranslateLottieComposition(
                         lottieComposition: lottieComposition,
-                        configuration: new TranslatorConfiguration { TranslatePropertyBindings = true, TargetUapVersion = GetCurrentUapVersion() });
+                        configuration: new TranslatorConfiguration
+                        {
+                            TranslatePropertyBindings = makeColorsBindable,
+                            GenerateColorBindings = makeColorsBindable,
+                            TargetUapVersion = GetCurrentUapVersion(),
+                        });
 
                     wincompDataRootVisual = translationResult.RootVisual;
                     requiredUapVersion = translationResult.MinimumRequiredUapVersion;
@@ -417,6 +420,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                     {
                         diagnostics.TranslationIssues = ToIssues(translationResult.TranslationIssues);
                         diagnostics.TranslationTime = sw.Elapsed;
+
+                        // If there were any property bindings, save them in the Diagnostics object.
+                        if (translationResult.SourceMetadata.TryGetValue(s_propertyBindingNamesKey, out var propertyBindingNames))
+                        {
+                            diagnostics.ThemePropertyBindings = (IReadOnlyList<PropertyBinding>)propertyBindingNames;
+                        }
+
                         sw.Restart();
                     }
 
@@ -425,7 +435,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                     if (wincompDataRootVisual != null && optimizationEnabled)
                     {
                         // Optimize.
-                        wincompDataRootVisual = UIData.Tools.Optimizer.Optimize(wincompDataRootVisual, ignoreCommentProperties: true);
+                        wincompDataRootVisual = Optimizer.Optimize(wincompDataRootVisual, ignoreCommentProperties: true);
 
                         if (diagnostics != null)
                         {
@@ -555,9 +565,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             internal static readonly ContentFactory FailedContent = new ContentFactory(null);
             readonly LottieVisualDiagnostics _diagnostics;
             WinCompData.Visual _wincompDataRootVisual;
+            WinCompData.CompositionPropertySet _wincompDataThemingPropertySet;
             double _width;
             double _height;
             TimeSpan _duration;
+            CompositionPropertySet _themingPropertySet;
 
             internal ContentFactory(LottieVisualDiagnostics diagnostics)
             {
@@ -573,7 +585,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
 
             internal void SetRootVisual(WinCompData.Visual rootVisual)
             {
+                // Save the root visual.
                 _wincompDataRootVisual = rootVisual;
+
+                // Find the theming property set, if any.
+                var graph = ObjectGraph<Graph.Node>.FromCompositionObject(_wincompDataRootVisual, includeVertices: false);
+                _wincompDataThemingPropertySet = graph.
+                                                    CompositionObjectNodes.
+                                                    Where(n => n.Object is WinCompData.CompositionPropertySet cps && cps.Owner is null).
+                                                    Select(n => (WinCompData.CompositionPropertySet)n.Object).FirstOrDefault();
             }
 
             internal bool CanInstantiate => _wincompDataRootVisual != null;
@@ -587,6 +607,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
 
             public IAnimatedVisual TryCreateAnimatedVisual(Compositor compositor, out object diagnostics)
             {
+                // Clone the Diagnostics object so that the data from the translation is captured, then we
+                // will update the clone with information about this particular instantiation.
                 var diags = GetDiagnosticsClone();
                 diagnostics = diags;
 
@@ -597,15 +619,25 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 else
                 {
                     var sw = Stopwatch.StartNew();
+
+                    var instantiator = new Instantiator(compositor, initialCacheContent: null);
+
                     var result = new Comp()
                     {
-                        RootVisual = Instantiator.CreateVisual(compositor, _wincompDataRootVisual),
+                        RootVisual = (Visual)instantiator.GetInstance(_wincompDataRootVisual),
                         Size = new System.Numerics.Vector2((float)_width, (float)_height),
                         Duration = _duration,
                     };
 
                     if (diags != null)
                     {
+                        if (_wincompDataThemingPropertySet != null && _themingPropertySet is null)
+                        {
+                            // Instantiate the theming property set. This is shared by all of the instantiations.
+                            _themingPropertySet = (CompositionPropertySet)instantiator.GetInstance(_wincompDataThemingPropertySet);
+                            diags.ThemingPropertySet = _diagnostics.ThemingPropertySet = _themingPropertySet;
+                        }
+
                         diags.InstantiationTime = sw.Elapsed;
                     }
 

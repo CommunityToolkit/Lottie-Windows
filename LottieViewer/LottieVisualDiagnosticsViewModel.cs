@@ -7,6 +7,8 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using Microsoft.Toolkit.Uwp.UI.Lottie;
+using Microsoft.Toolkit.Uwp.UI.Lottie.CompMetadata;
+using Windows.ApplicationModel.Payments;
 
 namespace LottieViewer
 {
@@ -24,22 +26,70 @@ namespace LottieViewer
             set
             {
                 LottieVisualDiagnostics = (LottieVisualDiagnostics)value;
-                PlayerIssues.Clear();
+                Issues.Clear();
                 Markers.Clear();
+                ThemePropertyBindings.Clear();
+                ThemingPropertySet = null;
+
                 if (value != null)
                 {
+                    // Populate the issues list.
                     foreach (var issue in LottieVisualDiagnostics.JsonParsingIssues.
                                             Concat(LottieVisualDiagnostics.LottieValidationIssues).
                                             Concat(LottieVisualDiagnostics.TranslationIssues).
                                             OrderBy(a => a.Code).
                                             ThenBy(a => a.Description))
                     {
-                        PlayerIssues.Add(issue);
+                        Issues.Add(issue);
                     }
 
-                    foreach (var marker in LottieVisualDiagnostics.Markers)
+                    // Populate the marker info.
+                    var composition = LottieVisualDiagnostics.LottieComposition;
+                    if (composition != null)
                     {
-                        Markers.Add((marker.Key, marker.Value));
+                        var framesPerSecond = composition.FramesPerSecond;
+                        var duration = composition.Duration.TotalSeconds;
+                        var totalFrames = framesPerSecond * duration;
+
+                        var isFirst = true;
+                        foreach (var m in composition.Markers)
+                        {
+                            var progress = m.Frame / totalFrames;
+                            Marker marker;
+
+                            if (m.DurationInFrames == 0)
+                            {
+                                marker = new Marker
+                                {
+                                    ProgressText = $"{progress:0.000#}",
+                                };
+                            }
+                            else
+                            {
+                                var toProgress = progress + (m.DurationInFrames / totalFrames);
+                                marker = new MarkerWithDuration
+                                {
+                                    ProgressText = $"{progress:0.000#}",
+                                    ToProgress = toProgress,
+                                    ToProgressText = $"{toProgress:0.000#}",
+                                };
+                            }
+
+                            marker.PropertyName = isFirst ? $"Marker{(composition.Markers.Count > 1 ? "s" : string.Empty)}" : string.Empty;
+                            isFirst = false;
+                            marker.Name = m.Name;
+                            marker.Progress = progress;
+                            Markers.Add(marker);
+                        }
+                    }
+
+                    ThemingPropertySet = LottieVisualDiagnostics.ThemingPropertySet;
+                    if (LottieVisualDiagnostics.ThemePropertyBindings != null)
+                    {
+                        foreach (var binding in LottieVisualDiagnostics.ThemePropertyBindings)
+                        {
+                            ThemePropertyBindings.Add(binding);
+                        }
                     }
                 }
 
@@ -48,27 +98,46 @@ namespace LottieViewer
                 {
                     propertyChangedCallback(this, new PropertyChangedEventArgs(nameof(DurationText)));
                     propertyChangedCallback(this, new PropertyChangedEventArgs(nameof(FileName)));
-                    propertyChangedCallback(this, new PropertyChangedEventArgs(nameof(MarkersText)));
-                    propertyChangedCallback(this, new PropertyChangedEventArgs(nameof(PlayerHasIssues)));
+                    propertyChangedCallback(this, new PropertyChangedEventArgs(nameof(HasIssues)));
+                    propertyChangedCallback(this, new PropertyChangedEventArgs(nameof(LottieVisualDiagnostics)));
+                    propertyChangedCallback(this, new PropertyChangedEventArgs(nameof(Name)));
                     propertyChangedCallback(this, new PropertyChangedEventArgs(nameof(SizeText)));
+                    propertyChangedCallback(this, new PropertyChangedEventArgs(nameof(ThemingPropertySet)));
                 }
             }
         }
 
         public LottieVisualDiagnostics LottieVisualDiagnostics { get; private set; }
 
-        public string DurationText => LottieVisualDiagnostics is null ? string.Empty : $"{LottieVisualDiagnostics.Duration.TotalSeconds} secs";
+        public string DurationText
+        {
+            get
+            {
+                if (LottieVisualDiagnostics is null)
+                {
+                    return string.Empty;
+                }
+                else
+                {
+                    var seconds = LottieVisualDiagnostics.Duration.TotalSeconds;
+                    return $"{seconds:0.##} second{(seconds == 1 ? string.Empty : "s")}";
+                }
+            }
+        }
+
+        public string Name => LottieVisualDiagnostics?.LottieComposition?.Name ?? string.Empty;
 
         public string FileName => LottieVisualDiagnostics?.FileName ?? string.Empty;
 
-        public ObservableCollection<(string Name, double Offset)> Markers { get; } = new ObservableCollection<(string, double)>();
+        public ObservableCollection<Marker> Markers { get; } = new ObservableCollection<Marker>();
 
-        public string MarkersText =>
-            LottieVisualDiagnostics is null ? string.Empty : string.Join(", ", Markers.Select(value => $"{value.Name}={value.Offset:0.###}"));
+        public ObservableCollection<PropertyBinding> ThemePropertyBindings { get; } = new ObservableCollection<PropertyBinding>();
 
-        public bool PlayerHasIssues => PlayerIssues.Count > 0;
+        public Windows.UI.Composition.CompositionPropertySet ThemingPropertySet { get; private set; }
 
-        public ObservableCollection<Issue> PlayerIssues { get; } = new ObservableCollection<Issue>();
+        public bool HasIssues => Issues.Count > 0;
+
+        public ObservableCollection<Issue> Issues { get; } = new ObservableCollection<Issue>();
 
         public string SizeText
         {
@@ -145,6 +214,25 @@ namespace LottieViewer
             }
 
             return (candidateN, candidateD);
+        }
+
+        public class Marker
+        {
+            public string PropertyName { get; set; }
+
+            public string Name { get; set; }
+
+            public double Progress { get; set; }
+
+            public string ProgressText { get; set; }
+        }
+
+        // A marker that has a non-0 duration.
+        public sealed class MarkerWithDuration : Marker
+        {
+            public double ToProgress { get; set; }
+
+            public string ToProgressText { get; set; }
         }
     }
 }

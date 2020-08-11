@@ -2455,7 +2455,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             {
                 // A color binding string was found. Bind the color to a property with the
                 // name described by the binding string.
-                return TranslateBoundSolidColor(context, opacity, bindingName, DefaultValueOf(color));
+                return TranslateBoundSolidColor(context, opacity, bindingName, displayName: bindingName, DefaultValueOf(color));
             }
 
             if (_colorPalette != null && !color.IsAnimated)
@@ -2470,7 +2470,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     _colorPalette.Add(paletteColor, bindingName);
                 }
 
-                return TranslateBoundSolidColor(context, opacity, bindingName, paletteColor);
+                var paletteColorAsWinUIColor = Color(paletteColor);
+
+                return TranslateBoundSolidColor(
+                    context,
+                    opacity,
+                    bindingName,
+                    displayName: $"#{paletteColorAsWinUIColor.R:X2}{paletteColorAsWinUIColor.G:X2}{paletteColorAsWinUIColor.B:X2}",
+                    paletteColor);
             }
 
             // Do not generate a binding for this color.
@@ -2482,10 +2489,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 TranslationContext context,
                 CompositeOpacity opacity,
                 string bindingName,
+                string displayName,
                 Color defaultColor)
         {
             // Ensure there is a property added to the theme property set.
-            EnsureColorThemePropertyExists(context, bindingName, defaultColor);
+            EnsureColorThemePropertyExists(bindingName, displayName, defaultColor);
 
             var result = _c.CreateColorBrush();
 
@@ -4264,7 +4272,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             else
             {
                 // Ensure there is a property in the theme property set for this binding name.
-                EnsureScalarThemePropertyExists(bindingName, defaultValue);
+                EnsureScalarThemePropertyExists(bindingName, bindingName, defaultValue);
 
                 // Create an expression that binds property to the theme property set.
                 var anim = _c.CreateExpressionAnimation(ThemedScalar(bindingName));
@@ -4275,7 +4283,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         }
 
         // Ensures there is a property in the theme property set with the given name and default value.
-        void EnsureColorThemePropertyExists(TranslationContext context, string bindingName, Color defaultValue)
+        void EnsureColorThemePropertyExists(string bindingName, string displayName, Color defaultValue)
         {
             // Create a theme property set if one hasn't been created yet.
             var themeProperties = _themePropertySet ??= _c.CreatePropertySet();
@@ -4289,11 +4297,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 case CompositionGetValueStatus.NotFound:
                     // The property hasn't been added yet. Add it.
                     themeProperties.InsertVector4(bindingName, Vector4(defaultValueAsWinUIColor));
-                    _propertyBindings.AddPropertyBinding(
-                        bindingName,
-                        actualType: PropertySetValueType.Vector4,
-                        exposedType: PropertySetValueType.Color,
-                        defaultValue: defaultValueAsWinUIColor);
+                    _propertyBindings.AddPropertyBinding(new CompMetadata.PropertyBinding
+                    {
+                        BindingName = bindingName,
+                        DisplayName = displayName,
+                        ActualType = PropertySetValueType.Vector4,
+                        ExposedType = PropertySetValueType.Color,
+                        DefaultValue = defaultValueAsWinUIColor,
+                    });
                     break;
 
                 case CompositionGetValueStatus.Succeeded:
@@ -4314,7 +4325,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         }
 
         // Ensures there is a property in the theme property set with the given name and default value.
-        void EnsureScalarThemePropertyExists(string bindingName, double defaultValue)
+        void EnsureScalarThemePropertyExists(string bindingName, string displayName, double defaultValue)
         {
             // Create a theme property set if one hasn't been created yet.
             var themeProperties = _themePropertySet ??= _c.CreatePropertySet();
@@ -4327,11 +4338,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 case CompositionGetValueStatus.NotFound:
                     // The property hasn't been added yet. Add it.
                     themeProperties.InsertScalar(bindingName, defaultValueAsFloat);
-                    _propertyBindings.AddPropertyBinding(
-                        bindingName,
-                        actualType: PropertySetValueType.Scalar,
-                        exposedType: PropertySetValueType.Scalar,
-                        defaultValue: Float(defaultValue));
+                    _propertyBindings.AddPropertyBinding(new CompMetadata.PropertyBinding
+                    {
+                        BindingName = bindingName,
+                        DisplayName = displayName,
+                        ActualType = PropertySetValueType.Scalar,
+                        ExposedType = PropertySetValueType.Scalar,
+                        DefaultValue = Float(defaultValue),
+                    });
                     break;
 
                 case CompositionGetValueStatus.Succeeded:
