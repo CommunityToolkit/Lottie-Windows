@@ -5,7 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.MetaData;
+using Microsoft.Toolkit.Uwp.UI.Lottie.CompMetadata;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 {
@@ -14,22 +14,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         // Identifies the bound property names in TranslationResult.SourceMetadata.
         static readonly Guid s_propertyBindingNamesKey = new Guid("A115C46A-254C-43E6-A3C7-9DE516C3C3C8");
 
-        readonly List<(string bindingName, PropertySetValueType actualType, PropertySetValueType exposedType, object initialValue)> _names =
-            new List<(string bindingName, PropertySetValueType actualType, PropertySetValueType exposedType, object initialValue)>();
+        readonly List<PropertyBinding> _propertyBindings = new List<PropertyBinding>();
 
         // Adds the current list of property bindings to the source metadata dictionary.
         internal void AddToSourceMetadata(Dictionary<Guid, object> sourceMetadata)
         {
-            if (_names.Count > 0)
+            if (_propertyBindings.Count > 0)
             {
                 // Add the binding descriptions, ordered by binding name.
-                sourceMetadata.Add(s_propertyBindingNamesKey, _names.OrderBy(n => n.Item1).ToArray());
+                sourceMetadata.Add(s_propertyBindingNamesKey, _propertyBindings.OrderBy(n => n.BindingName).ToArray());
             }
         }
 
         // Adds a property binding to the list of property bindings.
-        internal void AddPropertyBinding(string bindingName, PropertySetValueType actualType, PropertySetValueType exposedType, object defaultValue)
-             => _names.Add((bindingName, actualType, exposedType, defaultValue));
+        internal void AddPropertyBinding(PropertyBinding propertyBinding) => _propertyBindings.Add(propertyBinding);
 
         // Parses the given binding string and returns the binding name for the given property, or
         // null if not found. Returns the first matching binding name (there could be more than

@@ -57,11 +57,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 case CompositionGetValueStatus.NotFound:
                     // The property hasn't been added yet. Add it.
                     themePropertySet.InsertVector4(bindingName, ConvertTo.Vector4(defaultValueAsWinUIColor));
-                    context.Translation.PropertyBindings.AddPropertyBinding(
-                        bindingName,
-                        actualType: PropertySetValueType.Vector4,
-                        exposedType: PropertySetValueType.Color,
-                        defaultValue: defaultValueAsWinUIColor);
+                    context.Translation.PropertyBindings.AddPropertyBinding(new CompMetadata.PropertyBinding
+                    {
+                        BindingName = bindingName,
+                        ActualType = PropertySetValueType.Vector4,
+                        ExposedType = PropertySetValueType.Color,
+                        DefaultValue = defaultValueAsWinUIColor,
+                    });
                     break;
 
                 case CompositionGetValueStatus.Succeeded:
@@ -95,11 +97,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 case CompositionGetValueStatus.NotFound:
                     // The property hasn't been added yet. Add it.
                     themePropertySet.InsertScalar(bindingName, defaultValueAsFloat);
-                    context.PropertyBindings.AddPropertyBinding(
-                        bindingName,
-                        actualType: PropertySetValueType.Scalar,
-                        exposedType: PropertySetValueType.Scalar,
-                        defaultValue: ConvertTo.Float(defaultValue));
+                    context.PropertyBindings.AddPropertyBinding(new CompMetadata.PropertyBinding
+                    {
+                        BindingName = bindingName,
+                        ActualType = PropertySetValueType.Scalar,
+                        ExposedType = PropertySetValueType.Scalar,
+                        DefaultValue = ConvertTo.Float(defaultValue),
+                    });
                     break;
 
                 case CompositionGetValueStatus.Succeeded:

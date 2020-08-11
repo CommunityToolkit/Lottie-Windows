@@ -26,7 +26,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\MatrixDecomposer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\NamedConstant.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\NodeNamer.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\PropertyBinding.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\SourceMetadata.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\Stringifier.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\Tables\ColumnData.cs" />

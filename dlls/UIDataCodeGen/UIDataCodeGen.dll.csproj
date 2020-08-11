@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
@@ -10,6 +10,7 @@
   <Import Project="..\..\source\UIDataCodeGen\UIDataCodeGen.projitems" Label="Shared" />
 
   <ItemGroup>
+    <ProjectReference Include="..\CompMetadata\CompMetadata.dll.csproj" />
     <ProjectReference Include="..\LottieMetadata\LottieMetadata.dll.csproj" />
     <ProjectReference Include="..\UIData\UIData.dll.csproj" />
   </ItemGroup>

@@ -138,12 +138,16 @@
     </Compile>
     <Compile Include="AnimatedVisuals\UiFeedbackAnimations.cs" />
     <Compile Include="AnimatedVisuals\LottieLogo.cs" />
+    <Compile Include="ColorPaletteEntry.cs" />
     <Compile Include="FeedbackLottie.xaml.cs">
       <DependentUpon>FeedbackLottie.xaml</DependentUpon>
     </Compile>
     <Compile Include="LottieVisualDiagnosticsViewModel.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="PaletteColorPicker.xaml.cs">
+      <DependentUpon>PaletteColorPicker.xaml</DependentUpon>
     </Compile>
     <Compile Include="Scrubber.xaml.cs">
       <DependentUpon>Scrubber.xaml</DependentUpon>
@@ -211,6 +215,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="PaletteColorPicker.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Scrubber.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -251,6 +259,7 @@
   <Import Project="..\source\WinUIXamlMediaData\WinUIXamlMediaData.projitems" Label="Shared" />
   <Import Project="..\source\YamlData\YamlData.projitems" Label="Shared" />
   <Import Project="..\source\GenericData\GenericData.projitems" Label="Shared" />
+  <Import Project="..\source\CompMetadata\CompMetadata.projitems" Label="Shared" />
   <Target Name="Pack">
     <!-- Dummy target to mute warnings about attempts to create a NuPkg -->
   </Target>

@@ -30,8 +30,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         IncludeDiagnostics = 2,
 
         /// <summary>
+        /// Bind each distinct color of the Lottie to a property set value so that
+        /// the colors can be dynamically updated.
+        /// </summary>
+        BindableColors = 4,
+
+        /// <summary>
         /// Enables all options.
         /// </summary>
-        All = IncludeDiagnostics | Optimize,
+        All = BindableColors | IncludeDiagnostics | Optimize,
     }
 }

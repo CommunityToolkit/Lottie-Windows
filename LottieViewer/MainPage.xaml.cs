@@ -4,81 +4,142 @@
 
 //#define DebugDragDrop
 using System;
-using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
-using Microsoft.Toolkit.Uwp.UI.Lottie;
+using System.Threading.Tasks;
+using Microsoft.UI.Xaml.Controls;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 using Windows.Storage.Pickers;
+using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
+
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+#pragma warning disable SA1402 // File may only contain a single type
 
 namespace LottieViewer
 {
     /// <summary>
     /// MainPage.
     /// </summary>
-    public sealed partial class MainPage : Page
+    public sealed partial class MainPage : Page, INotifyPropertyChanged
     {
         int _playVersion;
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public MainPage()
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             InitializeComponent();
 
             // Connect the player's progress to the scrubber's progress.
             _scrubber.SetAnimatedCompositionObject(_stage.Player.ProgressObject);
+
+            // Add the background to the color picker so that it can be modified by the user.
+            _paletteColorPicker.PaletteEntries.Add(BackgroundColor);
+
+            // Get notified when info about the loaded Lottie changes.
+            _stage.DiagnosticsViewModel.PropertyChanged += DiagnosticsViewModel_PropertyChanged;
         }
 
-        // Avoid "async void" method. Not valid here because we handle all async exceptions.
-#pragma warning disable VSTHRD100
-        async void PickFile_Click(object sender, RoutedEventArgs e)
+        public ObservableCollection<object> TheStuff { get; } = new ObservableCollection<object>();
+
+        void DiagnosticsViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-#pragma warning restore VSTHRD100
-            var playVersion = ++_playVersion;
+            var list = TheStuff;
+            var viewModel = _stage.DiagnosticsViewModel;
 
-            var filePicker = new FileOpenPicker
+            if (viewModel is null)
             {
-                ViewMode = PickerViewMode.List,
-                SuggestedStartLocation = PickerLocationId.ComputerFolder,
-            };
-            filePicker.FileTypeFilter.Add(".json");
+                list.Clear();
+            }
+            else if (e.PropertyName == nameof(viewModel.FileName))
+            {
+                list.Clear();
+                if (!string.IsNullOrWhiteSpace(viewModel.FileName))
+                {
+                    list.Add(Tuple.Create("File", viewModel.FileName));
+                }
 
-            StorageFile file = null;
+                // If the Lottie has 0 duration then it isn't valid, so don't show properties
+                // the only make sense for valid Lotties.
+                if (viewModel.LottieVisualDiagnostics?.Duration.Ticks > 0)
+                {
+                    // Not all Lotties have a name, so only add the name if it exists.
+                    if (!string.IsNullOrWhiteSpace(viewModel.Name))
+                    {
+                        list.Add(Tuple.Create("Name", viewModel.Name));
+                    }
+
+                    list.Add(Tuple.Create("Size", viewModel.SizeText));
+                    list.Add(Tuple.Create("Duration", viewModel.DurationText));
+
+                    foreach (var marker in viewModel.Markers)
+                    {
+                        list.Add(marker);
+                    }
+                }
+            }
+        }
+
+        internal ColorPaletteEntry BackgroundColor { get; } = new ColorPaletteEntry(Colors.White, "Background");
+
+        void PickFile_Click(object sender, RoutedEventArgs e)
+            => _ = OnPickFileAsync();
+
+        async Task OnPickFileAsync()
+        {
             try
             {
-                file = await filePicker.PickSingleFileAsync();
+                var playVersion = ++_playVersion;
+
+                var filePicker = new FileOpenPicker
+                {
+                    ViewMode = PickerViewMode.List,
+                    SuggestedStartLocation = PickerLocationId.ComputerFolder,
+                };
+                filePicker.FileTypeFilter.Add(".json");
+
+                StorageFile file = null;
+                try
+                {
+                    file = await filePicker.PickSingleFileAsync();
+                }
+                catch
+                {
+                    // Ignore PickSingleFileAsync exceptions so they don't crash the process.
+                }
+
+                if (file == null)
+                {
+                    // Used declined to pick anything.
+                    return;
+                }
+
+                if (playVersion != _playVersion)
+                {
+                    return;
+                }
+
+                // Reset the scrubber to the 0 position.
+                _scrubber.Value = 0;
+
+                // If we were stopped in manual play control, turn it back to automatic.
+                if (!_playStopButton.IsChecked.Value)
+                {
+                    _playStopButton.IsChecked = true;
+                }
+
+                _stage.DoDragDropped(file);
             }
-            catch
+            finally
             {
-                // Ignore PickSingleFileAsync exceptions so they don't crash the process.
+                // Uncheck the button. The button is a ToggleButton so that it indicates
+                // visually when the file picker is open. We need to manually reset its state.
+                PickFile.IsChecked = false;
             }
-
-            if (file == null)
-            {
-                // Used declined to pick anything.
-                return;
-            }
-
-            if (playVersion != _playVersion)
-            {
-                return;
-            }
-
-            // Reset the scrubber to the 0 position.
-            _scrubber.Value = 0;
-
-            // If we were stopped in manual play control, turn it back to automatic.
-            if (!_playStopButton.IsChecked.Value)
-            {
-                _playStopButton.IsChecked = true;
-            }
-
-            _stage.DoDragDropped(file);
         }
 
         // Avoid "async void" method. Not valid here because we handle all async exceptions.
@@ -176,6 +237,8 @@ namespace LottieViewer
 
         bool _ignoreScrubberValueChanges;
 
+        public event PropertyChangedEventHandler PropertyChanged;
+
         void ProgressSliderChanged(object sender, ScrubberValueChangedEventArgs e)
         {
             if (!_ignoreScrubberValueChanges)
@@ -229,20 +292,54 @@ namespace LottieViewer
 
         void CopyIssuesToClipboard(object sender, RoutedEventArgs e)
         {
-            var issues = _stage.Diagnostics.PlayerIssues;
+            var issues = _stage.DiagnosticsViewModel.Issues;
             var dataPackage = new DataPackage();
             dataPackage.RequestedOperation = DataPackageOperation.Copy;
             dataPackage.SetText(string.Join("\r\n", issues.Select(iss => iss.ToString())));
             Clipboard.SetContent(dataPackage);
             Clipboard.Flush();
         }
+
+        // Uncheck all the other control panel buttons when one is checked.
+        // This allows toggle buttons to act like radio buttons.
+        void ControlPanelButtonChecked(object sender, RoutedEventArgs e)
+        {
+            foreach (var button in new[] { PaletteButton, /*PlaySpeedButton, */InfoButton })
+            {
+                if (button != sender)
+                {
+                    button.IsChecked = false;
+                }
+            }
+
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsControlPanelVisible)));
+        }
+
+        public bool IsControlPanelVisible =>
+            PaletteButton.IsChecked == true || /*PlaySpeedButton.IsChecked == true || */InfoButton.IsChecked == true;
+
+        // When one of the control panel buttons is unchecked, if all the buttons
+        // are now unpressed, remove the filler from the play/stop control bar so that
+        // the scrubber takes up the whole area.
+        void ControlPanelButtonUnchecked(object sender, RoutedEventArgs e)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsControlPanelVisible)));
+        }
+
+        void MarkerClick(Windows.UI.Xaml.Documents.Hyperlink sender, Windows.UI.Xaml.Documents.HyperlinkClickEventArgs args)
+        {
+            var dataContext = ((FrameworkElement)sender.ElementStart.Parent).DataContext;
+            var marker = (LottieVisualDiagnosticsViewModel.Marker)dataContext;
+
+            // Ensure the Play button is unchecked because SetProgress will stop playing.
+            _playStopButton.IsChecked = false;
+
+            // Set the progress to the marker value.
+            _stage.Player.SetProgress(marker.Progress);
+        }
     }
 
-#pragma warning disable SA1402 // File may only contain a single type
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public sealed class VisiblityConverter : IValueConverter
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
-#pragma warning restore SA1402 // File may only contain a single type
     {
         object IValueConverter.Convert(object value, Type targetType, object parameter, string language)
         {
@@ -266,11 +363,7 @@ namespace LottieViewer
         }
     }
 
-#pragma warning disable SA1402 // File may only contain a single type
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public sealed class FloatFormatter : IValueConverter
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
-#pragma warning restore SA1402 // File may only contain a single type
     {
         object IValueConverter.Convert(object value, Type targetType, object parameter, string language)
         {
@@ -281,6 +374,31 @@ namespace LottieViewer
         {
             // Only support one way binding.
             throw new NotImplementedException();
+        }
+    }
+
+    public sealed class PropertiesTemplateSelector : DataTemplateSelector
+    {
+        public DataTemplate Normal { get; set; }
+
+        public DataTemplate Marker { get; set; }
+
+        public DataTemplate MarkerWithDuration { get; set; }
+
+        protected override DataTemplate SelectTemplateCore(object item, DependencyObject container)
+        {
+            if (item is Tuple<string, string>)
+            {
+                return Normal;
+            }
+            else if (item is LottieVisualDiagnosticsViewModel.Marker)
+            {
+                return Marker;
+            }
+            else
+            {
+                return MarkerWithDuration;
+            }
         }
     }
 }
