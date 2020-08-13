@@ -23,7 +23,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         readonly string _interface;
         readonly string _sourceInterface;
         readonly string _winUiNamespace;
-        readonly string _winui3CastHack;
+        readonly string _winUi3CastHack;
 
         CSharpInstantiatorGenerator(
             CodegenConfiguration configuration,
@@ -40,7 +40,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             // This is a hack that is required to use Win2D with WinUI3 as of August 2020. It
             // will not be necessary when an official Win2D for WinUI3 is released.
-            _winui3CastHack = AnimatedVisualSourceInfo.WinUi3 ? "(IGeometrySource2D)(object)" : string.Empty;
+            _winUi3CastHack = AnimatedVisualSourceInfo.WinUi3 ? "(IGeometrySource2D)(object)" : string.Empty;
         }
 
         IAnimatedVisualSourceInfo Info => AnimatedVisualSourceInfo;
@@ -286,28 +286,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             }
             else
             {
-                // WinUI3 doesn't ever do a version check. It's up to the user to make sure
-                // the version they're using is compatible.
-                if (Info.WinUi3)
+                // Check the runtime version and instantiate the highest compatible IAnimatedVisual class.
+                var animatedVisualInfos = Info.AnimatedVisualInfos.OrderByDescending(avi => avi.RequiredUapVersion).ToArray();
+                for (var i = 0; i < animatedVisualInfos.Length; i++)
                 {
-                    WriteInstantiateAndReturnAnimatedVisual(builder, Info.AnimatedVisualInfos.First());
+                    var current = animatedVisualInfos[i];
+                    builder.WriteLine($"if ({current.ClassName}.IsRuntimeCompatible())");
+                    builder.OpenScope();
+                    WriteInstantiateAndReturnAnimatedVisual(builder, current);
+                    builder.CloseScope();
+                    builder.WriteLine();
                 }
-                else
-                {
-                    // Check the runtime version and instantiate the highest compatible IAnimatedVisual class.
-                    var animatedVisualInfos = Info.AnimatedVisualInfos.OrderByDescending(avi => avi.RequiredUapVersion).ToArray();
-                    for (var i = 0; i < animatedVisualInfos.Length; i++)
-                    {
-                        var current = animatedVisualInfos[i];
-                        builder.WriteLine($"if ({current.ClassName}.IsRuntimeCompatible())");
-                        builder.OpenScope();
-                        WriteInstantiateAndReturnAnimatedVisual(builder, current);
-                        builder.CloseScope();
-                        builder.WriteLine();
-                    }
 
-                    builder.WriteLine("return null;");
-                }
+                builder.WriteLine("return null;");
             }
         }
 
@@ -650,7 +641,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// <inheritdoc/>
         protected override void WriteCanvasGeometryEllipseFactory(CodeBuilder builder, CanvasGeometry.Ellipse obj, string typeName, string fieldName)
         {
-            builder.WriteLine($"var result = {FieldAssignment(fieldName)}{_winui3CastHack}CanvasGeometry.CreateEllipse(");
+            builder.WriteLine($"var result = {FieldAssignment(fieldName)}{_winUi3CastHack}CanvasGeometry.CreateEllipse(");
             builder.Indent();
             builder.WriteLine($"null,");
             builder.WriteLine($"{Float(obj.X)}, {Float(obj.Y)}, {Float(obj.RadiusX)}, {Float(obj.RadiusY)});");
@@ -660,7 +651,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// <inheritdoc/>
         protected override void WriteCanvasGeometryGroupFactory(CodeBuilder builder, CanvasGeometry.Group obj, string typeName, string fieldName)
         {
-            builder.WriteLine($"var result = {FieldAssignment(fieldName)}{_winui3CastHack}CanvasGeometry.CreateGroup(");
+            builder.WriteLine($"var result = {FieldAssignment(fieldName)}{_winUi3CastHack}CanvasGeometry.CreateGroup(");
             builder.Indent();
             builder.WriteLine($"null,");
             builder.WriteLine($"new CanvasGeometry[] {{ {string.Join(", ", obj.Geometries.Select(g => CallFactoryFor(g))) } }},");
@@ -701,14 +692,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 }
             }
 
-            builder.WriteLine($"result = {FieldAssignment(fieldName)}{_winui3CastHack}CanvasGeometry.CreatePath(builder);");
+            builder.WriteLine($"result = {FieldAssignment(fieldName)}{_winUi3CastHack}CanvasGeometry.CreatePath(builder);");
             builder.CloseScope();
         }
 
         /// <inheritdoc/>
         protected override void WriteCanvasGeometryRoundedRectangleFactory(CodeBuilder builder, CanvasGeometry.RoundedRectangle obj, string typeName, string fieldName)
         {
-            builder.WriteLine($"var result = {FieldAssignment(fieldName)}{_winui3CastHack}CanvasGeometry.CreateRoundedRectangle(");
+            builder.WriteLine($"var result = {FieldAssignment(fieldName)}{_winUi3CastHack}CanvasGeometry.CreateRoundedRectangle(");
             builder.Indent();
             builder.WriteLine("null,");
             builder.WriteLine($"{Float(obj.X)},");
