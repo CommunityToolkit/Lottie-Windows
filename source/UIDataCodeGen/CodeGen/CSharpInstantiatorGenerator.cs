@@ -14,6 +14,9 @@ using Mgce = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 {
+    /// <summary>
+    /// Generates C# code that instantiates a Composition graph.
+    /// </summary>
 #if PUBLIC_UIDataCodeGen
     public
 #endif
