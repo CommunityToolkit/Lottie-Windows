@@ -3,14 +3,15 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:local="using:LottieViewer"
-      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-      RequestedTheme="Default"
+      xmlns:lottie="using:Microsoft.Toolkit.Uwp.UI.Lottie"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:viewmodel="using:LottieViewer.ViewModel"
+      RequestedTheme="Light"
       Visibility="Visible"
       mc:Ignorable="d">
     <Page.Resources>
         <local:VisiblityConverter x:Key="VisibilityConverter" />
         <local:FloatFormatter x:Key="floatFormatter" />
-        <SolidColorBrush x:Key="ArtboardBrush"
+        <SolidColorBrush x:Name="ArtboardBrush"
                          Color="{x:Bind BackgroundColor.Color, Mode=OneWay}" />
     </Page.Resources>
 
@@ -81,7 +82,7 @@
             </Grid.Resources>
 
             <!--  The stage. This is where the Lotties are displayed.  -->
-            <local:Stage x:Name="_stage" ArtboardColor="{Binding Source={StaticResource ArtboardBrush}, Path=Color}" />
+            <local:Stage x:Name="_stage" ArtboardColor="{x:Bind ArtboardBrush.Color, Mode=OneWay}" />
 
             <!-- Control panel. This shows to the right of the stage. Only one panel is allowed to be
                  open at a time. This is ensured through code behind. -->
@@ -120,13 +121,13 @@
                             <ItemsControl Margin="12"
                                       ItemsSource="{x:Bind _stage.DiagnosticsViewModel.Issues, Mode=OneWay}">
                                 <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
+                                    <DataTemplate x:DataType="lottie:Issue">
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock MinWidth="60">
-                                                        <Hyperlink NavigateUri="{Binding Path=Url}"><Run FontWeight="Bold"
-                                                                 Text="{Binding Path=Code}" /></Hyperlink>
+                                                        <Hyperlink NavigateUri="{x:Bind Url}"><Run FontWeight="Bold"
+                                                                 Text="{x:Bind Code}" /></Hyperlink>
                                             </TextBlock>
-                                            <TextBlock Text="{Binding Path=Description}" TextWrapping="Wrap" MaxWidth="240" Foreground="Orange"/>
+                                            <TextBlock Text="{x:Bind Description}" TextWrapping="Wrap" MaxWidth="240" Foreground="Orange"/>
                                         </StackPanel>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
@@ -164,28 +165,28 @@
                                 <RowDefinition/>
                             </Grid.RowDefinitions>
                             <Grid.Resources>
-                                <DataTemplate x:Key="NormalTemplate">
+                                <DataTemplate x:Key="NormalTemplate" x:DataType="viewmodel:PairOfStrings">
                                     <StackPanel Orientation="Horizontal" Margin="0,0,0,2">
-                                        <TextBlock Foreground="LightGray" MinWidth="60" Text="{Binding Path=Item1}"/>
-                                        <TextBlock Foreground="White" Text="{Binding Path=Item2}" TextWrapping="Wrap" MaxWidth="250" />
+                                        <TextBlock Foreground="LightGray" MinWidth="60" Text="{x:Bind Item1}"/>
+                                        <TextBlock Foreground="White" Text="{x:Bind Item2}" TextWrapping="Wrap" MaxWidth="250" />
                                     </StackPanel>
                                 </DataTemplate>
 
-                                <DataTemplate x:Key="MarkerTemplate">
+                                <DataTemplate x:Key="MarkerTemplate" x:DataType="viewmodel:Marker">
                                     <StackPanel Orientation="Horizontal" Margin="0,0,0,2">
-                                        <TextBlock Foreground="LightGray" MinWidth="60" Text="{Binding Path=PropertyName}"/>
+                                        <TextBlock Foreground="LightGray" MinWidth="60" Text="{x:Bind PropertyName}"/>
                                         <TextBlock Foreground="White" TextWrapping="Wrap" MaxWidth="250">
-                                        <Hyperlink NavigateUri="{Binding Path=Progress}" Click="MarkerClick"><Run Text="{Binding Path=ProgressText}"/></Hyperlink> <Run Text="{Binding Path=Name}"/>
+                                        <Hyperlink Click="MarkerClick"><Run Text="{x:Bind ProgressText}"/></Hyperlink> <Run Text="{x:Bind Name}"/>
                                         </TextBlock>
                                     </StackPanel>
                                 </DataTemplate>
 
-                                <DataTemplate x:Key="MarkerWithDurationTemplate">
+                                <DataTemplate x:Key="MarkerWithDurationTemplate" x:DataType="viewmodel:MarkerWithDuration">
                                     <StackPanel Orientation="Horizontal" Margin="0,0,0,2">
-                                        <TextBlock Foreground="LightGray" MinWidth="60" Text="{Binding Path=PropertyName}"/>
+                                        <TextBlock Foreground="LightGray" MinWidth="60" Text="{x:Bind PropertyName}"/>
                                         <TextBlock Foreground="White" TextWrapping="Wrap" MaxWidth="250">
-                                        <Hyperlink NavigateUri="{Binding Path=Progress}" Click="MarkerClick"><Run Text="{Binding Path=ProgressText}"/></Hyperlink> -
-                                        <Hyperlink NavigateUri="{Binding Path=ToProgress}" Click="MarkerClick"><Run Text="{Binding Path=ToProgressText}"/></Hyperlink> <Run Text="{Binding Path=Name}"/>
+                                        <Hyperlink Click="MarkerClick"><Run Text="{x:Bind ProgressText}"/></Hyperlink> -
+                                        <Hyperlink Click="MarkerEndClick"><Run Text="{x:Bind ToProgressText}"/></Hyperlink> <Run Text="{x:Bind Name}"/>
                                         </TextBlock>
                                     </StackPanel>
                                 </DataTemplate>
@@ -198,7 +199,7 @@
                             </Grid.Resources>
 
                             <TextBlock FontWeight="Bold" HorizontalAlignment="Center">Properties</TextBlock>
-                            <ItemsControl x:Name="InfoList" Grid.Row="1" ItemsSource="{x:Bind TheStuff}" ItemTemplateSelector="{StaticResource PropertiesTemplateSelector}"/>
+                            <ItemsControl x:Name="InfoList" Grid.Row="1" ItemsSource="{x:Bind PropertiesList}" ItemTemplateSelector="{StaticResource PropertiesTemplateSelector}"/>
                         </Grid>
                     </StackPanel>
                 </ScrollViewer>

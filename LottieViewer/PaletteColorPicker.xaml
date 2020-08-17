@@ -35,7 +35,6 @@
                     <Setter Property="Template">
                         <Setter.Value>
                             <ControlTemplate TargetType="ListBoxItem">
-                                <!--<Grid x:Name="LayoutRoot" Background="{TemplateBinding Background}" BorderThickness="{TemplateBinding BorderThickness}">-->
                                 <Grid x:Name="LayoutRoot">
                                     <Grid.Resources>
                                         <Style x:Key="BaseContentPresenterStyle" TargetType="ContentPresenter">
@@ -157,20 +156,20 @@
             </muxc:ListBox.Resources>
 
             <muxc:ItemsControl.ItemTemplate>
-                <DataTemplate>
+                <DataTemplate x:DataType="local:ColorPaletteEntry">
                     <Grid Padding="8" HorizontalAlignment="Stretch">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="210"/>
                             <ColumnDefinition Width="96"/>
                         </Grid.ColumnDefinitions>
-                        <muxc:TextBlock Text="{Binding Name}" Margin="15,0,0,0"/>
+                        <muxc:TextBlock Text="{x:Bind Name}" Margin="15,0,0,0"/>
                         <Rectangle Grid.Column="1" 
                                        HorizontalAlignment="Stretch" 
                                        StrokeThickness="3" 
                                        Stroke="#DDDDDD" 
                                        Height="20">
                             <Rectangle.Fill>
-                                <SolidColorBrush Color="{Binding Color}"/>
+                                <SolidColorBrush Color="{x:Bind Color, Mode=OneWay}"/>
                             </Rectangle.Fill>
                         </Rectangle>
                     </Grid>

@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using Microsoft.Toolkit.Uwp.UI.Lottie.CompMetadata;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.MetaData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
@@ -199,7 +200,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     builder.WriteComment($"Dependency property for {prop.BindingName}.");
                     builder.WriteLine($"public static readonly DependencyProperty {prop.BindingName}Property =");
                     builder.Indent();
-                    builder.WriteLine($"DependencyProperty.Register({String(prop.BindingName)}, typeof({ExposedType(prop)}), typeof({info.ClassName}),");
+                    builder.WriteLine($"DependencyProperty.Register({String(prop.BindingName)}, typeof({ExposedType(prop)}), typeof({Info.ClassName}),");
                     builder.Indent();
                     builder.WriteLine($"new PropertyMetadata({GetDefaultPropertyBindingValue(prop)}, On{prop.BindingName}Changed));");
                     builder.UnIndent();

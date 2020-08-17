@@ -9,6 +9,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using LottieViewer.ViewModel;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 using Windows.Storage.Pickers;
@@ -49,11 +50,11 @@ namespace LottieViewer
             _stage.DiagnosticsViewModel.PropertyChanged += DiagnosticsViewModel_PropertyChanged;
         }
 
-        public ObservableCollection<object> TheStuff { get; } = new ObservableCollection<object>();
+        public ObservableCollection<object> PropertiesList { get; } = new ObservableCollection<object>();
 
         void DiagnosticsViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            var list = TheStuff;
+            var list = PropertiesList;
             var viewModel = _stage.DiagnosticsViewModel;
 
             if (viewModel is null)
@@ -65,7 +66,7 @@ namespace LottieViewer
                 list.Clear();
                 if (!string.IsNullOrWhiteSpace(viewModel.FileName))
                 {
-                    list.Add(Tuple.Create("File", viewModel.FileName));
+                    list.Add(new PairOfStrings("File", viewModel.FileName));
                 }
 
                 // If the Lottie has 0 duration then it isn't valid, so don't show properties
@@ -75,11 +76,11 @@ namespace LottieViewer
                     // Not all Lotties have a name, so only add the name if it exists.
                     if (!string.IsNullOrWhiteSpace(viewModel.Name))
                     {
-                        list.Add(Tuple.Create("Name", viewModel.Name));
+                        list.Add(new PairOfStrings("Name", viewModel.Name));
                     }
 
-                    list.Add(Tuple.Create("Size", viewModel.SizeText));
-                    list.Add(Tuple.Create("Duration", viewModel.DurationText));
+                    list.Add(new PairOfStrings("Size", viewModel.SizeText));
+                    list.Add(new PairOfStrings("Duration", viewModel.DurationText));
 
                     foreach (var marker in viewModel.Markers)
                     {
@@ -330,16 +331,30 @@ namespace LottieViewer
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsControlPanelVisible)));
         }
 
+        // Called when the user clicks on a marker hyperlink.
         void MarkerClick(Windows.UI.Xaml.Documents.Hyperlink sender, Windows.UI.Xaml.Documents.HyperlinkClickEventArgs args)
         {
             var dataContext = ((FrameworkElement)sender.ElementStart.Parent).DataContext;
-            var marker = (LottieVisualDiagnosticsViewModel.Marker)dataContext;
+            var marker = (Marker)dataContext;
 
             // Ensure the Play button is unchecked because SetProgress will stop playing.
             _playStopButton.IsChecked = false;
 
             // Set the progress to the marker value.
             _stage.Player.SetProgress(marker.Progress);
+        }
+
+        // Called when the user clicks on a marker-with-duration hyperlink.
+        void MarkerEndClick(Windows.UI.Xaml.Documents.Hyperlink sender, Windows.UI.Xaml.Documents.HyperlinkClickEventArgs args)
+        {
+            var dataContext = ((FrameworkElement)sender.ElementStart.Parent).DataContext;
+            var marker = (MarkerWithDuration)dataContext;
+
+            // Ensure the Play button is unchecked because SetProgress will stop playing.
+            _playStopButton.IsChecked = false;
+
+            // Set the progress to the marker value.
+            _stage.Player.SetProgress(marker.ToProgress);
         }
     }
 
@@ -391,11 +406,11 @@ namespace LottieViewer
 
         protected override DataTemplate SelectTemplateCore(object item, DependencyObject container)
         {
-            if (item is Tuple<string, string>)
+            if (item is PairOfStrings)
             {
                 return Normal;
             }
-            else if (item is LottieVisualDiagnosticsViewModel.Marker)
+            else if (item is Marker)
             {
                 return Marker;
             }
