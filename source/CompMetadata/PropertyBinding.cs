@@ -33,7 +33,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.CompMetadata
         /// The type that should be used when making this binding available via an API.
         /// Typically this is the same as the <see cref="ActualType"/>, however some types
         /// are not supported by animations expressions and must be stored using a different type,
-        /// for examples, colors are stored as Vector4.
+        /// for example, colors are stored as Vector4.
         /// </summary>
         public PropertySetValueType ExposedType { get; set; }
 

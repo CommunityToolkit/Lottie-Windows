@@ -9,13 +9,13 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.UI.Xaml.Controls;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
@@ -28,11 +28,16 @@ namespace LottieViewer
     /// </summary>
     public sealed partial class MainPage : Page, INotifyPropertyChanged
     {
+        readonly ToggleButton[] _controlPanelButtons;
         int _playVersion;
 
         public MainPage()
         {
             InitializeComponent();
+
+            // The control panel buttons. We hold onto these in order to ensure that no more
+            // than one is checked at the same time.
+            _controlPanelButtons = new[] { PaletteButton, InfoButton };
 
             // Connect the player's progress to the scrubber's progress.
             _scrubber.SetAnimatedCompositionObject(_stage.Player.ProgressObject);
@@ -304,7 +309,7 @@ namespace LottieViewer
         // This allows toggle buttons to act like radio buttons.
         void ControlPanelButtonChecked(object sender, RoutedEventArgs e)
         {
-            foreach (var button in new[] { PaletteButton, /*PlaySpeedButton, */InfoButton })
+            foreach (var button in _controlPanelButtons)
             {
                 if (button != sender)
                 {
@@ -315,8 +320,7 @@ namespace LottieViewer
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsControlPanelVisible)));
         }
 
-        public bool IsControlPanelVisible =>
-            PaletteButton.IsChecked == true || /*PlaySpeedButton.IsChecked == true || */InfoButton.IsChecked == true;
+        public bool IsControlPanelVisible => _controlPanelButtons.Any(b => b.IsChecked == true);
 
         // When one of the control panel buttons is unchecked, if all the buttons
         // are now unpressed, remove the filler from the play/stop control bar so that
