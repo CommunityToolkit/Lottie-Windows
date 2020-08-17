@@ -49,25 +49,7 @@
                     Style="{StaticResource ControlsToggleButtonStyle}">
                     &#xe790;
                 </ToggleButton>
-                <!--  Play speed  -->
-                <!--
-                <ToggleButton 
-                    IsEnabled="{x:Bind _stage.Player.IsAnimatedVisualLoaded, Mode=OneWay}"
-                    x:Name="PlaySpeedButton"
-                    Checked="ControlPanelButtonChecked"
-                    Unchecked="ControlPanelButtonUnchecked"
-                    AutomationProperties.Name="Pick play speed"
-                    ToolTipService.ToolTip="Play speed"
-                    Style="{StaticResource ControlsToggleButtonStyle}">
-                    &#xEC4a;
-                </ToggleButton>-->
                 <!--  Info  -->
-                <!-- 
-                    Foreground="Orange"
-                    &#xE7BA; - Check engine
-                    &#xE946; - Info
-                    &#xF167; - Info solid
-                -->
                 <ToggleButton 
                     x:Name="InfoButton"
                     Checked="ControlPanelButtonChecked"
@@ -121,27 +103,6 @@
                         Grid.Column="1"
                         DiagnosticsViewModel="{x:Bind _stage.DiagnosticsViewModel}"/>
                 </ScrollViewer>
-
-                <!-- Play speed panel -->
-                <!--<StackPanel 
-                    Width="{StaticResource ControlPanelWidth}"
-                    Visibility="{x:Bind PlaySpeedButton.IsChecked, Converter={StaticResource VisibilityConverter}, Mode=OneWay}">
-                    <StackPanel Orientation="Horizontal" Padding="20,20,0,0">
-                        <TextBlock>Play speed =</TextBlock>
-                        <TextBlock Text="{x:Bind _stage.Player.PlaybackRate, Mode=OneWay, Converter={StaticResource floatFormatter}}" />
-                    </StackPanel>
-                    <Slider 
-                        Padding="10, 0, 10, 0"
-                        HorizontalAlignment="Stretch"
-                            LargeChange="1"
-                            Maximum="2.0"
-                            Minimum="-2.0"
-                            SmallChange="0.1"
-                            StepFrequency="0.1"
-                            TickFrequency="0.5"
-                            TickPlacement="BottomRight"
-                            Value="{x:Bind _stage.Player.PlaybackRate, Mode=TwoWay}" />
-                </StackPanel>-->
 
                 <!-- Info panel -->
                 <ScrollViewer

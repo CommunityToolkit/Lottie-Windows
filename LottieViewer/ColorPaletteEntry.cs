@@ -7,8 +7,7 @@ using Windows.UI;
 
 namespace LottieViewer
 {
-    // An observable named color with the ability change the color value, and to restore it
-    // to it's initial color.
+    // An observable named color with the ability to change the color value.
     public sealed class ColorPaletteEntry : INotifyPropertyChanged
     {
         Color _color;

@@ -35,10 +35,16 @@ namespace LottieViewer
             get => _diagnosticsViewModel;
             set
             {
-                _diagnosticsViewModel = value;
                 if (_diagnosticsViewModel != null)
                 {
-                    // TODO - unhook these.
+                    // Unhook form the previous DiagnosticsViewModel.
+                    value.ThemePropertyBindings.CollectionChanged -= Value_CollectionChanged;
+                }
+
+                _diagnosticsViewModel = value;
+
+                if (_diagnosticsViewModel != null)
+                {
                     value.ThemePropertyBindings.CollectionChanged += Value_CollectionChanged;
                 }
             }
@@ -94,7 +100,7 @@ namespace LottieViewer
 
                     break;
                 case NotifyCollectionChangedAction.Reset:
-                    // Remove all except the first item in PaletteEntries (first item is background)
+                    // Remove all except the first item in PaletteEntries (first item is Background).
                     while (PaletteEntries.Count > 1)
                     {
                         PaletteEntries.Remove(PaletteEntries[PaletteEntries.Count - 1]);
