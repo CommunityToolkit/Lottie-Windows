@@ -77,9 +77,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
                 if (SourceInfo.GenerateDependencyObject)
                 {
-                    builder.Private.WriteLine($"static Windows::UI::Xaml::DependencyProperty^ _{S.CamelCase(prop.Name)}Property;");
-                    builder.Private.WriteLine($"static void On{prop.Name}Changed(Windows::UI::Xaml::DependencyObject^ d, Windows::UI::Xaml::DependencyPropertyChangedEventArgs^ e);");
-                    builder.Internal.WriteLine($"static Windows::UI::Xaml::DependencyProperty^ {prop.Name}Property();");
+                    builder.Private.WriteLine($"static {WinUINamespace}::Xaml::DependencyProperty^ _{S.CamelCase(prop.Name)}Property;");
+                    builder.Private.WriteLine($"static void On{prop.Name}Changed({WinUINamespace}::Xaml::DependencyObject^ d, {WinUINamespace}::Xaml::DependencyPropertyChangedEventArgs^ e);");
+                    builder.Internal.WriteLine($"static {WinUINamespace}::Xaml::DependencyProperty^ {prop.Name}Property();");
                     builder.Internal.WriteLine();
                 }
                 else
@@ -104,7 +104,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             if (hasColorProperty)
             {
                 var b = IsInterfaceCustom ? builder.Internal : builder.Private;
-                b.WriteLine("static Windows::Foundation::Numerics::float4 ColorAsVector4(Windows::UI::Color color);");
+                b.WriteLine($"static Windows::Foundation::Numerics::float4 ColorAsVector4({WinUINamespace}::Color color);");
                 b.WriteLine();
             }
         }
