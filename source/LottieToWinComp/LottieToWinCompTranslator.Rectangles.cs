@@ -461,13 +461,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             // set of expressions, so for now we don't support that case.
             //
             // If Rectangle.Roundness is ever non-0, choose it to define the rounding of the corners.
-            cornerRadiusIsRectangleRoundness = rectangle.Roundness.EverNot(0);
+            cornerRadiusIsRectangleRoundness = rectangle.Roundness.IsEverNot(0);
 
             // If we're using Rectangle.Roundness, check whether that might interfere with the
             // RoundCorners.Radius values.
             if (cornerRadiusIsRectangleRoundness &&
-                rectangle.Roundness.Ever(0) &&
-                shapeContext.RoundCorners.Radius.EverNot(0))
+                rectangle.Roundness.IsEver(0) &&
+                shapeContext.RoundCorners.Radius.IsEverNot(0))
             {
                 // Report the issue about RoundCorners being ignored.
                 _issues.ConflictingRoundnessAndRadiusIsNotSupported();
@@ -492,6 +492,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         // Returns true if the given rectangle ever has rounded corners.
         static bool IsNonRounded(ShapeContext shapeContext, Rectangle rectangle) =>
-            rectangle.Roundness.Always(0) && shapeContext.RoundCorners.Radius.Always(0);
+            rectangle.Roundness.IsAlways(0) && shapeContext.RoundCorners.Radius.IsAlways(0);
     }
 }

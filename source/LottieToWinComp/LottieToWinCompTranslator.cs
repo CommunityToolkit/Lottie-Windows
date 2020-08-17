@@ -884,7 +884,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var inProgress = context.InPointAsProgress;
             var outProgress = context.OutPointAsProgress;
 
-            if (inProgress > 1 || outProgress <= 0 || inProgress >= outProgress || layerOpacity.Always(LottieData.Opacity.Transparent))
+            if (inProgress > 1 || outProgress <= 0 || inProgress >= outProgress || layerOpacity.IsAlways(LottieData.Opacity.Transparent))
             {
                 // The layer is never visible. Don't create anything.
                 rootNode = null;
@@ -965,7 +965,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var inProgress = context.InPointAsProgress;
             var outProgress = context.OutPointAsProgress;
 
-            if (inProgress > 1 || outProgress <= 0 || inProgress >= outProgress || layerOpacity.Always(LottieData.Opacity.Transparent))
+            if (inProgress > 1 || outProgress <= 0 || inProgress >= outProgress || layerOpacity.IsAlways(LottieData.Opacity.Transparent))
             {
                 // The layer is never visible. Don't create anything.
                 rootNode = null;
@@ -1067,7 +1067,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var inProgress = context.InPointAsProgress;
             var outProgress = context.OutPointAsProgress;
 
-            if (inProgress > 1 || outProgress <= 0 || inProgress >= outProgress || layerOpacity.Always(LottieData.Opacity.Transparent))
+            if (inProgress > 1 || outProgress <= 0 || inProgress >= outProgress || layerOpacity.IsAlways(LottieData.Opacity.Transparent))
             {
                 // The layer is never visible. Don't create anything.
                 rootNode = null;
@@ -1910,7 +1910,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         void CheckForRoundCornersOnPath(TranslationContext context, ShapeContext shapeContext)
         {
-            if (!context.TrimAnimatable(shapeContext.RoundCorners.Radius).Always(0))
+            if (!context.TrimAnimatable(shapeContext.RoundCorners.Radius).IsAlways(0))
             {
                 // TODO - can round corners be implemented by composing cubic Beziers?
                 _issues.PathWithRoundCornersIsNotSupported();
@@ -2212,7 +2212,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 return;
             }
 
-            if (shapeStroke.StrokeWidth.Always(0))
+            if (shapeStroke.StrokeWidth.IsAlways(0))
             {
                 return;
             }
@@ -4637,11 +4637,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 }
 
                 internal override bool IsShape =>
-                    !_context.Layer.Masks.Any() || _context.Layer.IsHidden || _context.Layer.Transform.Opacity.Always(LottieData.Opacity.Transparent);
+                    !_context.Layer.Masks.Any() || _context.Layer.IsHidden || _context.Layer.Transform.Opacity.IsAlways(LottieData.Opacity.Transparent);
 
                 internal override CompositionShape GetShapeRoot()
                 {
-                    if (_context.Layer.IsHidden || _context.Layer.Transform.Opacity.Always(LottieData.Opacity.Transparent))
+                    if (_context.Layer.IsHidden || _context.Layer.Transform.Opacity.IsAlways(LottieData.Opacity.Transparent))
                     {
                         // The layer does not render anything. Nothing to translate. This can happen when someone
                         // creates a solid layer to act like a Null layer.
@@ -4681,7 +4681,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 internal override Visual GetVisualRoot(Sn.Vector2 maximumSize)
                 {
                     // Translate the SolidLayer to a Visual.
-                    if (_context.Layer.IsHidden || _context.Layer.Transform.Opacity.Always(LottieData.Opacity.Transparent))
+                    if (_context.Layer.IsHidden || _context.Layer.Transform.Opacity.IsAlways(LottieData.Opacity.Transparent))
                     {
                         // The layer does not render anything. Nothing to translate. This can happen when someone
                         // creates a solid layer to act like a Null layer.
