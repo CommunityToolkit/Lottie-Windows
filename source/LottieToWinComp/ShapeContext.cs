@@ -188,7 +188,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             Debug.Assert(a != null && b != null, "Precondition");
 
             if (!a.StrokeWidth.IsAnimated && !b.StrokeWidth.IsAnimated &&
-                a.Opacity.Always(LottieData.Opacity.Opaque) && b.Opacity.Always(LottieData.Opacity.Opaque))
+                a.Opacity.IsAlways(LottieData.Opacity.Opaque) && b.Opacity.IsAlways(LottieData.Opacity.Opaque))
             {
                 if (a.StrokeWidth.InitialValue >= b.StrokeWidth.InitialValue)
                 {
@@ -206,7 +206,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             Debug.Assert(a != null && b != null, "Precondition");
 
             if (!a.StrokeWidth.IsAnimated && !b.StrokeWidth.IsAnimated &&
-                a.Opacity.Always(LottieData.Opacity.Opaque) && b.Opacity.Always(LottieData.Opacity.Opaque))
+                a.Opacity.IsAlways(LottieData.Opacity.Opaque) && b.Opacity.IsAlways(LottieData.Opacity.Opaque))
             {
                 if (a.StrokeWidth.InitialValue >= b.StrokeWidth.InitialValue)
                 {
@@ -225,7 +225,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             if (!a.StrokeWidth.IsAnimated && !b.StrokeWidth.IsAnimated &&
                 !a.DashPattern.Any() && !b.DashPattern.Any() &&
-                a.Opacity.Always(LottieData.Opacity.Opaque) && b.Opacity.Always(LottieData.Opacity.Opaque))
+                a.Opacity.IsAlways(LottieData.Opacity.Opaque) && b.Opacity.IsAlways(LottieData.Opacity.Opaque))
             {
                 if (a.StrokeWidth.InitialValue >= b.StrokeWidth.InitialValue)
                 {
