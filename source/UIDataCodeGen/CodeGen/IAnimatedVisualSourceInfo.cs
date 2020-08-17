@@ -119,5 +119,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// this data is source specific.
         /// </summary>
         SourceMetadata SourceMetadata { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether the generated code should target WinUI3. This
+        /// is an experimental feature.
+        /// </summary>
+        bool WinUi3 { get; }
     }
 }
