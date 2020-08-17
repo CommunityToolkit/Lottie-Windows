@@ -142,7 +142,7 @@
     <Compile Include="FeedbackLottie.xaml.cs">
       <DependentUpon>FeedbackLottie.xaml</DependentUpon>
     </Compile>
-    <Compile Include="LottieVisualDiagnosticsViewModel.cs" />
+    <Compile Include="ViewModel\LottieVisualDiagnosticsViewModel.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
@@ -155,6 +155,9 @@
     <Compile Include="Stage.xaml.cs">
       <DependentUpon>Stage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ViewModel\Marker.cs" />
+    <Compile Include="ViewModel\MarkerWithDuration.cs" />
+    <Compile Include="ViewModel\PairOfStrings.cs" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">

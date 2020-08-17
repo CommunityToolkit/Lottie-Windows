@@ -8,9 +8,8 @@ using System.ComponentModel;
 using System.Linq;
 using Microsoft.Toolkit.Uwp.UI.Lottie;
 using Microsoft.Toolkit.Uwp.UI.Lottie.CompMetadata;
-using Windows.ApplicationModel.Payments;
 
-namespace LottieViewer
+namespace LottieViewer.ViewModel
 {
     /// <summary>
     /// View model class for <see cref="LottieVisualDiagnostics"/>.
@@ -214,25 +213,6 @@ namespace LottieViewer
             }
 
             return (candidateN, candidateD);
-        }
-
-        public class Marker
-        {
-            public string PropertyName { get; set; }
-
-            public string Name { get; set; }
-
-            public double Progress { get; set; }
-
-            public string ProgressText { get; set; }
-        }
-
-        // A marker that has a non-0 duration.
-        public sealed class MarkerWithDuration : Marker
-        {
-            public double ToProgress { get; set; }
-
-            public string ToProgressText { get; set; }
         }
     }
 }

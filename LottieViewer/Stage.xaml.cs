@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using LottieViewer.ViewModel;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Storage;
 using Windows.UI;

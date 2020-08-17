@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Specialized;
 using System.Numerics;
+using LottieViewer.ViewModel;
 using Microsoft.Toolkit.Uwp.UI.Lottie;
 using Windows.Foundation;
 using Windows.UI;
