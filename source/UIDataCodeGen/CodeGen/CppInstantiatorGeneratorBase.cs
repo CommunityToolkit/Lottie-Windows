@@ -19,7 +19,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
     abstract class CppInstantiatorGeneratorBase : InstantiatorGeneratorBase
     {
         protected const string Muxc = "Microsoft::UI::Xaml::Controls";
-        protected const string Wuc = "Windows::UI::Composition";
         readonly bool _isCppwinrtMode;
         readonly CppStringifier _s;
         readonly string _headerFileName;
@@ -42,7 +41,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             _typeName = new TypeNames(stringifier, isCppwinrtMode);
             SourceClassName = AnimatedVisualSourceInfo.ClassName;
             AnimatedVisualTypeName = AnimatedVisualSourceInfo.InterfaceType.GetQualifiedName(S);
+            WinUINamespace = SourceInfo.WinUi3 ? "Microsoft::UI" : "Windows::UI";
+            Wuc = $"{WinUINamespace}::Composition";
         }
+
+        protected string Wuc { get; }
+
+        protected string WinUINamespace { get; }
 
         protected IAnimatedVisualSourceInfo SourceInfo => AnimatedVisualSourceInfo;
 
@@ -174,7 +179,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             namespaces.Add("Windows::Foundation");
             namespaces.Add("Windows::Foundation::Numerics");
-            namespaces.Add("Windows::UI");
+            namespaces.Add($"{WinUINamespace}");
             namespaces.Add(Wuc);
             namespaces.Add("Windows::Graphics");
 
@@ -187,7 +192,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             if (SourceInfo.UsesNamespaceWindowsUIXamlMedia)
             {
-                namespaces.Add("Windows::UI::Xaml::Media");
+                namespaces.Add($"{WinUINamespace}::Xaml::Media");
             }
 
             if (SourceInfo.UsesStreams)
@@ -198,7 +203,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             if (SourceInfo.GenerateDependencyObject)
             {
-                namespaces.Add("Windows::UI::Xaml");
+                namespaces.Add($"{WinUINamespace}::Xaml");
             }
 
             // Write out each namespace using.
@@ -362,11 +367,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 WritePropertyImpl(builder, isVirtual: true, "float2", "Size", propertyImplBuilder);
             }
 
-            // Write the IsRuntimeCompatible static method.
-            builder.WriteLine("static bool IsRuntimeCompatible()");
-            builder.OpenScope();
-            builder.WriteLine($"return Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent({_s.String("Windows.Foundation.UniversalApiContract")}, {info.RequiredUapVersion});");
-            builder.CloseScope();
+            // WinUI3 doesn't ever do a version check. It's up to the user to make sure
+            // the version they're using is compatible.
+            if (!SourceInfo.WinUi3)
+            {
+                // Write the IsRuntimeCompatible static method.
+                builder.WriteLine("static bool IsRuntimeCompatible()");
+                builder.OpenScope();
+                builder.WriteLine($"return Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent({_s.String("Windows.Foundation.UniversalApiContract")}, {info.RequiredUapVersion});");
+                builder.CloseScope();
+            }
 
             // Close the scope for the instantiator class.
             builder.CloseCppTypeScope();
@@ -626,10 +636,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             // Check whether the runtime will support the lowest UAP version required.
             var animatedVisualInfos = SourceInfo.AnimatedVisualInfos.OrderByDescending(avi => avi.RequiredUapVersion).ToArray();
-            builder.WriteLine($"if (!{animatedVisualInfos[animatedVisualInfos.Length - 1].ClassName}::IsRuntimeCompatible())");
-            builder.OpenScope();
-            builder.WriteLine("return nullptr;");
-            builder.CloseScope();
+
+            // WinUI3 doesn't ever do a version check. It's up to the user to make sure
+            // the version they're using is compatible.
+            if (!SourceInfo.WinUi3)
+            {
+                builder.WriteLine($"if (!{animatedVisualInfos[animatedVisualInfos.Length - 1].ClassName}::IsRuntimeCompatible())");
+                builder.OpenScope();
+                builder.WriteLine("return nullptr;");
+                builder.CloseScope();
+            }
+
             builder.WriteLine();
             builder.WriteLine("EnsureImageLoadingStarted();");
             builder.WriteLine();
@@ -658,17 +675,27 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 CodeBuilder builder,
                 IReadOnlyList<IAnimatedVisualInfo> animatedVisualInfos)
         {
-            foreach (var info in animatedVisualInfos.OrderByDescending(avi => avi.RequiredUapVersion))
+            // WinUI3 doesn't ever do a version check. It's up to the user to make sure
+            // the version they're using is compatible.
+            if (SourceInfo.WinUi3)
             {
-                builder.WriteLine();
-                builder.WriteLine($"if ({info.ClassName}::IsRuntimeCompatible())");
-                builder.OpenScope();
+                var info = animatedVisualInfos.First();
                 builder.WriteBreakableLine($"return {_s.New(info.ClassName)}(", CommaSeparate(GetConstructorArguments(info)), ");");
-                builder.CloseScope();
             }
+            else
+            {
+                foreach (var info in animatedVisualInfos.OrderByDescending(avi => avi.RequiredUapVersion))
+                {
+                    builder.WriteLine();
+                    builder.WriteLine($"if ({info.ClassName}::IsRuntimeCompatible())");
+                    builder.OpenScope();
+                    builder.WriteBreakableLine($"return {_s.New(info.ClassName)}(", CommaSeparate(GetConstructorArguments(info)), ");");
+                    builder.CloseScope();
+                }
 
-            builder.WriteLine();
-            builder.WriteLine("return nullptr;");
+                builder.WriteLine();
+                builder.WriteLine("return nullptr;");
+            }
         }
 
         void WriteIsAnimatedVisualSourceDynamicGetSet(CodeBuilder builder)
@@ -711,10 +738,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                         builder.WriteLine($"{dataWriterName}->StoreAsync();");
                         builder.WriteLine($"{dataWriterName}->FlushAsync();");
                         builder.WriteLine($"{streamName}->Seek(0);");
-                        builder.WriteLine($"{imageMemberName} = Windows::UI::Xaml::Media::LoadedImageSurface::StartLoadFromStream({streamName});");
+                        builder.WriteLine($"{imageMemberName} = {WinUINamespace}::Xaml::Media::LoadedImageSurface::StartLoadFromStream({streamName});");
                         break;
                     case LoadedImageSurface.LoadedImageSurfaceType.FromUri:
-                        builder.WriteLine($"{imageMemberName} = Windows::UI::Xaml::Media::LoadedImageSurface::StartLoadFromUri(ref new Uri(\"{n.ImageUri}\"));");
+                        builder.WriteLine($"{imageMemberName} = {WinUINamespace}::Xaml::Media::LoadedImageSurface::StartLoadFromUri(ref new Uri(\"{n.ImageUri}\"));");
                         break;
                     default:
                         throw new InvalidOperationException();
@@ -811,7 +838,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 switch (c.Type)
                 {
                     case ConstantType.Color:
-                        builder.WriteLine($"static inline const Windows::UI::Color {c.Name}{S.Color((WinCompData.Wui.Color)c.Value)};");
+                        builder.WriteLine($"static inline const {WinUINamespace}::Color {c.Name}{S.Color((WinCompData.Wui.Color)c.Value)};");
                         break;
                     case ConstantType.Int64:
                         builder.WriteLine($"static constexpr int64_t {c.Name}{{ {S.Int64((long)c.Value)} }};");
@@ -850,7 +877,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         {
             if (SourceInfo.GenerateDependencyObject)
             {
-                WriteHeaderNamespaceStart(builder, info, $"Windows::UI::Xaml::DependencyObject, {AnimatedVisualTypeName}Source");
+                WriteHeaderNamespaceStart(builder, info, $"{WinUINamespace}::Xaml::DependencyObject, {AnimatedVisualTypeName}Source");
             }
             else
             {
@@ -901,9 +928,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             builder.Preamble.WriteLine($"using namespace {Muxc};");
             builder.Preamble.WriteLine("using namespace Platform;");
-            builder.Preamble.WriteLine("using namespace Windows::UI::Xaml;");
-            builder.Preamble.WriteLine("using namespace Windows::UI::Xaml::Data;");
-            builder.Preamble.WriteLine("using namespace Windows::UI::Xaml::Media;");
+            builder.Preamble.WriteLine($"using namespace {WinUINamespace}::Xaml;");
+            builder.Preamble.WriteLine($"using namespace {WinUINamespace}::Xaml::Data;");
+            builder.Preamble.WriteLine($"using namespace {WinUINamespace}::Xaml::Media;");
 
             WriteHeaderNamespaceStart(builder, info, "public IDynamicAnimatedVisualSource, INotifyPropertyChanged");
 
@@ -1194,10 +1221,10 @@ private:
 };
 ";
 
-        protected static string QualifiedTypeName(PropertySetValueType propertySetValueType)
+        protected string QualifiedTypeName(PropertySetValueType propertySetValueType)
             => propertySetValueType switch
             {
-                PropertySetValueType.Color => "Windows::UI::Color",
+                PropertySetValueType.Color => $"{WinUINamespace}::Color",
                 _ => TypeName(propertySetValueType),
             };
 

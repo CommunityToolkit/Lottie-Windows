@@ -82,5 +82,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// When <c>true</c> the generated class is made public.
         /// </summary>
         public bool Public { get; set; }
+
+        /// <summary>
+        /// When <c>true</c>, makes the generated code suitable for WinUI3.
+        /// This is an experimental feature - the generated code may still need
+        /// some hand tweaking.
+        /// </summary>
+        public bool WinUI3 { get; set; }
     }
 }

@@ -47,6 +47,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         readonly bool _disableFieldOptimization;
         readonly bool _generateDependencyObject;
         readonly bool _generatePublicClass;
+        readonly bool _generateForWinui3;
         readonly Stringifier _s;
         readonly IReadOnlyList<AnimatedVisualGenerator> _animatedVisualGenerators;
         readonly LoadedImageSurfaceInfo[] _loadedImageSurfaceInfos;
@@ -74,6 +75,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             _disableFieldOptimization = configuration.DisableOptimization;
             _generateDependencyObject = configuration.GenerateDependencyObject;
             _generatePublicClass = configuration.Public;
+            _generateForWinui3 = configuration.WinUI3;
             _s = stringifier;
             _toolInfo = configuration.ToolInfo;
             _interfaceType = new TypeName(configuration.InterfaceType);
@@ -85,7 +87,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             _animatedVisualGenerators = graphs.Select(g => new AnimatedVisualGenerator(this, g.graphRoot, g.requiredUapVersion, graphs.Count > 1)).ToArray();
 
-            // Determined whether theming is enabled.
+            // Determine whether theming is enabled.
             _isThemed = _animatedVisualGenerators.Any(avg => avg.IsThemed);
 
             // Deal with the nodes that are shared between multiple AnimatedVisual classes.
@@ -733,6 +735,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         bool IAnimatedVisualSourceInfo.GenerateDependencyObject => _generateDependencyObject;
 
         bool IAnimatedVisualSourceInfo.Public => _generatePublicClass;
+
+        bool IAnimatedVisualSourceInfo.WinUi3 => _generateForWinui3;
 
         string IAnimatedVisualSourceInfo.ThemePropertiesFieldName => ThemePropertiesFieldName;
 
@@ -3329,9 +3333,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             internal string TypeName
                 => Type switch
                 {
+                    // Return the interface type for CanvasGeometry. Nobody consumes the class type.
+                    Graph.NodeType.CanvasGeometry => "IGeometrySource2D",
                     Graph.NodeType.CompositionObject => ((CompositionObject)Object).Type.ToString(),
                     Graph.NodeType.CompositionPath => "CompositionPath",
-                    Graph.NodeType.CanvasGeometry => "CanvasGeometry",
                     Graph.NodeType.LoadedImageSurface => "LoadedImageSurface",
                     _ => throw new InvalidOperationException(),
                 };
