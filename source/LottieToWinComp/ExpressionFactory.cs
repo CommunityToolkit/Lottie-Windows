@@ -16,9 +16,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         // The name used to bind to the property set that contains the Progress property.
         internal const string RootName = "_";
 
-        // The name used to bind to the property set that contains the theme properties.
-        internal const string ThemePropertiesName = "_theme";
-
         internal static readonly Vector2 MyAnchor = MyVector2("Anchor");
         internal static readonly Vector3 MyAnchor3 = Vector3(MyAnchor.X, MyAnchor.Y, 0);
         internal static readonly Vector4 MyColor = MyVector4("Color");
@@ -33,7 +30,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         static readonly Scalar MyTEnd = MyScalar("TEnd");
 
         // An expression that refers to the name of the root property set and the Progress property on it.
-        internal static readonly Scalar RootProgress = RootScalar(LottieToWinCompTranslator.ProgressPropertyName);
+        internal static readonly Scalar RootProgress = RootScalar(TranslationContext.ProgressPropertyName);
         internal static readonly Scalar MaxTStartTEnd = Max(MyTStart, MyTEnd);
         internal static readonly Scalar MinTStartTEnd = Min(MyTStart, MyTEnd);
         static readonly Vector2 HalfMySize = MySize / Vector2(2, 2);
@@ -257,6 +254,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         // A property on the theming property set. Used to bind to properties that can be
         // updated for theming purposes.
-        static string ThemeProperty(string propertyName) => $"{ThemePropertiesName}.{propertyName}";
+        static string ThemeProperty(string propertyName) => $"{ThemePropertyBindings.ThemePropertiesName}.{propertyName}";
     }
 }
