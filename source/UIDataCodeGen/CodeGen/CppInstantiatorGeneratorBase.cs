@@ -763,10 +763,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.WriteLine("m_loadCompleteEventCount++;");
             builder.WriteLine("if (e->Status == LoadedImageSourceLoadStatus::Success)");
             builder.OpenScope();
-            builder.WriteLine("if (m_isAnimatedVisualSourceDynamic && m_loadCompleteEventCount == c_loadedImageSurfaceCount)");
-            builder.OpenScope();
-            builder.WriteLine("RaiseAnimatedVisualInvalidatedEvent(this, nullptr);");
-            builder.CloseScope();
             builder.WriteLine("m_imageSuccessfulLoadingProgress = (double)m_loadCompleteEventCount / c_loadedImageSurfaceCount;");
             builder.WriteLine("PropertyChanged(this, ref new PropertyChangedEventArgs(\"ImageSuccessfulLoadingProgress\"));");
             builder.CloseScope();
@@ -775,6 +771,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.OpenScope();
             builder.WriteLine("m_isImageLoadingCompleted = true;");
             builder.WriteLine("PropertyChanged(this, ref new PropertyChangedEventArgs(\"IsImageLoadingCompleted\"));");
+            builder.WriteLine("if (m_isAnimatedVisualSourceDynamic)");
+            builder.OpenScope();
+            builder.WriteLine("RaiseAnimatedVisualInvalidatedEvent(this, nullptr);");
+            builder.CloseScope();
             builder.CloseScope();
             builder.CloseScope();
             builder.WriteLine();
