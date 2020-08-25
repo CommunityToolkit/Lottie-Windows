@@ -35,7 +35,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         // of PathGeometryGroups. Returns true if it succeeds without issues.
         // Even if false is returned a best-effort animatable is returned.
         internal static bool TryGroupPaths(
-            TranslationContext context,
+            ShapeLayerContext context,
             IEnumerable<Path> paths,
             out Animatable<PathGeometryGroup> result)
         {
