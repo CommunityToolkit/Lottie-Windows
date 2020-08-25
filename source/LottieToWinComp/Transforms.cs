@@ -230,7 +230,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 }
 
                 visibilityAnimation.Duration = context.Translation.LottieComposition.Duration;
-                Animate.StartKeyframeAnimation(context, visibilityNode, nameof(visibilityNode.Scale), visibilityAnimation);
+                Animate.WithKeyFrame(context, visibilityNode, nameof(visibilityNode.Scale), visibilityAnimation);
             }
             else
             {
@@ -341,7 +341,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 }
 
                 visibilityAnimation.Duration = context.LottieComposition.Duration;
-                Animate.StartKeyframeAnimation(context, visibilityNode, "IsVisible", visibilityAnimation);
+                Animate.WithKeyFrame(context, visibilityNode, "IsVisible", visibilityAnimation);
             }
         }
 
@@ -562,7 +562,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 container.Properties.InsertVector2("Anchor", initialAnchor);
                 var centerPointExpression = context.ObjectFactory.CreateExpressionAnimation(container.IsShape ? (Expr)ExpressionFactory.MyAnchor : (Expr)ExpressionFactory.MyAnchor3);
                 centerPointExpression.SetReferenceParameter("my", container);
-                Animate.StartExpressionAnimation(container, nameof(container.CenterPoint), centerPointExpression);
+                Animate.WithExpression(container, centerPointExpression, nameof(container.CenterPoint));
 
                 if (xyzAnchor != null)
                 {
@@ -713,7 +713,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             if (offsetExpression != null)
             {
                 offsetExpression.SetReferenceParameter("my", container);
-                Animate.StartExpressionAnimation(container, nameof(container.Offset), offsetExpression);
+                Animate.WithExpression(container, offsetExpression, nameof(container.Offset));
             }
         }
 

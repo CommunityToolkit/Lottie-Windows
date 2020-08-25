@@ -8,7 +8,12 @@ using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 {
-    static class ExtensionMethods
+    /// <summary>
+    /// Extension methods for <see cref="IDescribable"/>. These make it easier to access the
+    /// members of the interface without requiring a cast, and they add some debug checks
+    /// to help ensure correct usage.
+    /// </summary>
+    static class IDescribableExtensionMethods
     {
         /// <summary>
         /// Sets a name on an object. This allows the code generator to give the object

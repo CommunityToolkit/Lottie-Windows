@@ -16,13 +16,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
     /// </summary>
     static class Animate
     {
-        public static void StartExpressionAnimation(CompositionObject compObject, string target, ExpressionAnimation animation)
-        {
-            // Start the animation.
+        /// <summary>
+        /// Animates a property on <paramref name="compObject"/> using an expression animation.
+        /// </summary>
+        public static void WithExpression(
+            CompositionObject compObject,
+            ExpressionAnimation animation,
+            string target) =>
             compObject.StartAnimation(target, animation);
-        }
 
-        public static void StartKeyframeAnimation(
+        /// <summary>
+        /// Animates a property on <paramref name="compObject"/> using a key frame animation.
+        /// </summary>
+        public static void WithKeyFrame(
             TranslationContext context,
             CompositionObject compObject,
             string target,
@@ -68,8 +74,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             controller.StartAnimation("Progress", bindingAnimation);
         }
 
-        // Adds and animates a CompositionPropertySet value on the target object.
-        public static void InsertAndApplyScalarKeyFramePropertySetAnimation(
+        /// <summary>
+        /// Adds and animates a <see cref="CompositionPropertySet"/> value on the target object.
+        /// </summary>
+        public static void ScalarPropertySetValue(
             LayerContext context,
             in TrimmedAnimatable<double> value,
             CompositionObject targetObject,
@@ -90,7 +98,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
         }
 
-        public static void InsertAndApplyTrimKeyFramePropertySetAnimation(
+        /// <summary>
+        /// Adds and animates a <see cref="CompositionPropertySet"/> value on the target object.
+        /// </summary>
+        public static void TrimStartOrTrimEndPropertySetValue(
             LayerContext context,
             in TrimmedAnimatable<Trim> value,
             CompositionGeometry targetObject,
@@ -106,6 +117,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
         }
 
+        /// <summary>
+        /// Animates a rotation value.
+        /// </summary>
         public static void Rotation(
             LayerContext context,
             in TrimmedAnimatable<Rotation> value,
@@ -115,6 +129,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             string shortDescription = null)
             => ScaledRotation(context, value, 1, targetObject, targetPropertyName, longDescription, shortDescription);
 
+        /// <summary>
+        /// Animates a scalar value.
+        /// </summary>
         public static void Scalar(
             LayerContext context,
             in TrimmedAnimatable<double> value,
@@ -124,6 +141,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             string shortDescription = null)
             => ScaledScalar(context, value, 1, targetObject, targetPropertyName, longDescription, shortDescription);
 
+        /// <summary>
+        /// Animates a percent value.
+        /// </summary>
         public static void Percent(
             LayerContext context,
             in TrimmedAnimatable<double> value,
@@ -133,6 +153,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             string shortDescription = null)
             => ScaledScalar(context, value, 0.01, targetObject, targetPropertyName, longDescription, shortDescription);
 
+        /// <summary>
+        /// Animates an opacity value.
+        /// </summary>
         public static void Opacity(
             LayerContext context,
             in TrimmedAnimatable<Opacity> value,
@@ -142,6 +165,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             string shortDescription = null)
             => ScaledOpacity(context, value, 1, targetObject, targetPropertyName, longDescription, shortDescription);
 
+        /// <summary>
+        /// Animates a trim start or trim end value.
+        /// </summary>
         public static void TrimStartOrTrimEnd(
             LayerContext context,
             in TrimmedAnimatable<Trim> value,
@@ -151,6 +177,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             string shortDescription = null)
             => ScaledTrimStartOrTrimEnd(context, value, 1, targetObject, targetPropertyName, longDescription, shortDescription);
 
+        /// <summary>
+        /// Animates a rotation value.
+        /// </summary>
         public static void ScaledRotation(
             LayerContext context,
             in TrimmedAnimatable<Rotation> value,
@@ -173,6 +202,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 shortDescription);
         }
 
+        /// <summary>
+        /// Animates an opacity value.
+        /// </summary>
         public static void ScaledOpacity(
             LayerContext context,
             in TrimmedAnimatable<Opacity> value,
@@ -195,6 +227,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 shortDescription);
         }
 
+        /// <summary>
+        /// Animates a scalar value.
+        /// </summary>
         public static void ScaledScalar(
             LayerContext context,
             in TrimmedAnimatable<double> value,
@@ -217,6 +252,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 shortDescription);
         }
 
+        /// <summary>
+        /// Animates a trim start or trim end value.
+        /// </summary>
         static void ScaledTrimStartOrTrimEnd(
             LayerContext context,
             in TrimmedAnimatable<Trim> value,
@@ -239,6 +277,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 shortDescription);
         }
 
+        /// <summary>
+        /// Animates a color using an expression animation.
+        /// </summary>
+        public static void ColorWithExpression(
+            CompositionObject compObject,
+            ExpressionAnimation animation,
+            string target = "Color") =>
+                WithExpression(compObject, animation, target);
+
+        /// <summary>
+        /// Animates a color value.
+        /// </summary>
         public static void Color(
             LayerContext context,
             in TrimmedAnimatable<Color> value,
@@ -260,7 +310,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 shortDescription);
         }
 
-        public static void ApplyExpressionColorKeyFrameAnimation(
+        public static void ColorWithExpressionKeyFrameAnimation(
             LayerContext context,
             in TrimmedAnimatable<WinCompData.Expressions.Color> value,
             CompositionObject targetObject,
@@ -283,6 +333,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 beforeStartCallback);
         }
 
+        /// <summary>
+        /// Animates a color expressed as a Vector4 value.
+        /// </summary>
         public static void ColorAsVector4(
             LayerContext context,
             in TrimmedAnimatable<Color> value,
@@ -304,6 +357,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 shortDescription);
         }
 
+        /// <summary>
+        /// Animates a path value.
+        /// </summary>
         public static void Path(
                 LayerContext context,
                 in TrimmedAnimatable<PathGeometry> value,
@@ -338,6 +394,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 shortDescription);
         }
 
+        /// <summary>
+        /// Animates a path group value.
+        /// </summary>
         public static void PathGroup(
             LayerContext context,
             in TrimmedAnimatable<PathGeometryGroup> value,
@@ -372,6 +431,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 shortDescription);
         }
 
+        /// <summary>
+        /// Animates a Vector2 value.
+        /// </summary>
         public static void Vector2(
             LayerContext context,
             in TrimmedAnimatable<Vector3> value,
@@ -381,6 +443,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             string shortDescription = null)
             => ScaledVector2(context, value, 1, targetObject, targetPropertyName, longDescription, shortDescription);
 
+        /// <summary>
+        /// Animates a Vector2 value.
+        /// </summary>
         public static void ScaledVector2(
             LayerContext context,
             in TrimmedAnimatable<Vector3> value,
@@ -403,6 +468,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 shortDescription);
         }
 
+        /// <summary>
+        /// Animates a Vector3 value.
+        /// </summary>
         public static void Vector3(
             LayerContext context,
             in TrimmedAnimatable<Vector3> value,
@@ -412,6 +480,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             string shortDescription = null)
             => ScaledVector3(context, value, 1, targetObject, targetPropertyName, longDescription, shortDescription);
 
+        /// <summary>
+        /// Animates a Vector3 value.
+        /// </summary>
         public static void ScaledVector3(
             LayerContext context,
             in TrimmedAnimatable<Vector3> value,
@@ -638,7 +709,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             beforeStartCallback?.Invoke(compositionAnimation);
 
             // Start the animation scaled and offset.
-            Animate.StartKeyframeAnimation(context, targetObject, targetPropertyName, compositionAnimation, scale, offset);
+            Animate.WithKeyFrame(context, targetObject, targetPropertyName, compositionAnimation, scale, offset);
 
             // If the given progress value is equal to a progress value that was already
             // inserted into the animation, adjust it up to ensure we never try to

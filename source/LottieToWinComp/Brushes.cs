@@ -99,7 +99,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var opacityScalarExpressions = animatableOpacities.Select(a => Expr.Scalar($"my.{a.name}")).ToArray();
             var anim = context.ObjectFactory.CreateExpressionAnimation(ExpressionFactory.MyColorAsVector4MultipliedByOpacity(opacityScalarExpressions));
             anim.SetReferenceParameter("my", result.Properties);
-            Animate.StartExpressionAnimation(result, nameof(result.Color), anim);
+            Animate.ColorWithExpression(result, anim);
             return result;
         }
 
@@ -385,7 +385,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 anim.SetReferenceParameter("my", result.Properties);
                 anim.SetReferenceParameter(ThemePropertyBindings.ThemePropertiesName, ThemePropertyBindings.GetThemePropertySet(context));
 
-                Animate.StartExpressionAnimation(result, nameof(result.Color), anim);
+                Animate.ColorWithExpression(result, anim);
             }
             else
             {
@@ -393,7 +393,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 // Create an expression that multiplies the alpha channel of the color by the opacity value.
                 var anim = context.ObjectFactory.CreateExpressionAnimation(ExpressionFactory.ThemedColorMultipliedByOpacity(bindingName, opacity.NonAnimatedValue));
                 anim.SetReferenceParameter(ThemePropertyBindings.ThemePropertiesName, ThemePropertyBindings.GetThemePropertySet(context));
-                Animate.StartExpressionAnimation(result, nameof(result.Color), anim);
+                Animate.ColorWithExpression(result, anim);
             }
 
             return result;
@@ -582,7 +582,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     gs => ExpressionFactory.ColorMultipliedByPreMultipliedOpacities(ConvertTo.Color(gs.Color), opacityExpressions)).ToArray();
 
                 // Bind the color to the opacities multiplied by the colors.
-                Animate.ApplyExpressionColorKeyFrameAnimation(
+                Animate.ColorWithExpressionKeyFrameAnimation(
                     context,
                     new TrimmedAnimatable<WinCompData.Expressions.Color>(context, colorKeyFrames[0].Value, colorKeyFrames),
                     gradientStop,
@@ -731,7 +731,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     // Bind the color to the opacity multiplied by the color.
                     var anim = context.ObjectFactory.CreateExpressionAnimation(ExpressionFactory.ColorMultipliedByPreMultipliedOpacities(ConvertTo.Color(stop.Color), opacityExpressions));
                     anim.SetReferenceParameter("my", brush.Properties);
-                    Animate.StartExpressionAnimation(gradientStop, "Color", anim);
+                    Animate.ColorWithExpression(gradientStop, anim);
                 }
 
                 brush.ColorStops.Add(gradientStop);

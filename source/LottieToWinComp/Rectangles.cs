@@ -7,7 +7,7 @@ using System.Diagnostics;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
-using Expr = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions.Expression;
+using Expressions = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions;
 using Sn = System.Numerics;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
@@ -157,11 +157,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             // If size or corner radius are animated, handle this with an expression.
             if (cornerRadius.IsAnimated || isSizeAnimated)
             {
-                WinCompData.Expressions.Vector2 cornerRadiusExpression;
+                Expressions.Vector2 cornerRadiusExpression;
 
                 if (cornerRadius.IsAnimated)
                 {
-                    Animate.InsertAndApplyScalarKeyFramePropertySetAnimation(
+                    Animate.ScalarPropertySetValue(
                         context,
                         cornerRadius,
                         geometry,
@@ -192,7 +192,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
                 var cornerRadiusAnimation = context.ObjectFactory.CreateExpressionAnimation(cornerRadiusExpression);
                 cornerRadiusAnimation.SetReferenceParameter("my", geometry);
-                Animate.StartExpressionAnimation(geometry, "CornerRadius", cornerRadiusAnimation);
+                Animate.WithExpression(geometry, cornerRadiusAnimation, "CornerRadius");
             }
             else
             {
@@ -226,7 +226,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         {
             if (position.IsAnimated || size.IsAnimated)
             {
-                Expr offsetExpression;
+                Expressions.Vector2 offsetExpression;
                 if (position.IsAnimated)
                 {
                     Animate.Vector2(context, position, geometry, nameof(Rectangle.Position));
@@ -252,7 +252,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
                 var offsetExpressionAnimation = context.ObjectFactory.CreateExpressionAnimation(offsetExpression);
                 offsetExpressionAnimation.SetReferenceParameter("my", geometry);
-                Animate.StartExpressionAnimation(geometry, "Offset", offsetExpressionAnimation);
+                Animate.WithExpression(geometry, offsetExpressionAnimation, "Offset");
             }
 
             // Lottie rectangles have 0,0 at top right. That causes problems for TrimPath which expects 0,0 to be top left.
@@ -295,7 +295,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         {
             if (position.IsAnimated || width.IsAnimated || height.IsAnimated)
             {
-                Expr offsetExpression;
+                Expressions.Vector2 offsetExpression;
                 if (position.IsAnimated)
                 {
                     Animate.Vector2(context, position, geometry, nameof(Rectangle.Position));
@@ -337,7 +337,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
                 var offsetExpressionAnimation = context.ObjectFactory.CreateExpressionAnimation(offsetExpression);
                 offsetExpressionAnimation.SetReferenceParameter("my", geometry);
-                Animate.StartExpressionAnimation(geometry, "Offset", offsetExpressionAnimation);
+                Animate.WithExpression(geometry, offsetExpressionAnimation, "Offset");
             }
 
             // Lottie rectangles have 0,0 at top right. That causes problems for TrimPath which expects 0,0 to be top left.

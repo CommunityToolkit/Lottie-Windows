@@ -12,6 +12,9 @@ using Sn = System.Numerics;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 {
+    /// <summary>
+    /// Translation for Lottie shapes.
+    /// </summary>
     static class Shapes
     {
         public static LayerTranslator CreateShapeLayerTranslator(ShapeLayerContext context) =>
@@ -427,15 +430,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             {
                 // Add properties that will be animated. The TrimStart and TrimEnd properties
                 // will be set by these values through an expression.
-                Animate.InsertAndApplyTrimKeyFramePropertySetAnimation(context, startTrim, geometry, "TStart");
+                Animate.TrimStartOrTrimEndPropertySetValue(context, startTrim, geometry, "TStart");
                 var trimStartExpression = context.ObjectFactory.CreateExpressionAnimation(ExpressionFactory.MinTStartTEnd);
                 trimStartExpression.SetReferenceParameter("my", geometry);
-                Animate.StartExpressionAnimation(geometry, nameof(geometry.TrimStart), trimStartExpression);
+                Animate.WithExpression(geometry, trimStartExpression, nameof(geometry.TrimStart));
 
-                Animate.InsertAndApplyTrimKeyFramePropertySetAnimation(context, endTrim, geometry, "TEnd");
+                Animate.TrimStartOrTrimEndPropertySetValue(context, endTrim, geometry, "TEnd");
                 var trimEndExpression = context.ObjectFactory.CreateExpressionAnimation(ExpressionFactory.MaxTStartTEnd);
                 trimEndExpression.SetReferenceParameter("my", geometry);
-                Animate.StartExpressionAnimation(geometry, nameof(geometry.TrimEnd), trimEndExpression);
+                Animate.WithExpression(geometry, trimEndExpression, nameof(geometry.TrimEnd));
             }
             else
             {

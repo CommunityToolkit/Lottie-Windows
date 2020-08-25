@@ -246,7 +246,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     animation.InsertKeyFrame(keyframe.End, 1, ObjectFactory.CreateCompositionEasingFunction(keyframe.Easing));
                 }
 
-                Animate.StartKeyframeAnimation(this, RootVisual.Properties, name, animation, scale, offset);
+                Animate.WithKeyFrame(this, RootVisual.Properties, name, animation, scale, offset);
             }
         }
    }
