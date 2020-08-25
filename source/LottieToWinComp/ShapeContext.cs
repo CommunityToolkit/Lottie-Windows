@@ -19,9 +19,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         static readonly RoundCorners s_defaultRoundCorners =
             new RoundCorners(new ShapeLayerContent.ShapeLayerContentArgs { }, new Animatable<double>(0, null));
 
-        readonly TranslationIssues _issues;
+        internal ShapeContext(ShapeLayerContext layer)
+        {
+            LayerContext = layer;
+            ObjectFactory = layer.ObjectFactory;
+        }
 
-        internal ShapeContext(TranslationIssues issues) => _issues = issues;
+        public ShapeLayerContext LayerContext { get; }
+
+        public CompositionObjectFactory ObjectFactory { get; }
+
+        public TranslationContext Translation => LayerContext.CompositionContext.Translation;
+
+        public TranslationIssues Issues => Translation.Issues;
 
         internal ShapeStroke Stroke { get; private set; }
 
@@ -76,14 +86,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
         }
 
-        internal void UpdateOpacityFromTransform(TranslationContext context, Transform transform)
+        internal void UpdateOpacityFromTransform(LayerContext context, Transform transform)
         {
             if (transform is null)
             {
                 return;
             }
 
-            Opacity = Opacity.ComposedWith(context.TrimAnimatable(transform.Opacity));
+            Opacity = Opacity.ComposedWith(Optimizer.TrimAnimatable(context, transform.Opacity));
         }
 
         // Only used when translating geometries. Layers use an extra Shape or Visual to
@@ -95,7 +105,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         }
 
         internal ShapeContext Clone() =>
-            new ShapeContext(_issues)
+            new ShapeContext(LayerContext)
             {
                 Fill = Fill,
                 Stroke = Stroke,
@@ -118,7 +128,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             if (a.FillKind != b.FillKind)
             {
-                _issues.MultipleFillsIsNotSupported();
+                Translation.Issues.MultipleFillsIsNotSupported();
                 return b;
             }
 
@@ -128,7 +138,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     return ComposeSolidColorFills((SolidColorFill)a, (SolidColorFill)b);
             }
 
-            _issues.MultipleFillsIsNotSupported();
+            Translation.Issues.MultipleFillsIsNotSupported();
             return b;
         }
 
@@ -149,7 +159,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 }
             }
 
-            _issues.MultipleFillsIsNotSupported();
+            Translation.Issues.MultipleFillsIsNotSupported();
             return b;
         }
 
@@ -166,7 +176,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             if (a.StrokeKind != b.StrokeKind)
             {
-                _issues.MultipleStrokesIsNotSupported();
+                Translation.Issues.MultipleStrokesIsNotSupported();
                 return b;
             }
 
@@ -197,7 +207,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 }
             }
 
-            _issues.MultipleStrokesIsNotSupported();
+            Translation.Issues.MultipleStrokesIsNotSupported();
             return a;
         }
 
@@ -215,7 +225,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 }
             }
 
-            _issues.MultipleStrokesIsNotSupported();
+            Translation.Issues.MultipleStrokesIsNotSupported();
             return a;
         }
 
@@ -235,7 +245,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
 
             // The new stroke should be in addition to the existing stroke. And colors should blend.
-            _issues.MultipleStrokesIsNotSupported();
+            Translation.Issues.MultipleStrokesIsNotSupported();
             return b;
         }
 
@@ -264,7 +274,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 }
             }
 
-            _issues.MultipleAnimatedRoundCornersIsNotSupported();
+            Translation.Issues.MultipleAnimatedRoundCornersIsNotSupported();
             return b;
         }
 
@@ -308,8 +318,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 }
             }
 
-            _issues.MultipleTrimPathsIsNotSupported();
+            Translation.Issues.MultipleTrimPathsIsNotSupported();
             return b;
         }
+
+        /// <summary>
+        /// Allow a <see cref="ShapeContext"/> to be used wherever a <see cref="ShapeLayerContext"/> is required.
+        /// </summary>
+        public static implicit operator ShapeLayerContext(ShapeContext obj) => obj.LayerContext;
+
+        /// <summary>
+        /// Allow a <see cref="ShapeContext"/> to be used wherever a <see cref="TranslationContext"/> is required.
+        /// </summary>
+        public static implicit operator TranslationContext(ShapeContext obj) => obj.LayerContext;
     }
 }
