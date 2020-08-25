@@ -15,10 +15,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
     /// <summary>
     /// Translates a <see cref="LottieData.LottieComposition"/> to an equivalent <see cref="Visual"/>.
     /// </summary>
-    /// <remarks>See https://helpx.adobe.com/pdf/after_effects_reference.pdf"/> for the
-    /// After Effects semantics.</remarks>
-#pragma warning disable SA1205 // Partial elements should declare access
-    sealed partial class TranslationContext
+    sealed class TranslationContext
     {
         // Identifies the Lottie metadata in TranslationResult.SourceMetadata.
         static readonly Guid s_lottieMetadataKey = new Guid("EA3D6538-361A-4B1C-960D-50A6C35563A5");

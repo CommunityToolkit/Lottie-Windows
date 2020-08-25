@@ -10,8 +10,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
     /// <summary>
     /// Translates a <see cref="LottieComposition"/> to an equivalent <see cref="Visual"/>.
     /// </summary>
-    /// <remarks>See https://helpx.adobe.com/pdf/after_effects_reference.pdf"/> for the
-    /// After Effects semantics.</remarks>
+    /// <remarks>
+    /// See https://helpx.adobe.com/pdf/after_effects_reference.pdf"/> for the
+    /// After Effects semantics.
+    /// </remarks>
 #if PUBLIC
     public
 #endif
