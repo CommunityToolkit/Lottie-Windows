@@ -29,6 +29,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
     /// </summary>
     abstract class Loader
     {
+        // Private constructor prevents subclassing outside of this class.
         Loader()
         {
         }
@@ -39,10 +40,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         internal async Task<ContentFactory> LoadAsync(LottieVisualOptions options)
         {
             LottieVisualDiagnostics diagnostics = null;
-            Stopwatch sw = null;
+            var timeMeasurer = TimeMeasurer.Create();
+
             if (options.HasFlag(LottieVisualOptions.IncludeDiagnostics))
             {
-                sw = Stopwatch.StartNew();
                 diagnostics = new LottieVisualDiagnostics { Options = options };
             }
 
@@ -54,8 +55,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             if (diagnostics != null)
             {
                 diagnostics.FileName = fileName;
-                diagnostics.ReadTime = sw.Elapsed;
-                sw.Restart();
+                diagnostics.ReadTime = timeMeasurer.GetElapsedAndRestart();
             }
 
             if (jsonStream is null)
@@ -83,8 +83,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
 
             if (diagnostics != null)
             {
-                diagnostics.ParseTime = sw.Elapsed;
-                sw.Restart();
+                diagnostics.ParseTime = timeMeasurer.GetElapsedAndRestart();
             }
 
             if (lottieComposition is null)
@@ -108,8 +107,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
 
                 // Validate the composition and report if issues are found.
                 diagnostics.LottieValidationIssues = ToIssues(LottieCompositionValidator.Validate(lottieComposition));
-                diagnostics.ValidationTime = sw.Elapsed;
-                sw.Restart();
+                diagnostics.ValidationTime = timeMeasurer.GetElapsedAndRestart();
             }
 
             result.SetDimensions(
@@ -125,11 +123,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             TranslationResult translationResult;
             await CheckedAwaitAsync(Task.Run(() =>
             {
-                // translatePropertyBindings is turned on so that it can report
-                // an issue if the author is using property bindings incorrectly.
+                // TranslatePropertyBindings is turned on if diagnostics are enabled so that
+                // property binding issues can be reported, even if the property bindings are
+                // not actually wanted by the client.
                 translationResult = LottieToWinCompTranslator.TryTranslateLottieComposition(
                     lottieComposition: lottieComposition,
-                    configuration: new TranslatorConfiguration { TranslatePropertyBindings = true, TargetUapVersion = GetCurrentUapVersion() });
+                    configuration: new TranslatorConfiguration
+                    {
+                        TranslatePropertyBindings = options.HasFlag(LottieVisualOptions.IncludeDiagnostics),
+                        TargetUapVersion = GetCurrentUapVersion(),
+                    });
 
                 wincompDataRootVisual = translationResult.RootVisual;
                 requiredUapVersion = translationResult.MinimumRequiredUapVersion;
@@ -137,8 +140,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 if (diagnostics != null)
                 {
                     diagnostics.TranslationIssues = ToIssues(translationResult.TranslationIssues);
-                    diagnostics.TranslationTime = sw.Elapsed;
-                    sw.Restart();
+                    diagnostics.TranslationTime = timeMeasurer.GetElapsedAndRestart();
                 }
 
                 // Optimize the resulting translation. This will usually significantly reduce the size of
@@ -150,8 +152,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
 
                     if (diagnostics != null)
                     {
-                        diagnostics.OptimizationTime = sw.Elapsed;
-                        sw.Restart();
+                        diagnostics.OptimizationTime = timeMeasurer.GetElapsedAndRestart();
                     }
                 }
             }));
@@ -229,6 +230,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 _inputStream = inputStream;
             }
 
+            // Turn off the warning about lacking an await. This method has to return a Task
+            // and the easiest way to do that when you do not need the asynchrony is to declare
+            // the method as async and return the value. This will cause C# to wrap the value in
+            // a Task.
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
             private protected override async Task<(string, Stream)> GetJsonStreamAsync()
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
@@ -286,9 +291,23 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             }
         }
 
-        // ----
-        // BEGIN: DEBUGGING HELPERS
-        // ----
+        // Specializes the Stopwatch to do just the one thing we need of it - get the time
+        // elapsed since the last call then restart the Stopwatch to start measuring again.
+        readonly struct TimeMeasurer
+        {
+            readonly Stopwatch _stopwatch;
+
+            TimeMeasurer(Stopwatch stopwatch) => _stopwatch = stopwatch;
+
+            public static TimeMeasurer Create() => new TimeMeasurer(Stopwatch.StartNew());
+
+            public TimeSpan GetElapsedAndRestart()
+            {
+                var result = _stopwatch.Elapsed;
+                _stopwatch.Restart();
+                return result;
+            }
+        }
 
         // For testing purposes, slows down a task.
 #if SlowAwaits
@@ -307,9 +326,5 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
 #pragma warning restore VSTHRD003 // Avoid awaiting foreign Tasks
 #endif
         }
-
-        // ----
-        // END: DEBUGGING HELPERS
-        // ----
     }
 }
