@@ -21,6 +21,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 {
     sealed class CompositionObjectFactory
     {
+        readonly TranslationContext _context;
         readonly Compositor _compositor;
 
         // The UAP version of the Compositor.
@@ -43,8 +44,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         // Holds a StepEasingFunction that can be reused in multiple animations.
         readonly StepEasingFunction _jumpStepEasingFunction;
 
-        internal CompositionObjectFactory(Compositor compositor, uint targetUapVersion)
+        internal CompositionObjectFactory(TranslationContext context, Compositor compositor, uint targetUapVersion)
         {
+            _context = context;
             _compositor = compositor;
             _targetUapVersion = targetUapVersion;
 
@@ -84,6 +86,21 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 default:
                     throw new InvalidOperationException();
             }
+        }
+
+        /// <summary>
+        /// Checks whether the given API is available for the current translation.
+        /// </summary>
+        /// <returns><c>true</c> if the given api is available in this translation.</returns>
+        internal bool IsUapApiAvailable(string apiName, string versionDependentFeatureDescription)
+        {
+            if (!IsUapApiAvailable(apiName))
+            {
+                _context.Issues.UapVersionNotSupported(versionDependentFeatureDescription, GetUapVersionForApi(apiName).ToString());
+                return false;
+            }
+
+            return true;
         }
 
         internal CompositionEllipseGeometry CreateEllipseGeometry() => _compositor.CreateEllipseGeometry();

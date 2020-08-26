@@ -793,7 +793,7 @@ sealed class LottieFileProcessor
             // Optimize the code unless told not to.
             if (!_options.DisableTranslationOptimizer)
             {
-                _translationResults = _translationResults.Select(tr => tr.WithDifferentRoot(Optimizer.Optimize(tr.RootVisual, ignoreCommentProperties: true))).ToArray();
+                _translationResults = _translationResults.Select(tr => tr.WithDifferentRoot(Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools.Optimizer.Optimize(tr.RootVisual, ignoreCommentProperties: true))).ToArray();
                 _profiler.OnOptimizationFinished();
 
                 // NOTE: this is only reporting on the latest version in a multi-version translation.

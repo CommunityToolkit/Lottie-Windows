@@ -86,8 +86,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             if (Info.UsesCanvasGeometry)
             {
-                // Microsoft.Graphics is needed for IGeometrySource2D.
-                namespaces.Add("Microsoft.Graphics");
+                // Windows.Graphics is needed for IGeometrySource2D.
+                namespaces.Add("Windows.Graphics");
                 namespaces.Add("Microsoft.Graphics.Canvas.Geometry");
             }
 

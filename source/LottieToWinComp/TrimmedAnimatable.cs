@@ -18,14 +18,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
     {
         readonly IReadOnlyList<KeyFrame<T>> _keyFrames;
 
-        internal TrimmedAnimatable(TranslationContext context, T initialValue, IReadOnlyList<KeyFrame<T>> keyFrames)
+        internal TrimmedAnimatable(LayerContext context, T initialValue, IReadOnlyList<KeyFrame<T>> keyFrames)
         {
             Context = context;
             InitialValue = initialValue;
             _keyFrames = keyFrames;
         }
 
-        internal TrimmedAnimatable(TranslationContext context, T initialValue)
+        internal TrimmedAnimatable(LayerContext context, T initialValue)
         {
             Context = context;
             InitialValue = initialValue;
@@ -53,6 +53,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// <returns><c>true</c> if this value is always equal to the given value.</returns>
         internal bool IsAlways(T value) => !IsAnimated && value.Equals(InitialValue);
 
-        internal TranslationContext Context { get; }
+        internal LayerContext Context { get; }
     }
 }
