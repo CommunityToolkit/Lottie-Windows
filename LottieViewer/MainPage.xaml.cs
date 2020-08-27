@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using LottieViewer.ViewModel;
+using Windows.ApplicationModel;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 using Windows.Storage.Pickers;
@@ -51,6 +52,16 @@ namespace LottieViewer
         }
 
         public ObservableCollection<object> PropertiesList { get; } = new ObservableCollection<object>();
+
+        public string AppVersion
+        {
+            get
+            {
+                var version = Package.Current.Id.Version;
+
+                return string.Format("{0}.{1}.{2}.{3}", version.Major, version.Minor, version.Build, version.Revision);
+            }
+        }
 
         void DiagnosticsViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
