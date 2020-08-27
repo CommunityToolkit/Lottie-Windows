@@ -6,7 +6,6 @@ using System;
 using System.Collections.Specialized;
 using System.Numerics;
 using LottieViewer.ViewModel;
-using Microsoft.Toolkit.Uwp.UI.Lottie;
 using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.Composition;
@@ -200,7 +199,7 @@ namespace LottieViewer
             {
                 var topRect = (Rectangle)_markersTop.Children[i];
                 var bottomRect = (Rectangle)_markersBottom.Children[i];
-                var offset = _diagnostics.Markers[i].Progress;
+                var offset = _diagnostics.Markers[i].ConstrainedProgress;
                 topRect.Margin = new Thickness((offset * barWidth) + c_trackMargin, 0, 0, 0);
                 bottomRect.Margin = new Thickness((offset * barWidth) + c_trackMargin, 0, 0, 0);
             }

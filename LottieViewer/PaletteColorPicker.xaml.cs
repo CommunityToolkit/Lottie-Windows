@@ -24,6 +24,11 @@ namespace LottieViewer
     {
         LottieVisualDiagnosticsViewModel _diagnosticsViewModel;
 
+        // Used to prevent infinite recursion when the color picker is updated.
+        // Needed because we have 2-way binding between 2 color pickers and they
+        // try to set each others values.
+        bool m_isColorPickerChanging = false;
+
         public PaletteColorPicker()
         {
             this.InitializeComponent();
@@ -134,10 +139,25 @@ namespace LottieViewer
 
         void MyColorPicker_ColorChanged(ColorPicker sender, ColorChangedEventArgs args)
         {
+            if (m_isColorPickerChanging)
+            {
+                // Ignore if we're in the middle of changing the color already.
+                return;
+            }
+
             if (_listBox.SelectedItem is ColorPaletteEntry selectedEntry)
             {
+                m_isColorPickerChanging = true;
                 selectedEntry.Color = args.NewColor;
+                TextColorPicker.Color = args.NewColor;
+                m_isColorPickerChanging = false;
             }
+        }
+
+        void TextColorPicker_ColorChanged(ColorPicker sender, ColorChangedEventArgs args)
+        {
+            // Update the main color picker.
+            MyColorPicker.Color = args.NewColor;
         }
 
         // Handle double-click on an entry. Restore the original color.
