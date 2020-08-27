@@ -117,7 +117,7 @@
                                    FontWeight="Bold" Foreground="White" >
                                         This Lottie has some issues ...
                             </TextBlock>
-                            <ItemsControl Margin="12"
+                            <ItemsControl Margin="0, 12, 12,12"
                                       ItemsSource="{x:Bind _stage.DiagnosticsViewModel.Issues, Mode=OneWay}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate x:DataType="lottie:Issue">
