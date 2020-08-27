@@ -153,10 +153,11 @@
                     <Grid Padding="8" HorizontalAlignment="Stretch">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="210"/>
-                            <ColumnDefinition Width="24"/>
-                            <ColumnDefinition Width="72"/>
+                            <ColumnDefinition Width="10"/>
+                            <ColumnDefinition Width="5"/>
+                            <ColumnDefinition Width="82"/>
                         </Grid.ColumnDefinitions>
-                        <muxc:TextBlock Text="{x:Bind Name}" Margin="15,0,0,0"/>
+                        <muxc:TextBlock Text="{x:Bind Name}" Margin="10,0,0,0"/>
                         <Border Grid.Column="1" BorderBrush="#DDDDDD" BorderThickness="3,3,0,3">
                             <Rectangle
                                        HorizontalAlignment="Stretch" 
@@ -166,7 +167,19 @@
                                 </Rectangle.Fill>
                             </Rectangle>
                         </Border>
-                        <Border Grid.Column="2" BorderBrush="#DDDDDD" BorderThickness="0,3,3,3">
+                        <Border Grid.Column="2" BorderBrush="#DDDDDD" BorderThickness="0,3,0,3">
+                            <Rectangle
+                                       HorizontalAlignment="Stretch" 
+                                       Height="20">
+                                <Rectangle.Fill>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                        <GradientStop Color="{x:Bind InitialColor, Mode=OneWay}" Offset="0" />
+                                        <GradientStop Color="{x:Bind Color, Mode=OneWay}" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Rectangle.Fill>
+                            </Rectangle>
+                        </Border>
+                        <Border Grid.Column="3" BorderBrush="#DDDDDD" BorderThickness="0,3,3,3">
                             <Rectangle 
                                        HorizontalAlignment="Stretch" 
                                        Height="20">
@@ -181,22 +194,44 @@
 
         </muxc:ListBox>
         <StackPanel>
-            <muxc:ColorPicker 
+            <Border Margin="30,20,-20,0">
+                <muxc:ColorPicker 
                 x:Name="MyColorPicker"
-                Width="330"
-                Margin="0,20,0,0"
                 IsEnabled="False"
                 ColorChanged="MyColorPicker_ColorChanged"
                 ColorSpectrumComponents="HueSaturation"
                 ColorSpectrumShape="Ring"
                 IsColorChannelTextInputVisible="False"
                 IsColorPreviewVisible="False"
-                IsHexInputVisible="True" IsAlphaTextInputVisible="False" IsAlphaSliderVisible="False" >
+                IsHexInputVisible="False"
+                IsAlphaTextInputVisible="False"
+                IsAlphaSliderVisible="False" >
+                    <muxc:ColorPicker.RenderTransform>
+                        <ScaleTransform ScaleX="0.85" ScaleY="0.85"/>
+                    </muxc:ColorPicker.RenderTransform>
+                </muxc:ColorPicker>
+            </Border>
+            <!-- Use a second ColorPicker so that we can show the text entry
+                 box in the middle instead of off to the left. -->
+            <muxc:ColorPicker
+                x:Name="TextColorPicker"
+                ColorChanged="TextColorPicker_ColorChanged"
+                HorizontalAlignment="Center"
+                Margin="0,-75,-175,0"
+                ColorSpectrumComponents="HueSaturation"
+                ColorSpectrumShape="Ring"
+                IsColorChannelTextInputVisible="False"
+                IsColorPreviewVisible="False"
+                IsColorSpectrumVisible="False"
+                IsColorSliderVisible="False"
+                IsHexInputVisible="True"
+                IsAlphaTextInputVisible="False"
+                IsAlphaSliderVisible="False" >
             </muxc:ColorPicker>
 
-            <StackPanel Margin="20,6,20,20">
+            <StackPanel Margin="20,-15,20,20">
                 <!-- Separator -->
-                <Border BorderBrush="DarkGray" BorderThickness="1.5" HorizontalAlignment="Stretch" Margin="10"/>
+                <Border Style="{StaticResource SeparatorStyle}"/>
 
                 <TextBlock FontWeight="Bold">Colors</TextBlock>
             </StackPanel>

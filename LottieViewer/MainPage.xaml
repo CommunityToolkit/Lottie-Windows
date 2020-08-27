@@ -133,7 +133,7 @@
                             </ItemsControl>
                         </StackPanel>
                         <!-- Separator -->
-                        <Border BorderBrush="DarkGray" BorderThickness="1.5" HorizontalAlignment="Stretch" Margin="10" Visibility="{x:Bind _stage.DiagnosticsViewModel.HasIssues, Converter={StaticResource VisibilityConverter}, Mode=OneWay}"/>
+                        <Border Style="{StaticResource SeparatorStyle}" Visibility="{x:Bind _stage.DiagnosticsViewModel.HasIssues, Converter={StaticResource VisibilityConverter}, Mode=OneWay}"/>
 
                         <!-- Play speed controller. -->
                         <StackPanel>
@@ -159,7 +159,7 @@
                         </StackPanel>
 
                         <!-- Separator -->
-                        <Border BorderBrush="DarkGray" BorderThickness="1.5" HorizontalAlignment="Stretch" Margin="10"/>
+                        <Border Style="{StaticResource SeparatorStyle}"/>
 
                         <!-- Properties list. -->
                         <Grid Visibility="{x:Bind _stage.Player.IsAnimatedVisualLoaded, Converter={StaticResource VisibilityConverter}, Mode=OneWay}">
@@ -205,11 +205,7 @@
                         </Grid>
 
                         <!-- Separator -->
-                        <Border 
-                            BorderBrush="DarkGray"
-                            BorderThickness="1.5"
-                            HorizontalAlignment="Stretch"
-                            Margin="10"
+                        <Border Style="{StaticResource SeparatorStyle}"
                             Visibility="{x:Bind _stage.Player.IsAnimatedVisualLoaded, Converter={StaticResource VisibilityConverter}, Mode=OneWay}"/>
 
                         <!-- App version -->
