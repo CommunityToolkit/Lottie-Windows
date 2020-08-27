@@ -101,7 +101,7 @@ namespace LottieViewer
             }
         }
 
-        internal ColorPaletteEntry BackgroundColor { get; } = new ColorPaletteEntry(Colors.White, "Background");
+        internal ColorPaletteEntry BackgroundColor { get; } = new ColorPaletteEntry(Colors.White, "Background") { IsInitialColorSameAsColor = true };
 
         void PickFile_Click(object sender, RoutedEventArgs e)
             => _ = OnPickFileAsync();

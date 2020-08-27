@@ -153,9 +153,9 @@
                     <Grid Padding="8" HorizontalAlignment="Stretch">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="210"/>
-                            <ColumnDefinition Width="10"/>
-                            <ColumnDefinition Width="5"/>
-                            <ColumnDefinition Width="82"/>
+                            <ColumnDefinition Width="40"/>
+                            <ColumnDefinition Width="0"/>
+                            <ColumnDefinition Width="40"/>
                         </Grid.ColumnDefinitions>
                         <muxc:TextBlock Text="{x:Bind Name}" Margin="10,0,0,0"/>
                         <Border Grid.Column="1" BorderBrush="#DDDDDD" BorderThickness="3,3,0,3">

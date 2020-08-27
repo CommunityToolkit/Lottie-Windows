@@ -10,18 +10,24 @@ namespace LottieViewer
     // An observable named color with the ability to change the color value.
     public sealed class ColorPaletteEntry : INotifyPropertyChanged
     {
+        Color _initialColor;
         Color _color;
 
         internal ColorPaletteEntry(Color color, string name)
         {
-            InitialColor = color;
+            _initialColor = color;
             _color = color;
             Name = name;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public Color InitialColor { get; }
+        /// <summary>
+        /// If ture, changing the Color will also change the InitialColor to keep it the
+        /// same as Color. This is used to special case the "Background" color, which does
+        /// not have an initial color.
+        /// </summary>
+        public bool IsInitialColorSameAsColor { get; set; }
 
         public Color Color
         {
@@ -33,10 +39,18 @@ namespace LottieViewer
                 if (value != _color)
                 {
                     _color = value;
+                    if (IsInitialColorSameAsColor)
+                    {
+                        _initialColor = value;
+                        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(this.InitialColor)));
+                    }
+
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(this.Color)));
                 }
             }
         }
+
+        public Color InitialColor => _initialColor;
 
         // A name that describes the palette entry.
         public string Name { get; set; }
