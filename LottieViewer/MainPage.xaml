@@ -5,7 +5,6 @@
       xmlns:local="using:LottieViewer"
       xmlns:lottie="using:Microsoft.Toolkit.Uwp.UI.Lottie"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:viewmodel="using:LottieViewer.ViewModel"
-      RequestedTheme="Light"
       Visibility="Visible"
       mc:Ignorable="d">
     <Page.Resources>
@@ -86,7 +85,7 @@
 
             <!-- Control panel. This shows to the right of the stage. Only one panel is allowed to be
                  open at a time. This is ensured through code behind. -->
-            <Grid x:Name="ControlPanel"  Grid.Column="1" Background="{StaticResource DropTargetBrush}" MaxWidth="{StaticResource ControlPanelWidth}">
+            <Grid x:Name="ControlPanel"  Grid.Column="1" Background="{StaticResource DropTargetBrush}">
                 <Grid.Resources>
                     <Style TargetType="TextBlock">
                         <Setter Property="Foreground" Value="White" />
@@ -95,11 +94,11 @@
 
                 <!-- Color palette panel -->
                 <ScrollViewer x:Name="ColorPanel"
-                              Visibility="{x:Bind PaletteButton.IsChecked, Converter={StaticResource VisibilityConverter}, Mode=OneWay}">
+                              Visibility="{x:Bind PaletteButton.IsChecked, Converter={StaticResource VisibilityConverter}, Mode=OneWay}"
+                              Width="{StaticResource ControlPanelWidth}">
                     <local:PaletteColorPicker 
                         Height="{x:Bind ColorPanel.ViewportHeight, Mode=OneWay}"
                         MinHeight="500"
-                        Width="{StaticResource ControlPanelWidth}"
                         x:Name="_paletteColorPicker" 
                         Grid.Column="1"
                         DiagnosticsViewModel="{x:Bind _stage.DiagnosticsViewModel}"/>
@@ -111,10 +110,10 @@
                     Width="{StaticResource ControlPanelWidth}"
                     Visibility="{x:Bind InfoButton.IsChecked, Converter={StaticResource VisibilityConverter}, Mode=OneWay}">
 
-                    <StackPanel>
+                    <StackPanel Padding="20,10,20,0">
                         <!-- Issues. Collapsed if there are no issues. -->
-                        <StackPanel Visibility="{x:Bind _stage.DiagnosticsViewModel.HasIssues, Converter={StaticResource VisibilityConverter}, Mode=OneWay}" BorderBrush="DarkGray" BorderThickness="4" Margin="4">
-                            <TextBlock HorizontalAlignment="Center" Visibility="{x:Bind _stage.DiagnosticsViewModel.HasIssues, Converter={StaticResource VisibilityConverter}, Mode=OneWay}"
+                        <StackPanel Visibility="{x:Bind _stage.DiagnosticsViewModel.HasIssues, Converter={StaticResource VisibilityConverter}, Mode=OneWay}">
+                            <TextBlock Visibility="{x:Bind _stage.DiagnosticsViewModel.HasIssues, Converter={StaticResource VisibilityConverter}, Mode=OneWay}"
                                    FontWeight="Bold" Foreground="White" >
                                         This Lottie has some issues ...
                             </TextBlock>
@@ -125,18 +124,20 @@
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock MinWidth="60">
                                                         <Hyperlink NavigateUri="{x:Bind Url}"><Run FontWeight="Bold"
-                                                                 Text="{x:Bind Code}" /></Hyperlink>
+                                                                 Text="{x:Bind Code}" Foreground="Orange" /></Hyperlink>
                                             </TextBlock>
-                                            <TextBlock Text="{x:Bind Description}" TextWrapping="Wrap" MaxWidth="240" Foreground="Orange"/>
+                                            <TextBlock Text="{x:Bind Description}" TextWrapping="Wrap" MaxWidth="240" Foreground="White"/>
                                         </StackPanel>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
                         </StackPanel>
+                        <!-- Separator -->
+                        <Border BorderBrush="DarkGray" BorderThickness="1.5" HorizontalAlignment="Stretch" Margin="10" Visibility="{x:Bind _stage.DiagnosticsViewModel.HasIssues, Converter={StaticResource VisibilityConverter}, Mode=OneWay}"/>
 
                         <!-- Play speed controller. -->
-                        <StackPanel Margin="0,20,0,0">
-                            <TextBlock FontWeight="Bold" HorizontalAlignment="Center">Play speed</TextBlock>
+                        <StackPanel>
+                            <TextBlock FontWeight="Bold" >Play speed</TextBlock>
                             <Grid Margin="20,14,20,20">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition/>
@@ -155,11 +156,13 @@
                                 Value="{x:Bind _stage.Player.PlaybackRate, Mode=TwoWay}" />
                                 <TextBlock Grid.Column="1" Margin="10,0,0,0">x <Run Text="{x:Bind _stage.Player.PlaybackRate, Mode=OneWay, Converter={StaticResource floatFormatter}}"/></TextBlock>
                             </Grid>
-                            <Border BorderBrush="DarkGray" BorderThickness="1.5" HorizontalAlignment="Center" Margin="0,14,0,10" Width="320"/>
                         </StackPanel>
 
+                        <!-- Separator -->
+                        <Border BorderBrush="DarkGray" BorderThickness="1.5" HorizontalAlignment="Stretch" Margin="10"/>
+
                         <!-- Properties list. -->
-                        <Grid Margin="20">
+                        <Grid Visibility="{x:Bind _stage.Player.IsAnimatedVisualLoaded, Converter={StaticResource VisibilityConverter}, Mode=OneWay}">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="26"/>
                                 <RowDefinition/>
@@ -192,14 +195,35 @@
                                 </DataTemplate>
 
                                 <local:PropertiesTemplateSelector 
-                                x:Key="PropertiesTemplateSelector"
-                                Normal="{StaticResource NormalTemplate}"
-                                Marker="{StaticResource MarkerTemplate}"
-                                MarkerWithDuration="{StaticResource MarkerWithDurationTemplate}"/>
+                                    x:Key="PropertiesTemplateSelector"
+                                    Normal="{StaticResource NormalTemplate}"
+                                    Marker="{StaticResource MarkerTemplate}"
+                                    MarkerWithDuration="{StaticResource MarkerWithDurationTemplate}"/>
                             </Grid.Resources>
-
-                            <TextBlock FontWeight="Bold" HorizontalAlignment="Center">Properties</TextBlock>
+                            <TextBlock FontWeight="Bold" >Lottie properties</TextBlock>
                             <ItemsControl x:Name="InfoList" Grid.Row="1" ItemsSource="{x:Bind PropertiesList}" ItemTemplateSelector="{StaticResource PropertiesTemplateSelector}"/>
+                        </Grid>
+
+                        <!-- Separator -->
+                        <Border 
+                            BorderBrush="DarkGray"
+                            BorderThickness="1.5"
+                            HorizontalAlignment="Stretch"
+                            Margin="10"
+                            Visibility="{x:Bind _stage.Player.IsAnimatedVisualLoaded, Converter={StaticResource VisibilityConverter}, Mode=OneWay}"/>
+
+                        <!-- App version -->
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="26"/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+                            <TextBlock FontWeight="Bold" >Lottie Viewer app</TextBlock>
+                            <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,2">
+                                <TextBlock Foreground="LightGray" MinWidth="60" Text="Version"/>
+                                <TextBlock Foreground="White" Text="{x:Bind AppVersion}" MaxWidth="250" />
+                            </StackPanel>
+
                         </Grid>
                     </StackPanel>
                 </ScrollViewer>

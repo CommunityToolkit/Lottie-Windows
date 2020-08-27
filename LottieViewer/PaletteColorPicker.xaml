@@ -53,11 +53,6 @@
                                     <VisualStateManager.VisualStateGroups>
                                         <VisualStateGroup x:Name="CommonStates">
                                             <VisualState x:Name="Normal" >
-                                                <!--<Storyboard>
-                                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
-                                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ForegroundBrush}" />
-                                                        </ObjectAnimationUsingKeyFrames>
-                                                    </Storyboard>-->
                                             </VisualState>
 
                                             <VisualState x:Name="Disabled">
@@ -71,7 +66,6 @@
                                             <VisualState x:Name="PointerOver">
                                                 <Storyboard>
                                                     <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PressedBackground" Storyboard.TargetProperty="Fill">
-                                                        <!--<DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlHighlightListLowBrush}" />-->
                                                         <DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource LottieBasicBrush}" />
                                                     </ObjectAnimationUsingKeyFrames>
                                                     <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
@@ -83,7 +77,6 @@
                                             <VisualState x:Name="Pressed">
                                                 <Storyboard>
                                                     <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PressedBackground" Storyboard.TargetProperty="Fill">
-                                                        <!--<DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlHighlightListMediumBrush}" />-->
                                                         <DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource LottieBasicBrush}" />
                                                     </ObjectAnimationUsingKeyFrames>
                                                     <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
@@ -160,34 +153,53 @@
                     <Grid Padding="8" HorizontalAlignment="Stretch">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="210"/>
-                            <ColumnDefinition Width="96"/>
+                            <ColumnDefinition Width="24"/>
+                            <ColumnDefinition Width="72"/>
                         </Grid.ColumnDefinitions>
                         <muxc:TextBlock Text="{x:Bind Name}" Margin="15,0,0,0"/>
-                        <Rectangle Grid.Column="1" 
+                        <Border Grid.Column="1" BorderBrush="#DDDDDD" BorderThickness="3,3,0,3">
+                            <Rectangle
                                        HorizontalAlignment="Stretch" 
-                                       StrokeThickness="3" 
-                                       Stroke="#DDDDDD" 
                                        Height="20">
-                            <Rectangle.Fill>
-                                <SolidColorBrush Color="{x:Bind Color, Mode=OneWay}"/>
-                            </Rectangle.Fill>
-                        </Rectangle>
+                                <Rectangle.Fill>
+                                    <SolidColorBrush Color="{x:Bind InitialColor, Mode=OneWay}"/>
+                                </Rectangle.Fill>
+                            </Rectangle>
+                        </Border>
+                        <Border Grid.Column="2" BorderBrush="#DDDDDD" BorderThickness="0,3,3,3">
+                            <Rectangle 
+                                       HorizontalAlignment="Stretch" 
+                                       Height="20">
+                                <Rectangle.Fill>
+                                    <SolidColorBrush Color="{x:Bind Color, Mode=OneWay}"/>
+                                </Rectangle.Fill>
+                            </Rectangle>
+                        </Border>
                     </Grid>
                 </DataTemplate>
             </muxc:ItemsControl.ItemTemplate>
 
         </muxc:ListBox>
-        <muxc:ColorPicker 
+        <StackPanel>
+            <muxc:ColorPicker 
                 x:Name="MyColorPicker"
                 Width="330"
-                Margin="0,20,0,20"
+                Margin="0,20,0,0"
                 IsEnabled="False"
                 ColorChanged="MyColorPicker_ColorChanged"
                 ColorSpectrumComponents="HueSaturation"
                 ColorSpectrumShape="Ring"
                 IsColorChannelTextInputVisible="False"
                 IsColorPreviewVisible="False"
-                IsHexInputVisible="False" IsAlphaTextInputVisible="False" IsAlphaSliderVisible="False" >
-        </muxc:ColorPicker>
+                IsHexInputVisible="True" IsAlphaTextInputVisible="False" IsAlphaSliderVisible="False" >
+            </muxc:ColorPicker>
+
+            <StackPanel Margin="20,6,20,20">
+                <!-- Separator -->
+                <Border BorderBrush="DarkGray" BorderThickness="1.5" HorizontalAlignment="Stretch" Margin="10"/>
+
+                <TextBlock FontWeight="Bold">Colors</TextBlock>
+            </StackPanel>
+        </StackPanel>
     </Grid>
 </UserControl>
