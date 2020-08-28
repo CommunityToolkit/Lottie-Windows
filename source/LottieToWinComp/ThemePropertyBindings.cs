@@ -45,7 +45,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// <summary>
         /// Ensures there is a property in the theme property set with the given name and default value.
         /// </summary>
-        public static void EnsureColorThemePropertyExists(LayerContext context, string bindingName, Color defaultValue)
+        public static void EnsureColorThemePropertyExists(LayerContext context, string bindingName, string displayName, Color defaultValue)
         {
             var defaultValueAsWinUIColor = ConvertTo.Color(defaultValue);
             var defaultValueAsVector4 = ConvertTo.Vector4(defaultValueAsWinUIColor);
@@ -60,6 +60,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     context.Translation.PropertyBindings.AddPropertyBinding(new CompMetadata.PropertyBinding
                     {
                         BindingName = bindingName,
+                        DisplayName = displayName,
                         ActualType = PropertySetValueType.Vector4,
                         ExposedType = PropertySetValueType.Color,
                         DefaultValue = defaultValueAsWinUIColor,
@@ -86,7 +87,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// <summary>
         /// Ensures there is a property in the theme property set with the given name and default value.
         /// </summary>
-        static void EnsureScalarThemePropertyExists(TranslationContext context, string bindingName, double defaultValue)
+        static void EnsureScalarThemePropertyExists(TranslationContext context, string bindingName, string displayName, double defaultValue)
         {
             var defaultValueAsFloat = ConvertTo.Float(defaultValue);
             var themePropertySet = GetThemePropertySet(context);
@@ -100,6 +101,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     context.PropertyBindings.AddPropertyBinding(new CompMetadata.PropertyBinding
                     {
                         BindingName = bindingName,
+                        DisplayName = displayName,
                         ActualType = PropertySetValueType.Scalar,
                         ExposedType = PropertySetValueType.Scalar,
                         DefaultValue = ConvertTo.Float(defaultValue),
@@ -138,7 +140,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             else
             {
                 // Ensure there is a property in the theme property set for this binding name.
-                EnsureScalarThemePropertyExists(context, bindingName, defaultValue);
+                EnsureScalarThemePropertyExists(context, bindingName, displayName: bindingName, defaultValue);
 
                 // Create an expression that binds property to the theme property set.
                 var anim = context.ObjectFactory.CreateExpressionAnimation(ExpressionFactory.ThemedScalar(bindingName));

@@ -61,23 +61,23 @@ namespace LottieViewer
         {
             switch (e.Action)
             {
+                // These are the only cases we expect becasue of the way we modify the collection.
                 case NotifyCollectionChangedAction.Add:
-                    if (e.NewItems.Count == PaletteEntries.Count)
-                    {
-                        // All new items. Select the first.
-                        _listBox.SelectedIndex = 0;
-                    }
-
-                    break;
-
                 case NotifyCollectionChangedAction.Remove:
                     break;
 
+                // These are never expected because of the way we modify the collection.
                 case NotifyCollectionChangedAction.Move:
                 case NotifyCollectionChangedAction.Replace:
                 case NotifyCollectionChangedAction.Reset:
                 default:
                     throw new InvalidOperationException();
+            }
+
+            // Ensure something is selected if there are any items in the list.
+            if (_listBox.SelectedIndex >= PaletteEntries.Count && PaletteEntries.Count > 0)
+            {
+                _listBox.SelectedIndex = PaletteEntries.Count - 1;
             }
         }
 

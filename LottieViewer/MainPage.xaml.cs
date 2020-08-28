@@ -369,21 +369,28 @@ namespace LottieViewer
         }
     }
 
+    // Converts bool and null values into Visibility values.
     public sealed class VisiblityConverter : IValueConverter
     {
         object IValueConverter.Convert(object value, Type targetType, object parameter, string language)
         {
             if (value is bool boolValue)
             {
-                if ((string)parameter == "not")
-                {
-                    boolValue = !boolValue;
-                }
-
-                return boolValue ? Visibility.Visible : Visibility.Collapsed;
+                // The value is already a boolean.
+            }
+            else
+            {
+                // The value is not a boolean. Used !null to convert to a boolean.
+                boolValue = !(value is null);
             }
 
-            return null;
+            // The "not" parameter inverts the logic.
+            if ((string)parameter == "not")
+            {
+                boolValue = !boolValue;
+            }
+
+            return boolValue ? Visibility.Visible : Visibility.Collapsed;
         }
 
         object IValueConverter.ConvertBack(object value, Type targetType, object parameter, string language)

@@ -102,6 +102,7 @@ namespace LottieViewer.ViewModel
                     propertyChangedCallback(this, new PropertyChangedEventArgs(nameof(Name)));
                     propertyChangedCallback(this, new PropertyChangedEventArgs(nameof(SizeText)));
                     propertyChangedCallback(this, new PropertyChangedEventArgs(nameof(ThemingPropertySet)));
+                    propertyChangedCallback(this, new PropertyChangedEventArgs(nameof(DiagnosticsObject)));
                 }
             }
         }

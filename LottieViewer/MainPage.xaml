@@ -161,8 +161,8 @@
                         <!-- Separator -->
                         <Border Style="{StaticResource SeparatorStyle}"/>
 
-                        <!-- Properties list. -->
-                        <Grid Visibility="{x:Bind _stage.Player.IsAnimatedVisualLoaded, Converter={StaticResource VisibilityConverter}, Mode=OneWay}">
+                        <!-- Properties list. Only visible if there is a Diagnostics object. -->
+                        <Grid Visibility="{x:Bind _stage.DiagnosticsViewModel.DiagnosticsObject, Converter={StaticResource VisibilityConverter}, ConverterParameter=whatthe, Mode=OneWay}">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="26"/>
                                 <RowDefinition/>
@@ -206,7 +206,7 @@
 
                         <!-- Separator -->
                         <Border Style="{StaticResource SeparatorStyle}"
-                            Visibility="{x:Bind _stage.Player.IsAnimatedVisualLoaded, Converter={StaticResource VisibilityConverter}, Mode=OneWay}"/>
+                            Visibility="{x:Bind _stage.DiagnosticsViewModel.DiagnosticsObject, Converter={StaticResource VisibilityConverter}, ConverterParameter=whatthe, Mode=OneWay}"/>
 
                         <!-- App version -->
                         <Grid>
