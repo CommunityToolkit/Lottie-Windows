@@ -75,7 +75,8 @@ namespace LottieViewer
             }
 
             // Ensure something is selected if there are any items in the list.
-            if (_listBox.SelectedIndex >= PaletteEntries.Count && PaletteEntries.Count > 0)
+            if ((_listBox.SelectedIndex == -1 || _listBox.SelectedIndex >= PaletteEntries.Count)
+                && PaletteEntries.Count > 0)
             {
                 _listBox.SelectedIndex = PaletteEntries.Count - 1;
             }
