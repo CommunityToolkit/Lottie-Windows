@@ -23,7 +23,7 @@ namespace LottieViewer
         public event PropertyChangedEventHandler PropertyChanged;
 
         /// <summary>
-        /// If ture, changing the Color will also change the InitialColor to keep it the
+        /// If true, changing the Color will also change the InitialColor to keep it the
         /// same as Color. This is used to special case the "Background" color, which does
         /// not have an initial color.
         /// </summary>

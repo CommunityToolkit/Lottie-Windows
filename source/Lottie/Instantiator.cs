@@ -34,18 +34,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         readonly Wc.ExpressionAnimation _expressionAnimation;
 #endif
 
-        public Instantiator(Wc.Compositor compositor, IEnumerable<KeyValuePair<Wd.CompositionObject, Wc.CompositionObject>> initialCacheContent)
+        public Instantiator(Wc.Compositor compositor)
         {
             _c = compositor;
-
-            // Populate the cache with the initial content.
-            if (initialCacheContent != null)
-            {
-                foreach (var (key, value) in initialCacheContent)
-                {
-                    _cache.Add(key, value);
-                }
-            }
 
 #if ReuseExpressionAnimation
             _expressionAnimation = _c.CreateExpressionAnimation();
