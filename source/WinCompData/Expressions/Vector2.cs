@@ -85,9 +85,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
             }
 
             /// <inheritdoc/>
-            protected override string CreateExpressionText() => _text;
-
             protected override bool IsAtomic => true;
+
+            /// <inheritdoc/>
+            // We don't actually know the operation count because the text could
+            // be an expression. We just assume that it doesn't involve an expression.
+            public override int OperationsCount => 0;
+
+            /// <inheritdoc/>
+            protected override string CreateExpressionText() => _text;
         }
 
         internal abstract class BinaryExpression : Vector2
@@ -101,6 +107,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
             public Vector2 Left { get; }
 
             public Vector2 Right { get; }
+
+            /// <inheritdoc/>
+            public override int OperationsCount => Left.OperationsCount + Right.OperationsCount;
         }
 
         internal sealed class Constructed : Vector2
@@ -114,6 +123,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
             public override Scalar X { get; }
 
             public override Scalar Y { get; }
+
+            /// <inheritdoc/>
+            public override int OperationsCount => X.OperationsCount + Y.OperationsCount;
 
             /// <inheritdoc/>
             protected override Vector2 Simplify()
@@ -229,6 +241,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
             public Scalar Left { get; }
 
             public Vector2 Right { get; }
+
+            /// <inheritdoc/>
+            public override int OperationsCount => Left.OperationsCount + Right.OperationsCount;
 
             /// <inheritdoc/>
             protected override Vector2 Simplify()

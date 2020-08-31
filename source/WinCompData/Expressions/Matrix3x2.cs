@@ -42,6 +42,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
 
         public static Matrix3x2 Identity { get; } = new Constructed(1, 0, 0, 1, 0, 0);
 
+        /// <inheritdoc/>
+        public override int OperationsCount =>
+            _11.OperationsCount + _12.OperationsCount +
+            _21.OperationsCount + _32.OperationsCount +
+            _31.OperationsCount + _32.OperationsCount;
+
         internal sealed class Asserted : Matrix3x2
         {
             readonly string _text;
@@ -52,9 +58,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
             }
 
             /// <inheritdoc/>
-            protected override string CreateExpressionText() => _text;
-
             protected override bool IsAtomic => true;
+
+            /// <inheritdoc/>
+            // We don't actually know the operation count because the text could
+            // be an expression. We just assume that it doesn't involve an expression.
+            public override int OperationsCount => 0;
+
+            /// <inheritdoc/>
+            protected override string CreateExpressionText() => _text;
         }
 
         internal sealed class Constructed : Matrix3x2

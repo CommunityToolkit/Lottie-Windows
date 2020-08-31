@@ -42,9 +42,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
             }
 
             /// <inheritdoc/>
-            protected override string CreateExpressionText() => _text;
-
             protected override bool IsAtomic => true;
+
+            /// <inheritdoc/>
+            // We don't actually know the operation count because the text could
+            // be an expression. We just assume that it doesn't involve an expression.
+            public override int OperationsCount => 0;
+
+            /// <inheritdoc/>
+            protected override string CreateExpressionText() => _text;
         }
 
         internal sealed class Constructed : Vector4
@@ -64,6 +70,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
             public override Scalar Z { get; }
 
             public override Scalar W { get; }
+
+            /// <inheritdoc/>
+            public override int OperationsCount => X.OperationsCount + Y.OperationsCount + Z.OperationsCount + W.OperationsCount;
 
             /// <inheritdoc/>
             protected override Vector4 Simplify()
