@@ -35,7 +35,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         // LP0001 has been deprecated.
         // Was: Failed to parse JSON. {message}.
 
-        internal void FatalError(string message) => Report("LP0002", $"Fatal error: {message}.");
+        internal void FatalError(string message) => Report("LP0002", $"Fatal error: {message}");
 
         internal void AssetType(string type) => Report("LP0005", $"Unsupported asset type: {type}.");
 
