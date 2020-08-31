@@ -15,6 +15,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Tables
     // that is specific to a particular data set.
     abstract class MonospaceTableFormatter
     {
+        /// <summary>
+        /// Converts a list of <see cref="Row"/>s into monospaced strings.
+        /// </summary>
+        /// <returns>Text for each <see cref="Row"/>.</returns>
         protected static IEnumerable<string> GetTableLines(IEnumerable<Row> rows)
         {
             // Get the width of each column in each row and find the maximum width
