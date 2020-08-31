@@ -464,18 +464,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         }
 
         /// <summary>
-        /// Returns text that describes the graph statistics.
+        /// Returns text that describes the graph statistics. This graph shows the
+        /// number of objects instantiated and is designed to help with investigations
+        /// or performance.
         /// </summary>
         /// <returns>A list of strings describing the graph statistics.</returns>
-        IEnumerable<string> GetGraphStatsLines()
-        {
-            foreach (var line in GraphStatsMonospaceTableFormatter.GetGraphStatsLines(
-                                    _animatedVisualGenerators.Select(avg => (avg.StatsName, avg.Objects))
-                                    ))
-            {
-                yield return line;
-            }
-        }
+        IEnumerable<string> GetGraphStatsLines() =>
+            GraphStatsMonospaceTableFormatter.GetGraphStatsLines(
+                                    _animatedVisualGenerators.Select(avg => (avg.StatsName, avg.Objects)));
 
         /// <summary>
         /// Call this to get a list of the asset files referenced by the generated code.
