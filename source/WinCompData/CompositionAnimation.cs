@@ -64,7 +64,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
         /// Returns the reference parameters that have been set on this <see cref="CompositionAnimation"/>.
         /// The list is returned ordered alphabetically by key.
         /// </summary>
-        public IEnumerable<KeyValuePair<string, CompositionObject>> ReferenceParameters => _referencedParameters;
+        public IReadOnlyCollection<KeyValuePair<string, CompositionObject>> ReferenceParameters => _referencedParameters;
 
         internal abstract CompositionAnimation Clone();
     }

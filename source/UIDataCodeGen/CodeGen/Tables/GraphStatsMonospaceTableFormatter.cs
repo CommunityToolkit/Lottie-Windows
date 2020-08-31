@@ -43,7 +43,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Tables
                          where o is CompositionObject
                          select (CompositionObject)o).ToArray()).ToArray();
 
-            var (expressionAnimatorCount, keyFrameAnimatorCount) = GetAnimatorCountRecords(compositionObjects);
+            var animatorCounts = GetAnimatorCountRecords(compositionObjects);
 
             var rows = new[] {
                 Row.HeaderTop,
@@ -51,8 +51,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Tables
                 Row.HeaderBottom,
                 GetCompositionObjectCountRecord(compositionObjects, "All CompositionObjects", (o) => true),
                 Row.Separator,
-                expressionAnimatorCount,
-                keyFrameAnimatorCount,
+                animatorCounts.expressions,
+                animatorCounts.keyFrames,
+                animatorCounts.referenceParameters,
                 Row.Separator,
                 GetCompositionObjectCountRecord(compositionObjects, "Animated brushes", (o) => o is CompositionBrush b && b.Animators.Count > 0),
                 GetCompositionObjectCountRecord(compositionObjects, "Animated gradient stops", (o) => o is CompositionColorGradientStop s && s.Animators.Count > 0),
@@ -94,35 +95,40 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Tables
 
         // Returns a row describing the number of animators for each animated visual.
         // The parameter is a set of objects for each generator.
-        static (Row expressions, Row keyFrames) GetAnimatorCountRecords(CompositionObject[][] objects)
+        static (Row expressions, Row keyFrames, Row referenceParameters)
+            GetAnimatorCountRecords(CompositionObject[][] objects)
         {
             var expressions = new ColumnData[objects.Length + 1];
             var keyFrames = new ColumnData[objects.Length + 1];
+            var referenceParameters = new ColumnData[objects.Length + 1];
+
             expressions[0] = ColumnData.Create("Expression animators", TextAlignment.Left);
             keyFrames[0] = ColumnData.Create("KeyFrame animators", TextAlignment.Left);
+            referenceParameters[0] = ColumnData.Create("Reference parameters", TextAlignment.Left);
 
             for (var i = 0; i < objects.Length; i++)
             {
-                var (expressionsCount, keyFramesCount) = GetAnimatorCountColumns(objects[i]);
-                expressions[i + 1] = expressionsCount;
-                keyFrames[i + 1] = keyFramesCount;
+                (expressions[i + 1], keyFrames[i + 1], referenceParameters[i + 1]) = GetAnimatorCountColumns(objects[i]);
             }
 
-            return (new Row.ColumnData(expressions), new Row.ColumnData(keyFrames));
+            return (new Row.ColumnData(expressions), new Row.ColumnData(keyFrames), new Row.ColumnData(referenceParameters));
         }
 
         /// <summary>
         /// Returns columns describing the counts of animators for the given <see cref="CompositionObject"/>s.
         /// </summary>
         /// <returns>The animator counts columns.</returns>
-        static (ColumnData expressions, ColumnData keyFrames) GetAnimatorCountColumns(IEnumerable<CompositionObject> objects)
+        static (ColumnData expressions, ColumnData keyFrames, ColumnData referenceParameters)
+            GetAnimatorCountColumns(IEnumerable<CompositionObject> objects)
         {
             var expressions = 0;
             var keyFrames = 0;
+            var referenceParameters = 0;
 
             foreach (var obj in objects)
             {
                 var animators = obj.Animators;
+                referenceParameters += animators.Sum(a => a.Animation.ReferenceParameters.Count());
                 var expressionsCount = animators.Where(a => a.Animation.Type == CompositionObjectType.ExpressionAnimation).Count();
                 expressions += expressionsCount;
 
@@ -130,7 +136,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Tables
                 keyFrames += animators.Count - expressionsCount;
             }
 
-            return (ColumnData.Create(expressions), ColumnData.Create(keyFrames));
+            return (ColumnData.Create(expressions), ColumnData.Create(keyFrames), ColumnData.Create(referenceParameters));
         }
     }
 }
