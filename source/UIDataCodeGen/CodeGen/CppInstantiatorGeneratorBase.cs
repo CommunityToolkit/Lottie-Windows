@@ -823,10 +823,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         void WriteSourceDescriptionComments(CodeBuilder builder)
         {
             // Write a description of the source as comments.
-            foreach (var line in GetSourceDescriptionLines())
-            {
-                builder.WritePreformattedCommentLine(line);
-            }
+            builder.WritePreformattedCommentLines(GetSourceDescriptionLines());
         }
 
         void WriteInternalHeaderConstants(CodeBuilder builder)

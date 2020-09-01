@@ -297,7 +297,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         }
 
         // Returns the value from the given keyframe, or null.
-        static T? ValueFromKeyFrame<T, TExpression>(KeyFrameAnimation<T, TExpression>.KeyFrame kf)
+        static T? ValueFromKeyFrame<T, TExpression>(KeyFrameAnimation_.KeyFrame kf)
             where TExpression : Expr.Expression_<TExpression>
             where T : struct
                 => kf is KeyFrameAnimation<T, TExpression>.ValueKeyFrame valueKf ? (T?)valueKf.Value : null;
@@ -307,8 +307,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             where TExpression : Expr.Expression_<TExpression>
         {
             // If there's only one keyframe, return it as the last value and leave the first value null.
-            var first = animation.KeyFrameCount > 1 ? ValueFromKeyFrame(animation.KeyFrames.First()) : null;
-            var last = ValueFromKeyFrame(animation.KeyFrames.Last());
+            var first = animation.KeyFrameCount > 1 ? ValueFromKeyFrame<T, TExpression>(animation.KeyFrames.First()) : null;
+            var last = ValueFromKeyFrame<T, TExpression>(animation.KeyFrames.Last());
             return (first, last);
         }
 

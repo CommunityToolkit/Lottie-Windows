@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
@@ -33,7 +34,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
                 throw new ArgumentException($"Progress must be >=0 and <=1. Value: {progress}");
             }
 
-            _keyFrames.Add(progress, new ExpressionKeyFrame { Progress = progress, Expression = expression, Easing = easing });
+            _keyFrames.Add(progress, new ExpressionKeyFrame(progress, easing, expression));
         }
 
         // NOTE: this method does not exist on Windows.UI.Composition.BooleanKeyFrameAnimation - it does not support easing.
@@ -60,10 +61,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 
             // It is legal to insert a key frame at a progress value that already has
             // a key frame. Last one wins.
-            _keyFrames[progress] = new ValueKeyFrame { Progress = progress, Value = value, Easing = easing };
+            _keyFrames[progress] = new ValueKeyFrame(progress, easing, value);
         }
 
-        public IEnumerable<KeyFrame> KeyFrames => _keyFrames.Values;
+        public override IEnumerable<KeyFrame> KeyFrames => _keyFrames.Values;
 
         /// <inheritdoc/>
         public override int KeyFrameCount => _keyFrames.Count;
@@ -80,22 +81,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
             Target = other.Target;
         }
 
-        public abstract class KeyFrame
-        {
-            private protected KeyFrame()
-            {
-            }
-
-            public float Progress { get; internal set; }
-
-            public CompositionEasingFunction Easing { get; internal set; }
-
-            public abstract KeyFrameType Type { get; }
-        }
-
         public sealed class ValueKeyFrame : KeyFrame
         {
-            public T Value { get; internal set; }
+            internal ValueKeyFrame(float progress, CompositionEasingFunction easing, T value)
+                : base(progress, easing)
+            {
+                Value = value;
+            }
+
+            public T Value { get; }
 
             /// <inheritdoc/>
             public override KeyFrameType Type => KeyFrameType.Value;
@@ -104,9 +98,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
             public override string ToString() => $"ValueKeyFrame: {Value}@{Progress} {Easing}";
         }
 
-        public sealed class ExpressionKeyFrame : KeyFrame
+        public new sealed class ExpressionKeyFrame : KeyFrameAnimation_.ExpressionKeyFrame
         {
-            public TExpression Expression { get; internal set; }
+            internal ExpressionKeyFrame(float progress, CompositionEasingFunction easing, TExpression expression)
+                : base(progress, easing, expression)
+            {
+                Expression = expression;
+            }
+
+            public new TExpression Expression { get; }
 
             /// <inheritdoc/>
             public override KeyFrameType Type => KeyFrameType.Expression;
