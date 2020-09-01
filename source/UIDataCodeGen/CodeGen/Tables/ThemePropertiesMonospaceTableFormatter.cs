@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using Microsoft.Toolkit.Uwp.UI.Lottie.CompMetadata;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Tables
 {
@@ -22,6 +23,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Tables
                 Row.HeaderTop,
                 new Row.ColumnData(
                         ColumnData.Create("Theme property"),
+                        ColumnData.Create("Accessor"),
                         ColumnData.Create("Type"),
                         ColumnData.Create("Default value")
                         ),
@@ -31,7 +33,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Tables
             var records =
                 (from property in themeProperty
                  select new Row.ColumnData(
-                     ColumnData.Create(property.Name, TextAlignment.Left, 1),
+                     ColumnData.Create(property.DisplayName, TextAlignment.Left, 1),
+                     ColumnData.Create(property.BindingName, TextAlignment.Left, 1),
                      ColumnData.Create(property.ExposedType.ToString()),
                      ColumnData.Create(GetDefaultValueString(property))
                  )).ToArray();

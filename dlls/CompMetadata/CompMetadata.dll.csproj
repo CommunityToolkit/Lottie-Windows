@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <Configurations>Debug;Release</Configurations>
+    <LangVersion>latest</LangVersion>
+    <DefineConstants>PUBLIC_CompMetadata</DefineConstants>
+  </PropertyGroup>
+
+  <Import Project="..\..\source\CompMetadata\\CompMetadata.projitems" Label="Shared" />
+
+  <ItemGroup>
+    <ProjectReference Include="..\WinCompData\WinCompData.dll.csproj" />
+  </ItemGroup>
+
+</Project>

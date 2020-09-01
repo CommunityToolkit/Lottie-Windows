@@ -34,25 +34,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         readonly Wc.ExpressionAnimation _expressionAnimation;
 #endif
 
-        Instantiator(Wc.Compositor compositor)
+        public Instantiator(Wc.Compositor compositor)
         {
             _c = compositor;
+
 #if ReuseExpressionAnimation
             _expressionAnimation = _c.CreateExpressionAnimation();
 #endif
         }
 
-        /// <summary>
-        /// Creates a new instance of <see cref="Windows.UI.Composition.Visual"/>
-        /// described by the given <see cref="WinCompData.Visual"/>.
-        /// </summary>
-        /// <returns>The <see cref="Windows.UI.Composition.Visual"/>.</returns>
-        internal static Wc.Visual CreateVisual(Wc.Compositor compositor, Wd.Visual visual)
-        {
-            var converter = new Instantiator(compositor);
-            var result = converter.GetVisual(visual);
-            return result;
-        }
+        public Wc.CompositionObject GetInstance(Wd.CompositionObject obj) => GetCompositionObject(obj);
 
         bool GetExisting<T>(object key, out T result)
         {

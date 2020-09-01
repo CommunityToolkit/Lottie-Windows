@@ -13,6 +13,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Toolkit.Uwp.UI.Lottie.CompMetadata;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp;
@@ -29,6 +30,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
     /// </summary>
     abstract class Loader
     {
+        // Identifies the bound property names in SourceMetadata.
+        static readonly Guid s_propertyBindingNamesKey = new Guid("A115C46A-254C-43E6-A3C7-9DE516C3C3C8");
+
         // Private constructor prevents subclassing outside of this class.
         Loader()
         {
@@ -98,13 +102,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 // code can be derived from it.
                 diagnostics.LottieComposition = lottieComposition;
 
-                // Create the marker info.
-                diagnostics.Markers =
-                    lottieComposition.Markers.Select(m =>
-                        new KeyValuePair<string, double>(
-                            m.Name,
-                            m.Frame / (lottieComposition.FramesPerSecond * lottieComposition.Duration.TotalSeconds))).ToArray();
-
                 // Validate the composition and report if issues are found.
                 diagnostics.LottieValidationIssues = ToIssues(LottieCompositionValidator.Validate(lottieComposition));
                 diagnostics.ValidationTime = timeMeasurer.GetElapsedAndRestart();
@@ -123,14 +120,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             TranslationResult translationResult;
             await CheckedAwaitAsync(Task.Run(() =>
             {
-                // TranslatePropertyBindings is turned on if diagnostics are enabled so that
-                // property binding issues can be reported, even if the property bindings are
-                // not actually wanted by the client.
+                // Generate property bindings only if the diagnostics object was requested.
+                // This is because the binding information is output in the diagnostics object
+                // so there's no point translating bindings if the diagnostics object
+                // isn't available.
+                var makeColorsBindable = diagnostics != null && options.HasFlag(LottieVisualOptions.BindableColors);
                 translationResult = LottieToWinCompTranslator.TryTranslateLottieComposition(
                     lottieComposition: lottieComposition,
                     configuration: new TranslatorConfiguration
                     {
-                        TranslatePropertyBindings = options.HasFlag(LottieVisualOptions.IncludeDiagnostics),
+                        TranslatePropertyBindings = makeColorsBindable,
+                        GenerateColorBindings = makeColorsBindable,
                         TargetUapVersion = GetCurrentUapVersion(),
                     });
 
@@ -141,6 +141,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 {
                     diagnostics.TranslationIssues = ToIssues(translationResult.TranslationIssues);
                     diagnostics.TranslationTime = timeMeasurer.GetElapsedAndRestart();
+
+                    // If there were any property bindings, save them in the Diagnostics object.
+                    if (translationResult.SourceMetadata.TryGetValue(s_propertyBindingNamesKey, out var propertyBindingNames))
+                    {
+                        diagnostics.ThemePropertyBindings = (IReadOnlyList<PropertyBinding>)propertyBindingNames;
+                    }
                 }
 
                 // Optimize the resulting translation. This will usually significantly reduce the size of

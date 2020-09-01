@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Toolkit.Uwp.UI.Lottie.CompMetadata;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieMetadata;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.MetaData;
 
@@ -42,10 +43,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 {
                     if (_sourceMetadata.TryGetValue(s_propertyBindingNamesKey, out var propertyBindingNames))
                     {
-                        var list = (IReadOnlyList<(string bindingName, PropertySetValueType actualType, PropertySetValueType exposedType, object initialValue)>)propertyBindingNames;
-                        _propertyBindings = list.Select(item => new PropertyBinding(item.bindingName, item.actualType, item.exposedType, item.initialValue))
-                                                    .OrderBy(pb => pb.Name)
-                                                    .ToArray();
+                        var list = (IReadOnlyList<PropertyBinding>)propertyBindingNames;
+                        _propertyBindings = list.OrderBy(pb => pb.BindingName).ToArray();
                     }
                     else
                     {
