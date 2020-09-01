@@ -981,7 +981,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.Private.WriteLine($"const int c_loadedImageSurfaceCount = {SourceInfo.LoadedImageSurfaces.Distinct().Count()};");
             builder.Private.WriteLine("double m_imageSuccessfulLoadingProgress{};");
             builder.Private.WriteLine("int m_loadCompleteEventCount{};");
-            builder.Private.WriteLine("bool m_isAnimatedVisualSourceDynamic{true};");
+            builder.Private.WriteLine("bool m_isAnimatedVisualSourceDynamic{};");
             builder.Private.WriteLine("bool m_isImageLoadingCompleted{}");
             builder.Private.WriteLine("bool m_isTryCreateAnimatedVisualCalled{}");
             builder.Private.WriteLine("bool m_isImageLoadingStarted{}");

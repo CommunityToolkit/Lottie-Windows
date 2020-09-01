@@ -406,7 +406,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             // Declare variables.
             builder.WriteLine($"{_s.Const(_s.TypeInt32)} c_loadedImageSurfaceCount = {Info.LoadedImageSurfaces.Count};");
             builder.WriteLine($"{_s.TypeInt32} _loadCompleteEventCount;");
-            builder.WriteLine("bool _isAnimatedVisualSourceDynamic = true;");
+            builder.WriteLine("bool _isAnimatedVisualSourceDynamic;");
             builder.WriteLine("bool _isTryCreateAnimatedVisualCalled;");
             builder.WriteLine("bool _isImageLoadingStarted;");
             builder.WriteLine("EventRegistrationTokenTable<TypedEventHandler<Microsoft.UI.Xaml.Controls.IDynamicAnimatedVisualSource, object>> _animatedVisualInvalidatedEventTokenTable;");
