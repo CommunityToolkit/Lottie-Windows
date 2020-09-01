@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Text;
+using Microsoft.Toolkit.Uwp.UI.Lottie.CompMetadata;
 using Microsoft.Toolkit.Uwp.UI.Lottie.GenericData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Tables;
 using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools;
@@ -334,7 +335,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 builder,
                 propertySetVariableName,
                 prop,
-                $"_theme{prop.Name}");
+                $"_theme{prop.BindingName}");
 
         /// <summary>
         /// Writes code that initializes a theme property value in the theme property set.
@@ -346,7 +347,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             string themePropertyAccessor)
         {
             var propertyValueAccessor = GetThemePropertyAccessor(themePropertyAccessor, prop);
-            builder.WriteLine($"{propertySetVariableName}{Deref}Insert{PropertySetValueTypeName(prop.ActualType)}({String(prop.Name)}, {propertyValueAccessor});");
+            builder.WriteLine($"{propertySetVariableName}{Deref}Insert{PropertySetValueTypeName(prop.ActualType)}({String(prop.BindingName)}, {propertyValueAccessor});");
         }
 
         /// <summary>
@@ -404,10 +405,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 switch (themeProperty.ExposedType)
                 {
                     case PropertySetValueType.Color:
-                        yield return new NamedConstant($"c_theme{themeProperty.Name}", $"Theme property: {themeProperty.Name}.", ConstantType.Color, (Wui.Color)themeProperty.DefaultValue);
+                        yield return new NamedConstant($"c_theme{themeProperty.BindingName}", $"Theme property: {themeProperty.BindingName}.", ConstantType.Color, (Wui.Color)themeProperty.DefaultValue);
                         break;
                     case PropertySetValueType.Scalar:
-                        yield return new NamedConstant($"c_theme{themeProperty.Name}", $"Theme property: {themeProperty.Name}.", ConstantType.Float, (float)themeProperty.DefaultValue);
+                        yield return new NamedConstant($"c_theme{themeProperty.BindingName}", $"Theme property: {themeProperty.BindingName}.", ConstantType.Float, (float)themeProperty.DefaultValue);
                         break;
                     case PropertySetValueType.Vector2:
                     case PropertySetValueType.Vector3:

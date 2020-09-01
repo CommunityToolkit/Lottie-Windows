@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using Microsoft.Toolkit.Uwp.UI.Lottie.CompMetadata;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.MetaData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
@@ -161,19 +162,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             {
                 if (Info.GenerateDependencyObject)
                 {
-                    builder.WriteLine($"public {ExposedType(prop)} {prop.Name}");
+                    builder.WriteLine($"public {ExposedType(prop)} {prop.BindingName}");
                     builder.OpenScope();
-                    builder.WriteLine($"get => ({ExposedType(prop)})GetValue({prop.Name}Property);");
-                    builder.WriteLine($"set => SetValue({prop.Name}Property, value);");
+                    builder.WriteLine($"get => ({ExposedType(prop)})GetValue({prop.BindingName}Property);");
+                    builder.WriteLine($"set => SetValue({prop.BindingName}Property, value);");
                 }
                 else
                 {
-                    builder.WriteLine($"public {ExposedType(prop)} {prop.Name}");
+                    builder.WriteLine($"public {ExposedType(prop)} {prop.BindingName}");
                     builder.OpenScope();
-                    builder.WriteLine($"get => _theme{prop.Name};");
+                    builder.WriteLine($"get => _theme{prop.BindingName};");
                     builder.WriteLine("set");
                     builder.OpenScope();
-                    builder.WriteLine($"_theme{prop.Name} = value;");
+                    builder.WriteLine($"_theme{prop.BindingName} = value;");
                     builder.WriteLine($"if ({Info.ThemePropertiesFieldName} != null)");
                     builder.OpenScope();
                     WriteThemePropertyInitialization(builder, Info.ThemePropertiesFieldName, prop);
@@ -193,12 +194,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             {
                 foreach (var prop in Info.SourceMetadata.PropertyBindings)
                 {
-                    builder.WriteComment($"Dependency property for {prop.Name}.");
-                    builder.WriteLine($"public static readonly DependencyProperty {prop.Name}Property =");
+                    builder.WriteComment($"Dependency property for {prop.BindingName}.");
+                    builder.WriteLine($"public static readonly DependencyProperty {prop.BindingName}Property =");
                     builder.Indent();
-                    builder.WriteLine($"DependencyProperty.Register({String(prop.Name)}, typeof({ExposedType(prop)}), typeof({Info.ClassName}),");
+                    builder.WriteLine($"DependencyProperty.Register({String(prop.BindingName)}, typeof({ExposedType(prop)}), typeof({Info.ClassName}),");
                     builder.Indent();
-                    builder.WriteLine($"new PropertyMetadata({GetDefaultPropertyBindingValue(prop)}, On{prop.Name}Changed));");
+                    builder.WriteLine($"new PropertyMetadata({GetDefaultPropertyBindingValue(prop)}, On{prop.BindingName}Changed));");
                     builder.UnIndent();
                     builder.UnIndent();
                     builder.WriteLine();
@@ -214,7 +215,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             {
                 foreach (var prop in Info.SourceMetadata.PropertyBindings)
                 {
-                    builder.WriteLine($"static void On{prop.Name}Changed(DependencyObject d, DependencyPropertyChangedEventArgs args)");
+                    builder.WriteLine($"static void On{prop.BindingName}Changed(DependencyObject d, DependencyPropertyChangedEventArgs args)");
                     builder.OpenScope();
                     WriteThemePropertyInitialization(builder, $"(({Info.ClassName})d)._themeProperties?", prop, $"({ExposedType(prop)})args.NewValue");
                     builder.CloseScope();
@@ -316,7 +317,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     {
                         var defaultValue = GetDefaultPropertyBindingValue(prop);
 
-                        WriteInitializedField(builder, ExposedType(prop), $"_theme{prop.Name}", _s.VariableInitialization($"c_theme{prop.Name}"));
+                        WriteInitializedField(builder, ExposedType(prop), $"_theme{prop.BindingName}", _s.VariableInitialization($"c_theme{prop.BindingName}"));
                     }
                 }
 
@@ -370,7 +371,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 // Initialize the values in the property set.
                 foreach (var prop in Info.SourceMetadata.PropertyBindings)
                 {
-                    WriteThemePropertyInitialization(builder, Info.ThemePropertiesFieldName, prop, prop.Name);
+                    WriteThemePropertyInitialization(builder, Info.ThemePropertiesFieldName, prop, prop.BindingName);
                 }
 
                 builder.CloseScope();

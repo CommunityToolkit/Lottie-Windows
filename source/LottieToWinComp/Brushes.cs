@@ -316,7 +316,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             {
                 // A color binding string was found. Bind the color to a property with the
                 // name described by the binding string.
-                return TranslateBoundSolidColor(context, opacity, bindingName, DefaultValueOf(color));
+                return TranslateBoundSolidColor(context, opacity, bindingName, displayName: bindingName, DefaultValueOf(color));
             }
 
             if (context.Translation.ColorPalette != null && !color.IsAnimated)
@@ -325,13 +325,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 // the name of the color in the palette.
                 var paletteColor = color.InitialValue;
 
+                var paletteColorAsWinUIColor = ConvertTo.Color(paletteColor);
+
                 if (!context.Translation.ColorPalette.TryGetValue(paletteColor, out bindingName))
                 {
-                    bindingName = $"Color_{ConvertTo.Color(paletteColor).HexWithoutAlpha}";
+                    bindingName = $"Color_{paletteColorAsWinUIColor.HexWithoutAlpha}";
                     context.Translation.ColorPalette.Add(paletteColor, bindingName);
                 }
 
-                return TranslateBoundSolidColor(context, opacity, bindingName, paletteColor);
+                return TranslateBoundSolidColor(
+                    context,
+                    opacity,
+                    bindingName,
+                    displayName: $"#{paletteColorAsWinUIColor.R:X2}{paletteColorAsWinUIColor.G:X2}{paletteColorAsWinUIColor.B:X2}",
+                    paletteColor);
             }
 
             // Do not generate a binding for this color.
@@ -343,10 +350,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 LayerContext context,
                 CompositeOpacity opacity,
                 string bindingName,
+                string displayName,
                 Color defaultColor)
         {
             // Ensure there is a property added to the theme property set.
-            ThemePropertyBindings.EnsureColorThemePropertyExists(context, bindingName, defaultColor);
+            ThemePropertyBindings.EnsureColorThemePropertyExists(context, bindingName, displayName, defaultColor);
 
             var result = context.ObjectFactory.CreateColorBrush();
 
