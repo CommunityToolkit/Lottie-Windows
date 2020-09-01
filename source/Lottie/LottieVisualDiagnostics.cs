@@ -4,7 +4,9 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Toolkit.Uwp.UI.Lottie.CompMetadata;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
+using Windows.UI.Composition;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie
 {
@@ -47,9 +49,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         /// </summary>
         public LottieVisualOptions Options { get; internal set; }
 
-        public KeyValuePair<string, double>[] Markers { get; internal set; } = Array.Empty<KeyValuePair<string, double>>();
-
-        // Holds the parsed LottieComposition. Only used if one of the codegen or XML options was selected.
+        // Holds the parsed LottieComposition.
         internal LottieComposition LottieComposition { get; set; }
 
         // Holds the translated Visual. Only used if one of the codegen or XML options was selected.
@@ -59,6 +59,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         // XML options was selected.
         internal uint RequiredUapVersion { get; set; }
 
+        // CompostionPropertySet that holds the theming properties.
+        internal CompositionPropertySet ThemingPropertySet { get; set; }
+
+        // Describes the property bindings in the ThemingPropertySet.
+        internal IReadOnlyList<PropertyBinding> ThemePropertyBindings { get; set; }
+
         internal LottieVisualDiagnostics Clone() =>
             new LottieVisualDiagnostics
             {
@@ -67,14 +73,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 JsonParsingIssues = JsonParsingIssues,
                 LottieComposition = LottieComposition,
                 LottieValidationIssues = LottieValidationIssues,
-                Markers = Markers,
                 Options = Options,
                 ParseTime = ParseTime,
                 ReadTime = ReadTime,
+                RequiredUapVersion = RequiredUapVersion,
                 RootVisual = RootVisual,
+                ThemePropertyBindings = ThemePropertyBindings,
+                ThemingPropertySet = ThemingPropertySet,
+                TranslationIssues = TranslationIssues,
                 TranslationTime = TranslationTime,
                 ValidationTime = ValidationTime,
-                TranslationIssues = TranslationIssues,
             };
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     }

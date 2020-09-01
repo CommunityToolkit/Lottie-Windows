@@ -5,7 +5,7 @@
 using System;
 using System.Collections.Specialized;
 using System.Numerics;
-using Microsoft.Toolkit.Uwp.UI.Lottie;
+using LottieViewer.ViewModel;
 using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.Composition;
@@ -48,20 +48,30 @@ namespace LottieViewer
         readonly CompositionColorBrush _decreaseRectangleBrush;
         readonly SolidColorBrush _markerBrush;
 
-        readonly LottieVisualDiagnosticsViewModel _diagnostics = new LottieVisualDiagnosticsViewModel();
+        LottieVisualDiagnosticsViewModel _diagnostics;
 
         string _currentVisualStateName;
 
-        public static readonly DependencyProperty DiagnosticsObjectProperty =
-            DependencyProperty.Register("DiagnosticsObject", typeof(object), typeof(Scrubber), new PropertyMetadata(null, OnDiagnosticsObjectChanged));
-
         public event TypedEventHandler<Scrubber, ScrubberValueChangedEventArgs> ValueChanged;
+
+        internal LottieVisualDiagnosticsViewModel DiagnosticsViewModel
+        {
+            get => _diagnostics;
+            set
+            {
+                if (_diagnostics != null)
+                {
+                    _diagnostics.Markers.CollectionChanged -= Markers_CollectionChanged;
+                }
+
+                _diagnostics = value;
+                _diagnostics.Markers.CollectionChanged += Markers_CollectionChanged;
+            }
+        }
 
         public Scrubber()
         {
             this.InitializeComponent();
-
-            _diagnostics.Markers.CollectionChanged += Markers_CollectionChanged;
 
             // Create the brush used for markers.
             _markerBrush = new SolidColorBrush(GetResourceBrushColor("LottieBasicBrush"));
@@ -144,12 +154,6 @@ namespace LottieViewer
             set => _slider.Value = value;
         }
 
-        public object DiagnosticsObject
-        {
-            get { return (object)GetValue(DiagnosticsObjectProperty); }
-            set { SetValue(DiagnosticsObjectProperty, value); }
-        }
-
         // Associates the given CompositionObject with the scrubber. The object is required
         // to have a property called "Progress" that the scrubber position will be bound to.
         internal void SetAnimatedCompositionObject(CompositionObject obj)
@@ -170,12 +174,6 @@ namespace LottieViewer
             thumbPositionAnimation.SetReferenceParameter("comp", obj);
             thumbPositionAnimation.SetReferenceParameter("our", _properties);
             _thumb.StartAnimation("Offset.X", thumbPositionAnimation);
-        }
-
-        static void OnDiagnosticsObjectChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            var me = (Scrubber)d;
-            me._diagnostics.DiagnosticsObject = (LottieVisualDiagnostics)e.NewValue;
         }
 
         protected override Size ArrangeOverride(Size finalSize)
@@ -201,7 +199,7 @@ namespace LottieViewer
             {
                 var topRect = (Rectangle)_markersTop.Children[i];
                 var bottomRect = (Rectangle)_markersBottom.Children[i];
-                var offset = _diagnostics.Markers[i].Offset;
+                var offset = _diagnostics.Markers[i].ConstrainedProgress;
                 topRect.Margin = new Thickness((offset * barWidth) + c_trackMargin, 0, 0, 0);
                 bottomRect.Margin = new Thickness((offset * barWidth) + c_trackMargin, 0, 0, 0);
             }

@@ -12,6 +12,7 @@
   <Import Project="..\..\source\LottieMetadata\LottieMetadata.projitems" Label="Shared" />
 
   <ItemGroup>
+    <ProjectReference Include="..\CompMetadata\CompMetadata.dll.csproj" />
     <ProjectReference Include="..\LottieData\LottieData.dll.csproj" />
     <ProjectReference Include="..\WinCompData\WinCompData.dll.csproj" />
     <ProjectReference Include="..\WinStorageStreamsData\WinStorageStreamsData.dll.csproj" />

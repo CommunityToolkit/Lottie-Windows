@@ -68,8 +68,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             {
                 if (SourceInfo.GenerateDependencyObject)
                 {
-                    builder.Private.WriteLine($"static {WinUINamespace}::Xaml::DependencyProperty^ _{prop.Name}Property;");
-                    builder.Private.WriteLine($"static void On{prop.Name}Changed({WinUINamespace}::Xaml::DependencyObject^ d, {WinUINamespace}::Xaml::DependencyPropertyChangedEventArgs^ e);");
+                    builder.Private.WriteLine($"static {WinUINamespace}::Xaml::DependencyProperty^ _{prop.BindingName}Property;");
+                    builder.Private.WriteLine($"static void On{prop.BindingName}Changed({WinUINamespace}::Xaml::DependencyObject^ d, {WinUINamespace}::Xaml::DependencyPropertyChangedEventArgs^ e);");
                 }
                 else
                 {
@@ -85,7 +85,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                         _ => throw new InvalidOperationException(),
                     };
 
-                    WriteInitializedField(builder.Private, exposedTypeName, $"_theme{prop.Name}", S.VariableInitialization(initialValue));
+                    WriteInitializedField(builder.Private, exposedTypeName, $"_theme{prop.BindingName}", S.VariableInitialization(initialValue));
                 }
             }
 
@@ -96,8 +96,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             // Write properties declarations for each themed property.
             foreach (var prop in SourceInfo.SourceMetadata.PropertyBindings)
             {
-                builder.Internal.WriteLine($"{QualifiedTypeName(prop.ExposedType)} {prop.Name}();");
-                builder.Internal.WriteLine($"void {prop.Name}({QualifiedTypeName(prop.ExposedType)} value);");
+                builder.Internal.WriteLine($"{QualifiedTypeName(prop.ExposedType)} {prop.BindingName}();");
+                builder.Internal.WriteLine($"void {prop.BindingName}({QualifiedTypeName(prop.ExposedType)} value);");
             }
 
             builder.Internal.WriteLine();
@@ -147,17 +147,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             foreach (var prop in propertyBindings)
             {
                 // Write the getter. This just reads the values out of the backing field.
-                builder.WriteLine($"{TypeName(prop.ExposedType)} {sourceClassQualifier}{prop.Name}()");
+                builder.WriteLine($"{TypeName(prop.ExposedType)} {sourceClassQualifier}{prop.BindingName}()");
                 builder.OpenScope();
-                builder.WriteLine($"return _theme{prop.Name};");
+                builder.WriteLine($"return _theme{prop.BindingName};");
                 builder.CloseScope();
                 builder.WriteLine();
 
                 // Write the setter. This saves to the backing field, and updates the theme property
                 // set if one has been created.
-                builder.WriteLine($"void {sourceClassQualifier}{prop.Name}({TypeName(prop.ExposedType)} value)");
+                builder.WriteLine($"void {sourceClassQualifier}{prop.BindingName}({TypeName(prop.ExposedType)} value)");
                 builder.OpenScope();
-                builder.WriteLine($"_theme{prop.Name} = value;");
+                builder.WriteLine($"_theme{prop.BindingName} = value;");
                 builder.WriteLine("if (_themeProperties != nullptr)");
                 builder.OpenScope();
                 WriteThemePropertyInitialization(builder, "_themeProperties", prop);
