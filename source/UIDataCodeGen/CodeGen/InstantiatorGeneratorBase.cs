@@ -498,10 +498,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             }
 
             // Write a description of the graph stats.
-            foreach (var line in GetGraphStatsLines())
-            {
-                builder.WritePreformattedCommentLine(line);
-            }
+            builder.WritePreformattedCommentLines(GetGraphStatsLines());
 
             // Write the start of the file. This is everything up to the start of the AnimatedVisual class.
             WriteFileStart(builder);

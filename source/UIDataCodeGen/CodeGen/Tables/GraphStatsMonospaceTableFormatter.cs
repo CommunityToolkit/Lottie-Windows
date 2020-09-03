@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
+using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Tables
 {
@@ -54,6 +55,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Tables
                 animatorCounts.expressions,
                 animatorCounts.keyFrames,
                 animatorCounts.referenceParameters,
+                animatorCounts.operations,
                 Row.Separator,
                 GetCompositionObjectCountRecord(compositionObjects, "Animated brushes", (o) => o is CompositionBrush b && b.Animators.Count > 0),
                 GetCompositionObjectCountRecord(compositionObjects, "Animated gradient stops", (o) => o is CompositionColorGradientStop s && s.Animators.Count > 0),
@@ -95,48 +97,69 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Tables
 
         // Returns a row describing the number of animators for each animated visual.
         // The parameter is a set of objects for each generator.
-        static (Row expressions, Row keyFrames, Row referenceParameters)
+        static (Row expressions, Row keyFrames, Row referenceParameters, Row operations)
             GetAnimatorCountRecords(CompositionObject[][] objects)
         {
             var expressions = new ColumnData[objects.Length + 1];
             var keyFrames = new ColumnData[objects.Length + 1];
             var referenceParameters = new ColumnData[objects.Length + 1];
+            var operations = new ColumnData[objects.Length + 1];
 
             expressions[0] = ColumnData.Create("Expression animators", TextAlignment.Left);
             keyFrames[0] = ColumnData.Create("KeyFrame animators", TextAlignment.Left);
             referenceParameters[0] = ColumnData.Create("Reference parameters", TextAlignment.Left);
+            operations[0] = ColumnData.Create("Expression operations", TextAlignment.Left);
 
             for (var i = 0; i < objects.Length; i++)
             {
-                (expressions[i + 1], keyFrames[i + 1], referenceParameters[i + 1]) = GetAnimatorCountColumns(objects[i]);
+                (expressions[i + 1], keyFrames[i + 1], referenceParameters[i + 1], operations[i + 1]) = GetAnimatorCountColumns(objects[i]);
             }
 
-            return (new Row.ColumnData(expressions), new Row.ColumnData(keyFrames), new Row.ColumnData(referenceParameters));
+            return (new Row.ColumnData(expressions), new Row.ColumnData(keyFrames), new Row.ColumnData(referenceParameters), new Row.ColumnData(operations));
         }
 
         /// <summary>
         /// Returns columns describing the counts of animators for the given <see cref="CompositionObject"/>s.
         /// </summary>
         /// <returns>The animator counts columns.</returns>
-        static (ColumnData expressions, ColumnData keyFrames, ColumnData referenceParameters)
+        static (ColumnData expressions, ColumnData keyFrames, ColumnData referenceParameters, ColumnData operations)
             GetAnimatorCountColumns(IEnumerable<CompositionObject> objects)
         {
             var expressions = 0;
             var keyFrames = 0;
             var referenceParameters = 0;
+            var operations = 0;
 
             foreach (var obj in objects)
             {
                 var animators = obj.Animators;
                 referenceParameters += animators.Sum(a => a.Animation.ReferenceParameters.Count());
-                var expressionsCount = animators.Where(a => a.Animation.Type == CompositionObjectType.ExpressionAnimation).Count();
-                expressions += expressionsCount;
+
+                // Count the expressions and operations in ExpressionAnimations
+                var expressionAnimations =
+                    (from a in animators
+                     where a.Animation.Type == CompositionObjectType.ExpressionAnimation
+                     select (ExpressionAnimation)a.Animation).ToArray();
+
+                expressions += expressionAnimations.Length;
+                operations += expressionAnimations.Sum(e => e.Expression.OperationsCount);
+
+                // Count the expressions and operations in KeyFrameAnimations
+                var expressionKeyFrames =
+                    (from a in animators
+                     where a.Animation.Type != CompositionObjectType.ExpressionAnimation
+                     from keyFrame in ((KeyFrameAnimation_)a.Animation).KeyFrames
+                     where keyFrame.Type == KeyFrameType.Expression
+                     select (KeyFrameAnimation_.ExpressionKeyFrame)keyFrame).ToArray();
+
+                expressions += expressionKeyFrames.Length;
+                operations += expressionKeyFrames.Sum(e => e.Expression.OperationsCount);
 
                 // Key frame animations are the animations that are not expression animations.
-                keyFrames += animators.Count - expressionsCount;
+                keyFrames += animators.Count - expressionAnimations.Length;
             }
 
-            return (ColumnData.Create(expressions), ColumnData.Create(keyFrames), ColumnData.Create(referenceParameters));
+            return (ColumnData.Create(expressions), ColumnData.Create(keyFrames), ColumnData.Create(referenceParameters), ColumnData.Create(operations));
         }
     }
 }

@@ -96,9 +96,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
             }
 
             /// <inheritdoc/>
-            protected override string CreateExpressionText() => _text;
-
             protected override bool IsAtomic => true;
+
+            /// <inheritdoc/>
+            // We don't actually know the operation count because the text could
+            // be an expression. We just assume that it doesn't involve an expression.
+            public override int OperationsCount => 0;
+
+            /// <inheritdoc/>
+            protected override string CreateExpressionText() => _text;
         }
 
         internal abstract class BinaryExpression : Scalar
@@ -112,6 +118,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
             public Scalar Left { get; }
 
             public Scalar Right { get; }
+
+            /// <inheritdoc/>
+            public override int OperationsCount => Left.OperationsCount + Right.OperationsCount;
         }
 
         internal sealed class Divide : BinaryExpression
@@ -167,12 +176,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
                 Value = value;
             }
 
+            /// <inheritdoc/>
+            protected override bool IsAtomic => Value >= 0;
+
+            /// <inheritdoc/>
+            public override int OperationsCount => 0;
+
             public double Value { get; }
 
             /// <inheritdoc/>
             protected override string CreateExpressionText() => ToString(Value);
-
-            protected override bool IsAtomic => Value >= 0;
 
             static string ToString(double value)
             {
@@ -314,6 +327,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
             public Scalar Value { get; }
 
             /// <inheritdoc/>
+            public override int OperationsCount => Power.OperationsCount + Value.OperationsCount;
+
+            /// <inheritdoc/>
             protected override Scalar Simplify()
             {
                 var value = Value.Simplified;
@@ -366,6 +382,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
             public Scalar Value { get; }
 
             /// <inheritdoc/>
+            public override int OperationsCount => Value.OperationsCount;
+
+            /// <inheritdoc/>
             protected override Scalar Simplify()
             {
                 return Value.Simplified is Literal numberValue
@@ -390,6 +409,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
                 _value = value;
                 _channelName = channelName.ToUpperInvariant();
             }
+
+            /// <inheritdoc/>
+            public override int OperationsCount => 1;
 
             /// <inheritdoc/>
             protected override Scalar Simplify()
@@ -454,6 +476,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
             public Scalar TrueValue { get; }
 
             public Scalar FalseValue { get; }
+
+            /// <inheritdoc/>
+            public override int OperationsCount => Condition.OperationsCount + FalseValue.OperationsCount + TrueValue.OperationsCount;
 
             /// <inheritdoc/>
             protected override Scalar Simplify()

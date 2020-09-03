@@ -32,9 +32,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
             }
 
             /// <inheritdoc/>
-            protected override string CreateExpressionText() => _text;
-
             protected override bool IsAtomic => true;
+
+            /// <inheritdoc/>
+            // We don't actually know the operation count because the text could
+            // be an expression. We just assume that it doesn't involve an expression.
+            public override int OperationsCount => 0;
+
+            /// <inheritdoc/>
+            protected override string CreateExpressionText() => _text;
         }
 
         internal abstract class BinaryScalarExpression : Boolean
@@ -48,6 +54,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
             internal Scalar Left { get; }
 
             internal Scalar Right { get; }
+
+            /// <inheritdoc/>
+            public override int OperationsCount => Left.OperationsCount + Right.OperationsCount;
         }
 
         internal sealed new class LessThan : BinaryScalarExpression
@@ -89,12 +98,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
             }
 
             /// <inheritdoc/>
+            protected override bool IsAtomic => true;
+
+            /// <inheritdoc/>
+            public override int OperationsCount => 0;
+
+            /// <inheritdoc/>
             protected override Boolean Simplify() => Value ? True : False;
 
             /// <inheritdoc/>
             protected override string CreateExpressionText() => Value ? "true" : "false";
-
-            protected override bool IsAtomic => true;
         }
     }
 }

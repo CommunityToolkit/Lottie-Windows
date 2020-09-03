@@ -38,6 +38,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// </summary>
         public static CubicBezierFunction2 ZeroBezier { get; } = Create(SnVector2.Zero, SnVector2.Zero, SnVector2.Zero, SnVector2.Zero, 0);
 
+        public override int OperationsCount => _t.OperationsCount;
+
         /// <summary>
         /// Gets a value indicating whether the cubic Bezier is equivalent to a line drawn from point 0 to point 3.
         /// </summary>
@@ -174,6 +176,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             {
                 _original = original;
             }
+
+            /// <inheritdoc/>
+            public override int OperationsCount => _original.OperationsCount;
 
             /// <inheritdoc/>
             // (1-t)^3P0 + 3(1-t)^2tP1 + 3(1-t)t^2P2 + t^3P3

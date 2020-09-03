@@ -76,6 +76,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
         /// </summary>
         protected virtual bool IsAtomic => false;
 
+        /// <summary>
+        /// The number of operations in this <see cref="Expression"/>. An operation is something that
+        /// requires evaluation, for example an addition.
+        /// </summary>
+        public abstract int OperationsCount { get; }
+
         protected static string Parenthesize(Expression expression)
             => expression.IsAtomic
                 ? expression.ToText()
