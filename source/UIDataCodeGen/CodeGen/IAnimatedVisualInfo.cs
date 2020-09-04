@@ -15,12 +15,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
     interface IAnimatedVisualInfo
     {
         /// <summary>
-        /// The <see cref="IAnimatedVisualSourceInfo"/> describing the IAnimatedVisualSource that
-        /// will source the IAnimatedVisual described by this object.
-        /// </summary>
-        IAnimatedVisualSourceInfo AnimatedVisualSourceInfo { get; }
-
-        /// <summary>
         /// Gets the name of the IAnimatedVisual class that will be exposed to users.
         /// </summary>
         string ClassName { get; }

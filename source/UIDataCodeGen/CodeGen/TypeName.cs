@@ -14,8 +14,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 #endif
     sealed class TypeName
     {
-        readonly string _namespaceName;
-
         internal TypeName(string namespaceName, string unqualifiedName)
         {
             if (namespaceName.Contains(':'))
@@ -23,12 +21,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 throw new ArgumentException();
             }
 
-            _namespaceName = namespaceName;
+            NormalizedNamespace = namespaceName;
             UnqualifiedName = unqualifiedName;
         }
 
         internal TypeName(string qualifiedName)
-            => (_namespaceName, UnqualifiedName) = ParseQualifiedName(qualifiedName);
+            => (NormalizedNamespace, UnqualifiedName) = ParseQualifiedName(qualifiedName);
 
         static (string namespaceName, string unqualifiedName) ParseQualifiedName(string qualifiedName)
         {
@@ -44,20 +42,26 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         public string UnqualifiedName { get; }
 
         public string GetQualifiedName(Stringifier stringifier)
-            => string.IsNullOrWhiteSpace(_namespaceName)
+            => string.IsNullOrWhiteSpace(NormalizedNamespace)
                 ? UnqualifiedName
-                : stringifier.Namespace($"{_namespaceName}.{UnqualifiedName}");
+                : stringifier.Namespace($"{NormalizedNamespace}.{UnqualifiedName}");
 
         public string GetNamespace(Stringifier stringifier)
-            => stringifier.Namespace(_namespaceName);
+            => stringifier.Namespace(NormalizedNamespace);
 
         /// <summary>
         /// A non-language-specific name that can be used for display
         /// and comparison.
         /// </summary>
         public string NormalizedQualifiedName
-            => string.IsNullOrWhiteSpace(_namespaceName)
+            => string.IsNullOrWhiteSpace(NormalizedNamespace)
                 ? UnqualifiedName
-                : $"{_namespaceName}.{UnqualifiedName}";
+                : $"{NormalizedNamespace}.{UnqualifiedName}";
+
+        /// <summary>
+        /// A non-language-specific name that can be used for display
+        /// and comparison.
+        /// </summary>
+        public string NormalizedNamespace { get; }
     }
 }

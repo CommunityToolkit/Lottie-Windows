@@ -11,6 +11,9 @@ using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp;
 using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen;
+using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt;
+using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp;
+using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx;
 using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 
@@ -128,7 +131,9 @@ sealed class LottieFileProcessor
 
     bool TryGenerateCode()
     {
-        var outputFileBase = System.IO.Path.Combine(_outputFolder, System.IO.Path.GetFileNameWithoutExtension(_lottieFilePath));
+        var lottieFileNameWithoutExtension = System.IO.Path.GetFileNameWithoutExtension(_lottieFilePath);
+
+        var outputFileBase = System.IO.Path.Combine(_outputFolder, lottieFileNameWithoutExtension);
 
         var codeGenSucceeded = true;
 
@@ -145,17 +150,15 @@ sealed class LottieFileProcessor
 
                 case Lang.Cx:
                     // If both cppwinrt and cx files were requested, add a differentiator to
-                    // the filenames of the cx files to make their names distinct from the
-                    // cppwinrt filenames. This ensures the cx doesn't overwrite the cppwinrt
-                    // while still making the cx have normal-looking names in the common case
-                    // where only one of the languages is specified.
-                    var cxDifferentiator = areBothCppwinrtAndCxRequested ? ".cx" : string.Empty;
-                    codeGenSucceeded &= TryGenerateCXCode($"{outputFileBase}{cxDifferentiator}.h", $"{outputFileBase}{cxDifferentiator}.cpp");
+                    // the folder name for the cx files to make their names distinct from the
+                    // cppwinrt output. This ensures the cx doesn't overwrite the cppwinrt.
+                    var cxDifferentiator = areBothCppwinrtAndCxRequested ? "CX" : string.Empty;
+                    codeGenSucceeded &= TryGenerateCXCode($"{_outputFolder}{cxDifferentiator}");
                     _profiler.OnCodeGenFinished();
                     break;
 
                 case Lang.Cppwinrt:
-                    codeGenSucceeded &= TryGenerateCppwinrtCode($"{outputFileBase}.h", $"{outputFileBase}.cpp");
+                    codeGenSucceeded &= TryGenerateCppwinrtCode(_outputFolder);
                     _profiler.OnCodeGenFinished();
                     break;
 
@@ -396,16 +399,16 @@ sealed class LottieFileProcessor
             return false;
         }
 
-        (string csText, IEnumerable<Uri> assetList) =
+        var codegenResult =
             CSharpInstantiatorGenerator.CreateFactoryCode(CreateCodeGenConfiguration("CSharp"));
 
-        if (string.IsNullOrWhiteSpace(csText))
+        if (string.IsNullOrWhiteSpace(codegenResult.CsText))
         {
             _reporter.WriteError("Failed to create the C# code.");
             return false;
         }
 
-        var result = TryWriteTextFile(outputFilePath, csText);
+        var result = TryWriteTextFile(outputFilePath, codegenResult.CsText);
 
         if (result)
         {
@@ -415,48 +418,45 @@ sealed class LottieFileProcessor
                 _reporter.WriteInfo(InfoType.FilePath, $" {outputFilePath}");
             }
 
-            if (assetList != null)
+            if (codegenResult.Assets != null)
             {
                 // Write out the list of asset files referenced by the code.
-                WriteAssetFiles(assetList);
+                WriteAssetFiles(codegenResult.Assets);
             }
         }
 
         return result;
     }
 
-    bool TryGenerateCppwinrtCode(
-        string outputHeaderFilePath,
-        string outputCppFilePath)
+    bool TryGenerateCppwinrtCode(string outputFolder)
     {
         if (!TryEnsureTranslated())
         {
             return false;
         }
 
-        (string cppText, string hText, IEnumerable<Uri> assetList) =
-                    CppwinrtInstantiatorGenerator.CreateFactoryCode(
-                        CreateCodeGenConfiguration("Cppwinrt"),
-                        System.IO.Path.GetFileName(outputHeaderFilePath));
+        var codegenResult =
+                    CppwinrtInstantiatorGenerator.CreateFactoryCode(CreateCodeGenConfiguration("Cppwinrt"));
 
-        if (string.IsNullOrWhiteSpace(cppText))
+        if (string.IsNullOrWhiteSpace(codegenResult.CppText))
         {
             _reporter.WriteError("Failed to generate the .cpp code.");
             return false;
         }
 
-        if (string.IsNullOrWhiteSpace(hText))
+        if (string.IsNullOrWhiteSpace(codegenResult.HText))
         {
             _reporter.WriteError("Failed to generate the .h code.");
             return false;
         }
 
-        if (!TryWriteTextFile(outputHeaderFilePath, hText))
-        {
-            return false;
-        }
+        var cppFilePath = System.IO.Path.Combine(outputFolder, codegenResult.CppFilename);
+        var hFilePath = System.IO.Path.Combine(outputFolder, codegenResult.HFilename);
+        var idlFilePath = System.IO.Path.Combine(outputFolder, codegenResult.IdlFilename);
 
-        if (!TryWriteTextFile(outputCppFilePath, cppText))
+        if (!(TryWriteTextFile(hFilePath, codegenResult.HText) &&
+            TryWriteTextFile(cppFilePath, codegenResult.CppText) &&
+            TryWriteTextFile(idlFilePath, codegenResult.IdlText)))
         {
             return false;
         }
@@ -464,53 +464,51 @@ sealed class LottieFileProcessor
         using (_reporter.InfoStream.Lock())
         {
             _reporter.WriteInfo($"Cppwinrt header for class {_className} written to:");
-            _reporter.WriteInfo(InfoType.FilePath, $" {outputHeaderFilePath}");
+            _reporter.WriteInfo(InfoType.FilePath, $" {hFilePath}");
 
             _reporter.WriteInfo($"Cppwinrt source for class {_className} written to:");
-            _reporter.WriteInfo(InfoType.FilePath, $" {outputCppFilePath}");
+            _reporter.WriteInfo(InfoType.FilePath, $" {cppFilePath}");
 
-            if (assetList != null)
+            _reporter.WriteInfo($"Cppwinrt IDL for class {_className} written to:");
+            _reporter.WriteInfo(InfoType.FilePath, $" {idlFilePath}");
+
+            if (codegenResult.Assets != null)
             {
                 // Write out the list of asset files referenced by the code.
-                WriteAssetFiles(assetList);
+                WriteAssetFiles(codegenResult.Assets);
             }
         }
 
         return true;
     }
 
-    bool TryGenerateCXCode(
-        string outputHeaderFilePath,
-        string outputCppFilePath)
+    bool TryGenerateCXCode(string outputFolder)
     {
         if (!TryEnsureTranslated())
         {
             return false;
         }
 
-        (string cppText, string hText, IEnumerable<Uri> assetList) =
-                    CxInstantiatorGenerator.CreateFactoryCode(
-                        CreateCodeGenConfiguration("CX"),
-                        System.IO.Path.GetFileName(outputHeaderFilePath));
+        var codegenResult =
+            CxInstantiatorGenerator.CreateFactoryCode(CreateCodeGenConfiguration("CX"));
 
-        if (string.IsNullOrWhiteSpace(cppText))
+        if (string.IsNullOrWhiteSpace(codegenResult.CppText))
         {
             _reporter.WriteError("Failed to generate the .cpp code.");
             return false;
         }
 
-        if (string.IsNullOrWhiteSpace(hText))
+        if (string.IsNullOrWhiteSpace(codegenResult.HText))
         {
             _reporter.WriteError("Failed to generate the .h code.");
             return false;
         }
 
-        if (!TryWriteTextFile(outputHeaderFilePath, hText))
-        {
-            return false;
-        }
+        var cppFilePath = System.IO.Path.Combine(outputFolder, codegenResult.CppFilename);
+        var hFilePath = System.IO.Path.Combine(outputFolder, codegenResult.HFilename);
 
-        if (!TryWriteTextFile(outputCppFilePath, cppText))
+        if (!(TryWriteTextFile(hFilePath, codegenResult.HText) &&
+              TryWriteTextFile(cppFilePath, codegenResult.CppText)))
         {
             return false;
         }
@@ -518,15 +516,15 @@ sealed class LottieFileProcessor
         using (_reporter.InfoStream.Lock())
         {
             _reporter.WriteInfo($"CX header for class {_className} written to:");
-            _reporter.WriteInfo(InfoType.FilePath, $" {outputHeaderFilePath}");
+            _reporter.WriteInfo(InfoType.FilePath, $" {hFilePath}");
 
             _reporter.WriteInfo($"CX source for class {_className} written to:");
-            _reporter.WriteInfo(InfoType.FilePath, $" {outputCppFilePath}");
+            _reporter.WriteInfo(InfoType.FilePath, $" {cppFilePath}");
 
-            if (assetList != null)
+            if (codegenResult.Assets != null)
             {
                 // Write out the list of asset files referenced by the code.
-                WriteAssetFiles(assetList);
+                WriteAssetFiles(codegenResult.Assets);
             }
         }
 
