@@ -131,11 +131,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
 
             if (SourceInfo.GenerateDependencyObject)
             {
-                WriteHeaderClassStart(builder, $"{_winUINamespace}::Xaml::DependencyObject, {_animatedVisualTypeName}Source");
+                WriteHeaderClassStart(builder.Preamble, $"{_winUINamespace}::Xaml::DependencyObject, {_animatedVisualTypeName}Source");
             }
             else
             {
-                WriteHeaderClassStart(builder, $"{_animatedVisualTypeName}Source");
+                WriteHeaderClassStart(builder.Preamble, $"{_animatedVisualTypeName}Source");
             }
 
             WriteInternalHeaderConstants(builder.Internal);
@@ -167,15 +167,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
             builder.Public.UnIndent();
         }
 
-        void WriteHeaderClassStart(HeaderBuilder builder, string inherits)
+        void WriteHeaderClassStart(CodeBuilder builder, string inherits)
         {
             // NOTE: the CX class is always made public. This is necessary to allow CX
             // XAML projects to compile (the XAML compiler can't find the metadata for the
             // class if it isn't made public).
-            builder.Preamble.WriteLine($"public ref class {_sourceClassName} sealed");
-            builder.Preamble.Indent();
-            builder.Preamble.WriteLine($": public {inherits}");
-            builder.Preamble.UnIndent();
+            builder.WriteLine($"public ref class {_sourceClassName} sealed");
+            builder.Indent();
+            builder.WriteLine($": public {inherits}");
+            builder.UnIndent();
+            builder.OpenScope();
         }
 
         void WriteThemeHeader(HeaderBuilder builder)
@@ -187,7 +188,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
 
             var hasColorProperty = false;
 
-            // Add fields and proeprty declarations for each of the theme properties.
+            // Add fields and property declarations for each of the theme properties.
             foreach (var prop in SourceInfo.SourceMetadata.PropertyBindings)
             {
                 hasColorProperty |= prop.ExposedType == PropertySetValueType.Color;
@@ -368,7 +369,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
 
             WriteSourceDescriptionComments(builder.Preamble);
 
-            WriteHeaderClassStart(builder, "public IDynamicAnimatedVisualSource, INotifyPropertyChanged");
+            WriteHeaderClassStart(builder.Preamble, "public IDynamicAnimatedVisualSource, INotifyPropertyChanged");
 
             WriteInternalHeaderConstants(builder.Internal);
 

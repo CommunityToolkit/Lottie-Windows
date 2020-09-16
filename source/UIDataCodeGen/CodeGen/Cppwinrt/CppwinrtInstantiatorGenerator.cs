@@ -222,6 +222,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
             builder.Class.Public.Indent();
             builder.Class.Public.WriteLine($"winrt::{_wuc}::Compositor const& compositor,");
             builder.Class.Public.WriteLine($"winrt::Windows::Foundation::IInspectable& diagnostics);");
+            builder.Class.Public.UnIndent();
 
             if (SourceInfo.IsThemed)
             {
@@ -271,13 +272,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
                 }
             }
 
-            builder.Class.Private.WriteLine();
-            builder.Class.Private.WriteLine($"winrt::{_wuc}::CompositionPropertySet EnsureThemeProperties(winrt::{_wuc}::Compositor compositor);");
-            builder.Class.Private.WriteLine();
+            builder.Class.Public.WriteLine($"winrt::{_wuc}::CompositionPropertySet EnsureThemeProperties(winrt::{_wuc}::Compositor compositor);");
 
             // Write properties declarations for each themed property.
             foreach (var prop in SourceInfo.SourceMetadata.PropertyBindings)
             {
+                builder.Class.Public.WriteLine();
                 builder.Class.Public.WriteLine($"{QualifiedTypeName(prop.ExposedType)} {prop.BindingName}();");
                 builder.Class.Public.WriteLine($"void {prop.BindingName}({QualifiedTypeName(prop.ExposedType)} value);");
             }

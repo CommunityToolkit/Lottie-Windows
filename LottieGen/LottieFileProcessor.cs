@@ -149,13 +149,25 @@ sealed class LottieFileProcessor
                     break;
 
                 case Lang.Cx:
-                    // If both cppwinrt and cx files were requested, add a differentiator to
-                    // the folder name for the cx files to make their names distinct from the
-                    // cppwinrt output. This ensures the cx doesn't overwrite the cppwinrt.
-                    var cxDifferentiator = areBothCppwinrtAndCxRequested ? "CX" : string.Empty;
-                    codeGenSucceeded &= TryGenerateCXCode($"{_outputFolder}{cxDifferentiator}");
-                    _profiler.OnCodeGenFinished();
-                    break;
+                    {
+                        // If both cppwinrt and cx files were requested, add a differentiator to
+                        // the folder name for the cx files to make their names distinct from the
+                        // cppwinrt output. This ensures the cx doesn't overwrite the cppwinrt.
+                        var cxDifferentiator = areBothCppwinrtAndCxRequested ? "CX" : string.Empty;
+                        var outputFolder = $"{_outputFolder}\\{cxDifferentiator}";
+                        var directoryExists = TryEnsureDirectoryExists(outputFolder);
+                        if (!directoryExists)
+                        {
+                            codeGenSucceeded = false;
+                        }
+                        else
+                        {
+                            codeGenSucceeded &= TryGenerateCXCode(outputFolder);
+                        }
+
+                        _profiler.OnCodeGenFinished();
+                        break;
+                    }
 
                 case Lang.Cppwinrt:
                     codeGenSucceeded &= TryGenerateCppwinrtCode(_outputFolder);
