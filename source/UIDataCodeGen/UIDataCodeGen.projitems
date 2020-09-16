@@ -11,13 +11,13 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\CodegenConfiguration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\ConstantType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\Cppwinrt\CppNamespaceListBuilder.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\CSharp\CSharpCodegenResult.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\Cx\CppNamespaceListBuilder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\Cppwinrt\CppwinrtCodegenResult.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\Cppwinrt\CppwinrtInstantiatorGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\Cppwinrt\CppwinrtStringifier.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\CSharp\CSharpCodegenResult.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\CSharp\CSharpInstantiatorGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\CSharp\CSharpStringifier.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\Cx\CppNamespaceListBuilder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\Cx\CxCodegenResult.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\Cx\CxInstantiatorGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\Cx\CxStringifier.cs" />

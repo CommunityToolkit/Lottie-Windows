@@ -110,6 +110,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
 
         public override string TypeInt64 => "int64_t";
 
+        public override string TypeMatrix3x2 { get; } = "float3x2";
+
         public override string TypeString => "String^";
 
         public override string TypeVector2 { get; } = "float2";
@@ -118,22 +120,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
 
         public override string TypeVector4 { get; } = "float4";
 
-        public override string TypeMatrix3x2 { get; } = "float3x2";
-
         public override string Var => "auto";
 
         public override string VariableInitialization(string value) => $"{{ {value} }}";
 
-        public override string Vector2(Vector2 value) => $"{{ {Vector2Args(value)} }}";
+        public override string Vector2(Vector2 value) => $"{{ {Float(value.X)}, {Float(value.Y)} }}";
 
-        public string Vector2Args(Vector2 value) => $"{Float(value.X)}, {Float(value.Y)}";
+        public override string Vector3(Vector3 value) => $"{{ {Float(value.X)}, {Float(value.Y)}, {Float(value.Z)} }}";
 
-        public override string Vector3(Vector3 value) => $"{{ {Vector3Args(value)} }}";
-
-        public string Vector3Args(Vector3 value) => $"{Float(value.X)}, {Float(value.Y)}, {Float(value.Z)}";
-
-        public override string Vector4(Vector4 value) => $"{{ {Vector4Args(value)} }}";
-
-        public string Vector4Args(Vector4 value) => $"{Float(value.X)}, {Float(value.Y)}, {Float(value.Z)}, {Float(value.W)}";
+        public override string Vector4(Vector4 value) => $"{{ {Float(value.X)}, {Float(value.Y)}, {Float(value.Z)}, {Float(value.W)} }}";
     }
 }

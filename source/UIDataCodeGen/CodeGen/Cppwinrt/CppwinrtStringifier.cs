@@ -109,6 +109,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
 
         public override string TypeInt64 => "int64_t";
 
+        public override string TypeMatrix3x2 { get; } = "float3x2";
+
         public override string TypeString => "winrt::hstring";
 
         public override string TypeVector2 { get; } = "float2";
@@ -116,8 +118,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
         public override string TypeVector3 { get; } = "float3";
 
         public override string TypeVector4 { get; } = "float4";
-
-        public override string TypeMatrix3x2 { get; } = "float3x2";
 
         public override string Var => "auto";
 

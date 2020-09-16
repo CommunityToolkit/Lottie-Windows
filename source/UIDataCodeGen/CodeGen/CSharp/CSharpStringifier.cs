@@ -18,6 +18,32 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
     {
         public override string ByteArray => "byte[]";
 
+        public override string CanvasFigureLoop(CanvasFigureLoop value)
+        {
+            var typeName = nameof(CanvasFigureLoop);
+            return value switch
+            {
+                Mgcg.CanvasFigureLoop.Open => $"{typeName}{ScopeResolve}Open",
+                Mgcg.CanvasFigureLoop.Closed => $"{typeName}{ScopeResolve}Closed",
+                _ => throw new InvalidOperationException(),
+            };
+        }
+
+        public override string CanvasGeometryCombine(CanvasGeometryCombine value)
+        {
+            var typeName = nameof(CanvasGeometryCombine);
+            return value switch
+            {
+                Mgcg.CanvasGeometryCombine.Union => $"{typeName}{ScopeResolve}Union",
+                Mgcg.CanvasGeometryCombine.Exclude => $"{typeName}{ScopeResolve}Exclude",
+                Mgcg.CanvasGeometryCombine.Intersect => $"{typeName}{ScopeResolve}Intersect",
+                Mgcg.CanvasGeometryCombine.Xor => $"{typeName}{ScopeResolve}Xor",
+                _ => throw new InvalidOperationException(),
+            };
+        }
+
+        public override string CanvasGeometryFactoryCall(string value) => value;
+
         public override string Color(Color value) => $"Color.FromArgb({Hex(value.A)}, {Hex(value.R)}, {Hex(value.G)}, {Hex(value.B)})";
 
         public override string ConstExprField(string type, string name, string value) => $"const {type} {name} = {value};";
@@ -33,12 +59,21 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
                     ? value.ToString("0", CultureInfo.InvariantCulture) + "d"
                     : value.ToString("G15", CultureInfo.InvariantCulture);
 
+        public override string FilledRegionDetermination(CanvasFilledRegionDetermination value)
+        {
+            var typeName = nameof(CanvasFilledRegionDetermination);
+            return value switch
+            {
+                CanvasFilledRegionDetermination.Alternate => $"{typeName}{ScopeResolve}Alternate",
+                CanvasFilledRegionDetermination.Winding => $"{typeName}{ScopeResolve}Winding",
+                _ => throw new InvalidOperationException(),
+            };
+        }
+
         public override string Float(float value) =>
             (Math.Floor(value) == value
                 ? value.ToString("0", CultureInfo.InvariantCulture)
                 : value.ToString("G9", CultureInfo.InvariantCulture)) + "F";
-
-        public override string CanvasGeometryFactoryCall(string value) => value;
 
         public override string IListAdd => "Add";
 
@@ -95,40 +130,5 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
         public override string Vector3(Vector3 value) => $"new Vector3({Float(value.X)}, {Float(value.Y)}, {Float(value.Z)})";
 
         public override string Vector4(Vector4 value) => $"new Vector4({Float(value.X)}, {Float(value.Y)}, {Float(value.Z)}, {Float(value.W)})";
-
-        public override string CanvasFigureLoop(CanvasFigureLoop value)
-        {
-            var typeName = nameof(CanvasFigureLoop);
-            switch (value)
-            {
-                case Mgcg.CanvasFigureLoop.Open: return $"{typeName}{ScopeResolve}Open";
-                case Mgcg.CanvasFigureLoop.Closed: return $"{typeName}{ScopeResolve}Closed";
-                default: throw new InvalidOperationException();
-            }
-        }
-
-        public override string CanvasGeometryCombine(CanvasGeometryCombine value)
-        {
-            var typeName = nameof(CanvasGeometryCombine);
-            switch (value)
-            {
-                case Mgcg.CanvasGeometryCombine.Union: return $"{typeName}{ScopeResolve}Union";
-                case Mgcg.CanvasGeometryCombine.Exclude: return $"{typeName}{ScopeResolve}Exclude";
-                case Mgcg.CanvasGeometryCombine.Intersect: return $"{typeName}{ScopeResolve}Intersect";
-                case Mgcg.CanvasGeometryCombine.Xor: return $"{typeName}{ScopeResolve}Xor";
-                default: throw new InvalidOperationException();
-            }
-        }
-
-        public override string FilledRegionDetermination(CanvasFilledRegionDetermination value)
-        {
-            var typeName = nameof(CanvasFilledRegionDetermination);
-            switch (value)
-            {
-                case CanvasFilledRegionDetermination.Alternate: return $"{typeName}{ScopeResolve}Alternate";
-                case CanvasFilledRegionDetermination.Winding: return $"{typeName}{ScopeResolve}Winding";
-                default: throw new InvalidOperationException();
-            }
-        }
     }
 }
