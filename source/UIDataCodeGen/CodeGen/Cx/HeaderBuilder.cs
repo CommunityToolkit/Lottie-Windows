@@ -20,12 +20,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
         {
             var result = new CodeBuilder();
             result.WriteCodeBuilder(Preamble);
-            result.Indent();
-            result.OpenScope();
-            result.UnIndent();
+            if (Private.LineCount > 1)
+            {
+                result.WriteCodeBuilder(Private);
+            }
 
-            result.WriteCodeBuilder(Private);
-            result.WriteCodeBuilder(Internal);
+            if (Internal.LineCount > 1)
+            {
+                result.WriteCodeBuilder(Internal);
+            }
+
             result.WriteCodeBuilder(Public);
             result.WriteCodeBuilder(Postamble);
 

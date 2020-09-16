@@ -289,7 +289,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
         {
             var propertyBindings = SourceInfo.SourceMetadata.PropertyBindings;
 
-            var sourceClassQualifier = $"winrt::{_s.Namespace(SourceInfo.Namespace)}::implementation::{_sourceClassName}::";
+            var sourceClassQualifier = $"{_sourceClassName}::";
 
             if (propertyBindings.Any(pb => pb.ExposedType == PropertySetValueType.Color))
             {
@@ -526,7 +526,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
             builder.WriteLine("#include <WindowsNumerics.h>");
 
             builder.WriteLine("#include <winrt/Windows.Foundation.Metadata.h>");
-            builder.WriteLine("#include <winrt/Windows.UI.Composition.h>");
+
+            if (SourceInfo.WinUi3)
+            {
+                builder.WriteLine("#include <winrt/Microsoft.UI.Composition.h>");
+            }
+            else
+            {
+                builder.WriteLine("#include <winrt/Windows.UI.Composition.h>");
+            }
 
             if (SourceInfo.UsesCanvas ||
                 SourceInfo.UsesCanvasEffects ||
@@ -558,8 +566,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
                 builder.WriteLine("#else");
                 builder.WriteLine("#include <Windows.Graphics.Effects.Interop.h>");
                 builder.WriteLine("#endif");
-                builder.WriteLine("#include <windows.graphics.effects.interop.h>");
-                builder.WriteLine("#include <winrt/windows.graphics.effects.h>");
+                builder.WriteLine("#include <winrt/Windows.Graphics.Effects.h>");
             }
 
             if (SourceInfo.UsesStreams)
@@ -609,10 +616,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
 
             builder.WriteLine();
 
-            // Put the Instantiator class in an anonymous namespace.
-            builder.WriteLine("namespace");
-            builder.WriteLine("{");
-            builder.Indent();
+            builder.WriteLine($"namespace winrt::{_s.Namespace(SourceInfo.Namespace)}::implementation");
+            builder.OpenScope();
 
             if (SourceInfo.UsesCanvasEffects ||
                 SourceInfo.UsesCanvasGeometry)
@@ -710,9 +715,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
         // Called by the base class to write the end of the file (i.e. everything after the body of the AnimatedVisual class).
         protected override void WriteImplementationFileEnd(CodeBuilder builder)
         {
-            // Close the anonymous namespace.
-            builder.UnIndent();
-            builder.WriteLine("} // end namespace");
             builder.WriteLine();
 
             // Generate the methods that create and get the theme property set.
@@ -722,7 +724,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
             }
 
             // Generate the method that creates an instance of the composition on the IAnimatedVisualSource.
-            builder.WriteLine($"winrt::{_animatedVisualTypeName} winrt::{_s.Namespace(SourceInfo.Namespace)}::implementation::{_sourceClassName}::TryCreateAnimatedVisual(");
+            builder.WriteLine($"winrt::{_animatedVisualTypeName} {_sourceClassName}::TryCreateAnimatedVisual(");
             builder.Indent();
             builder.WriteLine("Compositor const& compositor,");
             builder.WriteLine("IInspectable& diagnostics)");
@@ -743,6 +745,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
             {
                 WriteIAnimatedVisualSource(builder);
             }
+
+            // Close the namespace.
+            builder.UnIndent();
+            builder.WriteLine("} // end namespace");
+            builder.WriteLine();
         }
 
         /// <summary>

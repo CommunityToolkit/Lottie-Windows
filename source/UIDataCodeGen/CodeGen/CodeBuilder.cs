@@ -20,7 +20,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         readonly SortedDictionary<string, CodeBuilder> _subBuilders = new SortedDictionary<string, CodeBuilder>();
         int _indentCount = 0;
 
+        /// <summary>
+        /// True iff no lines have been added to this <see cref="CodeBuilder"/>.
+        /// </summary>
         internal bool IsEmpty => _lines.Count == 0;
+
+        /// <summary>
+        /// The number of lines added to this <see cref="CodeBuilder"/> including the
+        /// lines added to any nested <see cref="CodeBuilder"/>s.
+        /// </summary>
+        internal int LineCount => _lines.Sum(line => line.LineCount);
 
         internal void WriteLine()
         {
@@ -411,6 +420,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             // A string or a CodeBuilder.
             internal object Contents;
             internal int IndentCount;
+
+            internal int LineCount => Contents is CodeBuilder nestedCodeBuilder ? nestedCodeBuilder.LineCount : 1;
 
             // In the debugger, show the contents of the line.
             public override string ToString() => Contents.ToString();

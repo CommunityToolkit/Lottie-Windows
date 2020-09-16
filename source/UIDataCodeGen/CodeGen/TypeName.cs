@@ -59,7 +59,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 : $"{NormalizedNamespace}.{UnqualifiedName}";
 
         /// <summary>
-        /// A non-language-specific name that can be used for display
+        /// A non-language-specific namespace name that can be used for display
         /// and comparison.
         /// </summary>
         public string NormalizedNamespace { get; }
