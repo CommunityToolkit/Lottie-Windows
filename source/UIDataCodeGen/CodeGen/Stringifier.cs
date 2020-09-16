@@ -3,275 +3,204 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Globalization;
 using System.Numerics;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.MetaData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgc;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui;
-using Mgcg = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 {
     /// <summary>
-    /// Converts various language keywords and values to strings. The strings returned
-    /// from here are useful for C# and may need to be overridden for other languages.
+    /// Converts various language keywords and values to strings.
     /// </summary>
 #if PUBLIC_UIDataCodeGen
     public
 #endif
-    class Stringifier
+    abstract class Stringifier
     {
-        public virtual string DefaultInitialize => string.Empty;
-
-        public virtual string VariableInitialization(string value) => $" = {value}";
-
-        public virtual string Deref => ".";
-
-        public virtual string IListAdd => "Add";
-
-        public virtual string New(string typeName) => $"new {typeName}";
-
-        public virtual string Null => "null";
-
-        public virtual string ScopeResolve => ".";
-
-        public virtual string Var => "var";
-
-        public virtual string ConstVar => "var";
-
-        public string Const(string value) => $"const {value}";
-
-        // A constant - in C# this is just a const. In C++ this is a static constexpr.
-        public virtual string ConstExprField(string type, string name, string value) => $"const {type} {name} = {value};";
-
-        public virtual string PropertyGet(string target, string propertyName) => $"{target}{Deref}{propertyName}";
-
-        public virtual string PropertySet(string target, string propertyName, string value) => $"{target}{Deref}{propertyName} = {value}";
-
-        public string PropertySetValueType(PropertySetValueType type, bool isNamespaceQualified)
-        {
-            switch (type)
-            {
-                case WinCompData.MetaData.PropertySetValueType.Color:
-                    return isNamespaceQualified ? Namespace("Windows.UI.Colors.Color") : "Color";
-                case WinCompData.MetaData.PropertySetValueType.Scalar:
-                    return TypeFloat32;
-                case WinCompData.MetaData.PropertySetValueType.Vector2:
-                    return TypeVector2;
-                case WinCompData.MetaData.PropertySetValueType.Vector3:
-                    return TypeVector3;
-                case WinCompData.MetaData.PropertySetValueType.Vector4:
-                    return TypeVector4;
-                default:
-                    throw new InvalidOperationException();
-            }
-        }
-
-        public virtual string Readonly(string value) => $"readonly {value}";
-
-        public virtual string FieldName(string value) => $"_{CamelCase(value)}";
-
-        public string Bool(bool value) => value ? "true" : "false";
-
-        public virtual string Color(Color value) => $"Color.FromArgb({Hex(value.A)}, {Hex(value.R)}, {Hex(value.G)}, {Hex(value.B)})";
-
-        public virtual string FactoryCall(string value) => value;
-
-        public string Float(double value) => Float((float)value);
-
-        public virtual string Float(float value) =>
-            (Math.Floor(value) == value
-                ? value.ToString("0", CultureInfo.InvariantCulture)
-                : value.ToString("G9", CultureInfo.InvariantCulture)) + "F";
-
-        public virtual string Double(double value) =>
-            Math.Floor(value) == value
-                    ? value.ToString("0", CultureInfo.InvariantCulture) + "d"
-                    : value.ToString("G15", CultureInfo.InvariantCulture);
-
-        public virtual string Int32(int value) => value.ToString();
-
-        public virtual string Int64(long value) => value.ToString();
-
-        public virtual string Matrix3x2(Matrix3x2 value)
-            => $"new Matrix3x2({Float(value.M11)}, {Float(value.M12)}, {Float(value.M21)}, {Float(value.M22)}, {Float(value.M31)}, {Float(value.M32)})";
-
-        public virtual string Matrix4x4(Matrix4x4 value)
-            => $"new Matrix4x4({Float(value.M11)}, {Float(value.M12)}, {Float(value.M13)}, {Float(value.M14)}, {Float(value.M21)}, {Float(value.M22)}, {Float(value.M23)}, {Float(value.M24)}, {Float(value.M31)}, {Float(value.M32)}, {Float(value.M33)}, {Float(value.M34)}, {Float(value.M41)}, {Float(value.M42)}, {Float(value.M43)}, {Float(value.M44)})";
-
-        public virtual string Namespace(string value) => value;
-
-        public virtual string ReferenceTypeName(string value) => value;
-
-        public virtual string String(string value) => $"\"{value}\"";
-
-        public virtual string TimeSpan(TimeSpan value) => TimeSpan(Int64(value.Ticks));
-
-        public virtual string TimeSpan(string ticks) => $"TimeSpan.FromTicks({ticks})";
-
-        public virtual string Vector2(Vector2 value) => $"new Vector2({Float(value.X)}, {Float(value.Y)})";
-
-        public virtual string Vector3(Vector3 value) => $"new Vector3({Float(value.X)}, {Float(value.Y)}, {Float(value.Z)})";
-
-        public virtual string Vector4(Vector4 value) => $"new Vector4({Float(value.X)}, {Float(value.Y)}, {Float(value.Z)}, {Float(value.W)})";
-
-        public string Static => "static";
-
-        public virtual string StringType => "string";
-
-        public virtual string ByteArray => "byte[]";
-
         public string BorderMode(CompositionBorderMode value)
         {
             var typeName = nameof(CompositionBorderMode);
-            switch (value)
+            return value switch
             {
-                case CompositionBorderMode.Hard: return $"{typeName}{ScopeResolve}{nameof(CompositionBorderMode.Hard)}";
-                case CompositionBorderMode.Soft: return $"{typeName}{ScopeResolve}{nameof(CompositionBorderMode.Soft)}";
-                case CompositionBorderMode.Inherit: return $"{typeName}{ScopeResolve}{nameof(CompositionBorderMode.Inherit)}";
-                default: throw new InvalidOperationException();
-            }
+                CompositionBorderMode.Hard => $"{typeName}{ScopeResolve}{nameof(CompositionBorderMode.Hard)}",
+                CompositionBorderMode.Soft => $"{typeName}{ScopeResolve}{nameof(CompositionBorderMode.Soft)}",
+                CompositionBorderMode.Inherit => $"{typeName}{ScopeResolve}{nameof(CompositionBorderMode.Inherit)}",
+                _ => throw new InvalidOperationException(),
+            };
         }
 
-        public virtual string CanvasFigureLoop(CanvasFigureLoop value)
-        {
-            var typeName = nameof(CanvasFigureLoop);
-            switch (value)
-            {
-                case Mgcg.CanvasFigureLoop.Open: return $"{typeName}{ScopeResolve}Open";
-                case Mgcg.CanvasFigureLoop.Closed: return $"{typeName}{ScopeResolve}Closed";
-                default: throw new InvalidOperationException();
-            }
-        }
+        public abstract string ByteArray { get; }
 
-        public virtual string CanvasGeometryCombine(CanvasGeometryCombine value)
-        {
-            var typeName = nameof(CanvasGeometryCombine);
-            switch (value)
-            {
-                case Mgcg.CanvasGeometryCombine.Union: return $"{typeName}{ScopeResolve}Union";
-                case Mgcg.CanvasGeometryCombine.Exclude: return $"{typeName}{ScopeResolve}Exclude";
-                case Mgcg.CanvasGeometryCombine.Intersect: return $"{typeName}{ScopeResolve}Intersect";
-                case Mgcg.CanvasGeometryCombine.Xor: return $"{typeName}{ScopeResolve}Xor";
-                default: throw new InvalidOperationException();
-            }
-        }
-
-        public virtual string FilledRegionDetermination(CanvasFilledRegionDetermination value)
-        {
-            var typeName = nameof(CanvasFilledRegionDetermination);
-            switch (value)
-            {
-                case CanvasFilledRegionDetermination.Alternate: return $"{typeName}{ScopeResolve}Alternate";
-                case CanvasFilledRegionDetermination.Winding: return $"{typeName}{ScopeResolve}Winding";
-                default: throw new InvalidOperationException();
-            }
-        }
+        // Sets the first character to lower case.
+        public string CamelCase(string value) => $"{char.ToLowerInvariant(value[0])}{value.Substring(1)}";
 
         public string CanvasCompositeMode(CanvasComposite value)
         {
             var typeName = nameof(CanvasComposite);
-            switch (value)
+            return value switch
             {
-                case CanvasComposite.SourceOver: return $"{typeName}{ScopeResolve}SourceOver";
-                case CanvasComposite.DestinationOver: return $"{typeName}{ScopeResolve}DestinationOver";
-                case CanvasComposite.SourceIn: return $"{typeName}{ScopeResolve}SourceIn";
-                case CanvasComposite.DestinationIn: return $"{typeName}{ScopeResolve}DestinationIn";
-                case CanvasComposite.SourceOut: return $"{typeName}{ScopeResolve}SourceOut";
-                case CanvasComposite.DestinationOut: return $"{typeName}{ScopeResolve}DestinationOut";
-                case CanvasComposite.SourceAtop: return $"{typeName}{ScopeResolve}SourceAtop";
-                case CanvasComposite.DestinationAtop: return $"{typeName}{ScopeResolve}DestinationAtop";
-                case CanvasComposite.Xor: return $"{typeName}{ScopeResolve}Xor";
-                case CanvasComposite.Add: return $"{typeName}{ScopeResolve}Add";
-                case CanvasComposite.Copy: return $"{typeName}{ScopeResolve}Copy";
-                case CanvasComposite.BoundedCopy: return $"{typeName}{ScopeResolve}BoundedCopy";
-                case CanvasComposite.MaskInvert: return $"{typeName}{ScopeResolve}MaskInvert";
-                default: throw new InvalidOperationException();
-            }
+                CanvasComposite.SourceOver => $"{typeName}{ScopeResolve}SourceOver",
+                CanvasComposite.DestinationOver => $"{typeName}{ScopeResolve}DestinationOver",
+                CanvasComposite.SourceIn => $"{typeName}{ScopeResolve}SourceIn",
+                CanvasComposite.DestinationIn => $"{typeName}{ScopeResolve}DestinationIn",
+                CanvasComposite.SourceOut => $"{typeName}{ScopeResolve}SourceOut",
+                CanvasComposite.DestinationOut => $"{typeName}{ScopeResolve}DestinationOut",
+                CanvasComposite.SourceAtop => $"{typeName}{ScopeResolve}SourceAtop",
+                CanvasComposite.DestinationAtop => $"{typeName}{ScopeResolve}DestinationAtop",
+                CanvasComposite.Xor => $"{typeName}{ScopeResolve}Xor",
+                CanvasComposite.Add => $"{typeName}{ScopeResolve}Add",
+                CanvasComposite.Copy => $"{typeName}{ScopeResolve}Copy",
+                CanvasComposite.BoundedCopy => $"{typeName}{ScopeResolve}BoundedCopy",
+                CanvasComposite.MaskInvert => $"{typeName}{ScopeResolve}MaskInvert",
+                _ => throw new InvalidOperationException(),
+            };
         }
 
         public string ColorSpace(CompositionColorSpace value)
         {
             const string typeName = nameof(CompositionColorSpace);
-            switch (value)
+            return value switch
             {
-                case CompositionColorSpace.Auto: return $"{typeName}{ScopeResolve}Auto";
-                case CompositionColorSpace.Hsl: return $"{typeName}{ScopeResolve}Hsl";
-                case CompositionColorSpace.Rgb: return $"{typeName}{ScopeResolve}Rgb";
-                case CompositionColorSpace.HslLinear: return $"{typeName}{ScopeResolve}HslLinear";
-                case CompositionColorSpace.RgbLinear: return $"{typeName}{ScopeResolve}RgbLinear";
-                default: throw new InvalidOperationException();
-            }
+                CompositionColorSpace.Auto => $"{typeName}{ScopeResolve}Auto",
+                CompositionColorSpace.Hsl => $"{typeName}{ScopeResolve}Hsl",
+                CompositionColorSpace.Rgb => $"{typeName}{ScopeResolve}Rgb",
+                CompositionColorSpace.HslLinear => $"{typeName}{ScopeResolve}HslLinear",
+                CompositionColorSpace.RgbLinear => $"{typeName}{ScopeResolve}RgbLinear",
+                _ => throw new InvalidOperationException(),
+            };
         }
+
+        public abstract string CanvasFigureLoop(CanvasFigureLoop value);
+
+        public abstract string CanvasGeometryCombine(CanvasGeometryCombine value);
+
+        public abstract string Color(Color value);
+
+        public abstract string ConstExprField(string type, string name, string value);
+
+        public abstract string ConstVar { get; }
+
+        public abstract string DefaultInitialize { get; }
+
+        public abstract string Deref { get; }
+
+        public abstract string Double(double value);
 
         public string ExtendMode(CompositionGradientExtendMode value)
         {
             const string typeName = nameof(CompositionGradientExtendMode);
-            switch (value)
+            return value switch
             {
-                case CompositionGradientExtendMode.Clamp: return $"{typeName}{ScopeResolve}Clamp";
-                case CompositionGradientExtendMode.Wrap: return $"{typeName}{ScopeResolve}Wrap";
-                case CompositionGradientExtendMode.Mirror: return $"{typeName}{ScopeResolve}Mirror";
-                default: throw new InvalidOperationException();
-            }
+                CompositionGradientExtendMode.Clamp => $"{typeName}{ScopeResolve}Clamp",
+                CompositionGradientExtendMode.Wrap => $"{typeName}{ScopeResolve}Wrap",
+                CompositionGradientExtendMode.Mirror => $"{typeName}{ScopeResolve}Mirror",
+                _ => throw new InvalidOperationException(),
+            };
         }
+
+        public abstract string CanvasGeometryFactoryCall(string value);
+
+        public abstract string FilledRegionDetermination(CanvasFilledRegionDetermination value);
+
+        public abstract string Float(float value);
+
+        public string Float(double value) => Float((float)value);
+
+        public string Hex(int value) => $"0x{value.ToString("X2")}";
+
+        public abstract string IListAdd { get; }
+
+        public abstract string Int32(int value);
+
+        public abstract string Int64(long value);
 
         public string MappingMode(CompositionMappingMode value)
         {
             const string typeName = nameof(CompositionMappingMode);
-            switch (value)
+            return value switch
             {
-                case CompositionMappingMode.Absolute: return $"{typeName}{ScopeResolve}Absolute";
-                case CompositionMappingMode.Relative: return $"{typeName}{ScopeResolve}Relative";
-                default: throw new InvalidOperationException();
-            }
+                CompositionMappingMode.Absolute => $"{typeName}{ScopeResolve}Absolute",
+                CompositionMappingMode.Relative => $"{typeName}{ScopeResolve}Relative",
+                _ => throw new InvalidOperationException(),
+            };
         }
+
+        public abstract string Matrix3x2(Matrix3x2 value);
+
+        public abstract string Matrix4x4(Matrix4x4 value);
+
+        public abstract string Namespace(string value);
+
+        public abstract string New(string typeName);
+
+        public abstract string Null { get; }
+
+        public abstract string PropertyGet(string target, string propertyName);
+
+        public abstract string PropertySet(string target, string propertyName, string value);
+
+        public abstract string Readonly(string value);
+
+        public abstract string ReferenceTypeName(string value);
+
+        public abstract string ScopeResolve { get; }
+
+        public abstract string String(string value);
 
         public string StrokeCap(CompositionStrokeCap value)
         {
             const string typeName = nameof(CompositionStrokeCap);
-            switch (value)
+            return value switch
             {
-                case CompositionStrokeCap.Flat: return $"{typeName}{ScopeResolve}Flat";
-                case CompositionStrokeCap.Square: return $"{typeName}{ScopeResolve}Square";
-                case CompositionStrokeCap.Round: return $"{typeName}{ScopeResolve}Round";
-                case CompositionStrokeCap.Triangle: return $"{typeName}{ScopeResolve}Triangle";
-                default: throw new InvalidOperationException();
-            }
+                CompositionStrokeCap.Flat => $"{typeName}{ScopeResolve}Flat",
+                CompositionStrokeCap.Square => $"{typeName}{ScopeResolve}Square",
+                CompositionStrokeCap.Round => $"{typeName}{ScopeResolve}Round",
+                CompositionStrokeCap.Triangle => $"{typeName}{ScopeResolve}Triangle",
+                _ => throw new InvalidOperationException(),
+            };
         }
 
         public string StrokeLineJoin(CompositionStrokeLineJoin value)
         {
             const string typeName = nameof(CompositionStrokeLineJoin);
-            switch (value)
+            return value switch
             {
-                case CompositionStrokeLineJoin.Miter: return $"{typeName}{ScopeResolve}Miter";
-                case CompositionStrokeLineJoin.Bevel: return $"{typeName}{ScopeResolve}Bevel";
-                case CompositionStrokeLineJoin.Round: return $"{typeName}{ScopeResolve}Round";
-                case CompositionStrokeLineJoin.MiterOrBevel: return $"{typeName}{ScopeResolve}MiterOrBevel";
-                default: throw new InvalidOperationException();
-            }
+                CompositionStrokeLineJoin.Miter => $"{typeName}{ScopeResolve}Miter",
+                CompositionStrokeLineJoin.Bevel => $"{typeName}{ScopeResolve}Bevel",
+                CompositionStrokeLineJoin.Round => $"{typeName}{ScopeResolve}Round",
+                CompositionStrokeLineJoin.MiterOrBevel => $"{typeName}{ScopeResolve}MiterOrBevel",
+                _ => throw new InvalidOperationException(),
+            };
         }
 
-        public virtual string Hex(int value) => $"0x{value.ToString("X2")}";
+        public abstract string TimeSpan(string ticks);
 
-        public virtual string TypeInt32 => "int";
+        public abstract string TimeSpan(TimeSpan value);
 
-        public virtual string TypeInt64 => "long";
+        public string TypeFloat32 => "float";
 
-        public virtual string TypeFloat32 { get; } = "float";
+        public abstract string TypeInt64 { get; }
 
-        public virtual string TypeVector2 { get; } = "Vector2";
+        public abstract string TypeMatrix3x2 { get; }
 
-        public virtual string TypeVector3 { get; } = "Vector3";
+        public abstract string TypeString { get; }
 
-        public virtual string TypeVector4 { get; } = "Vector4";
+        public abstract string TypeVector2 { get; }
 
-        public virtual string TypeMatrix3x2 { get; } = "Matrix3x2";
+        public abstract string TypeVector3 { get; }
 
-        // Sets the first character to lower case.
-        public string CamelCase(string value) => $"{char.ToLowerInvariant(value[0])}{value.Substring(1)}";
+        public abstract string TypeVector4 { get; }
+
+        public abstract string Var { get; }
+
+        public abstract string VariableInitialization(string value);
+
+        public abstract string Vector2(Vector2 value);
+
+        public abstract string Vector3(Vector3 value);
+
+        public abstract string Vector4(Vector4 value);
     }
 }

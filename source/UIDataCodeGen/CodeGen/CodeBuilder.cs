@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -19,7 +20,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         readonly SortedDictionary<string, CodeBuilder> _subBuilders = new SortedDictionary<string, CodeBuilder>();
         int _indentCount = 0;
 
+        /// <summary>
+        /// True iff no lines have been added to this <see cref="CodeBuilder"/>.
+        /// </summary>
         internal bool IsEmpty => _lines.Count == 0;
+
+        /// <summary>
+        /// The number of lines added to this <see cref="CodeBuilder"/> including the
+        /// lines added to any nested <see cref="CodeBuilder"/>s.
+        /// </summary>
+        internal int LineCount => _lines.Sum(line => line.LineCount);
 
         internal void WriteLine()
         {
@@ -28,7 +38,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         internal void WriteLine(string line)
         {
-            _lines.Add(new CodeLine { Text = line, IndentCount = _indentCount });
+            _lines.Add(new CodeLine { Contents = line, IndentCount = _indentCount });
         }
 
         // Writes a line, or multiple lines if the line would be too long as a single line.
@@ -113,7 +123,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         internal void WriteCodeBuilder(CodeBuilder builder)
         {
-            _lines.Add(new CodeLine { Text = builder, IndentCount = _indentCount });
+            _lines.Add(new CodeLine { Contents = builder, IndentCount = _indentCount });
         }
 
         /// <summary>
@@ -156,6 +166,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         internal void UnIndent()
         {
             _indentCount--;
+            Debug.Assert(_indentCount >= 0, "Postcondition");
         }
 
         internal void Clear()
@@ -181,27 +192,32 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         internal IEnumerable<string> ToLines(int indentCount)
         {
-            var indent = string.Empty;
+            var indentString = string.Empty;
 
             foreach (var line in _lines)
             {
-                var builder = line.Text as CodeBuilder;
-                if (builder != null)
+                if (line.Contents is CodeBuilder builder)
                 {
-                    foreach (var subLine in builder.ToLines(line.IndentCount + indentCount))
+                    // A nested code builder. Yield each line from it with the appropriate indent.
+                    foreach (var subLineText in builder.ToLines(line.IndentCount + indentCount))
                     {
-                        yield return subLine;
+                        yield return subLineText;
                     }
                 }
                 else
                 {
-                    var lineText = line.Text.ToString();
+                    // A regular line.
+                    var lineText = line.Contents.ToString();
+
                     if (string.IsNullOrWhiteSpace(lineText))
                     {
+                        // An empty line.
                         yield return string.Empty;
                     }
                     else
                     {
+                        // Calculate how big the indent should be, and adjust the indent
+                        // string if it has changed.
                         var indentSpaceCount = (line.IndentCount + indentCount) * IndentSize;
 
                         if (indentSpaceCount <= 0)
@@ -211,12 +227,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                             indentSpaceCount = 0;
                         }
 
-                        if (indent.Length != indentSpaceCount)
+                        if (indentString.Length != indentSpaceCount)
                         {
-                            indent = new string(' ', indentSpaceCount);
+                            // The indent changed. Create a new indent string.
+                            indentString = new string(' ', indentSpaceCount);
                         }
 
-                        yield return indent + lineText;
+                        yield return indentString + lineText;
                     }
                 }
             }
@@ -401,11 +418,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         struct CodeLine
         {
             // A string or a CodeBuilder.
-            internal object Text;
+            internal object Contents;
             internal int IndentCount;
 
+            internal int LineCount => Contents is CodeBuilder nestedCodeBuilder ? nestedCodeBuilder.LineCount : 1;
+
             // In the debugger, show the contents of the line.
-            public override string ToString() => Text.ToString();
+            public override string ToString() => Contents.ToString();
         }
     }
 }

@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
+namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
 {
     sealed class HeaderBuilder
     {
@@ -20,20 +20,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         {
             var result = new CodeBuilder();
             result.WriteCodeBuilder(Preamble);
-            result.Indent();
-            result.OpenScope();
-            result.UnIndent();
+            if (Private.LineCount > 1)
+            {
+                result.WriteCodeBuilder(Private);
+            }
 
-            result.WriteCodeBuilder(Private);
-            result.WriteCodeBuilder(Internal);
+            if (Internal.LineCount > 1)
+            {
+                result.WriteCodeBuilder(Internal);
+            }
+
             result.WriteCodeBuilder(Public);
+            result.WriteCodeBuilder(Postamble);
 
-            // Close the class.
-            result.Indent();
-            result.CloseCppTypeScope();
-
-            // Close the namespace.
-            result.CloseScope();
             return result.ToString();
         }
     }

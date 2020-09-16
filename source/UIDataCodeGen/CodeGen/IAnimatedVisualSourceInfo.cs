@@ -31,6 +31,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         TypeName InterfaceType { get; }
 
         /// <summary>
+        /// True iff the interface type is not the default Microsoft.UI.Xaml interface.
+        /// </summary>
+        bool IsInterfaceCustom { get; }
+
+        /// <summary>
         /// Gets the name of the field in the instantiator class that holds the reusable ExpressionAnimation.
         /// </summary>
         string ReusableExpressionAnimationFieldName { get; }

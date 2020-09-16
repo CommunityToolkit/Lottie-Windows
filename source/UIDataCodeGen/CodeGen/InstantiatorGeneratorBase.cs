@@ -56,6 +56,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         readonly bool _isThemed;
         readonly IReadOnlyList<string> _toolInfo;
         readonly TypeName _interfaceType;
+        readonly bool _isInterfaceCustom;
         readonly IReadOnlyList<MarkerInfo> _lottieMarkers;
         readonly IReadOnlyList<NamedConstant> _internalConstants;
 
@@ -79,7 +80,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             _s = stringifier;
             _toolInfo = configuration.ToolInfo;
             _interfaceType = new TypeName(configuration.InterfaceType);
-
+            _isInterfaceCustom = _interfaceType.NormalizedQualifiedName != "Microsoft.UI.Xaml.Controls.IAnimatedVisual";
             _lottieMarkers = MarkerInfo.GetMarkerInfos(_sourceMetadata.LottieMetadata.FilteredMarkers).ToArray();
             _internalConstants = GetInternalConstants().ToArray();
 
@@ -151,6 +152,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             _loadedImageSurfaceInfosByNode = sharedLoadedImageSurfaceInfos.ToDictionary(n => n.node, n => n.loadedImageSurfaceNode);
         }
 
+        /// <summary>
+        /// Information about the IAnimatedVisualSourceInfo implementation.
+        /// </summary>
         protected IAnimatedVisualSourceInfo AnimatedVisualSourceInfo => this;
 
         /// <summary>
@@ -205,7 +209,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// <summary>
         /// Writes the start of the file, e.g. using namespace statements and includes at the top of the file.
         /// </summary>
-        protected abstract void WriteFileStart(CodeBuilder builder);
+        protected abstract void WriteImplementationFileStart(CodeBuilder builder);
 
         /// <summary>
         /// Writes the start of the IAnimatedVisual implementation class.
@@ -224,7 +228,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// <summary>
         /// Writes the end of the file.
         /// </summary>
-        protected abstract void WriteFileEnd(CodeBuilder builder);
+        protected abstract void WriteImplementationFileEnd(CodeBuilder builder);
 
         /// <summary>
         /// Writes CanvasGeometery.Combination factory code.
@@ -321,7 +325,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// <param name="fieldName">The name of the Bytes field to be written.</param>
         protected void WriteBytesField(CodeBuilder builder, string fieldName)
         {
-            builder.WriteLine($"{_s.Static} {_s.Readonly(_s.ReferenceTypeName(_s.ByteArray))} {fieldName} = {_s.New(_s.ByteArray)}");
+            builder.WriteLine($"static {_s.Readonly(_s.ReferenceTypeName(_s.ByteArray))} {fieldName} = {_s.New(_s.ByteArray)}");
         }
 
         /// <summary>
@@ -501,7 +505,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             builder.WritePreformattedCommentLines(GetGraphStatsLines());
 
             // Write the start of the file. This is everything up to the start of the AnimatedVisual class.
-            WriteFileStart(builder);
+            WriteImplementationFileStart(builder);
 
             // Write the LoadedImageSurface byte arrays into the outer (IAnimatedVisualSource) class.
             WriteLoadedImageSurfaceArrays(builder);
@@ -524,7 +528,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             }
 
             // Write the end of the file.
-            WriteFileEnd(builder);
+            WriteImplementationFileEnd(builder);
 
             return builder.ToString();
         }
@@ -698,28 +702,26 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         {
             switch (value.Type)
             {
-                case GenericDataObjectType.Bool: return _s.Bool(((GenericDataBool)value).Value);
+                case GenericDataObjectType.Bool: return Bool(((GenericDataBool)value).Value);
                 case GenericDataObjectType.Number: return _s.Double(((GenericDataNumber)value).Value);
                 case GenericDataObjectType.String: return _s.String(((GenericDataString)value).Value);
                 default: throw new InvalidOperationException();
             }
         }
 
+        string Bool(bool value) => value ? "true" : "false";
+
         string Deref => _s.Deref;
 
-        string ConstVar => _s.ConstVar;
-
         string New(string typeName) => _s.New(typeName);
-
-        string ReferenceTypeName(string value) => _s.ReferenceTypeName(value);
-
-        string Static => _s.Static;
 
         string IAnimatedVisualSourceInfo.ClassName => _className;
 
         string IAnimatedVisualSourceInfo.Namespace => _namespace;
 
         TypeName IAnimatedVisualSourceInfo.InterfaceType => _interfaceType;
+
+        bool IAnimatedVisualSourceInfo.IsInterfaceCustom => _isInterfaceCustom;
 
         string IAnimatedVisualSourceInfo.ReusableExpressionAnimationFieldName => SingletonExpressionAnimationName;
 
@@ -1035,7 +1037,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     node.ForceInline(() =>
                     {
                         var inlinedFactoryCode = CallFactoryFromFor(node, ((CompositionPath)node.Object).Source);
-                        return $"{New("CompositionPath")}({_s.FactoryCall(inlinedFactoryCode)})";
+                        return $"{New("CompositionPath")}({_s.CanvasGeometryFactoryCall(inlinedFactoryCode)})";
                     });
                 }
 
@@ -1171,7 +1173,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             string ConstVar => _s.ConstVar;
 
-            string Bool(bool value) => _s.Bool(value);
+            string Bool(bool value) => value ? "true" : "false";
 
             string Color(Wui.Color value) => _s.Color(value);
 
@@ -1339,7 +1341,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             {
                 WriteObjectFactoryStart(builder, node);
                 var canvasGeometry = _objectGraph[(CanvasGeometry)obj.Source];
-                WriteCreateAssignment(builder, node, $"{New("CompositionPath")}({_s.FactoryCall(canvasGeometry.FactoryCall())})");
+                WriteCreateAssignment(builder, node, $"{New("CompositionPath")}({_s.CanvasGeometryFactoryCall(canvasGeometry.FactoryCall())})");
                 WriteObjectFactoryEnd(builder);
                 return true;
             }
@@ -1982,10 +1984,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 var b = builder.GetSubBuilder("StartProgressBoundAnimation");
                 if (b.IsEmpty)
                 {
-                    b.WriteLine($"{_s.Static} void StartProgressBoundAnimation(");
+                    b.WriteLine("static void StartProgressBoundAnimation(");
                     b.Indent();
                     b.WriteLine($"{ReferenceTypeName("CompositionObject")} target,");
-                    b.WriteLine($"{_s.StringType} animatedPropertyName,");
+                    b.WriteLine($"{_s.TypeString} animatedPropertyName,");
                     b.WriteLine($"{ReferenceTypeName("CompositionAnimation")} animation,");
                     b.WriteLine($"{ReferenceTypeName("ExpressionAnimation")} controllerProgressExpression)");
                     b.UnIndent();
@@ -2009,9 +2011,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     b.WriteLine("void BindProperty(");
                     b.Indent();
                     b.WriteLine($"{ReferenceTypeName("CompositionObject")} target,");
-                    b.WriteLine($"{_s.StringType} animatedPropertyName,");
-                    b.WriteLine($"{_s.StringType} expression,");
-                    b.WriteLine($"{_s.StringType} referenceParameterName,");
+                    b.WriteLine($"{_s.TypeString} animatedPropertyName,");
+                    b.WriteLine($"{_s.TypeString} expression,");
+                    b.WriteLine($"{_s.TypeString} referenceParameterName,");
                     b.WriteLine($"{ReferenceTypeName("CompositionObject")} referencedObject)");
                     b.UnIndent();
                     b.OpenScope();
@@ -2035,11 +2037,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     b.WriteLine($"void BindProperty2(");
                     b.Indent();
                     b.WriteLine($"{ReferenceTypeName("CompositionObject")} target,");
-                    b.WriteLine($"{_s.StringType} animatedPropertyName,");
-                    b.WriteLine($"{_s.StringType} expression,");
-                    b.WriteLine($"{_s.StringType} referenceParameterName0,");
+                    b.WriteLine($"{_s.TypeString} animatedPropertyName,");
+                    b.WriteLine($"{_s.TypeString} expression,");
+                    b.WriteLine($"{_s.TypeString} referenceParameterName0,");
                     b.WriteLine($"{ReferenceTypeName("CompositionObject")} referencedObject0,");
-                    b.WriteLine($"{_s.StringType} referenceParameterName1,");
+                    b.WriteLine($"{_s.TypeString} referenceParameterName1,");
                     b.WriteLine($"{ReferenceTypeName("CompositionObject")} referencedObject1)");
                     b.UnIndent();
                     b.OpenScope();
@@ -3095,8 +3097,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 return true;
             }
 
-            IAnimatedVisualSourceInfo IAnimatedVisualInfo.AnimatedVisualSourceInfo => _owner;
-
             // Name used in stats reports to identify the class without using its class name.
             internal string StatsName => _isPartOfMultiVersionSource ? $"UAP v{_requiredUapVersion}" : null;
 
@@ -3326,8 +3326,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             internal string TypeName
                 => Type switch
                 {
-                    // Return the interface type for CanvasGeometry. Nobody consumes the class type.
-                    Graph.NodeType.CanvasGeometry => "IGeometrySource2D",
+                    Graph.NodeType.CanvasGeometry => "CanvasGeometry",
                     Graph.NodeType.CompositionObject => ((CompositionObject)Object).Type.ToString(),
                     Graph.NodeType.CompositionPath => "CompositionPath",
                     Graph.NodeType.LoadedImageSurface => "LoadedImageSurface",
