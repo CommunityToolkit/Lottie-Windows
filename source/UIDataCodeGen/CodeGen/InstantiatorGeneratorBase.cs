@@ -62,7 +62,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         AnimatedVisualGenerator _currentAnimatedVisualGenerator;
 
-        protected InstantiatorGeneratorBase(
+        private protected InstantiatorGeneratorBase(
             CodegenConfiguration configuration,
             bool setCommentProperties,
             Stringifier stringifier)
@@ -170,9 +170,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 return null;
             }
 
-            // Remove any non-characters from the start of the name.
-            var nonCharPrefixSize = name.TakeWhile(c => !char.IsLetter(c)).Count();
-            return SanitizeTypeName(name.Substring(nonCharPrefixSize));
+            // Remove any leading punctuation.
+            var prefixSize = name.TakeWhile(c => !char.IsLetterOrDigit(c)).Count();
+
+            return SanitizeTypeName(name.Substring(prefixSize));
         }
 
         /// <summary>
@@ -3100,7 +3101,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             // Name used in stats reports to identify the class without using its class name.
             internal string StatsName => _isPartOfMultiVersionSource ? $"UAP v{_requiredUapVersion}" : null;
 
-            string IAnimatedVisualInfo.ClassName => "AnimatedVisual" + (_isPartOfMultiVersionSource ? $"_UAPv{_requiredUapVersion}" : string.Empty);
+            string IAnimatedVisualInfo.ClassName =>
+                $"{_owner._className}_AnimatedVisual{(_isPartOfMultiVersionSource ? $"_UAPv{_requiredUapVersion}" : string.Empty)}";
 
             IReadOnlyList<LoadedImageSurfaceInfo> IAnimatedVisualInfo.LoadedImageSurfaceNodes
             {

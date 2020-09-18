@@ -629,9 +629,6 @@ sealed class LottieFileProcessor
 
     CodegenConfiguration CreateCodeGenConfiguration(string languageSwitch)
     {
-        var syntheticCommandLine =
-            $"{_options.ToConfigurationCommandLine()} -Language {languageSwitch} -InputFile {System.IO.Path.GetFileName(_lottieFilePath)}";
-
         var result = new CodegenConfiguration
         {
             ClassName = _className,
@@ -677,7 +674,7 @@ sealed class LottieFileProcessor
         }
 
         var syntheticCommandLine =
-            $"{_options.ToConfigurationCommandLine()} -Language {languageSwitch} -InputFile {inputFile.Name}";
+            $"{_options.ToConfigurationCommandLine(languageSwitch)} -InputFile {inputFile.Name}";
 
         yield return "Command:";
         yield return $"{indent}{syntheticCommandLine}";
