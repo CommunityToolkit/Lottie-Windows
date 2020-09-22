@@ -379,9 +379,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
             }
 
             builder.Preamble.WriteLine();
-            builder.Preamble.WriteLine($"virtual event {_s.ReferenceTypeName($"Windows::Foundation::TypedEventHandler<{_s.ReferenceTypeName("IDynamicAnimatedVisualSource")}, Object^>")} AnimatedVisualInvalidated");
+            builder.Preamble.WriteLine("virtual event Windows::Foundation::TypedEventHandler<IDynamicAnimatedVisualSource^, Object^>^ AnimatedVisualInvalidated");
             builder.Preamble.OpenScope();
-            builder.Preamble.WriteLine($"Windows::Foundation::EventRegistrationToken add({_s.ReferenceTypeName($"Windows::Foundation::TypedEventHandler<{_s.ReferenceTypeName("IDynamicAnimatedVisualSource")}, Object^>")} value)");
+            builder.Preamble.WriteLine("Windows::Foundation::EventRegistrationToken add(Windows::Foundation::TypedEventHandler<IDynamicAnimatedVisualSource^, Object^>^ value)");
             builder.Preamble.OpenScope();
             builder.Preamble.WriteLine("return m_InternalHandler::add(value);");
             builder.Preamble.CloseScope();
@@ -392,13 +392,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
             builder.Preamble.CloseScope();
 
             builder.Preamble.WriteLine();
-            builder.Preamble.WriteLine($"virtual {_s.ReferenceTypeName($"{_animatedVisualTypeName}^")} TryCreateAnimatedVisual(");
+            builder.Preamble.WriteLine($"virtual {_animatedVisualTypeName}^ TryCreateAnimatedVisual(");
             builder.Preamble.Indent();
             builder.Preamble.WriteLine($"{_wuc}::Compositor^ compositor,");
             builder.Preamble.WriteLine($"Object^* diagnostics);");
             builder.Preamble.UnIndent();
             builder.Preamble.WriteLine();
-            builder.Preamble.WriteLine($"virtual event {_s.ReferenceTypeName("PropertyChangedEventHandler")} PropertyChanged;");
+            builder.Preamble.WriteLine($"virtual event PropertyChangedEventHandler^ PropertyChanged;");
             builder.Preamble.WriteSummaryComment("If this property is set to true, <see cref=\"TryCreateAnimatedVisual\"/> will" +
                 " return null until all images have loaded. When all images have loaded, <see cref=\"TryCreateAnimatedVisual\"/>" +
                 " will return the AnimatedVisual. To use, set it when declaring the AnimatedVisualSource. Once" +
@@ -432,16 +432,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
             builder.Private.WriteLine("bool m_isImageLoadingCompleted{}");
             builder.Private.WriteLine("bool m_isTryCreateAnimatedVisualCalled{}");
             builder.Private.WriteLine("bool m_isImageLoadingStarted{}");
-            builder.Private.WriteLine($"event {_s.ReferenceTypeName($"Windows::Foundation::TypedEventHandler<{_s.ReferenceTypeName("IDynamicAnimatedVisualSource")}, Object^>")} m_InternalHandler;");
+            builder.Private.WriteLine("event Windows::Foundation::TypedEventHandler<IDynamicAnimatedVisualSource^, Object^>^ m_InternalHandler;");
 
             foreach (var n in SourceInfo.LoadedImageSurfaces)
             {
-                builder.Private.WriteLine($"{_s.ReferenceTypeName(n.TypeName)} {n.FieldName}{{}};");
+                builder.Private.WriteLine($"{n.TypeName}^ {n.FieldName}{{}};");
             }
 
             builder.Private.WriteLine("void EnsureImageLoadingStarted();");
-            builder.Private.WriteLine($"void HandleLoadCompleted({_s.ReferenceTypeName("LoadedImageSurface")} sender, {_s.ReferenceTypeName("LoadedImageSourceLoadCompletedEventArgs")} e);");
-            builder.Private.WriteLine($"void RaiseAnimatedVisualInvalidatedEvent({_s.ReferenceTypeName("IDynamicAnimatedVisualSource")} sender, Object^ object)");
+            builder.Private.WriteLine("void HandleLoadCompleted(LoadedImageSurface^ sender, LoadedImageSourceLoadCompletedEventArgs^ e);");
+            builder.Private.WriteLine("void RaiseAnimatedVisualInvalidatedEvent(IDynamicAnimatedVisualSource^ sender, Object^ object)");
             builder.Private.OpenScope();
             builder.Private.OpenScope();
             builder.Private.WriteLine("m_InternalHandler::raise(sender, object);");
@@ -631,7 +631,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
                 builder.CloseScope();
             }
 
-            return $"reinterpret_cast<{_s.ReferenceTypeName("Windows::Graphics::Effects::IGraphicsEffect")}>(compositeEffect.Get())";
+            return "reinterpret_cast<Windows::Graphics::Effects::IGraphicsEffect^>(compositeEffect.Get())";
         }
 
         /// <inheritdoc/>
@@ -824,7 +824,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
             builder.OpenScope();
             builder.WriteLine("if (!m_isImageLoadingStarted)");
             builder.OpenScope();
-            builder.WriteLine($"auto eventHandler = ref new TypedEventHandler<{_s.ReferenceTypeName("LoadedImageSurface")}, {_s.ReferenceTypeName("LoadedImageSourceLoadCompletedEventArgs")}>(this, &{_s.Namespace(SourceInfo.Namespace)}::{_sourceClassName}::HandleLoadCompleted);");
+            builder.WriteLine($"auto eventHandler = ref new TypedEventHandler<LoadedImageSurface^, LoadedImageSourceLoadCompletedEventArgs^>(this, &{_s.Namespace(SourceInfo.Namespace)}::{_sourceClassName}::HandleLoadCompleted);");
 
             foreach (var n in SourceInfo.LoadedImageSurfaces)
             {
@@ -860,7 +860,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
 
         void WriteHandleLoadCompleted(CodeBuilder builder)
         {
-            builder.WriteLine($"void {_s.Namespace(SourceInfo.Namespace)}::{_sourceClassName}::HandleLoadCompleted({_s.ReferenceTypeName("LoadedImageSurface")} sender, {_s.ReferenceTypeName("LoadedImageSourceLoadCompletedEventArgs")} e)");
+            builder.WriteLine($"void {_s.Namespace(SourceInfo.Namespace)}::{_sourceClassName}::HandleLoadCompleted(LoadedImageSurface^ sender, LoadedImageSourceLoadCompletedEventArgs^ e)");
             builder.OpenScope();
             builder.WriteLine("m_loadCompleteEventCount++;");
             builder.WriteLine("if (e->Status == LoadedImageSourceLoadStatus::Success)");
@@ -1165,7 +1165,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
 
             foreach (var loadedImageSurfaceNode in info.LoadedImageSurfaceNodes)
             {
-                yield return $"{_s.ReferenceTypeName(loadedImageSurfaceNode.TypeName)} {_s.CamelCase(loadedImageSurfaceNode.Name)}";
+                yield return $"{loadedImageSurfaceNode.TypeName}^ {_s.CamelCase(loadedImageSurfaceNode.Name)}";
             }
         }
 
