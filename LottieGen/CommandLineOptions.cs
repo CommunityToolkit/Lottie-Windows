@@ -78,7 +78,7 @@ sealed class CommandLineOptions
     // for adding to generated code so that users can regenerate the code and know that
     // they got the set of options the same as a previous run. It does not include the
     // InputFile, OutputFolder, or Language options.
-    internal string ToConfigurationCommandLine()
+    internal string ToConfigurationCommandLine(string languageSwitch)
     {
         var sb = new StringBuilder();
         sb.Append(ThisAssembly.AssemblyName);
@@ -108,6 +108,8 @@ sealed class CommandLineOptions
             sb.Append($" -{nameof(Interface)} {Interface}");
         }
 
+        sb.Append($" -Language {languageSwitch}");
+
         if (MinimumUapVersion.HasValue)
         {
             sb.Append($" -{nameof(MinimumUapVersion)} {MinimumUapVersion.Value}");
@@ -118,7 +120,8 @@ sealed class CommandLineOptions
             sb.Append($" -{nameof(Namespace)} {Namespace}");
         }
 
-        if (Public)
+        // The -Public switch is ignored for cppwinrt.
+        if (Public && !languageSwitch.Equals("cppwinrt", StringComparison.OrdinalIgnoreCase))
         {
             sb.Append($" -{nameof(Public)}");
         }
