@@ -175,7 +175,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
                 throw new NotImplementedException();
             }
 
-            builder.Class.Preamble.WriteLine($"class {_sourceClassName} final");
+            builder.Class.Preamble.WriteLine($"class {_sourceClassName}");
             builder.Class.Preamble.Indent();
             builder.Class.Preamble.WriteLine($": public {_sourceClassName}T<{_sourceClassName}>");
             builder.Class.Preamble.UnIndent();
@@ -205,7 +205,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
             // Write the factory_implementation namespace. This allows the class to be activatable.
             builder.Postamble.WriteLine("namespace factory_implementation");
             builder.Postamble.OpenScope();
-            builder.Postamble.WriteLine($"struct {_sourceClassName} final : {_sourceClassName}T<{_sourceClassName}, implementation::{_sourceClassName}>");
+            builder.Postamble.WriteLine($"struct {_sourceClassName} : {_sourceClassName}T<{_sourceClassName}, implementation::{_sourceClassName}>");
             builder.Postamble.OpenScope();
             builder.Postamble.CloseCppTypeScope();
             builder.Postamble.CloseScope();
@@ -450,7 +450,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
             IAnimatedVisualInfo info)
         {
             // Start writing the instantiator.
-            builder.WriteLine($"class {info.ClassName} final : public winrt::implements<{info.ClassName},");
+            builder.WriteLine($"class {info.ClassName} : public winrt::implements<{info.ClassName},");
             builder.Indent();
             builder.Indent();
             builder.WriteLine($"winrt::{_animatedVisualTypeName},");
@@ -1200,7 +1200,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
         }
 
         static string CanvasGeometryClass =>
-@"class CanvasGeometry final : public winrt::implements<CanvasGeometry,
+@"class CanvasGeometry : public winrt::implements<CanvasGeometry,
         winrt::Windows::Graphics::IGeometrySource2D,
         ::ABI::Windows::Graphics::IGeometrySource2DInterop>
     {
@@ -1253,7 +1253,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
     // Windows::UI::Composition::CompositionEffectBrush without requiring Win2d. This is
     // achieved by implementing the interfaces Windows::UI::Composition requires for it
     // to consume an effect.
-    class CompositeEffect final : public winrt::implements<CompositeEffect,
+    class CompositeEffect : public winrt::implements<CompositeEffect,
         winrt::Windows::Graphics::Effects::IGraphicsEffect,
         winrt::Windows::Graphics::Effects::IGraphicsEffectSource,
         ::ABI::Windows::Graphics::Effects::IGraphicsEffectD2D1Interop>
