@@ -1275,7 +1275,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     // factory, then a dereference of the ".Properties" property on the owner.
                     if (propertySet.Owner != null)
                     {
-                        return $"{CallFactoryFromFor(callerNode, NodeFor(propertySet.Owner))}{Deref}Properties";
+                        return _s.PropertyGet(CallFactoryFromFor(callerNode, NodeFor(propertySet.Owner)), "Properties");
                     }
                 }
 
