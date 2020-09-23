@@ -694,7 +694,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
             builder.WriteLine($"compositeEffect.SetMode({_s.CanvasCompositeMode(compositeEffect.Mode)});");
             foreach (var source in compositeEffect.Sources)
             {
-                builder.WriteLine($"compositeEffect.AddSource(CompositionEffectSourceParameter(L\"{source.Name}));");
+                builder.WriteLine($"compositeEffect.AddSource(CompositionEffectSourceParameter(L\"{source.Name}\"));");
             }
 
             return "compositeEffect";
