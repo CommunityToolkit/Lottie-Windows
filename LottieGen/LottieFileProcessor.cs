@@ -654,6 +654,11 @@ sealed class LottieFileProcessor
             result.Namespace = NormalizeNamespace(_options.Namespace);
         }
 
+        if (!string.IsNullOrEmpty(_options.RootNamespace))
+        {
+            result.RootNamespace = NormalizeNamespace(_options.RootNamespace);
+        }
+
         return result;
     }
 
