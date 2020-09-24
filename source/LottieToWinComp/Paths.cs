@@ -344,19 +344,32 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 return false;
             }
 
+            // Don't compare the values directly - there could be some rounding errors that
+            // are acceptable. This value is just a guess about what is acceptable. We could
+            // do something a lot more sophisticated (e.g. take into consideration the size
+            // of the path) but this is probably good enough.
+            const double acceptableError = 0.005;
+
             offset = b[0].ControlPoint0 - a[0].ControlPoint0;
+
+            // The first bezier in a is an offset of b if all of the control points
+            // in a are offset from b by the same amount.
+            if (!IsFuzzyEqual(b[0].ControlPoint1 - a[0].ControlPoint1, offset, acceptableError) ||
+                !IsFuzzyEqual(b[0].ControlPoint2 - a[0].ControlPoint2, offset, acceptableError) ||
+                !IsFuzzyEqual(b[0].ControlPoint3 - a[0].ControlPoint3, offset, acceptableError))
+            {
+                offset = default;
+                return false;
+            }
+
+            // Compare all of the points in the sequence of beziers to see if they are all offset
+            // by the same amount.
             for (var i = 1; i < a.Count; i++)
             {
                 var cp0Offset = b[i].ControlPoint0 - a[i].ControlPoint0;
                 var cp1Offset = b[i].ControlPoint1 - a[i].ControlPoint1;
                 var cp2Offset = b[i].ControlPoint2 - a[i].ControlPoint2;
                 var cp3Offset = b[i].ControlPoint3 - a[i].ControlPoint3;
-
-                // Don't compare the values directly - there could be some rounding errors that
-                // are acceptable. This value is just a guess about what is acceptable. We could
-                // do something a lot more sophisticated (e.g. take into consideration the size
-                // of the path) but this is probably good enough.
-                const double acceptableError = 0.005;
 
                 if (!IsFuzzyEqual(cp0Offset, offset, acceptableError) ||
                     !IsFuzzyEqual(cp1Offset, offset, acceptableError) ||
