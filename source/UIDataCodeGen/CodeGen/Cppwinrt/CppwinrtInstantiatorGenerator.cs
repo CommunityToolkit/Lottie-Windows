@@ -690,14 +690,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
         /// <inheritdoc/>
         protected override string WriteCompositeEffectFactory(CodeBuilder builder, Mgce.CompositeEffect compositeEffect)
         {
-            builder.WriteLine("CompositeEffect compositeEffect{};");
-            builder.WriteLine($"compositeEffect.SetMode({_s.CanvasCompositeMode(compositeEffect.Mode)});");
+            builder.WriteLine("auto compositeEffect = winrt::make_self<CompositeEffect>();");
+            builder.WriteLine($"compositeEffect->SetMode({_s.CanvasCompositeMode(compositeEffect.Mode)});");
             foreach (var source in compositeEffect.Sources)
             {
-                builder.WriteLine($"compositeEffect.AddSource(CompositionEffectSourceParameter(L\"{source.Name}\"));");
+                builder.WriteLine($"compositeEffect->AddSource(CompositionEffectSourceParameter(L\"{source.Name}\"));");
             }
 
-            return "compositeEffect";
+            return "*compositeEffect";
         }
 
         /// <inheritdoc/>

@@ -345,7 +345,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
 
             offset = b[0].ControlPoint0 - a[0].ControlPoint0;
-            for (var i = 1; i < a.Count; i++)
+
+            // Compare all of the points in the sequence of beziers to see if they are all offset
+            // by the same amount.
+            for (var i = 0; i < a.Count; i++)
             {
                 var cp0Offset = b[i].ControlPoint0 - a[i].ControlPoint0;
                 var cp1Offset = b[i].ControlPoint1 - a[i].ControlPoint1;
