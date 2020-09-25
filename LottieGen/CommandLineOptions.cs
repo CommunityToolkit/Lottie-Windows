@@ -128,6 +128,7 @@ sealed class CommandLineOptions
             sb.Append($" -{nameof(Public)}");
         }
 
+        // The -RootNamespace parameter is only used for cppwinrt.
         if (!string.IsNullOrWhiteSpace(RootNamespace) && languageSwitch.Equals("cppwinrt", StringComparison.OrdinalIgnoreCase))
         {
             sb.Append($" -{nameof(RootNamespace)} {RootNamespace}");
