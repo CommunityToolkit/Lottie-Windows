@@ -55,6 +55,8 @@ sealed class CommandLineOptions
 
     internal bool Public { get; private set; }
 
+    internal string RootNamespace { get; private set; }
+
     internal bool StrictMode { get; private set; }
 
     internal uint? TargetUapVersion { get; private set; }
@@ -126,6 +128,12 @@ sealed class CommandLineOptions
             sb.Append($" -{nameof(Public)}");
         }
 
+        // The -RootNamespace parameter is only used for cppwinrt.
+        if (!string.IsNullOrWhiteSpace(RootNamespace) && languageSwitch.Equals("cppwinrt", StringComparison.OrdinalIgnoreCase))
+        {
+            sb.Append($" -{nameof(RootNamespace)} {RootNamespace}");
+        }
+
         if (StrictMode)
         {
             sb.Append($" -{nameof(StrictMode)}");
@@ -165,6 +173,7 @@ sealed class CommandLineOptions
         Namespace,
         OutputFolder,
         Public,
+        RootNamespace,
         Strict,
         TargetUapVersion,
         TestMode,
@@ -228,6 +237,7 @@ sealed class CommandLineOptions
             .AddPrefixedKeyword(Keyword.Namespace)
             .AddPrefixedKeyword(Keyword.OutputFolder)
             .AddPrefixedKeyword(Keyword.Public)
+            .AddPrefixedKeyword(Keyword.RootNamespace)
             .AddPrefixedKeyword(Keyword.Strict)
             .AddPrefixedKeyword(Keyword.TargetUapVersion)
             .AddPrefixedKeyword(Keyword.TestMode)
@@ -288,6 +298,7 @@ sealed class CommandLineOptions
                         case Keyword.Namespace:
                         case Keyword.OutputFolder:
                         case Keyword.MinimumUapVersion:
+                        case Keyword.RootNamespace:
                         case Keyword.TargetUapVersion:
                             previousKeyword = keyword;
                             break;
@@ -355,6 +366,15 @@ sealed class CommandLineOptions
                         MinimumUapVersion = version;
                     }
 
+                    break;
+                case Keyword.RootNamespace:
+                    if (RootNamespace != null)
+                    {
+                        ErrorDescription = ArgumentSpecifiedMoreThanOnce("Output folder");
+                        return;
+                    }
+
+                    RootNamespace = arg;
                     break;
                 case Keyword.TargetUapVersion:
                     if (TargetUapVersion != null)

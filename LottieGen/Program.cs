@@ -266,6 +266,10 @@ OVERVIEW:
                        specified the files will be written to the current directory.
          -Public       Makes the generated class public rather than internal. Ignored
                        for cppwinrt.
+         -RootNamespace
+                       Cppwinrt only, specifies the root namespace of the consuming
+                       project. Affects the names used to reference files generated
+                       by cppwinrt.exe.
          -StrictMode   Fails on any parsing or translation issue. If not specified,
                        a best effort will be made to create valid output, and any
                        issues will be reported to STDOUT.
