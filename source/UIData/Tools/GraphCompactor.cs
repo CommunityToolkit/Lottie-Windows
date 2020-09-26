@@ -1244,6 +1244,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 return false;
             }
 
+            // If the child has a centerpoint, it cannot be pulled into the parent if the
+            // parent has a transform, offset, rotation, or scale, as that would change the
+            // centerpoint context in which the parent's transform, offset, rotation, and scale
+            // are performed.
+            if (((child & PropertyId.CenterPoint) != PropertyId.None) &&
+                ((parent & (PropertyId.TransformMatrix | PropertyId.Offset | PropertyId.RotationAngleInDegrees | PropertyId.Scale)) != PropertyId.None))
+            {
+                return false;
+            }
+
             if (((parent & PropertyId.RotationAngleInDegrees) != PropertyId.None) &&
                 ((child & (PropertyId.Offset | PropertyId.Clip)) != PropertyId.None))
             {
