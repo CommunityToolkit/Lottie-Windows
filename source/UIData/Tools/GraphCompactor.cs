@@ -102,7 +102,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             PushPropertiesDownToShapeVisual(graph);
             CoalesceContainerVisuals(graph);
             CoalesceOrthogonalVisuals(graph);
-
             CoalesceOrthogonalContainerVisuals(graph);
             RemoveRedundantInsetClipVisuals(graph);
         }
