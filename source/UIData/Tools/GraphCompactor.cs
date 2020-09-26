@@ -102,6 +102,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             PushPropertiesDownToShapeVisual(graph);
             CoalesceContainerVisuals(graph);
             CoalesceOrthogonalVisuals(graph);
+
             CoalesceOrthogonalContainerVisuals(graph);
             RemoveRedundantInsetClipVisuals(graph);
         }
@@ -1240,6 +1241,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             // the transform to be evaluated too early.
             if (((child & PropertyId.TransformMatrix) != PropertyId.None) &&
                 ((parent & (PropertyId.Offset | PropertyId.RotationAngleInDegrees | PropertyId.Scale | PropertyId.Clip | PropertyId.CenterPoint)) != PropertyId.None))
+            {
+                return false;
+            }
+
+            // If the child has a centerpoint, it cannot be pulled into the parent if the
+            // parent has a transform, offset, rotation, or scale, as that would change the
+            // centerpoint context in which the parent's transform, offset, rotation, and scale
+            // are performed.
+            if (((child & PropertyId.CenterPoint) != PropertyId.None) &&
+                ((parent & (PropertyId.TransformMatrix | PropertyId.Offset | PropertyId.RotationAngleInDegrees | PropertyId.Scale)) != PropertyId.None))
             {
                 return false;
             }
