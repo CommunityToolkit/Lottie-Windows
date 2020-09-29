@@ -662,14 +662,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             // CompositionVisualSurface (CompositionVisualSurface ignores
             // IsVisible on its SourceVisual).
             var visualsWithSingleParents =
-                (from n in graph.CompositionObjectNodes
-                 let visual = n.Object as Visual
-                 let parent = n.Node.Parent as ContainerVisual
-                 where visual != null &&
-                       parent != null &&
-                       parent.Children.Count == 1 &&
-                       !IsVisualSurfaceSourceVisual(graph, parent)
-                 select (visual, parent)).ToArray();
+                from n in graph.CompositionObjectNodes
+                let visual = n.Object as Visual
+                where visual != null
+                let parent = n.Node.Parent as ContainerVisual
+                where parent != null &&
+                      parent.Children.Count == 1 &&
+                      !IsVisualSurfaceSourceVisual(graph, parent)
+                select (visual, parent);
 
             foreach (var (visual, parent) in visualsWithSingleParents)
             {
