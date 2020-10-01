@@ -656,17 +656,30 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
         // animation up to the top of the chain.
         void PushVisualVisibilityUp(ObjectGraph<Node> graph)
         {
-            var visualsWithSingleParents = graph.CompositionObjectNodes.Where(n =>
-                n.Object is Visual &&
-                n.Node.Parent != null &&
-                ((ContainerVisual)n.Node.Parent).Children.Count == 1).Select(x => (x.Node, (Visual)x.Object)).ToArray();
+            // Find the Visuals that have a single parent. It is safe to combine
+            // the visibility of such a Visual with the visibility of its parent,
+            // except in the case where the parent is the SourceVisual of a
+            // CompositionVisualSurface (CompositionVisualSurface ignores
+            // IsVisible on its SourceVisual).
+            var visualsWithSingleParents =
+                from n in graph.CompositionObjectNodes
+                let visual = n.Object as Visual
+                where visual != null
+                let parent = n.Node.Parent as ContainerVisual
+                where parent != null &&
+                      parent.Children.Count == 1 &&
+                      !IsVisualSurfaceSourceVisual(graph, parent)
+                select (visual, parent);
 
-            foreach (var (node, visual) in visualsWithSingleParents)
+            foreach (var (visual, parent) in visualsWithSingleParents)
             {
                 var visibilityController = visual.TryGetAnimationController("IsVisible");
                 if (visibilityController != null)
                 {
-                    ApplyVisibility((Visual)node.Parent, GetVisiblityAnimationDescription(visual), TryGetAnimatorByPropertyName(visibilityController, "Progress").Animation);
+                    ApplyVisibility(
+                        parent,
+                        GetVisiblityAnimationDescription(visual),
+                        TryGetAnimatorByPropertyName(visibilityController, "Progress").Animation);
 
                     // Clear out the visibility property and animation from the visual.
                     visual.IsVisible = null;
@@ -1193,7 +1206,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 if (ArePropertiesOrthogonal(parentProperties, childProperties) &&
                     (childProperties & PropertyId.Properties) == PropertyId.None)
                 {
-                    if (IsVisualSurfaceRoot(graph, parent))
+                    if (IsVisualSurfaceSourceVisual(graph, parent))
                     {
                         // VisualSurface roots are special - they ignore their transforming properties
                         // so such properties cannot be hoisted from the child.
@@ -1210,11 +1223,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             }
         }
 
-        // True iff the given ContainerVisual is the SourceVisual of a CompositionVisualSurface.
-        // In this case the transforming properties (e.g. offset) will be ignored, so it is not
-        // safe to hoist any such properties from its child.
-        static bool IsVisualSurfaceRoot(ObjectGraph<Node> graph, ContainerVisual containerVisual)
-         => graph[containerVisual].InReferences.Any(vertex => vertex.Node.Object is CompositionVisualSurface);
+        // True iff the given Visual is the SourceVisual of a CompositionVisualSurface.
+        // In this case the transforming properties (e.g. offset) and visiblity will be ignored,
+        // so it is not safe to hoist any such properties from its child.
+        static bool IsVisualSurfaceSourceVisual(ObjectGraph<Node> graph, Visual visual)
+         => graph[visual].InReferences.Any(vertex => vertex.Node.Object is CompositionVisualSurface);
 
         static bool ArePropertiesOrthogonal(PropertyId parent, PropertyId child)
         {
@@ -1300,7 +1313,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 if (ArePropertiesOrthogonal(parentProperties, childProperties) &&
                     (parentProperties & PropertyId.Properties) == PropertyId.None)
                 {
-                    if (IsVisualSurfaceRoot(graph, parent))
+                    if (IsVisualSurfaceSourceVisual(graph, parent))
                     {
                         // VisualSurface roots are special - they ignore their transforming properties
                         // so such properties cannot be hoisted from the child.
