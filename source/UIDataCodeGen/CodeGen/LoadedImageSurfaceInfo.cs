@@ -2,7 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
+
 using System;
+using System.Collections.Generic;
 using Wmd = Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
@@ -23,7 +26,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             string bytesFieldName,
             Uri imageUri,
             Wmd.LoadedImageSurface.LoadedImageSurfaceType loadedImageSurfaceType,
-            byte[] bytes)
+            IReadOnlyList<byte>? bytes)
         {
             TypeName = typeName;
             Name = name;
@@ -49,6 +52,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         public Wmd.LoadedImageSurface.LoadedImageSurfaceType LoadedImageSurfaceType { get; }
 
-        public byte[] Bytes { get; }
+        public IReadOnlyList<byte>? Bytes { get; }
     }
 }

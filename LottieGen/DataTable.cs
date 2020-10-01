@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -46,7 +48,7 @@ sealed class DataTable
         foreach (var name in columnNames)
         {
             // Return the row in the correct column order.
-            yield return rowDictionary.TryGetValue(name, out (string columnName, string columnValue) col) ? col.columnValue : null;
+            yield return rowDictionary.TryGetValue(name, out (string columnName, string columnValue) col) ? col.columnValue : string.Empty;
         }
     }
 }

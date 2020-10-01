@@ -2,8 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 
@@ -33,7 +36,7 @@ sealed class CommandLineOptions
 
     // The parse error, or null if the parse succeeded.
     // The error should be a sentence (starts with a capital letter, and ends with a period).
-    internal string ErrorDescription { get; private set; }
+    internal string? ErrorDescription { get; private set; }
 
     internal bool GenerateColorBindings { get; private set; }
 
@@ -41,21 +44,21 @@ sealed class CommandLineOptions
 
     internal bool HelpRequested { get; private set; }
 
-    internal string InputFile { get; private set; }
+    internal string? InputFile { get; private set; }
 
-    internal string Interface { get; private set; }
+    internal string? Interface { get; private set; }
 
-    internal IEnumerable<Lang> Languages { get; private set; }
+    internal IEnumerable<Lang> Languages { get; private set; } = Array.Empty<Lang>();
 
     internal uint? MinimumUapVersion { get; private set; }
 
-    internal string Namespace { get; private set; }
+    internal string? Namespace { get; private set; }
 
-    internal string OutputFolder { get; private set; }
+    internal string? OutputFolder { get; private set; }
 
     internal bool Public { get; private set; }
 
-    internal string RootNamespace { get; private set; }
+    internal string? RootNamespace { get; private set; }
 
     internal bool StrictMode { get; private set; }
 

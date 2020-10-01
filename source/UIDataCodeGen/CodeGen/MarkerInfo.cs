@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,7 +19,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
     {
         readonly Marker _marker;
 
-        MarkerInfo(Marker marker, string name, string startConstant, string endConstant)
+        MarkerInfo(Marker marker, string name, string startConstant, string? endConstant)
         {
             _marker = marker;
             Name = name;
@@ -37,7 +39,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         public double StartProgress => _marker.Frame.Progress;
 
-        public string EndConstant { get; }
+        public string? EndConstant { get; }
 
         public double EndProgress => (_marker.Frame + _marker.Duration).Progress;
 

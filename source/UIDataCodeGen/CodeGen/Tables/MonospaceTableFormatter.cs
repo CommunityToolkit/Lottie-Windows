@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -56,7 +58,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Tables
             }
         }
 
-        static int[] GetRequiredMinimumWidths(Row row)
+        static int[]? GetRequiredMinimumWidths(Row row)
         {
             switch (row.Type)
             {
@@ -118,7 +120,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Tables
             var sb = new StringBuilder();
 
             var spanWidth = 0;
-            string spanText = null;
+            string spanText = string.Empty;
             TextAlignment spanAlignment = default(TextAlignment);
             int spanCountdown = -1;
 

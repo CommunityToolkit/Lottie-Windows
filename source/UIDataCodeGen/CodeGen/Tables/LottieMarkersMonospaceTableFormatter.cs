@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
+
 using System.Collections.Generic;
 using System.Linq;
 
@@ -86,7 +88,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Tables
                 select (Row)new Row.ColumnData(
                     ColumnData.Create(m.Name, TextAlignment.Left),
                     ColumnData.Create(m.StartConstant, TextAlignment.Left),
-                    ColumnData.Create(m.EndConstant, TextAlignment.Left),
+                    ColumnData.Create(m.EndConstant ?? string.Empty, TextAlignment.Left),
                     ColumnData.Create(m.StartFrame),
                     ColumnData.Create(m.StartTime.TotalMilliseconds),
                     m.DurationInFrames > 0 ? ColumnData.Create(m.Duration.TotalMilliseconds) : ColumnData.Empty,

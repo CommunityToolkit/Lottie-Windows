@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 
@@ -19,7 +21,7 @@ sealed class CommandlineTokenizer<TKeywordId>
     }
 
     internal CommandlineTokenizer<TKeywordId> AddPrefixedKeyword(TKeywordId id) =>
-        AddPrefixedKeyword(id, Enum.GetName(typeof(TKeywordId), id));
+        AddPrefixedKeyword(id, Enum.GetName(typeof(TKeywordId), id)!);
 
     internal CommandlineTokenizer<TKeywordId> AddPrefixedKeyword(TKeywordId id, string keyword)
     {
@@ -28,7 +30,7 @@ sealed class CommandlineTokenizer<TKeywordId>
     }
 
     internal CommandlineTokenizer<TKeywordId> AddKeyword(TKeywordId id) =>
-        AddKeyword(id, Enum.GetName(typeof(TKeywordId), id));
+        AddKeyword(id, Enum.GetName(typeof(TKeywordId), id)!);
 
     // Add a keyword to the recognizer.
     internal CommandlineTokenizer<TKeywordId> AddKeyword(TKeywordId id, string keyword)
@@ -54,6 +56,11 @@ sealed class CommandlineTokenizer<TKeywordId>
                     // includes an existing keyword, or is the same as an existing keyword.
                     if (n.Children.Count == 0)
                     {
+                        if (!n.Keyword.HasValue)
+                        {
+                            throw new InvalidOperationException();
+                        }
+
                         if (n.Keyword.Value.CompareTo(id) == 0)
                         {
                             throw new InvalidOperationException("Equivalent keyword already added.");

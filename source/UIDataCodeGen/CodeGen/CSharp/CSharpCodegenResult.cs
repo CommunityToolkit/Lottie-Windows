@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 
@@ -15,6 +17,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
 #endif
     sealed class CSharpCodegenResult
     {
+        internal CSharpCodegenResult(string csText, IReadOnlyList<Uri> assets)
+        {
+            CsText = csText;
+            Assets = assets;
+        }
+
         /// <summary>
         /// The text of the .cs file.
         /// </summary>

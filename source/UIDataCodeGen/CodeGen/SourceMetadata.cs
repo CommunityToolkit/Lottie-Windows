@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,7 +25,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         static readonly Guid s_lottieMetadataKey = new Guid("EA3D6538-361A-4B1C-960D-50A6C35563A5");
 
         readonly IReadOnlyDictionary<Guid, object> _sourceMetadata;
-        IReadOnlyList<PropertyBinding> _propertyBindings;
+        IReadOnlyList<PropertyBinding>? _propertyBindings;
 
         internal SourceMetadata(IReadOnlyDictionary<Guid, object> sourceMetadata)
         {

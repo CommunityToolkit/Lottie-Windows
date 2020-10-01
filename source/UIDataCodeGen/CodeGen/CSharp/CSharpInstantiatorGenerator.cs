@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -58,11 +60,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
                                 configuration: configuration,
                                 stringifier: new CSharpStringifier());
 
-            return new CSharpCodegenResult
-            {
-                CsText = generator.GenerateCode(),
-                Assets = generator.GetAssetsList(),
-            };
+            return new CSharpCodegenResult(
+                csText: generator.GenerateCode(),
+                assets: generator.GetAssetsList()
+            );
         }
 
         static string FieldAssignment(string fieldName) => fieldName != null ? $"{fieldName} = " : string.Empty;
@@ -730,7 +731,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
         }
 
         /// <inheritdoc/>
-        protected override void WriteByteArrayField(CodeBuilder builder, string fieldName, byte[] bytes)
+        protected override void WriteByteArrayField(CodeBuilder builder, string fieldName, IReadOnlyList<byte> bytes)
         {
             builder.WriteLine($"static readonly byte[] {fieldName} = new byte[]");
             builder.OpenScope();
