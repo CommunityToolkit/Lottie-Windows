@@ -900,6 +900,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             {
                 if (loadedImageSurface.Bytes != null)
                 {
+                    builder.WriteComment(loadedImageSurface.Comment);
                     WriteByteArrayField(builder, loadedImageSurface.BytesFieldName, loadedImageSurface.Bytes);
                     builder.WriteLine();
                 }
@@ -917,6 +918,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             return new LoadedImageSurfaceInfo(
                                 node.TypeName,
                                 node.Name,
+                                node.ShortComment,
                                 node.FieldName,
                                 node.LoadedImageSurfaceBytesFieldName,
                                 node.LoadedImageSurfaceImageUri,
@@ -1516,7 +1518,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                         {
                             // A single item. We can add the shape in a single line.
                             var shape = shapes[0];
-                            builder.WriteComment(((IDescribable)shape).ShortDescription);
+                            WriteShortDescriptionComment(builder, shape);
                             builder.WriteLine($"{_s.PropertyGet("result", "Shapes")}{Deref}{IListAdd}({CallFactoryFromFor(node, shape)});");
                             break;
                         }
@@ -1527,7 +1529,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                             builder.WriteLine($"{ConstVar} shapes = {_s.PropertyGet("result", "Shapes")};");
                             foreach (var shape in shapes)
                             {
-                                builder.WriteComment(((IDescribable)shape).ShortDescription);
+                                WriteShortDescriptionComment(builder, shape);
                                 builder.WriteLine($"shapes{Deref}{IListAdd}({CallFactoryFromFor(node, shape)});");
                             }
 
@@ -2356,7 +2358,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                         {
                             // A single child. We can add the child in a single line.
                             var child = obj.Children[0];
-                            builder.WriteComment(((IDescribable)child).ShortDescription);
+                            WriteShortDescriptionComment(builder, child);
                             builder.WriteLine($"{_s.PropertyGet("result", "Children")}{Deref}InsertAtTop({CallFactoryFromFor(node, child)});");
                             break;
                         }
@@ -2367,7 +2369,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                             builder.WriteLine($"{ConstVar} children = {_s.PropertyGet("result", "Children")};");
                             foreach (var child in obj.Children)
                             {
-                                builder.WriteComment(((IDescribable)child).ShortDescription);
+                                WriteShortDescriptionComment(builder, child);
                                 builder.WriteLine($"children{Deref}InsertAtTop({CallFactoryFromFor(node, child)});");
                             }
 
@@ -3142,6 +3144,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     builder.WriteComment(string.Join(", ", new[] { t, r, sc }.Where(str => str.Length > 0)));
                 }
             }
+
+            static void WriteShortDescriptionComment(CodeBuilder builder, IDescribable obj) =>
+                builder.WriteComment(obj.ShortDescription);
         }
 
         // Aggregates ObjectData nodes that are shared between different IAnimatedVisual instances,

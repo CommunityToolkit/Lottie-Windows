@@ -4,7 +4,6 @@
 
 using System;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData;
 using Sn = System.Numerics;
 
@@ -34,8 +33,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             content.Size = new Sn.Vector2((float)imageAsset.Width, (float)imageAsset.Height);
 
             LoadedImageSurface surface;
-            var imageAssetWidth = imageAsset.Width;
-            var imageAssetHeight = imageAsset.Height;
+            var imageSize = $"{imageAsset.Width}x{imageAsset.Height}";
 
             switch (imageAsset.ImageType)
             {
@@ -43,12 +41,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     var embeddedImageAsset = (EmbeddedImageAsset)imageAsset;
                     surface = LoadedImageSurface.StartLoadFromStream(embeddedImageAsset.Bytes);
                     surface.SetName(imageAsset.Id);
+                    surface.SetDescription(context, $"Image: \"{embeddedImageAsset.Id}\" {embeddedImageAsset.Format} {imageSize}.");
                     break;
                 case ImageAsset.ImageAssetType.External:
                     var externalImageAsset = (ExternalImageAsset)imageAsset;
                     surface = LoadedImageSurface.StartLoadFromUri(new Uri($"file://localhost/{externalImageAsset.Path}{externalImageAsset.FileName}"));
                     surface.SetName(externalImageAsset.FileName);
-                    context.Issues.ImageFileRequired($"{externalImageAsset.Path}{externalImageAsset.FileName}");
+                    var path = externalImageAsset.Path + externalImageAsset.FileName;
+                    surface.SetDescription(context, $"\"{path}\" {imageSize}.");
+                    context.Issues.ImageFileRequired(path);
                     break;
                 default:
                     throw new InvalidOperationException();
@@ -56,8 +57,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             var imageBrush = context.ObjectFactory.CreateSurfaceBrush(surface);
             content.Brush = imageBrush;
-
-            surface.SetDescription(context, () => $"{context.Layer.Name}, {imageAssetWidth}x{imageAssetHeight}");
 
             return new LayerTranslator.FromVisual(containerVisualRootNode);
         }

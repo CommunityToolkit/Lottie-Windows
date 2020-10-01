@@ -829,6 +829,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
                         builder.WriteLine($"{imageMemberName} = {_winUINamespace}::Xaml::Media::LoadedImageSurface::StartLoadFromStream({streamName});");
                         break;
                     case LoadedImageSurface.LoadedImageSurfaceType.FromUri:
+                        builder.WriteComment(n.Comment);
                         builder.WriteLine($"{imageMemberName} = {_winUINamespace}::Xaml::Media::LoadedImageSurface::StartLoadFromUri(ref new Uri(\"{n.ImageUri}\"));");
                         break;
                     default:

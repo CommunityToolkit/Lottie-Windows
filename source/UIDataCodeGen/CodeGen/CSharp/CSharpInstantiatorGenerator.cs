@@ -771,6 +771,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
                         builder.WriteLine($"{n.FieldName} = LoadedImageSurface.StartLoadFromStream({n.BytesFieldName}.AsBuffer().AsStream().AsRandomAccessStream());");
                         break;
                     case LoadedImageSurface.LoadedImageSurfaceType.FromUri:
+                        builder.WriteComment(n.Comment);
                         builder.WriteLine($"{n.FieldName} = LoadedImageSurface.StartLoadFromUri(new Uri(\"{n.ImageUri}\"));");
                         break;
                     default:

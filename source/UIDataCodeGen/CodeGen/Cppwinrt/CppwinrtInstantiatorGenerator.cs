@@ -949,6 +949,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
                         builder.CloseScope();
                         break;
                     case LoadedImageSurface.LoadedImageSurfaceType.FromUri:
+                        builder.WriteComment(n.Comment);
                         builder.WriteLine($"{imageMemberName} = LoadedImageSurface::StartLoadFromUri(Uri(L\"{n.ImageUri.AbsoluteUri}\"));");
                         builder.WriteLine($"{imageMemberName}.LoadCompleted(eventHandler);");
                         break;
