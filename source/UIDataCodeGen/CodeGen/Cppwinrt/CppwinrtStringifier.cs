@@ -15,8 +15,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
     /// </summary>
     sealed class CppwinrtStringifier : Stringifier
     {
-        public override string ByteArray => "Array<byte>";
-
         public override string CanvasFigureLoop(Mgcg.CanvasFigureLoop value) =>
             value switch
             {

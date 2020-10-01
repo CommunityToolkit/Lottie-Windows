@@ -248,26 +248,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         }
 
         static NodeName NameLoadedImageSurface(TNode node, LoadedImageSurface obj)
-            => obj.Type switch
-            {
-                LoadedImageSurface.LoadedImageSurfaceType.FromStream => NodeName.FromNonTypeName("ImageFromStream"),
-                LoadedImageSurface.LoadedImageSurfaceType.FromUri => DescribeLoadedImageSurfaceFromUri((LoadedImageSurfaceFromUri)obj),
-                _ => throw Unreachable,
-            };
-
-        static NodeName DescribeLoadedImageSurfaceFromUri(LoadedImageSurfaceFromUri obj)
         {
-            // Get the image file name only.
-            var imageFileName = obj.Uri.Segments.Last();
-            var imageFileNameWithoutExtension = imageFileName.Substring(0, imageFileName.LastIndexOf('.'));
+            var name = NameOf(obj);
 
             // Replace any disallowed character with underscores.
-            var cleanedImageName = new string((from ch in imageFileNameWithoutExtension
+            var cleanName = new string((from ch in name
                                                select char.IsLetterOrDigit(ch) ? ch : '_').ToArray());
 
             // Remove any duplicated underscores.
-            cleanedImageName = cleanedImageName.Replace("__", "_");
-            return NodeName.FromNameAndDescription("Image", cleanedImageName);
+            cleanName = cleanName.Replace("__", "_");
+            return NodeName.FromNameAndDescription("Image", cleanName);
         }
 
         // Returns a string for use in an identifier that describes a BooleanKeyFrameAnimation, or null

@@ -16,8 +16,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
     /// </summary>
     sealed class CSharpStringifier : Stringifier
     {
-        public override string ByteArray => "byte[]";
-
         public override string CanvasFigureLoop(CanvasFigureLoop value)
         {
             var typeName = nameof(CanvasFigureLoop);

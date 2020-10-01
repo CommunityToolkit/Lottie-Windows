@@ -15,8 +15,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
     /// </summary>
     sealed class CxStringifier : Stringifier
     {
-        public override string ByteArray => "Array<byte>";
-
         public override string CanvasFigureLoop(Mgcg.CanvasFigureLoop value) =>
             value switch
             {
@@ -75,12 +73,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
 
         public override string Matrix3x2(Matrix3x2 value)
         {
-            return $"{{ {Float(value.M11)}, {Float(value.M12)}, {Float(value.M21)}, {Float(value.M22)}, {Float(value.M31)}, {Float(value.M32)} }}";
+            return $"float3x2{{ {Float(value.M11)}, {Float(value.M12)}, {Float(value.M21)}, {Float(value.M22)}, {Float(value.M31)}, {Float(value.M32)} }}";
         }
 
         public override string Matrix4x4(Matrix4x4 value)
         {
-            return $"{{ {Float(value.M11)}, {Float(value.M12)}, {Float(value.M13)}, {Float(value.M14)}, {Float(value.M21)}, {Float(value.M22)}, {Float(value.M23)}, {Float(value.M24)}, {Float(value.M31)}, {Float(value.M32)}, {Float(value.M33)}, {Float(value.M34)}, {Float(value.M41)}, {Float(value.M42)}, {Float(value.M43)}, {Float(value.M44)} }}";
+            return $"float4x4{{ {Float(value.M11)}, {Float(value.M12)}, {Float(value.M13)}, {Float(value.M14)}, {Float(value.M21)}, {Float(value.M22)}, {Float(value.M23)}, {Float(value.M24)}, {Float(value.M31)}, {Float(value.M32)}, {Float(value.M33)}, {Float(value.M34)}, {Float(value.M41)}, {Float(value.M42)}, {Float(value.M43)}, {Float(value.M44)} }}";
         }
 
         public override string Namespace(string value) => value.Replace(".", "::");
@@ -106,7 +104,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
 
         public override string TimeSpan(TimeSpan value) => TimeSpan(Int64(value.Ticks));
 
-        public override string TimeSpan(string ticks) => $"{{ {ticks} }}";
+        public override string TimeSpan(string ticks) => $"TimeSpan{{ {ticks} }}";
 
         public override string TypeInt64 => "int64_t";
 
@@ -124,10 +122,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
 
         public override string VariableInitialization(string value) => $"{{ {value} }}";
 
-        public override string Vector2(Vector2 value) => $"{{ {Float(value.X)}, {Float(value.Y)} }}";
+        public override string Vector2(Vector2 value) => $"float2{{ {Float(value.X)}, {Float(value.Y)} }}";
 
-        public override string Vector3(Vector3 value) => $"{{ {Float(value.X)}, {Float(value.Y)}, {Float(value.Z)} }}";
+        public override string Vector3(Vector3 value) => $"float3{{ {Float(value.X)}, {Float(value.Y)}, {Float(value.Z)} }}";
 
-        public override string Vector4(Vector4 value) => $"{{ {Float(value.X)}, {Float(value.Y)}, {Float(value.Z)}, {Float(value.W)} }}";
+        public override string Vector4(Vector4 value) => $"float4{{ {Float(value.X)}, {Float(value.Y)}, {Float(value.Z)}, {Float(value.W)} }}";
     }
 }
