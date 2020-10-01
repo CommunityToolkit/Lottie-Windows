@@ -31,8 +31,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             };
         }
 
-        public abstract string ByteArray { get; }
-
         // Sets the first character to lower case.
         public string CamelCase(string value) => $"{char.ToLowerInvariant(value[0])}{value.Substring(1)}";
 

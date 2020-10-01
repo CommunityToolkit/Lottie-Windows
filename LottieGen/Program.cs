@@ -265,7 +265,7 @@ OVERVIEW:
          -OutputFolder Specifies the output folder for the generated files. If not
                        specified the files will be written to the current directory.
          -Public       Makes the generated class public rather than internal. Ignored
-                       for cppwinrt.
+                       for c++.
          -RootNamespace
                        Cppwinrt only, specifies the root namespace of the consuming
                        project. Affects the names used to reference files generated

@@ -160,9 +160,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
                 // not need to be declared in IDL because it is implied by the class inheriting
                 // from IDynamicAnimatedVisualSource.
                 builder.WriteLine();
-                builder.WriteLine("Boolean IsAnimatedVisualSourceDynamic;");
+                builder.WriteLine("Boolean IsImageLoadingAsynchronous;");
                 builder.WriteLine("Boolean IsImageLoadingCompleted { get; };");
-                builder.WriteLine("Double ImageSuccessfulLoadingProgress { get; };");
             }
 
             builder.CloseCppTypeScope();
@@ -416,13 +415,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
             var priv = builder.Class.Private;
 
             priv.WriteLine($"const int c_loadedImageSurfaceCount = {SourceInfo.LoadedImageSurfaces.Distinct().Count()};");
-            priv.WriteLine("double m_imageSuccessfulLoadingProgress{};");
-            priv.WriteLine("int m_loadCompleteEventCount{};");
-            priv.WriteLine("bool m_isAnimatedVisualSourceDynamic{};");
+            priv.WriteLine("int m_loadCompletedEventCount{};");
+            priv.WriteLine("bool m_isImageLoadingAsynchronous{};");
             priv.WriteLine("bool m_isImageLoadingCompleted{};");
-            priv.WriteLine("bool m_isTryCreateAnimatedVisualCalled{};");
             priv.WriteLine("bool m_isImageLoadingStarted{};");
-            priv.WriteLine("winrt::event<Windows::Foundation::TypedEventHandler<Microsoft::UI::Xaml::Controls::IDynamicAnimatedVisualSource, Windows::Foundation::IInspectable>> m_InternalHandler{};");
+            priv.WriteLine("bool m_isTryCreateAnimatedVisualCalled{};");
+            priv.WriteLine("winrt::event<Windows::Foundation::TypedEventHandler<");
+            priv.Indent();
+            priv.WriteLine("Microsoft::UI::Xaml::Controls::IDynamicAnimatedVisualSource,");
+            priv.WriteLine("Windows::Foundation::IInspectable>> m_IDynamicAnimatedVisualSourceEvent{};");
+            priv.UnIndent();
             priv.WriteLine("winrt::event<Windows::UI::Xaml::Data::PropertyChangedEventHandler> m_PropertyChanged{};");
 
             foreach (var n in SourceInfo.LoadedImageSurfaces)
@@ -431,38 +433,38 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
             }
 
             priv.WriteLine("void EnsureImageLoadingStarted();");
-            priv.WriteLine("void HandleLoadCompleted(winrt::Windows::UI::Xaml::Media::LoadedImageSurface sender, winrt::Windows::UI::Xaml::Media::LoadedImageSourceLoadCompletedEventArgs e);");
+            priv.WriteLine("void HandleLoadCompleted(");
+            priv.Indent();
+            priv.WriteLine("winrt::Windows::UI::Xaml::Media::LoadedImageSurface sender,");
+            priv.WriteLine("winrt::Windows::UI::Xaml::Media::LoadedImageSourceLoadCompletedEventArgs e);");
+            priv.UnIndent();
 
             // INotifyPropertyChanged implementation.
-            pub.WriteLine("winrt::event_token PropertyChanged(Windows::UI::Xaml::Data::PropertyChangedEventHandler const& handler);");
+            pub.WriteLine("winrt::event_token PropertyChanged(winrt::Windows::UI::Xaml::Data::PropertyChangedEventHandler const& handler);");
             pub.WriteLine("void PropertyChanged(winrt::event_token const& token) noexcept;");
 
             // IDynamicAnimatedVisualSource implementation.
             pub.WriteLine();
-            pub.WriteLine("winrt::event_token AnimatedVisualInvalidated(Windows::Foundation::TypedEventHandler<Microsoft::UI::Xaml::Controls::IDynamicAnimatedVisualSource, winrt::Windows::Foundation::IInspectable> const& handler);");
+            pub.WriteLine("winrt::event_token AnimatedVisualInvalidated(");
+            pub.Indent();
+            pub.WriteLine("winrt::Windows::Foundation::TypedEventHandler<Microsoft::UI::Xaml::Controls::IDynamicAnimatedVisualSource, IInspectable> const& handler);");
+            pub.UnIndent();
             pub.WriteLine("void AnimatedVisualInvalidated(winrt::event_token const& token) noexcept;");
 
             pub.WriteLine();
             pub.WriteSummaryComment("If this property is set to true, <see cref=\"TryCreateAnimatedVisual\"/> will" +
                 " return null until all images have loaded. When all images have loaded, <see cref=\"TryCreateAnimatedVisual\"/>" +
-                " will return the AnimatedVisual. To use, set it when declaring the AnimatedVisualSource. Once" +
-                " <see cref=\"TryCreateAnimatedVisual\"/> is called, changes made to this property will be ignored." +
-                " Default value is true.");
-            pub.WriteLine("bool IsAnimatedVisualSourceDynamic();");
-            pub.WriteLine("void IsAnimatedVisualSourceDynamic(bool value);");
+                " will return the AnimatedVisual. Once <see cref=\"TryCreateAnimatedVisual\"/> is called," +
+                " changes made to this property will be ignored. Default value is false.");
+            pub.WriteLine("bool IsImageLoadingAsynchronous();");
+
+            pub.WriteLine("void IsImageLoadingAsynchronous(bool value);");
             pub.WriteLine();
 
-            pub.WriteSummaryComment("Returns true if all images have loaded. To see if the images succeeded to load," +
-                " see <see cref=\"ImageSuccessfulLoadingProgress\"/>.");
-
+            pub.WriteSummaryComment("Returns true if all images have finished loading.");
             pub.WriteLine("bool IsImageLoadingCompleted();");
             pub.WriteLine();
 
-            pub.WriteSummaryComment("Represents the progress of successful image loading. Returns a value between" +
-                " 0 and 1. 0 means none of the images succeeded to load. 1 means all images succeeded to load.");
-
-            pub.WriteLine("double ImageSuccessfulLoadingProgress();");
-            pub.WriteLine();
             WriteTryCreateAnimatedVisualDeclaration(builder.Class.Public);
         }
 
@@ -476,7 +478,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
             builder.Indent();
             builder.Indent();
             builder.WriteLine($"winrt::{_animatedVisualTypeName},");
-            builder.WriteLine($"winrt::Windows::Foundation::IClosable>");
+            builder.WriteLine($"IClosable>");
             builder.UnIndent();
             builder.UnIndent();
             builder.OpenScope();
@@ -552,6 +554,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
             if (_isIDynamic)
             {
                 builder.WriteLine("#include <winrt/Windows.UI.Xaml.Media.h>");
+
+                // Images that load from embedded arrays need Windows.Store.Streams.h.
+                if (SourceInfo.LoadedImageSurfaces.Any(lis =>
+                    lis.LoadedImageSurfaceType == LoadedImageSurface.LoadedImageSurfaceType.FromStream))
+                {
+                    builder.WriteLine("#include <winrt/Windows.Storage.Streams.h>");
+                }
             }
 
             if (SourceInfo.UsesCanvas ||
@@ -598,10 +607,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
                 builder.WriteLine("#include <vector>");
             }
 
+            if (SourceInfo.UsesStreams)
+            {
+                // Embedded images uses std::array.
+                builder.WriteLine("#include <array>");
+            }
+
             builder.WriteLine();
 
             var namespaces = new CppNamespaceListBuilder();
 
+            namespaces.Add("winrt::Windows::Foundation");
             namespaces.Add("winrt::Windows::Foundation::Numerics");
             namespaces.Add($"winrt::{_winUINamespace}");
             namespaces.Add($"winrt::{_wuc}");
@@ -619,7 +635,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
 
             if (SourceInfo.UsesStreams)
             {
-                namespaces.Add("winrt::Platform");
                 namespaces.Add("winrt::Windows::Storage::Streams");
             }
 
@@ -723,6 +738,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
         }
 
         /// <inheritdoc/>
+        protected override void WriteByteArrayField(CodeBuilder builder, string fieldName, byte[] bytes)
+        {
+            builder.WriteLine($"static const std::array<byte, {bytes.Length}> {fieldName}");
+            builder.OpenScope();
+            builder.WriteByteArrayLiteral(bytes, maximumColumns: 115);
+            builder.UnIndent();
+            builder.WriteLine("};");
+        }
+
+        /// <inheritdoc/>
         // Called by the base class to write the end of the file (i.e. everything after the body of the AnimatedVisual class).
         protected override void WriteImplementationFileEnd(CodeBuilder builder)
         {
@@ -760,7 +785,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
             // Close the namespace.
             builder.UnIndent();
             builder.WriteLine("} // end namespace");
-            builder.WriteLine();
         }
 
         /// <summary>
@@ -828,7 +852,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
             builder.WriteLine();
             builder.WriteLine("EnsureImageLoadingStarted();");
             builder.WriteLine();
-            builder.WriteLine("if (m_isAnimatedVisualSourceDynamic && m_loadCompleteEventCount != c_loadedImageSurfaceCount)");
+            builder.WriteLine("if (m_isImageLoadingAsynchronous && m_loadCompletedEventCount != c_loadedImageSurfaceCount)");
             builder.OpenScope();
             builder.WriteLine("return nullptr;");
             builder.CloseScope();
@@ -839,23 +863,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
             builder.CloseScope();
             builder.WriteLine();
 
-            // Generate the get() and set() methods of IsAnimatedVisualSourceDynamic property.
-            WriteSimplePropertyGetterImpl(builder, "IsAnimatedVisualSourceDynamic", "m_isAnimatedVisualSourceDynamic", "bool");
-            builder.WriteLine($"void {_sourceClassName}::IsAnimatedVisualSourceDynamic(bool isAnimatedVisualSourceDynamic)");
+            // Generate the get() and set() methods of IsImageLoadingAsynchronous property.
+            WriteSimplePropertyGetterImpl(builder, "IsImageLoadingAsynchronous", "m_isImageLoadingAsynchronous", "bool");
+            builder.WriteLine($"void {_sourceClassName}::IsImageLoadingAsynchronous(bool value)");
             builder.OpenScope();
-            builder.WriteLine("if (!m_isTryCreateAnimatedVisualCalled && m_isAnimatedVisualSourceDynamic != isAnimatedVisualSourceDynamic)");
+            builder.WriteLine("if (!m_isTryCreateAnimatedVisualCalled && m_isImageLoadingAsynchronous != value)");
             builder.OpenScope();
-            builder.WriteLine("m_isAnimatedVisualSourceDynamic = isAnimatedVisualSourceDynamic;");
-            builder.WriteLine($"m_PropertyChanged(*this, Windows::UI::Xaml::Data::PropertyChangedEventArgs(L\"IsAnimatedVisualSourceDynamic\"));");
+            builder.WriteLine("m_isImageLoadingAsynchronous = value;");
+            builder.WriteLine($"m_PropertyChanged(*this, Windows::UI::Xaml::Data::PropertyChangedEventArgs(L\"IsImageLoadingAsynchronous\"));");
             builder.CloseScope();
             builder.CloseScope();
             builder.WriteLine();
 
             // Generate the get() method of IsImageLoadingCompleted.
             WriteSimplePropertyGetterImpl(builder, "IsImageLoadingCompleted", "m_isImageLoadingCompleted", "bool");
-
-            // Generate the get() method of ImageSuccessfulLoadingProgress
-            WriteSimplePropertyGetterImpl(builder, "ImageSuccessfulLoadingProgress", "m_imageSuccessfulLoadingProgress", "double");
 
             // Generate the method that loads all the LoadedImageSurfaces.
             WriteEnsureImageLoadingStarted(builder);
@@ -874,8 +895,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
             WriteEventImpl(
                 builder,
                 "AnimatedVisualInvalidated",
-                "Windows::Foundation::TypedEventHandler<Microsoft::UI::Xaml::Controls::IDynamicAnimatedVisualSource, Windows::Foundation::IInspectable>",
-                "m_InternalHandler");
+                "TypedEventHandler<Microsoft::UI::Xaml::Controls::IDynamicAnimatedVisualSource, IInspectable>",
+                "m_IDynamicAnimatedVisualSourceEvent");
         }
 
         void WriteEventImpl(CodeBuilder builder, string eventName, string handlerTypeName, string backingEventName)
@@ -908,7 +929,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
             builder.OpenScope();
             builder.WriteLine("if (!m_isImageLoadingStarted)");
             builder.OpenScope();
-            builder.WriteLine($"auto eventHandler = Windows::Foundation::TypedEventHandler<LoadedImageSurface, LoadedImageSourceLoadCompletedEventArgs>(this, &{_sourceClassName}::HandleLoadCompleted);");
+            builder.WriteLine("m_isImageLoadingStarted = true;");
+            builder.WriteLine($"TypedEventHandler<LoadedImageSurface, LoadedImageSourceLoadCompletedEventArgs> eventHandler{{ this, &{_sourceClassName}::HandleLoadCompleted }};");
 
             foreach (var n in SourceInfo.LoadedImageSurfaces)
             {
@@ -916,27 +938,25 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
                 switch (n.LoadedImageSurfaceType)
                 {
                     case LoadedImageSurface.LoadedImageSurfaceType.FromStream:
-                        var streamName = $"stream_{n.Name}";
-                        var dataWriterName = $"dataWriter_{n.Name}";
-                        builder.WriteLine($"auto {streamName} = ref new InMemoryRandomAccessStream();");
-                        builder.WriteLine($"auto {dataWriterName} = ref new DataWriter({streamName}->GetOutputStreamAt(0));");
-                        builder.WriteLine($"{dataWriterName}->WriteBytes({n.BytesFieldName});");
-                        builder.WriteLine($"{dataWriterName}->StoreAsync();");
-                        builder.WriteLine($"{dataWriterName}->FlushAsync();");
-                        builder.WriteLine($"{streamName}->Seek(0);");
-                        builder.WriteLine($"{imageMemberName} = {_winUINamespace}::Xaml::Media::LoadedImageSurface::StartLoadFromStream({streamName});");
+                        builder.OpenScope();
+                        builder.WriteLine("InMemoryRandomAccessStream stream{};");
+                        builder.WriteLine("DataWriter dataWriter{ stream.GetOutputStreamAt(0) };");
+                        builder.WriteLine($"dataWriter.WriteBytes({n.BytesFieldName});");
+                        builder.WriteLine("dataWriter.StoreAsync();");
+                        builder.WriteLine("dataWriter.FlushAsync();");
+                        builder.WriteLine($"{imageMemberName} = LoadedImageSurface::StartLoadFromStream(stream);");
+                        builder.WriteLine($"{imageMemberName}.LoadCompleted(eventHandler);");
+                        builder.CloseScope();
                         break;
                     case LoadedImageSurface.LoadedImageSurfaceType.FromUri:
-                        builder.WriteLine($"{imageMemberName} = {_winUINamespace}::Xaml::Media::LoadedImageSurface::StartLoadFromUri(Windows::Foundation::Uri(L\"{n.ImageUri.AbsoluteUri}\"));");
+                        builder.WriteLine($"{imageMemberName} = LoadedImageSurface::StartLoadFromUri(Uri(L\"{n.ImageUri.AbsoluteUri}\"));");
+                        builder.WriteLine($"{imageMemberName}.LoadCompleted(eventHandler);");
                         break;
                     default:
                         throw new InvalidOperationException();
                 }
-
-                builder.WriteLine($"{imageMemberName}.LoadCompleted(eventHandler);");
             }
 
-            builder.WriteLine("m_isImageLoadingStarted = true;");
             builder.CloseScope();
             builder.CloseScope();
             builder.WriteLine();
@@ -944,22 +964,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
 
         void WriteHandleLoadCompleted(CodeBuilder builder)
         {
+            // Called for each LoadCompleted callback for each image. This code does
+            // not care whether the loading was successful, just that it completed.
             builder.WriteLine($"void {_sourceClassName}::HandleLoadCompleted(LoadedImageSurface sender, LoadedImageSourceLoadCompletedEventArgs e)");
             builder.OpenScope();
-            builder.WriteLine("m_loadCompleteEventCount++;");
-            builder.WriteLine("if (e.Status() == LoadedImageSourceLoadStatus::Success)");
-            builder.OpenScope();
-            builder.WriteLine("m_imageSuccessfulLoadingProgress = (double)m_loadCompleteEventCount / c_loadedImageSurfaceCount;");
-            builder.WriteLine("m_PropertyChanged(*this, Windows::UI::Xaml::Data::PropertyChangedEventArgs(L\"ImageSuccessfulLoadingProgress\"));");
-            builder.CloseScope();
+            builder.WriteLine("m_loadCompletedEventCount++;");
             builder.WriteLine();
-            builder.WriteLine("if (m_loadCompleteEventCount == c_loadedImageSurfaceCount)");
+            builder.WriteLine("if (m_loadCompletedEventCount == c_loadedImageSurfaceCount)");
             builder.OpenScope();
             builder.WriteLine("m_isImageLoadingCompleted = true;");
             builder.WriteLine("m_PropertyChanged(*this, Windows::UI::Xaml::Data::PropertyChangedEventArgs(L\"IsImageLoadingCompleted\"));");
-            builder.WriteLine("if (m_isAnimatedVisualSourceDynamic)");
+
+            // If asynchronouse image loading is enabled notify via IDynamicAnimatedVisualSource that
+            // the previous result is now invalidated.
+            builder.WriteLine("if (m_isImageLoadingAsynchronous)");
             builder.OpenScope();
-            builder.WriteLine("m_InternalHandler(*this, nullptr);");
+            builder.WriteLine("m_IDynamicAnimatedVisualSourceEvent(*this, nullptr);");
             builder.CloseScope();
             builder.CloseScope();
             builder.CloseScope();
@@ -990,9 +1010,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
                 SourceInfo.UsesCanvasGeometry)
             {
                 // Utility method for D2D geometries.
-                builder.WriteLine("static winrt::Windows::Graphics::IGeometrySource2D CanvasGeometryToIGeometrySource2D(winrt::com_ptr<CanvasGeometry> geo)");
+                builder.WriteLine("static IGeometrySource2D CanvasGeometryToIGeometrySource2D(winrt::com_ptr<CanvasGeometry> geo)");
                 builder.OpenScope();
-                builder.WriteLine("return geo.as<winrt::Windows::Graphics::IGeometrySource2D>();");
+                builder.WriteLine("return geo.as<IGeometrySource2D>();");
                 builder.CloseScope();
                 builder.WriteLine();
             }
@@ -1048,18 +1068,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
             builder.WriteLine();
             {
                 var propertyImplBuilder = new CodeBuilder();
-                propertyImplBuilder.WriteLine($"return {{ {_s.TimeSpan(SourceInfo.DurationTicksFieldName)} }};");
+                propertyImplBuilder.WriteLine($"return TimeSpan{{ {SourceInfo.DurationTicksFieldName} }};");
                 WritePropertyImpl(builder, "TimeSpan", "Duration", propertyImplBuilder);
             }
 
-            builder.WriteLine();
             {
                 var propertyImplBuilder = new CodeBuilder();
                 propertyImplBuilder.WriteLine("return _root;");
                 WritePropertyImpl(builder, nameof(Visual), "RootVisual", propertyImplBuilder);
             }
 
-            builder.WriteLine();
             {
                 var propertyImplBuilder = new CodeBuilder();
                 propertyImplBuilder.WriteLine($"return {_s.Vector2(SourceInfo.CompositionDeclaredSize)};");
@@ -1223,7 +1241,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
 
         static string CanvasGeometryClass =>
 @"class CanvasGeometry : public winrt::implements<CanvasGeometry,
-        winrt::Windows::Graphics::IGeometrySource2D,
+        IGeometrySource2D,
         ::ABI::Windows::Graphics::IGeometrySource2DInterop>
     {
         winrt::com_ptr<ID2D1Geometry> _geometry{ nullptr };

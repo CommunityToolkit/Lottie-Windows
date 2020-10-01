@@ -227,6 +227,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             IAnimatedVisualInfo info);
 
         /// <summary>
+        /// Write a byte array field.
+        /// </summary>
+        /// <param name="builder">A <see cref="CodeBuilder"/> used to create the code.</param>
+        /// <param name="fieldName">The name of the field to be written.</param>
+        /// <param name="bytes">The bytes in the array.</param>
+        protected abstract void WriteByteArrayField(CodeBuilder builder, string fieldName, byte[] bytes);
+
+        /// <summary>
         /// Writes the end of the file.
         /// </summary>
         protected abstract void WriteImplementationFileEnd(CodeBuilder builder);
@@ -320,16 +328,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             Mgce.CompositeEffect compositeEffect);
 
         /// <summary>
-        /// Write a Bytes field.
-        /// </summary>
-        /// <param name="builder">A <see cref="CodeBuilder"/> used to create the code.</param>
-        /// <param name="fieldName">The name of the Bytes field to be written.</param>
-        protected void WriteBytesField(CodeBuilder builder, string fieldName)
-        {
-            builder.WriteLine($"static {_s.Readonly(_s.ReferenceTypeName(_s.ByteArray))} {fieldName} = {_s.New(_s.ByteArray)}");
-        }
-
-        /// <summary>
         /// Writes code that initializes a theme property value in the theme property set.
         /// </summary>
         private protected void WriteThemePropertyInitialization(
@@ -389,7 +387,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         {
             // Get the duration in ticks.
             yield return new NamedConstant(
-                "c_durationTicks",
+                DurationTicksFieldName,
                 $"Animation duration: {_compositionDuration.Ticks / (double)TimeSpan.TicksPerSecond,-1:N3} seconds.",
                 ConstantType.Int64,
                 _compositionDuration.Ticks);
@@ -898,24 +896,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         // Write the LoadedImageSurface byte arrays into the outer (IAnimatedVisualSource) class.
         void WriteLoadedImageSurfaceArrays(CodeBuilder builder)
         {
-            bool bytesWritten = false;
-
             foreach (var loadedImageSurface in _loadedImageSurfaceInfos)
             {
                 if (loadedImageSurface.Bytes != null)
                 {
-                    WriteBytesField(builder, loadedImageSurface.BytesFieldName);
-                    builder.OpenScope();
-                    builder.BytesToLiteral(loadedImageSurface.Bytes, maximumColumns: 100);
-                    builder.UnIndent();
-                    builder.WriteLine("};");
-                    bytesWritten = true;
+                    WriteByteArrayField(builder, loadedImageSurface.BytesFieldName, loadedImageSurface.Bytes);
+                    builder.WriteLine();
                 }
-            }
-
-            if (bytesWritten)
-            {
-                builder.WriteLine();
             }
         }
 

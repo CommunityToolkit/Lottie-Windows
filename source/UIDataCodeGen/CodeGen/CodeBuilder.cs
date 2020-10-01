@@ -371,9 +371,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// </summary>
         /// <param name="bytes">Bytes to be converted to string literals.</param>
         /// <param name="maximumColumns">Width limit of the output byte line.</param>
-        internal void BytesToLiteral(byte[] bytes, int maximumColumns)
+        internal void WriteByteArrayLiteral(byte[] bytes, int maximumColumns)
         {
-            var bytesLines = BytesToBytesList(bytes, maximumColumns - 1 - IndentSize).ToArray();
+            var bytesLines = BytesToBytesList(bytes, maximumColumns - 1 - (_indentCount * IndentSize)).ToArray();
 
             // Write each byte line one at a time and append ',' at the end, except the last line.
             int i;
@@ -387,7 +387,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         static IEnumerable<string> BytesToBytesList(byte[] bytes, int maximumWidth)
         {
-            const string delimeter = ", ";
+            const string delimiter = ", ";
 
             IEnumerable<string> byteStrings = bytes.Select(b => b.ToString());
 
@@ -396,10 +396,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             var currentWidth = 0;
             foreach (var bs in byteStrings)
             {
-                if (currentWidth + (delimeter.Length * accumulator.Count) + bs.Length > maximumWidth)
+                if (currentWidth + (delimiter.Length * accumulator.Count) + bs.Length > maximumWidth)
                 {
                     // There is no room for the next byte string. Output what we have.
-                    yield return string.Join(delimeter, accumulator);
+                    yield return string.Join(delimiter, accumulator);
                     accumulator.Clear();
                     currentWidth = 0;
                 }
