@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 // Recognizes command line argument keywords such as "-help" or "-include". Matches partial
 // strings as long as they uniquely identify the keyword. Matching is case insenstive.
@@ -20,7 +19,7 @@ sealed class CommandlineTokenizer<TKeywordId>
     }
 
     internal CommandlineTokenizer<TKeywordId> AddPrefixedKeyword(TKeywordId id) =>
-        AddPrefixedKeyword(id, Enum.GetName(typeof(TKeywordId), id)!);
+        AddPrefixedKeyword(id, GetKeywordIdName(id));
 
     internal CommandlineTokenizer<TKeywordId> AddPrefixedKeyword(TKeywordId id, string keyword)
     {
@@ -29,7 +28,7 @@ sealed class CommandlineTokenizer<TKeywordId>
     }
 
     internal CommandlineTokenizer<TKeywordId> AddKeyword(TKeywordId id) =>
-        AddKeyword(id, Enum.GetName(typeof(TKeywordId), id)!);
+        AddKeyword(id, GetKeywordIdName(id));
 
     // Add a keyword to the recognizer.
     internal CommandlineTokenizer<TKeywordId> AddKeyword(TKeywordId id, string keyword)
@@ -145,6 +144,18 @@ sealed class CommandlineTokenizer<TKeywordId>
         // The whole of the given keyword matched.
         id = currentNode.Keyword;
         return !IsAmbiguousId(id);
+    }
+
+    // Gets the name associated with the given enum value.
+    static string GetKeywordIdName(TKeywordId id)
+    {
+        var result = Enum.GetName(typeof(TKeywordId), id);
+        if (result is null)
+        {
+            throw new ArgumentException("Enum value is required to have a name.");
+        }
+
+        return result;
     }
 
     static bool IsEqual(TKeywordId a, TKeywordId b) => a.CompareTo(b) == 0;
