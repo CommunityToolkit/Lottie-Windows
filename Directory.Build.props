@@ -24,6 +24,7 @@
     <DefaultTargetPlatformMinVersion>16299</DefaultTargetPlatformMinVersion>
     <PackageOutputPath>$(MSBuildThisFileDirectory)bin\nupkg</PackageOutputPath>
     <OutputPath>bin\$(Platform)\$(Configuration)</OutputPath>
+    <Nullable>enable</Nullable>
 
     <!-- Default to not creating a NuPkg. Set this to True in projects that should generate a NuPkg -->
     <IsPackable>False</IsPackable>

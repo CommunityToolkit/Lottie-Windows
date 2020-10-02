@@ -6,7 +6,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 {
     static class TextLayers
     {
-        public static LayerTranslator CreateTextLayerTranslator(TextLayerContext context)
+        public static LayerTranslator? CreateTextLayerTranslator(TextLayerContext context)
         {
             // Text layers are not yet suported.
             context.Issues.TextLayerIsNotSupported();

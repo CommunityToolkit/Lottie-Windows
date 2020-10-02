@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable enable
-
 /// <summary>
 /// Categories of information that are displayed to the user on the console. These
 /// categories are used to color the output.

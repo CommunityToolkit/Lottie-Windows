@@ -2,14 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable enable
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Toolkit.Uwp.UI.Lottie.CompMetadata;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieMetadata;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.MetaData;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 {

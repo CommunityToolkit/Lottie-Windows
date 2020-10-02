@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable enable
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -43,7 +41,7 @@ sealed class CommandlineTokenizer<TKeywordId>
 
         TrieNode currrentNode = _root;
 
-        foreach (char ch in keyword)
+        foreach (var ch in keyword)
         {
             // Search through the current set of nodes to see if there is a node
             // for the current character already. If there is, use it, if not, add one.
@@ -62,7 +60,7 @@ sealed class CommandlineTokenizer<TKeywordId>
                     }
 
                     // If the node is a terminal (i.e. it has no children) then this keyword
-                    // cannot be added as it the same as an existing keyword.
+                    // cannot be added as it is the same as an existing keyword.
                     if (node.Children.Count == 0)
                     {
                         // No children, therefore this node is a terminal node.
@@ -120,7 +118,7 @@ sealed class CommandlineTokenizer<TKeywordId>
 
         var currentNode = _root;
 
-        foreach (char ch in keyword)
+        foreach (var ch in keyword)
         {
             bool matched = false;
 
