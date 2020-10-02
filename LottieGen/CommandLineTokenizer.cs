@@ -147,16 +147,9 @@ sealed class CommandlineTokenizer<TKeywordId>
     }
 
     // Gets the name associated with the given enum value.
-    static string GetKeywordIdName(TKeywordId id)
-    {
-        var result = Enum.GetName(typeof(TKeywordId), id);
-        if (result is null)
-        {
-            throw new ArgumentException("Enum value is required to have a name.");
-        }
-
-        return result;
-    }
+    static string GetKeywordIdName(TKeywordId id) =>
+            Enum.GetName(typeof(TKeywordId), id) ??
+                throw new ArgumentException("Enum value is required to have a name.");
 
     static bool IsEqual(TKeywordId a, TKeywordId b) => a.CompareTo(b) == 0;
 
