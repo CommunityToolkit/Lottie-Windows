@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Tables
 {
@@ -16,7 +15,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Tables
         /// Returns text that describes the graph statistics.
         /// </summary>
         /// <returns>A formatted string for each line in the table.</returns>
-        internal static IEnumerable<string> GetGraphStatsLines(IEnumerable<(string name, IEnumerable<object> objects)> objects)
+        internal static IEnumerable<string> GetGraphStatsLines(
+            IEnumerable<(string? name, IEnumerable<object> objects)> objects)
         {
             var objs = objects.ToArray();
 

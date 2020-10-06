@@ -43,14 +43,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
         {
             var generator = new CxInstantiatorGenerator(configuration, new CxStringifier());
 
-            return new CxCodegenResult
-            {
-                CppFilename = generator._cppFileName,
-                CppText = generator.GenerateCode(),
-                HFilename = generator._headerFileName,
-                HText = generator.GenerateHeaderText(),
-                Assets = generator.GetAssetsList(),
-            };
+            return new CxCodegenResult(
+                cppFilename: generator._cppFileName,
+                cppText: generator.GenerateCode(),
+                hFilename: generator._headerFileName,
+                hText: generator.GenerateHeaderText(),
+                assets: generator.GetAssetsList()
+            );
         }
 
         CxInstantiatorGenerator(CodegenConfiguration configuration, CxStringifier stringifier)
@@ -611,7 +610,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
         }
 
         /// <inheritdoc/>
-        protected override void WriteByteArrayField(CodeBuilder builder, string fieldName, byte[] bytes)
+        protected override void WriteByteArrayField(CodeBuilder builder, string fieldName, IReadOnlyList<byte> bytes)
         {
             builder.WriteLine($"static const Array<byte>^ {fieldName} = ref new Array<byte>");
             builder.OpenScope();

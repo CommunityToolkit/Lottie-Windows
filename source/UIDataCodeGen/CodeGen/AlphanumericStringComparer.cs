@@ -11,7 +11,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
     // Defines a case-sensitive alphabetical order for strings, but treats numeric parts
     // of each string as numbers. This is useful for ordering strings that include numeric
     // qualifiers, e.g. myfile_3, myfile_11.
-    sealed class AlphanumericStringComparer : IComparer<string>
+    sealed class AlphanumericStringComparer : IComparer<string?>
     {
         static readonly Regex s_upperHexRecognizer = new Regex(@"[0-9A-F]+");
         static readonly Regex s_lowerHexRecognizer = new Regex(@"[0-9a-f]+");
@@ -22,7 +22,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         internal static AlphanumericStringComparer Instance { get; } = new AlphanumericStringComparer();
 
-        int IComparer<string>.Compare(string x, string y)
+        int IComparer<string?>.Compare(string? x, string? y)
         {
             if (ReferenceEquals(x, y))
             {

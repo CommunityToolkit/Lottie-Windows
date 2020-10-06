@@ -15,6 +15,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
 #endif
     sealed class CSharpCodegenResult
     {
+        internal CSharpCodegenResult(string csText, IReadOnlyList<Uri> assets)
+        {
+            CsText = csText;
+            Assets = assets;
+        }
+
         /// <summary>
         /// The text of the .cs file.
         /// </summary>

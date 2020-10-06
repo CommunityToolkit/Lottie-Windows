@@ -32,13 +32,12 @@ sealed class LottieFileProcessor
     readonly string _className;
     bool _reportedErrors;
     bool? _isTranslatedSuccessfully;
-    LottieComposition _lottieComposition;
-    Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Tools.Stats _lottieStats;
-    IReadOnlyList<(string Code, string Description)> _readerIssues;
-    Stats _beforeOptimizationStats;
-    Stats _afterOptimizationStats;
-    IReadOnlyList<TranslationResult> _translationResults;
-    IReadOnlyList<(TranslationIssue issue, UapVersionRange versionRange)> _translationIssues;
+    Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Tools.Stats? _lottieStats;
+    IReadOnlyList<(string Code, string Description)>? _readerIssues;
+    Stats? _beforeOptimizationStats;
+    Stats? _afterOptimizationStats;
+    IReadOnlyList<TranslationResult>? _translationResults;
+    IReadOnlyList<(TranslationIssue issue, UapVersionRange versionRange)>? _translationIssues;
 
     LottieFileProcessor(
         CommandLineOptions options,
@@ -61,7 +60,7 @@ sealed class LottieFileProcessor
         // Get an appropriate name for a generated class.
         _className =
             InstantiatorGeneratorBase.TrySynthesizeClassName(System.IO.Path.GetFileNameWithoutExtension(_lottieFilePath)) ??
-            InstantiatorGeneratorBase.TrySynthesizeClassName("Lottie");  // If all else fails, just call it Lottie.
+            "Lottie";  // If all else fails, just call it Lottie.
     }
 
     internal static bool ProcessLottieFile(
@@ -100,7 +99,7 @@ sealed class LottieFileProcessor
         }
 
         // Parse the Lottie.
-        _lottieComposition =
+        var lottieComposition =
             LottieCompositionReader.ReadLottieCompositionFromJsonStream(
                 jsonStream,
                 LottieCompositionReader.Options.IgnoreMatchNames,
@@ -113,15 +112,15 @@ sealed class LottieFileProcessor
             _reporter.WriteInfo(InfoType.Issue, IssueToString(_lottieFilePath, issue));
         }
 
-        if (_lottieComposition is null)
+        if (lottieComposition is null)
         {
             _reporter.WriteError($"Failed to parse Lottie file: {_lottieFilePath}");
             return false;
         }
 
-        _lottieStats = new Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Tools.Stats(_lottieComposition);
+        _lottieStats = new Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Tools.Stats(lottieComposition);
 
-        var codeGenResult = TryGenerateCode();
+        var codeGenResult = TryGenerateCode(lottieComposition);
 
         // Any error that was reported is treated as a failure.
         codeGenResult &= !_reportedErrors;
@@ -129,7 +128,7 @@ sealed class LottieFileProcessor
         return codeGenResult;
     }
 
-    bool TryGenerateCode()
+    bool TryGenerateCode(LottieComposition lottieComposition)
     {
         var lottieFileNameWithoutExtension = System.IO.Path.GetFileNameWithoutExtension(_lottieFilePath);
 
@@ -144,7 +143,7 @@ sealed class LottieFileProcessor
             switch (lang)
             {
                 case Lang.CSharp:
-                    codeGenSucceeded &= TryGenerateCSharpCode($"{outputFileBase}.cs");
+                    codeGenSucceeded &= TryGenerateCSharpCode(lottieComposition, $"{outputFileBase}.cs");
                     _profiler.OnCodeGenFinished();
                     break;
 
@@ -162,7 +161,7 @@ sealed class LottieFileProcessor
                         }
                         else
                         {
-                            codeGenSucceeded &= TryGenerateCXCode(outputFolder);
+                            codeGenSucceeded &= TryGenerateCXCode(lottieComposition, outputFolder);
                         }
 
                         _profiler.OnCodeGenFinished();
@@ -170,22 +169,22 @@ sealed class LottieFileProcessor
                     }
 
                 case Lang.Cppwinrt:
-                    codeGenSucceeded &= TryGenerateCppwinrtCode(_outputFolder);
+                    codeGenSucceeded &= TryGenerateCppwinrtCode(lottieComposition, _outputFolder);
                     _profiler.OnCodeGenFinished();
                     break;
 
                 case Lang.LottieYaml:
-                    codeGenSucceeded &= TryGenerateLottieYaml($"{outputFileBase}-Lottie.yaml");
+                    codeGenSucceeded &= TryGenerateLottieYaml(lottieComposition, $"{outputFileBase}-Lottie.yaml");
                     _profiler.OnSerializationFinished();
                     break;
 
                 case Lang.WinCompDgml:
-                    codeGenSucceeded &= TryGenerateWincompDgml($"{outputFileBase}.dgml");
+                    codeGenSucceeded &= TryGenerateWincompDgml(lottieComposition, $"{outputFileBase}.dgml");
                     _profiler.OnSerializationFinished();
                     break;
 
                 case Lang.Stats:
-                    codeGenSucceeded &= TryGenerateStats();
+                    codeGenSucceeded &= TryGenerateStats(lottieComposition);
                     break;
 
                 default:
@@ -200,9 +199,9 @@ sealed class LottieFileProcessor
     /// <summary>
     /// Generates data describing the Lottie and its translation.
     /// </summary>
-    bool TryGenerateStats()
+    bool TryGenerateStats(LottieComposition lottieComposition)
     {
-        if (!TryEnsureTranslated())
+        if (!TryEnsureTranslated(lottieComposition))
         {
             return false;
         }
@@ -224,6 +223,11 @@ sealed class LottieFileProcessor
                 ("CodegenSeconds", _profiler.CodegenTime.TotalSeconds.ToString()),
                 ("SerializationSeconds", _profiler.SerializationTime.TotalSeconds.ToString()),
             });
+
+        if (_lottieStats is null)
+        {
+            throw new InvalidOperationException();
+        }
 
         // Write the Lottie stats table.
         _reporter.WriteDataTableRow(
@@ -251,6 +255,11 @@ sealed class LottieFileProcessor
             });
 
         var translationStats = _afterOptimizationStats ?? _beforeOptimizationStats;
+
+        if (translationStats is null)
+        {
+            throw new InvalidOperationException();
+        }
 
         // Write the WinComp stats table.
         _reporter.WriteDataTableRow(
@@ -294,6 +303,11 @@ sealed class LottieFileProcessor
                     ("ViewBox", translationStats.ViewBoxCount.ToString()),
                     ("VisualSurfaceCount", translationStats.VisualSurfaceCount.ToString()),
             });
+
+        if (_beforeOptimizationStats is null)
+        {
+            throw new InvalidOperationException();
+        }
 
         // Write the WinComp optimization stats table.
         if (_afterOptimizationStats != null)
@@ -359,12 +373,12 @@ sealed class LottieFileProcessor
         return true;
     }
 
-    bool TryGenerateLottieYaml(string outputFilePath)
+    bool TryGenerateLottieYaml(LottieComposition lottieComposition, string outputFilePath)
     {
         var result = TryWriteTextFile(
             outputFilePath,
             writer => LottieCompositionYamlSerializer.WriteYaml(
-                            _lottieComposition,
+                            lottieComposition,
                             writer,
                             System.IO.Path.GetFileName(_lottieFilePath)));
 
@@ -380,11 +394,18 @@ sealed class LottieFileProcessor
         return result;
     }
 
-    bool TryGenerateWincompDgml(string outputFilePath)
+    bool TryGenerateWincompDgml(
+        LottieComposition lottieComposition,
+        string outputFilePath)
     {
-        if (!TryEnsureTranslated())
+        if (!TryEnsureTranslated(lottieComposition))
         {
             return false;
+        }
+
+        if (_translationResults is null)
+        {
+            throw new InvalidOperationException();
         }
 
         // NOTE: this only writes the latest version of a multi-version translation.
@@ -404,15 +425,15 @@ sealed class LottieFileProcessor
         return result;
     }
 
-    bool TryGenerateCSharpCode(string outputFilePath)
+    bool TryGenerateCSharpCode(LottieComposition lottieComposition, string outputFilePath)
     {
-        if (!TryEnsureTranslated())
+        if (!TryEnsureTranslated(lottieComposition))
         {
             return false;
         }
 
         var codegenResult =
-            CSharpInstantiatorGenerator.CreateFactoryCode(CreateCodeGenConfiguration("CSharp"));
+            CSharpInstantiatorGenerator.CreateFactoryCode(CreateCodeGenConfiguration(lottieComposition, "CSharp"));
 
         if (string.IsNullOrWhiteSpace(codegenResult.CsText))
         {
@@ -440,15 +461,15 @@ sealed class LottieFileProcessor
         return result;
     }
 
-    bool TryGenerateCppwinrtCode(string outputFolder)
+    bool TryGenerateCppwinrtCode(LottieComposition lottieComposition, string outputFolder)
     {
-        if (!TryEnsureTranslated())
+        if (!TryEnsureTranslated(lottieComposition))
         {
             return false;
         }
 
         var codegenResult =
-                    CppwinrtInstantiatorGenerator.CreateFactoryCode(CreateCodeGenConfiguration("Cppwinrt"));
+                    CppwinrtInstantiatorGenerator.CreateFactoryCode(CreateCodeGenConfiguration(lottieComposition, "Cppwinrt"));
 
         if (string.IsNullOrWhiteSpace(codegenResult.CppText))
         {
@@ -494,15 +515,15 @@ sealed class LottieFileProcessor
         return true;
     }
 
-    bool TryGenerateCXCode(string outputFolder)
+    bool TryGenerateCXCode(LottieComposition lottieComposition, string outputFolder)
     {
-        if (!TryEnsureTranslated())
+        if (!TryEnsureTranslated(lottieComposition))
         {
             return false;
         }
 
         var codegenResult =
-            CxInstantiatorGenerator.CreateFactoryCode(CreateCodeGenConfiguration("CX"));
+            CxInstantiatorGenerator.CreateFactoryCode(CreateCodeGenConfiguration(lottieComposition, "CX"));
 
         if (string.IsNullOrWhiteSpace(codegenResult.CppText))
         {
@@ -603,7 +624,7 @@ sealed class LottieFileProcessor
         return true;
     }
 
-    Stream TryReadTextFile(string filePath)
+    Stream? TryReadTextFile(string filePath)
     {
         using (_reporter.InfoStream.Lock())
         {
@@ -627,37 +648,40 @@ sealed class LottieFileProcessor
         }
     }
 
-    CodegenConfiguration CreateCodeGenConfiguration(string languageSwitch)
+    CodegenConfiguration CreateCodeGenConfiguration(
+        LottieComposition lottieComposition,
+        string languageSwitch)
     {
-        var result = new CodegenConfiguration
+        if (_translationResults is null)
         {
-            ClassName = _className,
+            throw new InvalidOperationException();
+        }
+
+        var result = new CodegenConfiguration(
+            className: _className,
+            interfaceType: string.IsNullOrWhiteSpace(_options.Interface)
+                            ? "Microsoft.UI.Xaml.Controls.IAnimatedVisual"
+                            : _options.Interface,
+            objectGraphs: _translationResults.Select(
+                            tr => ((CompositionObject)tr.RootVisual, tr.MinimumRequiredUapVersion)).ToArray(),
+            nameSpace: string.IsNullOrWhiteSpace(_options.Namespace)
+                            ? "AnimatedVisuals"
+                            : NormalizeNamespace(_options.Namespace),
+            rootNamespace: string.IsNullOrEmpty(_options.RootNamespace)
+                            ? string.Empty
+                            : NormalizeNamespace(_options.RootNamespace),
+            sourceMetadata: _translationResults[0].SourceMetadata,
+            toolInfo: GetToolInvocationInfo(languageSwitch).ToArray()
+            )
+        {
             DisableOptimization = _options.DisableCodeGenOptimizer,
-            Duration = _lottieComposition.Duration,
+            Duration = lottieComposition.Duration,
             GenerateDependencyObject = _options.GenerateDependencyObject,
-            Height = _lottieComposition.Height,
-            ObjectGraphs = _translationResults.Select(tr => ((CompositionObject)tr.RootVisual, tr.MinimumRequiredUapVersion)).ToArray(),
+            Height = lottieComposition.Height,
             Public = _options.Public,
-            SourceMetadata = _translationResults[0].SourceMetadata,
-            ToolInfo = GetToolInvocationInfo(languageSwitch).ToArray(),
-            Width = _lottieComposition.Width,
+            Width = lottieComposition.Width,
             WinUI3 = _options.WinUI3Mode,
         };
-
-        if (!string.IsNullOrWhiteSpace(_options.Interface))
-        {
-            result.InterfaceType = _options.Interface;
-        }
-
-        if (!string.IsNullOrWhiteSpace(_options.Namespace))
-        {
-            result.Namespace = NormalizeNamespace(_options.Namespace);
-        }
-
-        if (!string.IsNullOrEmpty(_options.RootNamespace))
-        {
-            result.RootNamespace = NormalizeNamespace(_options.RootNamespace);
-        }
 
         return result;
     }
@@ -763,7 +787,7 @@ sealed class LottieFileProcessor
         return $"{originatingFile}: {errorOrWarning} {issue.Code}: {issue.Description}";
     }
 
-    bool TryEnsureTranslated()
+    bool TryEnsureTranslated(LottieComposition lottieComposition)
     {
         if (_isTranslatedSuccessfully.HasValue)
         {
@@ -779,7 +803,7 @@ sealed class LottieFileProcessor
         };
 
         var translationResult = LottieToMultiVersionWinCompTranslator.TryTranslateLottieComposition(
-            lottieComposition: _lottieComposition,
+            lottieComposition: lottieComposition,
             configuration: configuration,
             minimumUapVersion: _options.WinUI3Mode ? uint.MaxValue : _minimumUapVersion);
 
@@ -826,7 +850,7 @@ sealed class LottieFileProcessor
     }
 
     // Convert namespaces to a normalized form: replace "::" with ".".
-    static string NormalizeNamespace(string @namespace) => @namespace?.Replace("::", ".");
+    static string NormalizeNamespace(string @namespace) => @namespace.Replace("::", ".");
 
     public override string ToString() => $"{nameof(LottieFileProcessor)} {_lottieFilePath}";
 }

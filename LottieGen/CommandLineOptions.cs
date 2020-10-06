@@ -33,7 +33,7 @@ sealed class CommandLineOptions
 
     // The parse error, or null if the parse succeeded.
     // The error should be a sentence (starts with a capital letter, and ends with a period).
-    internal string ErrorDescription { get; private set; }
+    internal string? ErrorDescription { get; private set; }
 
     internal bool GenerateColorBindings { get; private set; }
 
@@ -41,21 +41,21 @@ sealed class CommandLineOptions
 
     internal bool HelpRequested { get; private set; }
 
-    internal string InputFile { get; private set; }
+    internal string? InputFile { get; private set; }
 
-    internal string Interface { get; private set; }
+    internal string? Interface { get; private set; }
 
-    internal IEnumerable<Lang> Languages { get; private set; }
+    internal IEnumerable<Lang> Languages { get; private set; } = Array.Empty<Lang>();
 
     internal uint? MinimumUapVersion { get; private set; }
 
-    internal string Namespace { get; private set; }
+    internal string? Namespace { get; private set; }
 
-    internal string OutputFolder { get; private set; }
+    internal string? OutputFolder { get; private set; }
 
     internal bool Public { get; private set; }
 
-    internal string RootNamespace { get; private set; }
+    internal string? RootNamespace { get; private set; }
 
     internal bool StrictMode { get; private set; }
 

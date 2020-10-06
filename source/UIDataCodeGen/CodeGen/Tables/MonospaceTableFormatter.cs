@@ -56,7 +56,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Tables
             }
         }
 
-        static int[] GetRequiredMinimumWidths(Row row)
+        static int[]? GetRequiredMinimumWidths(Row row)
         {
             switch (row.Type)
             {
@@ -118,7 +118,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Tables
             var sb = new StringBuilder();
 
             var spanWidth = 0;
-            string spanText = null;
+            string spanText = string.Empty;
             TextAlignment spanAlignment = default(TextAlignment);
             int spanCountdown = -1;
 

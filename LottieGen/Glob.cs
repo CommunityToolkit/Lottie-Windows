@@ -129,7 +129,7 @@ static class Glob
     static (string directoryPath, string[] segments) SplitPath(string path)
     {
         var pathRoot = Path.GetPathRoot(path);
-        var pathWithoutRoot = path.Substring(pathRoot.Length);
+        var pathWithoutRoot = path.Substring(pathRoot!.Length);
 
         var segments = pathWithoutRoot.Split(new char[] { Path.DirectorySeparatorChar });
 

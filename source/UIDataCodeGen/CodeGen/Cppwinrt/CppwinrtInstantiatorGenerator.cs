@@ -51,16 +51,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
         {
             var generator = new CppwinrtInstantiatorGenerator(configuration, new CppwinrtStringifier());
 
-            return new CppwinrtCodegenResult
-            {
-                Assets = generator.GetAssetsList(),
-                CppFilename = generator._cppFileName,
-                CppText = generator.GenerateCode(),
-                HFilename = generator._headerFileName,
-                HText = generator.GenerateHeaderText(),
-                IdlFilename = generator._idlFileName,
-                IdlText = generator.GenerateIdlText(),
-            };
+            return new CppwinrtCodegenResult(
+                cppFilename: generator._cppFileName,
+                cppText: generator.GenerateCode(),
+                hFilename: generator._headerFileName,
+                hText: generator.GenerateHeaderText(),
+                idlFilename: generator._idlFileName,
+                idlText: generator.GenerateIdlText(),
+                assets: generator.GetAssetsList()
+            );
         }
 
         CppwinrtInstantiatorGenerator(CodegenConfiguration configuration, CppwinrtStringifier stringifier)
@@ -738,9 +737,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
         }
 
         /// <inheritdoc/>
-        protected override void WriteByteArrayField(CodeBuilder builder, string fieldName, byte[] bytes)
+        protected override void WriteByteArrayField(CodeBuilder builder, string fieldName, IReadOnlyList<byte> bytes)
         {
-            builder.WriteLine($"static const std::array<byte, {bytes.Length}> {fieldName}");
+            builder.WriteLine($"static const std::array<byte, {bytes.Count}> {fieldName}");
             builder.OpenScope();
             builder.WriteByteArrayLiteral(bytes, maximumColumns: 115);
             builder.UnIndent();

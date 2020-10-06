@@ -371,7 +371,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// </summary>
         /// <param name="bytes">Bytes to be converted to string literals.</param>
         /// <param name="maximumColumns">Width limit of the output byte line.</param>
-        internal void WriteByteArrayLiteral(byte[] bytes, int maximumColumns)
+        internal void WriteByteArrayLiteral(IEnumerable<byte> bytes, int maximumColumns)
         {
             var bytesLines = BytesToBytesList(bytes, maximumColumns - 1 - (_indentCount * IndentSize)).ToArray();
 
@@ -385,7 +385,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             WriteLine(bytesLines[i]);
         }
 
-        static IEnumerable<string> BytesToBytesList(byte[] bytes, int maximumWidth)
+        static IEnumerable<string> BytesToBytesList(IEnumerable<byte> bytes, int maximumWidth)
         {
             const string delimiter = ", ";
 
@@ -424,7 +424,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             internal int LineCount => Contents is CodeBuilder nestedCodeBuilder ? nestedCodeBuilder.LineCount : 1;
 
             // In the debugger, show the contents of the line.
-            public override string ToString() => Contents.ToString();
+            public override string ToString() => Contents?.ToString() ?? string.Empty;
         }
     }
 }

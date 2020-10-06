@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Toolkit.Uwp.UI.Lottie.CompMetadata;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieMetadata;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.MetaData;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 {
@@ -23,7 +22,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         static readonly Guid s_lottieMetadataKey = new Guid("EA3D6538-361A-4B1C-960D-50A6C35563A5");
 
         readonly IReadOnlyDictionary<Guid, object> _sourceMetadata;
-        IReadOnlyList<PropertyBinding> _propertyBindings;
+        IReadOnlyList<PropertyBinding>? _propertyBindings;
 
         internal SourceMetadata(IReadOnlyDictionary<Guid, object> sourceMetadata)
         {

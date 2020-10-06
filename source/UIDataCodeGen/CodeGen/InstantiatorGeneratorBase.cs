@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Text;
+using System.Threading.Tasks.Dataflow;
 using Microsoft.Toolkit.Uwp.UI.Lottie.CompMetadata;
 using Microsoft.Toolkit.Uwp.UI.Lottie.GenericData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Tables;
@@ -60,7 +61,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         readonly IReadOnlyList<MarkerInfo> _lottieMarkers;
         readonly IReadOnlyList<NamedConstant> _internalConstants;
 
-        AnimatedVisualGenerator _currentAnimatedVisualGenerator;
+        AnimatedVisualGenerator? _currentAnimatedVisualGenerator;
 
         private protected InstantiatorGeneratorBase(
             CodegenConfiguration configuration,
@@ -163,7 +164,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// Returns null on failure.
         /// </summary>
         /// <returns>A name, or null.</returns>
-        public static string TrySynthesizeClassName(string name)
+        public static string? TrySynthesizeClassName(string? name)
         {
             if (string.IsNullOrWhiteSpace(name))
             {
@@ -232,7 +233,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// <param name="builder">A <see cref="CodeBuilder"/> used to create the code.</param>
         /// <param name="fieldName">The name of the field to be written.</param>
         /// <param name="bytes">The bytes in the array.</param>
-        protected abstract void WriteByteArrayField(CodeBuilder builder, string fieldName, byte[] bytes);
+        protected abstract void WriteByteArrayField(CodeBuilder builder, string fieldName, IReadOnlyList<byte> bytes);
 
         /// <summary>
         /// Writes the end of the file.
@@ -398,7 +399,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 yield return new NamedConstant(marker.StartConstant, $"Marker: {marker.Name}.", ConstantType.Float, (float)marker.StartProgress);
                 if (marker.DurationInFrames > 0)
                 {
-                    yield return new NamedConstant(marker.EndConstant, $"Marker: {marker.Name}.", ConstantType.Float, (float)marker.EndProgress);
+                    yield return new NamedConstant(marker.EndConstant!, $"Marker: {marker.Name}.", ConstantType.Float, (float)marker.EndProgress);
                 }
             }
 
@@ -536,10 +537,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// Returns the code to call the factory for the given object.
         /// </summary>
         /// <returns>The code to call the factory for the given object.</returns>
-        protected string CallFactoryFor(CanvasGeometry obj) => _currentAnimatedVisualGenerator.CallFactoryFor(obj);
+        protected string CallFactoryFor(CanvasGeometry obj)
+        {
+            return _currentAnimatedVisualGenerator!.CallFactoryFor(obj);
+        }
 
         // Makes the given name suitable for use as a class name in languages such as C# and C++.
-        static string SanitizeTypeName(string name)
+        static string? SanitizeTypeName(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
             {
@@ -567,7 +571,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         }
 
         // Makes the given text suitable for use as a single line comment.
-        static string SanitizeCommentLine(string text)
+        static string? SanitizeCommentLine(string text)
         {
             if (string.IsNullOrWhiteSpace(text))
             {
@@ -917,11 +921,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             var bytes = (node.Object as Wmd.LoadedImageSurfaceFromStream)?.Bytes;
             return new LoadedImageSurfaceInfo(
                                 node.TypeName,
-                                node.Name,
+                                node.Name!,
                                 node.ShortComment,
-                                node.FieldName,
-                                node.LoadedImageSurfaceBytesFieldName,
-                                node.LoadedImageSurfaceImageUri,
+                                node.FieldName!,
+                                node.LoadedImageSurfaceBytesFieldName!,
+                                node.LoadedImageSurfaceImageUri!,
                                 ((Wmd.LoadedImageSurface)node.Object).Type,
                                 bytes: bytes);
         }
@@ -999,10 +1003,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             // The subset of the object graph for which factories will be generated.
             readonly ObjectData[] _nodes;
 
-            IReadOnlyList<LoadedImageSurfaceInfo> _loadedImageSurfaceInfos;
+            IReadOnlyList<LoadedImageSurfaceInfo>? _loadedImageSurfaceInfos;
 
             // Holds the node for which a factory is currently being written.
-            ObjectData _currentObjectFactoryNode;
+            ObjectData? _currentObjectFactoryNode;
 
             internal AnimatedVisualGenerator(
                 InstantiatorGeneratorBase owner,
@@ -1209,12 +1213,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             /// </summary>
             /// <returns>The code to call the factory for the given object.</returns>
             internal string CallFactoryFor(CanvasGeometry obj)
-                => CallFactoryFromFor(_currentObjectFactoryNode, obj);
+                => CallFactoryFromFor(_currentObjectFactoryNode!, obj);
 
             // Returns the code to call the factory for the given node from the given node.
             string CallFactoryFromFor(ObjectData callerNode, ObjectData calleeNode)
             {
-                if (callerNode.CallFactoryFromForCache.TryGetValue(calleeNode, out string result))
+                if (callerNode.CallFactoryFromForCache.TryGetValue(calleeNode, out string? result))
                 {
                     // Return the factory from the cache.
                     return result;
@@ -1227,7 +1231,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 if (calleeNode.RequiresStorage && !_owner._disableFieldOptimization)
                 {
                     // The node has storage for its result. Next time just return the field.
-                    callerNode.CallFactoryFromForCache.Add(calleeNode, calleeNode.FieldName);
+                    callerNode.CallFactoryFromForCache.Add(calleeNode, calleeNode.FieldName!);
                 }
                 else
                 {
@@ -1246,7 +1250,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 if (calleeNode == _rootNode)
                 {
                     Debug.Assert(calleeNode.RequiresStorage, "Root node is not stored in a field");
-                    return calleeNode.FieldName;
+                    return calleeNode.FieldName!;
                 }
 
                 if (_owner._disableFieldOptimization)
@@ -1297,11 +1301,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 {
                     // The object was created by another caller. Just access the field.
                     Debug.Assert(calleeNode.RequiresStorage, "Expecting to access a field containing a previously cached value, but the callee has no field");
-                    return calleeNode.FieldName;
+                    return calleeNode.FieldName!;
                 }
                 else if (calleeNode.RequiresStorage && _factoriesAlreadyCalled.Contains((callerNode, calleeNode)))
                 {
-                    return calleeNode.FieldName;
+                    return calleeNode.FieldName!;
                 }
                 else
                 {
@@ -1336,7 +1340,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 return true;
             }
 
-            void WriteObjectFactoryStart(CodeBuilder builder, ObjectData node, IEnumerable<string> parameters = null)
+            void WriteObjectFactoryStart(CodeBuilder builder, ObjectData node, IEnumerable<string>? parameters = null)
             {
                 // Save the node as the current node while the factory is being written.
                 _currentObjectFactoryNode = node;
@@ -1597,13 +1601,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 foreach (var node in OrderByTypeThenName(_nodes.Where(n => n.RequiresReadonlyStorage)))
                 {
                     // Generate a field for the read-only storage.
-                    _owner.WriteDefaultInitializedField(builder, Readonly(_s.ReferenceTypeName(node.TypeName)), node.FieldName);
+                    _owner.WriteDefaultInitializedField(builder, Readonly(_s.ReferenceTypeName(node.TypeName)), node.FieldName!);
                 }
 
                 foreach (var node in OrderByTypeThenName(_nodes.Where(n => n.RequiresStorage && !n.RequiresReadonlyStorage)))
                 {
                     // Generate a field for the non-read-only storage.
-                    _owner.WriteDefaultInitializedField(builder, _s.ReferenceTypeName(node.TypeName), node.FieldName);
+                    _owner.WriteDefaultInitializedField(builder, _s.ReferenceTypeName(node.TypeName), node.FieldName!);
                 }
             }
 
@@ -1636,7 +1640,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             {
                 WriteObjectFactoryStart(builder, node);
                 var typeName = _s.ReferenceTypeName(node.TypeName);
-                var fieldName = node.FieldName;
+                var fieldName = node.FieldName!;
 
                 switch (obj.Type)
                 {
@@ -2093,7 +2097,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 }
             }
 
-            void WriteCallHelperCreateSpriteShape(CodeBuilder builder, CompositionSpriteShape obj, ObjectData node)
+            /// <summary>
+            /// Writes a call the helper method that creates a SpriteShape.
+            /// Creates the helper method if it hasn't been created yet.
+            /// </summary>
+            void WriteCallHelperCreateSpriteShape(
+                CodeBuilder builder,
+                CompositionSpriteShape obj,
+                ObjectData node,
+                Matrix3x2 transformMatrix)
             {
                 var b = builder.GetSubBuilder("CreateSpriteShape");
                 if (b.IsEmpty)
@@ -2107,11 +2119,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     b.WriteLine();
                 }
 
-                WriteMatrixComment(builder, obj.TransformMatrix);
-                builder.WriteLine($"{ConstVar} result = CreateSpriteShape({CallFactoryFromFor(node, obj.Geometry)}, {Matrix3x2(obj.TransformMatrix.Value)});");
+                WriteMatrixComment(builder, transformMatrix);
+                builder.WriteLine($"{ConstVar} result = CreateSpriteShape({CallFactoryFromFor(node, obj.Geometry)}, {Matrix3x2(transformMatrix)});");
             }
 
-            void WriteCallHelperCreateSpriteShapeWithFillBrush(CodeBuilder builder, CompositionSpriteShape obj, ObjectData node)
+            /// <summary>
+            /// Writes a call the helper method that creates a SpriteShape with a fill brush.
+            /// Creates the helper method if it hasn't been created yet.
+            /// </summary>
+            void WriteCallHelperCreateSpriteShapeWithFillBrush(
+                CodeBuilder builder,
+                CompositionSpriteShape obj,
+                ObjectData node,
+                Matrix3x2 transformMatrix)
             {
                 var b = builder.GetSubBuilder("CreateSpriteShapeWithFillBrush");
                 if (b.IsEmpty)
@@ -2127,7 +2147,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 }
 
                 WriteMatrixComment(builder, obj.TransformMatrix);
-                builder.WriteLine($"{ConstVar} result = CreateSpriteShape({CallFactoryFromFor(node, obj.Geometry)}, {Matrix3x2(obj.TransformMatrix.Value)}, {CallFactoryFromFor(node, obj.FillBrush)});");
+                builder.WriteLine($"{ConstVar} result = CreateSpriteShape({CallFactoryFromFor(node, obj.Geometry)}, {Matrix3x2(transformMatrix)}, {CallFactoryFromFor(node, obj.FillBrush)});");
             }
 
             // Starts an ExpressionAnimation that uses the shared singleton ExpressionAnimation.
@@ -2952,11 +2972,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
                         if (obj.FillBrush is null)
                         {
-                            WriteCallHelperCreateSpriteShape(builder, obj, node);
+                            WriteCallHelperCreateSpriteShape(builder, obj, node, obj.TransformMatrix.Value);
                         }
                         else
                         {
-                            WriteCallHelperCreateSpriteShapeWithFillBrush(builder, obj, node);
+                            WriteCallHelperCreateSpriteShapeWithFillBrush(builder, obj, node, obj.TransformMatrix.Value);
                         }
 
                         InitializeCompositionObject(builder, obj, node);
@@ -3020,7 +3040,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 var surfaceInitializationText = obj.Surface switch
                 {
                     CompositionObject compositionObject => CallFactoryFromFor(node, compositionObject),
-                    Wmd.LoadedImageSurface _ => surfaceNode.FieldName,
+                    Wmd.LoadedImageSurface _ => surfaceNode!.FieldName!,
                     null => string.Empty,
                     _ => throw new InvalidOperationException(),
                 };
@@ -3088,7 +3108,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             }
 
             // Name used in stats reports to identify the class without using its class name.
-            internal string StatsName => _isPartOfMultiVersionSource ? $"UAP v{_requiredUapVersion}" : null;
+            internal string? StatsName => _isPartOfMultiVersionSource ? $"UAP v{_requiredUapVersion}" : null;
 
             string IAnimatedVisualInfo.ClassName =>
                 $"{_owner._className}_AnimatedVisual{(_isPartOfMultiVersionSource ? $"_UAPv{_requiredUapVersion}" : string.Empty)}";
@@ -3180,8 +3200,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         // A node in the object graph, annotated with extra stuff to assist in code generation.
         sealed class ObjectData : Graph.Node<ObjectData>
         {
-            Func<string> _overriddenFactoryCall;
-            Dictionary<ObjectData, string> _callFactoryFromForCache;
+            Func<string>? _overriddenFactoryCall;
+            Dictionary<ObjectData, string>? _callFactoryFromForCache;
 
             public Dictionary<ObjectData, string> CallFactoryFromForCache
             {
@@ -3199,15 +3219,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             // The name that is given to the node by the NodeNamer. This name is used to generate factory method
             // names and field names.
-            public string Name { get; set; }
+            public string? Name { get; set; }
 
-            public string FieldName => RequiresStorage ? CamelCase(Name) : null;
+            public string? FieldName => RequiresStorage ? CamelCase(Name!) : null;
 
             // Returns text for obtaining the value for this node. If the node has
             // been inlined, this can generate the code into the returned string, otherwise
             // it returns code for calling the factory.
             internal string FactoryCall()
-                 => Inlined ? _overriddenFactoryCall() : $"{Name}()";
+                 => Inlined ? _overriddenFactoryCall!() : $"{Name}()";
 
             IEnumerable<string> GetAncestorShortComments()
             {
@@ -3301,9 +3321,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             internal bool UsesCompositeEffect => Object is CompositionEffectBrush compositeEffectBrush && compositeEffectBrush.GetEffect().Type == Mgce.GraphicsEffectType.CompositeEffect;
 
             // Identifies the byte array of a LoadedImageSurface.
-            internal string LoadedImageSurfaceBytesFieldName => IsLoadedImageSurface ? $"s_{Name}_Bytes" : null;
+            internal string? LoadedImageSurfaceBytesFieldName => IsLoadedImageSurface ? $"s_{Name}_Bytes" : null;
 
-            internal Uri LoadedImageSurfaceImageUri { get; set; }
+            internal Uri? LoadedImageSurfaceImageUri { get; set; }
 
             // True if the code to create the object will be generated inline.
             internal bool Inlined => _overriddenFactoryCall != null;

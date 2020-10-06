@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable disable // Temporary while enabling nullable everywhere.
+
 // Uncomment this to give each element a unique name. This is useful
 // for debugging how an element gets translated.
 //#define UniqueifyNames
