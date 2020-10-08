@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
 using System;
 using System.Linq;
 
@@ -17,11 +15,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Tools
 #endif
     sealed class Stats
     {
-        // Creates a string that describes the Lottie.
+        // Initializes the Stats from a given LottieComposition.
         public Stats(LottieComposition lottieComposition)
         {
-            if (lottieComposition is null) { return; }
-
             Name = lottieComposition.Name;
             Version = lottieComposition.Version;
             Width = lottieComposition.Width;

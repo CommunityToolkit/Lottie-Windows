@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,10 +27,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         public override EasingType Type => EasingType.CubicBezier;
 
         /// <inheritdoc/>
-        public override bool Equals(object obj) => Equals(obj as CubicBezierEasing);
+        public override bool Equals(object? obj) => Equals(obj as CubicBezierEasing);
 
         /// <inheritdoc/>
-        public bool Equals(CubicBezierEasing other) =>
+        public bool Equals(CubicBezierEasing? other) =>
                ReferenceEquals(this, other) ||
                 (other is CubicBezierEasing &&
                 Enumerable.SequenceEqual(Beziers, other.Beziers));

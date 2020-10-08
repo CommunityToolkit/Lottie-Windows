@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
 using System;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData;
@@ -16,7 +14,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
     /// </summary>
     static class Images
     {
-        public static LayerTranslator CreateImageLayerTranslator(ImageLayerContext context)
+        public static LayerTranslator? CreateImageLayerTranslator(ImageLayerContext context)
         {
             if (!Transforms.TryCreateContainerVisualTransformChain(context, out var containerVisualRootNode, out var containerVisualContentNode))
             {
@@ -63,7 +61,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return new LayerTranslator.FromVisual(containerVisualRootNode);
         }
 
-        static ImageAsset GetImageAsset(ImageLayerContext context) =>
-            (ImageAsset)context.Translation.GetAssetById(context, context.Layer.RefId, Asset.AssetType.Image);
+        static ImageAsset? GetImageAsset(ImageLayerContext context) =>
+            (ImageAsset?)context.Translation.GetAssetById(context, context.Layer.RefId, Asset.AssetType.Image);
     }
 }

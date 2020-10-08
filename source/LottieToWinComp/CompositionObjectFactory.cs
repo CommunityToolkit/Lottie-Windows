@@ -2,11 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce;
@@ -178,7 +177,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return _compositor.CreateRadialGradientBrush();
         }
 
-        internal CompositionEasingFunction CreateCompositionEasingFunction(Easing easingFunction)
+        [return: NotNullIfNotNull("easingFunction")]
+        internal CompositionEasingFunction? CreateCompositionEasingFunction(Easing? easingFunction)
         {
             if (easingFunction is null)
             {

@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
 using System;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
@@ -14,8 +12,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
     abstract class Expression_<T> : Expression, IEquatable<T>
         where T : Expression_<T>
     {
-        string _expressionTextCache;
-        T _simplifiedExpressionCache;
+        string? _expressionTextCache;
+        T? _simplifiedExpressionCache;
 
         private protected Expression_()
         {
@@ -34,6 +32,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
 
         protected virtual T Simplify() => (T)this;
 
-        public bool Equals(T other) => !(other is null) && other.ToText() == ToText();
+        public bool Equals(T? other) => !(other is null) && other.ToText() == ToText();
     }
 }

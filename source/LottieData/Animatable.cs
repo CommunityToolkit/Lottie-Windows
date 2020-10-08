@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -137,7 +135,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         }
 
         /// <inheritdoc/>
-        public override string ToString() =>
+        public override string? ToString() =>
             IsAnimated
                 ? string.Join(" -> ", KeyFrames.Select(kf => kf.Value.ToString()))
                 : InitialValue.ToString();

@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.YamlData
 {
     /// <summary>
@@ -19,6 +17,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.YamlData
         /// <summary>
         /// A comment. Comments should be a single line.
         /// </summary>
-        public string Comment { get; set; }
+        public string? Comment { get; set; }
     }
 }

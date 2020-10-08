@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -105,7 +103,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// <summary>
         /// The palette of colors in fills and strokes. Null if color bindings are not enabled.
         /// </summary>
-        public Dictionary<Color, string> ColorPalette { get; }
+        public Dictionary<Color, string>? ColorPalette { get; }
 
         /// <summary>
         /// Factory for creating composition objects.
@@ -147,7 +145,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// <summary>
         /// The root Visual of the resulting translation.
         /// </summary>
-        public ContainerVisual RootVisual { get; private set; }
+        public ContainerVisual? RootVisual { get; private set; }
 
         /// <summary>
         /// True iff theme property bindings are enabled.
@@ -183,7 +181,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// Returns the asset with the given ID and type, or null if no such asset exists.
         /// </summary>
         /// <returns>The asset or null.</returns>
-        public Asset GetAssetById(LayerContext context, string assetId, Asset.AssetType expectedAssetType)
+        public Asset? GetAssetById(LayerContext context, string assetId, Asset.AssetType expectedAssetType)
         {
             var referencedAsset = LottieComposition.Assets.GetAssetById(assetId);
             if (referencedAsset is null)

@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
@@ -70,7 +68,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
                     case JsonValueKind.Array:
                         {
-                            var array = AsArray().Value;
+                            var array = AsArray()!.Value;
                             switch (array.Count)
                             {
                                 case 0:
@@ -104,7 +102,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 return null;
             }
 
-            internal string AsString()
+            internal string? AsString()
             {
                 switch (_wrapped.ValueKind)
                 {
@@ -115,14 +113,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 }
             }
 
-            internal GenericDataObject ToGenericDataObject()
+            internal GenericDataObject? ToGenericDataObject()
             {
                 switch (Kind)
                 {
                     case JsonValueKind.Object:
 
-                        var obj = AsObject().Value;
-                        var dict = new Dictionary<string, GenericDataObject>();
+                        var obj = AsObject()!.Value;
+                        var dict = new Dictionary<string, GenericDataObject?>();
                         foreach (var property in obj)
                         {
                             dict.Add(property.Key, property.Value.ToGenericDataObject());
@@ -130,11 +128,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
                         return GenericDataMap.Create(dict);
                     case JsonValueKind.Array:
-                        return GenericDataList.Create(AsArray().Value.Select<GenericDataObject>(elem => elem.ToGenericDataObject()));
+                        return GenericDataList.Create(AsArray()!.Value.Select<GenericDataObject?>(elem => elem.ToGenericDataObject()));
                     case JsonValueKind.String:
-                        return GenericDataString.Create(AsString());
+                        return GenericDataString.Create(AsString()!);
                     case JsonValueKind.Number:
-                        return GenericDataNumber.Create(AsDouble().Value);
+                        return GenericDataNumber.Create(AsDouble()!.Value);
                     case JsonValueKind.True:
                         return GenericDataBool.True;
                     case JsonValueKind.False:

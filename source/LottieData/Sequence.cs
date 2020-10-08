@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -69,12 +67,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         public T this[int index] => ((IReadOnlyList<T>)_items)[index];
 
         /// <inheritdoc/>
-        public bool Equals(Sequence<T> other) =>
+        public bool Equals(Sequence<T>? other) =>
             other is Sequence<T> &&
             Enumerable.SequenceEqual(_items, other._items);
 
         /// <inheritdoc/>
-        public override bool Equals(object obj) => Equals(obj as Sequence<T>);
+        public override bool Equals(object? obj) => Equals(obj as Sequence<T>);
 
         /// <inheritdoc/>
         public override int GetHashCode()
@@ -87,7 +85,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
                 // the first few items.
                 for (var i = 0; i < 3 && i < _items.Length; i++)
                 {
-                    _hashcode ^= _items[i].GetHashCode();
+                    _hashcode ^= _items[i]?.GetHashCode() ?? 0;
                 }
             }
 

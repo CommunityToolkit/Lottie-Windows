@@ -84,7 +84,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)ShapeVisual.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SpriteVisual.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)StepEasingFunction.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Tools\ListOfNeverNull.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Vector2KeyFrameAnimation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Vector3KeyFrameAnimation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Vector4KeyFrameAnimation.cs" />

@@ -118,7 +118,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
             public bool AutoOrient { get; set; }
 
-            public IEnumerable<Mask> Masks { get; set; }
+            public IEnumerable<Mask>? Masks { get; set; }
 
             public MatteType LayerMatteType { get; set; }
         }

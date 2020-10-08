@@ -2,10 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 {
@@ -33,6 +33,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             _layers = layers.OrderByDescending(layer => layer.Index).ToArray();
         }
 
+        public static LayerCollection Empty { get; } = new LayerCollection(Array.Empty<Layer>());
+
         /// <summary>
         /// Returns the <see cref="Layer"/>s in the <see cref="LayerCollection"/> in
         /// painting order.
@@ -45,7 +47,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// </summary>
         /// <returns>The corresponding <see cref="Layer"/> or null if <paramref name="id"/> does not match
         /// a single <see cref="Layer"/> in the collection.</returns>
-        public Layer GetLayerById(int? id)
+        public Layer? GetLayerById(int? id)
         {
             if (!id.HasValue)
             {
@@ -55,7 +57,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             return BinarySearch(id.Value);
         }
 
-        Layer BinarySearch(int targetIndex)
+        Layer? BinarySearch(int targetIndex)
         {
             int min = 0;
             int max = _layers.Length - 1;

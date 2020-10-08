@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -50,14 +48,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             // ... but pause it immediately so that it doesn't react to time. Instead, bind
             // its progress to the progress of the composition.
             var controller = compObject.TryGetAnimationController(target);
-            controller.Pause();
+            controller!.Pause();
 
             // Bind it to the root visual's Progress property, scaling and offsetting if necessary.
             var key = new ScaleAndOffset(scale, offset);
             if (!state.ProgressBindingAnimations.TryGetValue(key, out var bindingAnimation))
             {
                 bindingAnimation = context.ObjectFactory.CreateExpressionAnimation(ExpressionFactory.ScaledAndOffsetRootProgress(scale, offset));
-                bindingAnimation.SetReferenceParameter(ExpressionFactory.RootName, context.RootVisual);
+                bindingAnimation.SetReferenceParameter(ExpressionFactory.RootName, context.RootVisual!);
                 if (context.AddDescriptions)
                 {
                     // Give the animation a nice readable name in codegen.
@@ -84,8 +82,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             in TrimmedAnimatable<double> value,
             CompositionObject targetObject,
             string targetPropertyName,
-            string longDescription = null,
-            string shortDescription = null)
+            string? longDescription = null,
+            string? shortDescription = null)
         {
             if (targetObject.Properties == targetObject)
             {
@@ -108,8 +106,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             in TrimmedAnimatable<Trim> value,
             CompositionGeometry targetObject,
             string targetPropertyName,
-            string longDescription = null,
-            string shortDescription = null)
+            string? longDescription = null,
+            string? shortDescription = null)
         {
             targetObject.Properties.InsertScalar(targetPropertyName, ConvertTo.Float(value.InitialValue));
 
@@ -127,8 +125,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             in TrimmedAnimatable<Rotation> value,
             CompositionObject targetObject,
             string targetPropertyName,
-            string longDescription = null,
-            string shortDescription = null)
+            string? longDescription = null,
+            string? shortDescription = null)
             => ScaledRotation(context, value, 1, targetObject, targetPropertyName, longDescription, shortDescription);
 
         /// <summary>
@@ -139,8 +137,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             in TrimmedAnimatable<double> value,
             CompositionObject targetObject,
             string targetPropertyName,
-            string longDescription = null,
-            string shortDescription = null)
+            string? longDescription = null,
+            string? shortDescription = null)
             => ScaledScalar(context, value, 1, targetObject, targetPropertyName, longDescription, shortDescription);
 
         /// <summary>
@@ -151,8 +149,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             in TrimmedAnimatable<double> value,
             CompositionObject targetObject,
             string targetPropertyName,
-            string longDescription = null,
-            string shortDescription = null)
+            string? longDescription = null,
+            string? shortDescription = null)
             => ScaledScalar(context, value, 0.01, targetObject, targetPropertyName, longDescription, shortDescription);
 
         /// <summary>
@@ -163,8 +161,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             in TrimmedAnimatable<Opacity> value,
             CompositionObject targetObject,
             string targetPropertyName,
-            string longDescription = null,
-            string shortDescription = null)
+            string? longDescription = null,
+            string? shortDescription = null)
             => ScaledOpacity(context, value, 1, targetObject, targetPropertyName, longDescription, shortDescription);
 
         /// <summary>
@@ -175,8 +173,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             in TrimmedAnimatable<Trim> value,
             CompositionGeometry targetObject,
             string targetPropertyName,
-            string longDescription = null,
-            string shortDescription = null)
+            string? longDescription = null,
+            string? shortDescription = null)
             => ScaledTrimStartOrTrimEnd(context, value, 1, targetObject, targetPropertyName, longDescription, shortDescription);
 
         /// <summary>
@@ -188,8 +186,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             double scale,
             CompositionObject targetObject,
             string targetPropertyName,
-            string longDescription,
-            string shortDescription)
+            string? longDescription,
+            string? shortDescription)
         {
             Debug.Assert(value.IsAnimated, "Precondition");
             GenericCreateCompositionKeyFrameAnimation(
@@ -213,8 +211,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             double scale,
             CompositionObject targetObject,
             string targetPropertyName,
-            string longDescription,
-            string shortDescription)
+            string? longDescription,
+            string? shortDescription)
         {
             Debug.Assert(value.IsAnimated, "Precondition");
             GenericCreateCompositionKeyFrameAnimation(
@@ -238,8 +236,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             double scale,
             CompositionObject targetObject,
             string targetPropertyName,
-            string longDescription = null,
-            string shortDescription = null)
+            string? longDescription = null,
+            string? shortDescription = null)
         {
             Debug.Assert(value.IsAnimated, "Precondition");
             GenericCreateCompositionKeyFrameAnimation(
@@ -263,8 +261,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             double scale,
             CompositionGeometry targetObject,
             string targetPropertyName,
-            string longDescription,
-            string shortDescription)
+            string? longDescription,
+            string? shortDescription)
         {
             Debug.Assert(value.IsAnimated, "Precondition");
             GenericCreateCompositionKeyFrameAnimation(
@@ -296,8 +294,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             in TrimmedAnimatable<Color> value,
             CompositionObject targetObject,
             string targetPropertyName,
-            string longDescription = null,
-            string shortDescription = null)
+            string? longDescription = null,
+            string? shortDescription = null)
         {
             Debug.Assert(value.IsAnimated, "Precondition");
             GenericCreateCompositionKeyFrameAnimation(
@@ -318,8 +316,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             CompositionObject targetObject,
             string targetPropertyName,
             Action<ColorKeyFrameAnimation> beforeStartCallback,
-            string longDescription = null,
-            string shortDescription = null)
+            string? longDescription = null,
+            string? shortDescription = null)
         {
             Debug.Assert(value.IsAnimated, "Precondition");
             GenericCreateCompositionKeyFrameAnimation(
@@ -343,8 +341,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             in TrimmedAnimatable<Color> value,
             CompositionPropertySet targetObject,
             string targetPropertyName,
-            string longDescription = null,
-            string shortDescription = null)
+            string? longDescription = null,
+            string? shortDescription = null)
         {
             Debug.Assert(value.IsAnimated, "Precondition");
             GenericCreateCompositionKeyFrameAnimation(
@@ -368,8 +366,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 ShapeFill.PathFillType fillType,
                 CompositionPathGeometry targetObject,
                 string targetPropertyName,
-                string longDescription = null,
-                string shortDescription = null)
+                string? longDescription = null,
+                string? shortDescription = null)
         {
             Debug.Assert(value.IsAnimated, "Precondition");
 
@@ -405,8 +403,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             ShapeFill.PathFillType fillType,
             CompositionPathGeometry targetObject,
             string targetPropertyName,
-            string longDescription = null,
-            string shortDescription = null)
+            string? longDescription = null,
+            string? shortDescription = null)
         {
             Debug.Assert(value.IsAnimated, "Precondition");
 
@@ -441,8 +439,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             in TrimmedAnimatable<Vector3> value,
             CompositionObject targetObject,
             string targetPropertyName,
-            string longDescription = null,
-            string shortDescription = null)
+            string? longDescription = null,
+            string? shortDescription = null)
             => ScaledVector2(context, value, 1, targetObject, targetPropertyName, longDescription, shortDescription);
 
         /// <summary>
@@ -454,8 +452,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             double scale,
             CompositionObject targetObject,
             string targetPropertyName,
-            string longDescription = null,
-            string shortDescription = null)
+            string? longDescription = null,
+            string? shortDescription = null)
         {
             Debug.Assert(value.IsAnimated, "Precondition");
             GenericCreateCompositionKeyFrameAnimation(
@@ -478,8 +476,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             in TrimmedAnimatable<Vector3> value,
             CompositionObject targetObject,
             string targetPropertyName,
-            string longDescription = null,
-            string shortDescription = null)
+            string? longDescription = null,
+            string? shortDescription = null)
             => ScaledVector3(context, value, 1, targetObject, targetPropertyName, longDescription, shortDescription);
 
         /// <summary>
@@ -491,8 +489,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             double scale,
             CompositionObject targetObject,
             string targetPropertyName,
-            string longDescription = null,
-            string shortDescription = null)
+            string? longDescription = null,
+            string? shortDescription = null)
         {
             Debug.Assert(value.IsAnimated, "Precondition");
             GenericCreateCompositionKeyFrameAnimation(
@@ -512,12 +510,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 in TrimmedAnimatable<T> value,
                 Func<TCA> compositionAnimationFactory,
                 Action<TCA, float, T, CompositionEasingFunction> keyFrameInserter,
-                Action<TCA, float, CubicBezierFunction2, CompositionEasingFunction> expressionKeyFrameInserter,
+                Action<TCA, float, CubicBezierFunction2, CompositionEasingFunction>? expressionKeyFrameInserter,
                 CompositionObject targetObject,
                 string targetPropertyName,
-                string longDescription,
-                string shortDescription,
-                Action<TCA> beforeStartCallback = null)
+                string? longDescription,
+                string? shortDescription,
+                Action<TCA>? beforeStartCallback = null)
          where TCA : KeyFrameAnimation_
          where T : IEquatable<T>
         {
@@ -705,7 +703,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             // Add a reference to the root Visual if needed (i.e. if an expression keyframe was added).
             if (rootReferenceRequired)
             {
-                compositionAnimation.SetReferenceParameter(ExpressionFactory.RootName, translationContext.RootVisual);
+                compositionAnimation.SetReferenceParameter(ExpressionFactory.RootName, translationContext.RootVisual!);
             }
 
             beforeStartCallback?.Invoke(compositionAnimation);
@@ -761,6 +759,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 // animation.
                 if (progress <= 1)
                 {
+                    if (expressionKeyFrameInserter is null)
+                    {
+                        throw new InvalidOperationException();
+                    }
+
                     expressionKeyFrameInserter(animation, progress, expression, easing);
                 }
             }
@@ -779,7 +782,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             internal double Offset { get; }
 
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
                 => obj is ScaleAndOffset other &&
                    other.Scale == Scale &&
                    other.Offset == Offset;

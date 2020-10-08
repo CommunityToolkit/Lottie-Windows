@@ -17,18 +17,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
         /// Gets or sets a long description of the object, suitable for
         /// use in a multi-line comment.
         /// </summary>
-        string LongDescription { get; set; }
+        string? LongDescription { get; set; }
 
         /// <summary>
         /// Gets or sets a short description of the object, suitable for
         /// use in a single line comment.
         /// </summary>
-        string ShortDescription { get; set; }
+        string? ShortDescription { get; set; }
 
         /// <summary>
         /// Gets or sets a name that is suitable for use as a variable name
         /// in code.
         /// </summary>
-        string Name { get; set; }
+        string? Name { get; set; }
     }
 }

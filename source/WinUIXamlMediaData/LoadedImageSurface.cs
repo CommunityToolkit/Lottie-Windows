@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
 using System;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinStorageStreamsData;
@@ -20,13 +18,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData
         }
 
         /// <inheritdoc/>
-        string IDescribable.LongDescription { get; set; }
+        string? IDescribable.LongDescription { get; set; }
 
         /// <inheritdoc/>
-        string IDescribable.ShortDescription { get; set; }
+        string? IDescribable.ShortDescription { get; set; }
 
         /// <inheritdoc/>
-        string IDescribable.Name { get; set; }
+        string? IDescribable.Name { get; set; }
 
         public abstract LoadedImageSurfaceType Type { get; }
 

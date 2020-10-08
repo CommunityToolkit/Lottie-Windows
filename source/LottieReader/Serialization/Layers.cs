@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
 using System;
 using System.Collections.Generic;
 using static Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization.Exceptions;
@@ -15,7 +13,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
     sealed partial class LottieCompositionReader
     {
         // May return null if there was a problem reading the layer.
-        Layer ParseLayer(ref Reader reader)
+        Layer? ParseLayer(ref Reader reader)
         {
             using var subDocument = reader.ParseElement();
 
@@ -27,7 +25,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         }
 
         // May return null if there was a problem reading the layer.
-        Layer ReadLayer(in LottieJsonObjectElement obj)
+        Layer? ReadLayer(in LottieJsonObjectElement obj)
         {
             // Not clear whether we need to read these properties.
             obj.IgnorePropertyThatIsNotYetSupported("bounds", "sy", "td");
@@ -150,8 +148,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                             var refId = obj.StringPropertyOrNull("refId") ?? string.Empty;
 
                             // Text data.
-                            ReadTextData(obj.ObjectPropertyOrNull("t").Value);
-                            return new TextLayer(in layerArgs, refId);
+                            var t = obj.ObjectPropertyOrNull("t");
+                            if (t is null)
+                            {
+                                return null;
+                            }
+                            else
+                            {
+                                ReadTextData(t.Value);
+                                return new TextLayer(in layerArgs, refId);
+                            }
                         }
 
                     default: throw Unreachable;
@@ -187,10 +193,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 shapes.Capacity = shapesJsonCount;
                 for (var i = 0; i < shapesJsonCount; i++)
                 {
-                    var item = ReadShapeContent(shapesJson.Value[i].AsObject().Value);
-                    if (item != null)
+                    var shapeObject = shapesJson.Value[i].AsObject();
+                    if (shapeObject != null)
                     {
-                        shapes.Add(item);
+                        var item = ReadShapeContent(shapeObject.Value);
+                        if (item != null)
+                        {
+                            shapes.Add(item);
+                        }
                     }
                 }
             }
@@ -225,7 +235,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         {
             foreach (var elem in array)
             {
-                var obj = elem.AsObject().Value;
+                var objObject = elem.AsObject();
+                if (objObject is null)
+                {
+                    continue;
+                }
+
+                var obj = objObject.Value;
 
                 // Ignoring property 'x' because it is not in the official spec.
                 // The x property refers to the mask expansion. In AE you can

@@ -2,11 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Numerics;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.MetaData;
@@ -33,12 +32,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
         PropertyBag<Vector3> _vector3Properties;
         PropertyBag<Vector4> _vector4Properties;
 
-        internal CompositionPropertySet(CompositionObject owner)
+        internal CompositionPropertySet(CompositionObject? owner)
         {
             Owner = owner;
         }
 
-        public CompositionObject Owner { get; }
+        public CompositionObject? Owner { get; }
 
         public void InsertColor(string propertyName, Color value)
             => Insert(propertyName, in value, PropertySetValueType.Color, ref _colorProperties);
@@ -55,19 +54,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
         public void InsertVector4(string propertyName, Vector4 value)
             => Insert(propertyName, in value, PropertySetValueType.Vector4, ref _vector4Properties);
 
-        public CompositionGetValueStatus TryGetColor(string propertyName, out Color value)
+        public CompositionGetValueStatus TryGetColor(string propertyName, out Color? value)
             => TryGet(propertyName, PropertySetValueType.Color, ref _colorProperties, out value);
 
-        public CompositionGetValueStatus TryGetScalar(string propertyName, out float value)
+        public CompositionGetValueStatus TryGetScalar(string propertyName, out float? value)
             => TryGet(propertyName, PropertySetValueType.Scalar, ref _scalarProperties, out value);
 
-        public CompositionGetValueStatus TryGetVector2(string propertyName, out Vector2 value)
+        public CompositionGetValueStatus TryGetVector2(string propertyName, out Vector2? value)
             => TryGet(propertyName, PropertySetValueType.Vector2, ref _vector2Properties, out value);
 
-        public CompositionGetValueStatus TryGetVector3(string propertyName, out Vector3 value)
+        public CompositionGetValueStatus TryGetVector3(string propertyName, out Vector3? value)
             => TryGet(propertyName, PropertySetValueType.Vector3, ref _vector3Properties, out value);
 
-        public CompositionGetValueStatus TryGetVector4(string propertyName, out Vector4 value)
+        public CompositionGetValueStatus TryGetVector4(string propertyName, out Vector4? value)
             => TryGet(propertyName, PropertySetValueType.Vector4, ref _vector4Properties, out value);
 
         /// <summary>
@@ -115,7 +114,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
             bag.SetValue(propertyName, in value);
         }
 
-        CompositionGetValueStatus TryGet<T>(string propertyName, PropertySetValueType type, ref PropertyBag<T> bag, out T value)
+        CompositionGetValueStatus TryGet<T>(string propertyName, PropertySetValueType type, ref PropertyBag<T> bag, out T? value)
+            where T : struct
         {
             if (!_names.TryGetValue(propertyName, out var existingPropertyType))
             {
@@ -132,10 +132,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
                 return CompositionGetValueStatus.TypeMismatch;
             }
 
-            if (!bag.TryGetValue(propertyName, out value))
+            if (!bag.TryGetValue(propertyName, out var result))
             {
                 throw new InvalidOperationException();
             }
+
+            value = result;
 
             return CompositionGetValueStatus.Succeeded;
         }
@@ -160,7 +162,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 
             internal bool ContainsKey(string propertyName) => _dictionary?.ContainsKey(propertyName) ?? false;
 
-            internal bool TryGetValue(string propertyName, out T value)
+            internal bool TryGetValue(string propertyName, [MaybeNullWhen(false)] out T value)
             {
                 if (_dictionary is null)
                 {

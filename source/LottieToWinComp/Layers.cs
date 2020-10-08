@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -52,7 +50,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         }
 
         // Combines 1 or more LayerTranslators as CompositionShape subgraphs under a ShapeVisual.
-        static Visual GetVisualForLayerTranslators(CompositionContext context, IReadOnlyList<LayerTranslator> shapes)
+        static Visual? GetVisualForLayerTranslators(CompositionContext context, IReadOnlyList<LayerTranslator> shapes)
         {
             Debug.Assert(shapes.All(s => s.IsShape), "Precondition");
 
@@ -71,13 +69,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     // TODO - if the shape graphs share the same opacity and/or visiblity, get them
                     //        to translate without opacity/visiblity and we'll pull those
                     //        into the Visual.
-                    var shapeVisual = context.ObjectFactory.CreateShapeVisualWithChild(compositionShapes[0].shape, context.Size);
+                    var shapeVisual = context.ObjectFactory.CreateShapeVisualWithChild(compositionShapes[0].shape!, context.Size);
 
                     shapeVisual.SetDescription(context, () => "Layer aggregator");
 
                     for (var i = 1; i < compositionShapes.Length; i++)
                     {
-                        shapeVisual.Shapes.Add(compositionShapes[i].shape);
+                        shapeVisual.Shapes.Add(compositionShapes[i].shape!);
                     }
 
                     return shapeVisual;
@@ -133,7 +131,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// </summary>
         /// <returns>The <see cref="LayerTranslator"/> that will translate the
         /// given Lottie layer to a Shape or a Visual.</returns>
-        static LayerTranslator CreateTranslatorForLayer(CompositionContext context, Layer layer)
+        static LayerTranslator? CreateTranslatorForLayer(CompositionContext context, Layer layer)
         {
             if (layer.Is3d)
             {

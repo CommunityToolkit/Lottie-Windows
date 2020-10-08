@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -35,11 +33,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         public TranslationIssues Issues => Translation.Issues;
 
-        internal ShapeStroke Stroke { get; private set; }
+        internal ShapeStroke? Stroke { get; private set; }
 
-        internal ShapeFill Fill { get; private set; }
+        internal ShapeFill? Fill { get; private set; }
 
-        internal TrimPath TrimPath { get; private set; }
+        internal TrimPath? TrimPath { get; private set; }
 
         /// <summary>
         /// Never null. If there is no <see cref="RoundCorners"/> set, a default
@@ -47,7 +45,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// </summary>
         internal RoundCorners RoundCorners { get; private set; } = s_defaultRoundCorners;
 
-        internal Transform Transform { get; private set; }
+        internal Transform? Transform { get; private set; }
 
         // Opacity is not part of the Lottie context for shapes. But because WinComp
         // doesn't support opacity on shapes, the opacity is inherited from
@@ -117,7 +115,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 Transform = Transform,
             };
 
-        ShapeFill ComposeFills(ShapeFill a, ShapeFill b)
+        ShapeFill? ComposeFills(ShapeFill? a, ShapeFill? b)
         {
             if (a is null)
             {
@@ -165,7 +163,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return b;
         }
 
-        ShapeStroke ComposeStrokes(ShapeStroke a, ShapeStroke b)
+        ShapeStroke? ComposeStrokes(ShapeStroke? a, ShapeStroke? b)
         {
             if (a is null)
             {
@@ -280,7 +278,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return b;
         }
 
-        TrimPath ComposeTrimPaths(TrimPath a, TrimPath b)
+        TrimPath? ComposeTrimPaths(TrimPath? a, TrimPath? b)
         {
             if (a is null)
             {

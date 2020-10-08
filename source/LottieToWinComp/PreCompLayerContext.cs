@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 using Sn = System.Numerics;
 
@@ -32,6 +30,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         public CompositionContext ChildrenCompositionContext { get; }
 
         static LayerCollection GetLayerCollectionByAssetId(PreCompLayerContext context, string assetId)
-            => ((LayerCollectionAsset)context.Translation.GetAssetById(context, assetId, Asset.AssetType.LayerCollection))?.Layers;
+            => ((LayerCollectionAsset?)context.Translation.GetAssetById(context, assetId, Asset.AssetType.LayerCollection))?.Layers ??
+                LayerCollection.Empty;
     }
 }

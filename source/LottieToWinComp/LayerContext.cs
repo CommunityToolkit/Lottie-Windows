@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
 using System.Collections.Generic;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 
@@ -16,7 +14,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
     /// </summary>
     abstract class LayerContext
     {
-        FrameNumberEqualityComparer _frameNumberEqualityComparer;
+        FrameNumberEqualityComparer? _frameNumberEqualityComparer;
 
         private protected LayerContext(CompositionContext compositionContext, Layer layer)
         {
@@ -43,7 +41,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// Returns the <see cref="Layer"/> from which the current layer inherits transforms
         /// or null if there is no transform parent.
         /// </summary>
-        public Layer TransformParentLayer =>
+        public Layer? TransformParentLayer =>
             Layer.Parent.HasValue ? CompositionContext.Layers.GetLayerById(Layer.Parent.Value) : null;
 
         public override string ToString() => $"{GetType().Name} - {Layer.Name}";

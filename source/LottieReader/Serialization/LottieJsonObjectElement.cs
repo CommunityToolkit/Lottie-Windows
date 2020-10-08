@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -64,7 +62,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
                     for (var i = 0; i < length; i++)
                     {
-                        result[i] = new Vector2(xs.Value[i].AsDouble() ?? 0.0, ys.Value[i].AsDouble() ?? 0.0);
+                        result[i] = new Vector2(xs!.Value[i].AsDouble() ?? 0.0, ys!.Value[i].AsDouble() ?? 0.0);
                     }
                 }
 
@@ -108,7 +106,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             internal LottieJsonObjectElement? ObjectPropertyOrNull(string propertyName)
                 => TryGetProperty(propertyName, out var value) ? value.AsObject() : null;
 
-            internal string StringPropertyOrNull(string propertyName)
+            internal string? StringPropertyOrNull(string propertyName)
                 => TryGetProperty(propertyName, out var value) ? value.AsString() : null;
 
             // Indicates that the given property will not be read because we don't yet support it.

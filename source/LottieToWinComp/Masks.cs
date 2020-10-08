@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -144,7 +142,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         {
             // Save off the visual for the layer to be matted when we encounter it. The very next
             // layer is the matte layer.
-            Visual mattedVisual = null;
+            Visual? mattedVisual = null;
             Layer.MatteType matteType = Layer.MatteType.None;
 
             // NOTE: The items appear in reverse order from how they appear in the original Lottie file.
@@ -154,7 +152,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 var layerIsMattedLayer = false;
                 layerIsMattedLayer = layer.LayerMatteType != Layer.MatteType.None;
 
-                Visual visual = null;
+                Visual? visual = null;
 
                 if (translatedLayer.IsShape)
                 {

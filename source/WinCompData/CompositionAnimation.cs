@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
 using System;
 using System.Collections.Generic;
 
@@ -18,7 +16,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
         readonly SortedDictionary<string, CompositionObject> _referencedParameters =
             new SortedDictionary<string, CompositionObject>();
 
-        private protected CompositionAnimation(CompositionAnimation other)
+        private protected CompositionAnimation(CompositionAnimation? other)
         {
             if (other != null)
             {
@@ -36,7 +34,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
             }
         }
 
-        public string Target { get; set; }
+        public string? Target { get; set; }
 
         // True iff this object's state is expected to never change.
         public bool IsFrozen { get; private set; }

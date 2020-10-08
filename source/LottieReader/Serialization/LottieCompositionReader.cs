@@ -2,13 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
 // Uncomment this to give each element a unique name. This is useful
 // for debugging how an element gets translated.
 //#define UniqueifyNames
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -70,7 +69,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         /// Parses a Lottie file to create a <see cref="LottieComposition"/>.
         /// </summary>
         /// <returns>A <see cref="LottieComposition"/> read from the json stream.</returns>
-        public static LottieComposition ReadLottieCompositionFromJsonStream(
+        public static LottieComposition? ReadLottieCompositionFromJsonStream(
             Stream stream,
             Options options,
             out IReadOnlyList<(string Code, string Description)> issues)
@@ -86,7 +85,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             _animatableColorParser = new AnimatableColorParser(!options.HasFlag(Options.DoNotIgnoreAlpha));
         }
 
-        static LottieComposition ReadLottieCompositionFromJson(
+        static LottieComposition? ReadLottieCompositionFromJson(
             in ReadOnlySpan<byte> utf8JsonText,
             Options options,
             out IReadOnlyList<(string Code, string Description)> issues)
@@ -94,7 +93,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             var reader = new LottieCompositionReader(options);
             var jsonReader = new Reader(reader, utf8JsonText);
 
-            LottieComposition result = null;
+            LottieComposition? result = null;
             try
             {
                 result = reader.ParseLottieComposition(ref jsonReader);
@@ -110,20 +109,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         LottieComposition ParseLottieComposition(ref Reader reader)
         {
-            string version = null;
+            string? version = null;
             double? framesPerSecond = null;
             double? inPoint = null;
             double? outPoint = null;
             double? width = null;
             double? height = null;
-            string name = null;
+            string? name = null;
             bool? is3d = null;
             var assets = Array.Empty<Asset>();
             var chars = Array.Empty<Char>();
             var fonts = Array.Empty<Font>();
             var layers = Array.Empty<Layer>();
             var markers = Array.Empty<Marker>();
-            Dictionary<string, GenericDataObject> extraData = null;
+            Dictionary<string, GenericDataObject?>? extraData = null;
 
             try
             {
@@ -204,11 +203,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
                                         if (extraData is null)
                                         {
-                                            extraData = new Dictionary<string, GenericDataObject>();
+                                            extraData = new Dictionary<string, GenericDataObject?>();
                                         }
 
                                         using var subDocument = reader.ParseElement();
-                                        extraData.Add(currentProperty, subDocument.RootElement.ToGenericDataObject());
+                                        var subDocumentAsGenericDataObject = subDocument.RootElement.ToGenericDataObject();
+                                        if (!(subDocumentAsGenericDataObject is null))
+                                        {
+                                            extraData.Add(currentProperty, subDocumentAsGenericDataObject);
+                                        }
                                     }
 
                                     break;
@@ -358,7 +361,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
             if (pointsData is null)
             {
-                return null;
+                return new PathGeometry(new Sequence<BezierSegment>(Array.Empty<BezierSegment>(), takeOwnership: true), isClosed: false);
             }
 
             var points = pointsData.Value;
@@ -449,7 +452,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         delegate T Parser<T>(ref Reader reader);
 
-        T[] ParseArray<T>(ref Reader reader, Parser<T> parser)
+        T[] ParseArray<T>(ref Reader reader, Parser<T?> parser)
+            where T : class
         {
             reader.ExpectToken(JsonTokenType.StartArray);
 

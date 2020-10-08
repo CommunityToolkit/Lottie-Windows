@@ -16,9 +16,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             Animatable<double> points,
             IAnimatableVector3 position,
             Animatable<double> rotation,
-            Animatable<double> innerRadius,
+            Animatable<double>? innerRadius,
             Animatable<double> outerRadius,
-            Animatable<double> innerRoundness,
+            Animatable<double>? innerRoundness,
             Animatable<double> outerRoundness)
             : base(in args, drawingDirection)
         {
@@ -40,11 +40,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
         internal Animatable<double> Rotation { get; }
 
-        internal Animatable<double> InnerRadius { get; }
+        internal Animatable<double>? InnerRadius { get; }
 
         internal Animatable<double> OuterRadius { get; }
 
-        internal Animatable<double> InnerRoundness { get; }
+        internal Animatable<double>? InnerRoundness { get; }
 
         internal Animatable<double> OuterRoundness { get; }
 

@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -14,17 +12,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.GenericData
 #if PUBLIC_LottieData
     public
 #endif
-    sealed class GenericDataList : GenericDataObject, IReadOnlyList<GenericDataObject>
+    sealed class GenericDataList : GenericDataObject, IReadOnlyList<GenericDataObject?>
     {
-        static GenericDataList s_empty;
-        readonly IReadOnlyList<GenericDataObject> _items;
+        readonly IReadOnlyList<GenericDataObject?> _items;
 
-        GenericDataList(IEnumerable<GenericDataObject> items)
+        GenericDataList(IEnumerable<GenericDataObject?> items)
         {
             _items = items.ToArray();
         }
 
-        public static GenericDataList Create(IEnumerable<GenericDataObject> items)
+        public static GenericDataList Create(IEnumerable<GenericDataObject?> items)
         {
             var result = new GenericDataList(items);
             return result._items.Count == 0
@@ -32,15 +29,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.GenericData
                     : result;
         }
 
-        public static GenericDataList Empty => s_empty ??= new GenericDataList(Array.Empty<GenericDataObject>());
+        public static GenericDataList Empty { get; } = new GenericDataList(Array.Empty<GenericDataObject?>());
 
-        public GenericDataObject this[int index] => _items[index];
+        public GenericDataObject? this[int index] => _items[index];
 
         public override GenericDataObjectType Type => GenericDataObjectType.List;
 
         public int Count => _items.Count;
 
-        public IEnumerator<GenericDataObject> GetEnumerator() => _items.GetEnumerator();
+        public IEnumerator<GenericDataObject?> GetEnumerator() => _items.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => _items.GetEnumerator();
 

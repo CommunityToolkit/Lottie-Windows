@@ -77,8 +77,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             Shapes.TranslateAndApplyShapeContext(
                 context,
                 compositionSpriteShape,
-                reverseDirection: shapeContent.DrawingDirection == DrawingDirection.Reverse,
-                trimOffsetDegrees: 0);
+                reverseDirection: shapeContent.DrawingDirection == DrawingDirection.Reverse);
 
             return compositionSpriteShape;
         }

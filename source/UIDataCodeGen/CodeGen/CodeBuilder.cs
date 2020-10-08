@@ -89,7 +89,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             }
         }
 
-        internal void WriteComment(string comment)
+        internal void WriteComment(string? comment)
         {
             if (!string.IsNullOrWhiteSpace(comment))
             {
@@ -107,7 +107,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             }
         }
 
-        internal void WriteSummaryComment(string comment)
+        internal void WriteSummaryComment(string? comment)
         {
             if (!string.IsNullOrWhiteSpace(comment))
             {

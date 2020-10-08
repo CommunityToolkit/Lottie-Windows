@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
 // Uncomment these for debugging
 //#define DisableKeyFrameTrimming
 //#define DisableKeyFrameOptimization
@@ -149,7 +147,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
         static Animatable<T> GetOptimized<T>(Animatable<T> value, Dictionary<Animatable<T>, Animatable<T>> cache)
             where T : IEquatable<T>
         {
-            if (!cache.TryGetValue(value, out Animatable<T> result))
+            if (!cache.TryGetValue(value, out Animatable<T>? result))
             {
                 // Nothing in the cache yet.
                 if (!value.IsAnimated)
@@ -200,7 +198,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                 return keyFrames;
             }
 
-            KeyFrame<T>[] optimizedFrames = null;
+            KeyFrame<T>[]? optimizedFrames = null;
             var optimizedCount = 0;
 
             // There's at least 2 key frames.
@@ -430,7 +428,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
               IEqualityComparer<Animatable<T>>
               where T : IEquatable<T>
         {
-            public bool Equals(KeyFrame<T> x, KeyFrame<T> y)
+            public bool Equals(KeyFrame<T>? x, KeyFrame<T>? y)
             {
                 if (ReferenceEquals(x, y))
                 {
@@ -445,7 +443,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                 return x.Equals(y);
             }
 
-            public bool Equals(IEnumerable<KeyFrame<T>> x, IEnumerable<KeyFrame<T>> y)
+            public bool Equals(IEnumerable<KeyFrame<T>>? x, IEnumerable<KeyFrame<T>>? y)
             {
                 if (ReferenceEquals(x, y))
                 {
@@ -460,9 +458,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                 return x.SequenceEqual(y);
             }
 
-            public bool Equals(Easing x, Easing y) => Equates(x, y);
+            public bool Equals(Easing? x, Easing? y) => Equates(x, y);
 
-            public bool Equals(Animatable<T> x, Animatable<T> y)
+            public bool Equals(Animatable<T>? x, Animatable<T>? y)
             {
                 if (ReferenceEquals(x, y))
                 {
@@ -486,7 +484,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
             public int GetHashCode(Animatable<T> obj) => obj.GetHashCode();
 
             // Compares 2 IEquatable<V> for equality.
-            static bool Equates<TV>(TV x, TV y)
+            static bool Equates<TV>(TV? x, TV? y)
                 where TV : class, IEquatable<TV> => x is null ? y is null : x.Equals(y);
         }
     }

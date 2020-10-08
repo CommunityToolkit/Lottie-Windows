@@ -16,7 +16,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.YamlData
 #endif
     sealed class YamlMap : YamlObject, IEnumerable<(string key, YamlObject value)>
     {
-        readonly List<(string key, YamlObject value)> _keysAndValues = new List<(string key, YamlObject value)>();
+        readonly List<(string key, YamlObject? value)> _keysAndValues = new List<(string key, YamlObject? value)>();
         readonly HashSet<string> _keys = new HashSet<string>();
 
         /// <summary>
@@ -25,7 +25,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.YamlData
         /// <param name="key">The property name.</param>
         /// <param name="value">The property value.</param>
         /// <exception cref="InvalidOperationException">The property name has already been added.</exception>
-        public void Add(string key, YamlObject value)
+        public void Add(string key, YamlObject? value)
         {
             if (!_keys.Add(key))
             {
@@ -41,7 +41,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.YamlData
         /// <param name="key">The property name.</param>
         /// <param name="value">The property value.</param>
         /// <exception cref="InvalidOperationException">The property name has already been added.</exception>
-        public void Add(string key, YamlScalar value) => Add(key, (YamlObject)value);
+        public void Add(string key, YamlScalar? value) => Add(key, value as YamlObject);
 
         IEnumerator<(string key, YamlObject value)> IEnumerable<(string key, YamlObject value)>.GetEnumerator()
             => _keysAndValues.GetEnumerator();

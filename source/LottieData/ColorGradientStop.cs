@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
 using System;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
@@ -35,10 +33,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
         static string ToHex(double value) => ((byte)(value * 255)).ToString("X2");
 
-        public bool Equals(ColorGradientStop other)
+        public bool Equals(ColorGradientStop? other)
             => other != null && other.Offset == Offset && other.Color.Equals(Color);
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
             => Equals(obj as ColorGradientStop);
 
         public override int GetHashCode() => Color.GetHashCode() ^ Offset.GetHashCode();

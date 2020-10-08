@@ -2,10 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 
@@ -13,7 +12,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 {
     static class Properties
     {
-        static IReadOnlyDictionary<string, PropertyId> s_propertyIdFromNameMap;
+        static IReadOnlyDictionary<string, PropertyId>? s_propertyIdFromNameMap;
 
         internal static PropertyId PropertyIdFromName(string value)
         {
@@ -22,7 +21,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 s_propertyIdFromNameMap =
                     Enum.GetValues(typeof(PropertyId)).Cast<PropertyId>()
                         .Where(p => p != PropertyId.None)
-                        .ToDictionary(p => Enum.GetName(typeof(PropertyId), p));
+                        .ToDictionary(p => Enum.GetName(typeof(PropertyId), p)!);
             }
 
             return s_propertyIdFromNameMap.TryGetValue(value, out var result)
@@ -62,9 +61,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             return result | GetNonDefaultVisualProperties(obj);
         }
 
-        internal static PropertyId GetNonDefaultGeometryProperties(CompositionGeometry obj)
+        internal static PropertyId GetNonDefaultGeometryProperties(CompositionGeometry? obj)
         {
             var result = PropertyId.None;
+
+            if (obj is null)
+            {
+                return result;
+            }
 
             if (obj.TrimStart.HasValue)
             {

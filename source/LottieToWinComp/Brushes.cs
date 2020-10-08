@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -128,7 +126,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         public static void TranslateAndApplyStroke(
                              LayerContext context,
-                             ShapeStroke shapeStroke,
+                             ShapeStroke? shapeStroke,
                              CompositionSpriteShape sprite,
                              CompositeOpacity contextOpacity)
         {
@@ -218,7 +216,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         static void ApplyCommonStrokeProperties(
             LayerContext context,
             ShapeStroke shapeStroke,
-            CompositionBrush brush,
+            CompositionBrush? brush,
             CompositionSpriteShape sprite)
         {
             var strokeThickness = Optimizer.TrimAnimatable(context, shapeStroke.StrokeWidth);
@@ -253,7 +251,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             sprite.StrokeBrush = brush;
         }
 
-        public static CompositionBrush TranslateShapeFill(LayerContext context, ShapeFill shapeFill, CompositeOpacity opacity)
+        public static CompositionBrush? TranslateShapeFill(LayerContext context, ShapeFill? shapeFill, CompositeOpacity opacity)
         {
             if (shapeFill is null)
             {
@@ -409,7 +407,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return result;
         }
 
-        static CompositionLinearGradientBrush TranslateLinearGradient(
+        static CompositionLinearGradientBrush? TranslateLinearGradient(
             LayerContext context,
             IGradient linearGradient,
             CompositeOpacity opacity)
@@ -453,7 +451,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return result;
         }
 
-        static CompositionGradientBrush TranslateRadialGradient(
+        static CompositionGradientBrush? TranslateRadialGradient(
             LayerContext context,
             IRadialGradient gradient,
             CompositeOpacity opacity)
