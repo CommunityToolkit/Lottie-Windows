@@ -67,8 +67,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             var graph1 = Graph.FromCompositionObject(root1, includeVertices: false);
             var graph2 = Graph.FromCompositionObject(root2, includeVertices: false);
 
-            var graph1Objects = new HashSet<object>(graph1.Nodes.Select(n => n.Object));
-            foreach (var obj in graph2.Nodes.Select(n => n.Object))
+            var graph1Objects = new HashSet<object>(graph1.Nodes.Select(n => n.Object!));
+            foreach (var obj in graph2.Nodes.Select(n => n.Object!))
             {
                 Debug.Assert(!graph1Objects.Contains(obj), "Graphs are not disjoint");
             }
@@ -108,8 +108,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
         bool GetExisting<T>(T key, [MaybeNullWhen(false)] out T result)
             where T : CompositionObject
         {
-            result = (T?)NodeFor(key).Copied;
-            return result != null;
+            var temp = NodeFor(key).Copied;
+            if (temp is null)
+            {
+                result = null;
+                return false;
+            }
+            else
+            {
+                result = (T)temp!;
+                return true;
+            }
         }
 
         bool GetExistingCanvasGeometry(CanvasGeometry key, [MaybeNullWhen(false)] out CanvasGeometry result)

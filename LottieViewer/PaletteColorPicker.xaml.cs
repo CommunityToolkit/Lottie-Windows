@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
+#nullable enable
 
 using System;
 using System.Collections.ObjectModel;
@@ -24,7 +24,7 @@ namespace LottieViewer
     /// </summary>
     public sealed partial class PaletteColorPicker : UserControl
     {
-        LottieVisualDiagnosticsViewModel _diagnosticsViewModel;
+        LottieVisualDiagnosticsViewModel? _diagnosticsViewModel;
 
         // Used to prevent infinite recursion when the color picker is updated.
         // Needed because we have 2-way binding between 2 color pickers and they
@@ -37,11 +37,16 @@ namespace LottieViewer
             PaletteEntries.CollectionChanged += PaletteEntries_CollectionChanged;
         }
 
-        internal LottieVisualDiagnosticsViewModel DiagnosticsViewModel
+        internal LottieVisualDiagnosticsViewModel? DiagnosticsViewModel
         {
             get => _diagnosticsViewModel;
             set
             {
+                if (value is null)
+                {
+                    return;
+                }
+
                 if (_diagnosticsViewModel != null)
                 {
                     // Unhook form the previous DiagnosticsViewModel.
@@ -101,7 +106,7 @@ namespace LottieViewer
                             entry.PropertyChanged += (_, args) =>
                             {
                                 var newColor = entry.Color;
-                                _diagnosticsViewModel.ThemingPropertySet.InsertVector4(item.BindingName, ColorAsVector4(entry.Color));
+                                _diagnosticsViewModel?.ThemingPropertySet?.InsertVector4(item.BindingName, ColorAsVector4(entry.Color));
                             };
                         }
                     }
@@ -175,7 +180,7 @@ namespace LottieViewer
 
             // Search up the tree for an object with a data context, and returns
             // the data context.
-            object GetDataContext(DependencyObject obj)
+            object? GetDataContext(DependencyObject obj)
             {
                 if (obj is FrameworkElement fe && fe.DataContext != null)
                 {

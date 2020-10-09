@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -48,8 +50,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
             // numbers of stops.
             var redundancies = input.Select(kf => FindRedundantColorStops(kf.Value.ToArray())).Aggregate((a, b) =>
             {
-                Debug.Assert(a != null && b != null, "Invariant");
-
                 for (var i = 0; i < a.Length; i++)
                 {
                     // Set the entry in a iff it's set in both a and b.

@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
+#nullable enable
 
 using System;
 using System.Numerics;
@@ -13,7 +13,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
 {
     sealed class DisposableAnimatedVisual : IAnimatedVisual, IDisposable
     {
-        public Visual RootVisual { get; set; }
+        internal DisposableAnimatedVisual(Visual? rootVisual)
+        {
+            RootVisual = rootVisual;
+        }
+
+        public Visual? RootVisual { get; }
 
         public TimeSpan Duration { get; set; }
 

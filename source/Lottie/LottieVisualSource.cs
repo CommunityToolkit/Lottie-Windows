@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
+#nullable enable
 
 using System;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -23,10 +23,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
     /// </summary>
     public sealed class LottieVisualSource : DependencyObject, IDynamicAnimatedVisualSource
     {
-        EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource, object>> _compositionInvalidatedEventTokenTable;
+        EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource?, object?>>? _compositionInvalidatedEventTokenTable;
         int _loadVersion;
-        Uri _uriSource;
-        ContentFactory _contentFactory;
+        Uri? _uriSource;
+        ContentFactory? _contentFactory;
 
         /// <summary>
         /// Gets the options for the <see cref="LottieVisualSource"/>.
@@ -48,7 +48,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         static DependencyProperty RegisterDp<T>(string propertyName, T defaultValue) =>
             DependencyProperty.Register(propertyName, typeof(T), typeof(LottieVisualSource), new PropertyMetadata(defaultValue));
 
-        static DependencyProperty RegisterDp<T>(string propertyName, T defaultValue, Action<LottieVisualSource, T, T> callback) =>
+        static DependencyProperty RegisterDp<T>(string propertyName, T? defaultValue, Action<LottieVisualSource, T, T> callback)
+            where T : class
+            =>
             DependencyProperty.Register(propertyName, typeof(T), typeof(LottieVisualSource),
                 new PropertyMetadata(defaultValue, (d, e) => callback((LottieVisualSource)d, (T)e.OldValue, (T)e.NewValue)));
 
@@ -81,7 +83,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         /// Called by XAML to convert a string to an <see cref="IAnimatedVisualSource"/>.
         /// </summary>
         /// <returns>The <see cref="LottieVisualSource"/> for the given url.</returns>
-        public static LottieVisualSource CreateFromString(string uri)
+        public static LottieVisualSource? CreateFromString(string uri)
         {
             var uriUri = Uris.StringToUri(uri);
             if (uriUri is null)
@@ -137,18 +139,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         /// Implements <see cref="IDynamicAnimatedVisualSource"/>.
         /// </summary>
         // TODO: currently explicitly implemented interfaces are causing a problem with .NET Native. Make them implicit for now.
-        public event TypedEventHandler<IDynamicAnimatedVisualSource, object> AnimatedVisualInvalidated
+        public event TypedEventHandler<IDynamicAnimatedVisualSource?, object?> AnimatedVisualInvalidated
         {
             add
             {
-                return EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource, object>>
+                return EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource?, object?>>
                    .GetOrCreateEventRegistrationTokenTable(ref _compositionInvalidatedEventTokenTable)
                    .AddEventHandler(value);
             }
 
             remove
             {
-                EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource, object>>
+                EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource?, object?>>
                    .GetOrCreateEventRegistrationTokenTable(ref _compositionInvalidatedEventTokenTable)
                     .RemoveEventHandler(value);
             }
@@ -162,16 +164,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         /// <returns>An <see cref="IAnimatedVisual"/>.</returns>
         // TODO: currently explicitly implemented interfaces are causing a problem with .NET Native. Make them implicit for now.
         //bool IAnimatedVisualSource.TryCreateAnimatedVisual(
-        public IAnimatedVisual TryCreateAnimatedVisual(
+        public IAnimatedVisual? TryCreateAnimatedVisual(
             Compositor compositor,
-            out object diagnostics)
+            out object? diagnostics)
         {
             if (_contentFactory is null)
             {
                 // No content has been loaded yet.
                 // Return an IAnimatedVisual that produces nothing.
                 diagnostics = null;
-                return new DisposableAnimatedVisual();
+                return new DisposableAnimatedVisual(null);
             }
             else
             {
@@ -184,7 +186,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
 
         void NotifyListenersThatCompositionChanged()
         {
-            EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource, object>>
+            EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource?, object?>>
                 .GetOrCreateEventRegistrationTokenTable(ref _compositionInvalidatedEventTokenTable)
                 .InvocationList?.Invoke(this, null);
         }
@@ -219,7 +221,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         }
 
         // Starts loading. Completes the returned task when the load completes or is replaced by another load.
-        async Task LoadAsync(Loader loader)
+        async Task LoadAsync(Loader? loader)
         {
             var loadVersion = ++_loadVersion;
 

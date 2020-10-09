@@ -52,6 +52,7 @@
     <ErrorReport>prompt</ErrorReport>
     <Prefer32Bit>true</Prefer32Bit>
     <UseDotNetNativeToolchain>true</UseDotNetNativeToolchain>
+    <Nullable>enable</Nullable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <SuppressXamlWarnings>1501</SuppressXamlWarnings>
   </PropertyGroup>
@@ -264,6 +265,7 @@
   <Import Project="..\source\YamlData\YamlData.projitems" Label="Shared" />
   <Import Project="..\source\GenericData\GenericData.projitems" Label="Shared" />
   <Import Project="..\source\CompMetadata\CompMetadata.projitems" Label="Shared" />
+  <Import Project="..\source\NullablesAttributes\NullablesAttributes.projitems" Label="Shared" />
   <Target Name="Pack">
     <!-- Dummy target to mute warnings about attempts to create a NuPkg -->
   </Target>

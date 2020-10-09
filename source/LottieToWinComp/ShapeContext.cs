@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -195,8 +197,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         LinearGradientStroke ComposeLinearGradientStrokes(LinearGradientStroke a, LinearGradientStroke b)
         {
-            Debug.Assert(a != null && b != null, "Precondition");
-
             if (!a.StrokeWidth.IsAnimated && !b.StrokeWidth.IsAnimated &&
                 a.Opacity.IsAlways(LottieData.Opacity.Opaque) && b.Opacity.IsAlways(LottieData.Opacity.Opaque))
             {
@@ -213,8 +213,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         RadialGradientStroke ComposeRadialGradientStrokes(RadialGradientStroke a, RadialGradientStroke b)
         {
-            Debug.Assert(a != null && b != null, "Precondition");
-
             if (!a.StrokeWidth.IsAnimated && !b.StrokeWidth.IsAnimated &&
                 a.Opacity.IsAlways(LottieData.Opacity.Opaque) && b.Opacity.IsAlways(LottieData.Opacity.Opaque))
             {
@@ -231,8 +229,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         SolidColorStroke ComposeSolidColorStrokes(SolidColorStroke a, SolidColorStroke b)
         {
-            Debug.Assert(a != null && b != null, "Precondition");
-
             if (!a.StrokeWidth.IsAnimated && !b.StrokeWidth.IsAnimated &&
                 !a.DashPattern.Any() && !b.DashPattern.Any() &&
                 a.Opacity.IsAlways(LottieData.Opacity.Opaque) && b.Opacity.IsAlways(LottieData.Opacity.Opaque))

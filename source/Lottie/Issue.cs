@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
+#nullable enable
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie
 {
@@ -11,15 +11,21 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
     /// </summary>
     public sealed class Issue
     {
+        internal Issue(string code, string description)
+        {
+            Code = code;
+            Description = description;
+        }
+
         /// <summary>
         /// Gets or sets a code that identifies the issue.
         /// </summary>
-        public string Code { get; set; }
+        public string Code { get; }
 
         /// <summary>
         /// Gets or sets a string that describes the issue.
         /// </summary>
-        public string Description { get; set; }
+        public string Description { get; }
 
         /// <summary>
         /// Gets a URL that may give more information about the issue.

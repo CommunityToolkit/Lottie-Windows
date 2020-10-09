@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
+
 // Uncomment these for debugging
 //#define DisableKeyFrameTrimming
 //#define DisableKeyFrameOptimization
@@ -485,7 +487,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
 
             // Compares 2 IEquatable<V> for equality.
             static bool Equates<TV>(TV? x, TV? y)
-                where TV : class, IEquatable<TV> => x is null ? y is null : x.Equals(y);
+                where TV : class, IEquatable<TV> =>
+                x is null
+                ? y is null
+                : !(y is null) && x.Equals(y);
         }
     }
 }

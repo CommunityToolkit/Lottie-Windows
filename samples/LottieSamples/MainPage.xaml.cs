@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
+#nullable enable
 
 using LottieSamples.Scenarios;
 using System;
@@ -16,11 +16,13 @@ namespace LottieSamples
 {
     internal sealed class NavData
     {
-        public string Tag;
-        public Type Page;
+        public string Tag { get; }
+        public Type Page { get; }
 
-        public static implicit operator NavData((string tag, Type page)arg)
-            => new NavData {  Tag = arg.tag, Page = arg.page};
+        NavData(string tag, Type page) => (Tag, Page) = (tag, page);
+
+        public static implicit operator NavData((string tag, Type page) arg)
+            => new NavData(arg.tag, arg.page);
     }
 
     public sealed partial class MainPage : Page
@@ -85,8 +87,11 @@ namespace LottieSamples
                     .OfType<NavigationViewItem>()
                     .First(n => n.Tag.Equals(item.Tag));
 
-                // Consequence of substituting NavigationViewItem's Icon + Content with a Stackpanel + 2 TextBlocks. 
-                NavView.Header = ((TextBlock)((StackPanel)((NavigationViewItem)NavView.SelectedItem)?.Content)?.Children[1]).Text.ToString();
+                // Consequence of substituting NavigationViewItem's Icon + Content with a Stackpanel + 2 TextBlocks.
+                var selectedItem = (NavigationViewItem?)NavView.SelectedItem;
+                var selectedStackPanel = (StackPanel?)selectedItem?.Content;
+                var selectedChild = (TextBlock?)selectedStackPanel?.Children[1];
+                NavView.Header = selectedChild?.Text.ToString();
             }
         }
     }

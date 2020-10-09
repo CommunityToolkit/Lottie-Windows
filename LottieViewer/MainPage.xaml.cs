@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
+#nullable enable
 
 //#define DebugDragDrop
 using System;
@@ -121,7 +121,7 @@ namespace LottieViewer
                 };
                 filePicker.FileTypeFilter.Add(".json");
 
-                StorageFile file = null;
+                StorageFile? file = null;
                 try
                 {
                     file = await filePicker.PickSingleFileAsync();
@@ -146,7 +146,7 @@ namespace LottieViewer
                 _scrubber.Value = 0;
 
                 // If we were stopped in manual play control, turn it back to automatic.
-                if (!_playStopButton.IsChecked.Value)
+                if (_playStopButton.IsChecked != true)
                 {
                     _playStopButton.IsChecked = true;
                 }
@@ -215,7 +215,7 @@ namespace LottieViewer
             DebugDragDrop("Dropping");
             var playVersion = ++_playVersion;
 
-            IStorageItem item = null;
+            IStorageItem? item = null;
             try
             {
                 item = (await e.DataView.GetStorageItemsAsync()).Single();
@@ -231,11 +231,17 @@ namespace LottieViewer
                 return;
             }
 
+            if (item is null)
+            {
+                DebugDragDrop("Ignoring drop");
+                return;
+            }
+
             // Reset the scrubber to the 0 position.
             _scrubber.Value = 0;
 
             // If we were stopped in manual play control, turn it back to automatic.
-            if (!_playStopButton.IsChecked.Value)
+            if (_playStopButton.IsChecked != true)
             {
                 _playStopButton.IsChecked = true;
             }
@@ -256,7 +262,7 @@ namespace LottieViewer
 
         bool _ignoreScrubberValueChanges;
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         void ProgressSliderChanged(object sender, ScrubberValueChangedEventArgs e)
         {
@@ -282,7 +288,7 @@ namespace LottieViewer
 
             // Otherwise, if we toggled on, we're stopped in manual mode: set the progress.
             //            If we toggled off, we're in auto mode, start playing.
-            if (!_playStopButton.IsChecked.Value)
+            if (_playStopButton.IsChecked != true)
             {
                 _stage.Player.SetProgress(_scrubber.Value);
             }
@@ -418,13 +424,13 @@ namespace LottieViewer
 
     public sealed class PropertiesTemplateSelector : DataTemplateSelector
     {
-        public DataTemplate Normal { get; set; }
+        public DataTemplate? Normal { get; set; }
 
-        public DataTemplate Marker { get; set; }
+        public DataTemplate? Marker { get; set; }
 
-        public DataTemplate MarkerWithDuration { get; set; }
+        public DataTemplate? MarkerWithDuration { get; set; }
 
-        protected override DataTemplate SelectTemplateCore(object item, DependencyObject container)
+        protected override DataTemplate? SelectTemplateCore(object item, DependencyObject container)
         {
             if (item is PairOfStrings)
             {

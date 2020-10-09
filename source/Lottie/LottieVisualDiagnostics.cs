@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
+#nullable enable
 
 using System;
 using System.Collections.Generic;
@@ -35,11 +35,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
 
         public TimeSpan InstantiationTime { get; internal set; }
 
-        public IEnumerable<Issue> JsonParsingIssues { get; internal set; } = Array.Empty<Issue>();
+        public IReadOnlyList<Issue> JsonParsingIssues { get; internal set; } = Array.Empty<Issue>();
 
-        public IEnumerable<Issue> LottieValidationIssues { get; internal set; } = Array.Empty<Issue>();
+        public IReadOnlyList<Issue> LottieValidationIssues { get; internal set; } = Array.Empty<Issue>();
 
-        public IEnumerable<Issue> TranslationIssues { get; internal set; } = Array.Empty<Issue>();
+        public IReadOnlyList<Issue> TranslationIssues { get; internal set; } = Array.Empty<Issue>();
 
         public double LottieWidth => LottieComposition?.Width ?? 0;
 
@@ -52,20 +52,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         public LottieVisualOptions Options { get; internal set; }
 
         // Holds the parsed LottieComposition.
-        internal LottieComposition LottieComposition { get; set; }
+        internal LottieComposition? LottieComposition { get; set; }
 
         // Holds the translated Visual. Only used if one of the codegen or XML options was selected.
-        internal WinCompData.Visual RootVisual { get; set; }
+        internal WinCompData.Visual? RootVisual { get; set; }
 
         // The UAP version required by the translated code. Only used if one of the codegen or
         // XML options was selected.
         internal uint RequiredUapVersion { get; set; }
 
         // CompostionPropertySet that holds the theming properties.
-        internal CompositionPropertySet ThemingPropertySet { get; set; }
+        internal CompositionPropertySet? ThemingPropertySet { get; set; }
 
         // Describes the property bindings in the ThemingPropertySet.
-        internal IReadOnlyList<PropertyBinding> ThemePropertyBindings { get; set; }
+        internal IReadOnlyList<PropertyBinding>? ThemePropertyBindings { get; set; }
 
         internal LottieVisualDiagnostics Clone() =>
             new LottieVisualDiagnostics

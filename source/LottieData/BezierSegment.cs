@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 
@@ -32,7 +34,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         public Vector2 ControlPoint3 { get; }
 
         /// <inheritdoc/>
-        public bool Equals(BezierSegment? other) => EqualityComparer.Equals(this, other);
+        public bool Equals(BezierSegment? other) => !(other is null) && EqualityComparer.Equals(this, other);
 
         internal static IEqualityComparer<BezierSegment> EqualityComparer { get; } = new Comparer();
 

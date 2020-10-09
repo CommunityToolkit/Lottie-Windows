@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -33,14 +35,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             bool reverseDirection,
             double trimOffsetDegrees)
         {
+            Debug.Assert(shape.Geometry != null, "Precondition");
+
             shape.FillBrush = Brushes.TranslateShapeFill(context, context.Fill, context.Opacity);
             Brushes.TranslateAndApplyStroke(context, context.Stroke, shape, context.Opacity);
 
-            Debug.Assert(shape.Geometry != null, "Precondition");
-
             TranslateAndApplyTrimPath(
                 context,
-                shape.Geometry,
+                geometry: shape.Geometry!,
                 reverseDirection,
                 trimOffsetDegrees);
         }

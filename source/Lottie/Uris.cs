@@ -2,9 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
+#nullable enable
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie
 {
@@ -15,7 +16,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         /// Relative URIs are made relative to ms-appx:///.
         /// </summary>
         /// <returns>A Uri or null.</returns>
-        public static Uri StringToUri(string uri)
+        [return: NotNullIfNotNull("uri")]
+        public static Uri? StringToUri(string uri)
         {
             if (!Uri.IsWellFormedUriString(uri, UriKind.RelativeOrAbsolute))
             {
@@ -29,7 +31,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         /// Returns an absolute URI. Relative URIs are made relative to ms-appx:///.
         /// </summary>
         /// <returns>A Uri or null.</returns>
-        public static Uri GetAbsoluteUri(Uri uri)
+        [return: NotNullIfNotNull("uri")]
+        public static Uri? GetAbsoluteUri(Uri uri)
         {
             if (uri is null)
             {

@@ -56,14 +56,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         private protected void Describe(TranslationContext context, IDescribable obj)
         {
-            if (context.AddDescriptions && obj.LongDescription is null && obj.ShortDescription is null && !(string.IsNullOrWhiteSpace(LongDescription) || string.IsNullOrWhiteSpace(ShortDescription)))
+            if (context.AddDescriptions &&
+                obj.LongDescription is null &&
+                obj.ShortDescription is null &&
+                !(string.IsNullOrWhiteSpace(LongDescription) || string.IsNullOrWhiteSpace(ShortDescription)))
             {
-                obj.SetDescription(context, LongDescription, ShortDescription);
+                // IsNullOrWhiteSpace implies LongDescription is not null.
+                obj.SetDescription(context, LongDescription!, ShortDescription);
             }
 
             if (context.AddDescriptions && obj.Name is null && !string.IsNullOrWhiteSpace(Name))
             {
-                obj.SetName(Name);
+                // !IsNullOrWhitespace(Name) implies Name is not null.
+                obj.SetName(Name!);
             }
         }
 
