@@ -177,6 +177,7 @@ Global
 		source\UIData\UIData.projitems*{74601e6c-2dfe-4842-b170-047941abff2c}*SharedItemsImports = 13
 		source\GenericData\GenericData.projitems*{77bcd724-8555-463b-985f-f8e8110164c4}*SharedItemsImports = 13
 		source\Lottie\Lottie.projitems*{8ef7bd77-28e9-4998-8dbb-8036f988fe65}*SharedItemsImports = 13
+		source\NullablesAttributes\NullablesAttributes.projitems*{9a99e690-71d2-4e26-9000-0e0920394dfe}*SharedItemsImports = 5
 		source\UIData\UIData.projitems*{9a99e690-71d2-4e26-9000-0e0920394dfe}*SharedItemsImports = 5
 		source\UIDataCodeGen\UIDataCodeGen.projitems*{9b6c0b7f-0d0f-4086-9746-0d34d7667db5}*SharedItemsImports = 5
 		source\CompMetadata\CompMetadata.projitems*{a262757c-9f1a-4f6e-9188-849f4b709d67}*SharedItemsImports = 5
@@ -184,8 +185,8 @@ Global
 		source\CompMetadata\CompMetadata.projitems*{b0197c19-bdf5-473e-a022-e21f6122eee5}*SharedItemsImports = 13
 		source\LottieData\LottieData.projitems*{b3db16ee-a821-4474-a188-e64926529bbd}*SharedItemsImports = 13
 		source\LottieReader\LottieReader.projitems*{bb081e5a-cf3c-490f-8f8e-450a79f6ca33}*SharedItemsImports = 5
-		source\LottieMetadata\LottieMetadata.projitems*{bcedf904-f986-42ec-a22d-e0662777b7f9}*SharedItemsImports = 5
 		source\LottieToWinComp\LottieToWinComp.projitems*{bcedf904-f986-42ec-a22d-e0662777b7f9}*SharedItemsImports = 5
+		source\NullablesAttributes\NullablesAttributes.projitems*{bcedf904-f986-42ec-a22d-e0662777b7f9}*SharedItemsImports = 5
 		source\CompMetadata\CompMetadata.projitems*{cb12d5ba-a6fe-41e2-b555-83c903cce92a}*SharedItemsImports = 5
 		source\GenericData\GenericData.projitems*{cb12d5ba-a6fe-41e2-b555-83c903cce92a}*SharedItemsImports = 5
 		source\LottieData\LottieData.projitems*{cb12d5ba-a6fe-41e2-b555-83c903cce92a}*SharedItemsImports = 5
