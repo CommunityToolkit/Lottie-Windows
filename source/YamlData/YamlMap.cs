@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -41,7 +43,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.YamlData
         /// <param name="key">The property name.</param>
         /// <param name="value">The property value.</param>
         /// <exception cref="InvalidOperationException">The property name has already been added.</exception>
-        public void Add(string key, YamlScalar? value) => Add(key, value as YamlObject);
+        public void Add(string key, YamlScalar? value) => Add(key, value is null ? null : value as YamlObject);
 
         IEnumerator<(string key, YamlObject value)> IEnumerable<(string key, YamlObject value)>.GetEnumerator()
             => _keysAndValues.GetEnumerator();

@@ -8,8 +8,7 @@
   </PropertyGroup>
 
   <Import Project="..\..\source\LottieData\LottieData.projitems" Label="Shared" />
-
-  <Import Project="..\..\source\GenericData\GenericData.projitems" Label="Shared" />
+  <Import Project="..\..\source\NullablesAttributes\NullablesAttributes.projitems" Label="Shared" />
 
   <ItemGroup>
     <PackageReference Include="System.Memory" Version="4.5.4" />
@@ -17,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\GenericData\GenericData.dll.csproj" />
     <ProjectReference Include="..\YamlData\YamlData.dll.csproj" />
   </ItemGroup>
 </Project>

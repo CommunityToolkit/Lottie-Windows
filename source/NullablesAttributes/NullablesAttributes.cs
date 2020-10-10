@@ -9,9 +9,8 @@
 // Without this file, the definitions for the attributes will not
 // be found causing build errors.
 //
-// The file is only needed for projects that use .NET Native (i.e UWP).
-#if WINDOWS_UWP
-
+// The file is only needed for projects built for older frameworks
+// that do not include these attributes.
 #pragma warning disable SA1402 // File should only contain one type
 #pragma warning disable SA1649 // File name should match first type name
 
@@ -19,8 +18,7 @@ namespace System.Diagnostics.CodeAnalysis
 {
     [AttributeUsage(
         AttributeTargets.Field | AttributeTargets.Parameter |
-        AttributeTargets.Property | AttributeTargets.ReturnValue,
-        Inherited = false
+        AttributeTargets.Property | AttributeTargets.ReturnValue
     )]
     internal sealed class MaybeNullAttribute : Attribute
     {
@@ -29,7 +27,7 @@ namespace System.Diagnostics.CodeAnalysis
         }
     }
 
-    [AttributeUsage(AttributeTargets.Parameter, Inherited = false)]
+    [AttributeUsage(AttributeTargets.Parameter)]
     internal sealed class MaybeNullWhenAttribute : Attribute
     {
         public bool ReturnValue { get; }
@@ -42,8 +40,7 @@ namespace System.Diagnostics.CodeAnalysis
 
     [AttributeUsage(
         AttributeTargets.Parameter | AttributeTargets.Property | AttributeTargets.ReturnValue,
-        AllowMultiple = true,
-        Inherited = false
+        AllowMultiple = true
     )]
     sealed class NotNullIfNotNullAttribute : Attribute
     {
@@ -55,7 +52,7 @@ namespace System.Diagnostics.CodeAnalysis
         }
     }
 
-    [AttributeUsage(AttributeTargets.Parameter, Inherited = false)]
+    [AttributeUsage(AttributeTargets.Parameter)]
     internal sealed class NotNullWhenAttribute : Attribute
     {
         public bool ReturnValue { get; }
@@ -66,4 +63,3 @@ namespace System.Diagnostics.CodeAnalysis
         }
     }
 }
-#endif

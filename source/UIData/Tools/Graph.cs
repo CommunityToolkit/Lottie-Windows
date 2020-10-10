@@ -44,12 +44,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
             // _obj should be non-null by the time this is called. We require that
             // SetObject(...) is set as part of initialization of the object.
-            public object? Object
+            public object Object
             {
                 get
                 {
-                    Debug.Assert(!(_obj is null), "Precondition");
-                    return _obj;
+                    Debug.Assert(_obj != null, "Precondition");
+                    return _obj!;
                 }
             }
 

@@ -57,16 +57,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
              _compositionObjectReferences.Values.Concat(_compositionPathReferences.Values).Concat(_canvasGeometryReferences.Values).Concat(_loadedImageSurfaceReferences.Values);
 
         public IEnumerable<(T Node, CanvasGeometry Object)> CanvasGeometryNodes =>
-            _canvasGeometryReferences.Values.Select(n => (n, (CanvasGeometry)n.Object!));
+            _canvasGeometryReferences.Values.Select(n => (n, (CanvasGeometry)n.Object));
 
         public IEnumerable<(T Node, CompositionObject Object)> CompositionObjectNodes =>
-            _compositionObjectReferences.Values.Select(n => (n, (CompositionObject)n.Object!));
+            _compositionObjectReferences.Values.Select(n => (n, (CompositionObject)n.Object));
 
         public IEnumerable<(T Node, CompositionPath Object)> CompositionPathNodes =>
-            _compositionPathReferences.Values.Select(n => (n, (CompositionPath)n.Object!));
+            _compositionPathReferences.Values.Select(n => (n, (CompositionPath)n.Object));
 
         public IEnumerable<(T Node, LoadedImageSurface Object)> LoadedImageSurfaceNodes =>
-            _loadedImageSurfaceReferences.Values.Select(n => (n, (LoadedImageSurface)n.Object!));
+            _loadedImageSurfaceReferences.Values.Select(n => (n, (LoadedImageSurface)n.Object));
 
         public T this[Wg.IGeometrySource2D obj] => _canvasGeometryReferences[obj];
 

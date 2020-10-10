@@ -121,15 +121,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 }
             }
 
-            TC CanonicalObject<TC>(Wg.IGeometrySource2D obj) => (TC)NodeFor(obj).Object!;
+            TC CanonicalObject<TC>(Wg.IGeometrySource2D obj) => (TC)NodeFor(obj).Object;
 
-            TC CanonicalObject<TC>(CompositionObject obj) => (TC)NodeFor(obj).Object!;
+            TC CanonicalObject<TC>(CompositionObject obj) => (TC)NodeFor(obj).Object;
 
-            TC CanonicalObject<TC>(CompositionPath obj) => (TC)NodeFor(obj).Object!;
+            TC CanonicalObject<TC>(CompositionPath obj) => (TC)NodeFor(obj).Object;
 
-            TC CanonicalObject<TC>(LoadedImageSurface obj) => (TC)NodeFor(obj).Object!;
+            TC CanonicalObject<TC>(LoadedImageSurface obj) => (TC)NodeFor(obj).Object;
 
-            TC CanonicalObject<TC>(ICompositionSurface obj) => (TC)NodeFor(obj).Object!;
+            TC CanonicalObject<TC>(ICompositionSurface obj) => (TC)NodeFor(obj).Object;
 
             IEnumerable<(TNode Node, TC Object)> GetCompositionObjects<TC>(CompositionObjectType type)
                 where TC : CompositionObject

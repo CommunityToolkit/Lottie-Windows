@@ -169,8 +169,9 @@ Global
 		source\WinStorageStreamsData\WinStorageStreamsData.projitems*{5120efd7-a556-46bf-8d56-f65f1ef9a305}*SharedItemsImports = 4
 		source\WinUIXamlMediaData\WinUIXamlMediaData.projitems*{5120efd7-a556-46bf-8d56-f65f1ef9a305}*SharedItemsImports = 4
 		source\YamlData\YamlData.projitems*{5120efd7-a556-46bf-8d56-f65f1ef9a305}*SharedItemsImports = 4
-		source\GenericData\GenericData.projitems*{6221591a-e8f4-4a5e-8f0c-2651c24ad495}*SharedItemsImports = 5
 		source\LottieData\LottieData.projitems*{6221591a-e8f4-4a5e-8f0c-2651c24ad495}*SharedItemsImports = 5
+		source\NullablesAttributes\NullablesAttributes.projitems*{6221591a-e8f4-4a5e-8f0c-2651c24ad495}*SharedItemsImports = 5
+		source\NullablesAttributes\NullablesAttributes.projitems*{68317393-f5a5-4b2c-918a-688db2c10f54}*SharedItemsImports = 5
 		source\WinCompData\WinCompData.projitems*{68317393-f5a5-4b2c-918a-688db2c10f54}*SharedItemsImports = 5
 		source\NullablesAttributes\NullablesAttributes.projitems*{6ab50ed0-6273-4919-9ade-50195664ef15}*SharedItemsImports = 4
 		source\UIData\UIData.projitems*{74601e6c-2dfe-4842-b170-047941abff2c}*SharedItemsImports = 13
@@ -197,6 +198,7 @@ Global
 		source\WinStorageStreamsData\WinStorageStreamsData.projitems*{cb12d5ba-a6fe-41e2-b555-83c903cce92a}*SharedItemsImports = 5
 		source\WinUIXamlMediaData\WinUIXamlMediaData.projitems*{cb12d5ba-a6fe-41e2-b555-83c903cce92a}*SharedItemsImports = 5
 		source\YamlData\YamlData.projitems*{cb12d5ba-a6fe-41e2-b555-83c903cce92a}*SharedItemsImports = 5
+		source\NullablesAttributes\NullablesAttributes.projitems*{cb587630-3cfd-4bb3-867c-3f5b1ffbc738}*SharedItemsImports = 5
 		source\YamlData\YamlData.projitems*{cb587630-3cfd-4bb3-867c-3f5b1ffbc738}*SharedItemsImports = 5
 		source\WinCompData\WinCompData.projitems*{d02870de-7ded-4916-85d4-3175ceedef74}*SharedItemsImports = 13
 		source\UIDataCodeGen\UIDataCodeGen.projitems*{d02be6c8-14db-4b4f-8600-f3c9b69c104d}*SharedItemsImports = 13
