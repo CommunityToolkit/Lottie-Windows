@@ -19,6 +19,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         public CodegenConfiguration(
             string className,
             string interfaceType,
+            IReadOnlyList<string> additionalInterfaces,
             IReadOnlyList<(CompositionObject graphRoot, uint requiredUapVersion)> objectGraphs,
             string nameSpace,
             string rootNamespace,
@@ -28,6 +29,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         {
             ClassName = className;
             InterfaceType = interfaceType;
+            AdditionalInterfaces = additionalInterfaces;
             ObjectGraphs = objectGraphs;
             Namespace = nameSpace;
             RootNamespace = rootNamespace;
@@ -80,6 +82,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// of code for IAnimatedVisualSource and IAnimatedVisual.
         /// </summary>
         public string InterfaceType { get; }
+
+        /// <summary>
+        /// 0 or more additional interfaces that the generated class will claim
+        /// to implement.
+        /// </summary>
+        public IReadOnlyList<string> AdditionalInterfaces { get; }
 
         /// <summary>
         /// The object graphs for which source will be generated.

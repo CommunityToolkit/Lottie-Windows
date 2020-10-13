@@ -238,6 +238,9 @@ OVERVIEW:
        [Other options]
 
          -Help         Print this help message and exit.
+         -AdditionalInterface
+                       Specifies an additional interface that the generated code
+                       will claim to implement. May be specified multiple times.
          -DisableTranslationOptimizer
                        Disables optimization of the translation from Lottie to
                        Windows code. Mainly used to detect bugs in the optimizer.

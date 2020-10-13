@@ -127,14 +127,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
 
             WriteSourceDescriptionComments(builder.Preamble);
 
+            var inherits = new List<string>();
             if (SourceInfo.GenerateDependencyObject)
             {
-                WriteHeaderClassStart(builder.Preamble, $"{_winUINamespace}::Xaml::DependencyObject, {_animatedVisualTypeName}Source");
+                inherits.Add($"{_winUINamespace}::Xaml::DependencyObject");
             }
-            else
-            {
-                WriteHeaderClassStart(builder.Preamble, $"{_animatedVisualTypeName}Source");
-            }
+
+            inherits.Add($"{_animatedVisualTypeName}Source");
+            inherits.AddRange(SourceInfo.AdditionalInterfaces.Select(n => n.GetQualifiedName(_s)));
+
+            WriteHeaderClassStart(builder.Preamble, inherits);
 
             WriteInternalHeaderConstants(builder.Internal);
 
@@ -163,14 +165,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
             builder.Public.UnIndent();
         }
 
-        void WriteHeaderClassStart(CodeBuilder builder, string inherits)
+        void WriteHeaderClassStart(CodeBuilder builder, IReadOnlyList<string> inherits)
         {
-            // NOTE: the CX class is always made public. This is necessary to allow CX
-            // XAML projects to compile (the XAML compiler can't find the metadata for the
-            // class if it isn't made public).
             builder.WriteLine($"public ref class {_sourceClassName} sealed");
             builder.Indent();
-            builder.WriteLine($": public {inherits}");
+            builder.WriteLine($": public {inherits[0]}");
+            for (var i = 1; i < inherits.Count; i++)
+            {
+                builder.WriteLine($", public {inherits[i]}");
+            }
+
             builder.UnIndent();
             builder.OpenScope();
         }
@@ -365,8 +369,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
 
             WriteSourceDescriptionComments(builder.Preamble);
 
-            WriteHeaderClassStart(builder.Preamble, "IDynamicAnimatedVisualSource, INotifyPropertyChanged");
-            builder.Preamble.UnIndent();
+            var inherits = new List<string>();
+            if (SourceInfo.GenerateDependencyObject)
+            {
+                inherits.Add($"{_winUINamespace}::Xaml::DependencyObject");
+            }
+
+            inherits.Add("IDynamicAnimatedVisualSourceSource");
+            inherits.Add("INotifyPropertyChanged");
+            inherits.AddRange(SourceInfo.AdditionalInterfaces.Select(n => n.GetQualifiedName(_s)));
+
+            WriteHeaderClassStart(builder.Preamble, inherits);
 
             WriteInternalHeaderConstants(builder.Internal);
 

@@ -57,6 +57,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         readonly bool _isThemed;
         readonly IReadOnlyList<string> _toolInfo;
         readonly TypeName _interfaceType;
+        readonly IReadOnlyList<TypeName> _additionalInterfaces;
         readonly bool _isInterfaceCustom;
         readonly IReadOnlyList<MarkerInfo> _lottieMarkers;
         readonly IReadOnlyList<NamedConstant> _internalConstants;
@@ -82,6 +83,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             _toolInfo = configuration.ToolInfo;
             _interfaceType = new TypeName(configuration.InterfaceType);
             _isInterfaceCustom = _interfaceType.NormalizedQualifiedName != "Microsoft.UI.Xaml.Controls.IAnimatedVisual";
+            _additionalInterfaces = configuration.AdditionalInterfaces.Select(n => new TypeName(n)).ToArray();
             _lottieMarkers = MarkerInfo.GetMarkerInfos(_sourceMetadata.LottieMetadata.FilteredMarkers).ToArray();
             _internalConstants = GetInternalConstants().ToArray();
 
@@ -723,6 +725,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         string IAnimatedVisualSourceInfo.Namespace => _namespace;
 
         TypeName IAnimatedVisualSourceInfo.InterfaceType => _interfaceType;
+
+        IReadOnlyList<TypeName> IAnimatedVisualSourceInfo.AdditionalInterfaces => _additionalInterfaces;
 
         bool IAnimatedVisualSourceInfo.IsInterfaceCustom => _isInterfaceCustom;
 
