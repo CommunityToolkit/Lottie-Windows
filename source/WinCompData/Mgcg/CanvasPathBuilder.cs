@@ -2,13 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
 using System;
 using System.Collections.Generic;
 using System.Numerics;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgc;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg
 {
@@ -17,10 +14,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg
 #endif
     sealed class CanvasPathBuilder : IDisposable
     {
-        readonly ListOfNeverNull<Command> _commands = new ListOfNeverNull<Command>();
+        readonly List<Command> _commands = new List<Command>();
         bool _isFilledRegionDeterminationSet;
 
-        public CanvasPathBuilder(CanvasDevice device)
+        public CanvasPathBuilder(CanvasDevice? device)
         {
         }
 
@@ -76,7 +73,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg
             public abstract CommandType Type { get; }
 
             /// <inheritdoc/>
-            public bool Equals(Command other)
+            public bool Equals(Command? other)
             {
                 if (other is null)
                 {
@@ -116,7 +113,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg
                 public Vector2 StartPoint { get; }
 
                 /// <inheritdoc/>
-                public bool Equals(BeginFigure other) => other != null && other.StartPoint.Equals(StartPoint);
+                public bool Equals(BeginFigure? other) => other != null && other.StartPoint.Equals(StartPoint);
             }
 
             public sealed class EndFigure : Command, IEquatable<EndFigure>
@@ -132,7 +129,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg
                 public CanvasFigureLoop FigureLoop { get; }
 
                 /// <inheritdoc/>
-                public bool Equals(EndFigure other) => other != null && other.FigureLoop == FigureLoop;
+                public bool Equals(EndFigure? other) => other != null && other.FigureLoop == FigureLoop;
             }
 
             public sealed class AddCubicBezier : Command, IEquatable<AddCubicBezier>
@@ -154,7 +151,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg
                 public Vector2 EndPoint { get; }
 
                 /// <inheritdoc/>
-                public bool Equals(AddCubicBezier other) =>
+                public bool Equals(AddCubicBezier? other) =>
                     other != null &&
                     other.ControlPoint1.Equals(ControlPoint1) &&
                     other.ControlPoint2.Equals(ControlPoint2) &&
@@ -174,7 +171,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg
                 public Vector2 EndPoint { get; }
 
                 /// <inheritdoc/>
-                public bool Equals(AddLine other) => other != null && other.EndPoint.Equals(EndPoint);
+                public bool Equals(AddLine? other) => other != null && other.EndPoint.Equals(EndPoint);
             }
         }
 

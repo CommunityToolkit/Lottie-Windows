@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
 using System;
 using System.Linq;
 using System.Numerics;
@@ -22,22 +20,21 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg
         {
         }
 
-        public abstract bool Equals(CanvasGeometry other);
+        public abstract bool Equals(CanvasGeometry? other);
 
         public static CanvasGeometry CreateGroup(
-            CanvasDevice device,
+            CanvasDevice? device,
             CanvasGeometry[] geometries,
             CanvasFilledRegionDetermination filledRegionDetermination)
-            => new Group
+            => new Group(geometries)
             {
-                Geometries = geometries,
                 FilledRegionDetermination = filledRegionDetermination,
             };
 
         public static CanvasGeometry CreatePath(CanvasPathBuilder pathBuilder)
             => new Path(pathBuilder);
 
-        public static CanvasGeometry CreateRoundedRectangle(CanvasDevice device, float x, float y, float w, float h, float radiusX, float radiusY)
+        public static CanvasGeometry CreateRoundedRectangle(CanvasDevice? device, float x, float y, float w, float h, float radiusX, float radiusY)
             => new RoundedRectangle
             {
                 X = x,
@@ -48,7 +45,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg
                 RadiusY = radiusY,
             };
 
-        public static CanvasGeometry CreateEllipse(CanvasDevice device, float x, float y, float radiusX, float radiusY)
+        public static CanvasGeometry CreateEllipse(CanvasDevice? device, float x, float y, float radiusX, float radiusY)
             => new Ellipse
             {
                 X = x,
@@ -58,10 +55,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg
             };
 
         public CanvasGeometry CombineWith(CanvasGeometry other, Matrix3x2 matrix, CanvasGeometryCombine combineMode)
-         => new Combination
+         => new Combination(this, other)
          {
-             A = this,
-             B = other,
              Matrix = matrix,
              CombineMode = combineMode,
          };
@@ -69,22 +64,21 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg
         public CanvasGeometry Transform(Matrix3x2 transformMatrix) =>
             transformMatrix.IsIdentity
             ? this
-            : new TransformedGeometry
+            : new TransformedGeometry(this)
             {
-                SourceGeometry = this,
                 TransformMatrix = transformMatrix,
             };
 
         public abstract GeometryType Type { get; }
 
         /// <inheritdoc/>
-        string IDescribable.LongDescription { get; set; }
+        string? IDescribable.LongDescription { get; set; }
 
         /// <inheritdoc/>
-        string IDescribable.ShortDescription { get; set; }
+        string? IDescribable.ShortDescription { get; set; }
 
         /// <inheritdoc/>
-        string IDescribable.Name { get; set; }
+        string? IDescribable.Name { get; set; }
 
         /// <summary>
         /// The type of a <see cref="CanvasGeometry"/>.
@@ -101,9 +95,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg
 
         public sealed class Combination : CanvasGeometry, IEquatable<Combination>
         {
-            public CanvasGeometry A { get; internal set; }
+            internal Combination(CanvasGeometry a, CanvasGeometry b) => (A, B) = (a, b);
 
-            public CanvasGeometry B { get; internal set; }
+            public CanvasGeometry A { get; }
+
+            public CanvasGeometry B { get; }
 
             public Matrix3x2 Matrix { get; internal set; }
 
@@ -119,9 +115,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg
             }
 
             /// <inheritdoc/>
-            public override bool Equals(CanvasGeometry other) => Equals(other as Combination);
+            public override bool Equals(CanvasGeometry? other) => Equals(other as Combination);
 
-            public bool Equals(Combination other)
+            public bool Equals(Combination? other)
             {
                 return
                     other != null &&
@@ -160,7 +156,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg
                     hashHelper.GetIntBits(RadiusY);
             }
 
-            public bool Equals(Ellipse other)
+            public bool Equals(Ellipse? other)
             {
                 return
                     other != null &&
@@ -171,19 +167,21 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg
             }
 
             /// <inheritdoc/>
-            public override bool Equals(CanvasGeometry other) => Equals(other as Ellipse);
+            public override bool Equals(CanvasGeometry? other) => Equals(other as Ellipse);
         }
 
         public sealed class Group : CanvasGeometry, IEquatable<Group>
         {
-            public CanvasGeometry[] Geometries { get; internal set; }
+            internal Group(CanvasGeometry[] geometries) => Geometries = geometries;
+
+            public CanvasGeometry[] Geometries { get; }
 
             public CanvasFilledRegionDetermination FilledRegionDetermination { get; internal set; }
 
             /// <inheritdoc/>
             public override GeometryType Type => GeometryType.Group;
 
-            public bool Equals(Group other)
+            public bool Equals(Group? other)
             {
                 if (other is null || other.Geometries.Length != Geometries.Length)
                 {
@@ -202,7 +200,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg
             }
 
             /// <inheritdoc/>
-            public override bool Equals(CanvasGeometry other) => Equals(other as Group);
+            public override bool Equals(CanvasGeometry? other) => Equals(other as Group);
 
             /// <inheritdoc/>
             public override int GetHashCode()
@@ -233,7 +231,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg
             public override GeometryType Type => GeometryType.Path;
 
             /// <inheritdoc/>
-            public bool Equals(Path other)
+            public bool Equals(Path? other)
             {
                 if (ReferenceEquals(this, other))
                 {
@@ -270,7 +268,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg
             }
 
             /// <inheritdoc/>
-            public override bool Equals(CanvasGeometry other) => Equals(other as Path);
+            public override bool Equals(CanvasGeometry? other) => Equals(other as Path);
 
             /// <inheritdoc/>
             public override int GetHashCode()
@@ -310,7 +308,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg
                     hashHelper.GetIntBits(RadiusY);
             }
 
-            public bool Equals(RoundedRectangle other)
+            public bool Equals(RoundedRectangle? other)
             {
                 return
                     other != null &&
@@ -323,12 +321,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg
             }
 
             /// <inheritdoc/>
-            public override bool Equals(CanvasGeometry other) => Equals(other as RoundedRectangle);
+            public override bool Equals(CanvasGeometry? other) => Equals(other as RoundedRectangle);
         }
 
         public sealed class TransformedGeometry : CanvasGeometry, IEquatable<TransformedGeometry>
         {
-            public CanvasGeometry SourceGeometry { get; internal set; }
+            internal TransformedGeometry(CanvasGeometry sourceGeometry) => SourceGeometry = sourceGeometry;
+
+            public CanvasGeometry SourceGeometry { get; }
 
             public Matrix3x2 TransformMatrix { get; internal set; }
 
@@ -341,7 +341,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg
                 return SourceGeometry.GetHashCode();
             }
 
-            public bool Equals(TransformedGeometry other)
+            public bool Equals(TransformedGeometry? other)
             {
                 return
                     other != null &&
@@ -350,7 +350,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg
             }
 
             /// <inheritdoc/>
-            public override bool Equals(CanvasGeometry other) => Equals(other as TransformedGeometry);
+            public override bool Equals(CanvasGeometry? other) => Equals(other as TransformedGeometry);
         }
 
         [StructLayout(LayoutKind.Explicit)]

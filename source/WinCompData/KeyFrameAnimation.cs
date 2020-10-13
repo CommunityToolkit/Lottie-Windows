@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
 using System;
 using System.Collections.Generic;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions;
@@ -19,7 +17,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
     {
         readonly SortedList<float, KeyFrame> _keyFrames = new SortedList<float, KeyFrame>();
 
-        private protected KeyFrameAnimation(KeyFrameAnimation<T, TExpression> other)
+        private protected KeyFrameAnimation(KeyFrameAnimation<T, TExpression>? other)
             : base(other)
         {
             if (other != null)
@@ -28,7 +26,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
             }
         }
 
-        public void InsertExpressionKeyFrame(float progress, TExpression expression, CompositionEasingFunction easing)
+        public void InsertExpressionKeyFrame(float progress, TExpression expression, CompositionEasingFunction? easing)
         {
             if (progress < 0 || progress > 1)
             {
@@ -40,7 +38,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 
         // NOTE: this method does not exist on Windows.UI.Composition.BooleanKeyFrameAnimation - it does not support easing.
         //       The method is inherited by the WinCompData.BooleanKeyFrameAnimation but it is not valid to call it.
-        public void InsertKeyFrame(float progress, T value, CompositionEasingFunction easing)
+        public void InsertKeyFrame(float progress, T value, CompositionEasingFunction? easing)
         {
             if (typeof(T) == typeof(bool))
             {
@@ -53,7 +51,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
         public void InsertKeyFrame(float progress, T value)
             => InsertKeyFrameCommon(progress, value, easing: null);
 
-        void InsertKeyFrameCommon(float progress, T value, CompositionEasingFunction easing)
+        void InsertKeyFrameCommon(float progress, T value, CompositionEasingFunction? easing)
         {
             if (progress < 0 || progress > 1)
             {
@@ -84,7 +82,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 
         public sealed class ValueKeyFrame : KeyFrame
         {
-            internal ValueKeyFrame(float progress, CompositionEasingFunction easing, T value)
+            internal ValueKeyFrame(float progress, CompositionEasingFunction? easing, T value)
                 : base(progress, easing)
             {
                 Value = value;
@@ -101,7 +99,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 
         public new sealed class ExpressionKeyFrame : KeyFrameAnimation_.ExpressionKeyFrame
         {
-            internal ExpressionKeyFrame(float progress, CompositionEasingFunction easing, TExpression expression)
+            internal ExpressionKeyFrame(float progress, CompositionEasingFunction? easing, TExpression expression)
                 : base(progress, easing, expression)
             {
                 Expression = expression;

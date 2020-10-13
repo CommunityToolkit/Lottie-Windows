@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -67,7 +65,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// </summary>
         sealed class ProgressVariable
         {
-            Range _rangesHead;
+            Range? _rangesHead;
 
             internal ProgressVariable(string name, double scale, double offset)
             {
@@ -170,17 +168,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             internal float End { get; }
 
-            internal Easing Easing { get; }
+            internal Easing? Easing { get; }
 
-            internal Range Next { get; set; }
+            internal Range? Next { get; set; }
 
-            bool Equals(Range other)
-                => (!(other is null)) && (other.Start == Start) && (other.End == End) && other.Easing.Equals(Easing);
+            bool Equals(Range? other)
+                => (!(other is null)) && (other.Start == Start) && (other.End == End) && other.Easing == Easing;
 
-            public override bool Equals(object obj) => Equals(obj as Range);
+            public override bool Equals(object? obj) => Equals(obj as Range);
 
             public override int GetHashCode()
-                => Easing.GetHashCode() ^ Start.GetHashCode() ^ End.GetHashCode();
+                => (Easing?.GetHashCode() ?? 0) ^ Start.GetHashCode() ^ End.GetHashCode();
 
             public override string ToString() => $"{Start}-{End}";
         }

@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -16,11 +14,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
     /// </summary>
     sealed class CompositeOpacity
     {
-        readonly CompositeOpacity _previous;
+        readonly CompositeOpacity? _previous;
         readonly Opacity _initialValue;
         readonly IReadOnlyList<KeyFrame<Opacity>> _keyFrames;
 
-        CompositeOpacity(CompositeOpacity previous, Opacity initialValue, IReadOnlyList<KeyFrame<Opacity>> keyFrames)
+        CompositeOpacity(CompositeOpacity? previous, Opacity initialValue, IReadOnlyList<KeyFrame<Opacity>> keyFrames)
         {
             Debug.Assert(previous is null || keyFrames.Count > 1, "Precondition");
 

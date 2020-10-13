@@ -2,10 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json;
 
@@ -459,7 +458,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 obj.IgnorePropertyIntentionally("a");
 
                 keyFrames = Array.Empty<KeyFrame<T>>();
-                initialValue = default(T);
+                initialValue = default(T)!;
 
                 foreach (var property in obj)
                 {
@@ -471,7 +470,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                                 if (k.Kind == JsonValueKind.Array)
                                 {
                                     var kArray = k.AsArray();
-                                    if (HasKeyframes(kArray))
+                                    if (kArray != null && HasKeyframes(kArray))
                                     {
                                         keyFrames = ReadKeyFrames(kArray.Value).ToArray();
                                         initialValue = keyFrames.First().Value;
@@ -591,7 +590,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                         if (!lottieKeyFrameObj.TryGetProperty("s", out var finalStartValue))
                         {
                             // Old format.
-                            yield return new KeyFrame<T>(startFrame, endValue, spatialBezier, easing);
+                            if (endValue != null)
+                            {
+                                yield return new KeyFrame<T>(startFrame, endValue, spatialBezier, easing);
+                            }
                         }
                         else
                         {

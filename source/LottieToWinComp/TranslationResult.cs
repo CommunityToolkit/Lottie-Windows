@@ -18,7 +18,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
     sealed class TranslationResult
     {
         internal TranslationResult(
-            Visual rootVisual,
+            Visual? rootVisual,
             IEnumerable<TranslationIssue> translationIssues,
             uint minimumRequiredUapVersion,
             IReadOnlyDictionary<Guid, object> sourceMetadata)
@@ -32,7 +32,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// <summary>
         /// The <see cref="Visual"/> at the root of the translation, or null if the translation failed.
         /// </summary>
-        public Visual RootVisual { get; }
+        public Visual? RootVisual { get; }
 
         /// <summary>
         /// Metadata from the source.

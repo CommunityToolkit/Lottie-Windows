@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
+#nullable enable
 
 using System;
 using System.Collections.Generic;
@@ -50,8 +50,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
             // numbers of stops.
             var redundancies = input.Select(kf => FindRedundantColorStops(kf.Value.ToArray())).Aggregate((a, b) =>
             {
-                Debug.Assert(a != null && b != null, "Invariant");
-
                 for (var i = 0; i < a.Length; i++)
                 {
                     // Set the entry in a iff it's set in both a and b.
@@ -90,10 +88,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
             // If a color stop is at the same offset as an opacity stop, put the color stop first.
             var orderedStops = stops.OrderBy(s => s.Offset).ThenBy(s => s.Kind == GradientStop.GradientStopKind.Color ? 0 : 1).ToArray();
 
-            OpacityGradientStop previousOpacityStop = null;
-            OpacityGradientStop nextOpacityStop = null;
-            ColorGradientStop previousColorStop = null;
-            ColorGradientStop nextColorStop = null;
+            OpacityGradientStop? previousOpacityStop = null;
+            OpacityGradientStop? nextOpacityStop = null;
+            ColorGradientStop? previousColorStop = null;
+            ColorGradientStop? nextColorStop = null;
             var foundLastColorStop = false;
             var foundLastOpacityStop = false;
 
@@ -130,7 +128,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                         // Find the next opacity stop, if there is one.
                         if (nextOpacityStop is null && !foundLastOpacityStop)
                         {
-                            nextOpacityStop = (OpacityGradientStop)FindNextStopOfKind(
+                            nextOpacityStop = (OpacityGradientStop?)FindNextStopOfKind(
                                                                         orderedStops,
                                                                         i + 1,
                                                                         GradientStop.GradientStopKind.Opacity);
@@ -180,7 +178,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                         // Find the next color stop, if there is one.
                         if (nextColorStop is null && !foundLastColorStop)
                         {
-                            nextColorStop = (ColorGradientStop)FindNextStopOfKind(
+                            nextColorStop = (ColorGradientStop?)FindNextStopOfKind(
                                                                     orderedStops,
                                                                     i + 1,
                                                                     GradientStop.GradientStopKind.Color);
@@ -215,7 +213,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
 
         // Searches forward in the GradientStops array from startIndex and returns the first stop
         // of the given kind, or null if none found.
-        static GradientStop FindNextStopOfKind(GradientStop[] stops, int startIndex, GradientStop.GradientStopKind kind)
+        static GradientStop? FindNextStopOfKind(GradientStop[] stops, int startIndex, GradientStop.GradientStopKind kind)
         {
             for (var i = startIndex; i < stops.Length; i++)
             {

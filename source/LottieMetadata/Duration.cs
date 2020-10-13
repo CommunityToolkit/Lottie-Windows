@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
 using System;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieMetadata
@@ -70,7 +68,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieMetadata
 
         public static bool operator !=(Duration a, Duration b) => !(a == b);
 
-        public override bool Equals(object obj) => obj is Duration other && this == other;
+        public override bool Equals(object? obj) => obj is Duration other && this == other;
 
         public override int GetHashCode() => Frames.GetHashCode();
 

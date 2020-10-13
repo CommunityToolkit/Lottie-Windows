@@ -2,13 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.MetaData;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 {
@@ -23,10 +19,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
         static readonly Guid s_longDescriptionMetadataKey = new Guid("63514254-2B3E-4794-B01D-9F67D5946A7E");
         static readonly Guid s_nameMetadataKey = new Guid("6EB18A31-FA33-43B9-8EE1-57B489DC3404");
 
-        readonly ListOfNeverNull<Animator> _animators = new ListOfNeverNull<Animator>();
+        readonly List<Animator> _animators = new List<Animator>();
 
         // Null until the first metadata is set.
-        SortedDictionary<Guid, object> _metadata;
+        SortedDictionary<Guid, object>? _metadata;
 
         private protected CompositionObject()
         {
@@ -48,14 +44,21 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
         /// </summary>
         /// <param name="key">A <see cref="Guid"/> that identifies that type of metadata.</param>
         /// <param name="value">The value of the metadata.</param>
-        public void SetMetadata(in Guid key, object value)
+        public void SetMetadata(in Guid key, object? value)
         {
             if (_metadata is null)
             {
                 _metadata = new SortedDictionary<Guid, object>();
             }
 
-            _metadata[key] = value;
+            if (value is null)
+            {
+                _metadata.Remove(key);
+            }
+            else
+            {
+                _metadata[key] = value;
+            }
         }
 
         /// <summary>
@@ -65,7 +68,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
         /// </summary>
         /// <param name="key">A <see cref="Guid"/> that identifies that type of metadata.</param>
         /// <returns>The metadata, or null.</returns>
-        public object TryGetMetadata(in Guid key)
+        public object? TryGetMetadata(in Guid key)
         {
             if (_metadata is object && _metadata.TryGetValue(key, out var result))
             {
@@ -75,16 +78,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
             return null;
         }
 
-        public string Comment { get; set; }
+        public string? Comment { get; set; }
 
         /// <summary>
         /// Gets or sets a description of the object. This may be used to add comments to generated code.
         /// Cf. the <see cref="Comment"/> property which is a property on real composition
         /// objects that is used for debugging.
         /// </summary>
-        string IDescribable.LongDescription
+        string? IDescribable.LongDescription
         {
-            get => (string)TryGetMetadata(in s_longDescriptionMetadataKey);
+            get => (string?)TryGetMetadata(in s_longDescriptionMetadataKey);
             set => SetMetadata(in s_longDescriptionMetadataKey, value);
         }
 
@@ -93,18 +96,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
         /// Cf. the <see cref="Comment"/> property which is a property on real composition
         /// objects that is used for debugging.
         /// </summary>
-        string IDescribable.ShortDescription
+        string? IDescribable.ShortDescription
         {
-            get => (string)TryGetMetadata(in s_shortDescriptionMetadataKey);
+            get => (string?)TryGetMetadata(in s_shortDescriptionMetadataKey);
             set => SetMetadata(in s_shortDescriptionMetadataKey, value);
         }
 
         /// <summary>
         /// Gets or sets a name for the object. This may be used for variable names in generated code.
         /// </summary>
-        string IDescribable.Name
+        string? IDescribable.Name
         {
-            get => (string)TryGetMetadata(in s_nameMetadataKey);
+            get => (string?)TryGetMetadata(in s_nameMetadataKey);
             set => SetMetadata(in s_nameMetadataKey, value);
         }
 
@@ -176,7 +179,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
         /// </summary>
         public IReadOnlyList<Animator> Animators => _animators;
 
-        public AnimationController TryGetAnimationController(string target) =>
+        public AnimationController? TryGetAnimationController(string target) =>
             _animators.Where(a => a.AnimatedProperty == target).SingleOrDefault()?.Controller;
 
         public abstract CompositionObjectType Type { get; }
@@ -197,7 +200,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
                 string animatedProperty,
                 CompositionObject animatedObject,
                 CompositionAnimation animation,
-                AnimationController controller)
+                AnimationController? controller)
             {
                 AnimatedProperty = animatedProperty;
                 AnimatedObject = animatedObject;
@@ -221,7 +224,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 
             public CompositionAnimation Animation { get; }
 
-            public AnimationController Controller { get; }
+            /// <summary>
+            /// The controller for this <see cref="Animator"/> or null
+            /// if the animation is an <see cref="ExpressionAnimation"/>.
+            /// </summary>
+            public AnimationController? Controller { get; }
 
             /// <inheritdoc/>
             public override string ToString() => AnimatedProperty;

@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,27 +27,31 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         {
             IList<Font> list = EmptyList<Font>.Singleton;
 
-            foreach (var item in fontsObject.ArrayPropertyOrNull("list"))
+            var listArray = fontsObject.ArrayPropertyOrNull("list");
+            if (listArray.HasValue)
             {
-                var element = item.AsObject();
-                if (!element.HasValue)
+                foreach (var item in listArray)
                 {
-                    continue;
+                    var element = item.AsObject();
+                    if (!element.HasValue)
+                    {
+                        continue;
+                    }
+
+                    var obj = element.Value;
+                    var fName = obj.StringPropertyOrNull("fName") ?? string.Empty;
+                    var fFamily = obj.StringPropertyOrNull("fFamily") ?? string.Empty;
+                    var fStyle = obj.StringPropertyOrNull("fStyle") ?? string.Empty;
+                    var ascent = obj.DoublePropertyOrNull("ascent") ?? 0;
+                    obj.AssertAllPropertiesRead();
+
+                    if (list == EmptyList<Font>.Singleton)
+                    {
+                        list = new List<Font>();
+                    }
+
+                    list.Add(new Font(fName, fFamily, fStyle, ascent));
                 }
-
-                var obj = element.Value;
-                var fName = obj.StringPropertyOrNull("fName") ?? string.Empty;
-                var fFamily = obj.StringPropertyOrNull("fFamily") ?? string.Empty;
-                var fStyle = obj.StringPropertyOrNull("fStyle") ?? string.Empty;
-                var ascent = obj.DoublePropertyOrNull("ascent") ?? 0;
-                obj.AssertAllPropertiesRead();
-
-                if (list == EmptyList<Font>.Singleton)
-                {
-                    list = new List<Font>();
-                }
-
-                list.Add(new Font(fName, fFamily, fStyle, ascent));
             }
 
             fontsObject.AssertAllPropertiesRead();

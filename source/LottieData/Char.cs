@@ -12,9 +12,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
     sealed class Char
     {
         public Char(
-              string characters,
-              string fontFamily,
-              string style,
+              string? characters,
+              string? fontFamily,
+              string? style,
               double fontSize,
               double width,
               IEnumerable<ShapeLayerContent> shapes)

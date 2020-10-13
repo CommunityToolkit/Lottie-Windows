@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 {
@@ -18,7 +17,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
         }
 
         /// <inheritdoc/>
-        public IList<CompositionShape> Shapes { get; } = new ListOfNeverNull<CompositionShape>();
+        public IList<CompositionShape> Shapes { get; } = new List<CompositionShape>();
 
         /// <inheritdoc/>
         public override CompositionObjectType Type => CompositionObjectType.CompositionContainerShape;

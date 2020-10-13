@@ -2,10 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
+#nullable enable
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce;
@@ -75,7 +76,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
         public T this[LoadedImageSurface obj] => _loadedImageSurfaceReferences[obj];
 
-        T Reference(T from, CompositionObject obj)
+        [return: NotNullIfNotNull("obj")]
+        T? Reference(T? from, CompositionObject? obj)
         {
             if (obj is null)
             {
@@ -95,7 +97,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
             // Object has not been seen before. Register it, and visit it.
             // Create a node for the object.
-            node = new T { Object = obj };
+            node = new T();
+            node.SetObject(obj);
 
             InitializeNode(node, NodeType.CompositionObject, _positionCounter++);
 
@@ -281,7 +284,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             }
             else
             {
-                node = new T { Object = obj };
+                node = new T();
+                node.SetObject(obj);
+
                 InitializeNode(node, NodeType.CompositionPath, _positionCounter++);
                 AddVertex(from, node);
                 _compositionPathReferences.Add(obj, node);
@@ -300,7 +305,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             }
             else
             {
-                node = new T { Object = obj };
+                node = new T();
+                node.SetObject(obj);
+
                 InitializeNode(node, NodeType.CanvasGeometry, _positionCounter++);
                 AddVertex(from, node);
                 _canvasGeometryReferences.Add(obj, node);
@@ -334,7 +341,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             }
             else
             {
-                node = new T { Object = obj };
+                node = new T();
+                node.SetObject(obj);
+
                 InitializeNode(node, NodeType.LoadedImageSurface, _positionCounter++);
                 AddVertex(from, node);
                 _loadedImageSurfaceReferences.Add(obj, node);

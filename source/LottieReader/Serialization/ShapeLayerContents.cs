@@ -2,8 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
+#nullable enable
 using System.Collections.Generic;
 using static Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization.Exceptions;
 
@@ -13,7 +12,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 #pragma warning disable SA1601 // Partial elements should be documented
     sealed partial class LottieCompositionReader
     {
-        ShapeLayerContent ReadShapeContent(in LottieJsonObjectElement obj)
+        ShapeLayerContent? ReadShapeContent(in LottieJsonObjectElement obj)
         {
             var args = default(ShapeLayerContent.ShapeLayerContentArgs);
             ReadShapeLayerContentArgs(obj, ref args);
@@ -100,7 +99,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             var miterLimit = obj.DoublePropertyOrNull("ml") ?? 4; // Default miter limit in After Effects is 4
 
             // Get dash pattern to be set as StrokeDashArray
-            Animatable<double> offset = null;
+            Animatable<double>? offset = null;
             var dashPattern = new List<double>();
             var dashes = obj.ArrayPropertyOrNull("d");
             if (dashes != null)
@@ -335,8 +334,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
             var polystarType = SyToPolystarType(obj.DoublePropertyOrNull("sy")) ?? Polystar.PolyStarType.Polygon;
 
-            Animatable<double> innerRadius;
-            Animatable<double> innerRoundness;
+            Animatable<double>? innerRadius;
+            Animatable<double>? innerRoundness;
 
             switch (polystarType)
             {

@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 {
     [MetaData.UapVersion(6)]
@@ -16,12 +14,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
         {
         }
 
-        internal CompositionPathGeometry(CompositionPath path)
+        internal CompositionPathGeometry(CompositionPath? path)
         {
             Path = path;
         }
 
-        public CompositionPath Path { get; set; }
+        public CompositionPath? Path { get; set; }
 
         /// <inheritdoc/>
         public override CompositionObjectType Type => CompositionObjectType.CompositionPathGeometry;

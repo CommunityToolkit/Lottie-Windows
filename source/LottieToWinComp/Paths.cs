@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -123,8 +121,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             Shapes.TranslateAndApplyShapeContext(
                 context,
                 compositionSpriteShape,
-                path.DrawingDirection == DrawingDirection.Reverse,
-                trimOffsetDegrees: 0);
+                path.DrawingDirection == DrawingDirection.Reverse);
 
             return compositionSpriteShape;
         }
@@ -166,8 +163,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             Shapes.TranslateAndApplyShapeContext(
                 context,
                 compositionSpriteShape,
-                reverseDirection: directions[0] == DrawingDirection.Reverse,
-                trimOffsetDegrees: 0);
+                reverseDirection: directions[0] == DrawingDirection.Reverse);
 
             return compositionSpriteShape;
         }
@@ -397,7 +393,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
         }
 
-        static ShapeFill.PathFillType GetPathFillType(ShapeFill fill) => fill is null ? ShapeFill.PathFillType.EvenOdd : fill.FillType;
+        static ShapeFill.PathFillType GetPathFillType(ShapeFill? fill) => fill is null ? ShapeFill.PathFillType.EvenOdd : fill.FillType;
 
         static bool IsFuzzyEqual(in Vector2 a, in Vector2 b, in double acceptableError)
         {

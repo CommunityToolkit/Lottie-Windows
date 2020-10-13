@@ -2,8 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Expr = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions.Expression;
@@ -21,7 +20,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
     /// </summary>
     static class Transforms
     {
-        public static Sn.Matrix3x2 CreateMatrixFromTransform(LayerContext context, Transform transform)
+        public static Sn.Matrix3x2 CreateMatrixFromTransform(LayerContext context, Transform? transform)
         {
             if (transform is null)
             {
@@ -58,8 +57,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// <returns><c>true</c> if the the chain was created.</returns>
         public static bool TryCreateShapeVisualTransformChain(
             LayerContext context,
-            out ContainerVisual rootNode,
-            out CompositionContainerShape contentsNode)
+            [NotNullWhen(true)] out ContainerVisual? rootNode,
+            [NotNullWhen(true)] out CompositionContainerShape? contentsNode)
         {
             // Create containers for the contents in the layer.
             // The rootNode is the root for the layer.
@@ -148,8 +147,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// <returns><c>true</c> if the the chain was created.</returns>
         public static bool TryCreateContainerShapeTransformChain(
             LayerContext context,
-            out CompositionContainerShape rootNode,
-            out CompositionContainerShape contentsNode)
+            [NotNullWhen(true)] out CompositionContainerShape? rootNode,
+            [NotNullWhen(true)] out CompositionContainerShape? contentsNode)
         {
             // Create containers for the contents in the layer.
             // The rootNode is the root for the layer. It may be the same object
@@ -250,8 +249,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// <returns><c>true</c> if the the chain was created.</returns>
         public static bool TryCreateContainerVisualTransformChain(
             LayerContext context,
-            out ContainerVisual rootNode,
-            out ContainerVisual contentsNode)
+            [NotNullWhen(true)] out ContainerVisual? rootNode,
+            [NotNullWhen(true)] out ContainerVisual? contentsNode)
         {
             // Create containers for the contents in the layer.
             // The rootTransformNode is the root for the layer. It may be the same object
@@ -393,7 +392,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             if (layer.Parent != null)
             {
                 var parentLayer = context.CompositionContext.Layers.GetLayerById(layer.Parent.Value);
-                TranslateTransformOnContainerVisualForLayer(context, parentLayer, out rootTransformNode, out var parentLeafTransform);
+                TranslateTransformOnContainerVisualForLayer(context, parentLayer!, out rootTransformNode, out var parentLeafTransform);
                 parentLeafTransform.Children.Add(leafTransformNode);
             }
             else
@@ -420,7 +419,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             if (layer.Parent != null)
             {
                 var parentLayer = context.CompositionContext.Layers.GetLayerById(layer.Parent.Value);
-                TranslateTransformOnContainerShapeForLayer(context, parentLayer, out rootTransformNode, out var parentLeafTransform);
+                TranslateTransformOnContainerShapeForLayer(context, parentLayer!, out rootTransformNode, out var parentLeafTransform);
                 parentLeafTransform.Shapes.Add(leafTransformNode);
                 leafTransformNode.SetDescription(context, () => ($"Transforms for {layer.Name}", $"Transforms: {layer.Name}"));
             }
@@ -589,7 +588,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
 
             // If the position or anchor are animated, the offset needs to be calculated via an expression.
-            ExpressionAnimation offsetExpression = null;
+            ExpressionAnimation? offsetExpression = null;
             if (positionIsAnimated && anchorIsAnimated)
             {
                 // Both position and anchor are animated.

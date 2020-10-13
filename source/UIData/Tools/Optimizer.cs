@@ -2,11 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Numerics;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
@@ -78,7 +77,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
         sealed class ObjectData : CanonicalizedNode<ObjectData>
         {
             // The copied object.
-            internal object Copied { get; set; }
+            internal object? Copied { get; set; }
         }
 
         Optimizer(ObjectGraph<ObjectData> graph)
@@ -106,28 +105,37 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             return _graph[obj].Canonical;
         }
 
-        bool GetExisting<T>(T key, out T result)
+        bool GetExisting<T>(T key, [MaybeNullWhen(false)] out T result)
             where T : CompositionObject
         {
-            result = (T)NodeFor(key).Copied;
+            var temp = NodeFor(key).Copied;
+            if (temp is null)
+            {
+                result = null;
+                return false;
+            }
+            else
+            {
+                result = (T)temp!;
+                return true;
+            }
+        }
+
+        bool GetExistingCanvasGeometry(CanvasGeometry key, [MaybeNullWhen(false)] out CanvasGeometry result)
+        {
+            result = (CanvasGeometry?)NodeFor(key).Copied;
             return result != null;
         }
 
-        bool GetExistingCanvasGeometry(CanvasGeometry key, out CanvasGeometry result)
+        bool GetExisting(CompositionPath key, [MaybeNullWhen(false)] out CompositionPath result)
         {
-            result = (CanvasGeometry)NodeFor(key).Copied;
+            result = (CompositionPath?)NodeFor(key).Copied;
             return result != null;
         }
 
-        bool GetExisting(CompositionPath key, out CompositionPath result)
+        bool GetExisting(LoadedImageSurface key, [MaybeNullWhen(false)] out LoadedImageSurface result)
         {
-            result = (CompositionPath)NodeFor(key).Copied;
-            return result != null;
-        }
-
-        bool GetExisting(LoadedImageSurface key, out LoadedImageSurface result)
-        {
-            result = (LoadedImageSurface)NodeFor(key).Copied;
+            result = (LoadedImageSurface?)NodeFor(key).Copied;
             return result != null;
         }
 
@@ -289,7 +297,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
         ShapeVisual GetShapeVisual(ShapeVisual obj)
         {
-            if (GetExisting(obj, out ShapeVisual result))
+            if (GetExisting(obj, out var result))
             {
                 return result;
             }
@@ -314,7 +322,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
         SpriteVisual GetSpriteVisual(SpriteVisual obj)
         {
-            if (GetExisting(obj, out SpriteVisual result))
+            if (GetExisting(obj, out var result))
             {
                 return result;
             }
@@ -333,7 +341,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
         ContainerVisual GetContainerVisual(ContainerVisual obj)
         {
-            if (GetExisting(obj, out ContainerVisual result))
+            if (GetExisting(obj, out var result))
             {
                 return result;
             }
@@ -401,14 +409,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
         AnimationController GetAnimationController(AnimationController obj)
         {
-            if (GetExisting(obj, out AnimationController result))
+            if (GetExisting(obj, out var result))
             {
                 return result;
             }
 
             var targetObject = GetCompositionObject(obj.TargetObject);
 
-            result = CacheAndInitializeCompositionObject(obj, targetObject.TryGetAnimationController(obj.TargetProperty));
+            result = CacheAndInitializeCompositionObject(obj, targetObject.TryGetAnimationController(obj.TargetProperty)!);
             StartAnimationsAndFreeze(obj, result);
             return result;
         }
@@ -491,7 +499,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
         CompositionPropertySet GetCompositionPropertySet(CompositionPropertySet obj)
         {
-            if (GetExisting(obj, out CompositionPropertySet result))
+            if (GetExisting(obj, out var result))
             {
                 return result;
             }
@@ -516,35 +524,35 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                     case WinCompData.MetaData.PropertySetValueType.Color:
                         {
                             obj.TryGetColor(name, out var value);
-                            result.InsertColor(name, value);
+                            result.InsertColor(name, value!.Value);
                             break;
                         }
 
                     case WinCompData.MetaData.PropertySetValueType.Scalar:
                         {
                             obj.TryGetScalar(name, out var value);
-                            result.InsertScalar(name, value);
+                            result.InsertScalar(name, value!.Value);
                             break;
                         }
 
                     case WinCompData.MetaData.PropertySetValueType.Vector2:
                         {
                             obj.TryGetVector2(name, out var value);
-                            result.InsertVector2(name, value);
+                            result.InsertVector2(name, value!.Value);
                             break;
                         }
 
                     case WinCompData.MetaData.PropertySetValueType.Vector3:
                         {
                             obj.TryGetVector3(name, out var value);
-                            result.InsertVector3(name, value);
+                            result.InsertVector3(name, value!.Value);
                             break;
                         }
 
                     case WinCompData.MetaData.PropertySetValueType.Vector4:
                         {
                             obj.TryGetVector4(name, out var value);
-                            result.InsertVector4(name, value);
+                            result.InsertVector4(name, value!.Value);
                             break;
                         }
 
@@ -672,7 +680,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
         ScalarKeyFrameAnimation GetScalarKeyFrameAnimation(ScalarKeyFrameAnimation obj)
         {
-            if (GetExisting(obj, out ScalarKeyFrameAnimation result))
+            if (GetExisting(obj, out var result))
             {
                 return result;
             }
@@ -701,7 +709,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
         Vector2KeyFrameAnimation GetVector2KeyFrameAnimation(Vector2KeyFrameAnimation obj)
         {
-            if (GetExisting(obj, out Vector2KeyFrameAnimation result))
+            if (GetExisting(obj, out var result))
             {
                 return result;
             }
@@ -730,7 +738,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
         Vector3KeyFrameAnimation GetVector3KeyFrameAnimation(Vector3KeyFrameAnimation obj)
         {
-            if (GetExisting(obj, out Vector3KeyFrameAnimation result))
+            if (GetExisting(obj, out var result))
             {
                 return result;
             }
@@ -759,7 +767,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
         Vector4KeyFrameAnimation GetVector4KeyFrameAnimation(Vector4KeyFrameAnimation obj)
         {
-            if (GetExisting(obj, out Vector4KeyFrameAnimation result))
+            if (GetExisting(obj, out var result))
             {
                 return result;
             }
@@ -788,7 +796,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
         PathKeyFrameAnimation GetPathKeyFrameAnimation(PathKeyFrameAnimation obj)
         {
-            if (GetExisting(obj, out PathKeyFrameAnimation result))
+            if (GetExisting(obj, out var result))
             {
                 return result;
             }
@@ -803,7 +811,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             return result;
         }
 
-        CompositionEasingFunction GetCompositionEasingFunction(CompositionEasingFunction obj)
+        [return: NotNullIfNotNull("obj")]
+        CompositionEasingFunction? GetCompositionEasingFunction(CompositionEasingFunction? obj)
         {
             if (obj is null)
             {
@@ -838,7 +847,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
         InsetClip GetInsetClip(InsetClip obj)
         {
-            if (GetExisting(obj, out InsetClip result))
+            if (GetExisting(obj, out var result))
             {
                 return result;
             }
@@ -861,7 +870,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
         CompositionGeometricClip GetCompositionGeometricClip(CompositionGeometricClip obj)
         {
-            if (GetExisting(obj, out CompositionGeometricClip result))
+            if (GetExisting(obj, out var result))
             {
                 return result;
             }
@@ -874,7 +883,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
         LinearEasingFunction GetLinearEasingFunction(LinearEasingFunction obj)
         {
-            if (GetExisting(obj, out LinearEasingFunction result))
+            if (GetExisting(obj, out var result))
             {
                 return result;
             }
@@ -886,7 +895,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
         StepEasingFunction GetStepEasingFunction(StepEasingFunction obj)
         {
-            if (GetExisting(obj, out StepEasingFunction result))
+            if (GetExisting(obj, out var result))
             {
                 return result;
             }
@@ -923,7 +932,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
         CubicBezierEasingFunction GetCubicBezierEasingFunction(CubicBezierEasingFunction obj)
         {
-            if (GetExisting(obj, out CubicBezierEasingFunction result))
+            if (GetExisting(obj, out var result))
             {
                 return result;
             }
@@ -935,7 +944,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
         CompositionViewBox GetCompositionViewBox(CompositionViewBox obj)
         {
-            if (GetExisting(obj, out CompositionViewBox result))
+            if (GetExisting(obj, out var result))
             {
                 return result;
             }
@@ -948,7 +957,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
         CompositionVisualSurface GetCompositionVisualSurface(CompositionVisualSurface obj)
         {
-            if (GetExisting(obj, out CompositionVisualSurface result))
+            if (GetExisting(obj, out var result))
             {
                 return result;
             }
@@ -970,7 +979,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
         LoadedImageSurface GetLoadedImageSurface(LoadedImageSurface obj)
         {
-            if (GetExisting(obj, out LoadedImageSurface result))
+            if (GetExisting(obj, out var result))
             {
                 return result;
             }
@@ -996,7 +1005,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
         CompositionEffectBrush GetCompositionEffectBrush(CompositionEffectBrush obj)
         {
-            if (GetExisting(obj, out CompositionEffectBrush result))
+            if (GetExisting(obj, out var result))
             {
                 return result;
             }
@@ -1036,7 +1045,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
         CompositionLinearGradientBrush GetCompositionLinearGradientBrush(CompositionLinearGradientBrush obj)
         {
-            if (GetExisting(obj, out CompositionLinearGradientBrush result))
+            if (GetExisting(obj, out var result))
             {
                 return result;
             }
@@ -1051,7 +1060,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
         CompositionRadialGradientBrush GetCompositionRadialGradientBrush(CompositionRadialGradientBrush obj)
         {
-            if (GetExisting(obj, out CompositionRadialGradientBrush result))
+            if (GetExisting(obj, out var result))
             {
                 return result;
             }
@@ -1080,7 +1089,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
         CompositionContainerShape GetCompositionContainerShape(CompositionContainerShape obj)
         {
-            if (GetExisting(obj, out CompositionContainerShape result))
+            if (GetExisting(obj, out var result))
             {
                 return result;
             }
@@ -1116,7 +1125,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
         CompositionSpriteShape GetCompositionSpriteShape(CompositionSpriteShape obj)
         {
-            if (GetExisting(obj, out CompositionSpriteShape result))
+            if (GetExisting(obj, out var result))
             {
                 return result;
             }
@@ -1179,7 +1188,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
         CompositionSurfaceBrush GetCompositionSurfaceBrush(CompositionSurfaceBrush obj)
         {
-            if (GetExisting(obj, out CompositionSurfaceBrush result))
+            if (GetExisting(obj, out var result))
             {
                 return result;
             }
@@ -1195,8 +1204,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             return result;
         }
 
-        CompositionGeometry GetCompositionGeometry(CompositionGeometry obj)
+        [return: NotNullIfNotNull("obj")]
+        CompositionGeometry? GetCompositionGeometry(CompositionGeometry? obj)
         {
+            if (obj is null)
+            {
+                return null;
+            }
+
             switch (obj.Type)
             {
                 case CompositionObjectType.CompositionPathGeometry:
@@ -1218,7 +1233,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
         CompositionEllipseGeometry GetCompositionEllipseGeometry(CompositionEllipseGeometry obj)
         {
-            if (GetExisting(obj, out CompositionEllipseGeometry result))
+            if (GetExisting(obj, out var result))
             {
                 return result;
             }
@@ -1236,7 +1251,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
         CompositionRectangleGeometry GetCompositionRectangleGeometry(CompositionRectangleGeometry obj)
         {
-            if (GetExisting(obj, out CompositionRectangleGeometry result))
+            if (GetExisting(obj, out var result))
             {
                 return result;
             }
@@ -1254,7 +1269,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
         CompositionRoundedRectangleGeometry GetCompositionRoundedRectangleGeometry(CompositionRoundedRectangleGeometry obj)
         {
-            if (GetExisting(obj, out CompositionRoundedRectangleGeometry result))
+            if (GetExisting(obj, out var result))
             {
                 return result;
             }
@@ -1273,7 +1288,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
         CompositionPathGeometry GetCompositionPathGeometry(CompositionPathGeometry obj)
         {
-            if (GetExisting(obj, out CompositionPathGeometry result))
+            if (GetExisting(obj, out var result))
             {
                 return result;
             }
@@ -1285,7 +1300,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
         CompositionPath GetCompositionPath(CompositionPath obj)
         {
-            if (GetExisting(obj, out CompositionPath result))
+            if (GetExisting(obj, out var result))
             {
                 return result;
             }
@@ -1297,7 +1312,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
         CanvasGeometry GetCanvasGeometry(Wg.IGeometrySource2D obj)
         {
-            if (GetExistingCanvasGeometry((CanvasGeometry)obj, out CanvasGeometry result))
+            if (GetExistingCanvasGeometry((CanvasGeometry)obj, out var result))
             {
                 return result;
             }
@@ -1425,7 +1440,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
         CompositionColorBrush GetCompositionColorBrush(CompositionColorBrush obj)
         {
-            if (GetExisting(obj, out CompositionColorBrush result))
+            if (GetExisting(obj, out var result))
             {
                 return result;
             }
@@ -1442,7 +1457,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
         CompositionColorGradientStop GetCompositionColorGradientStop(CompositionColorGradientStop obj)
         {
-            if (GetExisting(obj, out CompositionColorGradientStop result))
+            if (GetExisting(obj, out var result))
             {
                 return result;
             }

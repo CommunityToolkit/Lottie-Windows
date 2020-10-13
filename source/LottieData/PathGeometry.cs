@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
+#nullable enable
 
 using System;
 
@@ -39,10 +39,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// </summary>
         public static PathGeometry Empty { get; } = new PathGeometry(Sequence<BezierSegment>.Empty, false);
 
-        public bool Equals(PathGeometry other) =>
+        public bool Equals(PathGeometry? other) =>
             other != null && other.IsClosed == IsClosed && other.BezierSegments.Equals(BezierSegments);
 
-        public override bool Equals(object obj) => Equals(obj as PathGeometry);
+        public override bool Equals(object? obj) => Equals(obj as PathGeometry);
 
         public override int GetHashCode() => BezierSegments.GetHashCode();
     }

@@ -88,7 +88,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         void ValidateNoParentCycles(LayerCollection layers)
         {
             // Holds the layers that are known to not be in a cycle.
-            var notInCycles = new HashSet<Layer>();
+            var notInCycles = new HashSet<Layer?>();
 
             // Holds the layers that have parents and have not yet been proven to
             // not be in a cycle.

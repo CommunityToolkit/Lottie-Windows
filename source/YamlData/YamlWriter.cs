@@ -2,10 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
+#nullable enable
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -175,7 +176,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.YamlData
             }
         }
 
-        bool TryInlineObject(YamlObject obj, int maximumWidth, out string result)
+        bool TryInlineObject(YamlObject obj, int maximumWidth, [MaybeNullWhen(false)] out string result)
         {
             if (maximumWidth < 1)
             {
@@ -203,7 +204,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.YamlData
             }
         }
 
-        bool TryInlineScalar(YamlScalar obj, int maximumWidth, out string result)
+        bool TryInlineScalar(YamlScalar obj, int maximumWidth, [MaybeNullWhen(false)] out string result)
         {
             result = obj.ToString();
             if (result.Length > maximumWidth)
@@ -214,7 +215,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.YamlData
             return result != null;
         }
 
-        bool TryInlineMap(YamlMap obj, int maximumWidth, out string result)
+        bool TryInlineMap(YamlMap obj, int maximumWidth, [MaybeNullWhen(false)] out string result)
         {
             result = null;
 
@@ -259,7 +260,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.YamlData
             return result != null;
         }
 
-        bool TryInlineSequence(YamlSequence obj, int maximumWidth, out string result)
+        bool TryInlineSequence(YamlSequence obj, int maximumWidth, [MaybeNullWhen(false)] out string result)
         {
             result = null;
 

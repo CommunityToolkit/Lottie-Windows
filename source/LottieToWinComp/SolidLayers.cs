@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
 using System.Linq;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Sn = System.Numerics;
@@ -32,7 +30,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             internal override bool IsShape =>
                 !_context.Layer.Masks.Any() || _context.Layer.IsHidden || _context.Layer.Transform.Opacity.IsAlways(LottieData.Opacity.Transparent);
 
-            internal override CompositionShape GetShapeRoot(TranslationContext context)
+            internal override CompositionShape? GetShapeRoot(TranslationContext context)
             {
                 if (_context.Layer.IsHidden || _context.Layer.Transform.Opacity.IsAlways(LottieData.Opacity.Transparent))
                 {
@@ -67,7 +65,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 return containerRootNode;
             }
 
-            internal override Visual GetVisualRoot(CompositionContext context)
+            internal override Visual? GetVisualRoot(CompositionContext context)
             {
                 // Translate the SolidLayer to a Visual.
                 if (_context.Layer.IsHidden || _context.Layer.Transform.Opacity.IsAlways(LottieData.Opacity.Transparent))

@@ -4,7 +4,6 @@
 
 using System.Collections.Generic;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgc;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce
 {
@@ -15,7 +14,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce
     {
         public CanvasComposite Mode { get; set; }
 
-        public IList<CompositionEffectSourceParameter> Sources { get; } = new ListOfNeverNull<CompositionEffectSourceParameter>();
+        public IList<CompositionEffectSourceParameter> Sources { get; } = new List<CompositionEffectSourceParameter>();
 
         public override GraphicsEffectType Type => GraphicsEffectType.CompositeEffect;
     }

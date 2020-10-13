@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
+#nullable enable
 
 using System.Collections;
 using System.Collections.Generic;
@@ -38,7 +38,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// Returns the <see cref="Asset"/> with the given id, or null if not found.
         /// </summary>
         /// <returns>The <see cref="Asset"/> with the given id, or null if not found.</returns>
-        public Asset GetAssetById(string id)
+        public Asset? GetAssetById(string id)
         {
             if (id is null)
             {

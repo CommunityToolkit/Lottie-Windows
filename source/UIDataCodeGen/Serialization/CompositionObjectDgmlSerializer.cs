@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -43,7 +41,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         static readonly Category CategoryVisualSurface = new Category("VisualSurface", Colors.LightGreen);
 
         static readonly XNamespace ns = "http://schemas.microsoft.com/vs/2009/dgml";
-        ObjectGraph<ObjectData> _objectGraph;
+        ObjectGraph<ObjectData>? _objectGraph;
         int _idGenerator;
         int _groupIdGenerator;
 
@@ -94,12 +92,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             // Create the DGML nodes.
             var nodes =
                 from n in objectNodes
-                select CreateNodeXml(id: n.Id, label: n.Name, category: n.Category.Id);
+                select CreateNodeXml(id: n.Id!, label: n.Name, category: n.Category?.Id);
 
             // Create the DGML nodes for the groups.
             nodes = nodes.Concat(
                 from gn in groups
-                select CreateNodeXml(id: gn.Id, label: gn.GroupName, @group: "Expanded"));
+                select CreateNodeXml(id: gn.Id!, label: gn.GroupName, @group: "Expanded"));
 
             // Create the categories used by object nodes.
             var categories =
@@ -164,7 +162,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 );
         }
 
-        static XElement CreatePropertyXml(string id, string label = null, string description = null, string dataType = null)
+        static XElement CreatePropertyXml(string id, string? label = null, string? description = null, string? dataType = null)
         {
             return new XElement(ns + "Property", CreateAttributes(new[]
             {
@@ -175,7 +173,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             }));
         }
 
-        static XElement CreateNodeXml(string id, string label = null, string name = null, string category = null, string @group = null)
+        static XElement CreateNodeXml(
+            string id,
+            string? label = null,
+            string? name = null,
+            string? category = null,
+            string? @group = null)
         {
             return new XElement(ns + "Node", CreateAttributes(new[]
             {
@@ -186,7 +189,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             }));
         }
 
-        static IEnumerable<XAttribute> CreateAttributes(IEnumerable<(string name, string value)> attrs)
+        static IEnumerable<XAttribute> CreateAttributes(IEnumerable<(string name, string? value)> attrs)
         {
             foreach (var (name, value) in attrs)
             {
@@ -197,7 +200,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             }
         }
 
-        IEnumerable<GroupNode> GroupTree(ObjectData node, GroupNode group)
+        IEnumerable<GroupNode> GroupTree(ObjectData node, GroupNode? group)
         {
             if (group != null)
             {
@@ -235,7 +238,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 }
                 else
                 {
-                    childGroup = group;
+                    childGroup = group!;
                 }
 
                 // Recurse to group the subtree.
@@ -250,21 +253,21 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         string GenerateGroupId() => $"gid{_groupIdGenerator++}";
 
-        static string ShortDescription(IDescribable describable) => describable.ShortDescription;
+        static string ShortDescription(IDescribable describable) => describable.ShortDescription ?? string.Empty;
 
         sealed class ObjectData : Graph.Node<ObjectData>
         {
             readonly List<ObjectData> _children = new List<ObjectData>();
-            CompositionObjectDgmlSerializer _owner;
-            ObjectData _parent;
+            CompositionObjectDgmlSerializer? _owner;
+            ObjectData? _parent;
 
-            internal string Name { get; set; }
+            internal string? Name { get; set; }
 
-            internal Category Category { get; set; }
+            internal Category? Category { get; set; }
 
             internal bool IsDgmlNode { get; private set; }
 
-            internal string Id { get; private set; }
+            internal string? Id { get; private set; }
 
             // The links from this node to its children.
             internal IEnumerable<ObjectData> Children => _children;
@@ -354,7 +357,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 }
             }
 
-            public override string ToString() => Id;
+            public override string? ToString() => Id;
 
             bool IsAnimatedCompositionObject
             {
@@ -415,11 +418,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             internal List<GroupNode> GroupsInGroup { get; } = new List<GroupNode>();
 
-            internal string Id { get; set; }
+            internal string? Id { get; set; }
 
-            internal string GroupName { get; set; }
+            internal string? GroupName { get; set; }
 
-            public override string ToString() => Id;
+            public override string? ToString() => Id;
         }
 
         sealed class Category
@@ -443,7 +446,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             internal XElement ToXElement()
             {
-                return new XElement(ns + "Category", CreateAttributes(new[]
+                return new XElement(ns + "Category", CreateAttributes(new (string, string?)[]
                 {
                     ("Id", Id),
                     ("Label", _label),

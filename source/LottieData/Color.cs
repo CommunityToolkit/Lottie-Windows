@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
+#nullable enable
 
 using System;
 
@@ -49,10 +49,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         public double B { get; }
 
         /// <inheritdoc/>
-        public override bool Equals(object obj) => Equals(obj as Color);
+        public override bool Equals(object? obj) => Equals(obj as Color);
 
         /// <inheritdoc/>
-        public bool Equals(Color other) => other is Color && (A == other.A && R == other.R && G == other.G && B == other.B);
+        public bool Equals(Color? other) => other is Color && (A == other.A && R == other.R && G == other.G && B == other.B);
 
         /// <inheritdoc/>
         public override int GetHashCode() => (A * R * G * B).GetHashCode();
@@ -63,12 +63,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// <summary>
         /// Return a color with the given opacity multiplied into the alpha channel of the given color.
         /// </summary>
-        public static Color operator *(Color color, Opacity opacity) => color?.MultipliedByOpacity(opacity);
+        public static Color operator *(Color color, Opacity opacity) => color.MultipliedByOpacity(opacity);
 
         /// <summary>
         /// Return a color with the given opacity multiplied into the alpha channel of the given color.
         /// </summary>
-        public static Color operator *(Opacity opacity, Color color) => color?.MultipliedByOpacity(opacity);
+        public static Color operator *(Opacity opacity, Color color) => color.MultipliedByOpacity(opacity);
 
         Color MultipliedByOpacity(Opacity opacity) => opacity.IsOpaque ? this : new Color(opacity.Value * A, R, G, B);
 

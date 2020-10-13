@@ -125,7 +125,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
             var isTrimmed = (nonDefaultGeometryProperties & (PropertyId.TrimEnd | PropertyId.TrimStart)) != PropertyId.None;
 
-            if (sprite.Geometry.Type == CompositionObjectType.CompositionEllipseGeometry)
+            if (sprite.Geometry?.Type == CompositionObjectType.CompositionEllipseGeometry)
             {
                 // Remove the StrokeMiterLimit and StrokeLineJoin properties. These properties
                 // only apply to changes of direction in a path, and never to an ellipse.
@@ -142,9 +142,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 }
             }
 
-            if (sprite.Geometry.Type == CompositionObjectType.CompositionRectangleGeometry ||
-                sprite.Geometry.Type == CompositionObjectType.CompositionRoundedRectangleGeometry ||
-                sprite.Geometry.Type == CompositionObjectType.CompositionEllipseGeometry)
+            if (sprite.Geometry?.Type == CompositionObjectType.CompositionRectangleGeometry ||
+                sprite.Geometry?.Type == CompositionObjectType.CompositionRoundedRectangleGeometry ||
+                sprite.Geometry?.Type == CompositionObjectType.CompositionEllipseGeometry)
             {
                 // TODO - this can also be enabled for path geometries that are closed paths.
                 // The geometry is closed. If it's not trimmed then the caps are irrelavent.

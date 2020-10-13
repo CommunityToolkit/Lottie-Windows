@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
+#nullable enable
 
 using System;
 
@@ -10,13 +10,21 @@ namespace LottieViewer.ViewModel
 {
     class Marker
     {
-        public string PropertyName { get; set; }
+        internal Marker(string name, string propertyName, double progress, string progressText)
+        {
+            Name = name;
+            Progress = progress;
+            ProgressText = progressText;
+            PropertyName = propertyName;
+        }
 
-        public string Name { get; set; }
+        public string PropertyName { get; }
 
-        public double Progress { get; set; }
+        public string Name { get; }
 
-        public string ProgressText { get; set; }
+        public double Progress { get; }
+
+        public string ProgressText { get; }
 
         public double ConstrainedProgress => Math.Max(0, Math.Min(1, Progress));
     }

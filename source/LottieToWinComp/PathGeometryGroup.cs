@@ -2,12 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 
@@ -31,7 +28,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// </summary>
         public IReadOnlyList<PathGeometry> Data { get; }
 
-        public bool Equals(PathGeometryGroup other) => other != null && Enumerable.SequenceEqual(Data, other.Data);
+        public bool Equals(PathGeometryGroup? other) => other != null && Enumerable.SequenceEqual(Data, other.Data);
 
         // Takes a group of possibly-animated paths and returns an animatable
         // of PathGeometryGroups. Returns true if it succeeds without issues.

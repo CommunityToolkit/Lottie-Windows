@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
 using System;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
@@ -43,7 +41,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         public static bool operator !=(Vector2 left, Vector2 right) => !left.Equals(right);
 
         /// <inheritdoc/>
-        public override bool Equals(object obj) => obj is Vector2 other && Equals(other);
+        public override bool Equals(object? obj) => obj is Vector2 other && Equals(other);
 
         /// <inheritdoc/>
         public bool Equals(Vector2 other) => X == other.X && Y == other.Y;

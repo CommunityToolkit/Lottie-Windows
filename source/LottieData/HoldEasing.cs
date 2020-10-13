@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
+#nullable enable
 
 using System;
 
@@ -32,11 +32,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
         /// <inheritdoc/>
         // All HoldEasings are equivalent.
-        public override bool Equals(object obj) => obj is HoldEasing;
+        public override bool Equals(object? obj) => obj is HoldEasing;
 
         /// <inheritdoc/>
         // All HoldEasings are equivalent.
-        public bool Equals(HoldEasing other) => other is HoldEasing;
+        public bool Equals(HoldEasing? other) => other is HoldEasing;
 
         public static bool operator ==(HoldEasing a, HoldEasing b) => (a is HoldEasing && b is HoldEasing) || (a is null && b is null);
 

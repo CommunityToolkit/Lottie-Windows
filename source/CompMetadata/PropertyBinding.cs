@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.MetaData;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.CompMetadata
@@ -16,20 +14,34 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.CompMetadata
 #endif
     sealed class PropertyBinding
     {
+        public PropertyBinding(
+            string bindingName,
+            string displayName,
+            PropertySetValueType actualType,
+            PropertySetValueType exposedType,
+            object defaultValue)
+        {
+            BindingName = bindingName;
+            DisplayName = displayName;
+            ActualType = actualType;
+            ExposedType = exposedType;
+            DefaultValue = defaultValue;
+        }
+
         /// <summary>
         /// The name used to identify the value in the CompositionPropertySet.
         /// </summary>
-        public string BindingName { get; set; }
+        public string BindingName { get; }
 
         /// <summary>
         /// A name for the binding for display in tools.
         /// </summary>
-        public string DisplayName { get; set; }
+        public string DisplayName { get; }
 
         /// <summary>
         /// The type of data stored in the CompositionPropertySet under this name.
         /// </summary>
-        public PropertySetValueType ActualType { get; set; }
+        public PropertySetValueType ActualType { get; }
 
         /// <summary>
         /// The type that should be used when making this binding available via an API.
@@ -37,11 +49,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.CompMetadata
         /// are not supported by animations expressions and must be stored using a different type,
         /// for example, colors are stored as Vector4.
         /// </summary>
-        public PropertySetValueType ExposedType { get; set; }
+        public PropertySetValueType ExposedType { get; }
 
         /// <summary>
         /// The default value of the binding.
         /// </summary>
-        public object DefaultValue { get; set; }
+        public object DefaultValue { get; }
     }
 }

@@ -2,10 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
@@ -38,9 +38,33 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
         public class Node<T> : INodePrivate<T>
             where T : Node<T>, new()
         {
-            List<Vertex> _inReferences;
+            object? _obj;
 
-            public object Object { get; set; }
+            List<Vertex>? _inReferences;
+
+            // _obj should be non-null by the time this is called. We require that
+            // SetObject(...) is set as part of initialization of the object.
+            public object Object
+            {
+                get
+                {
+                    Debug.Assert(_obj != null, "Precondition");
+                    return _obj!;
+                }
+            }
+
+            /// <summary>
+            /// Sets the Object property. This should be called as part of intialization of the object.
+            /// </summary>
+            public void SetObject(object obj)
+            {
+                if (_obj != null)
+                {
+                    throw new InvalidOperationException();
+                }
+
+                _obj = obj;
+            }
 
             public Vertex[] InReferences => _inReferences is null ? Array.Empty<Vertex>() : _inReferences.ToArray();
 
@@ -58,7 +82,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             /// </summary>
             /// <param name="node">The node to test.</param>
             /// <returns><c>True</c> if this node is reachable from the given node.</returns>
-            public bool IsReachableFrom(Node<T> node) => node is null ? false : IsReachableFrom(node, new HashSet<Node<T>>());
+            public bool IsReachableFrom(Node<T>? node) => node is null ? false : IsReachableFrom(node, new HashSet<Node<T>>());
 
             bool IsReachableFrom(Node<T> targetNode, HashSet<Node<T>> alreadyVisited)
             {

@@ -13,7 +13,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 #endif
     abstract class KeyFrameAnimation_ : CompositionAnimation
     {
-        private protected KeyFrameAnimation_(KeyFrameAnimation_ other)
+        private protected KeyFrameAnimation_(KeyFrameAnimation_? other)
             : base(other)
         {
         }
@@ -26,7 +26,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 
         public abstract class KeyFrame
         {
-            private protected KeyFrame(float progress, CompositionEasingFunction easing)
+            private protected KeyFrame(float progress, CompositionEasingFunction? easing)
             {
                 Progress = progress;
                 Easing = easing;
@@ -34,14 +34,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 
             public float Progress { get; }
 
-            public CompositionEasingFunction Easing { get; }
+            public CompositionEasingFunction? Easing { get; }
 
             public abstract KeyFrameType Type { get; }
         }
 
         public abstract class ExpressionKeyFrame : KeyFrame
         {
-            private protected ExpressionKeyFrame(float progress, CompositionEasingFunction easing, Expression expression)
+            private protected ExpressionKeyFrame(float progress, CompositionEasingFunction? easing, Expression expression)
                 : base(progress, easing)
             {
                 Expression = expression;
