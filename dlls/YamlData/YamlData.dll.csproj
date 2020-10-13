@@ -7,6 +7,7 @@
     <DefineConstants>PUBLIC_YamlData</DefineConstants>
   </PropertyGroup>
 
+  <Import Project="..\..\source\NullablesAttributes\NullablesAttributes.projitems" Label="Shared" />
   <Import Project="..\..\source\YamlData\YamlData.projitems" Label="Shared" />
 
 </Project>

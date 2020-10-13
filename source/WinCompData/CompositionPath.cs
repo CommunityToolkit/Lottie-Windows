@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 {
     /// <summary>
@@ -23,12 +21,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
         public Wg.IGeometrySource2D Source { get; }
 
         /// <inheritdoc/>
-        string IDescribable.LongDescription { get; set; }
+        string? IDescribable.LongDescription { get; set; }
 
         /// <inheritdoc/>
-        string IDescribable.ShortDescription { get; set; }
+        string? IDescribable.ShortDescription { get; set; }
 
         /// <inheritdoc/>
-        string IDescribable.Name { get; set; }
+        string? IDescribable.Name { get; set; }
     }
 }

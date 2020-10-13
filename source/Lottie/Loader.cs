@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
+#nullable enable
 
 #if DEBUG
 // Uncomment this to slow down async awaits for testing.
@@ -40,12 +40,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         {
         }
 
-        private protected abstract Task<(string, Stream)> GetJsonStreamAsync();
+        private protected abstract Task<(string?, Stream?)> GetJsonStreamAsync();
 
         // Asynchronously loads WinCompData from a Lottie file.
         internal async Task<ContentFactory> LoadAsync(LottieVisualOptions options)
         {
-            LottieVisualDiagnostics diagnostics = null;
+            LottieVisualDiagnostics? diagnostics = null;
             var timeMeasurer = TimeMeasurer.Create();
 
             if (options.HasFlag(LottieVisualOptions.IncludeDiagnostics))
@@ -60,7 +60,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
 
             if (diagnostics != null)
             {
-                diagnostics.FileName = fileName;
+                diagnostics.FileName = fileName ?? string.Empty;
                 diagnostics.ReadTime = timeMeasurer.GetElapsedAndRestart();
             }
 
@@ -72,7 +72,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
 
             // Parsing large Lottie files can take significant time. Do it on
             // another thread.
-            LottieComposition lottieComposition = null;
+            LottieComposition? lottieComposition = null;
             await CheckedAwaitAsync(Task.Run(() =>
             {
                 lottieComposition =
@@ -115,7 +115,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 duration: lottieComposition.Duration);
 
             // Translating large Lotties can take significant time. Do it on another thread.
-            WinCompData.Visual wincompDataRootVisual = null;
+            WinCompData.Visual? wincompDataRootVisual = null;
             uint requiredUapVersion = 0;
             var optimizationEnabled = options.HasFlag(LottieVisualOptions.Optimize);
 
@@ -184,13 +184,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             }
         }
 
-        static Issue[] ToIssues(IEnumerable<(string Code, string Description)> issues)
-            => issues.Select(issue => new Issue { Code = issue.Code, Description = issue.Description }).ToArray();
+        static IReadOnlyList<Issue> ToIssues(IEnumerable<(string Code, string Description)> issues)
+            => issues.Select(issue => new Issue(code: issue.Code, description: issue.Description)).ToArray();
 
-        static Issue[] ToIssues(IEnumerable<TranslationIssue> issues)
-            => issues.Select(issue => new Issue { Code = issue.Code, Description = issue.Description }).ToArray();
+        static IReadOnlyList<Issue> ToIssues(IEnumerable<TranslationIssue> issues)
+            => issues.Select(issue => new Issue(code: issue.Code, description: issue.Description)).ToArray();
 
-        static async Task<(string, Stream)> GetStorageFileStreamAsync(StorageFile storageFile)
+        static async Task<(string?, Stream?)> GetStorageFileStreamAsync(StorageFile storageFile)
         {
             var randomAccessStream = await storageFile.OpenReadAsync();
             return (storageFile.Name, randomAccessStream.AsStreamForRead());
@@ -243,7 +243,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             // the method as async and return the value. This will cause C# to wrap the value in
             // a Task.
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-            private protected override async Task<(string, Stream)> GetJsonStreamAsync()
+            private protected override async Task<(string?, Stream?)> GetJsonStreamAsync()
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
             {
                 return (string.Empty, _inputStream.AsStreamForRead());
@@ -261,7 +261,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 _storageFile = storageFile;
             }
 
-            private protected override Task<(string, Stream)> GetJsonStreamAsync() =>
+            private protected override Task<(string?, Stream?)> GetJsonStreamAsync() =>
                 GetStorageFileStreamAsync(_storageFile);
         }
 
@@ -276,7 +276,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 _uri = uri;
             }
 
-            private protected override async Task<(string, Stream)> GetJsonStreamAsync()
+            private protected override async Task<(string?, Stream?)> GetJsonStreamAsync()
             {
                 var absoluteUri = Uris.GetAbsoluteUri(_uri);
                 if (absoluteUri != null)

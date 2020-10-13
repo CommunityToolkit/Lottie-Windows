@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
+#nullable enable
 
 using System;
 using System.Collections.Specialized;
@@ -50,13 +50,13 @@ namespace LottieViewer
         readonly CompositionColorBrush _decreaseRectangleBrush;
         readonly SolidColorBrush _markerBrush;
 
-        LottieVisualDiagnosticsViewModel _diagnostics;
+        LottieVisualDiagnosticsViewModel? _diagnostics;
 
-        string _currentVisualStateName;
+        string _currentVisualStateName = string.Empty;
 
-        public event TypedEventHandler<Scrubber, ScrubberValueChangedEventArgs> ValueChanged;
+        public event TypedEventHandler<Scrubber, ScrubberValueChangedEventArgs>? ValueChanged;
 
-        internal LottieVisualDiagnosticsViewModel DiagnosticsViewModel
+        internal LottieVisualDiagnosticsViewModel? DiagnosticsViewModel
         {
             get => _diagnostics;
             set
@@ -67,7 +67,11 @@ namespace LottieViewer
                 }
 
                 _diagnostics = value;
-                _diagnostics.Markers.CollectionChanged += Markers_CollectionChanged;
+
+                if (_diagnostics != null)
+                {
+                    _diagnostics.Markers.CollectionChanged += Markers_CollectionChanged;
+                }
             }
         }
 
@@ -197,13 +201,16 @@ namespace LottieViewer
             // Adjust the position of the markers.
             // Set the margin on each of the rectangles in the grid so that they match
             // the offsets of the markers in the view model.
-            for (var i = 0; i < _diagnostics.Markers.Count; i++)
+            if (_diagnostics != null)
             {
-                var topRect = (Rectangle)_markersTop.Children[i];
-                var bottomRect = (Rectangle)_markersBottom.Children[i];
-                var offset = _diagnostics.Markers[i].ConstrainedProgress;
-                topRect.Margin = new Thickness((offset * barWidth) + c_trackMargin, 0, 0, 0);
-                bottomRect.Margin = new Thickness((offset * barWidth) + c_trackMargin, 0, 0, 0);
+                for (var i = 0; i < _diagnostics.Markers.Count; i++)
+                {
+                    var topRect = (Rectangle)_markersTop.Children[i];
+                    var bottomRect = (Rectangle)_markersBottom.Children[i];
+                    var offset = _diagnostics.Markers[i].ConstrainedProgress;
+                    topRect.Margin = new Thickness((offset * barWidth) + c_trackMargin, 0, 0, 0);
+                    bottomRect.Margin = new Thickness((offset * barWidth) + c_trackMargin, 0, 0, 0);
+                }
             }
 
             return result;
@@ -229,7 +236,7 @@ namespace LottieViewer
         {
             switch (_currentVisualStateName)
             {
-                case null:
+                case "":
                 case "Normal":
                     SetColors(
                         markers: GetResourceBrushColor("LottieBasicBrush"),
@@ -327,7 +334,19 @@ namespace LottieViewer
 
             object IValueConverter.Convert(object value, Type targetType, object parameter, string language)
             {
-                var duration = _owner._diagnostics.LottieVisualDiagnostics.Duration;
+                var ownerDiagnostics = _owner._diagnostics;
+                if (ownerDiagnostics is null)
+                {
+                    return string.Empty;
+                }
+
+                var lottieVisualDiagnostics = ownerDiagnostics.LottieVisualDiagnostics;
+                if (lottieVisualDiagnostics is null)
+                {
+                    return string.Empty;
+                }
+
+                var duration = lottieVisualDiagnostics.Duration;
                 return $"    {_owner.Value:0.00}\r\n{_owner.Value * duration.TotalSeconds:0.00} secs";
             }
 
@@ -344,7 +363,7 @@ namespace LottieViewer
     {
         // Keep track of the previous state so we don't notify the Scrubber of
         // the same state twice in succession.
-        string _previousCommonState;
+        string _previousCommonState = string.Empty;
 
         protected override bool GoToStateCore(
             Control control,
@@ -362,7 +381,7 @@ namespace LottieViewer
                 var newState = state?.Name;
 
                 // Check whether we have already reported this state.
-                if (_previousCommonState != newState)
+                if (newState != null && _previousCommonState != newState)
                 {
                     _previousCommonState = newState;
                     scrubber.OnSliderVisualStateChange(newState);

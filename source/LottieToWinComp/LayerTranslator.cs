@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
 using System;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 
@@ -25,8 +23,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// Gets the translation of the layer as a <see cref="CompositionShape"/>.
         /// Only valid to call is <see cref="IsShape"/> is <c>true</c>.
         /// </summary>
-        /// <returns>The CompositionShape.</returns>
-        internal virtual CompositionShape GetShapeRoot(TranslationContext context)
+        /// <returns>The <see cref="CompositionShape"/> or null if the layer is never visible.</returns>
+        internal virtual CompositionShape? GetShapeRoot(TranslationContext context)
         {
             throw new InvalidOperationException();
         }
@@ -34,13 +32,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// <summary>
         /// Gets the translation of the layer as a <see cref="Visual"/>.
         /// </summary>
-        /// <returns>The Visual.</returns>
+        /// <returns>The <see cref="Visual"/> or null if the layer is never visible.</returns>
         /// <remarks>
         /// The size (in the context) is needed in case a CompositionShape tree
         /// needs to be converted to a ShapeVisual. Shape trees need to know their
         /// maximum size.
         /// </remarks>
-        internal abstract Visual GetVisualRoot(CompositionContext context);
+        internal abstract Visual? GetVisualRoot(CompositionContext context);
 
         /// <summary>
         /// True if the graph can be represented by a root CompositionShape.
@@ -50,22 +48,27 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// </summary>
         internal virtual bool IsShape => false;
 
-        public string LongDescription { get; set; }
+        public string? LongDescription { get; set; }
 
-        public string ShortDescription { get; set; }
+        public string? ShortDescription { get; set; }
 
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         private protected void Describe(TranslationContext context, IDescribable obj)
         {
-            if (context.AddDescriptions && obj.LongDescription is null && obj.ShortDescription is null && !(string.IsNullOrWhiteSpace(LongDescription) || string.IsNullOrWhiteSpace(ShortDescription)))
+            if (context.AddDescriptions &&
+                obj.LongDescription is null &&
+                obj.ShortDescription is null &&
+                !(string.IsNullOrWhiteSpace(LongDescription) || string.IsNullOrWhiteSpace(ShortDescription)))
             {
-                obj.SetDescription(context, LongDescription, ShortDescription);
+                // IsNullOrWhiteSpace implies LongDescription is not null.
+                obj.SetDescription(context, LongDescription!, ShortDescription);
             }
 
             if (context.AddDescriptions && obj.Name is null && !string.IsNullOrWhiteSpace(Name))
             {
-                obj.SetName(Name);
+                // !IsNullOrWhitespace(Name) implies Name is not null.
+                obj.SetName(Name!);
             }
         }
 

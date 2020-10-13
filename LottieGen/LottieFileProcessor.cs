@@ -411,7 +411,7 @@ sealed class LottieFileProcessor
         // NOTE: this only writes the latest version of a multi-version translation.
         var result = TryWriteTextFile(
             outputFilePath,
-            CompositionObjectDgmlSerializer.ToXml(_translationResults[0].RootVisual).ToString());
+            CompositionObjectDgmlSerializer.ToXml(_translationResults[0].RootVisual!).ToString());
 
         if (result)
         {
@@ -664,7 +664,7 @@ sealed class LottieFileProcessor
                             : _options.Interface,
             additionalInterfaces: _options.AdditionalInterfaces,
             objectGraphs: _translationResults.Select(
-                            tr => ((CompositionObject)tr.RootVisual, tr.MinimumRequiredUapVersion)).ToArray(),
+                            tr => ((CompositionObject?)tr.RootVisual!, tr.MinimumRequiredUapVersion)).ToArray(),
             nameSpace: string.IsNullOrWhiteSpace(_options.Namespace)
                             ? "AnimatedVisuals"
                             : NormalizeNamespace(_options.Namespace),
@@ -830,7 +830,7 @@ sealed class LottieFileProcessor
             // Optimize the code unless told not to.
             if (!_options.DisableTranslationOptimizer)
             {
-                _translationResults = _translationResults.Select(tr => tr.WithDifferentRoot(Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools.Optimizer.Optimize(tr.RootVisual, ignoreCommentProperties: true))).ToArray();
+                _translationResults = _translationResults.Select(tr => tr.WithDifferentRoot(Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools.Optimizer.Optimize(tr.RootVisual!, ignoreCommentProperties: true))).ToArray();
                 _profiler.OnOptimizationFinished();
 
                 // NOTE: this is only reporting on the latest version in a multi-version translation.

@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -120,7 +118,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             var containerShapes =
                 (from pair in graph.CompositionObjectNodes
                  where pair.Object.Type == CompositionObjectType.CompositionContainerShape
-                 let parent = (IContainShapes)pair.Node.Parent
+                 let parent = (IContainShapes?)pair.Node.Parent
                  select (node: pair.Node, container: (CompositionContainerShape)pair.Object, parent)).ToArray();
 
             CoalesceSiblingContainerShapes(graph);
@@ -291,7 +289,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                     n.Object is ContainerVisual container &&
                     (GetNonDefaultContainerVisualProperties(container) & (PropertyId.Clip | PropertyId.Size | PropertyId.Children))
                         == (PropertyId.Clip | PropertyId.Size | PropertyId.Children) &&
-                    container.Clip.Type == CompositionObjectType.InsetClip &&
+                    container.Clip?.Type == CompositionObjectType.InsetClip &&
                     container.Animators.Count == 0 &&
                     container.Properties.Names.Count == 0 &&
                     container.Children.Count == 1 &&
@@ -305,7 +303,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
                 // Check that the clip and size on the container is the same
                 // as the size on the shape visual.
-                var containerClip = (InsetClip)container.Clip;
+                // The Clip is definitely an InsetClip as we have already filtered
+                // the list to remove any non-InsetClip clips.
+                var containerClip = (InsetClip)container.Clip!;
 
                 var childClip = shapeVisual.Clip as InsetClip;
 
@@ -352,7 +352,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             }
         }
 
-        static bool IsBrushTransparent(CompositionBrush brush)
+        static bool IsBrushTransparent(CompositionBrush? brush)
         {
             return brush is null || (!brush.Animators.Any() && (brush as CompositionColorBrush)?.Color?.A == 0);
         }
@@ -364,7 +364,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                  where pair.Object.Type == CompositionObjectType.CompositionSpriteShape
                  let shape = (CompositionSpriteShape)pair.Object
                  where IsBrushTransparent(shape.FillBrush) && IsBrushTransparent(shape.StrokeBrush)
-                 select (Shape: shape, Parent: (IContainShapes)pair.Node.Parent)).ToArray();
+                 select (Shape: shape, Parent: (IContainShapes?)pair.Node.Parent)).ToArray();
 
             foreach (var (shape, parent) in transparentShapes)
             {
@@ -497,7 +497,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
         void ElideContainerShape(ObjectGraph<Node> graph, CompositionContainerShape container)
         {
             // Insert the children into the parent.
-            var parent = (IContainShapes)graph[container].Parent;
+            var parent = (IContainShapes?)graph[container].Parent;
             if (parent is null)
             {
                 // The container may have already been removed, or it might be a root.
@@ -559,7 +559,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
         bool TryElideContainerVisual(ObjectGraph<Node> graph, ContainerVisual container)
         {
             // Insert the children into the parent.
-            var parent = (ContainerVisual)graph[container].Parent;
+            var parent = (ContainerVisual?)graph[container].Parent;
             if (parent is null)
             {
                 // The container may have already been removed, or it might be a root.
@@ -767,14 +767,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
         // push the properties down to the ShapeVisual.
         static void PushPropertiesDownToShapeVisual(ObjectGraph<Node> graph)
         {
-            var shapeVisualsWithSingleParents = graph.CompositionObjectNodes.Where(n =>
-                n.Object.Type == CompositionObjectType.ShapeVisual &&
-                ((ContainerVisual)n.Node.Parent).Children.Count == 1).ToArray();
+            var shapeVisualsWithSingleParents =
+                (from n in graph.CompositionObjectNodes
+                 let parent = n.Node.Parent
+                 where n.Object.Type == CompositionObjectType.ShapeVisual
+                 where parent != null
+                 let parentContainerVisual = (ContainerVisual)parent
+                 where parentContainerVisual.Children.Count == 1
+                 select (n.Node, (ShapeVisual)n.Object, parentContainerVisual)).ToArray();
 
-            foreach (var (node, obj) in shapeVisualsWithSingleParents)
+            foreach (var (node, shapeVisual, parent) in shapeVisualsWithSingleParents)
             {
-                var shapeVisual = (ShapeVisual)obj;
-                var parent = (ContainerVisual)node.Parent;
                 var parentProperties = GetNonDefaultVisualProperties(parent);
 
                 if (parentProperties == PropertyId.None)
@@ -876,7 +879,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
                 to.StartAnimation("IsVisible", animation);
 
-                var controller = to.TryGetAnimationController("IsVisible");
+                var controller = to.TryGetAnimationController("IsVisible")!;
                 controller.Pause();
                 controller.StartAnimation("Progress", progressAnimation);
             }
@@ -956,7 +959,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             {
                 foreach (KeyFrameAnimation<Vector2, Expr.Vector2>.ValueKeyFrame kf in scaleAnimation.KeyFrames)
                 {
-                    if (kf.Easing.Type != CompositionObjectType.StepEasingFunction)
+                    if (kf.Easing?.Type != CompositionObjectType.StepEasingFunction)
                     {
                         // The animation is not used for visibility. Precondition.
                         throw new InvalidOperationException();
@@ -1085,7 +1088,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             var scaleAnimation = (Vector2KeyFrameAnimation)scaleAnimator.Animation;
             foreach (var kf in scaleAnimation.KeyFrames)
             {
-                if (kf.Easing.Type != CompositionObjectType.StepEasingFunction)
+                if (kf.Easing?.Type != CompositionObjectType.StepEasingFunction)
                 {
                     return false;
                 }
@@ -1109,26 +1112,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
         void CoalesceContainerVisuals(ObjectGraph<Node> graph)
         {
             // If a container is not animated and has no properties set, its children can be inserted into its parent.
-            var containersWithNoPropertiesSet = graph.CompositionObjectNodes.Where(n =>
+            var containersWithNoPropertiesSet =
+                (from n in graph.CompositionObjectNodes
+                 where n.Object.Type == CompositionObjectType.ContainerVisual
+                 let containerVisual = (ContainerVisual)n.Object
 
-                    // Find the ContainerVisuals that have no properties set.
-                    n.Object.Type == CompositionObjectType.ContainerVisual &&
-                    GetNonDefaultVisualProperties((ContainerVisual)n.Object) == PropertyId.None
-            ).ToArray();
+                 // Only if the container has no properties set.
+                 where GetNonDefaultVisualProperties(containerVisual) == PropertyId.None
+
+                 // The parent may have been removed already.
+                 let parent = n.Node.Parent
+                 where parent != null
+                 select ((ContainerVisual)parent, containerVisual)).ToArray();
 
             // Pull the children of the container into the parent of the container. Remove the unnecessary containers.
-            foreach (var (node, obj) in containersWithNoPropertiesSet)
+            foreach (var (parent, container) in containersWithNoPropertiesSet)
             {
-                var container = (ContainerVisual)obj;
-
-                // Insert the children into the parent.
-                var parent = (ContainerVisual)node.Parent;
-                if (parent is null)
-                {
-                    // The container may have already been removed, or it might be a root.
-                    continue;
-                }
-
                 // Find the index in the parent of the container.
                 // If childCount is 1, just replace the the container in the parent.
                 // If childCount is >1, insert into the parent.
@@ -1354,9 +1353,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             foreach (var anim in from.Animators)
             {
                 to.StartAnimation(anim.AnimatedProperty, anim.Animation);
-                if (anim.Controller.IsPaused || anim.Controller.Animators.Count > 0)
+                if (anim.Controller != null && (anim.Controller.IsPaused || anim.Controller.Animators.Count > 0))
                 {
-                    var controller = to.TryGetAnimationController(anim.AnimatedProperty);
+                    var controller = to.TryGetAnimationController(anim.AnimatedProperty)!;
                     if (anim.Controller.IsPaused)
                     {
                         controller.Pause();
@@ -1399,9 +1398,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             foreach (var anim in from.Animators)
             {
                 to.StartAnimation(anim.AnimatedProperty, anim.Animation);
-                if (anim.Controller.IsPaused || anim.Controller.Animators.Count > 0)
+                if (anim.Controller != null && (anim.Controller.IsPaused || anim.Controller.Animators.Count > 0))
                 {
-                    var controller = to.TryGetAnimationController(anim.AnimatedProperty);
+                    var controller = to.TryGetAnimationController(anim.AnimatedProperty)!;
                     if (anim.Controller.IsPaused)
                     {
                         controller.Pause();
@@ -1471,7 +1470,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
         sealed class Node : Graph.Node<Node>
         {
-            internal CompositionObject Parent { get; set; }
+            internal CompositionObject? Parent { get; set; }
         }
     }
 }

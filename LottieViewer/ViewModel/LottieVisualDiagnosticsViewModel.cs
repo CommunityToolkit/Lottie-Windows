@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
+#nullable enable
 
 using System;
 using System.Collections.ObjectModel;
@@ -18,21 +18,21 @@ namespace LottieViewer.ViewModel
     /// </summary>
     sealed class LottieVisualDiagnosticsViewModel : INotifyPropertyChanged
     {
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
-        public object DiagnosticsObject
+        public object? DiagnosticsObject
         {
             get => LottieVisualDiagnostics;
 
             set
             {
-                LottieVisualDiagnostics = (LottieVisualDiagnostics)value;
+                LottieVisualDiagnostics = (LottieVisualDiagnostics?)value;
                 Issues.Clear();
                 Markers.Clear();
                 ThemePropertyBindings.Clear();
                 ThemingPropertySet = null;
 
-                if (value != null)
+                if (LottieVisualDiagnostics != null)
                 {
                     // Populate the issues list.
                     foreach (var issue in LottieVisualDiagnostics.JsonParsingIssues.
@@ -58,28 +58,24 @@ namespace LottieViewer.ViewModel
                             var progress = m.Frame / totalFrames;
                             Marker marker;
 
+                            var propertyName = isFirst ? $"Marker{(composition.Markers.Count > 1 ? "s" : string.Empty)}" : string.Empty;
+
                             if (m.DurationInFrames == 0)
                             {
-                                marker = new Marker
-                                {
-                                    ProgressText = $"{progress:0.000#}",
-                                };
+                                marker = new Marker(m.Name, propertyName, progress, $"{progress:0.000#}");
                             }
                             else
                             {
                                 var toProgress = progress + (m.DurationInFrames / totalFrames);
-                                marker = new MarkerWithDuration
-                                {
-                                    ProgressText = $"{progress:0.000#}",
-                                    ToProgress = toProgress,
-                                    ToProgressText = $"{toProgress:0.000#}",
-                                };
+                                marker = new MarkerWithDuration(
+                                    m.Name,
+                                    propertyName, progress,
+                                    $"{progress:0.000#}",
+                                    toProgress,
+                                    $"{toProgress:0.000#}");
                             }
 
-                            marker.PropertyName = isFirst ? $"Marker{(composition.Markers.Count > 1 ? "s" : string.Empty)}" : string.Empty;
                             isFirst = false;
-                            marker.Name = m.Name;
-                            marker.Progress = progress;
                             Markers.Add(marker);
                         }
                     }
@@ -109,7 +105,7 @@ namespace LottieViewer.ViewModel
             }
         }
 
-        public LottieVisualDiagnostics LottieVisualDiagnostics { get; private set; }
+        public LottieVisualDiagnostics? LottieVisualDiagnostics { get; private set; }
 
         public string DurationText
         {
@@ -135,7 +131,7 @@ namespace LottieViewer.ViewModel
 
         public ObservableCollection<PropertyBinding> ThemePropertyBindings { get; } = new ObservableCollection<PropertyBinding>();
 
-        public Windows.UI.Composition.CompositionPropertySet ThemingPropertySet { get; private set; }
+        public Windows.UI.Composition.CompositionPropertySet? ThemingPropertySet { get; private set; }
 
         public bool HasIssues => Issues.Count > 0;
 

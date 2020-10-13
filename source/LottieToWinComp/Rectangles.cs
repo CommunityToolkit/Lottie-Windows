@@ -17,6 +17,44 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
     /// </summary>
     static class Rectangles
     {
+        // NOTES ABOUT RECTANGLE DRAWING AND CORNERS:
+        // ==========================================
+        // A rectangle can be thought of as having 8 components -
+        // 4 sides (1,3,5,7) and 4 corners (2,4,6,8):
+        //
+        //             1
+        //     8╭ ─────────── ╮2
+        //      ╷             ╷
+        //     7│             │3
+        //      ╵             ╵
+        //     6╰ ─────────── ╯4
+        //             5
+        //
+        // Windows.Composition draws in order 1,2,3,4,5,6,7,8.
+        //
+        // Lottie draws in one of two different ways depending on
+        // whether the corners are controlled by RoundCorners or by
+        // Rectangle.CornerRadius.
+        // If RoundCorners the order is 2,3,4,5,6,7,8,1.
+        // If Rectangle.CornerRadius the order is 3,4,5,6,7,8,1,2.
+        //
+        // If the corners have 0 radius, the corners are irrelevant
+        // resulting in:
+        // Windows.Composition: 1,3,5,7.
+        // Lottie:              3,5,7,1.
+        //
+        // The order of drawing matters only if there is a TrimPath, and in
+        // that case:
+        // a) If there are no RoundCorners, a TrimOffset equivalent to 90 degrees
+        //    must be added.
+        // b) If there are RoundCorners, swap width and height, rotate the rectangle
+        //    by 90 degrees around the center, and transform the trim path so that
+        //    it effectively draws in the reverse direction.
+        //
+        // TODO - the RoundCorners case with TrimPath is currently not handled correctly
+        //        and will cause the trim to appear to be rotated by 90 degrees.
+        //
+        //
         // Translates a Lottie rectangle to a CompositionShape.
         public static CompositionShape TranslateRectangleContent(ShapeContext context, Rectangle rectangle)
         {
@@ -224,6 +262,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             in TrimmedAnimatable<Vector3> position,
             RectangleOrRoundedRectangleGeometry geometry)
         {
+            if (compositionRectangle.Geometry is null)
+            {
+                throw new ArgumentException();
+            }
+
             if (position.IsAnimated || size.IsAnimated)
             {
                 Expressions.Vector2 offsetExpression;
@@ -274,7 +317,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var height = size.InitialValue.Y;
             var trimOffsetDegrees = (width / (2 * (width + height))) * 360;
 
-            Shapes.TranslateAndApplyShapeContext(
+            Shapes.TranslateAndApplyShapeContextWithTrimOffset(
                 context,
                 compositionRectangle,
                 rectangle.DrawingDirection == DrawingDirection.Reverse,
@@ -293,6 +336,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             in TrimmedAnimatable<Vector3> position,
             RectangleOrRoundedRectangleGeometry geometry)
         {
+            if (compositionRectangle.Geometry is null)
+            {
+                throw new ArgumentException();
+            }
+
             if (position.IsAnimated || width.IsAnimated || height.IsAnimated)
             {
                 Expressions.Vector2 offsetExpression;
@@ -359,7 +407,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var initialHeight = height.InitialValue;
             var trimOffsetDegrees = (initialWidth / (2 * (initialWidth + initialHeight))) * 360;
 
-            Shapes.TranslateAndApplyShapeContext(
+            Shapes.TranslateAndApplyShapeContextWithTrimOffset(
                 context,
                 compositionRectangle,
                 rectangle.DrawingDirection == DrawingDirection.Reverse,

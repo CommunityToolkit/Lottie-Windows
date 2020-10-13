@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -187,7 +185,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 CanonicalizeGrouping(grouping);
             }
 
-            (string expression, string, string, CompositionObject) GetExpressionAnimationKey1(ExpressionAnimation animation)
+            (string expression, string?, string, CompositionObject) GetExpressionAnimationKey1(ExpressionAnimation animation)
             {
                 var rp0 = animation.ReferenceParameters.First();
 
@@ -219,7 +217,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 => ReferenceEquals(NodeFor(a), NodeFor(b));
 
             bool SimpleEqualityComparer<T>(T a, T b)
-                => a.Equals(b);
+                => a!.Equals(b);
 
             sealed class KeyFrameAnimationKey<TKFA, TExpression>
                 where TExpression : Expression_<TExpression>
@@ -244,7 +242,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                     return _obj.KeyFrameCount ^ (int)_obj.Duration.Ticks;
                 }
 
-                public override bool Equals(object obj)
+                public override bool Equals(object? obj)
                 {
                     if (ReferenceEquals(this, obj))
                     {
@@ -414,8 +412,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                     _animation = (ExpressionAnimation)animator.Animation;
                 }
 
-                public bool Equals(ThemeBrushKey other)
+                public bool Equals(ThemeBrushKey? other)
                 {
+                    if (other is null)
+                    {
+                        return false;
+                    }
+
                     var otherAnimation = other._animation;
                     var thisText = _animation.Expression.ToText();
 
@@ -509,7 +512,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 public override int GetHashCode()
                     => _animation.Expression.ToText().GetHashCode();
 
-                public override bool Equals(object obj) => Equals(obj as ThemeBrushKey);
+                public override bool Equals(object? obj) => Equals(obj as ThemeBrushKey);
             }
 
             void CanonicalizeColorGradientStops()
@@ -635,7 +638,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 var grouping =
                     from item in items
                     let obj = item.Object
-                    let path = CanonicalObject<CompositionPath>(obj.Path)
+                    let path = obj.Path is null ? null : CanonicalObject<CompositionPath>(obj.Path)
                     group item.Node by (
                         path,
                         obj.TrimStart,
@@ -817,10 +820,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
                 internal static ByteArrayComparer Instance { get; } = new ByteArrayComparer();
 
-                bool IEqualityComparer<byte[]>.Equals(byte[] x, byte[] y)
-                {
-                    return x.SequenceEqual(y);
-                }
+                bool IEqualityComparer<byte[]>.Equals(byte[]? x, byte[]? y) =>
+                    x is null ? y is null : x.SequenceEqual(y);
 
                 int IEqualityComparer<byte[]>.GetHashCode(byte[] obj)
                 {

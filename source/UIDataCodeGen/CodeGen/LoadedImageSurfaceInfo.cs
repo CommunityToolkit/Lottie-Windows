@@ -19,7 +19,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         internal LoadedImageSurfaceInfo(
             string typeName,
             string name,
-            string comment,
+            string? comment,
             string fieldName,
             string bytesFieldName,
             Uri imageUri,
@@ -40,7 +40,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         public string Name { get; }
 
-        public string Comment { get; }
+        public string? Comment { get; }
 
         public string FieldName { get; }
 

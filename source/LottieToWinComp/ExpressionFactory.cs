@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
 using System;
 using System.Linq;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions;
@@ -221,10 +219,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         static Scalar CreateProgressExpression(ArraySegment<Segment> segments, Scalar progress)
         {
+            if (segments.Count == 0 || segments.Array is null)
+            {
+                throw new ArgumentException();
+            }
+
             switch (segments.Count)
             {
-                case 0:
-                    throw new ArgumentException();
                 case 1:
                     return segments.Array[segments.Offset].Value;
                 default:

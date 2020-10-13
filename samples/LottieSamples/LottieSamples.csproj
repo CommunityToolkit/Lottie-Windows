@@ -271,6 +271,7 @@
   <ItemGroup>
     <None Include="Assets\LottieLogo1_Modified.json" />
   </ItemGroup>
+  <Import Project="..\..\source\NullablesAttributes\NullablesAttributes.projitems" Label="Shared" />
   <Target Name="Pack">
     <!-- Dummy target to mute warnings about attempts to create a NuPkg -->
   </Target>

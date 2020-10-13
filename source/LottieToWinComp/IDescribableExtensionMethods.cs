@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
 using System;
 using System.Diagnostics;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
@@ -36,7 +34,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             this IDescribable obj,
             TranslationContext context,
             string longDescription,
-            string shortDescription = null)
+            string? shortDescription = null)
         {
             Debug.Assert(context.AddDescriptions, "Descriptions should only be set when requested.");
             Debug.Assert(obj.ShortDescription is null, "Descriptions should never get set more than once.");

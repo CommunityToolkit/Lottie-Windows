@@ -2,8 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
+using System;
 using System.Collections.Generic;
 using System.Text.Json;
 
@@ -17,12 +16,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         {
             reader.ExpectToken(JsonTokenType.StartObject);
 
-            string ch = null;
-            string fFamily = null;
+            string? ch = null;
+            string? fFamily = null;
             double? size = null;
-            string style = null;
+            string? style = null;
             double? width = null;
-            ShapeLayerContent[] shapes = null;
+            ShapeLayerContent[] shapes = Array.Empty<ShapeLayerContent>();
 
             while (reader.Read())
             {

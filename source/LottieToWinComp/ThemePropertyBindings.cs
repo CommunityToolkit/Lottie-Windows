@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
 using System;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
@@ -29,7 +27,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// </summary>
         /// <returns>The name of the corresponding property in the theme <see cref="CompositionPropertySet"/>
         /// or null.</returns>
-        public static string GetThemeBindingNameForLottieProperty(TranslationContext context, string bindingSpec, string propertyName)
+        public static string? GetThemeBindingNameForLottieProperty(TranslationContext context, string bindingSpec, string propertyName)
             => context.TranslatePropertyBindings
                 ? PropertyBindings.FindFirstBindingNameForProperty(bindingSpec, propertyName)
                 : null;
@@ -59,19 +57,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 case CompositionGetValueStatus.NotFound:
                     // The property hasn't been added yet. Add it.
                     themePropertySet.InsertVector4(bindingName, ConvertTo.Vector4(defaultValueAsWinUIColor));
-                    context.Translation.PropertyBindings.AddPropertyBinding(new CompMetadata.PropertyBinding
-                    {
-                        BindingName = bindingName,
-                        DisplayName = displayName,
-                        ActualType = PropertySetValueType.Vector4,
-                        ExposedType = PropertySetValueType.Color,
-                        DefaultValue = defaultValueAsWinUIColor,
-                    });
+                    context.Translation.PropertyBindings.AddPropertyBinding(new CompMetadata.PropertyBinding(
+                        bindingName : bindingName,
+                        displayName : displayName,
+                        actualType : PropertySetValueType.Vector4,
+                        exposedType : PropertySetValueType.Color,
+                        defaultValue : defaultValueAsWinUIColor));
                     break;
 
                 case CompositionGetValueStatus.Succeeded:
                     // The property has already been added.
-                    var existingValue = ConvertTo.Color(ConvertTo.Color(existingColorAsVector4));
+                    var existingValue = ConvertTo.Color(ConvertTo.Color(existingColorAsVector4!.Value));
 
                     if (defaultValueAsVector4 != existingColorAsVector4)
                     {
@@ -100,14 +96,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 case CompositionGetValueStatus.NotFound:
                     // The property hasn't been added yet. Add it.
                     themePropertySet.InsertScalar(bindingName, defaultValueAsFloat);
-                    context.PropertyBindings.AddPropertyBinding(new CompMetadata.PropertyBinding
-                    {
-                        BindingName = bindingName,
-                        DisplayName = displayName,
-                        ActualType = PropertySetValueType.Scalar,
-                        ExposedType = PropertySetValueType.Scalar,
-                        DefaultValue = ConvertTo.Float(defaultValue),
-                    });
+                    context.PropertyBindings.AddPropertyBinding(new CompMetadata.PropertyBinding(
+                        bindingName : bindingName,
+                        displayName : displayName,
+                        actualType : PropertySetValueType.Scalar,
+                        exposedType : PropertySetValueType.Scalar,
+                        defaultValue : ConvertTo.Float(defaultValue)));
                     break;
 
                 case CompositionGetValueStatus.Succeeded:
@@ -154,7 +148,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         sealed class StateCache
         {
-            CompositionPropertySet _themePropertySet;
+            CompositionPropertySet? _themePropertySet;
 
             /// <summary>
             /// <see cref="CompositionPropertySet"/> used for property bindings for themed Lotties.

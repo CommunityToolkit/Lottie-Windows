@@ -2,10 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Net.Http.Headers;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui
 {
@@ -68,7 +68,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui
         public bool Equals(Color other) => A == other.A && R == other.R && G == other.G && B == other.B;
 
         /// <inheritdoc/>
-        public override bool Equals(object obj) => obj is Color other && Equals(other);
+        public override bool Equals(object? obj) => obj is Color other && Equals(other);
 
         /// <inheritdoc/>
         public override int GetHashCode() => A * R * G * B;
@@ -81,7 +81,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui
         /// Attempts to get the friendly name for this color.
         /// </summary>
         /// <returns><c>true</c> if a friendly name was returned.</returns>
-        public bool TryGetFriendlyName(out string name)
+        public bool TryGetFriendlyName([MaybeNullWhen(false)] out string name)
         {
             name = GetFriendlyName(A, R, G, B);
             return name != null;
@@ -101,7 +101,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui
         // The same name will not be returned for more than one ARGB value.
         // The result is slightly different from GetWellKnownName in that it will
         // return names for many transparent and semi-transparent values.
-        static string GetFriendlyName(byte a, byte r, byte g, byte b)
+        static string? GetFriendlyName(byte a, byte r, byte g, byte b)
         {
             var result = GetWellKnownName(a, r, g, b);
             if (result is null)
@@ -121,7 +121,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui
         }
 
         // Gets the well known name for a given ARGB value, or null if no name is known.
-        static string GetWellKnownName(byte a, byte r, byte g, byte b)
+        static string? GetWellKnownName(byte a, byte r, byte g, byte b)
         {
             switch (((uint)a << 24) | ((uint)r << 16) | ((uint)g << 8) | b)
             {

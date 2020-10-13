@@ -4,7 +4,6 @@
 
 using System.Collections.Generic;
 using System.Numerics;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Tools;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 {
@@ -22,7 +21,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 
         public Vector2? CenterPoint { get; set; }
 
-        public IList<CompositionColorGradientStop> ColorStops { get; } = new ListOfNeverNull<CompositionColorGradientStop>();
+        public IList<CompositionColorGradientStop> ColorStops { get; } = new List<CompositionColorGradientStop>();
 
         public CompositionGradientExtendMode? ExtendMode { get; set; }
 

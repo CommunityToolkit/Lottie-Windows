@@ -10,7 +10,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
 {
     static class GenericDataToJson
     {
-        internal static IJsonValue GenericDataObjectToJsonValue(GenericDataObject obj)
+        internal static IJsonValue GenericDataObjectToJsonValue(GenericDataObject? obj)
         {
             if (obj is null)
             {

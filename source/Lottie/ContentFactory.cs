@@ -2,10 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools;
 using Microsoft.UI.Xaml.Controls;
@@ -21,15 +20,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
     sealed class ContentFactory : IAnimatedVisualSource
     {
         internal static readonly ContentFactory FailedContent = new ContentFactory(null);
-        readonly LottieVisualDiagnostics _diagnostics;
-        WinCompData.Visual _wincompDataRootVisual;
-        WinCompData.CompositionPropertySet _wincompDataThemingPropertySet;
-        CompositionPropertySet _themingPropertySet;
+        readonly LottieVisualDiagnostics? _diagnostics;
+        WinCompData.Visual? _wincompDataRootVisual;
+        WinCompData.CompositionPropertySet? _wincompDataThemingPropertySet;
+        CompositionPropertySet? _themingPropertySet;
         double _width;
         double _height;
         TimeSpan _duration;
 
-        internal ContentFactory(LottieVisualDiagnostics diagnostics)
+        internal ContentFactory(LottieVisualDiagnostics? diagnostics)
         {
             _diagnostics = diagnostics;
         }
@@ -56,7 +55,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
 
         internal bool CanInstantiate => _wincompDataRootVisual != null;
 
-        public IAnimatedVisual TryCreateAnimatedVisual(Compositor compositor, out object diagnostics)
+        public IAnimatedVisual? TryCreateAnimatedVisual(Compositor compositor, [MaybeNull] out object diagnostics)
         {
             // Clone the Diagnostics object so that the data from the translation is captured, then we
             // will update the clone with information about this particular instantiation.
@@ -73,9 +72,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
 
                 var instantiator = new Instantiator(compositor);
 
-                var result = new DisposableAnimatedVisual()
+                // _wincompDataRootVisual != null is implied by CanInstantiate.
+                var result = new DisposableAnimatedVisual((Visual)instantiator.GetInstance(_wincompDataRootVisual!))
                 {
-                    RootVisual = (Visual)instantiator.GetInstance(_wincompDataRootVisual),
                     Size = new System.Numerics.Vector2((float)_width, (float)_height),
                     Duration = _duration,
                 };
@@ -86,7 +85,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                     {
                         // Instantiate the theming property set. This is shared by all of the instantiations.
                         _themingPropertySet = (CompositionPropertySet)instantiator.GetInstance(_wincompDataThemingPropertySet);
-                        diags.ThemingPropertySet = _diagnostics.ThemingPropertySet = _themingPropertySet;
+
+                        // _diagnostics != null is implied by diags != null;
+                        diags.ThemingPropertySet = _diagnostics!.ThemingPropertySet = _themingPropertySet;
                     }
 
                     diags.InstantiationTime = sw.Elapsed;

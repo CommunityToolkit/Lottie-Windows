@@ -47,7 +47,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 
         public CompositionPathGeometry CreatePathGeometry() => new CompositionPathGeometry();
 
-        public CompositionPathGeometry CreatePathGeometry(CompositionPath path) => new CompositionPathGeometry(path);
+        public CompositionPathGeometry CreatePathGeometry(CompositionPath? path) => new CompositionPathGeometry(path);
 
         public PathKeyFrameAnimation CreatePathKeyFrameAnimation() => new PathKeyFrameAnimation();
 

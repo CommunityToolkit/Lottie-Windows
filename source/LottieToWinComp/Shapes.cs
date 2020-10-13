@@ -2,10 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
+#nullable enable
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
@@ -25,14 +26,23 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         public static void TranslateAndApplyShapeContext(
             ShapeContext context,
             CompositionSpriteShape shape,
+            bool reverseDirection) =>
+            TranslateAndApplyShapeContextWithTrimOffset(context, shape, reverseDirection, 0);
+
+        public static void TranslateAndApplyShapeContextWithTrimOffset(
+            ShapeContext context,
+            CompositionSpriteShape shape,
             bool reverseDirection,
             double trimOffsetDegrees)
         {
+            Debug.Assert(shape.Geometry != null, "Precondition");
+
             shape.FillBrush = Brushes.TranslateShapeFill(context, context.Fill, context.Opacity);
             Brushes.TranslateAndApplyStroke(context, context.Stroke, shape, context.Opacity);
+
             TranslateAndApplyTrimPath(
                 context,
-                shape.Geometry,
+                geometry: shape.Geometry!,
                 reverseDirection,
                 trimOffsetDegrees);
         }
@@ -221,7 +231,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         // Merge the stack into a single shape. Merging is done recursively - the top geometry on the
         // stack is merged with the merge of the remainder of the stack.
-        static CompositionShape TranslateMergePathsContent(ShapeContext context, Stack<ShapeLayerContent> stack, MergePaths.MergeMode mergeMode)
+        static CompositionShape? TranslateMergePathsContent(ShapeContext context, Stack<ShapeLayerContent> stack, MergePaths.MergeMode mergeMode)
         {
             var mergedGeometry = MergeShapeLayerContent(context, stack, mergeMode);
             if (mergedGeometry != null)
@@ -232,8 +242,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 TranslateAndApplyShapeContext(
                     context,
                     result,
-                    reverseDirection: false,
-                    trimOffsetDegrees: 0);
+                    reverseDirection: false);
 
                 return result;
             }
@@ -243,7 +252,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
         }
 
-        static CanvasGeometry MergeShapeLayerContent(ShapeContext context, Stack<ShapeLayerContent> stack, MergePaths.MergeMode mergeMode)
+        static CanvasGeometry? MergeShapeLayerContent(ShapeContext context, Stack<ShapeLayerContent> stack, MergePaths.MergeMode mergeMode)
         {
             var pathFillType = context.Fill is null ? ShapeFill.PathFillType.EvenOdd : context.Fill.FillType;
             var geometries = CreateCanvasGeometries(context, stack, pathFillType).ToArray();
@@ -260,7 +269,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         }
 
         // Combine all of the given geometries into a single geometry.
-        static CanvasGeometry CombineGeometries(
+        static CanvasGeometry? CombineGeometries(
             TranslationContext context,
             CanvasGeometry[] geometries,
             MergePaths.MergeMode mergeMode)
@@ -331,7 +340,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
                         break;
                     case ShapeContentType.MergePaths:
-                        yield return MergeShapeLayerContent(context, stack, ((MergePaths)shapeContent).Mode);
+                        var mergedShapeLayerContent = MergeShapeLayerContent(context, stack, ((MergePaths)shapeContent).Mode);
+                        if (mergedShapeLayerContent != null)
+                        {
+                            yield return mergedShapeLayerContent;
+                        }
+
                         break;
                     case ShapeContentType.Repeater:
                         context.Issues.RepeaterIsNotSupported();
@@ -624,7 +638,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             internal override bool IsShape => !_context.Layer.Masks.Any();
 
-            internal override CompositionShape GetShapeRoot(TranslationContext context)
+            internal override CompositionShape? GetShapeRoot(TranslationContext context)
             {
                 bool layerHasMasks = false;
 #if !NoClipping
@@ -651,7 +665,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 return rootNode;
             }
 
-            internal override Visual GetVisualRoot(CompositionContext context)
+            internal override Visual? GetVisualRoot(CompositionContext context)
             {
                 bool layerHasMasks = false;
 #if !NoClipping

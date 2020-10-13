@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
 using System;
 using Sn = System.Numerics;
 
@@ -95,14 +93,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
         /// <returns>The expression as a string suitable for use in the Windows.UI.Composition animation APIs.</returns>
         protected abstract string CreateExpressionText();
 
-        public bool Equals(Expression other) => other is Expression && other.ToText() == ToText();
+        public bool Equals(Expression? other) => other is Expression && other.ToText() == ToText();
 
-        public override sealed bool Equals(object obj) => Equals(obj as Expression);
+        public override sealed bool Equals(object? obj) => Equals(obj as Expression);
 
         public override sealed int GetHashCode() => ToText().GetHashCode();
 
-        public static bool operator ==(Expression a, Expression b) => (a is null && b is null) || a.ToText() == b.ToText();
+        public static bool operator ==(Expression? a, Expression? b) => a?.ToText() == b?.ToText();
 
-        public static bool operator !=(Expression a, Expression b) => !(a == b);
+        public static bool operator !=(Expression? a, Expression? b) => !(a == b);
     }
 }

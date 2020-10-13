@@ -42,6 +42,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.YamlData
             return new YamlScalar(value, escapedValue);
         }
 
+        public static implicit operator YamlScalar(int value) => new YamlScalar(value, value.ToString());
+
         public static implicit operator YamlScalar(double value) => new YamlScalar(value, value.ToString());
 
         public static implicit operator YamlScalar(bool value) => new YamlScalar(value, value.ToString());

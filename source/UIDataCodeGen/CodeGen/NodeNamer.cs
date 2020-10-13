@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -264,19 +262,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         // Returns a string for use in an identifier that describes a BooleanKeyFrameAnimation, or null
         // if the animation cannot be described.
-        static string DescribeAnimationRange(BooleanKeyFrameAnimation animation) => DescribeAnimationRange(animation, v => v.ToString());
+        static string? DescribeAnimationRange(BooleanKeyFrameAnimation animation) => DescribeAnimationRange(animation, v => v.ToString());
 
         // Returns a string for use in an identifier that describes a ColorKeyFrameAnimation, or null
         // if the animation cannot be described.
-        static string DescribeAnimationRange(ColorKeyFrameAnimation animation) => DescribeAnimationRange(animation, v => v.Name);
+        static string? DescribeAnimationRange(ColorKeyFrameAnimation animation) => DescribeAnimationRange(animation, v => v.Name);
 
         // Returns a string for use in an identifier that describes a ScalarKeyFrameAnimation, or null
         // if the animation cannot be described.
-        static string DescribeAnimationRange(ScalarKeyFrameAnimation animation) => DescribeAnimationRange(animation, FloatAsId);
+        static string? DescribeAnimationRange(ScalarKeyFrameAnimation animation) => DescribeAnimationRange(animation, FloatAsId);
 
         // Returns a string for use in an identifier that describes a KeyFrameAnimation, or null
         // if the animation cannot be described.
-        static string DescribeAnimationRange<T, TExpression>(KeyFrameAnimation<T, TExpression> animation, Func<T, string> valueFormatter)
+        static string? DescribeAnimationRange<T, TExpression>(KeyFrameAnimation<T, TExpression> animation, Func<T, string> valueFormatter)
             where T : struct
             where TExpression : Expr.Expression_<TExpression>
         {
@@ -304,7 +302,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             return (first, last);
         }
 
-        static string TryGetAnimatedPropertyName(TNode node)
+        static string? TryGetAnimatedPropertyName(TNode node)
         {
             // Find the property name that references this animation.
             var animators =
@@ -317,7 +315,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             return animators.Length == 1 ? SanitizePropertyName(animators[0]) : null;
         }
 
-        static string SanitizePropertyName(string propertyName)
+        static string? SanitizePropertyName(string propertyName)
             => propertyName?.Replace(".", string.Empty);
 
         // Removes the given prefix from a name.
@@ -330,7 +328,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         static string FloatAsId(float value)
             => value.ToString("0.###", CultureInfo.InvariantCulture).Replace('.', 'p').Replace('-', 'm');
 
-        static string NameOf(IDescribable obj) => obj.Name;
+        static string? NameOf(IDescribable obj) => obj.Name;
 
         // A Vector2 for use in an id.
         static string Vector2AsId(Vector2? size)
@@ -354,7 +352,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             // True iff the name is definitely not the name of a type.
             internal bool IsNotATypeName { get; }
 
-            internal static NodeName FromNameAndDescription(string name, string description)
+            internal static NodeName FromNameAndDescription(string name, string? description)
                 => new NodeName(name + (string.IsNullOrWhiteSpace(description) ? string.Empty : $"_{description}"), true);
 
             internal static NodeName FromNonTypeName(string name) => new NodeName(name, true);

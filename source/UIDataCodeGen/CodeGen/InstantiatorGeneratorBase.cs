@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Numerics;
 using System.Text;
@@ -968,27 +969,27 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         string PropertySetColorValueInitializer(CompositionPropertySet propertySet, string propertyName)
             => propertySet.TryGetColor(propertyName, out var value) == CompositionGetValueStatus.Succeeded
-                    ? _s.Color(value)
+                    ? _s.Color(value!.Value)
                     : throw new InvalidOperationException();
 
         string PropertySetScalarValueInitializer(CompositionPropertySet propertySet, string propertyName)
             => propertySet.TryGetScalar(propertyName, out var value) == CompositionGetValueStatus.Succeeded
-                    ? _s.Float(value)
+                    ? _s.Float(value!.Value)
                     : throw new InvalidOperationException();
 
         string PropertySetVector2ValueInitializer(CompositionPropertySet propertySet, string propertyName)
             => propertySet.TryGetVector2(propertyName, out var value) == CompositionGetValueStatus.Succeeded
-                    ? _s.Vector2(value)
+                    ? _s.Vector2(value!.Value)
                     : throw new InvalidOperationException();
 
         string PropertySetVector3ValueInitializer(CompositionPropertySet propertySet, string propertyName)
             => propertySet.TryGetVector3(propertyName, out var value) == CompositionGetValueStatus.Succeeded
-                    ? _s.Vector3(value)
+                    ? _s.Vector3(value!.Value)
                     : throw new InvalidOperationException();
 
         string PropertySetVector4ValueInitializer(CompositionPropertySet propertySet, string propertyName)
             => propertySet.TryGetVector4(propertyName, out var value) == CompositionGetValueStatus.Succeeded
-                    ? _s.Vector4(value)
+                    ? _s.Vector4(value!.Value)
                     : throw new InvalidOperationException();
 
         /// <summary>
@@ -1329,7 +1330,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             }
 
             // Returns the code to call the factory for the given object from the given node.
-            string CallFactoryFromFor(ObjectData callerNode, CompositionObject obj) => CallFactoryFromFor(callerNode, NodeFor(obj));
+            string CallFactoryFromFor(ObjectData callerNode, CompositionObject? obj) =>
+                obj is null
+                ? _s.Null
+                : CallFactoryFromFor(callerNode, NodeFor(obj));
 
             string CallFactoryFromFor(ObjectData callerNode, CompositionPath obj) => CallFactoryFromFor(callerNode, NodeFor(obj));
 
@@ -3255,9 +3259,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                         }
                     }
 
-                    if (!string.IsNullOrWhiteSpace(parents[0].ShortComment))
+                    var parentShortComment = parents[0].ShortComment;
+                    if (!string.IsNullOrWhiteSpace(parentShortComment))
                     {
-                        yield return parents[0].ShortComment;
+                        yield return parentShortComment;
                     }
                 }
             }
@@ -3282,7 +3287,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 }
             }
 
-            internal string ShortComment => ((IDescribable)Object).ShortDescription;
+            internal string? ShortComment => ((IDescribable)Object).ShortDescription;
 
             // True if this is the root node. This information is used when walking the
             // graph to create ancestor comments to prevent infinite recursion.

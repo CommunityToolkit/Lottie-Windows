@@ -17,8 +17,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 #endif
     sealed class Stats
     {
-        public Stats(CompositionObject root)
+        public Stats(CompositionObject? root)
         {
+            if (root is null)
+            {
+                return;
+            }
+
             var objectGraph = Graph.FromCompositionObject(root, includeVertices: false);
 
             CompositionPathCount = objectGraph.CompositionPathNodes.Count();

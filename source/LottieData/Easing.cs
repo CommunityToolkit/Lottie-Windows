@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable // Temporary while enabling nullable everywhere.
+#nullable enable
 
 using System;
 
@@ -20,7 +20,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         public abstract EasingType Type { get; }
 
         /// <inheritdoc/>
-        public bool Equals(Easing other)
+        public bool Equals(Easing? other)
         {
             if (ReferenceEquals(this, other))
             {
@@ -52,12 +52,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             }
         }
 
-        public static bool operator ==(Easing a, Easing b) => (a is Easing && a.Equals(b)) || (a is null && b is null);
+        public static bool operator ==(Easing? a, Easing? b) => (a is Easing && a.Equals(b)) || (a is null && b is null);
 
-        public static bool operator !=(Easing a, Easing b) => !(a == b);
+        public static bool operator !=(Easing? a, Easing? b) => !(a == b);
 
         /// <inheritdoc/>
-        public override abstract bool Equals(object obj);
+        public override abstract bool Equals(object? obj);
 
         /// <inheritdoc/>
         public override abstract int GetHashCode();
