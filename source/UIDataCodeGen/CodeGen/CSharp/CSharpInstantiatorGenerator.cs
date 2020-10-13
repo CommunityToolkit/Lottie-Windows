@@ -244,9 +244,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
                 builder.WriteLine($"        : {_sourceInterface}");
             }
 
-            foreach (var itfc in SourceInfo.AdditionalInterfaces)
+            foreach (var additionalInterface in SourceInfo.AdditionalInterfaces)
             {
-                builder.WriteLine($"        , {itfc.GetQualifiedName(_s)}");
+                builder.WriteLine($"        , {additionalInterface.GetQualifiedName(_s)}");
             }
 
             builder.OpenScope();
@@ -420,9 +420,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
                 builder.WriteLine("        : IDynamicAnimatedVisualSource");
             }
 
-            foreach (var itfc in SourceInfo.AdditionalInterfaces)
+            foreach (var additionalInterface in SourceInfo.AdditionalInterfaces)
             {
-                builder.WriteLine($"        , {itfc.GetQualifiedName(_s)}");
+                builder.WriteLine($"        , {additionalInterface.GetQualifiedName(_s)}");
             }
 
             builder.WriteLine("        , INotifyPropertyChanged");
