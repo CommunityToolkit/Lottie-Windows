@@ -662,6 +662,7 @@ sealed class LottieFileProcessor
             interfaceType: string.IsNullOrWhiteSpace(_options.Interface)
                             ? "Microsoft.UI.Xaml.Controls.IAnimatedVisual"
                             : _options.Interface,
+            additionalInterfaces: _options.AdditionalInterfaces,
             objectGraphs: _translationResults.Select(
                             tr => ((CompositionObject?)tr.RootVisual!, tr.MinimumRequiredUapVersion)).ToArray(),
             nameSpace: string.IsNullOrWhiteSpace(_options.Namespace)

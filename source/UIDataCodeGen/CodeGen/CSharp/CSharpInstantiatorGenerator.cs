@@ -73,6 +73,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
             // A sorted set to hold the namespaces that the generated code will use. The set is maintained in sorted order.
             var namespaces = new SortedSet<string>();
 
+            namespaces.Add("Microsoft.UI.Xaml.Controls");
+
             if (SourceInfo.UsesCanvas)
             {
                 namespaces.Add("Microsoft.Graphics.Canvas");
@@ -230,13 +232,21 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
         {
             var visibility = SourceInfo.Public ? "public " : string.Empty;
 
+            builder.WriteLine($"{visibility}sealed class {SourceInfo.ClassName}");
+
             if (SourceInfo.GenerateDependencyObject)
             {
-                builder.WriteLine($"{visibility}sealed class {SourceInfo.ClassName} : DependencyObject, {_sourceInterface}");
+                builder.WriteLine($"        : DependencyObject");
+                builder.WriteLine($"        , {_sourceInterface}");
             }
             else
             {
-                builder.WriteLine($"{visibility}sealed class {SourceInfo.ClassName} : {_sourceInterface}");
+                builder.WriteLine($"        : {_sourceInterface}");
+            }
+
+            foreach (var additionalInterface in SourceInfo.AdditionalInterfaces)
+            {
+                builder.WriteLine($"        , {additionalInterface.GetQualifiedName(_s)}");
             }
 
             builder.OpenScope();
@@ -396,7 +406,26 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
         /// </summary>
         void WriteIDynamicAnimatedVisualSource(CodeBuilder builder)
         {
-            builder.WriteLine($"sealed class {SourceInfo.ClassName} : {(SourceInfo.GenerateDependencyObject ? "DependencyObject, " : string.Empty)}Microsoft.UI.Xaml.Controls.IDynamicAnimatedVisualSource, INotifyPropertyChanged");
+            var visibility = SourceInfo.Public ? "public " : string.Empty;
+
+            builder.WriteLine($"{visibility}sealed class {SourceInfo.ClassName}");
+
+            if (SourceInfo.GenerateDependencyObject)
+            {
+                builder.WriteLine($"        : DependencyObject");
+                builder.WriteLine("        , IDynamicAnimatedVisualSource");
+            }
+            else
+            {
+                builder.WriteLine("        : IDynamicAnimatedVisualSource");
+            }
+
+            foreach (var additionalInterface in SourceInfo.AdditionalInterfaces)
+            {
+                builder.WriteLine($"        , {additionalInterface.GetQualifiedName(_s)}");
+            }
+
+            builder.WriteLine("        , INotifyPropertyChanged");
 
             builder.OpenScope();
 
@@ -406,7 +435,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
             builder.WriteLine("bool _isImageLoadingAsynchronous;");
             builder.WriteLine("bool _isTryCreateAnimatedVisualCalled;");
             builder.WriteLine("bool _isImageLoadingStarted;");
-            builder.WriteLine("EventRegistrationTokenTable<TypedEventHandler<Microsoft.UI.Xaml.Controls.IDynamicAnimatedVisualSource, object>> _animatedVisualInvalidatedEventTokenTable;");
+            builder.WriteLine("EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource, object>> _animatedVisualInvalidatedEventTokenTable;");
 
             // Declare the variables to hold the LoadedImageSurfaces.
             foreach (var n in SourceInfo.LoadedImageSurfaces)
@@ -521,9 +550,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
             builder.WriteLine();
 
             // Generate the method that get or create the EventRegistrationTokenTable.
-            builder.WriteLine("EventRegistrationTokenTable<TypedEventHandler<Microsoft.UI.Xaml.Controls.IDynamicAnimatedVisualSource, object>> GetAnimatedVisualInvalidatedEventRegistrationTokenTable()");
+            builder.WriteLine("EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource, object>> GetAnimatedVisualInvalidatedEventRegistrationTokenTable()");
             builder.OpenScope();
-            builder.WriteLine("return EventRegistrationTokenTable<TypedEventHandler<Microsoft.UI.Xaml.Controls.IDynamicAnimatedVisualSource, object>>.GetOrCreateEventRegistrationTokenTable(ref _animatedVisualInvalidatedEventTokenTable);");
+            builder.WriteLine("return EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource, object>>.GetOrCreateEventRegistrationTokenTable(ref _animatedVisualInvalidatedEventTokenTable);");
         }
 
         /// <inheritdoc/>
@@ -740,7 +769,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
 
         void WriteAnimatedVisualInvalidatedEvent(CodeBuilder builder)
         {
-            builder.WriteLine("public event TypedEventHandler<Microsoft.UI.Xaml.Controls.IDynamicAnimatedVisualSource, object> AnimatedVisualInvalidated");
+            builder.WriteLine("public event TypedEventHandler<IDynamicAnimatedVisualSource, object> AnimatedVisualInvalidated");
             builder.OpenScope();
             builder.WriteLine("add");
             builder.OpenScope();

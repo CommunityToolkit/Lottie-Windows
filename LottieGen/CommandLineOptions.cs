@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 internal enum Lang
@@ -25,7 +26,10 @@ internal enum Lang
 
 sealed class CommandLineOptions
 {
+    readonly List<string> _additionalInterfaces = new List<string>();
     readonly List<string> _languageStrings = new List<string>();
+
+    internal IReadOnlyList<string> AdditionalInterfaces => _additionalInterfaces;
 
     internal bool DisableCodeGenOptimizer { get; private set; }
 
@@ -45,7 +49,7 @@ sealed class CommandLineOptions
 
     internal string? Interface { get; private set; }
 
-    internal IEnumerable<Lang> Languages { get; private set; } = Array.Empty<Lang>();
+    internal IReadOnlyList<Lang> Languages { get; private set; } = Array.Empty<Lang>();
 
     internal uint? MinimumUapVersion { get; private set; }
 
@@ -85,6 +89,14 @@ sealed class CommandLineOptions
         var sb = new StringBuilder();
         sb.Append(ThisAssembly.AssemblyName);
 
+        if (AdditionalInterfaces.Any())
+        {
+            foreach (var additionalInterface in AdditionalInterfaces)
+            {
+                sb.Append($" -{nameof(Keyword.AdditionalInterface)} {additionalInterface}");
+            }
+        }
+
         if (DisableCodeGenOptimizer)
         {
             sb.Append($" -{nameof(DisableCodeGenOptimizer)}");
@@ -122,8 +134,10 @@ sealed class CommandLineOptions
             sb.Append($" -{nameof(Namespace)} {Namespace}");
         }
 
-        // The -Public switch is ignored for cppwinrt.
-        if (Public && !languageSwitch.Equals("cppwinrt", StringComparison.OrdinalIgnoreCase))
+        // The -Public switch is ignored for c++.
+        if (Public &&
+            !(languageSwitch.Equals("cppwinrt", StringComparison.OrdinalIgnoreCase) ||
+                languageSwitch.Equals("cx", StringComparison.OrdinalIgnoreCase)))
         {
             sb.Append($" -{nameof(Public)}");
         }
@@ -159,8 +173,14 @@ sealed class CommandLineOptions
 
     enum Keyword
     {
+        // Special value ot indicate that there was no match, or unintialized.
         None = 0,
+
+        // Special value to indicate that more than one keyword matched.
         Ambiguous,
+
+        // Normal keywords.
+        AdditionalInterface,
         DisableCodeGenOptimizer,
         DisableTranslationOptimizer,
         GenerateColorBindings,
@@ -215,7 +235,12 @@ sealed class CommandLineOptions
             }
         }
 
-        result.Languages = languages.Distinct();
+        result.Languages = languages.Distinct().ToArray();
+
+        // Sort any additional interfaces and remove duplicates.
+        var additionalInterfaces = result._additionalInterfaces.OrderBy(name => name).Distinct();
+        result._additionalInterfaces.Clear();
+        result._additionalInterfaces.AddRange(additionalInterfaces);
 
         return result;
     }
@@ -223,7 +248,8 @@ sealed class CommandLineOptions
     void ParseCommandLineStrings(string[] args)
     {
         // Define the keywords accepted on the command line.
-        var tokenizer = new CommandlineTokenizer<Keyword>(Keyword.Ambiguous)
+        var tokenizer = new CommandlineTokenizer<Keyword>(ambiguousValue: Keyword.Ambiguous)
+            .AddPrefixedKeyword(Keyword.AdditionalInterface)
             .AddPrefixedKeyword(Keyword.DisableCodeGenOptimizer)
             .AddPrefixedKeyword(Keyword.DisableTranslationOptimizer)
             .AddPrefixedKeyword(Keyword.GenerateColorBindings)
@@ -292,6 +318,7 @@ sealed class CommandLineOptions
                             break;
 
                         // The following keywords require a parameter as the next token.
+                        case Keyword.AdditionalInterface:
                         case Keyword.InputFile:
                         case Keyword.Interface:
                         case Keyword.Language:
@@ -307,6 +334,11 @@ sealed class CommandLineOptions
                             throw new InvalidOperationException();
                     }
 
+                    break;
+
+                case Keyword.AdditionalInterface:
+                    _additionalInterfaces.Add(arg);
+                    previousKeyword = Keyword.None;
                     break;
                 case Keyword.InputFile:
                     if (InputFile != null)
@@ -330,6 +362,7 @@ sealed class CommandLineOptions
                     break;
                 case Keyword.Language:
                     _languageStrings.Add(arg);
+                    previousKeyword = Keyword.None;
                     break;
                 case Keyword.Namespace:
                     if (Namespace != null)
@@ -339,6 +372,7 @@ sealed class CommandLineOptions
                     }
 
                     Namespace = arg;
+                    previousKeyword = Keyword.None;
                     break;
                 case Keyword.OutputFolder:
                     if (OutputFolder != null)
@@ -348,6 +382,7 @@ sealed class CommandLineOptions
                     }
 
                     OutputFolder = arg;
+                    previousKeyword = Keyword.None;
                     break;
                 case Keyword.MinimumUapVersion:
                     if (MinimumUapVersion != null)
@@ -366,6 +401,7 @@ sealed class CommandLineOptions
                         MinimumUapVersion = version;
                     }
 
+                    previousKeyword = Keyword.None;
                     break;
                 case Keyword.RootNamespace:
                     if (RootNamespace != null)
@@ -375,6 +411,7 @@ sealed class CommandLineOptions
                     }
 
                     RootNamespace = arg;
+                    previousKeyword = Keyword.None;
                     break;
                 case Keyword.TargetUapVersion:
                     if (TargetUapVersion != null)
@@ -393,6 +430,7 @@ sealed class CommandLineOptions
                         TargetUapVersion = version;
                     }
 
+                    previousKeyword = Keyword.None;
                     break;
                 default:
                     // Should never get here.
