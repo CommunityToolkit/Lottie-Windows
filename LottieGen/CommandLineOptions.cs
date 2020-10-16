@@ -238,7 +238,7 @@ sealed class CommandLineOptions
         result.Languages = languages.Distinct().ToArray();
 
         // Sort any additional interfaces and remove duplicates.
-        var additionalInterfaces = result._additionalInterfaces.OrderBy(name => name).Distinct();
+        var additionalInterfaces = result._additionalInterfaces.OrderBy(name => name).Distinct().ToArray();
         result._additionalInterfaces.Clear();
         result._additionalInterfaces.AddRange(additionalInterfaces);
 

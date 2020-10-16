@@ -111,6 +111,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
             }
 
             namespaces.Add("System");
+            namespaces.Add("System.Collections.Generic");
             namespaces.Add("System.Numerics");
 
             // Windows.UI is needed for Color.
@@ -142,7 +143,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
                 WriteIAnimatedVisualSource(builder);
             }
 
-            builder.CloseScope();
+            builder.WriteLine();
+
+            WriteFrameToProgressImpl(builder);
+            builder.WriteLine();
+
+            WriteMarkersPropertyImpl(builder);
+            builder.WriteLine();
+
+            WriteSetColorPropertyImpl(builder);
+            builder.WriteLine();
+
+            WriteSetScalarPropertyImpl(builder);
             builder.WriteLine();
         }
 
@@ -195,7 +207,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
             {
                 foreach (var prop in SourceInfo.SourceMetadata.PropertyBindings)
                 {
-                    builder.WriteComment($"Dependency property for {prop.BindingName}.");
+                    builder.WriteSummaryComment($"Dependency property for {prop.BindingName}.");
                     builder.WriteLine($"public static readonly DependencyProperty {prop.BindingName}Property =");
                     builder.Indent();
                     builder.WriteLine($"DependencyProperty.Register({_s.String(prop.BindingName)}, typeof({ExposedType(prop)}), typeof({SourceInfo.ClassName}),");
@@ -218,7 +230,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
                 {
                     builder.WriteLine($"static void On{prop.BindingName}Changed(DependencyObject d, DependencyPropertyChangedEventArgs args)");
                     builder.OpenScope();
-                    WriteThemePropertyInitialization(builder, $"(({SourceInfo.ClassName})d)._themeProperties?", prop, $"({ExposedType(prop)})args.NewValue");
+                    WriteThemePropertyInitialization(builder, $"(({SourceInfo.ClassName})d).{SourceInfo.ThemePropertiesFieldName}?", prop, $"({ExposedType(prop)})args.NewValue");
                     builder.CloseScope();
                     builder.WriteLine();
                 }
@@ -310,6 +322,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
 
                 builder.WriteLine("return null;");
             }
+
+            builder.CloseScope();
         }
 
         void WriteThemeMethodsAndFields(CodeBuilder builder)
@@ -342,26 +356,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
                     WriteThemeProperties(builder);
                 }
 
-                // The GetThemeProperties method is designed to allow setting of properties when the actual
-                // type of the IAnimatedVisualSource is not known. It relies on a custom interface that declares
-                // it, so if we're not generating code for a custom interface, there's no reason to generate
-                // the method.
-                if (SourceInfo.IsInterfaceCustom)
-                {
-                    builder.WriteLine("public CompositionPropertySet GetThemeProperties(Compositor compositor)");
-                    builder.OpenScope();
-                    builder.WriteLine("return EnsureThemeProperties(compositor);");
-                    builder.CloseScope();
-                    builder.WriteLine();
-                }
-
                 if (SourceInfo.SourceMetadata.PropertyBindings.Any(pb => pb.ExposedType == PropertySetValueType.Color))
                 {
                     // There's at least one themed color. They will need a helper method to convert to Vector4.
-                    // If we're generating a custom interface then users may want to use GetThemeProperties
-                    // to set a property color, so in that case make the helper method available to them.
-                    var visibility = SourceInfo.IsInterfaceCustom ? "internal " : string.Empty;
-                    builder.WriteLine($"{visibility}static Vector4 ColorAsVector4(Color color) => new Vector4(color.R, color.G, color.B, color.A);");
+                    builder.WriteLine("static Vector4 ColorAsVector4(Color color) => new Vector4(color.R, color.G, color.B, color.A);");
                     builder.WriteLine();
                 }
 
@@ -382,7 +380,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
                 }
 
                 builder.CloseScope();
-                builder.WriteLine("return _themeProperties;");
+                builder.WriteLine($"return {SourceInfo.ThemePropertiesFieldName};");
                 builder.CloseScope();
                 builder.WriteLine();
             }
@@ -553,6 +551,110 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
             builder.WriteLine("EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource, object>> GetAnimatedVisualInvalidatedEventRegistrationTokenTable()");
             builder.OpenScope();
             builder.WriteLine("return EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource, object>>.GetOrCreateEventRegistrationTokenTable(ref _animatedVisualInvalidatedEventTokenTable);");
+            builder.CloseScope();
+        }
+
+        /// <summary>
+        /// Generates the FrameToProgress(...) implementation.
+        /// </summary>
+        void WriteFrameToProgressImpl(CodeBuilder builder)
+        {
+            builder.WriteSummaryComment("Converts a frame number to the corresponding progress value.");
+            builder.WriteLine($"public double FrameToProgress(double frameNumber)");
+            builder.OpenScope();
+            builder.WriteLine($"return frameNumber / {_s.Double(SourceInfo.SourceMetadata.LottieMetadata.Duration.Frames)};");
+            builder.CloseScope();
+        }
+
+        /// <summary>
+        /// Generates the Markers property implementation.
+        /// </summary>
+        void WriteMarkersPropertyImpl(CodeBuilder builder)
+        {
+            builder.WriteSummaryComment("Returns a map from marker names to corresponding progress values.");
+            builder.WriteLine($"public IReadOnlyDictionary<string, double> Markers =>");
+            builder.Indent();
+            builder.WriteLine("new Dictionary<string, double>");
+            builder.OpenScope();
+            foreach (var marker in SourceInfo.Markers)
+            {
+                builder.WriteLine($"{{ {_s.String(marker.Name)}, {_s.Double(marker.StartProgress)} }},");
+            }
+
+            builder.CloseCppTypeScope();
+            builder.UnIndent();
+        }
+
+        /// <summary>
+        /// Generates the SetColorProperty(...) method implementation.
+        /// </summary>
+        void WriteSetColorPropertyImpl(CodeBuilder builder) =>
+            WriteSetPropertyImpl(
+                builder,
+                PropertySetValueType.Color,
+                "Color",
+                "Sets the color property with the given name, or does nothing if no such property exists.");
+
+        /// <summary>
+        /// Generates the SetScalarProperty(...) method implementation.
+        /// </summary>
+        void WriteSetScalarPropertyImpl(CodeBuilder builder) =>
+            WriteSetPropertyImpl(
+                builder,
+                PropertySetValueType.Scalar,
+                "double",
+                "Sets the scalar property with the given name, or does nothing if no such property exists.");
+
+        void WriteSetPropertyImpl(
+            CodeBuilder builder,
+            PropertySetValueType propertyType,
+            string typeName,
+            string comment)
+        {
+            builder.WriteSummaryComment(comment);
+            var properties = SourceInfo.SourceMetadata.PropertyBindings.Where(p => p.ExposedType == propertyType).ToArray();
+
+            builder.WriteLine($"public void Set{propertyType}Property(string propertyName, {typeName} value)");
+            if (properties.Length == 0)
+            {
+                // There are no properties. The method doesn't need to do anything.
+                builder.OpenScope();
+                builder.CloseScope();
+            }
+            else
+            {
+                var propertySetTypeName = PropertySetValueTypeName(properties[0].ActualType);
+                var valueInitializer = properties[0].ExposedType == PropertySetValueType.Color ? "ColorAsVector4(value)" : "value";
+
+                builder.OpenScope();
+
+                var firstSeen = false;
+                foreach (var prop in properties)
+                {
+                    // If the propertyName is a known name, save it into its backing field.
+                    builder.WriteLine($"{(firstSeen ? "else " : string.Empty)}if (propertyName == {_s.String(prop.BindingName)})");
+                    firstSeen = true;
+                    builder.OpenScope();
+                    builder.WriteLine($"_theme{prop.BindingName} = value;");
+                    builder.CloseScope();
+                }
+
+                builder.WriteLine("else");
+                builder.OpenScope();
+
+                // Ignore the name if it doesn't refer to a known property.
+                builder.WriteLine("return;");
+                builder.CloseScope();
+                builder.WriteLine();
+
+                // Update the CompositionPropertySet if it has been created.
+                builder.WriteLine($"if ({SourceInfo.ThemePropertiesFieldName} != null)");
+                builder.OpenScope();
+
+                builder.WriteLine($"{SourceInfo.ThemePropertiesFieldName}.Insert{propertySetTypeName}(propertyName, {valueInitializer});");
+                builder.CloseScope();
+                builder.CloseScope();
+            }
         }
 
         /// <inheritdoc/>

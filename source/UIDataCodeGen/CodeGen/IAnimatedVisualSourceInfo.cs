@@ -124,8 +124,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         IReadOnlyList<NamedConstant> InternalConstants { get; }
 
         /// <summary>
+        /// The markers. These are names for progress values.
+        /// </summary>
+        IReadOnlyList<MarkerInfo> Markers { get; }
+
+        /// <summary>
         /// Accesses metadata associated with the source of the composition. This may contain
-        /// information such as the frame rate and markers from the source. The contents of
+        /// information such as the frame rate and theme bindings from the source. The contents of
         /// this data is source specific.
         /// </summary>
         SourceMetadata SourceMetadata { get; }
