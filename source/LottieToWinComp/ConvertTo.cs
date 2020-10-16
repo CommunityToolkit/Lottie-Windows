@@ -79,34 +79,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return Math.Min(Math.Max(min, value), max);
         }
 
-        public static CompositionStrokeCap? StrokeCapDefaultIsFlat(ShapeStroke.LineCapType lineCapType)
-        {
-            switch (lineCapType)
+        public static CompositionStrokeCap? StrokeCapDefaultIsFlat(ShapeStroke.LineCapType lineCapType) =>
+            lineCapType switch
             {
-                case ShapeStroke.LineCapType.Butt:
-                    return null;
-                case ShapeStroke.LineCapType.Round:
-                    return CompositionStrokeCap.Round;
-                case ShapeStroke.LineCapType.Projected:
-                    return CompositionStrokeCap.Square;
-                default:
-                    throw new InvalidOperationException();
-            }
-        }
+                ShapeStroke.LineCapType.Butt => null,
+                ShapeStroke.LineCapType.Round => CompositionStrokeCap.Round,
+                ShapeStroke.LineCapType.Projected => CompositionStrokeCap.Square,
+                _ => throw new InvalidOperationException(),
+            };
 
-        public static CompositionStrokeLineJoin? StrokeLineJoinDefaultIsMiter(ShapeStroke.LineJoinType lineJoinType)
-        {
-            switch (lineJoinType)
+        public static CompositionStrokeLineJoin? StrokeLineJoinDefaultIsMiter(ShapeStroke.LineJoinType lineJoinType) =>
+            lineJoinType switch
             {
-                case ShapeStroke.LineJoinType.Bevel:
-                    return CompositionStrokeLineJoin.Bevel;
-                case ShapeStroke.LineJoinType.Miter:
-                    return null;
-                case ShapeStroke.LineJoinType.Round:
-                default:
-                    return CompositionStrokeLineJoin.Round;
-            }
-        }
+                ShapeStroke.LineJoinType.Bevel => CompositionStrokeLineJoin.Bevel,
+                ShapeStroke.LineJoinType.Miter => null,
+                _ => CompositionStrokeLineJoin.Round,
+            };
 
         public static CanvasFilledRegionDetermination FilledRegionDetermination(ShapeFill.PathFillType fillType)
         {

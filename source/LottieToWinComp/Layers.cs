@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -153,24 +155,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 return null;
             }
 
-            switch (layer.Type)
+            return layer.Type switch
             {
-                case Layer.LayerType.Image:
-                    return Images.CreateImageLayerTranslator(context.CreateLayerContext((ImageLayer)layer));
-                case Layer.LayerType.Null:
-                    // Null layers only exist to hold transforms when declared as parents of other layers.
-                    return null;
-                case Layer.LayerType.PreComp:
-                    return PreComps.CreatePreCompLayerTranslator(context.CreateLayerContext((PreCompLayer)layer));
-                case Layer.LayerType.Shape:
-                    return Shapes.CreateShapeLayerTranslator(context.CreateLayerContext((ShapeLayer)layer));
-                case Layer.LayerType.Solid:
-                    return SolidLayers.CreateSolidLayerTranslator(context.CreateLayerContext((SolidLayer)layer));
-                case Layer.LayerType.Text:
-                    return TextLayers.CreateTextLayerTranslator(context.CreateLayerContext((TextLayer)layer));
-                default:
-                    throw new InvalidOperationException();
-            }
+                Layer.LayerType.Image => Images.CreateImageLayerTranslator(context.CreateLayerContext((ImageLayer)layer)),
+
+                // Null layers only exist to hold transforms when declared as parents of other layers.
+                Layer.LayerType.Null => null,
+                Layer.LayerType.PreComp => PreComps.CreatePreCompLayerTranslator(context.CreateLayerContext((PreCompLayer)layer)),
+                Layer.LayerType.Shape => Shapes.CreateShapeLayerTranslator(context.CreateLayerContext((ShapeLayer)layer)),
+                Layer.LayerType.Solid => SolidLayers.CreateSolidLayerTranslator(context.CreateLayerContext((SolidLayer)layer)),
+                Layer.LayerType.Text => TextLayers.CreateTextLayerTranslator(context.CreateLayerContext((TextLayer)layer)),
+                _ => throw new InvalidOperationException(),
+            };
         }
     }
 }

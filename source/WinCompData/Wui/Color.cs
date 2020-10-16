@@ -2,10 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
+
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Net.Http.Headers;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui
 {
@@ -121,159 +122,156 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui
         }
 
         // Gets the well known name for a given ARGB value, or null if no name is known.
-        static string? GetWellKnownName(byte a, byte r, byte g, byte b)
-        {
-            switch (((uint)a << 24) | ((uint)r << 16) | ((uint)g << 8) | b)
+        static string? GetWellKnownName(byte a, byte r, byte g, byte b) =>
+            (((uint)a << 24) | ((uint)r << 16) | ((uint)g << 8) | b) switch
             {
-                case 0x00000000: return "Transparent";
-                case 0xFF000000: return "Black";
-                case 0xFF000080: return "Navy";
-                case 0xFF00008B: return "DarkBlue";
-                case 0xFF0000CD: return "MediumBlue";
-                case 0xFF0000FF: return "Blue";
-                case 0xFF006400: return "DarkGreen";
-                case 0xFF008000: return "Green";
-                case 0xFF008080: return "Teal";
-                case 0xFF008B8B: return "DarkCyan";
-                case 0xFF00BFFF: return "DeepSkyBlue";
-                case 0xFF00CED1: return "DarkTurquoise";
-                case 0xFF00FA9A: return "MediumSpringGreen";
-                case 0xFF00FF00: return "Lime";
-                case 0xFF00FF7F: return "SpringGreen";
+                0x00000000 => "Transparent",
+                0xFF000000 => "Black",
+                0xFF000080 => "Navy",
+                0xFF00008B => "DarkBlue",
+                0xFF0000CD => "MediumBlue",
+                0xFF0000FF => "Blue",
+                0xFF006400 => "DarkGreen",
+                0xFF008000 => "Green",
+                0xFF008080 => "Teal",
+                0xFF008B8B => "DarkCyan",
+                0xFF00BFFF => "DeepSkyBlue",
+                0xFF00CED1 => "DarkTurquoise",
+                0xFF00FA9A => "MediumSpringGreen",
+                0xFF00FF00 => "Lime",
+                0xFF00FF7F => "SpringGreen",
 
                 // Aqua and Cyan have the same value.
                 //case 0xFF00FFFF: return "Aqua";
-                case 0xFF00FFFF: return "Cyan";
-                case 0xFF191970: return "MidnightBlue";
-                case 0xFF1E90FF: return "DodgerBlue";
-                case 0xFF20B2AA: return "LightSeaGreen";
-                case 0xFF228B22: return "ForestGreen";
-                case 0xFF2E8B57: return "SeaGreen";
-                case 0xFF2F4F4F: return "DarkSlateGray";
-                case 0xFF32CD32: return "LimeGreen";
-                case 0xFF3CB371: return "MediumSeaGreen";
-                case 0xFF40E0D0: return "Turquoise";
-                case 0xFF4169E1: return "RoyalBlue";
-                case 0xFF4682B4: return "SteelBlue";
-                case 0xFF483D8B: return "DarkSlateBlue";
-                case 0xFF48D1CC: return "MediumTurquoise";
-                case 0xFF4B0082: return "Indigo";
-                case 0xFF556B2F: return "DarkOliveGreen";
-                case 0xFF5F9EA0: return "CadetBlue";
-                case 0xFF6495ED: return "CornflowerBlue";
-                case 0xFF66CDAA: return "MediumAquamarine";
-                case 0xFF696969: return "DimGray";
-                case 0xFF6A5ACD: return "SlateBlue";
-                case 0xFF6B8E23: return "OliveDrab";
-                case 0xFF708090: return "SlateGray";
-                case 0xFF778899: return "LightSlateGray";
-                case 0xFF7B68EE: return "MediumSlateBlue";
-                case 0xFF7CFC00: return "LawnGreen";
-                case 0xFF7FFF00: return "Chartreuse";
-                case 0xFF7FFFD4: return "Aquamarine";
-                case 0xFF800000: return "Maroon";
-                case 0xFF800080: return "Purple";
-                case 0xFF808000: return "Olive";
-                case 0xFF808080: return "Gray";
-                case 0xFF87CEEB: return "SkyBlue";
-                case 0xFF87CEFA: return "LightSkyBlue";
-                case 0xFF8A2BE2: return "BlueViolet";
-                case 0xFF8B0000: return "DarkRed";
-                case 0xFF8B008B: return "DarkMagenta";
-                case 0xFF8B4513: return "SaddleBrown";
-                case 0xFF8FBC8F: return "DarkSeaGreen";
-                case 0xFF90EE90: return "LightGreen";
-                case 0xFF9370DB: return "MediumPurple";
-                case 0xFF9400D3: return "DarkViolet";
-                case 0xFF98FB98: return "PaleGreen";
-                case 0xFF9932CC: return "DarkOrchid";
-                case 0xFF9ACD32: return "YellowGreen";
-                case 0xFFA0522D: return "Sienna";
-                case 0xFFA52A2A: return "Brown";
-                case 0xFFA9A9A9: return "DarkGray";
-                case 0xFFADD8E6: return "LightBlue";
-                case 0xFFADFF2F: return "GreenYellow";
-                case 0xFFAFEEEE: return "PaleTurquoise";
-                case 0xFFB0C4DE: return "LightSteelBlue";
-                case 0xFFB0E0E6: return "PowderBlue";
-                case 0xFFB22222: return "Firebrick";
-                case 0xFFB8860B: return "DarkGoldenrod";
-                case 0xFFBA55D3: return "MediumOrchid";
-                case 0xFFBC8F8F: return "RosyBrown";
-                case 0xFFBDB76B: return "DarkKhaki";
-                case 0xFFC0C0C0: return "Silver";
-                case 0xFFC71585: return "MediumVioletRed";
-                case 0xFFCD5C5C: return "IndianRed";
-                case 0xFFCD853F: return "Peru";
-                case 0xFFD2691E: return "Chocolate";
-                case 0xFFD2B48C: return "Tan";
-                case 0xFFD3D3D3: return "LightGray";
-                case 0xFFD8BFD8: return "Thistle";
-                case 0xFFDA70D6: return "Orchid";
-                case 0xFFDAA520: return "Goldenrod";
-                case 0xFFDB7093: return "PaleVioletRed";
-                case 0xFFDC143C: return "Crimson";
-                case 0xFFDCDCDC: return "Gainsboro";
-                case 0xFFDDA0DD: return "Plum";
-                case 0xFFDEB887: return "BurlyWood";
-                case 0xFFE0FFFF: return "LightCyan";
-                case 0xFFE6E6FA: return "Lavender";
-                case 0xFFE9967A: return "DarkSalmon";
-                case 0xFFEE82EE: return "Violet";
-                case 0xFFEEE8AA: return "PaleGoldenrod";
-                case 0xFFF08080: return "LightCoral";
-                case 0xFFF0E68C: return "Khaki";
-                case 0xFFF0F8FF: return "AliceBlue";
-                case 0xFFF0FFF0: return "Honeydew";
-                case 0xFFF0FFFF: return "Azure";
-                case 0xFFF4A460: return "SandyBrown";
-                case 0xFFF5DEB3: return "Wheat";
-                case 0xFFF5F5DC: return "Beige";
-                case 0xFFF5F5F5: return "WhiteSmoke";
-                case 0xFFF5FFFA: return "MintCream";
-                case 0xFFF8F8FF: return "GhostWhite";
-                case 0xFFFA8072: return "Salmon";
-                case 0xFFFAEBD7: return "AntiqueWhite";
-                case 0xFFFAF0E6: return "Linen";
-                case 0xFFFAFAD2: return "LightGoldenrodYellow";
-                case 0xFFFDF5E6: return "OldLace";
-                case 0xFFFF0000: return "Red";
+                0xFF00FFFF => "Cyan",
+                0xFF191970 => "MidnightBlue",
+                0xFF1E90FF => "DodgerBlue",
+                0xFF20B2AA => "LightSeaGreen",
+                0xFF228B22 => "ForestGreen",
+                0xFF2E8B57 => "SeaGreen",
+                0xFF2F4F4F => "DarkSlateGray",
+                0xFF32CD32 => "LimeGreen",
+                0xFF3CB371 => "MediumSeaGreen",
+                0xFF40E0D0 => "Turquoise",
+                0xFF4169E1 => "RoyalBlue",
+                0xFF4682B4 => "SteelBlue",
+                0xFF483D8B => "DarkSlateBlue",
+                0xFF48D1CC => "MediumTurquoise",
+                0xFF4B0082 => "Indigo",
+                0xFF556B2F => "DarkOliveGreen",
+                0xFF5F9EA0 => "CadetBlue",
+                0xFF6495ED => "CornflowerBlue",
+                0xFF66CDAA => "MediumAquamarine",
+                0xFF696969 => "DimGray",
+                0xFF6A5ACD => "SlateBlue",
+                0xFF6B8E23 => "OliveDrab",
+                0xFF708090 => "SlateGray",
+                0xFF778899 => "LightSlateGray",
+                0xFF7B68EE => "MediumSlateBlue",
+                0xFF7CFC00 => "LawnGreen",
+                0xFF7FFF00 => "Chartreuse",
+                0xFF7FFFD4 => "Aquamarine",
+                0xFF800000 => "Maroon",
+                0xFF800080 => "Purple",
+                0xFF808000 => "Olive",
+                0xFF808080 => "Gray",
+                0xFF87CEEB => "SkyBlue",
+                0xFF87CEFA => "LightSkyBlue",
+                0xFF8A2BE2 => "BlueViolet",
+                0xFF8B0000 => "DarkRed",
+                0xFF8B008B => "DarkMagenta",
+                0xFF8B4513 => "SaddleBrown",
+                0xFF8FBC8F => "DarkSeaGreen",
+                0xFF90EE90 => "LightGreen",
+                0xFF9370DB => "MediumPurple",
+                0xFF9400D3 => "DarkViolet",
+                0xFF98FB98 => "PaleGreen",
+                0xFF9932CC => "DarkOrchid",
+                0xFF9ACD32 => "YellowGreen",
+                0xFFA0522D => "Sienna",
+                0xFFA52A2A => "Brown",
+                0xFFA9A9A9 => "DarkGray",
+                0xFFADD8E6 => "LightBlue",
+                0xFFADFF2F => "GreenYellow",
+                0xFFAFEEEE => "PaleTurquoise",
+                0xFFB0C4DE => "LightSteelBlue",
+                0xFFB0E0E6 => "PowderBlue",
+                0xFFB22222 => "Firebrick",
+                0xFFB8860B => "DarkGoldenrod",
+                0xFFBA55D3 => "MediumOrchid",
+                0xFFBC8F8F => "RosyBrown",
+                0xFFBDB76B => "DarkKhaki",
+                0xFFC0C0C0 => "Silver",
+                0xFFC71585 => "MediumVioletRed",
+                0xFFCD5C5C => "IndianRed",
+                0xFFCD853F => "Peru",
+                0xFFD2691E => "Chocolate",
+                0xFFD2B48C => "Tan",
+                0xFFD3D3D3 => "LightGray",
+                0xFFD8BFD8 => "Thistle",
+                0xFFDA70D6 => "Orchid",
+                0xFFDAA520 => "Goldenrod",
+                0xFFDB7093 => "PaleVioletRed",
+                0xFFDC143C => "Crimson",
+                0xFFDCDCDC => "Gainsboro",
+                0xFFDDA0DD => "Plum",
+                0xFFDEB887 => "BurlyWood",
+                0xFFE0FFFF => "LightCyan",
+                0xFFE6E6FA => "Lavender",
+                0xFFE9967A => "DarkSalmon",
+                0xFFEE82EE => "Violet",
+                0xFFEEE8AA => "PaleGoldenrod",
+                0xFFF08080 => "LightCoral",
+                0xFFF0E68C => "Khaki",
+                0xFFF0F8FF => "AliceBlue",
+                0xFFF0FFF0 => "Honeydew",
+                0xFFF0FFFF => "Azure",
+                0xFFF4A460 => "SandyBrown",
+                0xFFF5DEB3 => "Wheat",
+                0xFFF5F5DC => "Beige",
+                0xFFF5F5F5 => "WhiteSmoke",
+                0xFFF5FFFA => "MintCream",
+                0xFFF8F8FF => "GhostWhite",
+                0xFFFA8072 => "Salmon",
+                0xFFFAEBD7 => "AntiqueWhite",
+                0xFFFAF0E6 => "Linen",
+                0xFFFAFAD2 => "LightGoldenrodYellow",
+                0xFFFDF5E6 => "OldLace",
+                0xFFFF0000 => "Red",
 
                 // Fuchsia and Magenta have the same value.
                 //case 0xFFFF00FF: return "Fuchsia";
-                case 0xFFFF00FF: return "Magenta";
-                case 0xFFFF1493: return "DeepPink";
-                case 0xFFFF4500: return "OrangeRed";
-                case 0xFFFF6347: return "Tomato";
-                case 0xFFFF69B4: return "HotPink";
-                case 0xFFFF7F50: return "Coral";
-                case 0xFFFF8C00: return "DarkOrange";
-                case 0xFFFFA07A: return "LightSalmon";
-                case 0xFFFFA500: return "Orange";
-                case 0xFFFFB6C1: return "LightPink";
-                case 0xFFFFC0CB: return "Pink";
-                case 0xFFFFD700: return "Gold";
-                case 0xFFFFDAB9: return "PeachPuff";
-                case 0xFFFFDEAD: return "NavajoWhite";
-                case 0xFFFFE4B5: return "Moccasin";
-                case 0xFFFFE4C4: return "Bisque";
-                case 0xFFFFE4E1: return "MistyRose";
-                case 0xFFFFEBCD: return "BlanchedAlmond";
-                case 0xFFFFEFD5: return "PapayaWhip";
-                case 0xFFFFF0F5: return "LavenderBlush";
-                case 0xFFFFF5EE: return "SeaShell";
-                case 0xFFFFF8DC: return "Cornsilk";
-                case 0xFFFFFACD: return "LemonChiffon";
-                case 0xFFFFFAF0: return "FloralWhite";
-                case 0xFFFFFAFA: return "Snow";
-                case 0xFFFFFF00: return "Yellow";
-                case 0xFFFFFFE0: return "LightYellow";
-                case 0xFFFFFFF0: return "Ivory";
-                case 0xFFFFFFFF: return "White";
-                default:
-                    return null;
-            }
-        }
+                0xFFFF00FF => "Magenta",
+                0xFFFF1493 => "DeepPink",
+                0xFFFF4500 => "OrangeRed",
+                0xFFFF6347 => "Tomato",
+                0xFFFF69B4 => "HotPink",
+                0xFFFF7F50 => "Coral",
+                0xFFFF8C00 => "DarkOrange",
+                0xFFFFA07A => "LightSalmon",
+                0xFFFFA500 => "Orange",
+                0xFFFFB6C1 => "LightPink",
+                0xFFFFC0CB => "Pink",
+                0xFFFFD700 => "Gold",
+                0xFFFFDAB9 => "PeachPuff",
+                0xFFFFDEAD => "NavajoWhite",
+                0xFFFFE4B5 => "Moccasin",
+                0xFFFFE4C4 => "Bisque",
+                0xFFFFE4E1 => "MistyRose",
+                0xFFFFEBCD => "BlanchedAlmond",
+                0xFFFFEFD5 => "PapayaWhip",
+                0xFFFFF0F5 => "LavenderBlush",
+                0xFFFFF5EE => "SeaShell",
+                0xFFFFF8DC => "Cornsilk",
+                0xFFFFFACD => "LemonChiffon",
+                0xFFFFFAF0 => "FloralWhite",
+                0xFFFFFAFA => "Snow",
+                0xFFFFFF00 => "Yellow",
+                0xFFFFFFE0 => "LightYellow",
+                0xFFFFFFF0 => "Ivory",
+                0xFFFFFFFF => "White",
+                _ => null,
+            };
 
         static string ToHex(byte value) => value.ToString("X2");
 

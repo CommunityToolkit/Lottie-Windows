@@ -182,17 +182,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 return b;
             }
 
-            switch (a.StrokeKind)
+            return a.StrokeKind switch
             {
-                case ShapeStroke.ShapeStrokeKind.SolidColor:
-                    return ComposeSolidColorStrokes((SolidColorStroke)a, (SolidColorStroke)b);
-                case ShapeStroke.ShapeStrokeKind.LinearGradient:
-                    return ComposeLinearGradientStrokes((LinearGradientStroke)a, (LinearGradientStroke)b);
-                case ShapeStroke.ShapeStrokeKind.RadialGradient:
-                    return ComposeRadialGradientStrokes((RadialGradientStroke)a, (RadialGradientStroke)b);
-                default:
-                    throw new InvalidOperationException();
-            }
+                ShapeStroke.ShapeStrokeKind.SolidColor => ComposeSolidColorStrokes((SolidColorStroke)a, (SolidColorStroke)b),
+                ShapeStroke.ShapeStrokeKind.LinearGradient => ComposeLinearGradientStrokes((LinearGradientStroke)a, (LinearGradientStroke)b),
+                ShapeStroke.ShapeStrokeKind.RadialGradient => ComposeRadialGradientStrokes((RadialGradientStroke)a, (RadialGradientStroke)b),
+                _ => throw new InvalidOperationException(),
+            };
         }
 
         LinearGradientStroke ComposeLinearGradientStrokes(LinearGradientStroke a, LinearGradientStroke b)

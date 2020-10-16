@@ -30,7 +30,7 @@ static class Glob
 
             // Get the path of the directory where the file is, relative to the
             // non-wildcarded part of the input.
-            var relativePath = filePath.Substring(directory.Length, filePath.Length - fileName.Length - directory.Length);
+            var relativePath = filePath[directory.Length..^fileName.Length];
 
             yield return (filePath, relativePath);
         }
@@ -141,7 +141,7 @@ static class Glob
             // There is more than one segment.
             // Assume no wildcards in any directory segments.
             directoryPath = pathRoot + string.Join(Path.DirectorySeparatorChar, segments.Take(segments.Length - 1));
-            pattern = new[] { segments[segments.Length - 1] };
+            pattern = new[] { segments[^1] };
 
             // There's a directory separator. The directory path is all the segments
             // up to the first segment that has a wildcard.

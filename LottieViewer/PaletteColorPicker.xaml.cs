@@ -180,7 +180,7 @@ namespace LottieViewer
 
             // Search up the tree for an object with a data context, and returns
             // the data context.
-            object? GetDataContext(DependencyObject obj)
+            static object? GetDataContext(DependencyObject obj)
             {
                 if (obj is FrameworkElement fe && fe.DataContext != null)
                 {

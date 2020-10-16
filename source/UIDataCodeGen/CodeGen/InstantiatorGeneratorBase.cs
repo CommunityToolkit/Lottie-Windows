@@ -704,16 +704,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             }
         }
 
-        string String(GenericDataObject value)
-        {
-            switch (value.Type)
+        string String(GenericDataObject value) =>
+            value.Type switch
             {
-                case GenericDataObjectType.Bool: return Bool(((GenericDataBool)value).Value);
-                case GenericDataObjectType.Number: return _s.Double(((GenericDataNumber)value).Value);
-                case GenericDataObjectType.String: return _s.String(((GenericDataString)value).Value);
-                default: throw new InvalidOperationException();
-            }
-        }
+                GenericDataObjectType.Bool => Bool(((GenericDataBool)value).Value),
+                GenericDataObjectType.Number => _s.Double(((GenericDataNumber)value).Value),
+                GenericDataObjectType.String => _s.String(((GenericDataString)value).Value),
+                _ => throw new InvalidOperationException(),
+            };
 
         string Bool(bool value) => value ? "true" : "false";
 
@@ -1682,77 +1680,45 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             {
                 // Uncomment to see the order of creation.
                 //builder.WriteComment($"Traversal order: {node.Position}");
-                switch (obj.Type)
+                return obj.Type switch
                 {
-                    case CompositionObjectType.AnimationController:
-                        // Do not generate code for animation controllers. It is done inline in the CompositionObject initialization.
-                        throw new InvalidOperationException();
-                    case CompositionObjectType.BooleanKeyFrameAnimation:
-                        return GenerateBooleanKeyFrameAnimationFactory(builder, (BooleanKeyFrameAnimation)obj, node);
-                    case CompositionObjectType.ColorKeyFrameAnimation:
-                        return GenerateColorKeyFrameAnimationFactory(builder, (ColorKeyFrameAnimation)obj, node);
-                    case CompositionObjectType.CompositionColorBrush:
-                        return GenerateCompositionColorBrushFactory(builder, (CompositionColorBrush)obj, node);
-                    case CompositionObjectType.CompositionColorGradientStop:
-                        return GenerateCompositionColorGradientStopFactory(builder, (CompositionColorGradientStop)obj, node);
-                    case CompositionObjectType.CompositionContainerShape:
-                        return GenerateContainerShapeFactory(builder, (CompositionContainerShape)obj, node);
-                    case CompositionObjectType.CompositionEffectBrush:
-                        return GenerateCompositionEffectBrushFactory(builder, (CompositionEffectBrush)obj, node);
-                    case CompositionObjectType.CompositionEllipseGeometry:
-                        return GenerateCompositionEllipseGeometryFactory(builder, (CompositionEllipseGeometry)obj, node);
-                    case CompositionObjectType.CompositionGeometricClip:
-                        return GenerateCompositionGeometricClipFactory(builder, (CompositionGeometricClip)obj, node);
-                    case CompositionObjectType.CompositionLinearGradientBrush:
-                        return GenerateCompositionLinearGradientBrushFactory(builder, (CompositionLinearGradientBrush)obj, node);
-                    case CompositionObjectType.CompositionPathGeometry:
-                        return GenerateCompositionPathGeometryFactory(builder, (CompositionPathGeometry)obj, node);
-                    case CompositionObjectType.CompositionPropertySet:
-                        // Do not generate code for property sets. It is done inline in the CompositionObject initialization.
-                        return true;
-                    case CompositionObjectType.CompositionRadialGradientBrush:
-                        return GenerateCompositionRadialGradientBrushFactory(builder, (CompositionRadialGradientBrush)obj, node);
-                    case CompositionObjectType.CompositionRectangleGeometry:
-                        return GenerateCompositionRectangleGeometryFactory(builder, (CompositionRectangleGeometry)obj, node);
-                    case CompositionObjectType.CompositionRoundedRectangleGeometry:
-                        return GenerateCompositionRoundedRectangleGeometryFactory(builder, (CompositionRoundedRectangleGeometry)obj, node);
-                    case CompositionObjectType.CompositionSpriteShape:
-                        return GenerateSpriteShapeFactory(builder, (CompositionSpriteShape)obj, node);
-                    case CompositionObjectType.CompositionSurfaceBrush:
-                        return GenerateCompositionSurfaceBrushFactory(builder, (CompositionSurfaceBrush)obj, node);
-                    case CompositionObjectType.CompositionViewBox:
-                        return GenerateCompositionViewBoxFactory(builder, (CompositionViewBox)obj, node);
-                    case CompositionObjectType.CompositionVisualSurface:
-                        return GenerateCompositionVisualSurfaceFactory(builder, (CompositionVisualSurface)obj, node);
-                    case CompositionObjectType.ContainerVisual:
-                        return GenerateContainerVisualFactory(builder, (ContainerVisual)obj, node);
-                    case CompositionObjectType.CubicBezierEasingFunction:
-                        return GenerateCubicBezierEasingFunctionFactory(builder, (CubicBezierEasingFunction)obj, node);
-                    case CompositionObjectType.ExpressionAnimation:
-                        return GenerateExpressionAnimationFactory(builder, (ExpressionAnimation)obj, node);
-                    case CompositionObjectType.InsetClip:
-                        return GenerateInsetClipFactory(builder, (InsetClip)obj, node);
-                    case CompositionObjectType.LinearEasingFunction:
-                        return GenerateLinearEasingFunctionFactory(builder, (LinearEasingFunction)obj, node);
-                    case CompositionObjectType.PathKeyFrameAnimation:
-                        return GeneratePathKeyFrameAnimationFactory(builder, (PathKeyFrameAnimation)obj, node);
-                    case CompositionObjectType.ScalarKeyFrameAnimation:
-                        return GenerateScalarKeyFrameAnimationFactory(builder, (ScalarKeyFrameAnimation)obj, node);
-                    case CompositionObjectType.ShapeVisual:
-                        return GenerateShapeVisualFactory(builder, (ShapeVisual)obj, node);
-                    case CompositionObjectType.SpriteVisual:
-                        return GenerateSpriteVisualFactory(builder, (SpriteVisual)obj, node);
-                    case CompositionObjectType.StepEasingFunction:
-                        return GenerateStepEasingFunctionFactory(builder, (StepEasingFunction)obj, node);
-                    case CompositionObjectType.Vector2KeyFrameAnimation:
-                        return GenerateVector2KeyFrameAnimationFactory(builder, (Vector2KeyFrameAnimation)obj, node);
-                    case CompositionObjectType.Vector3KeyFrameAnimation:
-                        return GenerateVector3KeyFrameAnimationFactory(builder, (Vector3KeyFrameAnimation)obj, node);
-                    case CompositionObjectType.Vector4KeyFrameAnimation:
-                        return GenerateVector4KeyFrameAnimationFactory(builder, (Vector4KeyFrameAnimation)obj, node);
-                    default:
-                        throw new InvalidOperationException();
-                }
+                    // Do not generate code for animation controllers. It is done inline in the CompositionObject initialization.
+                    CompositionObjectType.AnimationController => throw new InvalidOperationException(),
+                    CompositionObjectType.BooleanKeyFrameAnimation => GenerateBooleanKeyFrameAnimationFactory(builder, (BooleanKeyFrameAnimation)obj, node),
+                    CompositionObjectType.ColorKeyFrameAnimation => GenerateColorKeyFrameAnimationFactory(builder, (ColorKeyFrameAnimation)obj, node),
+                    CompositionObjectType.CompositionColorBrush => GenerateCompositionColorBrushFactory(builder, (CompositionColorBrush)obj, node),
+                    CompositionObjectType.CompositionColorGradientStop => GenerateCompositionColorGradientStopFactory(builder, (CompositionColorGradientStop)obj, node),
+                    CompositionObjectType.CompositionContainerShape => GenerateContainerShapeFactory(builder, (CompositionContainerShape)obj, node),
+                    CompositionObjectType.CompositionEffectBrush => GenerateCompositionEffectBrushFactory(builder, (CompositionEffectBrush)obj, node),
+                    CompositionObjectType.CompositionEllipseGeometry => GenerateCompositionEllipseGeometryFactory(builder, (CompositionEllipseGeometry)obj, node),
+                    CompositionObjectType.CompositionGeometricClip => GenerateCompositionGeometricClipFactory(builder, (CompositionGeometricClip)obj, node),
+                    CompositionObjectType.CompositionLinearGradientBrush => GenerateCompositionLinearGradientBrushFactory(builder, (CompositionLinearGradientBrush)obj, node),
+                    CompositionObjectType.CompositionPathGeometry => GenerateCompositionPathGeometryFactory(builder, (CompositionPathGeometry)obj, node),
+
+                    // Do not generate code for property sets. It is done inline in the CompositionObject initialization.
+                    CompositionObjectType.CompositionPropertySet => true,
+                    CompositionObjectType.CompositionRadialGradientBrush => GenerateCompositionRadialGradientBrushFactory(builder, (CompositionRadialGradientBrush)obj, node),
+                    CompositionObjectType.CompositionRectangleGeometry => GenerateCompositionRectangleGeometryFactory(builder, (CompositionRectangleGeometry)obj, node),
+                    CompositionObjectType.CompositionRoundedRectangleGeometry => GenerateCompositionRoundedRectangleGeometryFactory(builder, (CompositionRoundedRectangleGeometry)obj, node),
+                    CompositionObjectType.CompositionSpriteShape => GenerateSpriteShapeFactory(builder, (CompositionSpriteShape)obj, node),
+                    CompositionObjectType.CompositionSurfaceBrush => GenerateCompositionSurfaceBrushFactory(builder, (CompositionSurfaceBrush)obj, node),
+                    CompositionObjectType.CompositionViewBox => GenerateCompositionViewBoxFactory(builder, (CompositionViewBox)obj, node),
+                    CompositionObjectType.CompositionVisualSurface => GenerateCompositionVisualSurfaceFactory(builder, (CompositionVisualSurface)obj, node),
+                    CompositionObjectType.ContainerVisual => GenerateContainerVisualFactory(builder, (ContainerVisual)obj, node),
+                    CompositionObjectType.CubicBezierEasingFunction => GenerateCubicBezierEasingFunctionFactory(builder, (CubicBezierEasingFunction)obj, node),
+                    CompositionObjectType.ExpressionAnimation => GenerateExpressionAnimationFactory(builder, (ExpressionAnimation)obj, node),
+                    CompositionObjectType.InsetClip => GenerateInsetClipFactory(builder, (InsetClip)obj, node),
+                    CompositionObjectType.LinearEasingFunction => GenerateLinearEasingFunctionFactory(builder, (LinearEasingFunction)obj, node),
+                    CompositionObjectType.PathKeyFrameAnimation => GeneratePathKeyFrameAnimationFactory(builder, (PathKeyFrameAnimation)obj, node),
+                    CompositionObjectType.ScalarKeyFrameAnimation => GenerateScalarKeyFrameAnimationFactory(builder, (ScalarKeyFrameAnimation)obj, node),
+                    CompositionObjectType.ShapeVisual => GenerateShapeVisualFactory(builder, (ShapeVisual)obj, node),
+                    CompositionObjectType.SpriteVisual => GenerateSpriteVisualFactory(builder, (SpriteVisual)obj, node),
+                    CompositionObjectType.StepEasingFunction => GenerateStepEasingFunctionFactory(builder, (StepEasingFunction)obj, node),
+                    CompositionObjectType.Vector2KeyFrameAnimation => GenerateVector2KeyFrameAnimationFactory(builder, (Vector2KeyFrameAnimation)obj, node),
+                    CompositionObjectType.Vector3KeyFrameAnimation => GenerateVector3KeyFrameAnimationFactory(builder, (Vector3KeyFrameAnimation)obj, node),
+                    CompositionObjectType.Vector4KeyFrameAnimation => GenerateVector4KeyFrameAnimationFactory(builder, (Vector4KeyFrameAnimation)obj, node),
+                    _ => throw new InvalidOperationException(),
+                };
             }
 
             bool GenerateInsetClipFactory(CodeBuilder builder, InsetClip obj, ObjectData node)
@@ -2927,17 +2893,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 WriteObjectFactoryStart(builder, node);
 
                 var effect = obj.GetEffect();
-
-                string effectCreationString;
-                switch (effect.Type)
+                var effectCreationString = effect.Type switch
                 {
-                    case Mgce.GraphicsEffectType.CompositeEffect:
-                        effectCreationString = _owner.WriteCompositeEffectFactory(builder, (Mgce.CompositeEffect)effect);
-                        break;
-                    default:
-                        // Unsupported GraphicsEffectType.
-                        throw new InvalidOperationException();
-                }
+                    Mgce.GraphicsEffectType.CompositeEffect => _owner.WriteCompositeEffectFactory(builder, (Mgce.CompositeEffect)effect),
+
+                    // Unsupported GraphicsEffectType.
+                    _ => throw new InvalidOperationException(),
+                };
 
                 builder.WriteLine($"{ConstVar} effectFactory = _c{Deref}CreateEffectFactory({effectCreationString});");
                 WriteCreateAssignment(builder, node, $"effectFactory{Deref}CreateBrush()");

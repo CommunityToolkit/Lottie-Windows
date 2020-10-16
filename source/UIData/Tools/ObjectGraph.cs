@@ -313,23 +313,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 _canvasGeometryReferences.Add(obj, node);
             }
 
-            switch (obj.Type)
+            return obj.Type switch
             {
-                case CanvasGeometry.GeometryType.Combination:
-                    return VisitCombination((CanvasGeometry.Combination)obj, node);
-                case CanvasGeometry.GeometryType.Ellipse:
-                    return VisitEllipse((CanvasGeometry.Ellipse)obj, node);
-                case CanvasGeometry.GeometryType.Group:
-                    return VisitGroup((CanvasGeometry.Group)obj, node);
-                case CanvasGeometry.GeometryType.Path:
-                    return VisitPath((CanvasGeometry.Path)obj, node);
-                case CanvasGeometry.GeometryType.RoundedRectangle:
-                    return VisitRoundedRectangle((CanvasGeometry.RoundedRectangle)obj, node);
-                case CanvasGeometry.GeometryType.TransformedGeometry:
-                    return VisitTransformedGeometry((CanvasGeometry.TransformedGeometry)obj, node);
-                default:
-                    throw new InvalidOperationException();
-            }
+                CanvasGeometry.GeometryType.Combination => VisitCombination((CanvasGeometry.Combination)obj, node),
+                CanvasGeometry.GeometryType.Ellipse => VisitEllipse((CanvasGeometry.Ellipse)obj, node),
+                CanvasGeometry.GeometryType.Group => VisitGroup((CanvasGeometry.Group)obj, node),
+                CanvasGeometry.GeometryType.Path => VisitPath((CanvasGeometry.Path)obj, node),
+                CanvasGeometry.GeometryType.RoundedRectangle => VisitRoundedRectangle((CanvasGeometry.RoundedRectangle)obj, node),
+                CanvasGeometry.GeometryType.TransformedGeometry => VisitTransformedGeometry((CanvasGeometry.TransformedGeometry)obj, node),
+                _ => throw new InvalidOperationException(),
+            };
         }
 
         bool Reference(T from, LoadedImageSurface obj)

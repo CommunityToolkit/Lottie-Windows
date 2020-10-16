@@ -13,7 +13,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
     {
         ref struct Reader
         {
-            LottieCompositionReader _owner;
+            readonly LottieCompositionReader _owner;
             Utf8JsonReader _jsonReader;
 
             internal Reader(LottieCompositionReader owner, ReadOnlySpan<byte> jsonText)
@@ -64,20 +64,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     ? new LottieJsonDocument(_owner, document)
                     : throw Throw("Failed to parse value.");
 
-            internal bool ParseBool()
-            {
-                switch (_jsonReader.TokenType)
+            internal bool ParseBool() =>
+                _jsonReader.TokenType switch
                 {
-                    case JsonTokenType.Number:
-                        return _jsonReader.GetDouble() != 0;
-                    case JsonTokenType.True:
-                        return true;
-                    case JsonTokenType.False:
-                        return false;
-                    default:
-                        throw ThrowUnexpectedToken("bool");
-                }
-            }
+                    JsonTokenType.Number => _jsonReader.GetDouble() != 0,
+                    JsonTokenType.True => true,
+                    JsonTokenType.False => false,
+                    _ => throw ThrowUnexpectedToken("bool"),
+                };
 
             internal double ParseDouble()
             {

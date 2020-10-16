@@ -38,29 +38,16 @@ sealed class Reporter
     // Helper for writing info lines to the info stream.
     internal void WriteInfo(InfoType type, string infoMessage)
     {
-        ConsoleColor foreground, background = ConsoleColor.Black;
-
-        switch (type)
+        ConsoleColor background = ConsoleColor.Black;
+        var foreground = type switch
         {
-            case InfoType.Default:
-                foreground = ConsoleColor.Gray;
-                break;
-            case InfoType.Advice:
-                foreground = ConsoleColor.Green;
-                break;
-            case InfoType.FilePath:
-                foreground = ConsoleColor.Cyan;
-                break;
-            case InfoType.Issue:
-                foreground = ConsoleColor.Yellow;
-                break;
-            case InfoType.Signon:
-                foreground = ConsoleColor.White;
-                break;
-            default:
-                throw new ArgumentException();
-        }
-
+            InfoType.Default => ConsoleColor.Gray,
+            InfoType.Advice => ConsoleColor.Green,
+            InfoType.FilePath => ConsoleColor.Cyan,
+            InfoType.Issue => ConsoleColor.Yellow,
+            InfoType.Signon => ConsoleColor.White,
+            _ => throw new ArgumentException(),
+        };
         WriteInfo(infoMessage, foreground, background);
     }
 
