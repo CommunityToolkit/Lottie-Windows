@@ -1144,7 +1144,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
         }
 
         /// <inheritdoc/>
-            // Called by the base class to write the end of the AnimatedVisual class.
+        // Called by the base class to write the end of the AnimatedVisual class.
         protected override void WriteAnimatedVisualEnd(
             CodeBuilder builder,
             IAnimatedVisualInfo info)
