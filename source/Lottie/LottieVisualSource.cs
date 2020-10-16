@@ -124,6 +124,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         /// <param name="sourceUri">A URI that refers to a JSON Lottie file.</param>
         /// <returns>An <see cref="IAsyncAction"/> that completes when the load completes or fails.</returns>
         [DefaultOverload]
+        [Overload("SetSourceUriAsync")]
         public IAsyncAction SetSourceAsync(Uri sourceUri)
         {
             _uriSource = sourceUri;
