@@ -13,6 +13,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
     /// Information about a marker. Markers refer to points in time or segments of time in
     /// an animation.
     /// </summary>
+#if PUBLIC_UIDataCodeGen
+    public
+#endif
     sealed class MarkerInfo
     {
         readonly Marker _marker;
