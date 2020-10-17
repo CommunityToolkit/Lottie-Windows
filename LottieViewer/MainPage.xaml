@@ -79,13 +79,17 @@
             <Grid.Resources>
                 <x:Double x:Key="ControlPanelWidth">355</x:Double>
             </Grid.Resources>
-
             <!--  The stage. This is where the Lotties are displayed.  -->
             <local:Stage x:Name="_stage" ArtboardColor="{x:Bind ArtboardBrush.Color, Mode=OneWay}" />
 
             <!-- Control panel. This shows to the right of the stage. Only one panel is allowed to be
                  open at a time. This is ensured through code behind. -->
             <Grid x:Name="ControlPanel"  Grid.Column="1" Background="{StaticResource DropTargetBrush}">
+                <Grid.ChildrenTransitions>
+                    <TransitionCollection>
+                        <PaneThemeTransition Edge="Right"/>
+                    </TransitionCollection>
+                </Grid.ChildrenTransitions>
                 <Grid.Resources>
                     <Style TargetType="TextBlock">
                         <Setter Property="Foreground" Value="White" />
@@ -93,9 +97,10 @@
                 </Grid.Resources>
 
                 <!-- Color palette panel -->
-                <ScrollViewer x:Name="ColorPanel"
-                              Visibility="{x:Bind PaletteButton.IsChecked, Converter={StaticResource VisibilityConverter}, Mode=OneWay}"
-                              Width="{StaticResource ControlPanelWidth}">
+                <ScrollViewer 
+                    x:Name="ColorPanel"
+                    Width="{StaticResource ControlPanelWidth}">
+
                     <local:PaletteColorPicker 
                         Height="{x:Bind ColorPanel.ViewportHeight, Mode=OneWay}"
                         MinHeight="500"
@@ -107,8 +112,7 @@
                 <!-- Info panel -->
                 <ScrollViewer
                     x:Name="InfoPanel"
-                    Width="{StaticResource ControlPanelWidth}"
-                    Visibility="{x:Bind InfoButton.IsChecked, Converter={StaticResource VisibilityConverter}, Mode=OneWay}">
+                    Width="{StaticResource ControlPanelWidth}">
 
                     <StackPanel Padding="20,10,20,0">
                         <!-- Issues. Collapsed if there are no issues. -->
@@ -223,7 +227,6 @@
                         </Grid>
                     </StackPanel>
                 </ScrollViewer>
-
 
             </Grid>
         </Grid>
