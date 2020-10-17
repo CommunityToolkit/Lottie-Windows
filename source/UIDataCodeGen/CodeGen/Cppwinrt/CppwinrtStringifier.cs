@@ -49,7 +49,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
 
         public override string Double(double value) =>
             Math.Floor(value) == value
-                ? value.ToString("0.0", CultureInfo.InvariantCulture) + "d"
+                ? value.ToString("0.0", CultureInfo.InvariantCulture)
                 : value.ToString("G15", CultureInfo.InvariantCulture);
 
         public override string FilledRegionDetermination(Mgcg.CanvasFilledRegionDetermination value) =>

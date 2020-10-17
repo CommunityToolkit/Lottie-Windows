@@ -5,11 +5,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Numerics;
 using System.Text;
-using System.Threading.Tasks.Dataflow;
 using Microsoft.Toolkit.Uwp.UI.Lottie.CompMetadata;
 using Microsoft.Toolkit.Uwp.UI.Lottie.GenericData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Tables;
@@ -60,7 +58,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         readonly TypeName _interfaceType;
         readonly IReadOnlyList<TypeName> _additionalInterfaces;
         readonly bool _isInterfaceCustom;
-        readonly IReadOnlyList<MarkerInfo> _lottieMarkers;
+        readonly IReadOnlyList<MarkerInfo> _markers;
         readonly IReadOnlyList<NamedConstant> _internalConstants;
 
         AnimatedVisualGenerator? _currentAnimatedVisualGenerator;
@@ -85,7 +83,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             _interfaceType = new TypeName(configuration.InterfaceType);
             _isInterfaceCustom = _interfaceType.NormalizedQualifiedName != "Microsoft.UI.Xaml.Controls.IAnimatedVisual";
             _additionalInterfaces = configuration.AdditionalInterfaces.Select(n => new TypeName(n)).ToArray();
-            _lottieMarkers = MarkerInfo.GetMarkerInfos(_sourceMetadata.LottieMetadata.FilteredMarkers).ToArray();
+            _markers = MarkerInfo.GetMarkerInfos(_sourceMetadata.LottieMetadata.FilteredMarkers).ToArray();
             _internalConstants = GetInternalConstants().ToArray();
 
             var graphs = configuration.ObjectGraphs;
@@ -397,7 +395,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 _compositionDuration.Ticks);
 
             // Get the markers.
-            foreach (var marker in _lottieMarkers)
+            foreach (var marker in _markers)
             {
                 yield return new NamedConstant(marker.StartConstant, $"Marker: {marker.Name}.", ConstantType.Float, (float)marker.StartProgress);
                 if (marker.DurationInFrames > 0)
@@ -448,9 +446,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 yield return $"Frame count: {metadata.Duration.Frames}";
                 yield return $"Duration:    {metadata.Duration.Time.TotalMilliseconds:0.0} mS";
 
-                if (_lottieMarkers.Count > 0)
+                if (_markers.Count > 0)
                 {
-                    foreach (var line in LottieMarkersMonospaceTableFormatter.GetMarkersDescriptionLines(_s, _lottieMarkers))
+                    foreach (var line in LottieMarkersMonospaceTableFormatter.GetMarkersDescriptionLines(_s, _markers))
                     {
                         yield return line;
                     }
@@ -759,6 +757,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         bool IAnimatedVisualSourceInfo.UsesCompositeEffect => _animatedVisualGenerators.Any(f => f.UsesCompositeEffect);
 
+        IReadOnlyList<MarkerInfo> IAnimatedVisualSourceInfo.Markers => _markers;
+
         IReadOnlyList<NamedConstant> IAnimatedVisualSourceInfo.InternalConstants => _internalConstants;
 
         IReadOnlyList<LoadedImageSurfaceInfo> IAnimatedVisualSourceInfo.LoadedImageSurfaces => _loadedImageSurfaceInfos;
@@ -943,7 +943,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         static IEnumerable<ObjectData> OrderByTypeThenName(IEnumerable<ObjectData> nodes) =>
             nodes.OrderBy(n => n.TypeName).ThenBy(n => n.Name, AlphanumericStringComparer.Instance);
 
-        static string PropertySetValueTypeName(PropertySetValueType value)
+        private protected static string PropertySetValueTypeName(PropertySetValueType value)
             => value switch
             {
                 PropertySetValueType.Color => "Color",

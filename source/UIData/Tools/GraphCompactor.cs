@@ -1135,6 +1135,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 // If childCount is >1, insert into the parent.
                 var index = parent.Children.IndexOf(container);
 
+                if (index == -1)
+                {
+                    // Container has already been removed.
+                    continue;
+                }
+
                 var children = container.Children;
 
                 // Get the children from the container.
