@@ -38,11 +38,6 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
-  <ItemGroup>
-    <!-- Analyzer cop suppressions. -->
-    <Compile Include="$(MSBuildThisFileDirectory)GlobalSuppressions.cs"/>
-  </ItemGroup>
-
   <PropertyGroup>
     <SignAssembly Condition="'$(SignAssembly)' == '' and '$(IsUwpProject)' != 'true'" >true</SignAssembly>
     <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)toolkit.snk</AssemblyOriginatorKeyFile>
