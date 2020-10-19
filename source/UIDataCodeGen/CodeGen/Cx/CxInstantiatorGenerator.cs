@@ -155,6 +155,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
             WriteMarkersPropertyDecl(builder.Public);
 
             builder.Public.WriteLine();
+            WriteFrameToProgressDecl(builder.Public);
+
+            builder.Public.WriteLine();
             WriteSetColorPropertyDecl(builder.Public);
 
             builder.Public.WriteLine();
@@ -481,14 +484,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
             builder.WriteLine($"#include \"{_headerFileName}\"");
 
             // floatY, floatYxZ
-            builder.WriteLine("#include \"WindowsNumerics.h\"");
+            builder.WriteLine("#include <WindowsNumerics.h>");
 
             if (SourceInfo.UsesCanvas ||
                 SourceInfo.UsesCanvasEffects ||
                 SourceInfo.UsesCanvasGeometry)
             {
                 // D2D
-                builder.WriteLine("#include \"d2d1.h\"");
+                builder.WriteLine("#include <d2d1.h>");
                 builder.WriteLine("#include <d2d1_1.h>");
                 builder.WriteLine("#include <d2d1helper.h>");
                 builder.WriteLine("#include <Windows.Graphics.Interop.h>");
@@ -688,9 +691,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
         /// </summary>
         void WriteFrameToProgressImpl(CodeBuilder builder)
         {
-            builder.WriteLine($"double {_s.Namespace(SourceInfo.Namespace)}::{_sourceClassName}::FrameToProgress(double frameNumber);");
+            builder.WriteLine($"double {_s.Namespace(SourceInfo.Namespace)}::{_sourceClassName}::FrameToProgress(double frameNumber)");
             builder.OpenScope();
-            builder.WriteLine($"return frameNumber / {_s.Double(SourceInfo.SourceMetadata.LottieMetadata.Duration.Frames)}");
+            builder.WriteLine($"return frameNumber / {_s.Double(SourceInfo.SourceMetadata.LottieMetadata.Duration.Frames)};");
             builder.CloseScope();
         }
 
@@ -700,9 +703,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
         void WriteMarkersPropertyDecl(CodeBuilder builder)
         {
             builder.WriteComment("Returns a map from marker names to corresponding progress values.");
-            builder.WriteLine($"property Windows::Foundation::Collections::IMapView<Platform::String^, double>");
+            builder.WriteLine($"property Windows::Foundation::Collections::IMapView<Platform::String^, double>^ Markers");
             builder.OpenScope();
-            builder.WriteLine("Windows::Foundation::Collections::IMapView<Platform::String^, double> get();");
+            builder.WriteLine("Windows::Foundation::Collections::IMapView<Platform::String^, double>^ get();");
             builder.CloseScope();
         }
 
@@ -711,10 +714,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
         /// </summary>
         void WriteMarkersPropertyImpl(CodeBuilder builder)
         {
-            builder.WriteLine($"Windows::Foundation::Collections::IMapView<String^, double> {_s.Namespace(SourceInfo.Namespace)}::{_sourceClassName}::Markers::get()");
+            builder.WriteLine($"Windows::Foundation::Collections::IMapView<String^, double>^ {_s.Namespace(SourceInfo.Namespace)}::{_sourceClassName}::Markers::get()");
             builder.OpenScope();
 
-            builder.WriteLine("return ref new Platforms::Collections::Map<String^, double>(");
+            builder.WriteLine("return (ref new Platform::Collections::Map<String^, double>(");
             builder.Indent();
             builder.OpenScope();
             foreach (var marker in SourceInfo.Markers)
@@ -724,7 +727,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
 
             builder.CloseScope();
             builder.UnIndent();
-            builder.WriteLine(").GetView();");
+            builder.WriteLine("))->GetView();");
             builder.CloseScope();
         }
 
@@ -744,7 +747,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
             WriteSetPropertyImpl(builder, PropertySetValueType.Color, "Color");
 
         void WriteSetScalarPropertyImpl(CodeBuilder builder) =>
-            WriteSetPropertyImpl(builder, PropertySetValueType.Color, "Color");
+            WriteSetPropertyImpl(builder, PropertySetValueType.Scalar, "double");
 
         void WriteSetPropertyImpl(CodeBuilder builder, PropertySetValueType propertyType, string typeName)
         {

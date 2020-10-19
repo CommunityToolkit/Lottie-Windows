@@ -51,6 +51,9 @@ namespace LottieViewer
 
             // Get notified when info about the loaded Lottie changes.
             _stage.DiagnosticsViewModel.PropertyChanged += DiagnosticsViewModel_PropertyChanged;
+
+            // Remove all of the control panel panes. They will be added back as needed.
+            ControlPanel.Children.Clear();
         }
 
         public ObservableCollection<object> PropertiesList { get; } = new ObservableCollection<object>();
@@ -325,28 +328,51 @@ namespace LottieViewer
             Clipboard.Flush();
         }
 
+        public bool IsControlPanelVisible => _controlPanelButtons.Any(b => b.IsChecked == true);
+
         // Uncheck all the other control panel buttons when one is checked.
         // This allows toggle buttons to act like radio buttons.
         void ControlPanelButtonChecked(object sender, RoutedEventArgs e)
         {
+            // Uncheck all the other buttons.
             foreach (var button in _controlPanelButtons)
             {
                 if (button != sender)
                 {
-                    button.IsChecked = false;
+                    if (button.IsChecked == true)
+                    {
+                        button.IsChecked = false;
+                    }
                 }
+            }
+
+            // Remove all the children from the control pane Grid, then add back the
+            // one that is is being shown. This is done to trigger the PaneThemeTransition
+            // so that the pane slides in and out.
+            ControlPanel.Children.Clear();
+
+            // Add back the panel corresponding to the button that is checked.
+            if (sender == InfoButton)
+            {
+                ControlPanel.Children.Add(InfoPanel);
+            }
+            else if (sender == PaletteButton)
+            {
+                ControlPanel.Children.Add(ColorPanel);
             }
 
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsControlPanelVisible)));
         }
-
-        public bool IsControlPanelVisible => _controlPanelButtons.Any(b => b.IsChecked == true);
 
         // When one of the control panel buttons is unchecked, if all the buttons
         // are now unpressed, remove the filler from the play/stop control bar so that
         // the scrubber takes up the whole area.
         void ControlPanelButtonUnchecked(object sender, RoutedEventArgs e)
         {
+            // Remove all the children from the control pane Grid. This is done to
+            // trigger the PaneThemeTransition so that the pane slides in and out.
+            ControlPanel.Children.Clear();
+
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsControlPanelVisible)));
         }
 
