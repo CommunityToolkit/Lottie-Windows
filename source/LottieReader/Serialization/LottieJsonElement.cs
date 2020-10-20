@@ -71,17 +71,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     case JsonValueKind.Array:
                         {
                             var array = AsArray()!.Value;
-                            switch (array.Count)
+                            return array.Count switch
                             {
-                                case 0:
-                                    return null;
-                                case 1:
-                                    return array[0].AsDouble();
-                                default:
-                                    // Some Lottie files have multiple values in arrays that should only have one. Just
-                                    // take the first value.
-                                    return array[0].AsDouble();
-                            }
+                                0 => null,
+                                1 => array[0].AsDouble(),
+
+                                // Some Lottie files have multiple values in arrays that should only have one. Just
+                                // take the first value.
+                                _ => array[0].AsDouble(),
+                            };
                         }
 
                     default:
@@ -106,13 +104,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
             internal string? AsString()
             {
-                switch (_wrapped.ValueKind)
+                return _wrapped.ValueKind switch
                 {
-                    case JsonValueKind.String:
-                        return _wrapped.GetString();
-                    default:
-                        return null;
-                }
+                    JsonValueKind.String => _wrapped.GetString(),
+                    _ => null,
+                };
             }
 
             internal GenericDataObject? ToGenericDataObject()

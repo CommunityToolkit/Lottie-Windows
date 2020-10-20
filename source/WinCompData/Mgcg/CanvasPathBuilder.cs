@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Numerics;
@@ -85,19 +87,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg
                     return false;
                 }
 
-                switch (Type)
+                return Type switch
                 {
-                    case CommandType.BeginFigure:
-                        return ((BeginFigure)this).Equals((BeginFigure)other);
-                    case CommandType.EndFigure:
-                        return ((EndFigure)this).Equals((EndFigure)other);
-                    case CommandType.AddCubicBezier:
-                        return ((AddCubicBezier)this).Equals((AddCubicBezier)other);
-                    case CommandType.AddLine:
-                        return ((AddLine)this).Equals((AddLine)other);
-                    default:
-                        throw new InvalidOperationException();
-                }
+                    CommandType.BeginFigure => ((BeginFigure)this).Equals((BeginFigure)other),
+                    CommandType.EndFigure => ((EndFigure)this).Equals((EndFigure)other),
+                    CommandType.AddCubicBezier => ((AddCubicBezier)this).Equals((AddCubicBezier)other),
+                    CommandType.AddLine => ((AddLine)this).Equals((AddLine)other),
+                    _ => throw new InvalidOperationException(),
+                };
             }
 
             public sealed class BeginFigure : Command, IEquatable<BeginFigure>

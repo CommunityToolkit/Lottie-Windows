@@ -187,17 +187,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 return null;
             }
 
-            switch (easingFunction.Type)
+            return easingFunction.Type switch
             {
-                case Easing.EasingType.Linear:
-                    return CreateLinearEasingFunction();
-                case Easing.EasingType.CubicBezier:
-                    return CreateCubicBezierEasingFunction((CubicBezierEasing)easingFunction);
-                case Easing.EasingType.Hold:
-                    return CreateHoldThenStepEasingFunction();
-                default:
-                    throw new InvalidOperationException();
-            }
+                Easing.EasingType.Linear => CreateLinearEasingFunction(),
+                Easing.EasingType.CubicBezier => CreateCubicBezierEasingFunction((CubicBezierEasing)easingFunction),
+                Easing.EasingType.Hold => CreateHoldThenStepEasingFunction(),
+                _ => throw new InvalidOperationException(),
+            };
         }
 
         internal LinearEasingFunction CreateLinearEasingFunction() => _linearEasingFunction;

@@ -262,17 +262,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 return null;
             }
 
-            switch (shapeFill.FillKind)
+            return shapeFill.FillKind switch
             {
-                case ShapeFill.ShapeFillKind.SolidColor:
-                    return TranslateSolidColorFill(context, (SolidColorFill)shapeFill, opacity);
-                case ShapeFill.ShapeFillKind.LinearGradient:
-                    return TranslateLinearGradient(context, (LinearGradientFill)shapeFill, opacity);
-                case ShapeFill.ShapeFillKind.RadialGradient:
-                    return TranslateRadialGradient(context, (RadialGradientFill)shapeFill, opacity);
-                default:
-                    throw new InvalidOperationException();
-            }
+                ShapeFill.ShapeFillKind.SolidColor => TranslateSolidColorFill(context, (SolidColorFill)shapeFill, opacity),
+                ShapeFill.ShapeFillKind.LinearGradient => TranslateLinearGradient(context, (LinearGradientFill)shapeFill, opacity),
+                ShapeFill.ShapeFillKind.RadialGradient => TranslateRadialGradient(context, (RadialGradientFill)shapeFill, opacity),
+                _ => throw new InvalidOperationException(),
+            };
         }
 
         static CompositionColorBrush TranslateSolidColorStrokeColor(

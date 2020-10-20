@@ -257,15 +257,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var pathFillType = context.Fill is null ? ShapeFill.PathFillType.EvenOdd : context.Fill.FillType;
             var geometries = CreateCanvasGeometries(context, stack, pathFillType).ToArray();
 
-            switch (geometries.Length)
+            return geometries.Length switch
             {
-                case 0:
-                    return null;
-                case 1:
-                    return geometries[0];
-                default:
-                    return CombineGeometries(context, geometries, mergeMode);
-            }
+                0 => null,
+                1 => geometries[0],
+                _ => CombineGeometries(context, geometries, mergeMode),
+            };
         }
 
         // Combine all of the given geometries into a single geometry.

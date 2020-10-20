@@ -122,10 +122,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
 
         public override string VariableInitialization(string value) => $"{{ {value} }}";
 
-        public override string Vector2(Vector2 value) => $"float2{{ {Float(value.X)}, {Float(value.Y)} }}";
+        public override string Vector2(Vector2 value) => $"{{ {Float(value.X)}, {Float(value.Y)} }}";
 
-        public override string Vector3(Vector3 value) => $"float3{{ {Float(value.X)}, {Float(value.Y)}, {Float(value.Z)} }}";
+        public override string Vector3(Vector3 value) => $"{{ {Float(value.X)}, {Float(value.Y)}, {Float(value.Z)} }}";
 
-        public override string Vector4(Vector4 value) => $"float4{{ {Float(value.X)}, {Float(value.Y)}, {Float(value.Z)}, {Float(value.W)} }}";
+        public override string Vector4(Vector4 value) => $"{{ {Float(value.X)}, {Float(value.Y)}, {Float(value.Z)}, {Float(value.W)} }}";
     }
 }

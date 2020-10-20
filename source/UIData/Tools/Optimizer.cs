@@ -426,78 +426,43 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
         /// <summary>
         /// Returns a copy of the graph of composition objects starting at the given object.
         /// </summary>
-        CompositionObject GetCompositionObject(CompositionObject obj)
-        {
-            switch (obj.Type)
+        CompositionObject GetCompositionObject(CompositionObject obj) =>
+            obj.Type switch
             {
-                case CompositionObjectType.AnimationController:
-                    return GetAnimationController((AnimationController)obj);
-                case CompositionObjectType.BooleanKeyFrameAnimation:
-                    return GetBooleanKeyFrameAnimation((BooleanKeyFrameAnimation)obj);
-                case CompositionObjectType.ColorKeyFrameAnimation:
-                    return GetColorKeyFrameAnimation((ColorKeyFrameAnimation)obj);
-                case CompositionObjectType.CompositionColorBrush:
-                    return GetCompositionColorBrush((CompositionColorBrush)obj);
-                case CompositionObjectType.CompositionColorGradientStop:
-                    return GetCompositionColorGradientStop((CompositionColorGradientStop)obj);
-                case CompositionObjectType.CompositionContainerShape:
-                    return GetCompositionContainerShape((CompositionContainerShape)obj);
-                case CompositionObjectType.CompositionEffectBrush:
-                    return GetCompositionEffectBrush((CompositionEffectBrush)obj);
-                case CompositionObjectType.CompositionEllipseGeometry:
-                    return GetCompositionEllipseGeometry((CompositionEllipseGeometry)obj);
-                case CompositionObjectType.CompositionGeometricClip:
-                    return GetCompositionGeometricClip((CompositionGeometricClip)obj);
-                case CompositionObjectType.CompositionLinearGradientBrush:
-                    return GetCompositionLinearGradientBrush((CompositionLinearGradientBrush)obj);
-                case CompositionObjectType.CompositionPathGeometry:
-                    return GetCompositionPathGeometry((CompositionPathGeometry)obj);
-                case CompositionObjectType.CompositionPropertySet:
-                    return GetCompositionPropertySet((CompositionPropertySet)obj);
-                case CompositionObjectType.CompositionRadialGradientBrush:
-                    return GetCompositionRadialGradientBrush((CompositionRadialGradientBrush)obj);
-                case CompositionObjectType.CompositionRectangleGeometry:
-                    return GetCompositionRectangleGeometry((CompositionRectangleGeometry)obj);
-                case CompositionObjectType.CompositionRoundedRectangleGeometry:
-                    return GetCompositionRoundedRectangleGeometry((CompositionRoundedRectangleGeometry)obj);
-                case CompositionObjectType.CompositionSpriteShape:
-                    return GetCompositionSpriteShape((CompositionSpriteShape)obj);
-                case CompositionObjectType.CompositionSurfaceBrush:
-                    return GetCompositionSurfaceBrush((CompositionSurfaceBrush)obj);
-                case CompositionObjectType.CompositionViewBox:
-                    return GetCompositionViewBox((CompositionViewBox)obj);
-                case CompositionObjectType.CompositionVisualSurface:
-                    return GetCompositionVisualSurface((CompositionVisualSurface)obj);
-                case CompositionObjectType.ContainerVisual:
-                    return GetContainerVisual((ContainerVisual)obj);
-                case CompositionObjectType.CubicBezierEasingFunction:
-                    return GetCubicBezierEasingFunction((CubicBezierEasingFunction)obj);
-                case CompositionObjectType.ExpressionAnimation:
-                    return GetExpressionAnimation((ExpressionAnimation)obj);
-                case CompositionObjectType.InsetClip:
-                    return GetInsetClip((InsetClip)obj);
-                case CompositionObjectType.LinearEasingFunction:
-                    return GetLinearEasingFunction((LinearEasingFunction)obj);
-                case CompositionObjectType.PathKeyFrameAnimation:
-                    return GetPathKeyFrameAnimation((PathKeyFrameAnimation)obj);
-                case CompositionObjectType.ScalarKeyFrameAnimation:
-                    return GetScalarKeyFrameAnimation((ScalarKeyFrameAnimation)obj);
-                case CompositionObjectType.ShapeVisual:
-                    return GetShapeVisual((ShapeVisual)obj);
-                case CompositionObjectType.SpriteVisual:
-                    return GetSpriteVisual((SpriteVisual)obj);
-                case CompositionObjectType.StepEasingFunction:
-                    return GetStepEasingFunction((StepEasingFunction)obj);
-                case CompositionObjectType.Vector2KeyFrameAnimation:
-                    return GetVector2KeyFrameAnimation((Vector2KeyFrameAnimation)obj);
-                case CompositionObjectType.Vector3KeyFrameAnimation:
-                    return GetVector3KeyFrameAnimation((Vector3KeyFrameAnimation)obj);
-                case CompositionObjectType.Vector4KeyFrameAnimation:
-                    return GetVector4KeyFrameAnimation((Vector4KeyFrameAnimation)obj);
-                default:
-                    throw new InvalidOperationException();
-            }
-        }
+                CompositionObjectType.AnimationController => GetAnimationController((AnimationController)obj),
+                CompositionObjectType.BooleanKeyFrameAnimation => GetBooleanKeyFrameAnimation((BooleanKeyFrameAnimation)obj),
+                CompositionObjectType.ColorKeyFrameAnimation => GetColorKeyFrameAnimation((ColorKeyFrameAnimation)obj),
+                CompositionObjectType.CompositionColorBrush => GetCompositionColorBrush((CompositionColorBrush)obj),
+                CompositionObjectType.CompositionColorGradientStop => GetCompositionColorGradientStop((CompositionColorGradientStop)obj),
+                CompositionObjectType.CompositionContainerShape => GetCompositionContainerShape((CompositionContainerShape)obj),
+                CompositionObjectType.CompositionEffectBrush => GetCompositionEffectBrush((CompositionEffectBrush)obj),
+                CompositionObjectType.CompositionEllipseGeometry => GetCompositionEllipseGeometry((CompositionEllipseGeometry)obj),
+                CompositionObjectType.CompositionGeometricClip => GetCompositionGeometricClip((CompositionGeometricClip)obj),
+                CompositionObjectType.CompositionLinearGradientBrush => GetCompositionLinearGradientBrush((CompositionLinearGradientBrush)obj),
+                CompositionObjectType.CompositionPathGeometry => GetCompositionPathGeometry((CompositionPathGeometry)obj),
+                CompositionObjectType.CompositionPropertySet => GetCompositionPropertySet((CompositionPropertySet)obj),
+                CompositionObjectType.CompositionRadialGradientBrush => GetCompositionRadialGradientBrush((CompositionRadialGradientBrush)obj),
+                CompositionObjectType.CompositionRectangleGeometry => GetCompositionRectangleGeometry((CompositionRectangleGeometry)obj),
+                CompositionObjectType.CompositionRoundedRectangleGeometry => GetCompositionRoundedRectangleGeometry((CompositionRoundedRectangleGeometry)obj),
+                CompositionObjectType.CompositionSpriteShape => GetCompositionSpriteShape((CompositionSpriteShape)obj),
+                CompositionObjectType.CompositionSurfaceBrush => GetCompositionSurfaceBrush((CompositionSurfaceBrush)obj),
+                CompositionObjectType.CompositionViewBox => GetCompositionViewBox((CompositionViewBox)obj),
+                CompositionObjectType.CompositionVisualSurface => GetCompositionVisualSurface((CompositionVisualSurface)obj),
+                CompositionObjectType.ContainerVisual => GetContainerVisual((ContainerVisual)obj),
+                CompositionObjectType.CubicBezierEasingFunction => GetCubicBezierEasingFunction((CubicBezierEasingFunction)obj),
+                CompositionObjectType.ExpressionAnimation => GetExpressionAnimation((ExpressionAnimation)obj),
+                CompositionObjectType.InsetClip => GetInsetClip((InsetClip)obj),
+                CompositionObjectType.LinearEasingFunction => GetLinearEasingFunction((LinearEasingFunction)obj),
+                CompositionObjectType.PathKeyFrameAnimation => GetPathKeyFrameAnimation((PathKeyFrameAnimation)obj),
+                CompositionObjectType.ScalarKeyFrameAnimation => GetScalarKeyFrameAnimation((ScalarKeyFrameAnimation)obj),
+                CompositionObjectType.ShapeVisual => GetShapeVisual((ShapeVisual)obj),
+                CompositionObjectType.SpriteVisual => GetSpriteVisual((SpriteVisual)obj),
+                CompositionObjectType.StepEasingFunction => GetStepEasingFunction((StepEasingFunction)obj),
+                CompositionObjectType.Vector2KeyFrameAnimation => GetVector2KeyFrameAnimation((Vector2KeyFrameAnimation)obj),
+                CompositionObjectType.Vector3KeyFrameAnimation => GetVector3KeyFrameAnimation((Vector3KeyFrameAnimation)obj),
+                CompositionObjectType.Vector4KeyFrameAnimation => GetVector4KeyFrameAnimation((Vector4KeyFrameAnimation)obj),
+                _ => throw new InvalidOperationException(),
+            };
 
         CompositionPropertySet GetCompositionPropertySet(CompositionPropertySet obj)
         {
@@ -567,45 +532,28 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             return result;
         }
 
-        Visual GetVisual(Visual obj)
-        {
-            switch (obj.Type)
+        Visual GetVisual(Visual obj) =>
+            obj.Type switch
             {
-                case CompositionObjectType.ContainerVisual:
-                    return GetContainerVisual((ContainerVisual)obj);
-                case CompositionObjectType.ShapeVisual:
-                    return GetShapeVisual((ShapeVisual)obj);
-                case CompositionObjectType.SpriteVisual:
-                    return GetSpriteVisual((SpriteVisual)obj);
-                default:
-                    throw new InvalidOperationException();
-            }
-        }
+                CompositionObjectType.ContainerVisual => GetContainerVisual((ContainerVisual)obj),
+                CompositionObjectType.ShapeVisual => GetShapeVisual((ShapeVisual)obj),
+                CompositionObjectType.SpriteVisual => GetSpriteVisual((SpriteVisual)obj),
+                _ => throw new InvalidOperationException(),
+            };
 
-        CompositionAnimation GetCompositionAnimation(CompositionAnimation obj)
-        {
-            switch (obj.Type)
+        CompositionAnimation GetCompositionAnimation(CompositionAnimation obj) =>
+            obj.Type switch
             {
-                case CompositionObjectType.ExpressionAnimation:
-                    return GetExpressionAnimation((ExpressionAnimation)obj);
-                case CompositionObjectType.BooleanKeyFrameAnimation:
-                    return GetBooleanKeyFrameAnimation((BooleanKeyFrameAnimation)obj);
-                case CompositionObjectType.ColorKeyFrameAnimation:
-                    return GetColorKeyFrameAnimation((ColorKeyFrameAnimation)obj);
-                case CompositionObjectType.PathKeyFrameAnimation:
-                    return GetPathKeyFrameAnimation((PathKeyFrameAnimation)obj);
-                case CompositionObjectType.ScalarKeyFrameAnimation:
-                    return GetScalarKeyFrameAnimation((ScalarKeyFrameAnimation)obj);
-                case CompositionObjectType.Vector2KeyFrameAnimation:
-                    return GetVector2KeyFrameAnimation((Vector2KeyFrameAnimation)obj);
-                case CompositionObjectType.Vector3KeyFrameAnimation:
-                    return GetVector3KeyFrameAnimation((Vector3KeyFrameAnimation)obj);
-                case CompositionObjectType.Vector4KeyFrameAnimation:
-                    return GetVector4KeyFrameAnimation((Vector4KeyFrameAnimation)obj);
-                default:
-                    throw new InvalidOperationException();
-            }
-        }
+                CompositionObjectType.ExpressionAnimation => GetExpressionAnimation((ExpressionAnimation)obj),
+                CompositionObjectType.BooleanKeyFrameAnimation => GetBooleanKeyFrameAnimation((BooleanKeyFrameAnimation)obj),
+                CompositionObjectType.ColorKeyFrameAnimation => GetColorKeyFrameAnimation((ColorKeyFrameAnimation)obj),
+                CompositionObjectType.PathKeyFrameAnimation => GetPathKeyFrameAnimation((PathKeyFrameAnimation)obj),
+                CompositionObjectType.ScalarKeyFrameAnimation => GetScalarKeyFrameAnimation((ScalarKeyFrameAnimation)obj),
+                CompositionObjectType.Vector2KeyFrameAnimation => GetVector2KeyFrameAnimation((Vector2KeyFrameAnimation)obj),
+                CompositionObjectType.Vector3KeyFrameAnimation => GetVector3KeyFrameAnimation((Vector3KeyFrameAnimation)obj),
+                CompositionObjectType.Vector4KeyFrameAnimation => GetVector4KeyFrameAnimation((Vector4KeyFrameAnimation)obj),
+                _ => throw new InvalidOperationException(),
+            };
 
         ExpressionAnimation GetExpressionAnimation(ExpressionAnimation obj)
         {
@@ -821,31 +769,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 return null;
             }
 
-            switch (obj.Type)
+            return obj.Type switch
             {
-                case CompositionObjectType.LinearEasingFunction:
-                    return GetLinearEasingFunction((LinearEasingFunction)obj);
-                case CompositionObjectType.StepEasingFunction:
-                    return GetStepEasingFunction((StepEasingFunction)obj);
-                case CompositionObjectType.CubicBezierEasingFunction:
-                    return GetCubicBezierEasingFunction((CubicBezierEasingFunction)obj);
-                default:
-                    throw new InvalidOperationException();
-            }
+                CompositionObjectType.LinearEasingFunction => GetLinearEasingFunction((LinearEasingFunction)obj),
+                CompositionObjectType.StepEasingFunction => GetStepEasingFunction((StepEasingFunction)obj),
+                CompositionObjectType.CubicBezierEasingFunction => GetCubicBezierEasingFunction((CubicBezierEasingFunction)obj),
+                _ => throw new InvalidOperationException(),
+            };
         }
 
-        CompositionClip GetCompositionClip(CompositionClip obj)
-        {
-            switch (obj.Type)
+        CompositionClip GetCompositionClip(CompositionClip obj) =>
+            obj.Type switch
             {
-                case CompositionObjectType.InsetClip:
-                    return GetInsetClip((InsetClip)obj);
-                case CompositionObjectType.CompositionGeometricClip:
-                    return GetCompositionGeometricClip((CompositionGeometricClip)obj);
-                default:
-                    throw new InvalidOperationException();
-            }
-        }
+                CompositionObjectType.InsetClip => GetInsetClip((InsetClip)obj),
+                CompositionObjectType.CompositionGeometricClip => GetCompositionGeometricClip((CompositionGeometricClip)obj),
+                _ => throw new InvalidOperationException(),
+            };
 
         InsetClip GetInsetClip(InsetClip obj)
         {
@@ -1076,18 +1015,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             return result;
         }
 
-        CompositionShape GetCompositionShape(CompositionShape obj)
-        {
-            switch (obj.Type)
+        CompositionShape GetCompositionShape(CompositionShape obj) =>
+            obj.Type switch
             {
-                case CompositionObjectType.CompositionContainerShape:
-                    return GetCompositionContainerShape((CompositionContainerShape)obj);
-                case CompositionObjectType.CompositionSpriteShape:
-                    return GetCompositionSpriteShape((CompositionSpriteShape)obj);
-                default:
-                    throw new InvalidOperationException();
-            }
-        }
+                CompositionObjectType.CompositionContainerShape => GetCompositionContainerShape((CompositionContainerShape)obj),
+                CompositionObjectType.CompositionSpriteShape => GetCompositionSpriteShape((CompositionSpriteShape)obj),
+                _ => throw new InvalidOperationException(),
+            };
 
         CompositionContainerShape GetCompositionContainerShape(CompositionContainerShape obj)
         {
@@ -1214,23 +1148,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 return null;
             }
 
-            switch (obj.Type)
+            return obj.Type switch
             {
-                case CompositionObjectType.CompositionPathGeometry:
-                    return GetCompositionPathGeometry((CompositionPathGeometry)obj);
-
-                case CompositionObjectType.CompositionEllipseGeometry:
-                    return GetCompositionEllipseGeometry((CompositionEllipseGeometry)obj);
-
-                case CompositionObjectType.CompositionRectangleGeometry:
-                    return GetCompositionRectangleGeometry((CompositionRectangleGeometry)obj);
-
-                case CompositionObjectType.CompositionRoundedRectangleGeometry:
-                    return GetCompositionRoundedRectangleGeometry((CompositionRoundedRectangleGeometry)obj);
-
-                default:
-                    throw new InvalidOperationException();
-            }
+                CompositionObjectType.CompositionPathGeometry => GetCompositionPathGeometry((CompositionPathGeometry)obj),
+                CompositionObjectType.CompositionEllipseGeometry => GetCompositionEllipseGeometry((CompositionEllipseGeometry)obj),
+                CompositionObjectType.CompositionRectangleGeometry => GetCompositionRectangleGeometry((CompositionRectangleGeometry)obj),
+                CompositionObjectType.CompositionRoundedRectangleGeometry => GetCompositionRoundedRectangleGeometry((CompositionRoundedRectangleGeometry)obj),
+                _ => throw new InvalidOperationException(),
+            };
         }
 
         CompositionEllipseGeometry GetCompositionEllipseGeometry(CompositionEllipseGeometry obj)
@@ -1427,18 +1352,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             }
         }
 
-        CompositionGradientBrush GetCompositionGradientBrush(CompositionGradientBrush obj)
-        {
-            switch (obj.Type)
+        CompositionGradientBrush GetCompositionGradientBrush(CompositionGradientBrush obj) =>
+            obj.Type switch
             {
-                case CompositionObjectType.CompositionLinearGradientBrush:
-                    return GetCompositionLinearGradientBrush((CompositionLinearGradientBrush)obj);
-                case CompositionObjectType.CompositionRadialGradientBrush:
-                    return GetCompositionRadialGradientBrush((CompositionRadialGradientBrush)obj);
-                default:
-                    throw new InvalidOperationException();
-            }
-        }
+                CompositionObjectType.CompositionLinearGradientBrush => GetCompositionLinearGradientBrush((CompositionLinearGradientBrush)obj),
+                CompositionObjectType.CompositionRadialGradientBrush => GetCompositionRadialGradientBrush((CompositionRadialGradientBrush)obj),
+                _ => throw new InvalidOperationException(),
+            };
 
         CompositionColorBrush GetCompositionColorBrush(CompositionColorBrush obj)
         {
@@ -1469,17 +1389,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             return result;
         }
 
-        ICompositionSurface GetCompositionSurface(ICompositionSurface obj)
-        {
-            switch (obj)
+        ICompositionSurface GetCompositionSurface(ICompositionSurface obj) =>
+            obj switch
             {
-                case CompositionVisualSurface compositionVisualSurface:
-                    return GetCompositionVisualSurface(compositionVisualSurface);
-                case LoadedImageSurface loadedImageSurface:
-                    return GetLoadedImageSurface(loadedImageSurface);
-                default:
-                    throw new InvalidOperationException();
-            }
-        }
+                CompositionVisualSurface compositionVisualSurface => GetCompositionVisualSurface(compositionVisualSurface),
+                LoadedImageSurface loadedImageSurface => GetLoadedImageSurface(loadedImageSurface),
+                _ => throw new InvalidOperationException(),
+            };
     }
 }

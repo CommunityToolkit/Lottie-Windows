@@ -389,19 +389,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
                 var isGeometryAnimated = geometry.Animators.Any() || geometry.Properties.Animators.Any();
 
-                switch (geometry.Type)
+                return geometry.Type switch
                 {
-                    case CompositionObjectType.CompositionEllipseGeometry:
-                        return isGeometryAnimated ? CategoryEllipseAnimated : CategoryEllipse;
-                    case CompositionObjectType.CompositionPathGeometry:
-                        return isGeometryAnimated ? CategoryPathAnimated : CategoryPath;
-                    case CompositionObjectType.CompositionRectangleGeometry:
-                        return isGeometryAnimated ? CategoryRectangleAnimated : CategoryRectangle;
-                    case CompositionObjectType.CompositionRoundedRectangleGeometry:
-                        return isGeometryAnimated ? CategoryRoundedRectangleAnimated : CategoryRoundedRectangle;
-                    default:
-                        throw new InvalidOperationException();
-                }
+                    CompositionObjectType.CompositionEllipseGeometry => isGeometryAnimated ? CategoryEllipseAnimated : CategoryEllipse,
+                    CompositionObjectType.CompositionPathGeometry => isGeometryAnimated ? CategoryPathAnimated : CategoryPath,
+                    CompositionObjectType.CompositionRectangleGeometry => isGeometryAnimated ? CategoryRectangleAnimated : CategoryRectangle,
+                    CompositionObjectType.CompositionRoundedRectangleGeometry => isGeometryAnimated ? CategoryRoundedRectangleAnimated : CategoryRoundedRectangle,
+                    _ => throw new InvalidOperationException(),
+                };
             }
         }
 

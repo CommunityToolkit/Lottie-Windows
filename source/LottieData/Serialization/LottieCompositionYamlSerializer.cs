@@ -153,15 +153,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 { nameof(asset.Id), asset.Id },
             };
 
-            switch (asset.Type)
+            return asset.Type switch
             {
-                case Asset.AssetType.LayerCollection:
-                    return FromLayersAsset((LayerCollectionAsset)asset, superclassContent);
-                case Asset.AssetType.Image:
-                    return FromImageAsset((ImageAsset)asset, superclassContent);
-                default:
-                    throw Unreachable;
-            }
+                Asset.AssetType.LayerCollection => FromLayersAsset((LayerCollectionAsset)asset, superclassContent),
+                Asset.AssetType.Image => FromImageAsset((ImageAsset)asset, superclassContent),
+                _ => throw Unreachable,
+            };
         }
 
         YamlObject FromLayersAsset(LayerCollectionAsset asset, YamlMap superclassContent)
@@ -176,15 +173,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             superclassContent.Add(nameof(asset.Width), asset.Width);
             superclassContent.Add(nameof(asset.Height), asset.Height);
 
-            switch (asset.ImageType)
+            return asset.ImageType switch
             {
-                case ImageAsset.ImageAssetType.Embedded:
-                    return FromEmbeddedImageAsset((EmbeddedImageAsset)asset, superclassContent);
-                case ImageAsset.ImageAssetType.External:
-                    return FromExternalImageAsset((ExternalImageAsset)asset, superclassContent);
-                default:
-                    throw Unreachable;
-            }
+                ImageAsset.ImageAssetType.Embedded => FromEmbeddedImageAsset((EmbeddedImageAsset)asset, superclassContent),
+                ImageAsset.ImageAssetType.External => FromExternalImageAsset((ExternalImageAsset)asset, superclassContent),
+                _ => throw Unreachable,
+            };
         }
 
         YamlObject FromEmbeddedImageAsset(EmbeddedImageAsset asset, YamlMap superclassContent)
@@ -222,23 +216,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             superclassContent.Add(nameof(layer.Masks), FromEnumerable(layer.Masks, FromMask));
             superclassContent.Add(nameof(layer.LayerMatteType), Scalar(layer.LayerMatteType));
 
-            switch (layer.Type)
+            return layer.Type switch
             {
-                case Layer.LayerType.PreComp:
-                    return FromPreCompLayer((PreCompLayer)layer, superclassContent);
-                case Layer.LayerType.Solid:
-                    return FromSolidLayer((SolidLayer)layer, superclassContent);
-                case Layer.LayerType.Image:
-                    return FromImageLayer((ImageLayer)layer, superclassContent);
-                case Layer.LayerType.Null:
-                    return FromNullLayer((NullLayer)layer, superclassContent);
-                case Layer.LayerType.Shape:
-                    return FromShapeLayer((ShapeLayer)layer, superclassContent);
-                case Layer.LayerType.Text:
-                    return FromTextLayer((TextLayer)layer, superclassContent);
-                default:
-                    throw Unreachable;
-            }
+                Layer.LayerType.PreComp => FromPreCompLayer((PreCompLayer)layer, superclassContent),
+                Layer.LayerType.Solid => FromSolidLayer((SolidLayer)layer, superclassContent),
+                Layer.LayerType.Image => FromImageLayer((ImageLayer)layer, superclassContent),
+                Layer.LayerType.Null => FromNullLayer((NullLayer)layer, superclassContent),
+                Layer.LayerType.Shape => FromShapeLayer((ShapeLayer)layer, superclassContent),
+                Layer.LayerType.Text => FromTextLayer((TextLayer)layer, superclassContent),
+                _ => throw Unreachable,
+            };
         }
 
         YamlObject FromPreCompLayer(PreCompLayer layer, YamlMap superclassContent)
@@ -327,36 +314,27 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         {
             superclassContent.Add(nameof(content.DrawingDirection), Scalar(content.DrawingDirection));
 
-            switch (content.ContentType)
+            return content.ContentType switch
             {
-                case ShapeContentType.Path:
-                    return FromPath((Path)content, superclassContent);
-                case ShapeContentType.Ellipse:
-                    return FromEllipse((Ellipse)content, superclassContent);
-                case ShapeContentType.Rectangle:
-                    return FromRectangle((Rectangle)content, superclassContent);
-                case ShapeContentType.Polystar:
-                    return FromPolystar((Polystar)content, superclassContent);
-                default:
-                    throw Unreachable;
-            }
+                ShapeContentType.Path => FromPath((Path)content, superclassContent),
+                ShapeContentType.Ellipse => FromEllipse((Ellipse)content, superclassContent),
+                ShapeContentType.Rectangle => FromRectangle((Rectangle)content, superclassContent),
+                ShapeContentType.Polystar => FromPolystar((Polystar)content, superclassContent),
+                _ => throw Unreachable,
+            };
         }
 
         YamlObject FromShapeFill(ShapeFill content, YamlMap superclassContent)
         {
             superclassContent.Add(nameof(content.Opacity), FromAnimatable(content.Opacity));
             superclassContent.Add(nameof(content.FillType), Scalar(content.FillType));
-            switch (content.FillKind)
+            return content.FillKind switch
             {
-                case ShapeFill.ShapeFillKind.SolidColor:
-                    return FromSolidColorFill((SolidColorFill)content, superclassContent);
-                case ShapeFill.ShapeFillKind.LinearGradient:
-                    return FromLinearGradientFill((LinearGradientFill)content, superclassContent);
-                case ShapeFill.ShapeFillKind.RadialGradient:
-                    return FromRadialGradientFill((RadialGradientFill)content, superclassContent);
-                default:
-                    throw Unreachable;
-            }
+                ShapeFill.ShapeFillKind.SolidColor => FromSolidColorFill((SolidColorFill)content, superclassContent),
+                ShapeFill.ShapeFillKind.LinearGradient => FromLinearGradientFill((LinearGradientFill)content, superclassContent),
+                ShapeFill.ShapeFillKind.RadialGradient => FromRadialGradientFill((RadialGradientFill)content, superclassContent),
+                _ => throw Unreachable,
+            };
         }
 
         YamlObject FromShapeStroke(ShapeStroke content, YamlMap superclassContent)
@@ -366,17 +344,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             superclassContent.Add(nameof(content.CapType), Scalar(content.CapType));
             superclassContent.Add(nameof(content.JoinType), Scalar(content.JoinType));
             superclassContent.Add(nameof(content.MiterLimit), Scalar(content.MiterLimit));
-            switch (content.StrokeKind)
+            return content.StrokeKind switch
             {
-                case ShapeStroke.ShapeStrokeKind.SolidColor:
-                    return FromSolidColorStroke((SolidColorStroke)content, superclassContent);
-                case ShapeStroke.ShapeStrokeKind.LinearGradient:
-                    return FromLinearGradientStroke((LinearGradientStroke)content, superclassContent);
-                case ShapeStroke.ShapeStrokeKind.RadialGradient:
-                    return FromRadialGradientStroke((RadialGradientStroke)content, superclassContent);
-                default:
-                    throw Unreachable;
-            }
+                ShapeStroke.ShapeStrokeKind.SolidColor => FromSolidColorStroke((SolidColorStroke)content, superclassContent),
+                ShapeStroke.ShapeStrokeKind.LinearGradient => FromLinearGradientStroke((LinearGradientStroke)content, superclassContent),
+                ShapeStroke.ShapeStrokeKind.RadialGradient => FromRadialGradientStroke((RadialGradientStroke)content, superclassContent),
+                _ => throw Unreachable,
+            };
         }
 
         YamlObject FromMask(Mask mask)
@@ -531,18 +505,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             return result;
         }
 
-        YamlObject FromGradientStop(GradientStop value)
-        {
-            switch (value.Kind)
+        YamlObject FromGradientStop(GradientStop value) =>
+            value.Kind switch
             {
-                case GradientStop.GradientStopKind.Color:
-                    return FromColorGradientStop((ColorGradientStop)value);
-                case GradientStop.GradientStopKind.Opacity:
-                    return FromOpacityGradientStop((OpacityGradientStop)value);
-                default:
-                    throw Unreachable;
-            }
-        }
+                GradientStop.GradientStopKind.Color => FromColorGradientStop((ColorGradientStop)value),
+                GradientStop.GradientStopKind.Opacity => FromOpacityGradientStop((OpacityGradientStop)value),
+                _ => throw Unreachable,
+            };
 
         YamlObject FromColorGradientStop(ColorGradientStop value)
         {
@@ -593,14 +562,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 { nameof(value.Type), Scalar(value.Type) },
             };
 
-            switch (value.Type)
+            return value.Type switch
             {
-                case Easing.EasingType.CubicBezier:
-                    // CubicBezierEasing is the only easing that has parameters.
-                    return FromCubicBezierEasing((CubicBezierEasing)value, result);
-                default:
-                    return result;
-            }
+                // CubicBezierEasing is the only easing that has parameters.
+                Easing.EasingType.CubicBezier => FromCubicBezierEasing((CubicBezierEasing)value, result),
+                _ => result,
+            };
         }
 
         YamlObject FromCubicBezierEasing(CubicBezierEasing content, YamlMap superclassContent)

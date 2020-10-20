@@ -192,14 +192,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.YamlData
             {
                 switch (obj.Kind)
                 {
-                    case YamlObjectKind.Scalar:
-                        return TryInlineScalar((YamlScalar)obj, maximumWidth, out result);
-                    case YamlObjectKind.Map:
-                        return TryInlineMap((YamlMap)obj, maximumWidth, out result);
-                    case YamlObjectKind.Sequence:
-                        return TryInlineSequence((YamlSequence)obj, maximumWidth, out result);
-                    default:
-                        throw new InvalidOperationException();
+                    case YamlObjectKind.Scalar: return TryInlineScalar((YamlScalar)obj, maximumWidth, out result);
+                    case YamlObjectKind.Map: return TryInlineMap((YamlMap)obj, maximumWidth, out result);
+                    case YamlObjectKind.Sequence: return TryInlineSequence((YamlSequence)obj, maximumWidth, out result);
+                    default: throw new InvalidOperationException();
                 }
             }
         }

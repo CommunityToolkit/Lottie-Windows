@@ -985,7 +985,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
             // the version they're using is compatible.
             if (!SourceInfo.WinUi3)
             {
-                builder.WriteLine($"if (!{animatedVisualInfos[animatedVisualInfos.Length - 1].ClassName}::IsRuntimeCompatible())");
+                builder.WriteLine($"if (!{animatedVisualInfos[^1].ClassName}::IsRuntimeCompatible())");
                 builder.OpenScope();
                 builder.WriteLine("return nullptr;");
                 builder.CloseScope();

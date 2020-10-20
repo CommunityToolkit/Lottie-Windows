@@ -442,14 +442,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         static Vector3 ParseVector3(in LottieJsonElement jsonValue)
         {
-            switch (jsonValue.Kind)
+            return jsonValue.Kind switch
             {
-                case JsonValueKind.Object:
-                    return jsonValue.AsObject()?.AsVector3() ?? Vector3.Zero;
-                case JsonValueKind.Array:
-                    return jsonValue.AsArray()?.AsVector3() ?? Vector3.Zero;
-                default: return default(Vector3);
-            }
+                JsonValueKind.Object => jsonValue.AsObject()?.AsVector3() ?? Vector3.Zero,
+                JsonValueKind.Array => jsonValue.AsArray()?.AsVector3() ?? Vector3.Zero,
+                _ => default(Vector3),
+            };
         }
 
         delegate T Parser<T>(ref Reader reader);

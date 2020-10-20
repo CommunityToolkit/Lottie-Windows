@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 #nullable enable
+
 using System.Collections.Generic;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData

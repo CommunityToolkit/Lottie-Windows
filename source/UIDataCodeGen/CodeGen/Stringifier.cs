@@ -106,7 +106,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         public string Float(double value) => Float((float)value);
 
-        public string Hex(int value) => $"0x{value.ToString("X2")}";
+        public string Hex(int value) => $"0x{value:X2}";
 
         public abstract string IListAdd { get; }
 

@@ -61,7 +61,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     WriteLine(breakableParts[i]);
                 }
 
-                WriteLine($"{breakableParts[breakableParts.Length - 1]}{postfix.TrimStart()}");
+                WriteLine($"{breakableParts[^1]}{postfix.TrimStart()}");
                 UnIndent();
             }
         }

@@ -13,8 +13,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
     {
         ref struct LottieJsonDocument
         {
-            LottieCompositionReader _owner;
-            JsonDocument _wrapped;
+            readonly LottieCompositionReader _owner;
+            readonly JsonDocument _wrapped;
 
             internal LottieJsonDocument(LottieCompositionReader owner, JsonDocument wrapped)
             {

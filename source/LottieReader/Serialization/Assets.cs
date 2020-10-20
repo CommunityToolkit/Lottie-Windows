@@ -45,18 +45,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                                     break;
                                 case "id":
                                     // Older lotties use a string. New lotties use an int. Handle either as strings.
-                                    switch (reader.TokenType)
+                                    id = reader.TokenType switch
                                     {
-                                        case JsonTokenType.String:
-                                            id = reader.GetString();
-                                            break;
-                                        case JsonTokenType.Number:
-                                            id = reader.ParseInt().ToString();
-                                            break;
-                                        default:
-                                            throw reader.ThrowUnexpectedToken();
-                                    }
-
+                                        JsonTokenType.String => reader.GetString(),
+                                        JsonTokenType.Number => reader.ParseInt().ToString(),
+                                        _ => throw reader.ThrowUnexpectedToken(),
+                                    };
                                     break;
                                 case "layers":
                                     layers = ParseArray(ref reader, ParseLayer);
