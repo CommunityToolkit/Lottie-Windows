@@ -27,7 +27,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// </summary>
         public Animatable(T value, int? propertyIndex)
         {
-            Debug.Assert(value != null, "Precondition");
             KeyFrames = Array.Empty<KeyFrame<T>>();
             InitialValue = value;
             PropertyIndex = propertyIndex;
@@ -52,8 +51,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             }
 
             PropertyIndex = propertyIndex;
-
-            Debug.Assert(KeyFrames.All(kf => kf != null), "Precondition");
         }
 
         /// <summary>
@@ -74,9 +71,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             }
 
             PropertyIndex = propertyIndex;
-
-            Debug.Assert(initialValue != null, "Precondition");
-            Debug.Assert(KeyFrames.All(kf => kf != null), "Precondition");
         }
 
         /// <summary>

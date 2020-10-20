@@ -181,7 +181,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
                 builder.WriteLine("Boolean IsImageLoadingCompleted { get; };");
             }
 
-            builder.CloseCppTypeScope();
+            builder.CloseScopeWithSemicolon();
             builder.CloseScope();
             return builder.ToString();
         }
@@ -265,7 +265,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
             builder.Postamble.OpenScope();
             builder.Postamble.WriteLine($"struct {_sourceClassName} : {_sourceClassName}T<{_sourceClassName}, implementation::{_sourceClassName}>");
             builder.Postamble.OpenScope();
-            builder.Postamble.CloseCppTypeScope();
+            builder.Postamble.CloseScopeWithSemicolon();
             builder.Postamble.CloseScope();
 
             return builder.ToString();
@@ -1230,7 +1230,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
             WriteIsRuntimeCompatibleMethod(builder, info);
 
             // Close the scope for the instantiator class.
-            builder.CloseCppTypeScope();
+            builder.CloseScopeWithSemicolon();
         }
 
         void WritePropertyImpl(
@@ -1298,7 +1298,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
                 builder.WriteLine($"{CallFactoryFor(geometry)}.get()->Geometry(),");
             }
 
-            builder.CloseCppTypeScope();
+            builder.CloseScopeWithSemicolon();
             builder.WriteLine("winrt::com_ptr<ID2D1GeometryGroup> group{ nullptr };");
             builder.WriteLine("winrt::check_hresult(_d2dFactory->CreateGeometryGroup(");
             builder.Indent();
@@ -1350,7 +1350,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
                 result.WriteLine("public:");
                 result.Indent();
                 result.WriteCodeBuilder(Public);
-                result.CloseCppTypeScope();
+                result.CloseScopeWithSemicolon();
                 return result;
             }
 

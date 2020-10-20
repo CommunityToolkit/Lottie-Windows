@@ -581,7 +581,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
                 builder.WriteLine($"{{ {_s.String(marker.Name)}, {_s.Double(marker.StartProgress)} }},");
             }
 
-            builder.CloseCppTypeScope();
+            builder.CloseScopeWithSemicolon();
             builder.UnIndent();
         }
 
