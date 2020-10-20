@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -1338,7 +1340,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
         static void TransferShapeProperties(CompositionShape from, CompositionShape to)
         {
-            void TransferProperty<T>(Func<CompositionShape, T> get, Action<CompositionShape, T> set)
+            void TransferClassProperty<T>(Func<CompositionShape, T?> get, Action<CompositionShape, T> set)
+                where T : class
             {
                 var fromValue = get(from);
                 if (fromValue != null)
@@ -1348,12 +1351,23 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 }
             }
 
-            TransferProperty(cv => cv.CenterPoint, (cv, value) => cv.CenterPoint = value);
-            TransferProperty(cv => cv.Comment, (cv, value) => cv.Comment = value);
-            TransferProperty(cv => cv.Offset, (cv, value) => cv.Offset = value);
-            TransferProperty(cv => cv.RotationAngleInDegrees, (cv, value) => cv.RotationAngleInDegrees = value);
-            TransferProperty(cv => cv.Scale, (cv, value) => cv.Scale = value);
-            TransferProperty(cv => cv.TransformMatrix, (cv, value) => cv.TransformMatrix = value);
+            void TransferStructProperty<T>(Func<CompositionShape, T?> get, Action<CompositionShape, T> set)
+                where T : struct
+            {
+                var fromValue = get(from);
+                if (fromValue != null)
+                {
+                    Debug.Assert(get(to) is null, "Precondition");
+                    set(to, fromValue.Value);
+                }
+            }
+
+            TransferStructProperty(cv => cv.CenterPoint, (cv, value) => cv.CenterPoint = value);
+            TransferClassProperty(cv => cv.Comment, (cv, value) => cv.Comment = value);
+            TransferStructProperty(cv => cv.Offset, (cv, value) => cv.Offset = value);
+            TransferStructProperty(cv => cv.RotationAngleInDegrees, (cv, value) => cv.RotationAngleInDegrees = value);
+            TransferStructProperty(cv => cv.Scale, (cv, value) => cv.Scale = value);
+            TransferStructProperty(cv => cv.TransformMatrix, (cv, value) => cv.TransformMatrix = value);
 
             // Start the from's animations on the to.
             foreach (var anim in from.Animators)
@@ -1377,7 +1391,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
         static void TransferContainerVisualProperties(ContainerVisual from, ContainerVisual to)
         {
-            void TransferProperty<T>(Func<ContainerVisual, T> get, Action<ContainerVisual, T> set)
+            void TransferClassProperty<T>(Func<ContainerVisual, T?> get, Action<ContainerVisual, T> set)
+                where T : class
             {
                 var fromValue = get(from);
                 if (fromValue != null)
@@ -1387,18 +1402,29 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 }
             }
 
-            TransferProperty(cv => cv.BorderMode, (cv, value) => cv.BorderMode = value);
-            TransferProperty(cv => cv.CenterPoint, (cv, value) => cv.CenterPoint = value);
-            TransferProperty(cv => cv.Clip, (cv, value) => cv.Clip = value);
-            TransferProperty(cv => cv.Comment, (cv, value) => cv.Comment = value);
-            TransferProperty(cv => cv.IsVisible, (cv, value) => cv.IsVisible = value);
-            TransferProperty(cv => cv.Offset, (cv, value) => cv.Offset = value);
-            TransferProperty(cv => cv.Opacity, (cv, value) => cv.Opacity = value);
-            TransferProperty(cv => cv.RotationAngleInDegrees, (cv, value) => cv.RotationAngleInDegrees = value);
-            TransferProperty(cv => cv.RotationAxis, (cv, value) => cv.RotationAxis = value);
-            TransferProperty(cv => cv.Scale, (cv, value) => cv.Scale = value);
-            TransferProperty(cv => cv.Size, (cv, value) => cv.Size = value);
-            TransferProperty(cv => cv.TransformMatrix, (cv, value) => cv.TransformMatrix = value);
+            void TransferStructProperty<T>(Func<ContainerVisual, T?> get, Action<ContainerVisual, T> set)
+                where T : struct
+            {
+                var fromValue = get(from);
+                if (fromValue != null)
+                {
+                    Debug.Assert(get(to) is null, "Precondition");
+                    set(to, fromValue.Value);
+                }
+            }
+
+            TransferStructProperty(cv => cv.BorderMode, (cv, value) => cv.BorderMode = value);
+            TransferStructProperty(cv => cv.CenterPoint, (cv, value) => cv.CenterPoint = value);
+            TransferClassProperty(cv => cv.Clip, (cv, value) => cv.Clip = value);
+            TransferClassProperty(cv => cv.Comment, (cv, value) => cv.Comment = value);
+            TransferStructProperty(cv => cv.IsVisible, (cv, value) => cv.IsVisible = value);
+            TransferStructProperty(cv => cv.Offset, (cv, value) => cv.Offset = value);
+            TransferStructProperty(cv => cv.Opacity, (cv, value) => cv.Opacity = value);
+            TransferStructProperty(cv => cv.RotationAngleInDegrees, (cv, value) => cv.RotationAngleInDegrees = value);
+            TransferStructProperty(cv => cv.RotationAxis, (cv, value) => cv.RotationAxis = value);
+            TransferStructProperty(cv => cv.Scale, (cv, value) => cv.Scale = value);
+            TransferStructProperty(cv => cv.Size, (cv, value) => cv.Size = value);
+            TransferStructProperty(cv => cv.TransformMatrix, (cv, value) => cv.TransformMatrix = value);
 
             // Start the from's animations on the to.
             foreach (var anim in from.Animators)

@@ -111,7 +111,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
             }
 
             // Close the class.
-            builder.Public.CloseCppTypeScope();
+            builder.Public.CloseScopeWithSemicolon();
 
             // Close the namespace.
             builder.Postamble.Indent();
@@ -1112,7 +1112,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
             WriteIsRuntimeCompatibleMethod(builder, info);
 
             // Close the scope for the instantiator class.
-            builder.CloseCppTypeScope();
+            builder.CloseScopeWithSemicolon();
         }
 
         void WritePropertyImpl(

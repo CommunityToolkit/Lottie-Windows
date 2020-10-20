@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization;
@@ -253,6 +254,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             sprite.StrokeBrush = brush;
         }
 
+        [return: NotNullIfNotNull("shapeFill")]
         public static CompositionBrush? TranslateShapeFill(LayerContext context, ShapeFill? shapeFill, CompositeOpacity opacity)
         {
             if (shapeFill is null)

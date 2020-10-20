@@ -152,7 +152,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             WriteLine("}");
         }
 
-        internal void CloseCppTypeScope()
+        internal void CloseScopeWithSemicolon()
         {
             UnIndent();
             WriteLine("};");
