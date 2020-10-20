@@ -2,10 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
@@ -82,7 +83,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             /// </summary>
             /// <param name="node">The node to test.</param>
             /// <returns><c>True</c> if this node is reachable from the given node.</returns>
-            public bool IsReachableFrom(Node<T>? node) => node is null ? false : IsReachableFrom(node, new HashSet<Node<T>>());
+            public bool IsReachableFrom(Node<T>? node) => !(node is null) && IsReachableFrom(node, new HashSet<Node<T>>());
 
             bool IsReachableFrom(Node<T> targetNode, HashSet<Node<T>> alreadyVisited)
             {

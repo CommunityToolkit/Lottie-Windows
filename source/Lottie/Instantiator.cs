@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
+
 #define ReuseExpressionAnimation
 
 using System;
@@ -401,78 +403,43 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             return result;
         }
 
-        Wc.CompositionObject GetCompositionObject(Wd.CompositionObject obj)
-        {
-            switch (obj.Type)
+        Wc.CompositionObject GetCompositionObject(Wd.CompositionObject obj) =>
+            obj.Type switch
             {
-                case Wd.CompositionObjectType.AnimationController:
-                    return GetAnimationController((Wd.AnimationController)obj);
-                case Wd.CompositionObjectType.BooleanKeyFrameAnimation:
-                    return GetBooleanKeyFrameAnimation((Wd.BooleanKeyFrameAnimation)obj);
-                case Wd.CompositionObjectType.ColorKeyFrameAnimation:
-                    return GetColorKeyFrameAnimation((Wd.ColorKeyFrameAnimation)obj);
-                case Wd.CompositionObjectType.CompositionColorBrush:
-                    return GetCompositionColorBrush((Wd.CompositionColorBrush)obj);
-                case Wd.CompositionObjectType.CompositionColorGradientStop:
-                    return GetCompositionColorGradientStop((Wd.CompositionColorGradientStop)obj);
-                case Wd.CompositionObjectType.CompositionContainerShape:
-                    return GetCompositionContainerShape((Wd.CompositionContainerShape)obj);
-                case Wd.CompositionObjectType.CompositionEffectBrush:
-                    return GetCompositionEffectBrush((Wd.CompositionEffectBrush)obj);
-                case Wd.CompositionObjectType.CompositionEllipseGeometry:
-                    return GetCompositionEllipseGeometry((Wd.CompositionEllipseGeometry)obj);
-                case Wd.CompositionObjectType.CompositionGeometricClip:
-                    return GetCompositionGeometricClip((Wd.CompositionGeometricClip)obj);
-                case Wd.CompositionObjectType.CompositionLinearGradientBrush:
-                    return GetCompositionLinearGradientBrush((Wd.CompositionLinearGradientBrush)obj);
-                case Wd.CompositionObjectType.CompositionPathGeometry:
-                    return GetCompositionPathGeometry((Wd.CompositionPathGeometry)obj);
-                case Wd.CompositionObjectType.CompositionPropertySet:
-                    return GetCompositionPropertySet((Wd.CompositionPropertySet)obj);
-                case Wd.CompositionObjectType.CompositionRadialGradientBrush:
-                    return GetCompositionRadialGradientBrush((Wd.CompositionRadialGradientBrush)obj);
-                case Wd.CompositionObjectType.CompositionRectangleGeometry:
-                    return GetCompositionRectangleGeometry((Wd.CompositionRectangleGeometry)obj);
-                case Wd.CompositionObjectType.CompositionRoundedRectangleGeometry:
-                    return GetCompositionRoundedRectangleGeometry((Wd.CompositionRoundedRectangleGeometry)obj);
-                case Wd.CompositionObjectType.CompositionSpriteShape:
-                    return GetCompositionSpriteShape((Wd.CompositionSpriteShape)obj);
-                case Wd.CompositionObjectType.CompositionViewBox:
-                    return GetCompositionViewBox((Wd.CompositionViewBox)obj);
-                case Wd.CompositionObjectType.CompositionVisualSurface:
-                    return GetCompositionVisualSurface((Wd.CompositionVisualSurface)obj);
-                case Wd.CompositionObjectType.ContainerVisual:
-                    return GetContainerVisual((Wd.ContainerVisual)obj);
-                case Wd.CompositionObjectType.CubicBezierEasingFunction:
-                    return GetCubicBezierEasingFunction((Wd.CubicBezierEasingFunction)obj);
-                case Wd.CompositionObjectType.CompositionSurfaceBrush:
-                    return GetCompositionSurfaceBrush((Wd.CompositionSurfaceBrush)obj);
-                case Wd.CompositionObjectType.ExpressionAnimation:
-                    return GetExpressionAnimation((Wd.ExpressionAnimation)obj);
-                case Wd.CompositionObjectType.InsetClip:
-                    return GetInsetClip((Wd.InsetClip)obj);
-                case Wd.CompositionObjectType.LinearEasingFunction:
-                    return GetLinearEasingFunction((Wd.LinearEasingFunction)obj);
-                case Wd.CompositionObjectType.PathKeyFrameAnimation:
-                    return GetPathKeyFrameAnimation((Wd.PathKeyFrameAnimation)obj);
-                case Wd.CompositionObjectType.ScalarKeyFrameAnimation:
-                    return GetScalarKeyFrameAnimation((Wd.ScalarKeyFrameAnimation)obj);
-                case Wd.CompositionObjectType.ShapeVisual:
-                    return GetShapeVisual((Wd.ShapeVisual)obj);
-                case Wd.CompositionObjectType.SpriteVisual:
-                    return GetSpriteVisual((Wd.SpriteVisual)obj);
-                case Wd.CompositionObjectType.StepEasingFunction:
-                    return GetStepEasingFunction((Wd.StepEasingFunction)obj);
-                case Wd.CompositionObjectType.Vector2KeyFrameAnimation:
-                    return GetVector2KeyFrameAnimation((Wd.Vector2KeyFrameAnimation)obj);
-                case Wd.CompositionObjectType.Vector3KeyFrameAnimation:
-                    return GetVector3KeyFrameAnimation((Wd.Vector3KeyFrameAnimation)obj);
-                case Wd.CompositionObjectType.Vector4KeyFrameAnimation:
-                    return GetVector4KeyFrameAnimation((Wd.Vector4KeyFrameAnimation)obj);
-                default:
-                    throw new InvalidOperationException();
-            }
-        }
+                Wd.CompositionObjectType.AnimationController => GetAnimationController((Wd.AnimationController)obj),
+                Wd.CompositionObjectType.BooleanKeyFrameAnimation => GetBooleanKeyFrameAnimation((Wd.BooleanKeyFrameAnimation)obj),
+                Wd.CompositionObjectType.ColorKeyFrameAnimation => GetColorKeyFrameAnimation((Wd.ColorKeyFrameAnimation)obj),
+                Wd.CompositionObjectType.CompositionColorBrush => GetCompositionColorBrush((Wd.CompositionColorBrush)obj),
+                Wd.CompositionObjectType.CompositionColorGradientStop => GetCompositionColorGradientStop((Wd.CompositionColorGradientStop)obj),
+                Wd.CompositionObjectType.CompositionContainerShape => GetCompositionContainerShape((Wd.CompositionContainerShape)obj),
+                Wd.CompositionObjectType.CompositionEffectBrush => GetCompositionEffectBrush((Wd.CompositionEffectBrush)obj),
+                Wd.CompositionObjectType.CompositionEllipseGeometry => GetCompositionEllipseGeometry((Wd.CompositionEllipseGeometry)obj),
+                Wd.CompositionObjectType.CompositionGeometricClip => GetCompositionGeometricClip((Wd.CompositionGeometricClip)obj),
+                Wd.CompositionObjectType.CompositionLinearGradientBrush => GetCompositionLinearGradientBrush((Wd.CompositionLinearGradientBrush)obj),
+                Wd.CompositionObjectType.CompositionPathGeometry => GetCompositionPathGeometry((Wd.CompositionPathGeometry)obj),
+                Wd.CompositionObjectType.CompositionPropertySet => GetCompositionPropertySet((Wd.CompositionPropertySet)obj),
+                Wd.CompositionObjectType.CompositionRadialGradientBrush => GetCompositionRadialGradientBrush((Wd.CompositionRadialGradientBrush)obj),
+                Wd.CompositionObjectType.CompositionRectangleGeometry => GetCompositionRectangleGeometry((Wd.CompositionRectangleGeometry)obj),
+                Wd.CompositionObjectType.CompositionRoundedRectangleGeometry => GetCompositionRoundedRectangleGeometry((Wd.CompositionRoundedRectangleGeometry)obj),
+                Wd.CompositionObjectType.CompositionSpriteShape => GetCompositionSpriteShape((Wd.CompositionSpriteShape)obj),
+                Wd.CompositionObjectType.CompositionViewBox => GetCompositionViewBox((Wd.CompositionViewBox)obj),
+                Wd.CompositionObjectType.CompositionVisualSurface => GetCompositionVisualSurface((Wd.CompositionVisualSurface)obj),
+                Wd.CompositionObjectType.ContainerVisual => GetContainerVisual((Wd.ContainerVisual)obj),
+                Wd.CompositionObjectType.CubicBezierEasingFunction => GetCubicBezierEasingFunction((Wd.CubicBezierEasingFunction)obj),
+                Wd.CompositionObjectType.CompositionSurfaceBrush => GetCompositionSurfaceBrush((Wd.CompositionSurfaceBrush)obj),
+                Wd.CompositionObjectType.ExpressionAnimation => GetExpressionAnimation((Wd.ExpressionAnimation)obj),
+                Wd.CompositionObjectType.InsetClip => GetInsetClip((Wd.InsetClip)obj),
+                Wd.CompositionObjectType.LinearEasingFunction => GetLinearEasingFunction((Wd.LinearEasingFunction)obj),
+                Wd.CompositionObjectType.PathKeyFrameAnimation => GetPathKeyFrameAnimation((Wd.PathKeyFrameAnimation)obj),
+                Wd.CompositionObjectType.ScalarKeyFrameAnimation => GetScalarKeyFrameAnimation((Wd.ScalarKeyFrameAnimation)obj),
+                Wd.CompositionObjectType.ShapeVisual => GetShapeVisual((Wd.ShapeVisual)obj),
+                Wd.CompositionObjectType.SpriteVisual => GetSpriteVisual((Wd.SpriteVisual)obj),
+                Wd.CompositionObjectType.StepEasingFunction => GetStepEasingFunction((Wd.StepEasingFunction)obj),
+                Wd.CompositionObjectType.Vector2KeyFrameAnimation => GetVector2KeyFrameAnimation((Wd.Vector2KeyFrameAnimation)obj),
+                Wd.CompositionObjectType.Vector3KeyFrameAnimation => GetVector3KeyFrameAnimation((Wd.Vector3KeyFrameAnimation)obj),
+                Wd.CompositionObjectType.Vector4KeyFrameAnimation => GetVector4KeyFrameAnimation((Wd.Vector4KeyFrameAnimation)obj),
+                _ => throw new InvalidOperationException(),
+            };
 
         Wc.CompositionPropertySet GetCompositionPropertySet(Wd.CompositionPropertySet obj)
         {
@@ -542,45 +509,28 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             return result;
         }
 
-        Wc.Visual GetVisual(Wd.Visual obj)
-        {
-            switch (obj.Type)
+        Wc.Visual GetVisual(Wd.Visual obj) =>
+            obj.Type switch
             {
-                case Wd.CompositionObjectType.ContainerVisual:
-                    return GetContainerVisual((Wd.ContainerVisual)obj);
-                case Wd.CompositionObjectType.ShapeVisual:
-                    return GetShapeVisual((Wd.ShapeVisual)obj);
-                case Wd.CompositionObjectType.SpriteVisual:
-                    return GetSpriteVisual((Wd.SpriteVisual)obj);
-                default:
-                    throw new InvalidOperationException();
-            }
-        }
+                Wd.CompositionObjectType.ContainerVisual => GetContainerVisual((Wd.ContainerVisual)obj),
+                Wd.CompositionObjectType.ShapeVisual => GetShapeVisual((Wd.ShapeVisual)obj),
+                Wd.CompositionObjectType.SpriteVisual => GetSpriteVisual((Wd.SpriteVisual)obj),
+                _ => throw new InvalidOperationException(),
+            };
 
-        Wc.CompositionAnimation GetCompositionAnimation(Wd.CompositionAnimation obj)
-        {
-            switch (obj.Type)
+        Wc.CompositionAnimation GetCompositionAnimation(Wd.CompositionAnimation obj) =>
+            obj.Type switch
             {
-                case Wd.CompositionObjectType.BooleanKeyFrameAnimation:
-                    return GetBooleanKeyFrameAnimation((Wd.BooleanKeyFrameAnimation)obj);
-                case Wd.CompositionObjectType.ColorKeyFrameAnimation:
-                    return GetColorKeyFrameAnimation((Wd.ColorKeyFrameAnimation)obj);
-                case Wd.CompositionObjectType.ExpressionAnimation:
-                    return GetExpressionAnimation((Wd.ExpressionAnimation)obj);
-                case Wd.CompositionObjectType.PathKeyFrameAnimation:
-                    return GetPathKeyFrameAnimation((Wd.PathKeyFrameAnimation)obj);
-                case Wd.CompositionObjectType.ScalarKeyFrameAnimation:
-                    return GetScalarKeyFrameAnimation((Wd.ScalarKeyFrameAnimation)obj);
-                case Wd.CompositionObjectType.Vector2KeyFrameAnimation:
-                    return GetVector2KeyFrameAnimation((Wd.Vector2KeyFrameAnimation)obj);
-                case Wd.CompositionObjectType.Vector3KeyFrameAnimation:
-                    return GetVector3KeyFrameAnimation((Wd.Vector3KeyFrameAnimation)obj);
-                case Wd.CompositionObjectType.Vector4KeyFrameAnimation:
-                    return GetVector4KeyFrameAnimation((Wd.Vector4KeyFrameAnimation)obj);
-                default:
-                    throw new InvalidOperationException();
-            }
-        }
+                Wd.CompositionObjectType.BooleanKeyFrameAnimation => GetBooleanKeyFrameAnimation((Wd.BooleanKeyFrameAnimation)obj),
+                Wd.CompositionObjectType.ColorKeyFrameAnimation => GetColorKeyFrameAnimation((Wd.ColorKeyFrameAnimation)obj),
+                Wd.CompositionObjectType.ExpressionAnimation => GetExpressionAnimation((Wd.ExpressionAnimation)obj),
+                Wd.CompositionObjectType.PathKeyFrameAnimation => GetPathKeyFrameAnimation((Wd.PathKeyFrameAnimation)obj),
+                Wd.CompositionObjectType.ScalarKeyFrameAnimation => GetScalarKeyFrameAnimation((Wd.ScalarKeyFrameAnimation)obj),
+                Wd.CompositionObjectType.Vector2KeyFrameAnimation => GetVector2KeyFrameAnimation((Wd.Vector2KeyFrameAnimation)obj),
+                Wd.CompositionObjectType.Vector3KeyFrameAnimation => GetVector3KeyFrameAnimation((Wd.Vector3KeyFrameAnimation)obj),
+                Wd.CompositionObjectType.Vector4KeyFrameAnimation => GetVector4KeyFrameAnimation((Wd.Vector4KeyFrameAnimation)obj),
+                _ => throw new InvalidOperationException(),
+            };
 
         Wc.ExpressionAnimation GetExpressionAnimation(Wd.ExpressionAnimation obj)
         {
@@ -820,31 +770,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 return null;
             }
 
-            switch (obj.Type)
+            return obj.Type switch
             {
-                case Wd.CompositionObjectType.LinearEasingFunction:
-                    return GetLinearEasingFunction((Wd.LinearEasingFunction)obj);
-                case Wd.CompositionObjectType.StepEasingFunction:
-                    return GetStepEasingFunction((Wd.StepEasingFunction)obj);
-                case Wd.CompositionObjectType.CubicBezierEasingFunction:
-                    return GetCubicBezierEasingFunction((Wd.CubicBezierEasingFunction)obj);
-                default:
-                    throw new InvalidOperationException();
-            }
+                Wd.CompositionObjectType.LinearEasingFunction => GetLinearEasingFunction((Wd.LinearEasingFunction)obj),
+                Wd.CompositionObjectType.StepEasingFunction => GetStepEasingFunction((Wd.StepEasingFunction)obj),
+                Wd.CompositionObjectType.CubicBezierEasingFunction => GetCubicBezierEasingFunction((Wd.CubicBezierEasingFunction)obj),
+                _ => throw new InvalidOperationException(),
+            };
         }
 
-        Wc.CompositionClip GetCompositionClip(Wd.CompositionClip obj)
-        {
-            switch (obj.Type)
+        Wc.CompositionClip GetCompositionClip(Wd.CompositionClip obj) =>
+            obj.Type switch
             {
-                case Wd.CompositionObjectType.InsetClip:
-                    return GetInsetClip((Wd.InsetClip)obj);
-                case Wd.CompositionObjectType.CompositionGeometricClip:
-                    return GetCompositionGeometricClip((Wd.CompositionGeometricClip)obj);
-                default:
-                    throw new InvalidOperationException();
-            }
-        }
+                Wd.CompositionObjectType.InsetClip => GetInsetClip((Wd.InsetClip)obj),
+                Wd.CompositionObjectType.CompositionGeometricClip => GetCompositionGeometricClip((Wd.CompositionGeometricClip)obj),
+                _ => throw new InvalidOperationException(),
+            };
 
         static bool IsNullOrZero(float? value) => value is null || value == 0;
 
@@ -1011,18 +952,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             return result;
         }
 
-        Wc.CompositionShape GetCompositionShape(Wd.CompositionShape obj)
-        {
-            switch (obj.Type)
+        Wc.CompositionShape GetCompositionShape(Wd.CompositionShape obj) =>
+            obj.Type switch
             {
-                case Wd.CompositionObjectType.CompositionContainerShape:
-                    return GetCompositionContainerShape((Wd.CompositionContainerShape)obj);
-                case Wd.CompositionObjectType.CompositionSpriteShape:
-                    return GetCompositionSpriteShape((Wd.CompositionSpriteShape)obj);
-                default:
-                    throw new InvalidOperationException();
-            }
-        }
+                Wd.CompositionObjectType.CompositionContainerShape => GetCompositionContainerShape((Wd.CompositionContainerShape)obj),
+                Wd.CompositionObjectType.CompositionSpriteShape => GetCompositionSpriteShape((Wd.CompositionSpriteShape)obj),
+                _ => throw new InvalidOperationException(),
+            };
 
         Wc.CompositionContainerShape GetCompositionContainerShape(Wd.CompositionContainerShape obj)
         {
@@ -1209,23 +1145,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 return null;
             }
 
-            switch (obj.Type)
+            return obj.Type switch
             {
-                case Wd.CompositionObjectType.CompositionPathGeometry:
-                    return GetCompositionPathGeometry((Wd.CompositionPathGeometry)obj);
-
-                case Wd.CompositionObjectType.CompositionEllipseGeometry:
-                    return GetCompositionEllipseGeometry((Wd.CompositionEllipseGeometry)obj);
-
-                case Wd.CompositionObjectType.CompositionRectangleGeometry:
-                    return GetCompositionRectangleGeometry((Wd.CompositionRectangleGeometry)obj);
-
-                case Wd.CompositionObjectType.CompositionRoundedRectangleGeometry:
-                    return GetCompositionRoundedRectangleGeometry((Wd.CompositionRoundedRectangleGeometry)obj);
-
-                default:
-                    throw new InvalidOperationException();
-            }
+                Wd.CompositionObjectType.CompositionPathGeometry => GetCompositionPathGeometry((Wd.CompositionPathGeometry)obj),
+                Wd.CompositionObjectType.CompositionEllipseGeometry => GetCompositionEllipseGeometry((Wd.CompositionEllipseGeometry)obj),
+                Wd.CompositionObjectType.CompositionRectangleGeometry => GetCompositionRectangleGeometry((Wd.CompositionRectangleGeometry)obj),
+                Wd.CompositionObjectType.CompositionRoundedRectangleGeometry => GetCompositionRoundedRectangleGeometry((Wd.CompositionRoundedRectangleGeometry)obj),
+                _ => throw new InvalidOperationException(),
+            };
         }
 
         Wc.CompositionEllipseGeometry GetCompositionEllipseGeometry(Wd.CompositionEllipseGeometry obj)
@@ -1435,18 +1362,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             return result;
         }
 
-        Wc.CompositionGradientBrush GetCompositionGradientBrush(Wd.CompositionGradientBrush obj)
-        {
-            switch (obj.Type)
+        Wc.CompositionGradientBrush GetCompositionGradientBrush(Wd.CompositionGradientBrush obj) =>
+            obj.Type switch
             {
-                case Wd.CompositionObjectType.CompositionLinearGradientBrush:
-                    return GetCompositionLinearGradientBrush((Wd.CompositionLinearGradientBrush)obj);
-                case Wd.CompositionObjectType.CompositionRadialGradientBrush:
-                    return GetCompositionRadialGradientBrush((Wd.CompositionRadialGradientBrush)obj);
-                default:
-                    throw new InvalidOperationException();
-            }
-        }
+                Wd.CompositionObjectType.CompositionLinearGradientBrush => GetCompositionLinearGradientBrush((Wd.CompositionLinearGradientBrush)obj),
+                Wd.CompositionObjectType.CompositionRadialGradientBrush => GetCompositionRadialGradientBrush((Wd.CompositionRadialGradientBrush)obj),
+                _ => throw new InvalidOperationException(),
+            };
 
         Wc.CompositionLinearGradientBrush GetCompositionLinearGradientBrush(Wd.CompositionLinearGradientBrush obj)
         {
@@ -1499,18 +1421,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             return result;
         }
 
-        Wc.ICompositionSurface? GetCompositionSurface(Wd.ICompositionSurface obj)
-        {
-            switch (obj)
+        Wc.ICompositionSurface? GetCompositionSurface(Wd.ICompositionSurface obj) =>
+            obj switch
             {
-                case Wd.CompositionVisualSurface compositionVisualSurface:
-                    return (Wc.ICompositionSurface)GetCompositionObject(compositionVisualSurface);
-                case Wmd.LoadedImageSurface loadedImageSurface:
-                    return GetLoadedImageSurface(loadedImageSurface);
-                default:
-                    throw new InvalidOperationException();
-            }
-        }
+                Wd.CompositionVisualSurface compositionVisualSurface => (Wc.ICompositionSurface)GetCompositionObject(compositionVisualSurface),
+                Wmd.LoadedImageSurface loadedImageSurface => GetLoadedImageSurface(loadedImageSurface),
+                _ => throw new InvalidOperationException(),
+            };
 
         Wm.LoadedImageSurface? GetLoadedImageSurface(Wmd.LoadedImageSurface obj)
         {
@@ -1541,179 +1458,111 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             return result;
         }
 
-        static Wc.CompositionBorderMode BorderMode(Wd.CompositionBorderMode value)
-        {
-            switch (value)
+        static Wc.CompositionBorderMode BorderMode(Wd.CompositionBorderMode value) =>
+            value switch
             {
-                case Wd.CompositionBorderMode.Hard: return Wc.CompositionBorderMode.Hard;
-                case Wd.CompositionBorderMode.Inherit: return Wc.CompositionBorderMode.Inherit;
-                case Wd.CompositionBorderMode.Soft: return Wc.CompositionBorderMode.Soft;
-                default: throw new InvalidOperationException();
-            }
-        }
+                Wd.CompositionBorderMode.Hard => Wc.CompositionBorderMode.Hard,
+                Wd.CompositionBorderMode.Inherit => Wc.CompositionBorderMode.Inherit,
+                Wd.CompositionBorderMode.Soft => Wc.CompositionBorderMode.Soft,
+                _ => throw new InvalidOperationException(),
+            };
 
-        static Wc.CompositionStrokeLineJoin StrokeLineJoin(Wd.CompositionStrokeLineJoin value)
-        {
-            switch (value)
+        static Wc.CompositionStrokeLineJoin StrokeLineJoin(Wd.CompositionStrokeLineJoin value) =>
+            value switch
             {
-                case Wd.CompositionStrokeLineJoin.Miter:
-                    return Wc.CompositionStrokeLineJoin.Miter;
-                case Wd.CompositionStrokeLineJoin.Bevel:
-                    return Wc.CompositionStrokeLineJoin.Bevel;
-                case Wd.CompositionStrokeLineJoin.Round:
-                    return Wc.CompositionStrokeLineJoin.Round;
-                case Wd.CompositionStrokeLineJoin.MiterOrBevel:
-                    return Wc.CompositionStrokeLineJoin.MiterOrBevel;
-                default:
-                    throw new InvalidOperationException();
-            }
-        }
+                Wd.CompositionStrokeLineJoin.Miter => Wc.CompositionStrokeLineJoin.Miter,
+                Wd.CompositionStrokeLineJoin.Bevel => Wc.CompositionStrokeLineJoin.Bevel,
+                Wd.CompositionStrokeLineJoin.Round => Wc.CompositionStrokeLineJoin.Round,
+                Wd.CompositionStrokeLineJoin.MiterOrBevel => Wc.CompositionStrokeLineJoin.MiterOrBevel,
+                _ => throw new InvalidOperationException(),
+            };
 
-        static Wc.CompositionStrokeCap StrokeCap(Wd.CompositionStrokeCap value)
-        {
-            switch (value)
+        static Wc.CompositionStrokeCap StrokeCap(Wd.CompositionStrokeCap value) =>
+            value switch
             {
-                case Wd.CompositionStrokeCap.Flat:
-                    return Wc.CompositionStrokeCap.Flat;
-                case Wd.CompositionStrokeCap.Square:
-                    return Wc.CompositionStrokeCap.Square;
-                case Wd.CompositionStrokeCap.Round:
-                    return Wc.CompositionStrokeCap.Round;
-                case Wd.CompositionStrokeCap.Triangle:
-                    return Wc.CompositionStrokeCap.Triangle;
-                default:
-                    throw new InvalidOperationException();
-            }
-        }
+                Wd.CompositionStrokeCap.Flat => Wc.CompositionStrokeCap.Flat,
+                Wd.CompositionStrokeCap.Square => Wc.CompositionStrokeCap.Square,
+                Wd.CompositionStrokeCap.Round => Wc.CompositionStrokeCap.Round,
+                Wd.CompositionStrokeCap.Triangle => Wc.CompositionStrokeCap.Triangle,
+                _ => throw new InvalidOperationException(),
+            };
 
         static Windows.UI.Color Color(Wd.Wui.Color color) =>
             Windows.UI.Color.FromArgb(color.A, color.R, color.G, color.B);
 
         static CanvasFilledRegionDetermination FilledRegionDetermination(
-            Wd.Mgcg.CanvasFilledRegionDetermination value)
-        {
-            switch (value)
+            Wd.Mgcg.CanvasFilledRegionDetermination value) =>
+            value switch
             {
-                case Wd.Mgcg.CanvasFilledRegionDetermination.Alternate:
-                    return CanvasFilledRegionDetermination.Alternate;
-                case Wd.Mgcg.CanvasFilledRegionDetermination.Winding:
-                    return CanvasFilledRegionDetermination.Winding;
-                default:
-                    throw new InvalidOperationException();
-            }
-        }
+                Wd.Mgcg.CanvasFilledRegionDetermination.Alternate => CanvasFilledRegionDetermination.Alternate,
+                Wd.Mgcg.CanvasFilledRegionDetermination.Winding => CanvasFilledRegionDetermination.Winding,
+                _ => throw new InvalidOperationException(),
+            };
 
-        static Mgc.CanvasComposite CanvasComposite(Wd.Mgc.CanvasComposite value)
-        {
-            switch (value)
+        static Mgc.CanvasComposite CanvasComposite(Wd.Mgc.CanvasComposite value) =>
+            value switch
             {
-                case Wd.Mgc.CanvasComposite.SourceOver:
-                    return Mgc.CanvasComposite.SourceOver;
-                case Wd.Mgc.CanvasComposite.DestinationOver:
-                    return Mgc.CanvasComposite.DestinationOver;
-                case Wd.Mgc.CanvasComposite.SourceIn:
-                    return Mgc.CanvasComposite.SourceIn;
-                case Wd.Mgc.CanvasComposite.DestinationIn:
-                    return Mgc.CanvasComposite.DestinationIn;
-                case Wd.Mgc.CanvasComposite.SourceOut:
-                    return Mgc.CanvasComposite.SourceOut;
-                case Wd.Mgc.CanvasComposite.DestinationOut:
-                    return Mgc.CanvasComposite.DestinationOut;
-                case Wd.Mgc.CanvasComposite.SourceAtop:
-                    return Mgc.CanvasComposite.SourceAtop;
-                case Wd.Mgc.CanvasComposite.DestinationAtop:
-                    return Mgc.CanvasComposite.DestinationAtop;
-                case Wd.Mgc.CanvasComposite.Xor:
-                    return Mgc.CanvasComposite.Xor;
-                case Wd.Mgc.CanvasComposite.Add:
-                    return Mgc.CanvasComposite.Add;
-                case Wd.Mgc.CanvasComposite.Copy:
-                    return Mgc.CanvasComposite.Copy;
-                case Wd.Mgc.CanvasComposite.BoundedCopy:
-                    return Mgc.CanvasComposite.BoundedCopy;
-                case Wd.Mgc.CanvasComposite.MaskInvert:
-                    return Mgc.CanvasComposite.MaskInvert;
-                default:
-                    throw new InvalidOperationException();
-            }
-        }
+                Wd.Mgc.CanvasComposite.SourceOver => Mgc.CanvasComposite.SourceOver,
+                Wd.Mgc.CanvasComposite.DestinationOver => Mgc.CanvasComposite.DestinationOver,
+                Wd.Mgc.CanvasComposite.SourceIn => Mgc.CanvasComposite.SourceIn,
+                Wd.Mgc.CanvasComposite.DestinationIn => Mgc.CanvasComposite.DestinationIn,
+                Wd.Mgc.CanvasComposite.SourceOut => Mgc.CanvasComposite.SourceOut,
+                Wd.Mgc.CanvasComposite.DestinationOut => Mgc.CanvasComposite.DestinationOut,
+                Wd.Mgc.CanvasComposite.SourceAtop => Mgc.CanvasComposite.SourceAtop,
+                Wd.Mgc.CanvasComposite.DestinationAtop => Mgc.CanvasComposite.DestinationAtop,
+                Wd.Mgc.CanvasComposite.Xor => Mgc.CanvasComposite.Xor,
+                Wd.Mgc.CanvasComposite.Add => Mgc.CanvasComposite.Add,
+                Wd.Mgc.CanvasComposite.Copy => Mgc.CanvasComposite.Copy,
+                Wd.Mgc.CanvasComposite.BoundedCopy => Mgc.CanvasComposite.BoundedCopy,
+                Wd.Mgc.CanvasComposite.MaskInvert => Mgc.CanvasComposite.MaskInvert,
+                _ => throw new InvalidOperationException(),
+            };
 
-        static CanvasFigureLoop CanvasFigureLoop(Wd.Mgcg.CanvasFigureLoop value)
-        {
-            switch (value)
+        static CanvasFigureLoop CanvasFigureLoop(Wd.Mgcg.CanvasFigureLoop value) =>
+            value switch
             {
-                case Wd.Mgcg.CanvasFigureLoop.Open:
-                    return Microsoft.Graphics.Canvas.Geometry.CanvasFigureLoop.Open;
-                case Wd.Mgcg.CanvasFigureLoop.Closed:
-                    return Microsoft.Graphics.Canvas.Geometry.CanvasFigureLoop.Closed;
-                default:
-                    throw new InvalidOperationException();
-            }
-        }
+                Wd.Mgcg.CanvasFigureLoop.Open => Microsoft.Graphics.Canvas.Geometry.CanvasFigureLoop.Open,
+                Wd.Mgcg.CanvasFigureLoop.Closed => Microsoft.Graphics.Canvas.Geometry.CanvasFigureLoop.Closed,
+                _ => throw new InvalidOperationException(),
+            };
 
-        static CanvasGeometryCombine Combine(Wd.Mgcg.CanvasGeometryCombine value)
-        {
-            switch (value)
+        static CanvasGeometryCombine Combine(Wd.Mgcg.CanvasGeometryCombine value) =>
+            value switch
             {
-                case Wd.Mgcg.CanvasGeometryCombine.Union:
-                    return CanvasGeometryCombine.Union;
-                case Wd.Mgcg.CanvasGeometryCombine.Exclude:
-                    return CanvasGeometryCombine.Exclude;
-                case Wd.Mgcg.CanvasGeometryCombine.Intersect:
-                    return CanvasGeometryCombine.Intersect;
-                case Wd.Mgcg.CanvasGeometryCombine.Xor:
-                    return CanvasGeometryCombine.Xor;
-                default:
-                    throw new InvalidOperationException();
-            }
-        }
+                Wd.Mgcg.CanvasGeometryCombine.Union => CanvasGeometryCombine.Union,
+                Wd.Mgcg.CanvasGeometryCombine.Exclude => CanvasGeometryCombine.Exclude,
+                Wd.Mgcg.CanvasGeometryCombine.Intersect => CanvasGeometryCombine.Intersect,
+                Wd.Mgcg.CanvasGeometryCombine.Xor => CanvasGeometryCombine.Xor,
+                _ => throw new InvalidOperationException(),
+            };
 
-        static Wc.CompositionGradientExtendMode ExtendMode(Wd.CompositionGradientExtendMode value)
-        {
-            switch (value)
+        static Wc.CompositionGradientExtendMode ExtendMode(Wd.CompositionGradientExtendMode value) =>
+            value switch
             {
-                case Wd.CompositionGradientExtendMode.Clamp:
-                    return Wc.CompositionGradientExtendMode.Clamp;
-                case Wd.CompositionGradientExtendMode.Wrap:
-                    return Wc.CompositionGradientExtendMode.Wrap;
-                case Wd.CompositionGradientExtendMode.Mirror:
-                    return Wc.CompositionGradientExtendMode.Mirror;
-                default:
-                    throw new InvalidOperationException();
-            }
-        }
+                Wd.CompositionGradientExtendMode.Clamp => Wc.CompositionGradientExtendMode.Clamp,
+                Wd.CompositionGradientExtendMode.Wrap => Wc.CompositionGradientExtendMode.Wrap,
+                Wd.CompositionGradientExtendMode.Mirror => Wc.CompositionGradientExtendMode.Mirror,
+                _ => throw new InvalidOperationException(),
+            };
 
-        static Wc.CompositionColorSpace ColorSpace(Wd.CompositionColorSpace value)
-        {
-            switch (value)
+        static Wc.CompositionColorSpace ColorSpace(Wd.CompositionColorSpace value) =>
+            value switch
             {
-                case Wd.CompositionColorSpace.Auto:
-                    return Wc.CompositionColorSpace.Auto;
-                case Wd.CompositionColorSpace.Hsl:
-                    return Wc.CompositionColorSpace.Hsl;
-                case Wd.CompositionColorSpace.Rgb:
-                    return Wc.CompositionColorSpace.Rgb;
-                case Wd.CompositionColorSpace.HslLinear:
-                    return Wc.CompositionColorSpace.HslLinear;
-                case Wd.CompositionColorSpace.RgbLinear:
-                    return Wc.CompositionColorSpace.RgbLinear;
-                default:
-                    throw new InvalidOperationException();
-            }
-        }
+                Wd.CompositionColorSpace.Auto => Wc.CompositionColorSpace.Auto,
+                Wd.CompositionColorSpace.Hsl => Wc.CompositionColorSpace.Hsl,
+                Wd.CompositionColorSpace.Rgb => Wc.CompositionColorSpace.Rgb,
+                Wd.CompositionColorSpace.HslLinear => Wc.CompositionColorSpace.HslLinear,
+                Wd.CompositionColorSpace.RgbLinear => Wc.CompositionColorSpace.RgbLinear,
+                _ => throw new InvalidOperationException(),
+            };
 
-        static Wc.CompositionMappingMode MappingMode(Wd.CompositionMappingMode value)
-        {
-            switch (value)
+        static Wc.CompositionMappingMode MappingMode(Wd.CompositionMappingMode value) =>
+            value switch
             {
-                case Wd.CompositionMappingMode.Absolute:
-                    return Wc.CompositionMappingMode.Absolute;
-                case Wd.CompositionMappingMode.Relative:
-                    return Wc.CompositionMappingMode.Relative;
-                default:
-                    throw new InvalidOperationException();
-            }
-        }
+                Wd.CompositionMappingMode.Absolute => Wc.CompositionMappingMode.Absolute,
+                Wd.CompositionMappingMode.Relative => Wc.CompositionMappingMode.Relative,
+                _ => throw new InvalidOperationException(),
+            };
 
         sealed class ReferenceEqualsComparer : IEqualityComparer<object>
         {

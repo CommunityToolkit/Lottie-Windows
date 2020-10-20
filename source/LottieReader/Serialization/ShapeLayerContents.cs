@@ -139,18 +139,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         // gs
         ShapeLayerContent ReadGradientStroke(
             in LottieJsonObjectElement obj,
-            in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
-        {
-            switch (TToGradientType(obj.DoublePropertyOrNull("t")))
+            in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs) =>
+            TToGradientType(obj.DoublePropertyOrNull("t")) switch
             {
-                case GradientType.Linear:
-                    return ReadLinearGradientStroke(obj, in shapeLayerContentArgs);
-                case GradientType.Radial:
-                    return ReadRadialGradientStroke(obj, in shapeLayerContentArgs);
-                default:
-                    throw Unreachable;
-            }
-        }
+                GradientType.Linear => ReadLinearGradientStroke(obj, in shapeLayerContentArgs),
+                GradientType.Radial => ReadRadialGradientStroke(obj, in shapeLayerContentArgs),
+                _ => throw Unreachable,
+            };
 
         LinearGradientStroke ReadLinearGradientStroke(
             in LottieJsonObjectElement obj,
@@ -237,18 +232,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         // gf
         ShapeLayerContent ReadGradientFill(
             in LottieJsonObjectElement obj,
-            in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs)
-        {
-            switch (TToGradientType(obj.DoublePropertyOrNull("t")))
+            in ShapeLayerContent.ShapeLayerContentArgs shapeLayerContentArgs) =>
+            TToGradientType(obj.DoublePropertyOrNull("t")) switch
             {
-                case GradientType.Linear:
-                    return ReadLinearGradientFill(obj, in shapeLayerContentArgs);
-                case GradientType.Radial:
-                    return ReadRadialGradientFill(obj, in shapeLayerContentArgs);
-                default:
-                    throw Unreachable;
-            }
-        }
+                GradientType.Linear => ReadLinearGradientFill(obj, in shapeLayerContentArgs),
+                GradientType.Radial => ReadRadialGradientFill(obj, in shapeLayerContentArgs),
+                _ => throw Unreachable,
+            };
 
         RadialGradientFill ReadRadialGradientFill(
             in LottieJsonObjectElement obj,
@@ -455,15 +445,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         {
             // If not specified, the fill type is EvenOdd.
             var windingValue = obj.Int32PropertyOrNull("r");
-            switch (windingValue)
+            return windingValue switch
             {
-                case 0: return ShapeFill.PathFillType.EvenOdd;
-                case 1: return ShapeFill.PathFillType.Winding;
+                0 => ShapeFill.PathFillType.EvenOdd,
+                1 => ShapeFill.PathFillType.Winding,
 
                 // TODO - some files have a "2" value. There
                 // may be another fill type.
-                default: return ShapeFill.PathFillType.EvenOdd;
-            }
+                _ => ShapeFill.PathFillType.EvenOdd,
+            };
         }
 
         // Reads the transform for a repeater. Repeater transforms are the same as regular transforms

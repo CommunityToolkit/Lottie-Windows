@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -110,15 +112,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
             TNode NodeFor(ICompositionSurface obj)
             {
-                switch (obj)
+                return obj switch
                 {
-                    case CompositionObject compositionObject:
-                        return _graph[compositionObject].Canonical;
-                    case LoadedImageSurface loadedImageSurface:
-                        return _graph[loadedImageSurface].Canonical;
-                    default:
-                        throw new InvalidOperationException();
-                }
+                    CompositionObject compositionObject => _graph[compositionObject].Canonical,
+                    LoadedImageSurface loadedImageSurface => _graph[loadedImageSurface].Canonical,
+                    _ => throw new InvalidOperationException(),
+                };
             }
 
             TC CanonicalObject<TC>(Wg.IGeometrySource2D obj) => (TC)NodeFor(obj).Object;

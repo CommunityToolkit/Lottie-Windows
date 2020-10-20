@@ -177,30 +177,28 @@ sealed class Program
                 var tsvFilePath = System.IO.Path.Combine(outputFolder, $"LottieGen_{dataTableName}.tsv");
                 _reporter.WriteInfo("Writing stats to:");
                 _reporter.WriteInfo(InfoType.FilePath, $" {tsvFilePath}");
-                using (var tsvFile = File.CreateText(tsvFilePath))
+                using var tsvFile = File.CreateText(tsvFilePath);
+                tsvFile.WriteLine(string.Join("\t", columnNames));
+
+                // Sort the rows. This is necessary in order to ensure deterministic output
+                // when multiple LottieFileProcessors are run in parallel.
+                Array.Sort(rows, (a, b) =>
                 {
-                    tsvFile.WriteLine(string.Join("\t", columnNames));
-
-                    // Sort the rows. This is necessary in order to ensure deterministic output
-                    // when multiple LottieFileProcessors are run in parallel.
-                    Array.Sort(rows, (a, b) =>
+                    for (var i = 0; i < a.Length; i++)
                     {
-                        for (var i = 0; i < a.Length; i++)
+                        var result = StringComparer.Ordinal.Compare(a[i], b[i]);
+                        if (result != 0)
                         {
-                            var result = StringComparer.Ordinal.Compare(a[i], b[i]);
-                            if (result != 0)
-                            {
-                                return result;
-                            }
+                            return result;
                         }
-
-                        return 0;
-                    });
-
-                    foreach (var row in rows)
-                    {
-                        tsvFile.WriteLine(string.Join("\t", row));
                     }
+
+                    return 0;
+                });
+
+                foreach (var row in rows)
+                {
+                    tsvFile.WriteLine(string.Join("\t", row));
                 }
             }
         }
