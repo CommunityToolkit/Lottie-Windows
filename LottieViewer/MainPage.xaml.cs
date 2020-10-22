@@ -123,6 +123,7 @@ namespace LottieViewer
                     SuggestedStartLocation = PickerLocationId.ComputerFolder,
                 };
                 filePicker.FileTypeFilter.Add(".json");
+                filePicker.FileTypeFilter.Add(".lottie");
 
                 StorageFile? file = null;
                 try
@@ -181,7 +182,7 @@ namespace LottieViewer
                 {
                     var items = await e.DataView.GetStorageItemsAsync();
 
-                    var filteredItems = items.Where(IsJsonFile);
+                    var filteredItems = items.Where(IsJsonOrLottieFile);
 
                     if (!filteredItems.Any() || filteredItems.Skip(1).Any())
                     {
@@ -261,7 +262,10 @@ namespace LottieViewer
         [Conditional("DebugDragDrop")]
         static void DebugDragDrop(string text) => Debug.WriteLine(text);
 
-        static bool IsJsonFile(IStorageItem item) => item.IsOfType(StorageItemTypes.File) && item.Name.EndsWith(".json", StringComparison.InvariantCultureIgnoreCase);
+        static bool IsJsonOrLottieFile(IStorageItem item) =>
+            item.IsOfType(StorageItemTypes.File) &&
+            (item.Name.EndsWith(".json", StringComparison.InvariantCultureIgnoreCase) ||
+            item.Name.EndsWith(".lottie", StringComparison.InvariantCultureIgnoreCase));
 
         bool _ignoreScrubberValueChanges;
 

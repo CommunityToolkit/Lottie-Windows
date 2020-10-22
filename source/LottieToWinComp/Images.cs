@@ -43,14 +43,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     var embeddedImageAsset = (EmbeddedImageAsset)imageAsset;
                     surface = LoadedImageSurface.StartLoadFromStream(embeddedImageAsset.Bytes);
                     surface.SetName(imageAsset.Id);
-                    surface.SetDescription(context, $"Image: \"{embeddedImageAsset.Id}\" {embeddedImageAsset.Format} {imageSize}.");
+                    if (context.Translation.AddDescriptions)
+                    {
+                        surface.SetDescription(context, $"Image: \"{embeddedImageAsset.Id}\" {embeddedImageAsset.Format} {imageSize}.");
+                    }
+
                     break;
                 case ImageAsset.ImageAssetType.External:
                     var externalImageAsset = (ExternalImageAsset)imageAsset;
                     surface = LoadedImageSurface.StartLoadFromUri(new Uri($"file://localhost/{externalImageAsset.Path}{externalImageAsset.FileName}"));
                     surface.SetName(externalImageAsset.FileName);
                     var path = externalImageAsset.Path + externalImageAsset.FileName;
-                    surface.SetDescription(context, $"\"{path}\" {imageSize}.");
+                    if (context.Translation.AddDescriptions)
+                    {
+                        surface.SetDescription(context, $"\"{path}\" {imageSize}.");
+                    }
+
                     context.Issues.ImageFileRequired(path);
                     break;
                 default:

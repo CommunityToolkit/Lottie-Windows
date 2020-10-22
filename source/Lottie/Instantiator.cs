@@ -32,15 +32,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
     {
         readonly Wc.Compositor _c;
         readonly Dictionary<object, object> _cache = new Dictionary<object, object>(new ReferenceEqualsComparer());
+        readonly Func<Uri, Wc.ICompositionSurface?>? _surfaceResolver;
 #if ReuseExpressionAnimation
         // The one and only ExpressionAnimation - reset and reparameterized for each time we need one.
         readonly Wc.ExpressionAnimation _expressionAnimation;
 #endif
 
-        public Instantiator(Wc.Compositor compositor)
+        public Instantiator(Wc.Compositor compositor, Func<Uri, Wc.ICompositionSurface?>? surfaceResolver)
         {
             _c = compositor;
-
+            _surfaceResolver = surfaceResolver;
 #if ReuseExpressionAnimation
             _expressionAnimation = _c.CreateExpressionAnimation();
 #endif
@@ -1431,9 +1432,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 _ => throw new InvalidOperationException(),
             };
 
-        Wm.LoadedImageSurface? GetLoadedImageSurface(Wmd.LoadedImageSurface obj)
+        Wc.ICompositionSurface? GetLoadedImageSurface(Wmd.LoadedImageSurface obj)
         {
-            if (GetExisting<Wm.LoadedImageSurface>(obj, out var result))
+            if (GetExisting<Wc.ICompositionSurface>(obj, out var result))
             {
                 return result;
             }
@@ -1445,8 +1446,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                     result = Wm.LoadedImageSurface.StartLoadFromStream(bytes.AsBuffer().AsStream().AsRandomAccessStream());
                     break;
                 case Wmd.LoadedImageSurface.LoadedImageSurfaceType.FromUri:
-                    // Loading image surface from Uri is not supported yet.
-                    result = null;
+                    var uri = ((Wmd.LoadedImageSurfaceFromUri)obj).Uri;
+
+                    // Ask the resolver to convert the URI to a surface. It can return null on failure.
+                    result = _surfaceResolver?.Invoke(uri);
                     break;
                 default:
                     throw new InvalidOperationException();

@@ -5,6 +5,7 @@
 #nullable enable
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -19,10 +20,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
     /// translation of a composition and some metadata. This allows multiple instances of the translation
     /// to be instantiated without requiring repeated translations.
     /// </summary>
-    sealed class ContentFactory : IAnimatedVisualSource
+    sealed class AnimatedVisualFactory
+        : IAnimatedVisualSource
     {
-        internal static readonly ContentFactory FailedContent = new ContentFactory(null);
+        readonly Dictionary<Uri, ICompositionSurface?> _imageCache = new Dictionary<Uri, ICompositionSurface?>();
         readonly LottieVisualDiagnostics? _diagnostics;
+        Loader? _imageLoader;
         WinCompData.Visual? _wincompDataRootVisual;
         WinCompData.CompositionPropertySet? _wincompDataThemingPropertySet;
         CompositionPropertySet? _themingPropertySet;
@@ -30,8 +33,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         double _height;
         TimeSpan _duration;
 
-        internal ContentFactory(LottieVisualDiagnostics? diagnostics)
+        internal AnimatedVisualFactory(Loader imageLoader, LottieVisualDiagnostics? diagnostics)
         {
+            _imageLoader = imageLoader;
             _diagnostics = diagnostics;
         }
 
@@ -72,7 +76,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             {
                 var sw = Stopwatch.StartNew();
 
-                var instantiator = new Instantiator(compositor);
+                var instantiator = new Instantiator(compositor, surfaceResolver: LoadImageFromUri);
 
                 // _wincompDataRootVisual != null is implied by CanInstantiate.
                 var result = new DisposableAnimatedVisual((Visual)instantiator.GetInstance(_wincompDataRootVisual!))
@@ -95,8 +99,30 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                     diags.InstantiationTime = sw.Elapsed;
                 }
 
+                // After the first instantiation, all the images are cached so the
+                // image loader is no longer needed.
+                _imageLoader?.Dispose();
+                _imageLoader = null;
+
                 return result;
             }
+        }
+
+        ICompositionSurface? LoadImageFromUri(Uri uri)
+        {
+            if (!_imageCache.TryGetValue(uri, out var result))
+            {
+                // The image loader will not be null, because either this is the
+                // first instantiation of the animated visual in which case the
+                // image loader hasn't been set to null, or it's a second instantiation
+                // so the images are already cached.
+                result = _imageLoader!.LoadImage(uri);
+
+                // Cache the result so we can share the surfaces.
+                _imageCache.Add(uri, result);
+            }
+
+            return result;
         }
     }
 }
