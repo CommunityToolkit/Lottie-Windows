@@ -25,7 +25,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         }
 
         [return: NotNullIfNotNull("uri")]
-        internal static Task<AnimatedVisualFactory>? LoadAsync(
+        internal static async Task<AnimatedVisualFactory?> LoadAsync(
             ImageAssetHandler? imageLoader,
             Uri uri,
             LottieVisualOptions options)
@@ -40,13 +40,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             if (absoluteUri.Scheme.StartsWith("ms-"))
             {
                 // The URI is an application URI. Defer to the StorageFileLoader.
-                return StorageFileLoader.StartLoadingAsync(imageLoader, absoluteUri, options);
+                return await StorageFileLoader.LoadAsync(imageLoader, absoluteUri, options);
             }
             else
             {
                 var loader = new UriLoader(imageLoader);
 
-                return Loader.LoadAsync(
+                return await Loader.LoadAsync(
                     () => GetJsonStreamAsync(uri),
                     loader,
                     options);

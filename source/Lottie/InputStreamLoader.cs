@@ -13,7 +13,9 @@ using Windows.UI.Composition;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie
 {
-    // A loader that loads from an IInputStream.
+    /// <summary>
+    /// A loader that loads from an IInputStream.
+    /// </summary>
     sealed class InputStreamLoader : Loader
     {
         readonly ImageAssetHandler? _imageLoader;
@@ -26,7 +28,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         }
 
         [return: NotNullIfNotNull("inputStream")]
-        internal static Task<AnimatedVisualFactory>? LoadAsync(
+        internal static async Task<AnimatedVisualFactory?> LoadAsync(
             ImageAssetHandler? imageLoader,
             IInputStream inputStream,
             LottieVisualOptions options)
@@ -37,7 +39,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             }
 
             var loader = new InputStreamLoader(imageLoader, inputStream);
-            return Loader.LoadAsync(
+            return await Loader.LoadAsync(
                 loader.GetJsonStreamAsync,
                 loader,
                 options);

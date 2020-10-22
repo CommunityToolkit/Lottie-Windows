@@ -30,7 +30,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         }
 
         [return: NotNullIfNotNull("file")]
-        internal static Task<AnimatedVisualFactory>? LoadAsync(
+        internal static async Task<AnimatedVisualFactory?> LoadAsync(
             ImageAssetHandler? imageLoader,
             StorageFile file,
             LottieVisualOptions options)
@@ -43,18 +43,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             if (file.Name.EndsWith(".lottie", StringComparison.OrdinalIgnoreCase))
             {
                 // It's a .lottie file. Defer to the DotLottieLoader.
-                return DotLottieLoader.LoadAsync(file, options);
+                return await DotLottieLoader.LoadAsync(file, options);
             }
 
             var loader = new StorageFileLoader(imageLoader, file);
-            return Loader.LoadAsync(
+            return await Loader.LoadAsync(
                 loader.GetJsonStreamAsync,
                 loader,
                 options);
         }
 
         // Starts loading from an ms-appx asset file. This loads embedded assets.
-        internal static async Task<AnimatedVisualFactory>? StartLoadingAsync(
+        internal static async Task<AnimatedVisualFactory?> LoadAsync(
             ImageAssetHandler? imageLoader,
             Uri applicationUri,
             LottieVisualOptions options)

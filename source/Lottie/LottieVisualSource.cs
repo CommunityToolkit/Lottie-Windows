@@ -238,7 +238,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         }
 
         // Starts loading. Completes the returned task when the load completes or is replaced by another load.
-        async Task LoadAsync(Task<AnimatedVisualFactory>? loader)
+        async Task LoadAsync(Task<AnimatedVisualFactory?> loader)
         {
             var loadVersion = ++_loadVersion;
 
@@ -251,12 +251,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 // They should stop showing the content. We will notify them again when the
                 // content changes.
                 NotifyListenersThatCompositionChanged();
-            }
-
-            if (loader is null)
-            {
-                // No loader means clear out what you previously loaded.
-                return;
             }
 
             // Disable the warning about the task possibly having being started in

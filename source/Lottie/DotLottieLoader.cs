@@ -27,17 +27,23 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         {
         }
 
-        [return: NotNullIfNotNull("stream")]
-        internal static async Task<AnimatedVisualFactory>? LoadAsync(
+        [return: NotNullIfNotNull("file")]
+        internal static async Task<AnimatedVisualFactory?> LoadAsync(
             StorageFile file,
             LottieVisualOptions options)
         {
             var stream = (await file.OpenReadAsync()).AsStreamForRead();
-            return await LoadAsync(file.Name, stream, options);
+            var factory = LoadAsync(file.Name, stream, options);
+            if (factory == null)
+            {
+                // This won't work... we failed, but we already returned a Task.
+                return null;
+            }
+
+            return await factory;
         }
 
-        [return: NotNullIfNotNull("stream")]
-        static Task<AnimatedVisualFactory>? LoadAsync(
+        static async Task<AnimatedVisualFactory?> LoadAsync(
             string fileName,
             Stream stream,
             LottieVisualOptions options)
@@ -55,7 +61,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
 
             var loader = new DotLottieLoader();
 
-            return Loader.LoadAsync(
+            return await Loader.LoadAsync(
                 () => loader.GetJsonStreamAsync(zipArchive, fileName),
                 loader,
                 options);
