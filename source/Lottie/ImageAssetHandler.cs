@@ -14,5 +14,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
     /// </summary>
     /// <returns>A surface for the image referenced by <paramref name="imageUri"/>
     /// or null.</returns>
+    /// <remarks>Users can provide an <see cref="ImageAssetHandler"/> in order to
+    /// provide a bitmap for an image referenced in a Lottie file.
+    /// <seealso cref="LottieVisualSource.SetImageAssetHandler(ImageAssetHandler?)"/></remarks>
     public delegate ICompositionSurface? ImageAssetHandler(Uri imageUri);
 }

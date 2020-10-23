@@ -14,7 +14,7 @@ using Windows.UI.Composition;
 namespace Microsoft.Toolkit.Uwp.UI.Lottie
 {
     /// <summary>
-    /// A loader that loads from an IInputStream.
+    /// A loader that loads from an <see cref="IInputStream"/>.
     /// </summary>
     sealed class InputStreamLoader : Loader
     {

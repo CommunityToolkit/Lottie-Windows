@@ -41,7 +41,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         /// <param name="options">Options.</param>
         /// <returns>An <see cref="AnimatedVisualFactory"/> that can be used
         /// to instantiate IAnimatedVisual instances.</returns>
-        internal static async Task<AnimatedVisualFactory?> LoadAsync(
+        private protected static async Task<AnimatedVisualFactory?> LoadAsync(
             Func<Task<(string? name, Stream? stream)>> jsonLoader,
             Loader imageLoader,
             LottieVisualOptions options)
