@@ -26,7 +26,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource?, object?>>? _compositionInvalidatedEventTokenTable;
         int _loadVersion;
         Uri? _uriSource;
-        ContentFactory? _contentFactory;
+        AnimatedVisualFactory? _animatedVisualFactory;
+        ImageAssetHandler? _imageAssetHandler;
 
         /// <summary>
         /// Gets the options for the <see cref="LottieVisualSource"/>.
@@ -103,7 +104,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         public IAsyncAction SetSourceAsync(IInputStream stream)
         {
             _uriSource = null;
-            return LoadAsync(stream is null ? null : new Loader.FromInputStream(stream)).AsAsyncAction();
+            return LoadAsync(InputStreamLoader.LoadAsync(_imageAssetHandler, stream, Options)).AsAsyncAction();
         }
 
         /// <summary>
@@ -115,7 +116,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         public IAsyncAction SetSourceAsync(StorageFile file)
         {
             _uriSource = null;
-            return LoadAsync(file is null ? null : new Loader.FromStorageFile(file)).AsAsyncAction();
+            return LoadAsync(StorageFileLoader.LoadAsync(_imageAssetHandler, file, Options)).AsAsyncAction();
         }
 
         /// <summary>
@@ -133,7 +134,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             // This will not trigger loading because it will be seen as no change
             // from the current (just set) _uriSource value.
             UriSource = sourceUri;
-            return LoadAsync(sourceUri is null ? null : new Loader.FromUri(sourceUri)).AsAsyncAction();
+
+            return LoadAsync(UriLoader.LoadAsync(_imageAssetHandler, sourceUri, Options)).AsAsyncAction();
         }
 
         /// <summary>
@@ -158,6 +160,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         }
 
         /// <summary>
+        /// Sets a delegate that returns an <see cref="ICompositionSurface"/> for the given image uri.
+        /// If this is null, no images will be loaded from references to external images.
+        /// </summary>
+        /// <remarks>Most Lottie files do not reference external images, but those that do
+        /// will refer to the files via a uri. It is up to the user of <see cref="LottieVisualSource"/>
+        /// to manage the loading of the image, and return an <see cref="ICompositionSurface"/> for
+        /// that image. Alternatively the delegate may return null, and the image will not be
+        /// displayed.</remarks>
+        public void SetImageAssetHandler(ImageAssetHandler? imageAssetHandler)
+        {
+            _imageAssetHandler = imageAssetHandler;
+        }
+
+        /// <summary>
         /// Implements <see cref="IAnimatedVisualSource"/>.
         /// </summary>
         /// <param name="compositor">The <see cref="Compositor"/> that can be used as a factory for the resulting <see cref="IAnimatedVisual"/>.</param>
@@ -169,7 +185,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             Compositor compositor,
             out object? diagnostics)
         {
-            if (_contentFactory is null)
+            if (_animatedVisualFactory is null)
             {
                 // No content has been loaded yet.
                 // Return an IAnimatedVisual that produces nothing.
@@ -178,10 +194,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             }
             else
             {
-                // Some content was loaded. Ask the contentFactory to produce an
+                // Some content was loaded. Ask the factory to produce an
                 // IAnimatedVisual. If it returns null, the player will treat it
                 // as an error.
-                return _contentFactory.TryCreateAnimatedVisual(compositor, out diagnostics);
+                return _animatedVisualFactory.TryCreateAnimatedVisual(compositor, out diagnostics);
             }
         }
 
@@ -212,7 +228,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             {
                 try
                 {
-                    await LoadAsync(new Loader.FromUri(UriSource));
+                    await LoadAsync(UriLoader.LoadAsync(_imageAssetHandler, UriSource, Options));
                 }
                 catch
                 {
@@ -222,14 +238,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         }
 
         // Starts loading. Completes the returned task when the load completes or is replaced by another load.
-        async Task LoadAsync(Loader? loader)
+        async Task LoadAsync(Task<AnimatedVisualFactory?> loader)
         {
             var loadVersion = ++_loadVersion;
 
-            var oldContentFactory = _contentFactory;
-            _contentFactory = null;
+            var oldFactory = _animatedVisualFactory;
+            _animatedVisualFactory = null;
 
-            if (oldContentFactory != null)
+            if (oldFactory != null)
             {
                 // Notify all listeners that their existing content is no longer valid.
                 // They should stop showing the content. We will notify them again when the
@@ -237,23 +253,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 NotifyListenersThatCompositionChanged();
             }
 
-            if (loader is null)
-            {
-                // No loader means clear out what you previously loaded.
-                return;
-            }
+            // Disable the warning about the task possibly having being started in
+            // another context. There is no other context here.
+#pragma warning disable VSTHRD003
 
-            ContentFactory contentFactory;
-            try
-            {
-                contentFactory = await loader.LoadAsync(Options);
-            }
-            catch
-            {
-                // Set the content factory to one that will return a null IAnimatedVisual to
-                // indicate that something went wrong. If the load succeeds this will get overwritten.
-                contentFactory = ContentFactory.FailedContent;
-            }
+            // Wait for the loader to finish.
+            var factory = await loader;
+#pragma warning restore VSTHRD003
 
             if (loadVersion != _loadVersion)
             {
@@ -261,19 +267,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 return;
             }
 
-            if (contentFactory is null)
+            if (factory is null)
             {
                 // Load didn't produce anything.
                 return;
             }
 
             // We are the the most recent load. Save the result.
-            _contentFactory = contentFactory;
+            _animatedVisualFactory = factory;
 
             // Notify all listeners that they should try to create their instance of the content again.
             NotifyListenersThatCompositionChanged();
 
-            if (!contentFactory.CanInstantiate)
+            if (!factory.CanInstantiate)
             {
                 // The load did not produce any content. Throw an exception so the caller knows.
                 throw new ArgumentException("Failed to load animated visual.");

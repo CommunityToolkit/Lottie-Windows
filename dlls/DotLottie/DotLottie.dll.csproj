@@ -1,0 +1,12 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <Configurations>Debug;Release</Configurations>
+    <LangVersion>latest</LangVersion>
+    <DefineConstants>PUBLIC_DotLottie</DefineConstants>
+  </PropertyGroup>
+
+  <Import Project="..\..\source\DotLottie\DotLottie.projitems" Label="Shared" />
+
+</Project>

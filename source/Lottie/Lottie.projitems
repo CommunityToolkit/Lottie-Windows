@@ -6,15 +6,20 @@
     <SharedGUID>8ef7bd77-28e9-4998-8dbb-8036f988fe65</SharedGUID>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)ContentFactory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AnimatedVisualFactory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DisposableAnimatedVisual.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DotLottieLoader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GenericDataToJson.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ImageAssetHandler.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)InputStreamLoader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Instantiator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Loader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LottieVisualDiagnostics.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LottieVisualOptions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LottieVisualSource.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)StorageFileLoader.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UriLoader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Uris.cs" />
   </ItemGroup>
 </Project>

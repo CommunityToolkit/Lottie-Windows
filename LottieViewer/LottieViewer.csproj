@@ -266,6 +266,7 @@
   <Import Project="..\source\WinStorageStreamsData\WinStorageStreamsData.projitems" Label="Shared" />
   <Import Project="..\source\WinUIXamlMediaData\WinUIXamlMediaData.projitems" Label="Shared" />
   <Import Project="..\source\YamlData\YamlData.projitems" Label="Shared" />
+  <Import Project="..\source\DotLottie\DotLottie.projitems" Label="Shared" />
   <Target Name="Pack">
     <!-- Dummy target to mute warnings about attempts to create a NuPkg -->
   </Target>
