@@ -33,14 +33,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             LottieVisualOptions options)
         {
             var stream = (await file.OpenReadAsync()).AsStreamForRead();
-            var factory = LoadAsync(file.Name, stream, options);
-            if (factory == null)
-            {
-                // This won't work... we failed, but we already returned a Task.
-                return null;
-            }
-
-            return await factory;
+            return await LoadAsync(file.Name, stream, options);
         }
 
         static async Task<AnimatedVisualFactory?> LoadAsync(

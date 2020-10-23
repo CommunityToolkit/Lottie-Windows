@@ -25,7 +25,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
     {
         readonly Dictionary<Uri, ICompositionSurface?> _imageCache = new Dictionary<Uri, ICompositionSurface?>();
         readonly LottieVisualDiagnostics? _diagnostics;
-        Loader? _imageLoader;
+        Loader? _loader;
         WinCompData.Visual? _wincompDataRootVisual;
         WinCompData.CompositionPropertySet? _wincompDataThemingPropertySet;
         CompositionPropertySet? _themingPropertySet;
@@ -33,9 +33,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         double _height;
         TimeSpan _duration;
 
-        internal AnimatedVisualFactory(Loader imageLoader, LottieVisualDiagnostics? diagnostics)
+        internal AnimatedVisualFactory(Loader loader, LottieVisualDiagnostics? diagnostics)
         {
-            _imageLoader = imageLoader;
+            _loader = loader;
             _diagnostics = diagnostics;
         }
 
@@ -100,9 +100,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 }
 
                 // After the first instantiation, all the images are cached so the
-                // image loader is no longer needed.
-                _imageLoader?.Dispose();
-                _imageLoader = null;
+                // loader is no longer needed.
+                _loader?.Dispose();
+                _loader = null;
 
                 return result;
             }
@@ -112,11 +112,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         {
             if (!_imageCache.TryGetValue(uri, out var result))
             {
-                // The image loader will not be null, because either this is the
+                // The loader will not be null, because either this is the
                 // first instantiation of the animated visual in which case the
                 // image loader hasn't been set to null, or it's a second instantiation
                 // so the images are already cached.
-                result = _imageLoader!.LoadImage(uri);
+                result = _loader!.LoadImage(uri);
 
                 // Cache the result so we can share the surfaces.
                 _imageCache.Add(uri, result);
