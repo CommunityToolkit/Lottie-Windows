@@ -16,6 +16,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.DotLottie
 {
     /// <summary>
     /// Provides access to the contents of a .lottie file.
+    /// See https://dotlottie.io.
     /// </summary>
     sealed class DotLottieFile : IDisposable
     {
