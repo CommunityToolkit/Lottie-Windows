@@ -33,8 +33,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.MetaData
             //  7 = 1809 / 10.0.17763 / RS5  / October 2018 Update
             //  8 = 1903 / 10.0.18362 / 19H1 / May 2019 Update
             //  9 = 1909 / 10.0.18363 / 19H2 / November 2019 Update
-            //  10 = 2004 / 10.0.19041 / 20H1 / ?????
-            //  11 = ???? / 10.0.????? / 20H2 / ?????
+            //  10 = 2004 / 10.0.19041 / 20H1 / May 2020 Update
+            //  11 = 20H2 / 10.0.19042 / 20H2 / October 2020 Update
         }
     }
 }

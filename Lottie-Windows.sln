@@ -145,6 +145,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CompMetadata.dll", "dlls\Co
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "NullablesAttributes", "source\NullablesAttributes\NullablesAttributes.shproj", "{E32587A8-94E8-4B68-91AD-F3612A48A62B}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "DotLottie", "source\DotLottie\DotLottie.shproj", "{7012420D-624C-4BD4-A1D2-1C6C1655ED3A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotLottie.dll", "dlls\DotLottie\DotLottie.dll.csproj", "{AB2ACC11-DE31-4E47-8A5B-895D6934684F}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		source\LottieToWinComp\LottieToWinComp.projitems*{0340244a-683c-405e-838b-f93872779532}*SharedItemsImports = 13
@@ -157,6 +161,7 @@ Global
 		source\YamlData\YamlData.projitems*{39c6b7f3-5e75-4019-82ab-00fd8a0a06e2}*SharedItemsImports = 13
 		source\LottieReader\LottieReader.projitems*{4e7d8957-3f5f-46e1-99a8-2012b806c9b0}*SharedItemsImports = 13
 		source\CompMetadata\CompMetadata.projitems*{5120efd7-a556-46bf-8d56-f65f1ef9a305}*SharedItemsImports = 4
+		source\DotLottie\DotLottie.projitems*{5120efd7-a556-46bf-8d56-f65f1ef9a305}*SharedItemsImports = 4
 		source\GenericData\GenericData.projitems*{5120efd7-a556-46bf-8d56-f65f1ef9a305}*SharedItemsImports = 4
 		source\LottieData\LottieData.projitems*{5120efd7-a556-46bf-8d56-f65f1ef9a305}*SharedItemsImports = 4
 		source\LottieMetadata\LottieMetadata.projitems*{5120efd7-a556-46bf-8d56-f65f1ef9a305}*SharedItemsImports = 4
@@ -174,6 +179,7 @@ Global
 		source\NullablesAttributes\NullablesAttributes.projitems*{68317393-f5a5-4b2c-918a-688db2c10f54}*SharedItemsImports = 5
 		source\WinCompData\WinCompData.projitems*{68317393-f5a5-4b2c-918a-688db2c10f54}*SharedItemsImports = 5
 		source\NullablesAttributes\NullablesAttributes.projitems*{6ab50ed0-6273-4919-9ade-50195664ef15}*SharedItemsImports = 4
+		source\DotLottie\DotLottie.projitems*{7012420d-624c-4bd4-a1d2-1c6c1655ed3a}*SharedItemsImports = 13
 		source\UIData\UIData.projitems*{74601e6c-2dfe-4842-b170-047941abff2c}*SharedItemsImports = 13
 		source\GenericData\GenericData.projitems*{77bcd724-8555-463b-985f-f8e8110164c4}*SharedItemsImports = 13
 		source\Lottie\Lottie.projitems*{8ef7bd77-28e9-4998-8dbb-8036f988fe65}*SharedItemsImports = 13
@@ -182,6 +188,7 @@ Global
 		source\UIDataCodeGen\UIDataCodeGen.projitems*{9b6c0b7f-0d0f-4086-9746-0d34d7667db5}*SharedItemsImports = 5
 		source\CompMetadata\CompMetadata.projitems*{a262757c-9f1a-4f6e-9188-849f4b709d67}*SharedItemsImports = 5
 		source\GenericData\GenericData.projitems*{a687177e-31ff-4f05-89c6-03657c96a166}*SharedItemsImports = 5
+		source\DotLottie\DotLottie.projitems*{ab2acc11-de31-4e47-8a5b-895d6934684f}*SharedItemsImports = 5
 		source\CompMetadata\CompMetadata.projitems*{b0197c19-bdf5-473e-a022-e21f6122eee5}*SharedItemsImports = 13
 		source\LottieData\LottieData.projitems*{b3db16ee-a821-4474-a188-e64926529bbd}*SharedItemsImports = 13
 		source\LottieReader\LottieReader.projitems*{bb081e5a-cf3c-490f-8f8e-450a79f6ca33}*SharedItemsImports = 5
@@ -205,6 +212,7 @@ Global
 		source\UIDataCodeGen\UIDataCodeGen.projitems*{d02be6c8-14db-4b4f-8600-f3c9b69c104d}*SharedItemsImports = 13
 		source\NullablesAttributes\NullablesAttributes.projitems*{e32587a8-94e8-4b68-91ad-f3612a48a62b}*SharedItemsImports = 13
 		source\CompMetadata\CompMetadata.projitems*{e392bad0-f936-4b64-a445-552597795cc7}*SharedItemsImports = 5
+		source\DotLottie\DotLottie.projitems*{e392bad0-f936-4b64-a445-552597795cc7}*SharedItemsImports = 5
 		source\GenericData\GenericData.projitems*{e392bad0-f936-4b64-a445-552597795cc7}*SharedItemsImports = 5
 		source\LottieData\LottieData.projitems*{e392bad0-f936-4b64-a445-552597795cc7}*SharedItemsImports = 5
 		source\LottieMetadata\LottieMetadata.projitems*{e392bad0-f936-4b64-a445-552597795cc7}*SharedItemsImports = 5
@@ -451,6 +459,26 @@ Global
 		{A262757C-9F1A-4F6E-9188-849F4B709D67}.Release|ARM64.ActiveCfg = Release|Any CPU
 		{A262757C-9F1A-4F6E-9188-849F4B709D67}.Release|x64.ActiveCfg = Release|Any CPU
 		{A262757C-9F1A-4F6E-9188-849F4B709D67}.Release|x86.ActiveCfg = Release|Any CPU
+		{AB2ACC11-DE31-4E47-8A5B-895D6934684F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AB2ACC11-DE31-4E47-8A5B-895D6934684F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AB2ACC11-DE31-4E47-8A5B-895D6934684F}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{AB2ACC11-DE31-4E47-8A5B-895D6934684F}.Debug|ARM.Build.0 = Debug|Any CPU
+		{AB2ACC11-DE31-4E47-8A5B-895D6934684F}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{AB2ACC11-DE31-4E47-8A5B-895D6934684F}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{AB2ACC11-DE31-4E47-8A5B-895D6934684F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{AB2ACC11-DE31-4E47-8A5B-895D6934684F}.Debug|x64.Build.0 = Debug|Any CPU
+		{AB2ACC11-DE31-4E47-8A5B-895D6934684F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{AB2ACC11-DE31-4E47-8A5B-895D6934684F}.Debug|x86.Build.0 = Debug|Any CPU
+		{AB2ACC11-DE31-4E47-8A5B-895D6934684F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AB2ACC11-DE31-4E47-8A5B-895D6934684F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AB2ACC11-DE31-4E47-8A5B-895D6934684F}.Release|ARM.ActiveCfg = Release|Any CPU
+		{AB2ACC11-DE31-4E47-8A5B-895D6934684F}.Release|ARM.Build.0 = Release|Any CPU
+		{AB2ACC11-DE31-4E47-8A5B-895D6934684F}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{AB2ACC11-DE31-4E47-8A5B-895D6934684F}.Release|ARM64.Build.0 = Release|Any CPU
+		{AB2ACC11-DE31-4E47-8A5B-895D6934684F}.Release|x64.ActiveCfg = Release|Any CPU
+		{AB2ACC11-DE31-4E47-8A5B-895D6934684F}.Release|x64.Build.0 = Release|Any CPU
+		{AB2ACC11-DE31-4E47-8A5B-895D6934684F}.Release|x86.ActiveCfg = Release|Any CPU
+		{AB2ACC11-DE31-4E47-8A5B-895D6934684F}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -485,6 +513,8 @@ Global
 		{B0197C19-BDF5-473E-A022-E21F6122EEE5} = {AB232F35-AAF7-4AE2-B1D2-45DD9BC2F7D7}
 		{A262757C-9F1A-4F6E-9188-849F4B709D67} = {C75BD686-21A6-4EB3-8D4B-D5A01C019C52}
 		{E32587A8-94E8-4B68-91AD-F3612A48A62B} = {AB232F35-AAF7-4AE2-B1D2-45DD9BC2F7D7}
+		{7012420D-624C-4BD4-A1D2-1C6C1655ED3A} = {AB232F35-AAF7-4AE2-B1D2-45DD9BC2F7D7}
+		{AB2ACC11-DE31-4E47-8A5B-895D6934684F} = {C75BD686-21A6-4EB3-8D4B-D5A01C019C52}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {51B9BB4C-5196-41CF-950C-12B04AD8A61C}

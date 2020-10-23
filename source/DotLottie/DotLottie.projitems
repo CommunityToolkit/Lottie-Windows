@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>7012420d-624c-4bd4-a1d2-1c6c1655ed3a</SharedGUID>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)DotLottieFile.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DotLottieFileAnimation.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)InvalidLottieFileException.cs" />
+  </ItemGroup>
+</Project>
