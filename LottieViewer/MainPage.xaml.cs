@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using LottieViewer.ViewModel;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.Foundation.Metadata;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using Windows.UI;
@@ -65,6 +66,26 @@ namespace LottieViewer
                 var version = Package.Current.Id.Version;
 
                 return string.Format("{0}.{1}.{2}.{3}", version.Major, version.Minor, version.Build, version.Revision);
+            }
+        }
+
+        public string UapVersion
+        {
+            get
+            {
+                // Start testing on version 2. We know that at least version 1 is supported because
+                // we are running in UAP code.
+                var versionToTest = 2u;
+
+                // Keep querying until IsApiContractPresent fails to find the version.
+                while (ApiInformation.IsApiContractPresent("Windows.Foundation.UniversalApiContract", (ushort)versionToTest))
+                {
+                    // Keep looking ...
+                    versionToTest++;
+                }
+
+                // Query failed on versionToTest. Return the previous version.
+                return (versionToTest - 1).ToString();
             }
         }
 

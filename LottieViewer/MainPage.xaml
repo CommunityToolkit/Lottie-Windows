@@ -212,18 +212,22 @@
                         <Border Style="{StaticResource SeparatorStyle}"
                             Visibility="{x:Bind _stage.DiagnosticsViewModel.DiagnosticsObject, Converter={StaticResource VisibilityConverter}, ConverterParameter=whatthe, Mode=OneWay}"/>
 
-                        <!-- App version -->
+                        <!-- App version info. -->
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="26"/>
                                 <RowDefinition/>
+                                <RowDefinition/>
                             </Grid.RowDefinitions>
-                            <TextBlock FontWeight="Bold" >Lottie Viewer app</TextBlock>
+                            <TextBlock FontWeight="Bold">Lottie Viewer version</TextBlock>
                             <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,2">
-                                <TextBlock Foreground="LightGray" MinWidth="60" Text="Version"/>
+                                <TextBlock Foreground="LightGray" MinWidth="60">App</TextBlock>
                                 <TextBlock Foreground="White" Text="{x:Bind AppVersion}" MaxWidth="250" />
                             </StackPanel>
-
+                            <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,2">
+                                <TextBlock Foreground="LightGray" MinWidth="60">UAP</TextBlock>
+                                <TextBlock Foreground="White" Text="{x:Bind UapVersion}" MaxWidth="250" />
+                            </StackPanel>
                         </Grid>
                     </StackPanel>
                 </ScrollViewer>
