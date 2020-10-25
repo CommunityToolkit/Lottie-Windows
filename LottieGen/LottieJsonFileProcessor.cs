@@ -20,7 +20,7 @@ using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 /// <summary>
 /// Processes a single Lottie file to produce various generated outputs.
 /// </summary>
-sealed class LottieFileProcessor
+sealed class LottieJsonFileProcessor
 {
     readonly CommandLineOptions _options;
     readonly Profiler _profiler = new Profiler();
@@ -39,7 +39,7 @@ sealed class LottieFileProcessor
     IReadOnlyList<TranslationResult>? _translationResults;
     IReadOnlyList<(TranslationIssue issue, UapVersionRange versionRange)>? _translationIssues;
 
-    LottieFileProcessor(
+    LottieJsonFileProcessor(
         CommandLineOptions options,
         Reporter reporter,
         string lottieFilePath,
@@ -67,34 +67,22 @@ sealed class LottieFileProcessor
         CommandLineOptions options,
         Reporter reporter,
         string lottieFilePath,
+        Stream jsonStream,
         string outputFolder,
-        DateTime timestamp)
-    {
-        try
-        {
-            return new LottieFileProcessor(options, reporter, lottieFilePath, outputFolder, timestamp).Run();
-        }
-        catch
-        {
-            reporter.WriteError($"Unhandled exception processing: {lottieFilePath}");
-            throw;
-        }
-    }
+        DateTime timestamp) =>
+            new LottieJsonFileProcessor(
+                options,
+                reporter,
+                lottieFilePath,
+                outputFolder,
+                timestamp).Run(jsonStream);
 
-    bool Run()
+    bool Run(Stream jsonStream)
     {
         // Make sure we can write to the output directory.
         if (!TryEnsureDirectoryExists(_outputFolder))
         {
             _reporter.WriteError($"Failed to create the output directory: {_outputFolder}");
-            return false;
-        }
-
-        // Read the Lottie .json text.
-        var jsonStream = TryReadTextFile(_lottieFilePath);
-
-        if (jsonStream is null)
-        {
             return false;
         }
 
@@ -624,30 +612,6 @@ sealed class LottieFileProcessor
         return true;
     }
 
-    Stream? TryReadTextFile(string filePath)
-    {
-        using (_reporter.InfoStream.Lock())
-        {
-            _reporter.WriteInfo($"Reading file:");
-            _reporter.WriteInfo(InfoType.FilePath, $" {_lottieFilePath}");
-        }
-
-        try
-        {
-            return File.OpenRead(filePath);
-        }
-        catch (Exception e)
-        {
-            using (_reporter.ErrorStream.Lock())
-            {
-                _reporter.WriteError($"Failed to read from {filePath}");
-                _reporter.WriteError(e.Message);
-            }
-
-            return null;
-        }
-    }
-
     CodegenConfiguration CreateCodeGenConfiguration(
         LottieComposition lottieComposition,
         string languageSwitch)
@@ -853,5 +817,5 @@ sealed class LottieFileProcessor
     // Convert namespaces to a normalized form: replace "::" with ".".
     static string NormalizeNamespace(string @namespace) => @namespace.Replace("::", ".");
 
-    public override string ToString() => $"{nameof(LottieFileProcessor)} {_lottieFilePath}";
+    public override string ToString() => $"{nameof(LottieJsonFileProcessor)} {_lottieFilePath}";
 }
