@@ -170,8 +170,8 @@ sealed class Program
 
         if (_options.Languages.Contains(Lang.Stats))
         {
-            // Write the stats. Stats are collected by the Reporter from each LottieFileProcessor
-            // then written to files here after all of the LottieFileProcessors have finished.
+            // Write the stats. Stats are collected by the Reporter from each FileProcessor
+            // then written to files here after all of the FileProcessors have finished.
             foreach (var (dataTableName, columnNames, rows) in _reporter.GetDataTables())
             {
                 var tsvFilePath = Path.Combine(outputFolder, $"LottieGen_{dataTableName}.tsv");
@@ -181,7 +181,7 @@ sealed class Program
                 tsvFile.WriteLine(string.Join("\t", columnNames));
 
                 // Sort the rows. This is necessary in order to ensure deterministic output
-                // when multiple LottieFileProcessors are run in parallel.
+                // when multiple FileProcessors are run in parallel.
                 Array.Sort(rows, (a, b) =>
                 {
                     for (var i = 0; i < a.Length; i++)

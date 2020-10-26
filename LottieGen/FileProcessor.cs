@@ -5,6 +5,7 @@
 using System;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using Microsoft.Toolkit.Uwp.UI.Lottie.DotLottie;
 
 /// <summary>
@@ -68,7 +69,7 @@ sealed class FileProcessor
                 return ProcessJsonLottieFile(
                     options: _options,
                     reporter: _reporter,
-                    lottieFilePath: _filePath,
+                    jsonFilePath: _filePath,
                     outputFolder: _outputFolder,
                     timestamp: _timestamp);
         }
@@ -77,22 +78,24 @@ sealed class FileProcessor
     static bool ProcessJsonLottieFile(
         CommandLineOptions options,
         Reporter reporter,
-        string lottieFilePath,
+        string jsonFilePath,
         string outputFolder,
         DateTime timestamp)
     {
-        using var jsonStream = TryOpenFile(lottieFilePath, reporter);
+        using var jsonStream = TryOpenFile(jsonFilePath, reporter);
 
         if (jsonStream is null)
         {
-            reporter.WriteError($"Failed to read {lottieFilePath}.");
+            reporter.WriteError($"Failed to read {jsonFilePath}.");
             return false;
         }
 
-        return LottieJsonFileProcessor.ProcessLottieFile(
+        return LottieJsonFileProcessor.ProcessLottieJsonFile(
             options: options,
             reporter: reporter,
-            lottieFilePath: lottieFilePath,
+            sourceFilePath: jsonFilePath,
+            jsonFilePath: jsonFilePath,
+            className: GetClassName(jsonFilePath),
             jsonStream: jsonStream,
             outputFolder: outputFolder,
             timestamp: timestamp);
@@ -145,19 +148,30 @@ sealed class FileProcessor
         var succeeded = true;
         foreach (var animation in dotLottieFile.Animations)
         {
-            using var jsonStream = dotLottieFile.Animations[0].Open();
+            var jsonPath = $"{filePath}{animation.Path}";
+
+            using var jsonStream = animation.Open();
 
             if (jsonStream == null)
             {
-                reporter.WriteError($"Failed to read .json from {filePath}.");
+                reporter.WriteError($"Failed to read from {jsonPath}.");
                 succeeded = false;
                 continue;
             }
 
-            if (!LottieJsonFileProcessor.ProcessLottieFile(
+            // The name of the class should reflect the name of the .lottie file,
+            // but if there are multiple .json files in the .lottie file then we
+            // need to differentiate them by adding the file name.
+            var className = dotLottieFile.Animations.Count == 1
+                ? GetClassName(filePath)
+                : GetClassName($"{filePath}_{animation.Id}");
+
+            if (!LottieJsonFileProcessor.ProcessLottieJsonFile(
                 options: options,
                 reporter: reporter,
-                lottieFilePath: filePath,
+                sourceFilePath: filePath,
+                jsonFilePath: jsonPath,
+                className: className,
                 jsonStream: jsonStream,
                 outputFolder: outputFolder,
                 timestamp))
@@ -191,5 +205,57 @@ sealed class FileProcessor
 
             return null;
         }
+    }
+
+    // Get an appropriate name for a generated class.
+    static string GetClassName(string path) =>
+        TrySynthesizeClassName(Path.GetFileNameWithoutExtension(path)) ??
+        "Lottie";  // If all else fails, just call it Lottie.
+
+    /// <summary>
+    /// Takes a name and modifies it as necessary to be suited for use as a class name in languages such
+    /// as  C# and C++.
+    /// Returns null on failure.
+    /// </summary>
+    /// <returns>A name, or null.</returns>
+    static string? TrySynthesizeClassName(string? name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return null;
+        }
+
+        // Remove any leading punctuation.
+        var prefixSize = name.TakeWhile(c => !char.IsLetterOrDigit(c)).Count();
+
+        return SanitizeTypeName(name.Substring(prefixSize));
+    }
+
+    // Makes the given name suitable for use as a class name in languages such as C# and C++.
+    static string? SanitizeTypeName(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return null;
+        }
+
+        // If the first character is not a letter, prepend an underscore.
+        if (!char.IsLetter(name, 0))
+        {
+            name = "_" + name;
+        }
+
+        // Replace any disallowed character with underscores.
+        name =
+            new string((from ch in name
+                        select char.IsLetterOrDigit(ch) ? ch : '_').ToArray());
+
+        // Remove any duplicated underscores.
+        name = name.Replace("__", "_");
+
+        // Capitalize the first letter.
+        name = name.ToUpperInvariant().Substring(0, 1) + name.Substring(1);
+
+        return name;
     }
 }
