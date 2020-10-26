@@ -8,6 +8,10 @@ using System.IO;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.DotLottie
 {
+    /// <summary>
+    /// Describes an animation in a .lottie file. Animations
+    /// are Lottie .json files.
+    /// </summary>
     sealed class DotLottieFileAnimation
     {
         readonly DotLottieFile _owner;
@@ -26,8 +30,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.DotLottie
 
         public bool Loop { get; }
 
-        public string Path => $"animations/{Id}.json";
+        /// <summary>
+        /// The path to the animation in the .lottie archive.
+        /// </summary>
+        public string Path => $"/animations/{Id}.json";
 
-        public Stream Open() => _owner.ZipArchive.GetEntry(Path).Open();
+        public Stream Open() => _owner.ZipArchive.GetEntry(Path.Substring(1)).Open();
     }
 }

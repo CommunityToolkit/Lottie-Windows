@@ -18,14 +18,15 @@ using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 
 /// <summary>
-/// Processes a single Lottie file to produce various generated outputs.
+/// Processes a single Lottie .json file to produce various generated outputs.
 /// </summary>
-sealed class LottieFileProcessor
+sealed class LottieJsonFileProcessor
 {
     readonly CommandLineOptions _options;
     readonly Profiler _profiler = new Profiler();
     readonly Reporter _reporter;
-    readonly string _lottieFilePath;
+    readonly string _sourceFilePath;
+    readonly string _jsonFilePath;
     readonly string _outputFolder;
     readonly DateTime _timestamp;
     readonly uint _minimumUapVersion;
@@ -39,16 +40,20 @@ sealed class LottieFileProcessor
     IReadOnlyList<TranslationResult>? _translationResults;
     IReadOnlyList<(TranslationIssue issue, UapVersionRange versionRange)>? _translationIssues;
 
-    LottieFileProcessor(
+    LottieJsonFileProcessor(
         CommandLineOptions options,
         Reporter reporter,
-        string lottieFilePath,
+        string sourceFilePath,
+        string jsonFilePath,
+        string className,
         string outputFolder,
         DateTime timestamp)
     {
         _options = options;
         _reporter = reporter;
-        _lottieFilePath = lottieFilePath;
+        _sourceFilePath = sourceFilePath;
+        _jsonFilePath = jsonFilePath;
+        _className = className;
         _outputFolder = outputFolder;
         _timestamp = timestamp;
 
@@ -56,45 +61,44 @@ sealed class LottieFileProcessor
         const uint defaultUapVersion = 7;
 
         _minimumUapVersion = _options.MinimumUapVersion ?? defaultUapVersion;
-
-        // Get an appropriate name for a generated class.
-        _className =
-            InstantiatorGeneratorBase.TrySynthesizeClassName(System.IO.Path.GetFileNameWithoutExtension(_lottieFilePath)) ??
-            "Lottie";  // If all else fails, just call it Lottie.
     }
 
-    internal static bool ProcessLottieFile(
+    /// <summary>
+    /// Processes a single .json file containing a Lottie animation.
+    /// </summary>
+    /// <param name="options">The kinds of processing to perform.</param>
+    /// <param name="reporter">Receives progress and status information.</param>
+    /// <param name="sourceFilePath">The file in which the Lottie animation is contained.</param>
+    /// <param name="jsonFilePath">A path describing where the .json file is.</param>
+    /// <param name="className">The name to give to the generated C# and/or C++ class.</param>
+    /// <param name="jsonStream">The stream of bytes containined in the .json file.</param>
+    /// <param name="outputFolder">Where the output should be written.</param>
+    /// <param name="timestamp">A timestamp used to indicate when the processing took place.</param>
+    /// <returns><c>true</c> if the processing succeeded.</returns>
+    internal static bool ProcessLottieJsonFile(
         CommandLineOptions options,
         Reporter reporter,
-        string lottieFilePath,
+        string sourceFilePath,
+        string jsonFilePath,
+        string className,
+        Stream jsonStream,
         string outputFolder,
-        DateTime timestamp)
-    {
-        try
-        {
-            return new LottieFileProcessor(options, reporter, lottieFilePath, outputFolder, timestamp).Run();
-        }
-        catch
-        {
-            reporter.WriteError($"Unhandled exception processing: {lottieFilePath}");
-            throw;
-        }
-    }
+        DateTime timestamp) =>
+            new LottieJsonFileProcessor(
+                options: options,
+                reporter: reporter,
+                sourceFilePath: sourceFilePath,
+                jsonFilePath: jsonFilePath,
+                className: className,
+                outputFolder: outputFolder,
+                timestamp: timestamp).Run(jsonStream);
 
-    bool Run()
+    bool Run(Stream jsonStream)
     {
         // Make sure we can write to the output directory.
         if (!TryEnsureDirectoryExists(_outputFolder))
         {
             _reporter.WriteError($"Failed to create the output directory: {_outputFolder}");
-            return false;
-        }
-
-        // Read the Lottie .json text.
-        var jsonStream = TryReadTextFile(_lottieFilePath);
-
-        if (jsonStream is null)
-        {
             return false;
         }
 
@@ -109,12 +113,12 @@ sealed class LottieFileProcessor
 
         foreach (var issue in _readerIssues)
         {
-            _reporter.WriteInfo(InfoType.Issue, IssueToString(_lottieFilePath, issue));
+            _reporter.WriteInfo(InfoType.Issue, IssueToString(_jsonFilePath, issue));
         }
 
         if (lottieComposition is null)
         {
-            _reporter.WriteError($"Failed to parse Lottie file: {_lottieFilePath}");
+            _reporter.WriteError($"Failed to parse Lottie file: {_jsonFilePath}");
             return false;
         }
 
@@ -130,9 +134,7 @@ sealed class LottieFileProcessor
 
     bool TryGenerateCode(LottieComposition lottieComposition)
     {
-        var lottieFileNameWithoutExtension = System.IO.Path.GetFileNameWithoutExtension(_lottieFilePath);
-
-        var outputFileBase = System.IO.Path.Combine(_outputFolder, lottieFileNameWithoutExtension);
+        var outputFileBase = System.IO.Path.Combine(_outputFolder, _className);
 
         var codeGenSucceeded = true;
 
@@ -211,7 +213,7 @@ sealed class LottieFileProcessor
             "Timing",
             new[]
             {
-                ("Path", _lottieFilePath),
+                ("Path", _jsonFilePath),
                 ("TotalSeconds", (_profiler.ParseTime +
                                   _profiler.TranslateTime +
                                   _profiler.OptimizationTime +
@@ -234,7 +236,7 @@ sealed class LottieFileProcessor
             "Lottie",
             new[]
             {
-                    ("Path", _lottieFilePath),
+                    ("Path", _jsonFilePath),
                     ("Name", _lottieStats.Name),
                     ("BodyMovinVersion", _lottieStats.Version.ToString()),
                     ("DurationSeconds", _lottieStats.Duration.TotalSeconds.ToString()),
@@ -266,7 +268,7 @@ sealed class LottieFileProcessor
             "WinComp",
             new[]
             {
-                    ("Path", _lottieFilePath),
+                    ("Path", _jsonFilePath),
                     ("Animator", translationStats.AnimatorCount.ToString()),
                     ("BooleanKeyFrameAnimation", translationStats.BooleanKeyFrameAnimationCount.ToString()),
                     ("CanvasGeometry", translationStats.CanvasGeometryCount.ToString()),
@@ -316,7 +318,7 @@ sealed class LottieFileProcessor
                 "WinCompOptimization",
                 new[]
                 {
-                    ("Path", _lottieFilePath),
+                    ("Path", _jsonFilePath),
                     ("Animator", (_afterOptimizationStats.AnimatorCount - _beforeOptimizationStats.AnimatorCount).ToString()),
                     ("BooleanKeyFrameAnimation", (_afterOptimizationStats.BooleanKeyFrameAnimationCount - _beforeOptimizationStats.BooleanKeyFrameAnimationCount).ToString()),
                     ("CanvasGeometry", (_afterOptimizationStats.CanvasGeometryCount - _beforeOptimizationStats.CanvasGeometryCount).ToString()),
@@ -364,7 +366,7 @@ sealed class LottieFileProcessor
                 "Errors",
                 new[]
                 {
-                    ("Path", _lottieFilePath),
+                    ("Path", _jsonFilePath),
                     ("ErrorCode", code),
                     ("Description", description),
                 });
@@ -380,7 +382,7 @@ sealed class LottieFileProcessor
             writer => LottieCompositionYamlSerializer.WriteYaml(
                             lottieComposition,
                             writer,
-                            System.IO.Path.GetFileName(_lottieFilePath)));
+                            comment: System.IO.Path.GetFileName(_jsonFilePath)));
 
         if (result)
         {
@@ -624,30 +626,6 @@ sealed class LottieFileProcessor
         return true;
     }
 
-    Stream? TryReadTextFile(string filePath)
-    {
-        using (_reporter.InfoStream.Lock())
-        {
-            _reporter.WriteInfo($"Reading file:");
-            _reporter.WriteInfo(InfoType.FilePath, $" {_lottieFilePath}");
-        }
-
-        try
-        {
-            return File.OpenRead(filePath);
-        }
-        catch (Exception e)
-        {
-            using (_reporter.ErrorStream.Lock())
-            {
-                _reporter.WriteError($"Failed to read from {filePath}");
-                _reporter.WriteError(e.Message);
-            }
-
-            return null;
-        }
-    }
-
     CodegenConfiguration CreateCodeGenConfiguration(
         LottieComposition lottieComposition,
         string languageSwitch)
@@ -692,7 +670,7 @@ sealed class LottieFileProcessor
     // be included in the generated output.
     IEnumerable<string> GetToolInvocationInfo(string languageSwitch)
     {
-        var inputFile = new FileInfo(_lottieFilePath);
+        var inputFile = new FileInfo(_sourceFilePath);
 
         var indent = "    ";
 
@@ -818,7 +796,7 @@ sealed class LottieFileProcessor
 
         foreach (var (issue, uapVersionRange) in _translationIssues)
         {
-            _reporter.WriteInfo(InfoType.Issue, IssueToString(_lottieFilePath, issue, uapVersionRange));
+            _reporter.WriteInfo(InfoType.Issue, IssueToString(_jsonFilePath, issue, uapVersionRange));
         }
 
         // NOTE: this is only reporting on the latest version in a multi-version translation.
@@ -853,5 +831,5 @@ sealed class LottieFileProcessor
     // Convert namespaces to a normalized form: replace "::" with ".".
     static string NormalizeNamespace(string @namespace) => @namespace.Replace("::", ".");
 
-    public override string ToString() => $"{nameof(LottieFileProcessor)} {_lottieFilePath}";
+    public override string ToString() => $"{nameof(LottieJsonFileProcessor)} {_jsonFilePath}";
 }

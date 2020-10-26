@@ -96,11 +96,45 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.DotLottie
         /// </summary>
         /// <param name="zipArchive">The <see cref="ZipArchive"/>.</param>
         /// <returns>A <see cref="DotLottieFile"/> or null on error.</returns>
+        public static DotLottieFile? FromZipArchive(
+            ZipArchive zipArchive)
+        {
+            // The manifest contains information about the animation.
+            var manifestEntry = GetManifestEntry(zipArchive);
+
+            if (manifestEntry is null)
+            {
+                // Not a valid .lottie file.
+                return null;
+            }
+
+            var manifestBytes = new byte[manifestEntry.Length];
+            using var manifestStream = manifestEntry.Open();
+            var bytesRead = manifestStream.Read(
+                                    manifestBytes,
+                                    0,
+                                    manifestBytes.Length);
+            if (bytesRead != manifestBytes.Length)
+            {
+                // Failed to read the manifest
+                return null;
+            }
+
+            var manifest = Manifest.ParseManifest(manifestBytes);
+
+            return manifest is null ? null : new DotLottieFile(zipArchive, manifest);
+        }
+
+        /// <summary>
+        /// Returns a <see cref="DotLottieFile"/> that reads from the given <see cref="ZipArchive"/>.
+        /// </summary>
+        /// <param name="zipArchive">The <see cref="ZipArchive"/>.</param>
+        /// <returns>A <see cref="DotLottieFile"/> or null on error.</returns>
         public static async Task<DotLottieFile?> FromZipArchiveAsync(
             ZipArchive zipArchive)
         {
             // The manifest contains information about the animation.
-            var manifestEntry = zipArchive.GetEntry("manifest.json");
+            var manifestEntry = GetManifestEntry(zipArchive);
 
             if (manifestEntry is null)
             {
@@ -131,6 +165,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.DotLottie
         }
 
         internal ZipArchive ZipArchive { get; }
+
+        static ZipArchiveEntry? GetManifestEntry(ZipArchive zipArchive)
+            => zipArchive.GetEntry("manifest.json");
 
         ZipArchiveEntry GetEntryForPath(string path)
         {

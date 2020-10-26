@@ -151,11 +151,11 @@ sealed class Program
             Parallel.ForEach(matchingInputFiles, ((string path, string relativePath) inputFile) =>
 #endif // DO_NOT_PROCESS_IN_PARALLEL
             {
-                if (!LottieFileProcessor.ProcessLottieFile(
+                if (!FileProcessor.ProcessFile(
                     _options,
                     _reporter,
                     inputFile.path,
-                    System.IO.Path.Combine(outputFolder, inputFile.relativePath),
+                    Path.Combine(outputFolder, inputFile.relativePath),
                     timestamp))
                 {
                     succeeded = false;
@@ -170,18 +170,18 @@ sealed class Program
 
         if (_options.Languages.Contains(Lang.Stats))
         {
-            // Write the stats. Stats are collected by the Reporter from each LottieFileProcessor
-            // then written to files here after all of the LottieFileProcessors have finished.
+            // Write the stats. Stats are collected by the Reporter from each FileProcessor
+            // then written to files here after all of the FileProcessors have finished.
             foreach (var (dataTableName, columnNames, rows) in _reporter.GetDataTables())
             {
-                var tsvFilePath = System.IO.Path.Combine(outputFolder, $"LottieGen_{dataTableName}.tsv");
+                var tsvFilePath = Path.Combine(outputFolder, $"LottieGen_{dataTableName}.tsv");
                 _reporter.WriteInfo("Writing stats to:");
                 _reporter.WriteInfo(InfoType.FilePath, $" {tsvFilePath}");
                 using var tsvFile = File.CreateText(tsvFilePath);
                 tsvFile.WriteLine(string.Join("\t", columnNames));
 
                 // Sort the rows. This is necessary in order to ensure deterministic output
-                // when multiple LottieFileProcessors are run in parallel.
+                // when multiple FileProcessors are run in parallel.
                 Array.Sort(rows, (a, b) =>
                 {
                     for (var i = 0; i < a.Length; i++)
@@ -206,10 +206,10 @@ sealed class Program
         return succeeded ? RunResult.Success : RunResult.Failure;
     }
 
-    static string MakeAbsolutePath(string path)
-    {
-        return System.IO.Path.IsPathRooted(path) ? path : System.IO.Path.Combine(Directory.GetCurrentDirectory(), path);
-    }
+    static string MakeAbsolutePath(string path) =>
+        Path.IsPathRooted(path)
+            ? path
+            : Path.Combine(Directory.GetCurrentDirectory(), path);
 
     static void ShowHelp(Reporter.Writer writer)
     {
@@ -229,7 +229,7 @@ Usage: {0} -InputFile LOTTIEFILE -Language LANG [Other options]
 
 OVERVIEW:
        Generates source code from Lottie files for playing in the AnimatedVisualPlayer.
-       LOTTIEFILE is a Lottie .json file. LOTTIEFILE may contain wildcards.
+       LOTTIEFILE is a Lottie .json file or .lottie file. LOTTIEFILE may contain wildcards.
        LANG is one of cs, cppcx, cppwinrt, lottieyaml, dgml, or stats.
        -Language LANG may be specified multiple times.
 
