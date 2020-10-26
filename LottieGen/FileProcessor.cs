@@ -9,7 +9,7 @@ using System.Linq;
 using Microsoft.Toolkit.Uwp.UI.Lottie.DotLottie;
 
 /// <summary>
-/// Processes a file containing an animation and produces various generated outputs.
+/// Processes a file containing Lottie animations and produces various generated outputs.
 /// Both JSON and .lottie files are supported.
 /// </summary>
 sealed class FileProcessor
