@@ -36,7 +36,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             return result.ToArray();
         }
 
-        // See: https://github.com/airbnb/lottie-web/blob/master/docs/json/effects/layer.json.
         Effect? ReadEffect(in LottieJsonObjectElement obj, string layerName)
         {
             var effectType = obj.DoublePropertyOrNull("ty") ?? throw ReaderException("Invalid effect");
