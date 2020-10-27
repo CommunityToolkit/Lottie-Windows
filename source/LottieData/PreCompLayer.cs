@@ -32,8 +32,5 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
         /// <inheritdoc/>
         public override LayerType Type => LayerType.PreComp;
-
-        /// <inheritdoc/>
-        public override LottieObjectType ObjectType => LottieObjectType.PreCompLayer;
     }
 }

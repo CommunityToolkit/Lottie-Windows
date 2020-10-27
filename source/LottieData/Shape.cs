@@ -22,5 +22,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         }
 
         public DrawingDirection DrawingDirection { get; }
+
+        public abstract ShapeType ShapeType { get; }
     }
 }

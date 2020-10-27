@@ -40,9 +40,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// <inheritdoc/>
         public override ShapeContentType ContentType => ShapeContentType.TrimPath;
 
-        /// <inheritdoc/>
-        public override LottieObjectType ObjectType => LottieObjectType.TrimPath;
-
         /// <summary>
         /// Returns a new <see cref="TrimPath"/> that trims in the reverse direction of this
         /// <see cref="TrimPath"/>.

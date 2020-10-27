@@ -78,30 +78,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 case LottieObjectType.Marker:
                     return FromMarker((Marker)obj, superclassContent);
 
-                case LottieObjectType.ImageLayer:
-                case LottieObjectType.NullLayer:
-                case LottieObjectType.PreCompLayer:
-                case LottieObjectType.ShapeLayer:
-                case LottieObjectType.SolidLayer:
-                case LottieObjectType.TextLayer:
+                case LottieObjectType.Layer:
                     return FromLayer((Layer)obj, superclassContent);
 
-                case LottieObjectType.Ellipse:
-                case LottieObjectType.LinearGradientFill:
-                case LottieObjectType.LinearGradientStroke:
-                case LottieObjectType.MergePaths:
-                case LottieObjectType.Polystar:
-                case LottieObjectType.RadialGradientFill:
-                case LottieObjectType.RadialGradientStroke:
-                case LottieObjectType.Rectangle:
-                case LottieObjectType.Repeater:
-                case LottieObjectType.RoundCorners:
-                case LottieObjectType.Shape:
-                case LottieObjectType.ShapeGroup:
-                case LottieObjectType.SolidColorFill:
-                case LottieObjectType.SolidColorStroke:
-                case LottieObjectType.Transform:
-                case LottieObjectType.TrimPath:
+                case LottieObjectType.ShapeLayerContent:
                     return FromShapeLayerContent((ShapeLayerContent)obj, superclassContent);
 
                 default:

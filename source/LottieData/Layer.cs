@@ -92,6 +92,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
         public MatteType LayerMatteType { get; }
 
+        /// <inheritdoc/>
+        public override sealed LottieObjectType ObjectType => LottieObjectType.Layer;
+
         public ref struct LayerArgs
         {
             public string Name { get; set; }

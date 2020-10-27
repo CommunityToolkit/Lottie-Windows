@@ -29,8 +29,5 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
         /// <inheritdoc/>
         public override LayerType Type => LayerType.Solid;
-
-        /// <inheritdoc/>
-        public override LottieObjectType ObjectType => LottieObjectType.SolidLayer;
     }
 }

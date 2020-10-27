@@ -41,8 +41,5 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
         /// <inheritdoc/>
         public override ShapeContentType ContentType => ShapeContentType.Repeater;
-
-        /// <inheritdoc/>
-        public override LottieObjectType ObjectType => LottieObjectType.Repeater;
     }
 }
