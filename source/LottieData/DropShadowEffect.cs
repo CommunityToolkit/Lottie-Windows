@@ -12,7 +12,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 #endif
     sealed class DropShadowEffect : Effect
     {
-        internal DropShadowEffect(
+        public DropShadowEffect(
             string name,
             bool isEnabled,
             Animatable<Rotation> direction,
