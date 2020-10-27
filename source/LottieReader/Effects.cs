@@ -53,9 +53,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                         "mn",   // match name.
                         "en",   // enabled.
                         "np",   // unknown.
-                        "ix");  // index.
-                    obj.IgnorePropertyThatIsNotYetSupported(
-                        "ef"); // effect parameters
+                        "ix",   // index.
+                        "ef");  // effect parameters.
 
                     _issues.LayerEffectsIsNotSupported(layerName, effectType.ToString());
                     return null;
@@ -97,28 +96,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     case 0:
                         color = ReadAnimatableColor(value) ?? throw ParseFailure();
                         break;
-
-                    // Opacity.
                     case 1:
                         opacity = ReadAnimatableOpacity(value) ?? throw ParseFailure();
                         break;
-
-                    // Direction
                     case 2:
                         direction = ReadAnimatableRotation(value) ?? throw ParseFailure();
                         break;
-
-                    // Distance
                     case 3:
                         distance = ReadAnimatableFloat(value) ?? throw ParseFailure();
                         break;
-
-                    // Softness
                     case 4:
                         softness = ReadAnimatableFloat(value) ?? throw ParseFailure();
                         break;
-
-                    // IsShadowOnly
                     case 5:
                         isShadowOnly = ReadAnimatableBool(value) ?? throw ParseFailure();
                         break;

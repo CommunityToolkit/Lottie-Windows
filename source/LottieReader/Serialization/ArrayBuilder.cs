@@ -22,7 +22,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         public void AddItemIfNotNull(T? item)
         {
-            if (!(item is null))
+            if (item != null)
             {
                 if (_array is null)
                 {
