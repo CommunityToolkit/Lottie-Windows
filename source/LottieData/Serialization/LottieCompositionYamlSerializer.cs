@@ -213,6 +213,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             superclassContent.Add(nameof(layer.OutPoint), layer.OutPoint);
             superclassContent.Add(nameof(layer.TimeStretch), layer.TimeStretch);
             superclassContent.Add(nameof(layer.Transform), FromShapeLayerContent(layer.Transform));
+            superclassContent.Add(nameof(layer.Effects), FromEnumerable(layer.Effects, FromEffect));
             superclassContent.Add(nameof(layer.Masks), FromEnumerable(layer.Masks, FromMask));
             superclassContent.Add(nameof(layer.LayerMatteType), Scalar(layer.LayerMatteType));
 
@@ -351,6 +352,26 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 ShapeStroke.ShapeStrokeKind.RadialGradient => FromRadialGradientStroke((RadialGradientStroke)content, superclassContent),
                 _ => throw Unreachable,
             };
+        }
+
+        YamlObject FromEffect(Effect effect)
+        {
+            var result = new YamlMap
+            {
+                { nameof(effect.Name), effect.Name },
+                { nameof(effect.Type), effect.Type.ToString() },
+            };
+
+            return effect.Type switch
+            {
+                Effect.EffectType.DropShadow => FromDropShadowEffect((DropShadowEffect)effect, result),
+                _ => throw Unreachable,
+            };
+        }
+
+        YamlObject FromDropShadowEffect(DropShadowEffect effect, YamlMap superclassContent)
+        {
+            return superclassContent;
         }
 
         YamlObject FromMask(Mask mask)

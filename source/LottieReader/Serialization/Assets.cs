@@ -125,21 +125,21 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     // We only support the data: scheme
                     break;
                 default:
-                    throw new LottieCompositionReaderException($"Unsupported image asset url scheme: \"{urlScheme}\".");
+                    throw ReaderException($"Unsupported image asset url scheme: \"{urlScheme}\".");
             }
 
             // The mime type follows the colon, up to the first comma.
             var commaIndex = dataUrl.IndexOf(',', colonIndex + 1);
             if (commaIndex <= 0)
             {
-                throw new LottieCompositionReaderException("Missing image asset url mime type.");
+                throw ReaderException("Missing image asset url mime type.");
             }
 
             var (type, subtype, parameters) = ParseMimeType(dataUrl.Substring(colonIndex + 1, commaIndex - colonIndex - 1));
 
             if (type != "image")
             {
-                throw new LottieCompositionReaderException($"Unsupported mime type: \"{type}\".");
+                throw ReaderException($"Unsupported mime type: \"{type}\".");
             }
 
             switch (subtype)
@@ -154,7 +154,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     break;
 
                 default:
-                    throw new LottieCompositionReaderException($"Unsupported mime image subtype: \"{subtype}\".");
+                    throw ReaderException($"Unsupported mime image subtype: \"{subtype}\".");
             }
 
             // The embedded data starts after the comma.

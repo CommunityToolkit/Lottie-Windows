@@ -18,7 +18,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             Animatable<Rotation> direction,
             Animatable<Color> color,
             Animatable<double> distance,
-            bool isShadowOnly,
+            Animatable<bool> isShadowOnly,
             Animatable<Opacity> opacity,
             Animatable<double> softness)
             : base(
@@ -53,7 +53,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// will not be visible, otherwise both the shadow caster and the
         /// shadow will be visible.
         /// </summary>
-        public bool IsShadowOnly { get; }
+        public Animatable<bool> IsShadowOnly { get; }
 
         /// <summary>
         /// The opacity of the shadow.

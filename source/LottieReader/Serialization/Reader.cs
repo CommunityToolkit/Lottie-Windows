@@ -117,7 +117,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             internal Exception ThrowUnexpectedToken() => Throw($"Unexpected token: {_jsonReader.TokenType}");
 
             internal Exception Throw(string message)
-                => throw Exception($"{message} @ {_jsonReader.Position} depth={_jsonReader.CurrentDepth}");
+                => throw ReaderException($"{message} @ {_jsonReader.Position} depth={_jsonReader.CurrentDepth}");
         }
     }
 }

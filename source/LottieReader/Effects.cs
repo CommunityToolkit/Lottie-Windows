@@ -5,7 +5,6 @@
 #nullable enable
 
 using System;
-using System.Runtime.CompilerServices;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 {
@@ -19,14 +18,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             if (array != null)
             {
                 var effectsJsonCount = array.Value.Count;
-                result.SetCapacity(effectsJsonCount);
-
-                for (var i = 0; i < effectsJsonCount; i++)
+                if (effectsJsonCount > 0)
                 {
-                    var effectObject = array.Value[i].AsObject();
-                    if (effectObject != null)
+                    result.SetCapacity(effectsJsonCount);
+
+                    for (var i = 0; i < effectsJsonCount; i++)
                     {
-                        result.AddItemIfNotNull(ReadEffect(effectObject.Value, layerName));
+                        var effectObject = array.Value[i].AsObject();
+                        if (effectObject != null)
+                        {
+                            result.AddItemIfNotNull(ReadEffect(effectObject.Value, layerName));
+                        }
                     }
                 }
             }
@@ -37,102 +39,117 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         // See: https://github.com/airbnb/lottie-web/blob/master/docs/json/effects/layer.json.
         Effect? ReadEffect(in LottieJsonObjectElement obj, string layerName)
         {
-            var effectType = obj.DoublePropertyOrNull("ty");
+            var effectType = obj.DoublePropertyOrNull("ty") ?? throw ReaderException("Invalid effect");
 
             switch (effectType)
             {
                 // DropShadows are type 25. This is the only type we currently support.
                 case 25:
-                    return ReadDropShadoEffect(obj);
+                    return ReadDropShadowEffect(obj);
 
                 default:
                     obj.IgnorePropertyThatIsNotYetSupported(
                         "nm",   // name.
                         "mn",   // match name.
                         "en",   // enabled.
-                        "n",
+                        "np",   // unknown.
                         "ix");  // index.
                     obj.IgnorePropertyThatIsNotYetSupported(
                         "ef"); // effect parameters
 
-                    _issues.LayerEffectsIsNotSupported(layerName);
+                    _issues.LayerEffectsIsNotSupported(layerName, effectType.ToString());
                     return null;
             }
         }
 
-        DropShadowEffect ReadDropShadoEffect(in LottieJsonObjectElement obj)
+        DropShadowEffect ReadDropShadowEffect(in LottieJsonObjectElement obj)
         {
+            // Index.
             obj.IgnorePropertyIntentionally("ix");
+
+            // Match name.
             obj.IgnorePropertyIntentionally("mn");
-            obj.IgnorePropertyIntentionally("n");
+
+            // Unknown.
+            obj.IgnorePropertyIntentionally("np");
 
             var effectName = obj.StringPropertyOrNull("nm") ?? string.Empty;
 
             var isEnabled = obj.BoolPropertyOrNull("en") ?? true;
 
-            // TODO - what if there are no parameters? Need to throw or somethign.
-            var parameters = obj.ArrayPropertyOrNull("ef");
+            var parameters = obj.ArrayPropertyOrNull("ef") ?? throw ParseFailure();
 
             Animatable<Color>? color = null;
             Animatable<Opacity>? opacity = null;
             Animatable<Rotation>? direction = null;
             Animatable<double>? distance = null;
             Animatable<double>? softness = null;
+            Animatable<bool>? isShadowOnly = null;
 
-            for (var i = 0; i < parameters!.Value.Count; i++)
+            for (var i = 0; i < parameters.Count; i++)
             {
-                // TODO - what if this is null?
-                var p = parameters!.Value[i].AsObject();
-                var value = p!.Value.ObjectPropertyOrNull("v");
+                var p = parameters[i].AsObject() ?? throw ParseFailure();
+
+                var value = p.ObjectPropertyOrNull("v") ?? throw ParseFailure();
 
                 switch (i)
                 {
                     case 0:
-                        color = ReadAnimatableColor(value);
+                        color = ReadAnimatableColor(value) ?? throw ParseFailure();
                         break;
 
                     // Opacity.
                     case 1:
-                        opacity = ReadAnimatableOpacity(value);
+                        opacity = ReadAnimatableOpacity(value) ?? throw ParseFailure();
                         break;
 
                     // Direction
                     case 2:
-                        direction = ReadAnimatableRotation(value);
+                        direction = ReadAnimatableRotation(value) ?? throw ParseFailure();
                         break;
 
                     // Distance
                     case 3:
-                        distance = ReadAnimatableFloat(value);
+                        distance = ReadAnimatableFloat(value) ?? throw ParseFailure();
                         break;
 
                     // Softness
                     case 4:
-                        softness = ReadAnimatableFloat(value);
+                        softness = ReadAnimatableFloat(value) ?? throw ParseFailure();
                         break;
 
                     // IsShadowOnly
                     case 5:
-
-                        // TODO
+                        isShadowOnly = ReadAnimatableBool(value) ?? throw ParseFailure();
                         break;
 
-                    // TODO - throw
                     default:
-                        break;
+                        throw ReaderException("Invalid drop shadow effect");
                 }
             }
 
-            // TODO - deal with any of these not having values. Throw!
+            // Ensure all parameter values were provided.
+            if (direction is null ||
+                color is null ||
+                distance is null ||
+                isShadowOnly is null ||
+                opacity is null ||
+                softness is null)
+            {
+                throw ParseFailure();
+            }
+
             return new DropShadowEffect(
                 effectName,
                 isEnabled,
-                direction: direction!,
-                color: color!,
-                distance: distance!,
-                isShadowOnly: false,
-                opacity: opacity!,
-                softness: softness!);
+                direction: direction,
+                color: color,
+                distance: distance,
+                isShadowOnly: isShadowOnly,
+                opacity: opacity,
+                softness: softness);
+
+            static Exception ParseFailure() => ReaderException("Invalid drop shadow effect");
         }
     }
 }

@@ -57,6 +57,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         /// </summary>
         public void SetCapacity(int capacity)
         {
+            // If this assert is hit, the caller has set a capacity of 0, which indicates
+            // that they should not have called here seeing as they have no items to add.
             Debug.Assert(capacity > 0, "Precondition");
             Debug.Assert(_array is null, "Capacity should be set before any items are added");
 
