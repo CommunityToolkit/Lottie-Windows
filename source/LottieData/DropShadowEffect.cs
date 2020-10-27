@@ -12,10 +12,58 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 #endif
     sealed class DropShadowEffect : Effect
     {
-        internal DropShadowEffect(string name)
-            : base(name)
+        internal DropShadowEffect(
+            string name,
+            bool isEnabled,
+            Animatable<Rotation> direction,
+            Animatable<Color> color,
+            Animatable<double> distance,
+            bool isShadowOnly,
+            Animatable<Opacity> opacity,
+            Animatable<double> softness)
+            : base(
+                  name,
+                  isEnabled)
         {
+            Direction = direction;
+            Color = color;
+            Distance = distance;
+            IsShadowOnly = isShadowOnly;
+            Opacity = opacity;
+            Softness = softness;
         }
+
+        /// <summary>
+        /// The angle from the shadow caster to the shadow.
+        /// </summary>
+        public Animatable<Rotation> Direction { get; }
+
+        /// <summary>
+        /// The color of the shadow.
+        /// </summary>
+        public Animatable<Color> Color { get; }
+
+        /// <summary>
+        /// The distance from the shadow caster to the shadow.
+        /// </summary>
+        public Animatable<double> Distance { get; }
+
+        /// <summary>
+        /// If true, only the shadow will be viisble and the shadow caster
+        /// will not be visible, otherwise both the shadow caster and the
+        /// shadow will be visible.
+        /// </summary>
+        public bool IsShadowOnly { get; }
+
+        /// <summary>
+        /// The opacity of the shadow.
+        /// </summary>
+        public Animatable<Opacity> Opacity { get; }
+
+        /// <summary>
+        /// The softness of the shadow.
+        /// </summary>
+        public Animatable<double> Softness { get; }
 
         public override EffectType Type => EffectType.DropShadow;
     }
