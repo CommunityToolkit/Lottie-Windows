@@ -102,6 +102,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
             public bool IsHidden { get; set; }
 
+            public IReadOnlyList<Effect> Effects { get; set; }
+
             public Transform Transform { get; set; }
 
             public double TimeStretch { get; set; }

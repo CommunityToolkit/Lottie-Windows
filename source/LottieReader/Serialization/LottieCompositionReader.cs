@@ -457,28 +457,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         {
             reader.ExpectToken(JsonTokenType.StartArray);
 
-            IList<T> list = EmptyList<T>.Singleton;
+            ArrayBuilder<T> result = default;
 
             while (reader.Read())
             {
                 switch (reader.TokenType)
                 {
                     case JsonTokenType.StartObject:
-                        var result = parser(ref reader);
-                        if (result != null)
-                        {
-                            if (list == EmptyList<T>.Singleton)
-                            {
-                                list = new List<T>();
-                            }
-
-                            list.Add(result);
-                        }
-
+                        result.AddItemIfNotNull(parser(ref reader));
                         break;
 
                     case JsonTokenType.EndArray:
-                        return list.ToArray();
+                        return result.ToArray();
 
                     default:
                         throw reader.ThrowUnexpectedToken();

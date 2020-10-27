@@ -6,7 +6,9 @@
     <SharedGUID>4e7d8957-3f5f-46e1-99a8-2012b806c9b0</SharedGUID>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Effects.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\Animatables.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\ArrayBuilder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\Assets.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\Chars.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\EmptyList.cs" />

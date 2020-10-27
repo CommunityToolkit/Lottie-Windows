@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using static Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization.Exceptions;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
@@ -65,10 +66,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 _issues.IllustratorLayers();
             }
 
-            if (obj.ContainsProperty("ef"))
-            {
-                _issues.LayerEffectsIsNotSupported(layerArgs.Name);
-            }
+            layerArgs.Effects = ReadEffectsList(obj.ArrayPropertyOrNull("ef"), layerArgs.Name);
 
             // ----------------------
             // Layer Transform
@@ -188,26 +186,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         ShapeLayerContent[] ReadShapesList(in LottieJsonArrayElement? shapesJson)
         {
-            var shapes = new List<ShapeLayerContent>();
+            ArrayBuilder<ShapeLayerContent> result = default;
             if (shapesJson != null)
             {
                 var shapesJsonCount = shapesJson.Value.Count;
-                shapes.Capacity = shapesJsonCount;
+                result.SetCapacity(shapesJsonCount);
                 for (var i = 0; i < shapesJsonCount; i++)
                 {
                     var shapeObject = shapesJson.Value[i].AsObject();
                     if (shapeObject != null)
                     {
-                        var item = ReadShapeContent(shapeObject.Value);
-                        if (item != null)
-                        {
-                            shapes.Add(item);
-                        }
+                        result.AddItemIfNotNull(ReadShapeContent(shapeObject.Value));
                     }
                 }
             }
 
-            return shapes.ToArray();
+            return result.ToArray();
         }
 
         void ReadTextData(in LottieJsonObjectElement obj)
