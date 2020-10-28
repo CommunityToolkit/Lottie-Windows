@@ -145,14 +145,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 context.Issues.BlendModeNotNormal(layer.Name, layer.BlendMode.ToString());
             }
 
-            if (layer.TimeStretch != 1)
+            foreach (var effect in layer.Effects)
             {
-                context.Issues.TimeStretchIsNotSupported();
+                if (effect.Type != Effect.EffectType.DropShadow)
+                {
+                    context.Issues.UnsupportedLayerEffect(effect.Type.ToString());
+                }
             }
 
             if (layer.IsHidden)
             {
                 return null;
+            }
+
+            if (layer.TimeStretch != 1)
+            {
+                context.Issues.TimeStretchIsNotSupported();
             }
 
             return layer.Type switch

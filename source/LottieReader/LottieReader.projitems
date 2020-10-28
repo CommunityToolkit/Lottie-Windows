@@ -7,8 +7,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\Animatables.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\ArrayBuilder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\Assets.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\Chars.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\Effects.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\EmptyList.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\Enums.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\Exceptions.cs" />

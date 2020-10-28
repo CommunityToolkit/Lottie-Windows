@@ -298,7 +298,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             catch (JsonException e)
             {
                 // Re-throw errors from the JSON parser using our own exception.
-                throw Exception(e.Message);
+                throw ReaderException(e.Message);
             }
 
             throw EofException;
@@ -375,7 +375,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
             if (vertices is null || inTangents is null || outTangents is null)
             {
-                throw new LottieCompositionReaderException($"Unable to process points array or tangents. {points}");
+                throw ReaderException($"Unable to process points array or tangents. {points}");
             }
 
             var beziers = new BezierSegment[isClosed ? vertices.Value.Count : Math.Max(vertices.Value.Count - 1, 0)];
@@ -392,7 +392,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 if (verticesAsVector2.Length != inTangentsAsVector2.Length ||
                     verticesAsVector2.Length != outTangentsAsVector2.Length)
                 {
-                    throw new LottieCompositionReaderException($"Invalid path data. {points}");
+                    throw ReaderException($"Invalid path data. {points}");
                 }
 
                 var cp3 = verticesAsVector2[0];
@@ -457,28 +457,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         {
             reader.ExpectToken(JsonTokenType.StartArray);
 
-            IList<T> list = EmptyList<T>.Singleton;
+            ArrayBuilder<T> result = default;
 
             while (reader.Read())
             {
                 switch (reader.TokenType)
                 {
                     case JsonTokenType.StartObject:
-                        var result = parser(ref reader);
-                        if (result != null)
-                        {
-                            if (list == EmptyList<T>.Singleton)
-                            {
-                                list = new List<T>();
-                            }
-
-                            list.Add(result);
-                        }
-
+                        result.AddItemIfNotNull(parser(ref reader));
                         break;
 
                     case JsonTokenType.EndArray:
-                        return list.ToArray();
+                        return result.ToArray();
 
                     default:
                         throw reader.ThrowUnexpectedToken();
@@ -569,8 +559,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         }
 
         // We got to the end of the file while still reading. Fatal.
-        static LottieCompositionReaderException EofException => Exception("EOF");
+        static LottieCompositionReaderException EofException => ReaderException("EOF");
 
-        static LottieCompositionReaderException Exception(string message) => new LottieCompositionReaderException(message);
+        static LottieCompositionReaderException ReaderException(string message) => new LottieCompositionReaderException(message);
     }
 }

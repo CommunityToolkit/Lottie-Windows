@@ -9,6 +9,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 #endif
     enum LottieObjectType
     {
+        Effect,
         Ellipse,
         ImageLayer,
         LinearGradientFill,
