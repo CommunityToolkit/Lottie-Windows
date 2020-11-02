@@ -15,8 +15,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         public DropShadowEffect(
             string name,
             bool isEnabled,
-            Animatable<Rotation> direction,
             Animatable<Color> color,
+            Animatable<Rotation> direction,
             Animatable<double> distance,
             Animatable<bool> isShadowOnly,
             Animatable<Opacity> opacity,
@@ -34,14 +34,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         }
 
         /// <summary>
-        /// The angle from the shadow caster to the shadow.
-        /// </summary>
-        public Animatable<Rotation> Direction { get; }
-
-        /// <summary>
         /// The color of the shadow.
         /// </summary>
         public Animatable<Color> Color { get; }
+
+        /// <summary>
+        /// The angle from the shadow caster to the shadow.
+        /// </summary>
+        public Animatable<Rotation> Direction { get; }
 
         /// <summary>
         /// The distance from the shadow caster to the shadow.

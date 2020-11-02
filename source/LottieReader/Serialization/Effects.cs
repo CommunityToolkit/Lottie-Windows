@@ -130,8 +130,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             return new DropShadowEffect(
                 effectName,
                 isEnabled,
-                direction: direction,
                 color: color,
+                direction: direction,
                 distance: distance,
                 isShadowOnly: isShadowOnly,
                 opacity: opacity,
