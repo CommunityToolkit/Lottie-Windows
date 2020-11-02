@@ -112,6 +112,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal void ConflictingRoundnessAndRadiusIsNotSupported() => Report("LT0037", "Rectangle roundness with round corners is not supported.");
 
+        internal void UnsupportedLayerEffect(string type) => Report("LT0038", $"Effects of type {type} are not supported.");
+
         void Report(string code, string description)
         {
             _issues.Add((code, description));
