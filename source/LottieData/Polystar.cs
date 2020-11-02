@@ -51,8 +51,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// <inheritdoc/>
         public override ShapeContentType ContentType => ShapeContentType.Polystar;
 
-        /// <inheritdoc/>
-        public override LottieObjectType ObjectType => LottieObjectType.Polystar;
+        public override sealed ShapeType ShapeType => ShapeType.Polystar;
 
         public enum PolyStarType
         {

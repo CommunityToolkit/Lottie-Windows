@@ -41,9 +41,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// <inheritdoc/>
         public override ShapeContentType ContentType => ShapeContentType.SolidColorStroke;
 
-        /// <inheritdoc/>
-        public override LottieObjectType ObjectType => LottieObjectType.SolidColorStroke;
-
         public override ShapeStrokeKind StrokeKind => ShapeStrokeKind.SolidColor;
     }
 }

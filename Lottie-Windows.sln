@@ -195,6 +195,7 @@ Global
 		source\LottieToWinComp\LottieToWinComp.projitems*{bcedf904-f986-42ec-a22d-e0662777b7f9}*SharedItemsImports = 5
 		source\NullablesAttributes\NullablesAttributes.projitems*{bcedf904-f986-42ec-a22d-e0662777b7f9}*SharedItemsImports = 5
 		source\CompMetadata\CompMetadata.projitems*{cb12d5ba-a6fe-41e2-b555-83c903cce92a}*SharedItemsImports = 5
+		source\DotLottie\DotLottie.projitems*{cb12d5ba-a6fe-41e2-b555-83c903cce92a}*SharedItemsImports = 5
 		source\GenericData\GenericData.projitems*{cb12d5ba-a6fe-41e2-b555-83c903cce92a}*SharedItemsImports = 5
 		source\LottieData\LottieData.projitems*{cb12d5ba-a6fe-41e2-b555-83c903cce92a}*SharedItemsImports = 5
 		source\LottieMetadata\LottieMetadata.projitems*{cb12d5ba-a6fe-41e2-b555-83c903cce92a}*SharedItemsImports = 5

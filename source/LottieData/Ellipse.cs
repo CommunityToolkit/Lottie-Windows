@@ -27,7 +27,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// <inheritdoc/>
         public override ShapeContentType ContentType => ShapeContentType.Ellipse;
 
-        /// <inheritdoc/>
-        public override LottieObjectType ObjectType => LottieObjectType.Ellipse;
+        public override ShapeType ShapeType => ShapeType.Ellipse;
     }
 }

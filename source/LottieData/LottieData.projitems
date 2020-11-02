@@ -74,6 +74,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)ShapeLayer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ShapeLayerContent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ShapeStroke.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ShapeType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SolidColorFill.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SolidColorStroke.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SolidLayer.cs" />

@@ -87,6 +87,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
         public abstract LayerType Type { get; }
 
+        /// <inheritdoc/>
+        public override sealed LottieObjectType ObjectType => LottieObjectType.Layer;
+
         public ref struct LayerArgs
         {
             public string Name { get; set; }
