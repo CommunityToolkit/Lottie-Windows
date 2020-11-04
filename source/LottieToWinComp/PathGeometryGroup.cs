@@ -15,13 +15,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
     /// </summary>
     sealed class PathGeometryGroup : IEquatable<PathGeometryGroup>
     {
-        PathGeometryGroup(PathGeometry[] data, Easing easing)
+        PathGeometryGroup(PathGeometry[] data)
         {
             Data = data;
-            Easing = easing;
         }
-
-        public Easing Easing { get; }
 
         /// <summary>
         /// The geometries in the group.
@@ -30,124 +27,302 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         public bool Equals(PathGeometryGroup? other) => other != null && Enumerable.SequenceEqual(Data, other.Data);
 
-        // Takes a group of possibly-animated paths and returns an animatable
-        // of PathGeometryGroups. Returns true if it succeeds without issues.
-        // Even if false is returned a best-effort animatable is returned.
+        /// <summary>
+        /// Takes a group of possibly-animated paths and returns an animatable
+        /// of PathGeometryGroups. Returns true if it succeeds without issues.
+        /// Even if false is returned a best-effort animatable is returned.</summary>
+        /// <returns><c>true</c> iff the grouping worked perfectly.</returns>
         internal static bool TryGroupPaths(
             ShapeLayerContext context,
-            IEnumerable<Path> paths,
+            IReadOnlyList<Path> paths,
             out Animatable<PathGeometryGroup> result)
         {
-            // Store the keyframes in a dictionary, keyed by frame.
-            var ps = paths.ToArray();
+            // Ideally each of the paths would have identical key frames with identical frame numbers.
+            // For example:
+            //  paths[0] has key frames for frame 2, 5, 7, 15.
+            //  paths[1] has key frames for frame 2, 5, 7, 15.
+            //  paths[2] has key frames for frame 2, 5, 7, 15.
+            //
+            // However in practice the key frames for each path could be different, e.g.:
+            //  paths[0] has key frames for frame 2, 5, 7, 15.
+            //  paths[1] has key frames for frame 3, 5, 7, 17.
+            //  paths[2] has key frames for frame 1, 2, 3, 4, 5, 6.
+            //
+            // We can handle the ideal case perfectly as long as the easings are the same for
+            // each path. We'll do a compromise in other cases that may not look quite right but
+            // is preferable to just failing.
+            //
+            //
+            // Algorithm:
+            // ==========
+            //
+            // For each key frame number, create a (frame, easing, listOfPathGeometry) triple.
+            // For the ideal example:
+            // (2,  easing, paths[0].Data.KeyFrames[0], paths[1].Data.KeyFrames[0], paths[2].Data.KeyFrames[0]),
+            // (5,  easing, paths[0].Data.KeyFrames[1], paths[1].Data.KeyFrames[1], paths[2].Data.KeyFrames[1]),
+            // (7,  easing, paths[0].Data.KeyFrames[2], paths[1].Data.KeyFrames[2], paths[2].Data.KeyFrames[2]),
+            // (15, easing, paths[0].Data.KeyFrames[3], paths[1].Data.KeyFrames[3], paths[2].Data.KeyFrames[3])
+            //
+            // For the non-ideal example:
+            // (1,  easing,                       null,                       null, paths[2].Data.KeyFrames[0]),
+            // (2,  easing, paths[0].Data.KeyFrames[0],                       null, paths[2].Data.KeyFrames[1]),
+            // (3,  easing,                       null, paths[1].Data.KeyFrames[0], paths[2].Data.KeyFrames[2]),
+            // (4,  easing,                       null,                       null, paths[2].Data.KeyFrames[3]),
+            // (5,  easing, paths[0].Data.KeyFrames[1], paths[1].Data.KeyFrames[1], paths[2].Data.KeyFrames[4]),
+            // (6,  easing,                       null,                       null, paths[2].Data.KeyFrames[5]),
+            // (7,  easing, paths[0].Data.KeyFrames[2], paths[1].Data.KeyFrames[2],                       null),
+            // (15, easing, paths[0].Data.KeyFrames[3],                       null,                       null),
+            // (17, easing,                       null, paths[1].Data.KeyFrames[3],                       null)
+            //
+            // Then fill in the null entries with values that are interpolated from the surrounding data.
+            // NOTE: we currently don't try very hard to interpolate the values, so the results in the
+            // non-ideal cases still have room for improvement. Luckily the ideal case is quite common.
+            //
 
-            var groupsByFrame = new Dictionary<double, GeometryKeyFrame[]>(context.FrameNumberComparer)
+            // Test for the simplest case - all the paths are non animated.
+            if (paths.All(p => !p.Data.IsAnimated))
             {
-                { 0, new GeometryKeyFrame[ps.Length] },
-            };
+                var group = new PathGeometryGroup(paths.Select(p => p.Data.InitialValue).ToArray());
 
-            for (var i = 0; i < ps.Length; i++)
-            {
-                var p = ps[i];
+                result = new Animatable<PathGeometryGroup>(group, propertyIndex: null);
 
-                // Add the initial value.
-                groupsByFrame[0][i] = new GeometryKeyFrame(p, p.Data.InitialValue, HoldEasing.Instance);
-
-                // Add any keyframes.
-                foreach (var kf in p.Data.KeyFrames.ToArray().Skip(1))
-                {
-                    // See if there's a key frame at the frame number already.
-                    if (!groupsByFrame.TryGetValue(kf.Frame, out var array))
-                    {
-                        array = new GeometryKeyFrame[ps.Length];
-                        groupsByFrame.Add(kf.Frame, array);
-                    }
-
-                    // NOTE: this could result in a key frame being overwritten and
-                    // lost if the frame numbers are very close together. This seems
-                    // to be extremely rare, so rather than trying to be too clever
-                    // here we'll just let it happen. The assert should help us find
-                    // any cases where this happens to determine if we should be trying
-                    // harder.
-                    Debug.Assert(array[i] is null, "Path key frames very close together");
-
-                    array[i] = new GeometryKeyFrame(p, kf.Value, kf.Easing);
-                }
+                return true;
             }
 
-            // Make sure that every frame has a geometry from each path.
-            // For any missing path, fill the hole with the path from the
-            // previous frame.
-            var frames = groupsByFrame.OrderBy(kvp => kvp.Key).Select(kvp => (frame: kvp.Key, geometries: kvp.Value)).ToArray();
-            var previousGeometries = frames[0].geometries;
-            var success = true;
+            // At least some of the paths are animated. Create the data structure.
+            var records = CreateGroupRecords(paths.Select(p => p.Data).ToArray()).ToArray();
 
-            // Start from the second frame. The initial frame (0) will always have a value (.InitialValue).
-            foreach (var (frame, geometries) in frames.Skip(1))
+            // We are succeeding if the easing is correct in each record. If not we'll
+            // return false to indicate that the result is less than perfect.
+            var success = records.Select(g => g.EasingIsCorrect).Min();
+
+            // Fill in the nulls in the data structure. Ideally we'd fill these in with interpolated
+            // values, but interpolation is difficult, so for now we just copy the nearest value.
+            for (var pathIndex = 0; pathIndex < paths.Count; pathIndex++)
             {
-                // Get the easing for this frame.
-                var easings = geometries.Where(g => g != null).Select(g => g.Easing).Distinct().ToArray();
-                if (easings.Length > 1)
+                for (var frameIndex = 0; frameIndex < records.Length; frameIndex++)
                 {
-                    // There are conflicting easings. We can't currently handle that.
-                    success = false;
-                }
-
-                for (var i = 0; i < geometries.Length; i++)
-                {
-                    if (geometries[i] == null)
+                    // Get the key frame for the current frame number.
+                    var keyFrame = records[frameIndex].Geometries[pathIndex];
+                    if (keyFrame is null)
                     {
-                        // The frame doesn't have a correponding geometry for this path.
-                        // Use the geometry from the previous frame, but with the easing
-                        // from this frame.
-                        geometries[i] = previousGeometries[i].CloneWithDifferentEasing(easings[0]);
+                        // There is no key frame for the current frame number.
+                        // Interpolate a key frame to replace the null.
+                        // As mentioned above, we currently don't do proper
+                        // interpolation - we just find the non-null value that
+                        // is closest to the current frame number.
+                        // Get the previous value and its frame number, and the
+                        // next value and its frame number, and choose the one
+                        // with the nearest frame number.
+                        //
+                        // Indicate that the result is not perfect.
+                        success = false;
 
-                        // It's correct to use the previous frame's path if it isn't animated, but if
-                        // it is animated it would need to be interpolated to be correct. We currently
-                        // don't handle interpolation of paths in the translator, so indicate that we
-                        // weren't able to do things correctly.
-                        if (geometries[i].Path.Data.IsAnimated)
+                        var currentFrameNumber = records[frameIndex].Frame;
+                        KeyFrame<PathGeometry>? previousKeyFrame = null;
+                        KeyFrame<PathGeometry>? nextKeyFrame = null;
+                        if (frameIndex > 0)
                         {
-                            // This is a case that we can't handle correctly.
-                            success = false;
+                            previousKeyFrame = records[frameIndex - 1].Geometries[pathIndex];
                         }
+
+                        for (var nextFrameIndex = frameIndex; nextFrameIndex < records.Length && nextKeyFrame is null; nextFrameIndex++)
+                        {
+                            nextKeyFrame = records[nextFrameIndex].Geometries[pathIndex];
+                        }
+
+                        // Choose the frame that is closest.
+                        KeyFrame<PathGeometry> closestKeyFrame;
+                        if (previousKeyFrame is null)
+                        {
+                            closestKeyFrame = nextKeyFrame!;
+                        }
+                        else if (nextKeyFrame is null)
+                        {
+                            closestKeyFrame = previousKeyFrame!;
+                        }
+                        else if (currentFrameNumber - previousKeyFrame.Frame < nextKeyFrame.Frame - currentFrameNumber)
+                        {
+                            closestKeyFrame = previousKeyFrame!;
+                        }
+                        else
+                        {
+                            closestKeyFrame = nextKeyFrame!;
+                        }
+
+                        // Fill in the null with the value from the closest key frame.
+                        records[frameIndex].Geometries[pathIndex] =
+                            new KeyFrame<PathGeometry>(currentFrameNumber, closestKeyFrame.Value, HoldEasing.Instance);
                     }
                 }
-
-                previousGeometries = geometries;
             }
 
-            // Every entry in frames now has path data. Return the groups.
             result =
                 new Animatable<PathGeometryGroup>(
                     keyFrames:
-                        (from f in frames
-                         let firstGeometry = f.geometries[0]
-                         let easing = firstGeometry.Easing
-                         let geometryGroup = new PathGeometryGroup(f.geometries.Select(g => g.Geometry).ToArray(), easing)
-                         select new KeyFrame<PathGeometryGroup>(f.frame, geometryGroup, easing)).ToArray(),
+                        (from g in records
+                         let geometryGroup = new PathGeometryGroup(g.Geometries.Select(h => h!.Value).ToArray())
+                         select new KeyFrame<PathGeometryGroup>(g.Frame, geometryGroup, g.PreferredEasing)).ToArray(),
                     propertyIndex: null);
 
             return success;
         }
 
-        sealed class GeometryKeyFrame
+        /// <summary>
+        /// From a list of animatable paths, produce a record for each distinct key frame number.
+        /// Each record consists of the frame number a list of geometries for that frame number
+        /// and the easing from the previous frame number. The list of geometries has an entry
+        /// corresponding to each path, however the entry will be null if there is no geometry
+        /// for that particular key frame.
+        /// </summary>
+        static IEnumerable<PathGeometryGroupKeyFrames> CreateGroupRecords(
+            IReadOnlyList<Animatable<PathGeometry>> pathData)
         {
-            internal GeometryKeyFrame(Path path, PathGeometry geometry, Easing easing)
+            // Index of the current pathData key frame for each item in pathData.
+            var indices = new int[pathData.Count];
+
+            // Mark any non-animated pathData with a -1 index.
+            for (var i = 0; i < pathData.Count; i++)
             {
-                Path = path;
-                Geometry = geometry;
-                Easing = easing;
+                if (!pathData[i].IsAnimated)
+                {
+                    indices[i] = -1;
+                }
             }
 
-            internal GeometryKeyFrame CloneWithDifferentEasing(Easing easing)
-                => new GeometryKeyFrame(Path, Geometry, easing);
+            // Get enumerators for the key frames in each of the Animatable<PathGeometry>s.
+            var enumerators = pathData.Select(EnumerateKeyFrames).ToArray();
 
-            internal Path Path { get; }
+            // Start enumerating.
+            foreach (var enumerator in enumerators)
+            {
+                enumerator.MoveNext();
+            }
 
-            internal Easing Easing { get; }
+            // Get the current value from each enumerator.
+            var curs = enumerators.Select(en => en.Current).ToArray();
 
-            internal PathGeometry Geometry { get; }
+            // Keep looping until all of the enumerators have been consumed.
+            while (curs.Any(cur => !cur.isCompleted))
+            {
+                // Get the lowest frame number from the enumerators that have not yet been consumed.
+                var currentFrame = curs.Where(cur => !cur.isCompleted).Select(cur => cur.keyFrame.Frame).Min();
+
+                // Yield a group for all of the key frames that have a value for this frame number.
+                // The frame number is NaN if the value is non-animated. Non-animated values are
+                // always output.
+                Easing? preferredEasing = null;
+                var easingIsCorrect = true;
+                var geometries = new KeyFrame<PathGeometry>?[pathData.Count];
+
+                for (var i = 0; i < enumerators.Length; i++)
+                {
+                    var current = enumerators[i].Current;
+                    var frameNumber = current.keyFrame.Frame;
+                    if (double.IsNaN(frameNumber))
+                    {
+                        // The value is non-animated.
+                        geometries[i] = current.keyFrame;
+                    }
+                    else if (frameNumber == currentFrame)
+                    {
+                        // The value has a key frame at the current frame number.
+                        geometries[i] = current.keyFrame;
+                        if (preferredEasing is null)
+                        {
+                            // Use the first easing we come across. This is arbitrary -
+                            // we need an easing, but the various paths may have different easings
+                            // The first one we find is correct for that particular path, and it
+                            // might be correct for the other paths. The only way to get this
+                            // completely correct would be to write an interpolator.
+                            preferredEasing = current.keyFrame.Easing;
+                        }
+                        else if (preferredEasing != current.keyFrame.Easing)
+                        {
+                            easingIsCorrect = false;
+                        }
+                    }
+                }
+
+                // There should always be at least one keyframe for each frame number, so we will
+                // always end up with a non-null preferred easing here.
+                Debug.Assert(preferredEasing != null, "Invariant");
+
+                yield return new PathGeometryGroupKeyFrames(currentFrame, geometries, preferredEasing!, easingIsCorrect);
+
+                // Advance the enumerators that are on the current frame unless they are completed.
+                for (var i = 0; i < enumerators.Length; i++)
+                {
+                    var enumerator = enumerators[i];
+                    if (!enumerator.Current.isCompleted &&
+                        enumerator.Current.keyFrame.Frame == currentFrame)
+                    {
+                        enumerator.MoveNext();
+                        curs[i] = enumerator.Current;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns an enumerator that yields each value from its key frames in sequence, or if the animatable
+        /// is not animated, yields its initial value forever. The enumeration continues forever, repeatedly
+        /// returning the final value after all of the other values have been returned, but with the
+        /// isCompleted variable is set to indicate that all of the values have been returned. This is done
+        /// to make the code simpler for the consumer so that it doesn't need to handle exceptions from
+        /// calling .Current after getting to the end of the enumeration.
+        /// </summary>
+        static IEnumerator<(KeyFrame<PathGeometry> keyFrame, bool isCompleted)> EnumerateKeyFrames(
+            Animatable<PathGeometry> animatable)
+        {
+            KeyFrame<PathGeometry> finalKeyFrame;
+
+            if (!animatable.IsAnimated)
+            {
+                finalKeyFrame = new KeyFrame<PathGeometry>(double.NaN, animatable.InitialValue, HoldEasing.Instance);
+            }
+            else
+            {
+                // Yield each value.
+                var keyFrames = animatable.KeyFrames;
+                finalKeyFrame = keyFrames[keyFrames.Count - 1];
+                foreach (var keyFrame in keyFrames)
+                {
+                    yield return (keyFrame, isCompleted: false);
+                }
+            }
+
+            // Keep yielding the final key frame.
+            while (true)
+            {
+                yield return (finalKeyFrame, isCompleted: true);
+            }
+        }
+
+        /// <summary>
+        /// The grouped key frames for a particular frame number of an animated path geometry group.
+        /// </summary>
+        sealed class PathGeometryGroupKeyFrames
+        {
+            internal PathGeometryGroupKeyFrames(
+                double frame,
+                KeyFrame<PathGeometry>?[] geometries,
+                Easing preferredEasing,
+                bool easingIsCorrect)
+            {
+                Frame = frame;
+                Geometries = geometries;
+                PreferredEasing = preferredEasing;
+                EasingIsCorrect = easingIsCorrect;
+            }
+
+            internal double Frame { get; }
+
+            internal KeyFrame<PathGeometry>?[] Geometries { get; }
+
+            internal Easing PreferredEasing { get; }
+
+            internal bool EasingIsCorrect { get; }
         }
     }
 }

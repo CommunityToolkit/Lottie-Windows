@@ -130,7 +130,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// Groups multiple Shapes into a D2D geometry group.
         /// </summary>
         /// <returns>The shape.</returns>
-        public static CompositionShape TranslatePathGroupContent(ShapeContext context, IEnumerable<Path> paths)
+        public static CompositionShape TranslatePathGroupContent(ShapeContext context, IReadOnlyList<Path> paths)
         {
             var groupingSucceeded = PathGeometryGroup.TryGroupPaths(context, paths, out var grouped);
 
