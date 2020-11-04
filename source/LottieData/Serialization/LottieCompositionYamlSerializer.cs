@@ -72,36 +72,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
             switch (obj.ObjectType)
             {
+                case LottieObjectType.Effect:
+                    return FromEffect((Effect)obj, superclassContent);
+
+                case LottieObjectType.Layer:
+                    return FromLayer((Layer)obj, superclassContent);
+
                 case LottieObjectType.LottieComposition:
                     return FromLottieComposition((LottieComposition)obj, superclassContent);
 
                 case LottieObjectType.Marker:
                     return FromMarker((Marker)obj, superclassContent);
 
-                case LottieObjectType.ImageLayer:
-                case LottieObjectType.NullLayer:
-                case LottieObjectType.PreCompLayer:
-                case LottieObjectType.ShapeLayer:
-                case LottieObjectType.SolidLayer:
-                case LottieObjectType.TextLayer:
-                    return FromLayer((Layer)obj, superclassContent);
-
-                case LottieObjectType.Ellipse:
-                case LottieObjectType.LinearGradientFill:
-                case LottieObjectType.LinearGradientStroke:
-                case LottieObjectType.MergePaths:
-                case LottieObjectType.Polystar:
-                case LottieObjectType.RadialGradientFill:
-                case LottieObjectType.RadialGradientStroke:
-                case LottieObjectType.Rectangle:
-                case LottieObjectType.Repeater:
-                case LottieObjectType.RoundCorners:
-                case LottieObjectType.Shape:
-                case LottieObjectType.ShapeGroup:
-                case LottieObjectType.SolidColorFill:
-                case LottieObjectType.SolidColorStroke:
-                case LottieObjectType.Transform:
-                case LottieObjectType.TrimPath:
+                case LottieObjectType.ShapeLayerContent:
                     return FromShapeLayerContent((ShapeLayerContent)obj, superclassContent);
 
                 default:
@@ -213,6 +196,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             superclassContent.Add(nameof(layer.OutPoint), layer.OutPoint);
             superclassContent.Add(nameof(layer.TimeStretch), layer.TimeStretch);
             superclassContent.Add(nameof(layer.Transform), FromShapeLayerContent(layer.Transform));
+            superclassContent.Add(nameof(layer.Effects), FromEnumerable(layer.Effects, FromEffect));
             superclassContent.Add(nameof(layer.Masks), FromEnumerable(layer.Masks, FromMask));
             superclassContent.Add(nameof(layer.LayerMatteType), Scalar(layer.LayerMatteType));
 
@@ -353,6 +337,31 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             };
         }
 
+        YamlObject FromEffect(Effect effect) =>
+            FromEffect(effect, GetLottieObjectContent(effect));
+
+        YamlObject FromEffect(Effect effect, YamlMap superclassContent)
+        {
+            superclassContent.Add(nameof(effect.Type), effect.Type.ToString());
+            return effect.Type switch
+            {
+                Effect.EffectType.DropShadow => FromDropShadowEffect((DropShadowEffect)effect, superclassContent),
+                _ => throw Unreachable,
+            };
+        }
+
+        YamlObject FromDropShadowEffect(DropShadowEffect effect, YamlMap superclassContent)
+        {
+            var result = superclassContent;
+            result.Add(nameof(effect.Color), FromAnimatable(effect.Color));
+            result.Add(nameof(effect.Direction), FromAnimatable(effect.Direction));
+            result.Add(nameof(effect.Distance), FromAnimatable(effect.Distance));
+            result.Add(nameof(effect.IsShadowOnly), FromAnimatable(effect.IsShadowOnly));
+            result.Add(nameof(effect.Opacity), FromAnimatable(effect.Opacity));
+            result.Add(nameof(effect.Softness), FromAnimatable(effect.Softness));
+            return result;
+        }
+
         YamlObject FromMask(Mask mask)
             => new YamlMap
             {
@@ -451,6 +460,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             => animatable.IsAnimated
                 ? FromEnumerable(animatable.KeyFrames, kf => FromKeyFrame(kf, valueSelector))
                 : valueSelector(animatable.InitialValue);
+
+        YamlObject FromAnimatable(Animatable<bool> animatable) => FromAnimatable(animatable, Scalar);
 
         YamlObject FromAnimatable(Animatable<Color> animatable) => FromAnimatable(animatable, Scalar);
 
@@ -655,6 +666,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             var result = superclassContent;
             return result;
         }
+
+        YamlScalar Scalar(bool value) => Scalar(value, value ? "true" : "false");
 
         YamlScalar Scalar(Color value) => Scalar(value, $"'{value}'");
 

@@ -159,6 +159,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 MarkPropertyAsRead(propertyName5);
             }
 
+            internal void IgnorePropertyThatIsNotYetSupported(
+                string propertyName1,
+                string propertyName2,
+                string propertyName3,
+                string propertyName4,
+                string propertyName5,
+                string propertyName6)
+            {
+                MarkPropertyAsRead(propertyName1);
+                MarkPropertyAsRead(propertyName2);
+                MarkPropertyAsRead(propertyName3);
+                MarkPropertyAsRead(propertyName4);
+                MarkPropertyAsRead(propertyName5);
+                MarkPropertyAsRead(propertyName6);
+            }
+
             // Indicates that the given property is not read because we don't need to read it.
             internal void IgnorePropertyIntentionally(string propertyName)
                 => MarkPropertyAsRead(propertyName);

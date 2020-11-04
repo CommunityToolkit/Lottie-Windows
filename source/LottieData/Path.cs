@@ -23,8 +23,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// <inheritdoc/>
         public override ShapeContentType ContentType => ShapeContentType.Path;
 
-        /// <inheritdoc/>
-        public override LottieObjectType ObjectType => LottieObjectType.Shape;
+        public override ShapeType ShapeType => ShapeType.Path;
 
         /// <summary>
         /// Returns a path with the same properties except with the given

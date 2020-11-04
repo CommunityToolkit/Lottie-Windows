@@ -25,6 +25,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// </summary>
         public abstract ShapeContentType ContentType { get; }
 
+        public override sealed LottieObjectType ObjectType => LottieObjectType.ShapeLayerContent;
+
         public ref struct ShapeLayerContentArgs
         {
             public string Name { get; set; }

@@ -19,7 +19,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)CubicBezier.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CubicBezierEasing.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DrawingDirection.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DropShadowEffect.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Easing.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Effect.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Ellipse.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)EmbeddedImageAsset.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ExtensionMethods.cs" />
@@ -72,6 +74,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)ShapeLayer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ShapeLayerContent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ShapeStroke.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ShapeType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SolidColorFill.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SolidColorStroke.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SolidLayer.cs" />

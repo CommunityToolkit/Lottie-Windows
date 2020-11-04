@@ -6,6 +6,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using static Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization.Exceptions;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
@@ -65,10 +67,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 _issues.IllustratorLayers();
             }
 
-            if (obj.ContainsProperty("ef"))
-            {
-                _issues.LayerEffectsIsNotSupported(layerArgs.Name);
-            }
+            layerArgs.Effects = ReadEffectsList(obj.ArrayPropertyOrNull("ef"), layerArgs.Name);
 
             // ----------------------
             // Layer Transform
@@ -92,7 +91,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             // NOTE: The spec specifies this as 'maskProperties' but the BodyMovin tool exports
             // 'masksProperties' with the plural 'masks'.
             var maskProperties = obj.ArrayPropertyOrNull("masksProperties");
-            layerArgs.Masks = maskProperties != null ? ReadMaskProperties(maskProperties.Value) : null;
+            layerArgs.Masks = maskProperties != null
+                                    ? ReadMaskProperties(maskProperties.Value).ToArray()
+                                    : Array.Empty<Mask>();
 
             layerArgs.LayerMatteType = TTToMatteType(obj.DoublePropertyOrNull("tt"));
 
@@ -188,26 +189,25 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         ShapeLayerContent[] ReadShapesList(in LottieJsonArrayElement? shapesJson)
         {
-            var shapes = new List<ShapeLayerContent>();
+            ArrayBuilder<ShapeLayerContent> result = default;
             if (shapesJson != null)
             {
                 var shapesJsonCount = shapesJson.Value.Count;
-                shapes.Capacity = shapesJsonCount;
-                for (var i = 0; i < shapesJsonCount; i++)
+                if (shapesJsonCount > 0)
                 {
-                    var shapeObject = shapesJson.Value[i].AsObject();
-                    if (shapeObject != null)
+                    result.SetCapacity(shapesJsonCount);
+                    for (var i = 0; i < shapesJsonCount; i++)
                     {
-                        var item = ReadShapeContent(shapeObject.Value);
-                        if (item != null)
+                        var shapeObject = shapesJson.Value[i].AsObject();
+                        if (shapeObject != null)
                         {
-                            shapes.Add(item);
+                            result.AddItemIfNotNull(ReadShapeContent(shapeObject.Value));
                         }
                     }
                 }
             }
 
-            return shapes.ToArray();
+            return result.ToArray();
         }
 
         void ReadTextData(in LottieJsonObjectElement obj)

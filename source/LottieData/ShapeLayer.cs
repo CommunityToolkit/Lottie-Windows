@@ -27,8 +27,5 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
         /// <inheritdoc/>
         public override LayerType Type => LayerType.Shape;
-
-        /// <inheritdoc/>
-        public override LottieObjectType ObjectType => LottieObjectType.ShapeLayer;
     }
 }

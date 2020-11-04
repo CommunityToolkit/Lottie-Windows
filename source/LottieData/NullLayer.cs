@@ -16,8 +16,5 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
         /// <inheritdoc/>
         public override LayerType Type => LayerType.Null;
-
-        /// <inheritdoc/>
-        public override LottieObjectType ObjectType => LottieObjectType.NullLayer;
     }
 }

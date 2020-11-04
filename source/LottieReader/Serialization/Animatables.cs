@@ -17,8 +17,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         static readonly Sequence<GradientStop> s_defaultGradientStops =
             new Sequence<GradientStop>(new ColorGradientStop(0, Color.Black));
 
-        static readonly Animatable<double> s_animatableDoubleZero = CreateNonAnimatedAnimatable(0.0);
         static readonly Animatable<Color> s_animatableColorBlack = CreateNonAnimatedAnimatable(Color.Black);
+        static readonly Animatable<double> s_animatableDoubleZero = CreateNonAnimatedAnimatable(0.0);
+        static readonly Animatable<bool> s_animatableFalse = CreateNonAnimatedAnimatable(false);
         static readonly Animatable<Opacity> s_animatableOpacityOpaque = CreateNonAnimatedAnimatable(Opacity.Opaque);
         static readonly Animatable<PathGeometry> s_animatableGeometryEmpty = CreateNonAnimatedAnimatable(PathGeometry.Empty);
         static readonly Animatable<Rotation> s_animatableRotationNone = CreateNonAnimatedAnimatable(Rotation.None);
@@ -26,6 +27,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         static readonly Animatable<Trim> s_animatableTrimNone = CreateNonAnimatedAnimatable(Trim.None);
         static readonly AnimatableVector3 s_animatableVector3Zero = new AnimatableVector3(Vector3.Zero, null);
         static readonly AnimatableVector3 s_animatableVector3OneHundred = new AnimatableVector3(new Vector3(100, 100, 100), null);
+
+        // Parses boolean values as 0 or non-0 integers.
+        static readonly AnimatableParser<bool> s_animatableBoolParser =
+            CreateAnimatableParser((in LottieJsonElement element) => (element.AsInt32() ?? 0) != 0);
+
         static readonly AnimatableParser<double> s_animatableFloatParser =
             CreateAnimatableParser((in LottieJsonElement element) => element.AsDouble() ?? 0);
 
@@ -56,6 +62,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             parser.ParseJson(this, obj, out var keyFrames, out var initialValue);
             return CreateAnimatable(initialValue, keyFrames, obj.Int32PropertyOrNull("ix"));
         }
+
+        Animatable<bool> ReadAnimatableBool(in LottieJsonObjectElement? obj)
+            => obj is null
+                ? s_animatableFalse
+                : ReadAnimatable(s_animatableBoolParser, obj.Value);
 
         Animatable<Color> ReadAnimatableColor(in LottieJsonObjectElement? obj)
             => obj is null
@@ -134,7 +145,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     // There should be no key frames for color either.
                     if (colorKeyFrames.Any())
                     {
-                        throw new LottieCompositionReaderException(
+                        throw ReaderException(
                             "Numbers of key frames in opacity gradient stops and color gradient stops are unequal.");
                     }
 
@@ -160,7 +171,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             var bArray = b.ToArray();
             if (aArray.Length != bArray.Length)
             {
-                throw new LottieCompositionReaderException(
+                throw ReaderException(
                     "Numbers of key frames in opacity gradient stops and color gradient stops are unequal.");
             }
 
@@ -173,7 +184,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     aKeyFrame.SpatialBezier != bKeyFrame.SpatialBezier ||
                     aKeyFrame.Easing != bKeyFrame.Easing)
                 {
-                    throw new LottieCompositionReaderException(
+                    throw ReaderException(
                         "Opacity gradient stop key frame does not match color gradient stop key frame.");
                 }
 
@@ -277,7 +288,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                                 goto AllColorChannelsRead;
                             }
 
-                            throw Exception($"Unexpected {jsonValue.Kind}");
+                            throw ReaderException($"Unexpected {jsonValue.Kind}");
                     }
 
                     var number = jsonValue.AsDouble() ?? 0;
@@ -344,7 +355,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
                 if (gradientStopsData.Length < colorStopsDataLength)
                 {
-                    throw new LottieCompositionReaderException("Fewer gradient stop values than expected");
+                    throw ReaderException("Fewer gradient stop values than expected");
                 }
 
                 var colorStopsCount = colorStopsDataLength / 4;
@@ -435,7 +446,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     }
                 }
 
-                return new Sequence<GradientStop>(gradientStops, takeOwnership : true);
+                return new Sequence<GradientStop>(gradientStops, takeOwnership: true);
             }
         }
 
@@ -566,19 +577,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 // NOTE: indexing an array with GetObjectAt is faster than enumerating.
                 for (int i = 0; i < count; i++)
                 {
-                    var lottieKeyFrame = jsonArray[i].AsObject();
-                    if (lottieKeyFrame is null)
-                    {
-                        throw Exception($"Unexpected {jsonArray[i].Kind}");
-                    }
-
-                    var lottieKeyFrameObj = lottieKeyFrame.Value;
+                    var lottieKeyFrame = jsonArray[i].AsObject() ?? throw ReaderException($"Unexpected {jsonArray[i].Kind}");
 
                     // "n" is a name on the keyframe. It is not useful and has been deprecated in Bodymovin.
-                    lottieKeyFrameObj.IgnorePropertyIntentionally("n");
+                    lottieKeyFrame.IgnorePropertyIntentionally("n");
 
                     // Read the start frame.
-                    var startFrame = lottieKeyFrameObj.DoublePropertyOrNull("t") ?? 0;
+                    var startFrame = lottieKeyFrame.DoublePropertyOrNull("t") ?? 0;
 
                     var spatialBezier = new CubicBezier(to, ti);
 
@@ -587,7 +592,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                         // This is the final key frame.
                         // If parsing the old format, this key frame will just have the "t" startFrame value.
                         // If parsing the new format, this key frame will also have the "s" startValue.
-                        if (!lottieKeyFrameObj.TryGetProperty("s", out var finalStartValue))
+                        if (!lottieKeyFrame.TryGetProperty("s", out var finalStartValue))
                         {
                             // Old format.
                             if (endValue != null)
@@ -606,7 +611,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     }
 
                     // Read the start value.
-                    lottieKeyFrameObj.TryGetProperty("s", out var startValueToken);
+                    lottieKeyFrame.TryGetProperty("s", out var startValueToken);
                     var startValue = ReadValue(startValueToken);
 
                     // Output a keyframe that describes how to interpolate to this start value. The easing information
@@ -614,14 +619,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     yield return new KeyFrame<T>(startFrame, startValue, spatialBezier, easing);
 
                     // Spatial control points.
-                    if (lottieKeyFrameObj.ContainsProperty("ti"))
+                    if (lottieKeyFrame.ContainsProperty("ti"))
                     {
-                        ti = lottieKeyFrameObj.ArrayPropertyOrNull("ti")?.AsVector2() ?? Vector2.Zero;
-                        to = lottieKeyFrameObj.ArrayPropertyOrNull("to")?.AsVector2() ?? Vector2.Zero;
+                        ti = lottieKeyFrame.ArrayPropertyOrNull("ti")?.AsVector2() ?? Vector2.Zero;
+                        to = lottieKeyFrame.ArrayPropertyOrNull("to")?.AsVector2() ?? Vector2.Zero;
                     }
 
                     // Get the easing to the end value, and get the end value.
-                    if (lottieKeyFrameObj.BoolPropertyOrNull("h") == true)
+                    if (lottieKeyFrame.BoolPropertyOrNull("h") == true)
                     {
                         // Hold the current value. The next value comes from the start
                         // of the next entry.
@@ -633,8 +638,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     else
                     {
                         // Read the easing function parameters. If there are any parameters, it's a CubicBezierEasing.
-                        var cp1Json = lottieKeyFrameObj.ObjectPropertyOrNull("o");
-                        var cp2Json = lottieKeyFrameObj.ObjectPropertyOrNull("i");
+                        var cp1Json = lottieKeyFrame.ObjectPropertyOrNull("o");
+                        var cp2Json = lottieKeyFrame.ObjectPropertyOrNull("i");
                         if (cp1Json != null && cp2Json != null)
                         {
                             var cp1s = cp1Json.Value.AsVector2Array();
@@ -647,16 +652,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                             easing = LinearEasing.Instance;
                         }
 
-                        endValue = lottieKeyFrameObj.TryGetProperty("e", out var endValueObject)
+                        endValue = lottieKeyFrame.TryGetProperty("e", out var endValueObject)
                             ? ReadValue(endValueObject)
                             : default(T);
                     }
 
                     // "e" is the end value of a key frame but has been deprecated because it should always be equal
                     // to the start value of the next key frame.
-                    lottieKeyFrameObj.IgnorePropertyIntentionally("e");
+                    lottieKeyFrame.IgnorePropertyIntentionally("e");
 
-                    lottieKeyFrameObj.AssertAllPropertiesRead();
+                    lottieKeyFrame.AssertAllPropertiesRead();
                 }
             }
         }
