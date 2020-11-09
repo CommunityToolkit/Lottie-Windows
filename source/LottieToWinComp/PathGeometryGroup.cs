@@ -123,6 +123,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         KeyFrame<PathGeometry>? nextKeyFrame = null;
                         if (frameIndex > 0)
                         {
+                            // If there was a previous key frame, get it. It is guaranteed
+                            // by the algorithm that all records[<frameIndex] have non-null values.
                             previousKeyFrame = records[frameIndex - 1].Geometries[pathIndex];
                         }
 
