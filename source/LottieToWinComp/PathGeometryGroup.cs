@@ -157,6 +157,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 }
             }
 
+            // Create the result by creating a key frame containing a PathGeometryGroup for each record,
+            // and use the "preferred easing" to ease between the key frames.
             result =
                 new Animatable<PathGeometryGroup>(
                     keyFrames:
@@ -251,6 +253,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 yield return new PathGeometryGroupKeyFrames(currentFrame, geometries, preferredEasing!, easingIsCorrect);
 
                 // Advance the enumerators that are on the current frame unless they are completed.
+                // NOTE: we don't need to care about whether the enumerators are completed because
+                //       they will continue to return the last value, but we might as well avoid
+                //       some unnecessary work.
                 for (var i = 0; i < enumerators.Length; i++)
                 {
                     var enumerator = enumerators[i];
