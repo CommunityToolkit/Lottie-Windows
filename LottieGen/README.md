@@ -30,9 +30,13 @@ A specific release version can be installed from NuGet:
 
     dotnet tool install -g LottieGen --version 6.1.0
 
-CI builds can be installed from Azure DevOps:
+CI builds can be installed from Azure DevOps. From the [main branch](https://dev.azure.com/dotnet/WindowsCommunityToolkit/_packaging?_a=package&feed=WindowsCommunityToolkit-MainLatest&protocolType=NuGet&package=Microsoft.Toolkit.Uwp.UI.LottieGen):
 
     dotnet tool install -g LottieGen --add-source https://pkgs.dev.azure.com/dotnet/WindowsCommunityToolkit/_packaging/WindowsCommunityToolkit-MainLatest/nuget/v3/index.json --version 7.0.0-build.2
+
+From [PRs](https://dev.azure.com/dotnet/WindowsCommunityToolkit/_packaging?_a=package&feed=WindowsCommunityToolkit-PullRequests&protocolType=NuGet&package=Microsoft.Toolkit.Uwp.UI.LottieGen):
+
+    dotnet tool install -g LottieGen --add-source https://pkgs.dev.azure.com/dotnet/WindowsCommunityToolkit/_packaging/WindowsCommunityToolkit-PullRequests/nuget/v3/index.json --version 7.0.0-build.2
 
 Note that these builds may not be as stable as the official release builds.
 
