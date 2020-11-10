@@ -637,9 +637,7 @@ sealed class LottieJsonFileProcessor
 
         var result = new CodegenConfiguration(
             className: _className,
-            interfaceType: string.IsNullOrWhiteSpace(_options.Interface)
-                            ? "Microsoft.UI.Xaml.Controls.IAnimatedVisual"
-                            : _options.Interface,
+            interfaceType: _options.InterfaceBaseName!,
             additionalInterfaces: _options.AdditionalInterfaces,
             objectGraphs: _translationResults.Select(
                             tr => ((CompositionObject?)tr.RootVisual!, tr.MinimumRequiredUapVersion)).ToArray(),
@@ -650,7 +648,8 @@ sealed class LottieJsonFileProcessor
                             ? string.Empty
                             : NormalizeNamespace(_options.RootNamespace),
             sourceMetadata: _translationResults[0].SourceMetadata,
-            toolInfo: GetToolInvocationInfo(languageSwitch).ToArray()
+            toolInfo: GetToolInvocationInfo(languageSwitch).ToArray(),
+            winUIVersion: _options.WinUIVersion
             )
         {
             DisableOptimization = _options.DisableCodeGenOptimizer,
@@ -659,7 +658,7 @@ sealed class LottieJsonFileProcessor
             Height = lottieComposition.Height,
             Public = _options.Public,
             Width = lottieComposition.Width,
-            WinUI3 = _options.WinUI3Mode,
+            WinUIVersion = _options.WinUIVersion,
         };
 
         return result;
@@ -784,7 +783,7 @@ sealed class LottieJsonFileProcessor
         var translationResult = LottieToMultiVersionWinCompTranslator.TryTranslateLottieComposition(
             lottieComposition: lottieComposition,
             configuration: configuration,
-            minimumUapVersion: _options.WinUI3Mode ? uint.MaxValue : _minimumUapVersion);
+            minimumUapVersion: _options.WinUIVersion.Major >= 3 ? uint.MaxValue : _minimumUapVersion);
 
         _translationResults = translationResult.TranslationResults;
         _translationIssues = translationResult.Issues;

@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text;
 
 internal enum Lang
@@ -28,6 +27,8 @@ sealed class CommandLineOptions
 {
     readonly List<string> _additionalInterfaces = new List<string>();
     readonly List<string> _languageStrings = new List<string>();
+    string? _interfaceBaseName;
+    Version? _winUIVersion;
 
     internal IReadOnlyList<string> AdditionalInterfaces => _additionalInterfaces;
 
@@ -47,7 +48,7 @@ sealed class CommandLineOptions
 
     internal string? InputFile { get; private set; }
 
-    internal string? Interface { get; private set; }
+    internal string InterfaceBaseName => _interfaceBaseName ?? "Microsoft.UI.Xaml.Controls.IAnimatedVisual";
 
     internal IReadOnlyList<Lang> Languages { get; private set; } = Array.Empty<Lang>();
 
@@ -74,11 +75,7 @@ sealed class CommandLineOptions
     // a previous version of the tool.
     internal bool TestMode { get; private set; }
 
-    // Experimental feature to control code generation for WinUI3. Eventually there
-    // will be separate versions of LottieGen for WinUI3 and system APIs so there will
-    // be no need for this switch. For now, if you're using LottieGen to generate
-    // code for WinUI3, set this switch and the codegen will need less hand fixing.
-    internal bool WinUI3Mode { get; private set; }
+    internal Version WinUIVersion => _winUIVersion ?? new Version(2, 4);
 
     // Returns a command line equivalent to the current set of options. This is intended
     // for adding to generated code so that users can regenerate the code and know that
@@ -117,10 +114,7 @@ sealed class CommandLineOptions
             sb.Append($" -{nameof(GenerateDependencyObject)}");
         }
 
-        if (!string.IsNullOrWhiteSpace(Interface))
-        {
-            sb.Append($" -{nameof(Interface)} {Interface}");
-        }
+        sb.Append($" -{nameof(InterfaceBaseName)} {InterfaceBaseName}");
 
         sb.Append($" -Language {languageSwitch}");
 
@@ -163,10 +157,7 @@ sealed class CommandLineOptions
             }
         }
 
-        if (WinUI3Mode)
-        {
-            sb.Append($" -{nameof(WinUI3Mode)}");
-        }
+        sb.Append($" -{nameof(WinUIVersion)} {WinUIVersion.ToString(2)}");
 
         return sb.ToString();
     }
@@ -197,7 +188,7 @@ sealed class CommandLineOptions
         Strict,
         TargetUapVersion,
         TestMode,
-        WinUI3Mode,
+        WinUIVersion,
     }
 
     // Returns the parsed command line. If ErrorDescription is non-null, then the parse failed.
@@ -267,7 +258,7 @@ sealed class CommandLineOptions
             .AddPrefixedKeyword(Keyword.Strict)
             .AddPrefixedKeyword(Keyword.TargetUapVersion)
             .AddPrefixedKeyword(Keyword.TestMode)
-            .AddPrefixedKeyword(Keyword.WinUI3Mode);
+            .AddPrefixedKeyword(Keyword.WinUIVersion);
 
         // The last keyword recognized. This defines what the following parameter value is for,
         // or None if not expecting a parameter value.
@@ -304,9 +295,6 @@ sealed class CommandLineOptions
                         case Keyword.TestMode:
                             TestMode = true;
                             break;
-                        case Keyword.WinUI3Mode:
-                            WinUI3Mode = true;
-                            break;
                         case Keyword.DisableCodeGenOptimizer:
                             DisableCodeGenOptimizer = true;
                             break;
@@ -327,6 +315,7 @@ sealed class CommandLineOptions
                         case Keyword.MinimumUapVersion:
                         case Keyword.RootNamespace:
                         case Keyword.TargetUapVersion:
+                        case Keyword.WinUIVersion:
                             previousKeyword = keyword;
                             break;
                         default:
@@ -351,13 +340,13 @@ sealed class CommandLineOptions
                     previousKeyword = Keyword.None;
                     break;
                 case Keyword.Interface:
-                    if (Interface != null)
+                    if (_interfaceBaseName != null)
                     {
-                        ErrorDescription = ArgumentSpecifiedMoreThanOnce("Interface");
+                        ErrorDescription = ArgumentSpecifiedMoreThanOnce("Interface base name");
                         return;
                     }
 
-                    Interface = arg;
+                    _interfaceBaseName = arg;
                     previousKeyword = Keyword.None;
                     break;
                 case Keyword.Language:
@@ -432,6 +421,25 @@ sealed class CommandLineOptions
 
                     previousKeyword = Keyword.None;
                     break;
+                case Keyword.WinUIVersion:
+                    if (_winUIVersion != null)
+                    {
+                        ErrorDescription = ArgumentSpecifiedMoreThanOnce("WinUI version");
+                        return;
+                    }
+
+                    {
+                        if (!Version.TryParse(arg, out var version))
+                        {
+                            ErrorDescription = ArgumentMustBeAMajorAndMinorVerion("WinUI version");
+                            return;
+                        }
+
+                        _winUIVersion = version;
+                    }
+
+                    previousKeyword = Keyword.None;
+                    break;
                 default:
                     // Should never get here.
                     throw new InvalidOperationException();
@@ -448,4 +456,6 @@ sealed class CommandLineOptions
     static string ArgumentSpecifiedMoreThanOnce(string argument) => $"{argument} specified more than once.";
 
     static string ArgumentMustBeAPositiveInteger(string argument) => $"{argument} must be a positive integer.";
+
+    static string ArgumentMustBeAMajorAndMinorVerion(string argument) => $"{argument} is not a version in the form M.m.";
 }

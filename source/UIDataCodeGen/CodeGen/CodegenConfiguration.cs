@@ -24,7 +24,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             string nameSpace,
             string rootNamespace,
             IReadOnlyDictionary<Guid, object> sourceMetadata,
-            IReadOnlyList<string> toolInfo
+            IReadOnlyList<string> toolInfo,
+            Version winUIVersion
             )
         {
             ClassName = className;
@@ -35,6 +36,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             RootNamespace = rootNamespace;
             SourceMetadata = sourceMetadata;
             ToolInfo = toolInfo;
+            WinUIVersion = winUIVersion;
         }
 
         /// <summary>
@@ -117,10 +119,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         public bool Public { get; set; }
 
         /// <summary>
-        /// When <c>true</c>, makes the generated code suitable for WinUI3.
-        /// This is an experimental feature - the generated code may still need
-        /// some hand tweaking.
+        /// The version of WinUI to target.
         /// </summary>
-        public bool WinUI3 { get; set; }
+        public Version WinUIVersion { get; set; }
     }
 }

@@ -66,11 +66,11 @@ sealed class Program
             _reporter.ErrorStream.WriteLine(_options.ErrorDescription);
             return RunResult.InvalidUsage;
         }
-        else if (_options.WinUI3Mode && (_options.MinimumUapVersion.HasValue || _options.TargetUapVersion.HasValue))
+        else if (_options.WinUIVersion.Major >= 3 && (_options.MinimumUapVersion.HasValue || _options.TargetUapVersion.HasValue))
         {
             // WinUI3 does not permit setting a minimum or target version because WinUI3 implies
             // the latest version only.
-            _reporter.WriteError($"{nameof(_options.WinUI3Mode)} cannot be used with {nameof(_options.MinimumUapVersion)} or {nameof(_options.TargetUapVersion)}.");
+            _reporter.WriteError($"WinUI versions of 3 and above cannot be used with {nameof(_options.MinimumUapVersion)} or {nameof(_options.TargetUapVersion)}.");
             return RunResult.InvalidUsage;
         }
         else if (_options.MinimumUapVersion.HasValue && _options.MinimumUapVersion < LottieToWinCompTranslator.MinimumTargetUapVersion)
@@ -252,8 +252,10 @@ OVERVIEW:
          -GenerateDependencyObject
                        Generates code that extends DependencyObject. This is useful
                        to allow XAML binding to properties in the Lottie source.
-         -Interface    Specifies the name of the interface to implement in the generated
-                       code. Defaults to Microsoft.UI.Xaml.Controls.IAnimatedVisual.
+         -InterfaceBaseName
+                       Specifies the name of the interface to implement in the generated
+                       code. Overrides the default interface base name. The default
+                       is determined by the -WinUIVersion value.
          -MinimumUapVersion
                        The lowest UAP version on which the result must run. Defaults
                        to 7. Must be 7 or higher. Code will be generated that will
@@ -282,8 +284,7 @@ OVERVIEW:
                        from run to run with the same inputs, for example tool version
                        numbers, file paths, and dates. This is designed to enable
                        testing of the tool by diffing the outputs.
-         -WinUI3Mode   Generates code that is compatible with WinUI3. This is currently
-                       an experimental feature.
+         -WinUIVersion Generates code for a particular WinUI version. Defaults to 2.4.
 
 EXAMPLES:
 
