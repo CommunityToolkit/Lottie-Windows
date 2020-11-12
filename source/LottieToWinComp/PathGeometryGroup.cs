@@ -29,13 +29,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         /// <summary>
         /// Takes a group of possibly-animated paths and returns an animatable
-        /// of PathGeometryGroups. Returns true if it succeeds without issues.
-        /// Even if false is returned a best-effort animatable is returned.</summary>
-        /// <returns><c>true</c> iff the grouping worked perfectly.</returns>
-        internal static bool TryGroupPaths(
+        /// of PathGeometryGroups. <paramref name="groupingIsPerfect"/> is true
+        /// if there were no issues in the grouping.
+        /// Even if <paramref name="groupingIsPerfect"/> is false, a best-effort
+        /// animatable is returned that in a lot of cases will look ok.</summary>
+        /// <returns>The paths, grouped.</returns>
+        internal static Animatable<PathGeometryGroup> GroupPaths(
             ShapeLayerContext context,
             IReadOnlyList<Path> paths,
-            out Animatable<PathGeometryGroup> result)
+            out bool groupingIsPerfect)
         {
             // Ideally each of the paths would have identical key frames with identical frame numbers.
             // For example:
@@ -83,18 +85,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             if (paths.All(p => !p.Data.IsAnimated))
             {
                 var group = new PathGeometryGroup(paths.Select(p => p.Data.InitialValue).ToArray());
-
-                result = new Animatable<PathGeometryGroup>(group, propertyIndex: null);
-
-                return true;
+                groupingIsPerfect = true;
+                return new Animatable<PathGeometryGroup>(group, propertyIndex: null);
             }
 
             // At least some of the paths are animated. Create the data structure.
             var records = CreateGroupRecords(paths.Select(p => p.Data).ToArray()).ToArray();
 
             // We are succeeding if the easing is correct in each record. If not we'll
-            // return false to indicate that the result is less than perfect.
-            var success = records.Select(g => g.EasingIsCorrect).Min();
+            // indicate that the result is less than perfect.
+            groupingIsPerfect = records.Select(g => g.EasingIsCorrect).Min();
 
             // Fill in the nulls in the data structure. Ideally we'd fill these in with interpolated
             // values, but interpolation is difficult, so for now we just copy the nearest value.
@@ -108,73 +108,81 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     {
                         // There is no key frame for the current frame number.
                         // Interpolate a key frame to replace the null.
-                        // As mentioned above, we currently don't do proper
-                        // interpolation - we just find the non-null value that
-                        // is closest to the current frame number.
-                        // Get the previous value and its frame number, and the
-                        // next value and its frame number, and choose the one
-                        // with the nearest frame number.
-                        //
-                        // Indicate that the result is not perfect.
-                        success = false;
-
-                        var currentFrameNumber = records[frameIndex].Frame;
-                        KeyFrame<PathGeometry>? previousKeyFrame = null;
-                        KeyFrame<PathGeometry>? nextKeyFrame = null;
-                        if (frameIndex > 0)
-                        {
-                            // If there was a previous key frame, get it. It is guaranteed
-                            // by the algorithm that all records[<frameIndex] have non-null values.
-                            previousKeyFrame = records[frameIndex - 1].Geometries[pathIndex];
-                        }
-
-                        for (var nextFrameIndex = frameIndex; nextFrameIndex < records.Length && nextKeyFrame is null; nextFrameIndex++)
-                        {
-                            nextKeyFrame = records[nextFrameIndex].Geometries[pathIndex];
-                        }
-
-                        // Choose the frame that is closest.
-                        KeyFrame<PathGeometry> closestKeyFrame;
-                        if (previousKeyFrame is null)
-                        {
-                            closestKeyFrame = nextKeyFrame!;
-                        }
-                        else if (nextKeyFrame is null)
-                        {
-                            closestKeyFrame = previousKeyFrame!;
-                        }
-                        else if (currentFrameNumber - previousKeyFrame.Frame < nextKeyFrame.Frame - currentFrameNumber)
-                        {
-                            closestKeyFrame = previousKeyFrame!;
-                        }
-                        else
-                        {
-                            closestKeyFrame = nextKeyFrame!;
-                        }
-
-                        // Fill in the null with the value from the closest key frame.
                         records[frameIndex].Geometries[pathIndex] =
-                            new KeyFrame<PathGeometry>(currentFrameNumber, closestKeyFrame.Value, HoldEasing.Instance);
+                            InterpolateKeyFrame(records, pathIndex, frameIndex);
+
+                        // Indicate that the grouping is not perfect due to having
+                        // to interpolate the path value for this keyFrame.
+                        groupingIsPerfect = false;
                     }
                 }
             }
 
             // Create the result by creating a key frame containing a PathGeometryGroup for each record,
             // and use the "preferred easing" to ease between the key frames.
-            result =
+            return
                 new Animatable<PathGeometryGroup>(
                     keyFrames:
                         (from g in records
                          let geometryGroup = new PathGeometryGroup(g.Geometries.Select(h => h!.Value).ToArray())
                          select new KeyFrame<PathGeometryGroup>(g.Frame, geometryGroup, g.PreferredEasing)).ToArray(),
                     propertyIndex: null);
+        }
 
-            return success;
+        static KeyFrame<PathGeometry> InterpolateKeyFrame(
+            PathGeometryGroupKeyFrames[] records,
+            int pathIndex,
+            int frameIndex)
+        {
+            // We currently don't do proper interpolation - we just
+            // find the non-null value that is closest to the current
+            // frame number.
+            //
+            // Get the previous value and its frame number, and the
+            // next value and its frame number, and choose the one
+            // with the nearest frame number.
+            var currentFrameNumber = records[frameIndex].Frame;
+            KeyFrame<PathGeometry>? previousKeyFrame = null;
+            KeyFrame<PathGeometry>? nextKeyFrame = null;
+            if (frameIndex > 0)
+            {
+                // If there was a previous key frame, get it. It is guaranteed
+                // by the algorithm that all records[<frameIndex] have non-null values.
+                previousKeyFrame = records[frameIndex - 1].Geometries[pathIndex];
+            }
+
+            for (var nextFrameIndex = frameIndex; nextFrameIndex < records.Length && nextKeyFrame is null; nextFrameIndex++)
+            {
+                nextKeyFrame = records[nextFrameIndex].Geometries[pathIndex];
+            }
+
+            // Choose the frame that is closest.
+            KeyFrame<PathGeometry> closestKeyFrame;
+            if (previousKeyFrame is null)
+            {
+                closestKeyFrame = nextKeyFrame!;
+            }
+            else if (nextKeyFrame is null)
+            {
+                closestKeyFrame = previousKeyFrame!;
+            }
+            else if (currentFrameNumber - previousKeyFrame.Frame < nextKeyFrame.Frame - currentFrameNumber)
+            {
+                closestKeyFrame = previousKeyFrame!;
+            }
+            else
+            {
+                closestKeyFrame = nextKeyFrame!;
+            }
+
+            // Return the value from the closest key frame.
+            return
+                new KeyFrame<PathGeometry>(currentFrameNumber, closestKeyFrame.Value, HoldEasing.Instance);
         }
 
         /// <summary>
         /// From a list of animatable paths, produce a record for each distinct key frame number.
-        /// Each record consists of the frame number a list of geometries for that frame number
+        /// Each record consists of the frame number, a list of geometries for that frame number
         /// and the easing from the previous frame number. The list of geometries has an entry
         /// corresponding to each path, however the entry will be null if there is no geometry
         /// for that particular key frame.
@@ -182,18 +190,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         static IEnumerable<PathGeometryGroupKeyFrames> CreateGroupRecords(
             IReadOnlyList<Animatable<PathGeometry>> pathData)
         {
-            // Index of the current pathData key frame for each item in pathData.
-            var indices = new int[pathData.Count];
-
-            // Mark any non-animated pathData with a -1 index.
-            for (var i = 0; i < pathData.Count; i++)
-            {
-                if (!pathData[i].IsAnimated)
-                {
-                    indices[i] = -1;
-                }
-            }
-
             // Get enumerators for the key frames in each of the Animatable<PathGeometry>s.
             var enumerators = pathData.Select(EnumerateKeyFrames).ToArray();
 
