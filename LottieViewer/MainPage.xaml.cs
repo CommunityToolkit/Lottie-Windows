@@ -34,6 +34,7 @@ namespace LottieViewer
     public sealed partial class MainPage : Page, INotifyPropertyChanged
     {
         readonly ToggleButton[] _controlPanelButtons;
+        int _playControlToggleVersion;
         int _playVersion;
 
         public MainPage()
@@ -170,13 +171,11 @@ namespace LottieViewer
                 // Reset the scrubber to the 0 position.
                 _scrubber.Value = 0;
 
-                // If we were stopped in manual play control, turn it back to automatic.
-                if (_playStopButton.IsChecked != true)
+                if (await _stage.TryLoadFileAsync(file))
                 {
+                    // Loading succeeded, start playing.
                     _playStopButton.IsChecked = true;
                 }
-
-                _stage.DoDragDropped(file);
             }
             finally
             {
@@ -265,14 +264,12 @@ namespace LottieViewer
             // Reset the scrubber to the 0 position.
             _scrubber.Value = 0;
 
-            // If we were stopped in manual play control, turn it back to automatic.
-            if (_playStopButton.IsChecked != true)
+            DebugDragDrop("Doing drop");
+            if (await _stage.TryLoadFileAsync((StorageFile)item))
             {
+                // Loading succeeded, start playing.
                 _playStopButton.IsChecked = true;
             }
-
-            DebugDragDrop("Doing drop");
-            _stage.DoDragDropped((StorageFile)item);
         }
 
         void LottieDragLeaveHandler(object sender, DragEventArgs e)
@@ -296,7 +293,7 @@ namespace LottieViewer
         {
             if (!_ignoreScrubberValueChanges)
             {
-                _playStopButton.IsChecked = false;
+                UncheckPlayStopButton();
                 _stage.Player.SetProgress(e.NewValue);
             }
         }
@@ -316,7 +313,7 @@ namespace LottieViewer
 
             // Otherwise, if we toggled on, we're stopped in manual mode: set the progress.
             //            If we toggled off, we're in auto mode, start playing.
-            if (_playStopButton.IsChecked != true)
+            if (!_playStopButton.IsChecked)
             {
                 _stage.Player.SetProgress(_scrubber.Value);
             }
@@ -327,10 +324,12 @@ namespace LottieViewer
                 _ignoreScrubberValueChanges = false;
 
                 // If we were stopped in manual play control, turn it back to automatic.
-                if (!_playStopButton.IsChecked.Value)
+                if (!_playStopButton.IsChecked)
                 {
                     _playStopButton.IsChecked = true;
                 }
+
+                var playControlToggleVersion = ++_playControlToggleVersion;
 
                 try
                 {
@@ -340,7 +339,20 @@ namespace LottieViewer
                 {
                     // Ignore PlayAsync exceptions so they don't crash the process.
                 }
+
+                // Playing has finished. Make sure the PlayStopButton is no longer
+                // checked, unless a newer play has started.
+                if (playControlToggleVersion == _playControlToggleVersion)
+                {
+                    _playStopButton.IsChecked = false;
+                }
             }
+        }
+
+        void UncheckPlayStopButton()
+        {
+            //_playControlToggleVersion++;
+            _playStopButton.IsChecked = false;
         }
 
         void CopyIssuesToClipboard(object sender, RoutedEventArgs e)
@@ -407,10 +419,8 @@ namespace LottieViewer
             var dataContext = ((FrameworkElement)sender.ElementStart.Parent).DataContext;
             var marker = (Marker)dataContext;
 
-            // Ensure the Play button is unchecked because SetProgress will stop playing.
-            _playStopButton.IsChecked = false;
-
             // Set the progress to the marker value.
+            UncheckPlayStopButton();
             _stage.Player.SetProgress(marker.Progress);
         }
 
@@ -420,10 +430,8 @@ namespace LottieViewer
             var dataContext = ((FrameworkElement)sender.ElementStart.Parent).DataContext;
             var marker = (MarkerWithDuration)dataContext;
 
-            // Ensure the Play button is unchecked because SetProgress will stop playing.
-            _playStopButton.IsChecked = false;
-
             // Set the progress to the marker value.
+            UncheckPlayStopButton();
             _stage.Player.SetProgress(marker.ToProgress);
         }
     }

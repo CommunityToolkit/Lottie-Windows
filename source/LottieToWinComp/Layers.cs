@@ -163,6 +163,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 context.Issues.TimeStretchIsNotSupported();
             }
 
+            if (layer.InPoint >= layer.OutPoint)
+            {
+                // We currently don't support layers with InPoint after the OutPoint. In most
+                // cases this would describe a layer that isn't visible, but if TimeStretch
+                // is negative it is a layer that plays in reverse, so it is valid to have
+                // the InPoint after the OutPoint.
+                return null;
+            }
+
             return layer.Type switch
             {
                 Layer.LayerType.Image => Images.CreateImageLayerTranslator(context.CreateLayerContext((ImageLayer)layer)),

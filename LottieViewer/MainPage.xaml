@@ -4,7 +4,7 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:local="using:LottieViewer"
       xmlns:lottie="using:Microsoft.Toolkit.Uwp.UI.Lottie"
-      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:viewmodel="using:LottieViewer.ViewModel"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:viewmodel="using:LottieViewer.ViewModel" 
       Visibility="Visible"
       mc:Ignorable="d">
     <Page.Resources>
@@ -59,9 +59,9 @@
                     Style="{StaticResource ControlsToggleButtonStyle}">
                     <Grid>
                         <!-- Switch icon based on whether or not the Lottie file has any issues. -->
-                        <TextBlock Text="&#xE946;" Visibility="{x:Bind _stage.DiagnosticsViewModel.HasIssues, Converter={StaticResource VisibilityConverter}, ConverterParameter=not, Mode=OneWay}"/>
+                        <TextBlock Text="&#xE946;" Visibility="{x:Bind _stage.DiagnosticsViewModel.HasIssues, Converter={StaticResource VisibilityConverter}, ConverterParameter=not, Mode=OneWay}" AutomationProperties.AccessibilityView="Raw"/>
                         <!-- Different color if there are issues. -->
-                        <TextBlock Text="&#xE946;" Visibility="{x:Bind _stage.DiagnosticsViewModel.HasIssues, Converter={StaticResource VisibilityConverter}, Mode=OneWay}" Foreground="Orange"/>
+                        <TextBlock Text="&#xE946;" Visibility="{x:Bind _stage.DiagnosticsViewModel.HasIssues, Converter={StaticResource VisibilityConverter}, Mode=OneWay}" Foreground="Orange" AutomationProperties.AccessibilityView="Raw"/>
                     </Grid>
                 </ToggleButton>
             </StackPanel>
@@ -292,29 +292,17 @@
             <RelativePanel Grid.Column="1">
 
                 <!--  Play/stop button  -->
-                <ToggleButton x:Name="_playStopButton"
-                              VerticalAlignment="Center"
-                              Checked="_playControl_Toggled"
-                              IsEnabled="{x:Bind _stage.Player.IsAnimatedVisualLoaded, Mode=OneWay}"
-                              RelativePanel.AlignBottomWithPanel="True"
-                              RelativePanel.AlignLeftWithPanel="True"
-                              RelativePanel.AlignTopWithPanel="True"
-                              Style="{StaticResource ControlsToggleButtonPlainStyle}"
-                              ToolTipService.ToolTip="Play/Stop"
-                              AutomationProperties.Name="Toggle play/stop"
-                              Unchecked="_playControl_Toggled">
-                    <Grid>
-                        <!-- Those TextBlocks are just for visual purposes, but are confusinng for accessibility,
-                             so we remove them from UIA -->
-
-                        <!--  Play  -->
-                        <TextBlock Visibility="{x:Bind _playStopButton.IsChecked, Converter={StaticResource VisibilityConverter}, ConverterParameter=not, Mode=OneWay}"
-                                   AutomationProperties.AccessibilityView="Raw">&#xedb5;</TextBlock>
-                        <!--  Stop  -->
-                        <TextBlock Visibility="{x:Bind _playStopButton.IsChecked, Converter={StaticResource VisibilityConverter}, Mode=OneWay}"
-                                   AutomationProperties.AccessibilityView="Raw">&#xe71a;</TextBlock>
-                    </Grid>
-                </ToggleButton>
+                <local:PlayStopButton
+                    Margin="0,4,0,0"
+                    x:Name="_playStopButton"
+                    IsEnabled="{x:Bind _stage.Player.IsAnimatedVisualLoaded, Mode=OneWay}"
+                    Toggled="_playControl_Toggled"
+                    VerticalAlignment="Center"
+                    RelativePanel.AlignBottomWithPanel="True"
+                    RelativePanel.AlignLeftWithPanel="True"
+                    RelativePanel.AlignTopWithPanel="True"
+                    AutomationProperties.Name="Toggle play/stop"
+                    />
 
                 <!--  Scrubber  -->
                 <!--  IsEnabled="{x:Bind _playStopButton.IsChecked, Mode=OneWay}"  -->

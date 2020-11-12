@@ -73,8 +73,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
             // A sorted set to hold the namespaces that the generated code will use. The set is maintained in sorted order.
             var namespaces = new SortedSet<string>();
 
-            namespaces.Add("Microsoft.UI.Xaml.Controls");
-
             if (SourceInfo.UsesCanvas)
             {
                 namespaces.Add("Microsoft.Graphics.Canvas");
@@ -248,17 +246,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
 
             if (SourceInfo.GenerateDependencyObject)
             {
-                builder.WriteLine($"        : DependencyObject");
-                builder.WriteLine($"        , {_sourceInterface}");
+                builder.WriteLine($"    : DependencyObject");
+                builder.WriteLine($"    , {_sourceInterface}");
             }
             else
             {
-                builder.WriteLine($"        : {_sourceInterface}");
+                builder.WriteLine($"    : {_sourceInterface}");
             }
 
             foreach (var additionalInterface in SourceInfo.AdditionalInterfaces)
             {
-                builder.WriteLine($"        , {additionalInterface.GetQualifiedName(_s)}");
+                builder.WriteLine($"    , {additionalInterface.GetQualifiedName(_s)}");
             }
 
             builder.OpenScope();

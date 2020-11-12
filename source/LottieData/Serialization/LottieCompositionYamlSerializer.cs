@@ -98,6 +98,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             result.Add(nameof(lottieComposition.Version), lottieComposition.Version);
             result.Add(nameof(lottieComposition.Width), lottieComposition.Width);
             result.Add(nameof(lottieComposition.Height), lottieComposition.Height);
+            result.Add(nameof(lottieComposition.FramesPerSecond), lottieComposition.FramesPerSecond);
             result.Add(nameof(lottieComposition.InPoint), lottieComposition.InPoint);
             result.Add(nameof(lottieComposition.OutPoint), lottieComposition.OutPoint);
             result.Add(nameof(lottieComposition.Duration), lottieComposition.Duration);

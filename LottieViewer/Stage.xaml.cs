@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Threading.Tasks;
 using LottieViewer.ViewModel;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Storage;
@@ -46,14 +47,7 @@ namespace LottieViewer
             set { SetValue(ArtboardColorProperty, value); }
         }
 
-        // Avoid "async void" method. Not valid here because we handle all async exceptions.
-#pragma warning disable VSTHRD100
-
-        // Use "Async" suffix for async methods
-#pragma warning disable VSTHRD200
-        internal async void PlayFileAsync(StorageFile file)
-#pragma warning restore VSTHRD200
-#pragma warning restore VSTHRD100
+        internal async Task<bool> TryLoadFileAsync(StorageFile file)
         {
             var startDroppedAnimation = _feedbackLottie.PlayDroppedAnimationAsync();
 
@@ -76,31 +70,19 @@ namespace LottieViewer
                     // Ignore PlayLoadFailedAnimationAsync exceptions so they don't crash the process.
                 }
 
-                return;
+                return false;
             }
 
             // Wait until the dropping animation has finished.
             await startDroppedAnimation;
 
             _player.Opacity = 1;
-            try
-            {
-                await _player.PlayAsync(0, 1, true);
-            }
-            catch
-            {
-                // Ignore PlayAsync exceptions so they don't crash the process.
-            }
+            return true;
         }
 
         internal void DoDragEnter()
         {
             _feedbackLottie.PlayDragEnterAnimation();
-        }
-
-        internal void DoDragDropped(StorageFile file)
-        {
-            PlayFileAsync(file);
         }
 
         internal void DoDragLeave()

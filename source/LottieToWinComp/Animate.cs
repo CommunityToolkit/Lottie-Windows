@@ -742,7 +742,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 // animation.
                 if (progress <= 1)
                 {
-                    keyFrameInserter(animation, progress, value, easing);
+                    // Guard against progress values that are < 0.
+                    if (progress >= 0)
+                    {
+                        keyFrameInserter(animation, progress, value, easing);
+                    }
                 }
             }
 

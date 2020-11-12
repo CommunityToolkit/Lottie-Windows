@@ -22,7 +22,8 @@
                     
                     <Color x:Key="LottieBasic">#FF00D1C1</Color>
                     <Color x:Key="DisabledColor">#FF888888</Color>
-
+                    <Color x:Key="ForegroundColor">#FFEBEBEB</Color>
+                    
                     <SolidColorBrush x:Key="BackgroundBrush"
                          Color="#FF4F535E" />
                     <SolidColorBrush x:Key="StageBackgroundBrush"
@@ -35,7 +36,7 @@
                     <SolidColorBrush x:Key="TransparentBrush"
                          Color="Transparent" />
                     <SolidColorBrush x:Key="ForegroundBrush"
-                         Color="#FFEBEBEB" />
+                         Color="{StaticResource ForegroundColor}" />
                     <SolidColorBrush x:Key="LottieBasicBrush"
                          Color="{StaticResource LottieBasic}" />
                     <SolidColorBrush x:Key="DisabledBrush"
@@ -743,7 +744,7 @@
                     <Style x:Key="ControlsToggleButtonPlainStyle"
                TargetType="ToggleButton">
                         <Setter Property="Background" Value="{StaticResource TransparentBrush}" />
-                        <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}" />
+                        <Setter Property="Foreground" Value="{StaticResource LottieBasicBrush}" />
                         <Setter Property="BorderBrush" Value="{ThemeResource ToggleButtonBorderBrush}" />
                         <Setter Property="BorderThickness" Value="0" />
                         <Setter Property="Padding" Value="8,4,8,4" />
@@ -790,7 +791,7 @@
                                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter"
                                                                            Storyboard.TargetProperty="Foreground">
                                                             <DiscreteObjectKeyFrame KeyTime="0"
-                                                                        Value="{ThemeResource LottieBasicBrush}" />
+                                                                        Value="{ThemeResource ForegroundBrush}" />
                                                         </ObjectAnimationUsingKeyFrames>
                                                         <PointerUpThemeAnimation Storyboard.TargetName="RootGrid" />
                                                     </Storyboard>
@@ -839,7 +840,7 @@
                                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter"
                                                                            Storyboard.TargetProperty="Foreground">
                                                             <DiscreteObjectKeyFrame KeyTime="0"
-                                                                        Value="{StaticResource ForegroundBrush}" />
+                                                                        Value="{StaticResource LottieBasicBrush}" />
                                                         </ObjectAnimationUsingKeyFrames>
                                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter"
                                                                            Storyboard.TargetProperty="BorderBrush">
@@ -860,7 +861,7 @@
                                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter"
                                                                            Storyboard.TargetProperty="Foreground">
                                                             <DiscreteObjectKeyFrame KeyTime="0"
-                                                                        Value="{ThemeResource LottieBasicBrush}" />
+                                                                        Value="{ThemeResource ForegroundBrush}" />
                                                         </ObjectAnimationUsingKeyFrames>
                                                         <PointerUpThemeAnimation Storyboard.TargetName="RootGrid" />
                                                     </Storyboard>

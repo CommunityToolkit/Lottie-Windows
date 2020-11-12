@@ -1,0 +1,44 @@
+﻿<UserControl
+    x:Class="LottieViewer.PlayStopButton"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:LottieViewer"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:muxc="using:Microsoft.UI.Xaml.Controls" xmlns:animatedvisuals="using:AnimatedVisuals"
+    mc:Ignorable="d"
+    d:DesignHeight="100"
+    d:DesignWidth="100">
+
+    <ToggleButton 
+        x:Name="_playStopButton"
+        AutomationProperties.Name="Toggle play/stop"
+        IsEnabled="{x:Bind IsEnabled, Mode=OneWay}"
+        Style="{StaticResource ControlsToggleButtonPlainStyle}"
+        ToolTipService.ToolTip="Play/Stop"
+        Checked="PlayControl_Toggled"
+        Unchecked="PlayControl_Toggled">
+
+        <!-- Elements below here are just for visual purposes, but are confusing for accessibility,
+             so we remove them from UIA by marking them as "Raw" -->
+
+        <!--The transparent grid provides a target for clicking on that doesn't
+             change size when the animation for the button changes size.-->
+        <Grid Background="Transparent" Width="24" Height="24">
+
+            <!-- This grid is animated to change size on hover. The AnimatedVisualPlayer cannot
+                 have its size animated because it uses GetElementVisual for hosting the aimation. -->
+            <Grid x:Name="_playStopPlayerContainer" CenterPoint="12,12,0">
+                <Grid x:Name="_fallbackGrid">
+                    <!--  Play  -->
+                    <TextBlock x:Name="_playText" AutomationProperties.AccessibilityView="Raw">&#xedb5;</TextBlock>
+                    <!--  Stop  -->
+                    <TextBlock x:Name="_stopText" AutomationProperties.AccessibilityView="Raw">&#xe71a;</TextBlock>
+                </Grid>
+
+                <muxc:AnimatedVisualPlayer x:Name="_playStopPlayer" Margin="-2" AutoPlay="False" AutomationProperties.AccessibilityView="Raw">
+                    <animatedvisuals:LottieViewer_04_Playback x:Name="_animatedVisual" Foreground="#00d1c1"/>
+                </muxc:AnimatedVisualPlayer>
+            </Grid>
+        </Grid>
+    </ToggleButton>
+</UserControl>
