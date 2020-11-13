@@ -77,7 +77,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             _disableFieldOptimization = configuration.DisableOptimization;
             _generateDependencyObject = configuration.GenerateDependencyObject;
             _generatePublicClass = configuration.Public;
-            _generateForWinui3 = configuration.WinUI3;
+            _generateForWinui3 = configuration.WinUIVersion.Major >= 3;
             _s = stringifier;
             _toolInfo = configuration.ToolInfo;
             _interfaceType = new TypeName(configuration.InterfaceType);
