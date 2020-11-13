@@ -92,6 +92,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="AnimatedVisuals\LottieViewer_04_Playback.cs" />
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
@@ -100,6 +101,9 @@
     <Compile Include="ColorPaletteEntry.cs" />
     <Compile Include="FeedbackLottie.xaml.cs">
       <DependentUpon>FeedbackLottie.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="PlayStopButton.xaml.cs">
+      <DependentUpon>PlayStopButton.xaml</DependentUpon>
     </Compile>
     <Compile Include="ViewModel\LottieVisualDiagnosticsViewModel.cs" />
     <Compile Include="MainPage.xaml.cs">
@@ -191,6 +195,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="PaletteColorPicker.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="PlayStopButton.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
