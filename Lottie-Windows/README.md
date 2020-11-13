@@ -5,7 +5,8 @@ The Lottie-Windows project generates a NuGet package for use by Windows apps.
 
 ## Package locations
 * The [latest release and pre-release versions are on NuGet](https://www.nuget.org/packages/Microsoft.Toolkit.Uwp.UI.Lottie).
-* The [latest CI builds are on MyGet](https://dotnet.myget.org/feed/uwpcommunitytoolkit/package/nuget/Microsoft.Toolkit.Uwp.UI.Lottie).
+* The NuGets for the latest CI builds are published to Azure DevOps. Links here for the [main branch](https://dev.azure.com/dotnet/WindowsCommunityToolkit/_packaging?_a=package&feed=WindowsCommunityToolkit-MainLatest&protocolType=NuGet&package=Microsoft.Toolkit.Uwp.UI.Lottie) and for [PRs](https://dev.azure.com/dotnet/WindowsCommunityToolkit/_packaging?_a=package&feed=WindowsCommunityToolkit-PullRequests&protocolType=NuGet&package=Microsoft.Toolkit.Uwp.UI.Lottie).
+See the [Windows Community Toolkit wiki](https://github.com/windows-toolkit/WindowsCommunityToolkit/wiki/Preview-Packages) for details.
 * The latest local build is output to the bin\nupkg directory in your repo directory.
 
 ## Usage
