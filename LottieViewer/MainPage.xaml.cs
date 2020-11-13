@@ -351,7 +351,6 @@ namespace LottieViewer
 
         void UncheckPlayStopButton()
         {
-            //_playControlToggleVersion++;
             _playStopButton.IsChecked = false;
         }
 

@@ -6,6 +6,7 @@
 
 using System;
 using System.Numerics;
+using AnimatedVisuals;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -28,7 +29,7 @@ namespace LottieViewer
                 "IsChecked",
                 typeof(bool),
                 typeof(PlayStopButton),
-                new PropertyMetadata(false, IsCheckedChanged));
+                new PropertyMetadata(false, OnIsCheckedChanged));
 
         public event RoutedEventHandler? Toggled;
 
@@ -79,10 +80,11 @@ namespace LottieViewer
             SetAnimatedVisualColor();
         }
 
-        static void IsCheckedChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) => ((PlayStopButton)d).IsCheckedChanged(e);
+        static void OnIsCheckedChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) =>
+            ((PlayStopButton)d).OnIsCheckedChanged(e);
 
 #pragma warning disable VSTHRD100 // Avoid async void methods
-        async void IsCheckedChanged(DependencyPropertyChangedEventArgs e)
+        async void OnIsCheckedChanged(DependencyPropertyChangedEventArgs e)
 #pragma warning restore VSTHRD100 // Avoid async void methods
         {
             var isChecked = (bool)e.NewValue;
@@ -93,8 +95,8 @@ namespace LottieViewer
             if (IsAnimationSupported)
             {
                 // Play the segment that either goes from Play to Stop or Stop to Play.
-                var startProgress = isChecked ? 0.2501 : 0.75;
-                var endProgress = isChecked ? 0.75 : 1;
+                var startProgress = isChecked ? LottieViewer_04_Playback.M_Play_Click_On : LottieViewer_04_Playback.M_Stop_Click_On;
+                var endProgress = isChecked ? LottieViewer_04_Playback.M_Play_Click_Off : LottieViewer_04_Playback.M_Stop_Click_Off;
 
                 try
                 {

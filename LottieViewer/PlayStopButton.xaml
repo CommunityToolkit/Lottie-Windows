@@ -9,7 +9,7 @@
     d:DesignHeight="100"
     d:DesignWidth="100">
 
-    <ToggleButton 
+    <ToggleButton
         x:Name="_playStopButton"
         AutomationProperties.Name="Toggle play/stop"
         IsEnabled="{x:Bind IsEnabled, Mode=OneWay}"
@@ -19,14 +19,14 @@
         Unchecked="PlayControl_Toggled">
 
         <!-- Elements below here are just for visual purposes, but are confusing for accessibility,
-             so we remove them from UIA by marking them as "Raw" -->
+             so we remove them from UIA by marking them as "Raw". -->
 
         <!--The transparent grid provides a target for clicking on that doesn't
-             change size when the animation for the button changes size.-->
+            change size when the animation for the button changes size. -->
         <Grid Background="Transparent" Width="24" Height="24">
 
             <!-- This grid is animated to change size on hover. The AnimatedVisualPlayer cannot
-                 have its size animated because it uses GetElementVisual for hosting the aimation. -->
+                 have its size animated because it uses GetElementVisual for hosting the animation. -->
             <Grid x:Name="_playStopPlayerContainer" CenterPoint="12,12,0">
                 <Grid x:Name="_fallbackGrid">
                     <!--  Play  -->

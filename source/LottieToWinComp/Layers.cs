@@ -135,6 +135,23 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// given Lottie layer to a Shape or a Visual.</returns>
         static LayerTranslator? CreateTranslatorForLayer(CompositionContext context, Layer layer)
         {
+            if (layer.IsHidden)
+            {
+                // Hidden layers don't need to be translated. Get out before checking
+                // for any issues - we always render hidden layers correctly (by not
+                // showing them) so they have no issues.
+                return null;
+            }
+
+            if (layer.InPoint >= layer.OutPoint)
+            {
+                // We currently don't support layers with InPoint after the OutPoint. In most
+                // cases this would describe a layer that isn't visible, but if TimeStretch
+                // is negative it is a layer that plays in reverse, so it is valid to have
+                // the InPoint after the OutPoint.
+                return null;
+            }
+
             if (layer.Is3d)
             {
                 context.Issues.ThreeDLayerIsNotSupported();
@@ -153,23 +170,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 }
             }
 
-            if (layer.IsHidden)
-            {
-                return null;
-            }
-
             if (layer.TimeStretch != 1)
             {
                 context.Issues.TimeStretchIsNotSupported();
-            }
-
-            if (layer.InPoint >= layer.OutPoint)
-            {
-                // We currently don't support layers with InPoint after the OutPoint. In most
-                // cases this would describe a layer that isn't visible, but if TimeStretch
-                // is negative it is a layer that plays in reverse, so it is valid to have
-                // the InPoint after the OutPoint.
-                return null;
             }
 
             return layer.Type switch
