@@ -21,8 +21,8 @@
         <!-- Elements below here are just for visual purposes, but are confusing for accessibility,
              so we remove them from UIA by marking them as "Raw". -->
 
-        <!--The transparent grid provides a target for clicking on that doesn't
-            change size when the animation for the button changes size. -->
+        <!-- The transparent grid provides a target for clicking on that doesn't
+             change size when the animation for the button changes size. -->
         <Grid Background="Transparent" Width="24" Height="24">
 
             <!-- This grid is animated to change size on hover. The AnimatedVisualPlayer cannot
