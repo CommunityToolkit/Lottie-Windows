@@ -637,7 +637,7 @@ sealed class LottieJsonFileProcessor
 
         var result = new CodegenConfiguration(
             className: _className,
-            interfaceType: _options.InterfaceBaseName!,
+            interfaceType: _options.InterfaceBaseName,
             additionalInterfaces: _options.AdditionalInterfaces,
             objectGraphs: _translationResults.Select(
                             tr => ((CompositionObject?)tr.RootVisual!, tr.MinimumRequiredUapVersion)).ToArray(),

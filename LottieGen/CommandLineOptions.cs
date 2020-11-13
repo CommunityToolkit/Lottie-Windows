@@ -75,6 +75,9 @@ sealed class CommandLineOptions
     // a previous version of the tool.
     internal bool TestMode { get; private set; }
 
+    // If not specified, default to version 2.4 as that is the version that
+    // was current when we added the WinUIVersion parameter. That way the
+    // old users won't be broken by this change.
     internal Version WinUIVersion => _winUIVersion ?? new Version(2, 4);
 
     // Returns a command line equivalent to the current set of options. This is intended
