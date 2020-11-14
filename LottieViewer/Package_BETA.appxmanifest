@@ -4,7 +4,7 @@
   <mp:PhoneIdentity PhoneProductId="bc745331-50c8-4303-b915-9f18473cca65" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
   <Properties>
     <DisplayName>Lottie Viewer</DisplayName>
-    <PublisherDisplayName>developer</PublisherDisplayName>
+    <PublisherDisplayName>Microsoft Corporation</PublisherDisplayName>
     <Logo>Assets\StoreLogo-BETA.png</Logo>
   </Properties>
   <Dependencies>
