@@ -164,10 +164,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             foreach (var effect in layer.Effects)
             {
-                if (effect.Type != Effect.EffectType.DropShadow)
-                {
-                    context.Issues.UnsupportedLayerEffect(effect.Type.ToString());
-                }
+                context.Issues.UnsupportedLayerEffect(effect.Type.ToString());
             }
 
             if (layer.TimeStretch != 1)
