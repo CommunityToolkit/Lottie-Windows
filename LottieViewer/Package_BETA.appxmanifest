@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" IgnorableNamespaces="uap mp">
-  <Identity Name="bc745331-50c8-4303-b915-9f18473cca65" Publisher="CN=9AF86C33-622F-4896-9ED2-78CAE82263F6" Version="1.0.37.0" />
+  <Identity Name="bc745331-50c8-4303-b915-9f18473cca65" Publisher="CN=9AF86C33-622F-4896-9ED2-78CAE82263F6" Version="7.0.0.0" />
   <mp:PhoneIdentity PhoneProductId="bc745331-50c8-4303-b915-9f18473cca65" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
   <Properties>
     <DisplayName>Lottie Viewer</DisplayName>
