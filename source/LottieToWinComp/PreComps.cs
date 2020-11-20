@@ -5,6 +5,8 @@
 #nullable enable
 
 using System.Linq;
+using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
+using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 
 #if DEBUG
 // For diagnosing issues, give nothing a clip.
@@ -28,8 +30,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 // The layer is never visible.
                 return null;
             }
-
-            var result = context.ObjectFactory.CreateContainerVisual();
 
 #if !NoClipping
             // PreComps must clip to their size.
@@ -55,6 +55,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 #if !NoClipping
             layerHasMasks = context.Layer.Masks.Any();
 #endif
+            var result = context.ObjectFactory.CreateContainerVisual();
+
             if (layerHasMasks)
             {
                 var compositedVisual = Masks.TranslateAndApplyMasksForLayer(context, rootNode);
@@ -64,6 +66,27 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             else
             {
                 result.Children.Add(rootNode);
+            }
+
+            var dropShadowEffects =
+                context.Layer.Effects.Where(eff => eff.Type == LottieData.Effect.EffectType.DropShadow).ToArray();
+
+            if (dropShadowEffects.Length > 0 && dropShadowEffects.All(eff => eff.Type == LottieData.Effect.EffectType.DropShadow))
+            {
+#if DropShadows // Drop shadows are not yet supported.
+                // TODO - if they're not all drop shadows, ISSUE.
+                // TODO - ignore if not enabled.
+
+                // Create a LayerVisual so we can add a drop shadow.
+                var layerVisual = context.ObjectFactory.CreateLayerVisual();
+                var shadow = context.ObjectFactory.CreateDropShadow();
+                layerVisual.Shadow = shadow;
+
+                // TODO - use the correct value.
+                shadow.Offset = new System.Numerics.Vector3(1);
+                layerVisual.Children.Add(result);
+                result = layerVisual;
+#endif // DropShadows
             }
 
             return new LayerTranslator.FromVisual(result);

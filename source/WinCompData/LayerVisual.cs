@@ -6,21 +6,19 @@
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 {
-    [MetaData.UapVersion(2)]
+    [MetaData.UapVersion(3)]
 #if PUBLIC_WinCompData
     public
 #endif
-    class SpriteVisual : ContainerVisual
+    sealed class LayerVisual : ContainerVisual
     {
-        internal SpriteVisual()
+        internal LayerVisual()
         {
         }
-
-        public CompositionBrush? Brush { get; set; }
 
         public CompositionShadow? Shadow { get; set; }
 
         /// <inheritdoc/>
-        public override CompositionObjectType Type => CompositionObjectType.SpriteVisual;
+        public override CompositionObjectType Type => CompositionObjectType.LayerVisual;
     }
 }

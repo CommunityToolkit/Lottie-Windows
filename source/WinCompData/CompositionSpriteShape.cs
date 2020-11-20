@@ -22,11 +22,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 
         public CompositionGeometry? Geometry { get; set; }
 
-        public bool IsStrokeNonScaling { get; set; }
+        // Default is false.
+        public bool? IsStrokeNonScaling { get; set; }
 
         public CompositionBrush? StrokeBrush { get; set; }
 
-        public float StrokeDashOffset { get; set; }
+        // Default is 0.
+        public float? StrokeDashOffset { get; set; }
 
         public List<float> StrokeDashArray { get; } = new List<float>();
 

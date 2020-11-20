@@ -16,6 +16,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
         {
         }
 
+        // Default: <0, 0>
         public Vector2 Center { get; set; }
 
         public Vector2 Radius { get; set; }

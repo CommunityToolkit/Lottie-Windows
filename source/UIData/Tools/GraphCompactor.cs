@@ -77,14 +77,25 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 switch (node.Object.Type)
                 {
                     case CompositionObjectType.CompositionContainerShape:
-                    case CompositionObjectType.ShapeVisual:
                         foreach (var child in ((IContainShapes)node.Object).Shapes)
                         {
                             graph[child].Parent = node.Object;
                         }
 
                         break;
+
+                    case CompositionObjectType.ShapeVisual:
+                        foreach (var child in ((IContainShapes)node.Object).Shapes)
+                        {
+                            graph[child].Parent = node.Object;
+                        }
+
+                        // ShapeVisual is also a ContainerVisual.
+                        goto case CompositionObjectType.ContainerVisual;
+
                     case CompositionObjectType.ContainerVisual:
+                    case CompositionObjectType.LayerVisual:
+                    case CompositionObjectType.SpriteVisual:
                         foreach (var child in ((ContainerVisual)node.Object).Children)
                         {
                             graph[child].Parent = node.Object;

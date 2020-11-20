@@ -34,16 +34,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
         public static Visual Optimize(Visual root, bool ignoreCommentProperties)
         {
-            // Build the object graph.
-            var graph = ObjectGraph<ObjectData>.FromCompositionObject(root, includeVertices: true);
-
-            // Find the canonical objects in the graph.
-            Canonicalizer.Canonicalize(graph, ignoreCommentProperties: ignoreCommentProperties);
-
-            // Create a copy of the WinCompData objects from the canonical objects.
-            // The copy is needed so that we can modify the tree without affecting the graph that
-            // was given to us.
-            var result = (Visual)new Optimizer(graph).GetCompositionObject(root);
+            var result = CanonicalizeGraph(root, ignoreCommentProperties);
 
             AssertGraphsAreDisjoint(result, root);
 
@@ -57,7 +48,25 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             // Re-run the property value optimizer because the compactor may have set new properties.
             result = PropertyValueOptimizer.OptimizePropertyValues(result);
 
+            // The graph compactor may create new CompositionObjects (e.g. BooleanKeyFrameAnimations).
+            // Re-run the canonicalizer so that the new objects are canonicalized.
+            result = CanonicalizeGraph(result, ignoreCommentProperties);
+
             return result;
+        }
+
+        static Visual CanonicalizeGraph(Visual root, bool ignoreCommentProperties)
+        {
+            // Build the object graph.
+            var graph = ObjectGraph<ObjectData>.FromCompositionObject(root, includeVertices: true);
+
+            // Find the canonical objects in the graph.
+            Canonicalizer.Canonicalize(graph, ignoreCommentProperties: ignoreCommentProperties);
+
+            // Create a copy of the WinCompData objects from the canonical objects.
+            // The copy is needed so that we can modify the tree without affecting the graph that
+            // was given to us.
+            return (Visual)new Optimizer(graph).GetCompositionObject(root);
         }
 
         // Asserts that the 2 graphs are disjoint. If this assert ever fires then
@@ -297,6 +306,45 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             return obj;
         }
 
+        DropShadow GetDropShadow(DropShadow obj)
+        {
+            if (GetExisting(obj, out var result))
+            {
+                return result;
+            }
+
+            result = CacheAndInitializeCompositionObject(obj, _c.CreateDropShadow());
+
+            result.BlurRadius = obj.BlurRadius;
+            result.Color = obj.Color;
+            result.Mask = obj.Mask;
+            result.Offset = obj.Offset;
+            result.Opacity = obj.Opacity;
+            result.SourcePolicy = obj.SourcePolicy;
+
+            StartAnimationsAndFreeze(obj, result);
+            return result;
+        }
+
+        LayerVisual GetLayerVisual(LayerVisual obj)
+        {
+            if (GetExisting(obj, out var result))
+            {
+                return result;
+            }
+
+            result = CacheAndInitializeVisual(obj, _c.CreateLayerVisual());
+
+            if (obj.Shadow != null)
+            {
+                result.Shadow = GetCompositionShadow(obj.Shadow);
+            }
+
+            InitializeContainerVisual(obj, result);
+            StartAnimationsAndFreeze(obj, result);
+            return result;
+        }
+
         ShapeVisual GetShapeVisual(ShapeVisual obj)
         {
             if (GetExisting(obj, out var result))
@@ -450,8 +498,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 CompositionObjectType.CompositionVisualSurface => GetCompositionVisualSurface((CompositionVisualSurface)obj),
                 CompositionObjectType.ContainerVisual => GetContainerVisual((ContainerVisual)obj),
                 CompositionObjectType.CubicBezierEasingFunction => GetCubicBezierEasingFunction((CubicBezierEasingFunction)obj),
+                CompositionObjectType.DropShadow => GetDropShadow((DropShadow)obj),
                 CompositionObjectType.ExpressionAnimation => GetExpressionAnimation((ExpressionAnimation)obj),
                 CompositionObjectType.InsetClip => GetInsetClip((InsetClip)obj),
+                CompositionObjectType.LayerVisual => GetLayerVisual((LayerVisual)obj),
                 CompositionObjectType.LinearEasingFunction => GetLinearEasingFunction((LinearEasingFunction)obj),
                 CompositionObjectType.PathKeyFrameAnimation => GetPathKeyFrameAnimation((PathKeyFrameAnimation)obj),
                 CompositionObjectType.ScalarKeyFrameAnimation => GetScalarKeyFrameAnimation((ScalarKeyFrameAnimation)obj),
@@ -532,10 +582,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             return result;
         }
 
+        CompositionShadow GetCompositionShadow(CompositionShadow obj) =>
+            obj.Type switch
+            {
+                CompositionObjectType.DropShadow => GetDropShadow((DropShadow)obj),
+                _ => throw new InvalidOperationException(),
+            };
+
         Visual GetVisual(Visual obj) =>
             obj.Type switch
             {
                 CompositionObjectType.ContainerVisual => GetContainerVisual((ContainerVisual)obj),
+                CompositionObjectType.LayerVisual => GetLayerVisual((LayerVisual)obj),
                 CompositionObjectType.ShapeVisual => GetShapeVisual((ShapeVisual)obj),
                 CompositionObjectType.SpriteVisual => GetSpriteVisual((SpriteVisual)obj),
                 _ => throw new InvalidOperationException(),
@@ -842,30 +900,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             }
 
             result = CacheAndInitializeCompositionObject(obj, _c.CreateStepEasingFunction());
-            if (obj.FinalStep != 1)
-            {
-                result.FinalStep = obj.FinalStep;
-            }
-
-            if (obj.InitialStep != 0)
-            {
-                result.InitialStep = obj.InitialStep;
-            }
-
-            if (obj.IsFinalStepSingleFrame)
-            {
-                result.IsFinalStepSingleFrame = obj.IsFinalStepSingleFrame;
-            }
-
-            if (obj.IsInitialStepSingleFrame)
-            {
-                result.IsInitialStepSingleFrame = obj.IsInitialStepSingleFrame;
-            }
-
-            if (obj.StepCount != 1)
-            {
-                result.StepCount = obj.StepCount;
-            }
+            result.FinalStep = obj.FinalStep;
+            result.InitialStep = obj.InitialStep;
+            result.IsFinalStepSingleFrame = obj.IsFinalStepSingleFrame;
+            result.IsInitialStepSingleFrame = obj.IsInitialStepSingleFrame;
+            result.StepCount = obj.StepCount;
 
             StartAnimationsAndFreeze(obj, result);
             return result;
@@ -1070,40 +1109,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
             if (obj.StrokeBrush != null)
             {
+                result.IsStrokeNonScaling = obj.IsStrokeNonScaling;
                 result.StrokeBrush = GetCompositionBrush(obj.StrokeBrush);
-                if (obj.StrokeDashCap != CompositionStrokeCap.Flat)
-                {
-                    result.StrokeDashCap = obj.StrokeDashCap;
-                }
-
-                if (obj.StrokeStartCap != CompositionStrokeCap.Flat)
-                {
-                    result.StrokeStartCap = obj.StrokeStartCap;
-                }
-
-                if (obj.StrokeEndCap != CompositionStrokeCap.Flat)
-                {
-                    result.StrokeEndCap = obj.StrokeEndCap;
-                }
-
+                result.StrokeDashCap = obj.StrokeDashCap;
+                result.StrokeStartCap = obj.StrokeStartCap;
+                result.StrokeEndCap = obj.StrokeEndCap;
                 result.StrokeThickness = obj.StrokeThickness;
-
                 result.StrokeMiterLimit = obj.StrokeMiterLimit;
-
-                if (obj.StrokeLineJoin != CompositionStrokeLineJoin.Miter)
-                {
-                    result.StrokeLineJoin = obj.StrokeLineJoin;
-                }
-
-                if (obj.StrokeDashOffset != 0)
-                {
-                    result.StrokeDashOffset = obj.StrokeDashOffset;
-                }
-
-                if (obj.IsStrokeNonScaling)
-                {
-                    result.IsStrokeNonScaling = obj.IsStrokeNonScaling;
-                }
+                result.StrokeLineJoin = obj.StrokeLineJoin;
+                result.StrokeDashOffset = obj.StrokeDashOffset;
 
                 var strokeDashArray = result.StrokeDashArray;
                 foreach (var strokeDash in obj.StrokeDashArray)

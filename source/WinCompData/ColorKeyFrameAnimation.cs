@@ -21,6 +21,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
             InterpolationColorSpace = other.InterpolationColorSpace;
         }
 
+        // Default is Auto.
         public CompositionColorSpace InterpolationColorSpace { get; set; }
 
         /// <inheritdoc/>

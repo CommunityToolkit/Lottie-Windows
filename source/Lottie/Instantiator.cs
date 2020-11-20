@@ -14,6 +14,7 @@ using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Microsoft.Graphics.Canvas.Geometry;
+using Windows.UI.Composition;
 using Expr = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions;
 using Mgc = Microsoft.Graphics.Canvas;
 using Mgce = Microsoft.Graphics.Canvas.Effects;
@@ -135,8 +136,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 target.InterpolationSpace = ColorSpace(source.InterpolationSpace.Value);
             }
 
-            // Default mapping mode is Relative.
-            if (source.MappingMode.HasValue && source.MappingMode.Value != Wd.CompositionMappingMode.Relative)
+            if (source.MappingMode.HasValue)
             {
                 target.MappingMode = MappingMode(source.MappingMode.Value);
             }
@@ -279,6 +279,25 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         {
             _cache.Add(key, obj);
             return obj;
+        }
+
+        Wc.LayerVisual GetLayerVisual(Wd.LayerVisual obj)
+        {
+            if (GetExisting<Wc.LayerVisual>(obj, out var result))
+            {
+                return result;
+            }
+
+            result = CacheAndInitializeVisual(obj, _c.CreateLayerVisual());
+
+            if (obj.Shadow != null)
+            {
+                result.Shadow = GetCompositionShadow(obj.Shadow);
+            }
+
+            InitializeContainerVisual(obj, result);
+            StartAnimations(obj, result);
+            return result;
         }
 
         Wc.ShapeVisual GetShapeVisual(Wd.ShapeVisual obj)
@@ -428,8 +447,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 Wd.CompositionObjectType.ContainerVisual => GetContainerVisual((Wd.ContainerVisual)obj),
                 Wd.CompositionObjectType.CubicBezierEasingFunction => GetCubicBezierEasingFunction((Wd.CubicBezierEasingFunction)obj),
                 Wd.CompositionObjectType.CompositionSurfaceBrush => GetCompositionSurfaceBrush((Wd.CompositionSurfaceBrush)obj),
+                Wd.CompositionObjectType.DropShadow => GetDropShadow((Wd.DropShadow)obj),
                 Wd.CompositionObjectType.ExpressionAnimation => GetExpressionAnimation((Wd.ExpressionAnimation)obj),
                 Wd.CompositionObjectType.InsetClip => GetInsetClip((Wd.InsetClip)obj),
+                Wd.CompositionObjectType.LayerVisual => GetLayerVisual((Wd.LayerVisual)obj),
                 Wd.CompositionObjectType.LinearEasingFunction => GetLinearEasingFunction((Wd.LinearEasingFunction)obj),
                 Wd.CompositionObjectType.PathKeyFrameAnimation => GetPathKeyFrameAnimation((Wd.PathKeyFrameAnimation)obj),
                 Wd.CompositionObjectType.ScalarKeyFrameAnimation => GetScalarKeyFrameAnimation((Wd.ScalarKeyFrameAnimation)obj),
@@ -514,6 +535,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             obj.Type switch
             {
                 Wd.CompositionObjectType.ContainerVisual => GetContainerVisual((Wd.ContainerVisual)obj),
+                Wd.CompositionObjectType.LayerVisual => GetLayerVisual((Wd.LayerVisual)obj),
                 Wd.CompositionObjectType.ShapeVisual => GetShapeVisual((Wd.ShapeVisual)obj),
                 Wd.CompositionObjectType.SpriteVisual => GetSpriteVisual((Wd.SpriteVisual)obj),
                 _ => throw new InvalidOperationException(),
@@ -605,7 +627,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
 
             result = CacheAndInitializeKeyFrameAnimation(obj, _c.CreateColorKeyFrameAnimation());
 
-            if (obj.InterpolationColorSpace != default(Wd.CompositionColorSpace))
+            if (obj.InterpolationColorSpace != Wd.CompositionColorSpace.Auto)
             {
                 result.InterpolationColorSpace = (Wc.CompositionColorSpace)obj.InterpolationColorSpace;
             }
@@ -872,29 +894,29 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             }
 
             result = CacheAndInitializeCompositionObject(obj, _c.CreateStepEasingFunction());
-            if (obj.FinalStep != 1)
+            if (obj.FinalStep.HasValue)
             {
-                result.FinalStep = obj.FinalStep;
+                result.FinalStep = obj.FinalStep.Value;
             }
 
-            if (obj.InitialStep != 0)
+            if (obj.InitialStep.HasValue)
             {
-                result.InitialStep = obj.InitialStep;
+                result.InitialStep = obj.InitialStep.Value;
             }
 
-            if (obj.IsFinalStepSingleFrame)
+            if (obj.IsFinalStepSingleFrame.HasValue)
             {
-                result.IsFinalStepSingleFrame = obj.IsFinalStepSingleFrame;
+                result.IsFinalStepSingleFrame = obj.IsFinalStepSingleFrame.Value;
             }
 
-            if (obj.IsInitialStepSingleFrame)
+            if (obj.IsInitialStepSingleFrame.HasValue)
             {
-                result.IsInitialStepSingleFrame = obj.IsInitialStepSingleFrame;
+                result.IsInitialStepSingleFrame = obj.IsInitialStepSingleFrame.Value;
             }
 
-            if (obj.StepCount != 1)
+            if (obj.StepCount.HasValue)
             {
-                result.StepCount = obj.StepCount;
+                result.StepCount = obj.StepCount.Value;
             }
 
             StartAnimations(obj, result);
@@ -909,6 +931,56 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             }
 
             result = CacheAndInitializeCompositionObject(obj, _c.CreateCubicBezierEasingFunction(obj.ControlPoint1, obj.ControlPoint2));
+            StartAnimations(obj, result);
+            return result;
+        }
+
+        Wc.CompositionShadow GetCompositionShadow(Wd.CompositionShadow obj) =>
+            obj.Type switch
+            {
+                Wd.CompositionObjectType.DropShadow => GetDropShadow((Wd.DropShadow)obj),
+                _ => throw new InvalidOperationException(),
+            };
+
+        Wc.DropShadow GetDropShadow(Wd.DropShadow obj)
+        {
+            if (GetExisting<Wc.DropShadow>(obj, out var result))
+            {
+                return result;
+            }
+
+            result = CacheAndInitializeCompositionObject(obj, _c.CreateDropShadow());
+
+            if (obj.BlurRadius.HasValue)
+            {
+                result.BlurRadius = obj.BlurRadius.Value;
+            }
+
+            if (obj.Color.HasValue)
+            {
+                result.Color = Color(obj.Color.Value);
+            }
+
+            if (obj.Mask != null)
+            {
+                result.Mask = GetCompositionBrush(obj.Mask);
+            }
+
+            if (obj.Offset.HasValue)
+            {
+                result.Offset = obj.Offset.Value;
+            }
+
+            if (obj.Opacity.HasValue)
+            {
+                result.Opacity = obj.Opacity.Value;
+            }
+
+            if (obj.SourcePolicy.HasValue)
+            {
+                result.SourcePolicy = DropShadowSourcePolicy(obj.SourcePolicy.Value);
+            }
+
             StartAnimations(obj, result);
             return result;
         }
@@ -967,24 +1039,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             if (GetExisting<Wc.CompositionContainerShape>(obj, out var result))
             {
                 return result;
-            }
-
-            // If this container has only 1 child, it might be coalescable with its child.
-            if (obj.Shapes.Count == 1)
-            {
-                var child = obj.Shapes[0];
-                if (obj.Animators.Count == 0)
-                {
-                    // The container has no animations. It can be replaced with its child as
-                    // long as the child doesn't animate any of the non-default properties and
-                    // the container isn't referenced by an animation.
-                }
-                else if (child.Animators.Count == 0 && child.Type == Wd.CompositionObjectType.CompositionContainerShape)
-                {
-                    // The child has no animations. It can be replaced with its parent as long
-                    // as the parent doesn't animate any of the child's non-default properties
-                    // and the child isn't referenced by an animation.
-                }
             }
 
             result = CacheAndInitializeShape(obj, _c.CreateContainerShape());
@@ -1082,14 +1136,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                     result.StrokeLineJoin = StrokeLineJoin(obj.StrokeLineJoin.Value);
                 }
 
-                if (obj.StrokeDashOffset != 0)
+                if (obj.StrokeDashOffset.HasValue)
                 {
-                    result.StrokeDashOffset = obj.StrokeDashOffset;
+                    result.StrokeDashOffset = obj.StrokeDashOffset.Value;
                 }
 
-                if (obj.IsStrokeNonScaling)
+                if (obj.IsStrokeNonScaling.HasValue)
                 {
-                    result.IsStrokeNonScaling = obj.IsStrokeNonScaling;
+                    result.IsStrokeNonScaling = obj.IsStrokeNonScaling.Value;
                 }
 
                 var strokeDashArray = result.StrokeDashArray;
@@ -1494,6 +1548,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
 
         static Windows.UI.Color Color(Wd.Wui.Color color) =>
             Windows.UI.Color.FromArgb(color.A, color.R, color.G, color.B);
+
+        static CompositionDropShadowSourcePolicy DropShadowSourcePolicy(Wd.CompositionDropShadowSourcePolicy value) =>
+            value switch
+            {
+                Wd.CompositionDropShadowSourcePolicy.Default => CompositionDropShadowSourcePolicy.Default,
+                Wd.CompositionDropShadowSourcePolicy.InheritFromVisualContent => CompositionDropShadowSourcePolicy.InheritFromVisualContent,
+                _ => throw new InvalidOperationException(),
+            };
 
         static CanvasFilledRegionDetermination FilledRegionDetermination(
             Wd.Mgcg.CanvasFilledRegionDetermination value) =>

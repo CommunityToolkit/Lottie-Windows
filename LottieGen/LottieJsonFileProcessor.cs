@@ -284,6 +284,7 @@ sealed class LottieJsonFileProcessor
                     ("ExpressionAnimation", translationStats.ExpressionAnimationCount.ToString()),
                     ("GeometricClip", translationStats.GeometricClipCount.ToString()),
                     ("InsetClip", translationStats.InsetClipCount.ToString()),
+                    ("LayerVisual", translationStats.LayerVisualCount.ToString()),
                     ("LinearEasingFunction", translationStats.LinearEasingFunctionCount.ToString()),
                     ("LinearGradientBrush", translationStats.LinearGradientBrushCount.ToString()),
                     ("PathGeometry", translationStats.PathGeometryCount.ToString()),

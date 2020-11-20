@@ -55,6 +55,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             // Find the nodes that are equivalent and point them all to a single canonical representation.
             void Canonicalize()
             {
+                CanonicalizeDropShadows();
                 CanonicalizeInsetClips();
                 CanonicalizeEllipseGeometries();
                 CanonicalizeRectangleGeometries();
@@ -695,6 +696,26 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                     let obj = item.Object
                     let canonicalSource = CanonicalObject<CanvasGeometry>(obj.Source)
                     group item.Node by canonicalSource into grouped
+                    select grouped;
+
+                CanonicalizeGrouping(grouping);
+            }
+
+            void CanonicalizeDropShadows()
+            {
+                var items = GetCanonicalizableCompositionObjects<DropShadow>(CompositionObjectType.DropShadow);
+
+                var grouping =
+                    from item in items
+                    let obj = item.Object
+                    group item.Node by (
+                        obj.BlurRadius,
+                        obj.Color,
+                        obj.Mask,
+                        obj.Offset,
+                        obj.Opacity,
+                        obj.SourcePolicy)
+                    into grouped
                     select grouped;
 
                 CanonicalizeGrouping(grouping);

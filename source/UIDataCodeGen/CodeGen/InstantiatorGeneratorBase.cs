@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -1154,6 +1156,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             string ColorSpace(CompositionColorSpace value) => _s.ColorSpace(value);
 
+            string DropShadowSourcePolicy(CompositionDropShadowSourcePolicy value) => _s.DropShadowSourcePolicy(value);
+
             string ExtendMode(CompositionGradientExtendMode value) => _s.ExtendMode(value);
 
             string MappingMode(CompositionMappingMode value) => _s.MappingMode(value);
@@ -1318,6 +1322,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 _currentObjectFactoryNode = null;
             }
 
+            /// <summary>
+            /// Combines the calls to <see cref="StartAnimationsOnResult(CodeBuilder, CompositionObject, ObjectData)"/>
+            /// with <see cref="WriteObjectFactoryEnd(CodeBuilder)"/>.
+            /// </summary>
+            void WriteCompositionObjectFactoryEnd(CodeBuilder builder, CompositionObject obj, ObjectData node)
+            {
+                StartAnimationsOnResult(builder, obj, node);
+                WriteObjectFactoryEnd(builder);
+            }
+
             // Writes a factory that just creates an object but doesn't parameterize it before it is returned.
             void WriteSimpleObjectFactory(CodeBuilder builder, ObjectData node, string createCallText)
             {
@@ -1368,54 +1382,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 }
             }
 
-            void WriteSetPropertyStatementDefaultIsFalse(CodeBuilder builder, string propertyName, bool? value, string target = "result")
-            {
-                if (value != false)
-                {
-                    WriteSetPropertyStatement(builder, propertyName, value, target);
-                }
-            }
-
-            void WriteSetPropertyStatementDefaultIsTrue(CodeBuilder builder, string propertyName, bool? value, string target = "result")
-            {
-                if (value != true)
-                {
-                    WriteSetPropertyStatement(builder, propertyName, value, target);
-                }
-            }
-
-            void WriteSetPropertyStatementDefaultIsZero(CodeBuilder builder, string propertyName, int? value, string target = "result")
-            {
-                if (value != 0)
-                {
-                    WriteSetPropertyStatement(builder, propertyName, value, target);
-                }
-            }
-
-            void WriteSetPropertyStatementDefaultIsZero(CodeBuilder builder, string propertyName, float? value, string target = "result")
-            {
-                if (value != 0)
-                {
-                    WriteSetPropertyStatement(builder, propertyName, value, target);
-                }
-            }
-
-            void WriteSetPropertyStatementDefaultIsOne(CodeBuilder builder, string propertyName, int? value, string target = "result")
-            {
-                if (value != 1)
-                {
-                    WriteSetPropertyStatement(builder, propertyName, value, target);
-                }
-            }
-
-            void WriteSetPropertyStatementDefaultIsOne(CodeBuilder builder, string propertyName, float? value, string target = "result")
-            {
-                if (value != 1)
-                {
-                    WriteSetPropertyStatement(builder, propertyName, value, target);
-                }
-            }
-
             void WriteSetPropertyStatement(CodeBuilder builder, string propertyName, bool? value, string target = "result")
                 => WriteSetPropertyStatement(builder, propertyName, value, formatter: Bool, target);
 
@@ -1427,9 +1393,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             void WriteSetPropertyStatement(CodeBuilder builder, string propertyName, CompositionStrokeCap? value, string target = "result")
                 => WriteSetPropertyStatement(builder, propertyName, value, formatter: StrokeCap, target);
-
-            void WriteSetPropertyStatement(CodeBuilder builder, string propertyName, CompositionStrokeLineJoin? value, string target = "result")
-                => WriteSetPropertyStatement(builder, propertyName, value, formatter: StrokeLineJoin, target);
 
             void WriteSetPropertyStatement(CodeBuilder builder, string propertyName, Vector2? value, string target = "result")
                 => WriteSetPropertyStatement(builder, propertyName, value, formatter: Vector2, target);
@@ -1464,9 +1427,29 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 }
             }
 
+            void WriteSetPropertyStatementDefaultIsNullOrWhitespace(
+                CodeBuilder builder,
+                string propertyName,
+                string? value,
+                string target = "result")
+            {
+                if (!string.IsNullOrWhiteSpace(value))
+                {
+                    WriteSetPropertyStatement(builder, propertyName, String(value), target);
+                }
+            }
+
             void WriteSetPropertyStatement(CodeBuilder builder, string propertyName, string value, string target = "result")
             {
                 builder.WriteLine($"{_s.PropertySet(target, propertyName, value)};");
+            }
+
+            void WriteSetPropertyStatement(CodeBuilder builder, string propertyName, CompositionObject? value, ObjectData callerNode, string target = "result")
+            {
+                if (value != null)
+                {
+                    WriteSetPropertyStatement(builder, propertyName, CallFactoryFromFor(callerNode, value), target);
+                }
             }
 
             void WritePopulateShapesCollection(CodeBuilder builder, IList<CompositionShape> shapes, ObjectData node)
@@ -1659,8 +1642,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     CompositionObjectType.CompositionVisualSurface => GenerateCompositionVisualSurfaceFactory(builder, (CompositionVisualSurface)obj, node),
                     CompositionObjectType.ContainerVisual => GenerateContainerVisualFactory(builder, (ContainerVisual)obj, node),
                     CompositionObjectType.CubicBezierEasingFunction => GenerateCubicBezierEasingFunctionFactory(builder, (CubicBezierEasingFunction)obj, node),
+                    CompositionObjectType.DropShadow => GenerateDropShadowFactory(builder, (DropShadow)obj, node),
                     CompositionObjectType.ExpressionAnimation => GenerateExpressionAnimationFactory(builder, (ExpressionAnimation)obj, node),
                     CompositionObjectType.InsetClip => GenerateInsetClipFactory(builder, (InsetClip)obj, node),
+                    CompositionObjectType.LayerVisual => GenerateLayerVisualFactory(builder, (LayerVisual)obj, node),
                     CompositionObjectType.LinearEasingFunction => GenerateLinearEasingFunctionFactory(builder, (LinearEasingFunction)obj, node),
                     CompositionObjectType.PathKeyFrameAnimation => GeneratePathKeyFrameAnimationFactory(builder, (PathKeyFrameAnimation)obj, node),
                     CompositionObjectType.ScalarKeyFrameAnimation => GenerateScalarKeyFrameAnimationFactory(builder, (ScalarKeyFrameAnimation)obj, node),
@@ -1685,8 +1670,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 WriteSetPropertyStatement(builder, nameof(obj.TopInset), obj.TopInset);
                 WriteSetPropertyStatement(builder, nameof(obj.BottomInset), obj.BottomInset);
 
-                StartAnimationsOnResult(builder, obj, node);
-                WriteObjectFactoryEnd(builder);
+                WriteCompositionObjectFactoryEnd(builder, obj, node);
+                return true;
+            }
+
+            bool GenerateLayerVisualFactory(CodeBuilder builder, LayerVisual obj, ObjectData node)
+            {
+                WriteObjectFactoryStart(builder, node);
+                WriteCreateAssignment(builder, node, $"_c{Deref}CreateLayerVisual()");
+                InitializeContainerVisual(builder, obj, node);
+
+                WriteSetPropertyStatement(builder, nameof(obj.Shadow), obj.Shadow, node);
+
+                WriteCompositionObjectFactoryEnd(builder, obj, node);
                 return true;
             }
 
@@ -1696,13 +1692,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 WriteCreateAssignment(builder, node, $"_c{Deref}CreateGeometricClip()");
                 InitializeCompositionClip(builder, obj, node);
 
-                if (obj.Geometry != null)
-                {
-                    WriteSetPropertyStatement(builder, "Geometry", CallFactoryFromFor(node, obj.Geometry));
-                }
+                WriteSetPropertyStatement(builder, nameof(obj.Geometry), obj.Geometry, node);
 
-                StartAnimationsOnResult(builder, obj, node);
-                WriteObjectFactoryEnd(builder);
+                WriteCompositionObjectFactoryEnd(builder, obj, node);
                 return true;
             }
 
@@ -1715,8 +1707,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 WriteSetPropertyStatement(builder, "StartPoint", obj.StartPoint);
                 WriteSetPropertyStatement(builder, "EndPoint", obj.EndPoint);
 
-                StartAnimationsOnResult(builder, obj, node);
-                WriteObjectFactoryEnd(builder);
+                WriteCompositionObjectFactoryEnd(builder, obj, node);
                 return true;
             }
 
@@ -1730,8 +1721,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 WriteSetPropertyStatement(builder, "EllipseRadius", obj.EllipseRadius);
                 WriteSetPropertyStatement(builder, "GradientOriginOffset", obj.GradientOriginOffset);
 
-                StartAnimationsOnResult(builder, obj, node);
-                WriteObjectFactoryEnd(builder);
+                WriteCompositionObjectFactoryEnd(builder, obj, node);
                 return true;
             }
 
@@ -1747,18 +1737,36 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 return true;
             }
 
+            bool GenerateDropShadowFactory(CodeBuilder builder, DropShadow obj, ObjectData node)
+            {
+                WriteObjectFactoryStart(builder, node);
+                WriteCreateAssignment(builder, node, $"_c{Deref}CreateDropShadow();");
+                InitializeCompositionShadow(builder, obj, node);
+
+                WriteSetPropertyStatement(builder, nameof(obj.BlurRadius), obj.BlurRadius);
+                WriteSetPropertyStatement(builder, nameof(obj.Color), obj.Color, formatter: Color);
+                WriteSetPropertyStatement(builder, nameof(obj.Mask), obj.Mask, node);
+                WriteSetPropertyStatement(builder, nameof(obj.Offset), obj.Offset);
+                WriteSetPropertyStatement(builder, nameof(obj.Opacity), obj.Opacity);
+                WriteSetPropertyStatement(builder, nameof(obj.SourcePolicy), obj.SourcePolicy, formatter: DropShadowSourcePolicy);
+
+                WriteCompositionObjectFactoryEnd(builder, obj, node);
+                return true;
+            }
+
             bool GenerateStepEasingFunctionFactory(CodeBuilder builder, StepEasingFunction obj, ObjectData node)
             {
                 WriteObjectFactoryStart(builder, node);
                 WriteCreateAssignment(builder, node, $"_c{Deref}CreateStepEasingFunction()");
+                InitializeCompositionEasingFunction(builder, obj, node);
 
-                WriteSetPropertyStatementDefaultIsOne(builder, nameof(obj.FinalStep), obj.FinalStep);
-                WriteSetPropertyStatementDefaultIsZero(builder, nameof(obj.InitialStep), obj.InitialStep);
-                WriteSetPropertyStatementDefaultIsFalse(builder, nameof(obj.IsFinalStepSingleFrame), obj.IsFinalStepSingleFrame);
-                WriteSetPropertyStatementDefaultIsFalse(builder, nameof(obj.IsInitialStepSingleFrame), obj.IsInitialStepSingleFrame);
-                WriteSetPropertyStatementDefaultIsOne(builder, nameof(obj.StepCount), obj.StepCount);
+                WriteSetPropertyStatement(builder, nameof(obj.FinalStep), obj.FinalStep);
+                WriteSetPropertyStatement(builder, nameof(obj.InitialStep), obj.InitialStep);
+                WriteSetPropertyStatement(builder, nameof(obj.IsFinalStepSingleFrame), obj.IsFinalStepSingleFrame);
+                WriteSetPropertyStatement(builder, nameof(obj.IsInitialStepSingleFrame), obj.IsInitialStepSingleFrame);
+                WriteSetPropertyStatement(builder, nameof(obj.StepCount), obj.StepCount);
 
-                WriteObjectFactoryEnd(builder);
+                WriteCompositionObjectFactoryEnd(builder, obj, node);
                 return true;
             }
 
@@ -1767,8 +1775,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 WriteObjectFactoryStart(builder, node);
                 WriteCreateAssignment(builder, node, $"_c{Deref}CreateContainerVisual()");
                 InitializeContainerVisual(builder, obj, node);
-                StartAnimationsOnResult(builder, obj, node);
-                WriteObjectFactoryEnd(builder);
+                WriteCompositionObjectFactoryEnd(builder, obj, node);
                 return true;
             }
 
@@ -1777,8 +1784,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 WriteObjectFactoryStart(builder, node);
                 WriteCreateAssignment(builder, node, $"_c{Deref}CreateExpressionAnimation({String(obj.Expression)})");
                 InitializeCompositionAnimation(builder, obj, node);
-                StartAnimationsOnResult(builder, obj, node);
-                WriteObjectFactoryEnd(builder);
+                WriteCompositionObjectFactoryEnd(builder, obj, node);
                 return true;
             }
 
@@ -2046,8 +2052,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     b.WriteLine();
                 }
 
+                // Call the helper and initialize the remaining CompositionShape properties.
                 WriteMatrixComment(builder, transformMatrix);
                 builder.WriteLine($"{ConstVar} result = CreateSpriteShape({CallFactoryFromFor(node, obj.Geometry)}, {Matrix3x2(transformMatrix)});");
+                InitializeCompositionObject(builder, obj, node);
+                WriteSetPropertyStatement(builder, nameof(obj.CenterPoint), obj.CenterPoint);
+                WriteSetPropertyStatement(builder, nameof(obj.Offset), obj.Offset);
+                WriteSetPropertyStatement(builder, nameof(obj.RotationAngleInDegrees), obj.RotationAngleInDegrees);
+                WriteSetPropertyStatement(builder, nameof(obj.Scale), obj.Scale);
             }
 
             /// <summary>
@@ -2073,8 +2085,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     b.WriteLine();
                 }
 
+                // Call the helper and initialize the remaining CompositionShape properties.
                 WriteMatrixComment(builder, obj.TransformMatrix);
                 builder.WriteLine($"{ConstVar} result = CreateSpriteShape({CallFactoryFromFor(node, obj.Geometry)}, {Matrix3x2(transformMatrix)}, {CallFactoryFromFor(node, obj.FillBrush)});");
+                InitializeCompositionObject(builder, obj, node);
+                WriteSetPropertyStatement(builder, nameof(obj.CenterPoint), obj.CenterPoint);
+                WriteSetPropertyStatement(builder, nameof(obj.Offset), obj.Offset);
+                WriteSetPropertyStatement(builder, nameof(obj.RotationAngleInDegrees), obj.RotationAngleInDegrees);
+                WriteSetPropertyStatement(builder, nameof(obj.Scale), obj.Scale);
             }
 
             // Starts an ExpressionAnimation that uses the shared singleton ExpressionAnimation.
@@ -2195,10 +2213,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             {
                 if (_owner._setCommentProperties)
                 {
-                    if (!string.IsNullOrWhiteSpace(obj.Comment))
-                    {
-                        WriteSetPropertyStatement(builder, "Comment", String(obj.Comment), localName);
-                    }
+                    WriteSetPropertyStatementDefaultIsNullOrWhitespace(builder, nameof(obj.Comment), obj.Comment, localName);
                 }
 
                 var propertySet = obj.Properties;
@@ -2210,10 +2225,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 }
             }
 
-            void InitializeCompositionBrush(CodeBuilder builder, CompositionBrush obj, ObjectData node)
-            {
+            void InitializeCompositionBrush(CodeBuilder builder, CompositionBrush obj, ObjectData node) =>
                 InitializeCompositionObject(builder, obj, node);
-            }
+
+            void InitializeCompositionEasingFunction(CodeBuilder builder, CompositionEasingFunction obj, ObjectData node) =>
+                InitializeCompositionObject(builder, obj, node);
+
+            void InitializeCompositionShadow(CodeBuilder builder, CompositionShadow obj, ObjectData node) =>
+                InitializeCompositionObject(builder, obj, node);
 
             void InitializeVisual(CodeBuilder builder, Visual obj, ObjectData node)
             {
@@ -2225,13 +2244,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 }
 
                 WriteSetPropertyStatement(builder, nameof(obj.CenterPoint), obj.CenterPoint);
-
-                if (obj.Clip != null)
-                {
-                    WriteSetPropertyStatement(builder, nameof(obj.Clip), CallFactoryFromFor(node, obj.Clip));
-                }
-
-                WriteSetPropertyStatementDefaultIsTrue(builder, nameof(obj.IsVisible), obj.IsVisible);
+                WriteSetPropertyStatement(builder, nameof(obj.Clip), obj.Clip, node);
+                WriteSetPropertyStatement(builder, nameof(obj.IsVisible), obj.IsVisible);
                 WriteSetPropertyStatement(builder, nameof(obj.Offset), obj.Offset);
                 WriteSetPropertyStatement(builder, nameof(obj.Opacity), obj.Opacity);
                 WriteSetPropertyStatement(builder, nameof(obj.RotationAngleInDegrees), obj.RotationAngleInDegrees);
@@ -2267,13 +2281,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
                 WriteSetPropertyStatement(builder, nameof(obj.ExtendMode), obj.ExtendMode, formatter: ExtendMode);
                 WriteSetPropertyStatement(builder, nameof(obj.InterpolationSpace), obj.InterpolationSpace, formatter: ColorSpace);
-
-                // Default MappingMode is Relative
-                if (obj.MappingMode.HasValue && obj.MappingMode.Value != CompositionMappingMode.Relative)
-                {
-                    WriteSetPropertyStatement(builder, nameof(obj.MappingMode), MappingMode(obj.MappingMode.Value));
-                }
-
+                WriteSetPropertyStatement(builder, nameof(obj.MappingMode), obj.MappingMode, formatter: MappingMode);
                 WriteSetPropertyStatement(builder, nameof(obj.Offset), obj.Offset);
                 WriteSetPropertyStatement(builder, nameof(obj.RotationAngleInDegrees), obj.RotationAngleInDegrees);
                 WriteSetPropertyStatement(builder, nameof(obj.Scale), obj.Scale);
@@ -2313,7 +2321,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     default:
                         {
                             // Multiple children requires the use of a local.
-                            builder.WriteLine($"{ConstVar} children = {_s.PropertyGet("result", "Children")};");
+                            builder.WriteLine($"{ConstVar} children = {_s.PropertyGet("result", nameof(obj.Children))};");
                             foreach (var child in obj.Children)
                             {
                                 WriteShortDescriptionComment(builder, child);
@@ -2329,9 +2337,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             {
                 InitializeCompositionObject(builder, obj, node);
 
-                WriteSetPropertyStatementDefaultIsOne(builder, nameof(obj.TrimEnd), obj.TrimEnd);
-                WriteSetPropertyStatementDefaultIsZero(builder, nameof(obj.TrimOffset), obj.TrimOffset);
-                WriteSetPropertyStatementDefaultIsZero(builder, nameof(obj.TrimStart), obj.TrimStart);
+                WriteSetPropertyStatement(builder, nameof(obj.TrimEnd), obj.TrimEnd);
+                WriteSetPropertyStatement(builder, nameof(obj.TrimOffset), obj.TrimOffset);
+                WriteSetPropertyStatement(builder, nameof(obj.TrimStart), obj.TrimStart);
             }
 
             void InitializeCompositionAnimation(CodeBuilder builder, CompositionAnimation obj, ObjectData node)
@@ -2343,13 +2351,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     obj.ReferenceParameters.Select(p => new KeyValuePair<string, string>(p.Key, $"{CallFactoryFromFor(node, p.Value)}")));
             }
 
-            void InitializeCompositionAnimationWithParameters(CodeBuilder builder, CompositionAnimation obj, ObjectData node, IEnumerable<KeyValuePair<string, string>> parameters)
+            void InitializeCompositionAnimationWithParameters(
+                CodeBuilder builder,
+                CompositionAnimation obj,
+                ObjectData node,
+                IEnumerable<KeyValuePair<string, string>> parameters)
             {
                 InitializeCompositionObject(builder, obj, node);
-                if (!string.IsNullOrWhiteSpace(obj.Target))
-                {
-                    WriteSetPropertyStatement(builder, "Target", String(obj.Target));
-                }
+                WriteSetPropertyStatementDefaultIsNullOrWhitespace(builder, nameof(obj.Target), obj.Target);
 
                 foreach (var parameter in parameters)
                 {
@@ -2362,7 +2371,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 WriteCreateAssignment(builder, node, $"_c{Deref}Create{animation.Type}()");
 
                 Debug.Assert(animation.Duration.Ticks > 0, "Invariant");
-                WriteSetPropertyStatement(builder, "Duration", TimeSpan(animation.Duration));
+                WriteSetPropertyStatement(builder, nameof(animation.Duration), TimeSpan(animation.Duration));
 
                 InitializeCompositionAnimation(builder, animation, node);
             }
@@ -2409,8 +2418,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     }
                 }
 
-                StartAnimationsOnResult(builder, obj, node);
-                WriteObjectFactoryEnd(builder);
+                WriteCompositionObjectFactoryEnd(builder, obj, node);
                 return true;
             }
 
@@ -2441,7 +2449,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
                     if (obj.InterpolationColorSpace != CompositionColorSpace.Auto)
                     {
-                        WriteSetPropertyStatement(builder, "InterpolationColorSpace", ColorSpace(obj.InterpolationColorSpace));
+                        WriteSetPropertyStatement(builder, nameof(obj.InterpolationColorSpace), ColorSpace(obj.InterpolationColorSpace));
                     }
                 }
 
@@ -2463,8 +2471,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     }
                 }
 
-                StartAnimationsOnResult(builder, obj, node);
-                WriteObjectFactoryEnd(builder);
+                WriteCompositionObjectFactoryEnd(builder, obj, node);
                 return true;
             }
 
@@ -2510,8 +2517,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     }
                 }
 
-                StartAnimationsOnResult(builder, obj, node);
-                WriteObjectFactoryEnd(builder);
+                WriteCompositionObjectFactoryEnd(builder, obj, node);
                 return true;
             }
 
@@ -2556,8 +2562,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     }
                 }
 
-                StartAnimationsOnResult(builder, obj, node);
-                WriteObjectFactoryEnd(builder);
+                WriteCompositionObjectFactoryEnd(builder, obj, node);
                 return true;
             }
 
@@ -2602,8 +2607,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     }
                 }
 
-                StartAnimationsOnResult(builder, obj, node);
-                WriteObjectFactoryEnd(builder);
+                WriteCompositionObjectFactoryEnd(builder, obj, node);
                 return true;
             }
 
@@ -2636,8 +2640,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     builder.WriteLine($"result{Deref}InsertKeyFrame({Float(kf.Progress)}, {CallFactoryFromFor(node, valueKeyFrame.Value)}, {CallFactoryFromFor(node, kf.Easing)});");
                 }
 
-                StartAnimationsOnResult(builder, obj, node);
-                WriteObjectFactoryEnd(builder);
+                WriteCompositionObjectFactoryEnd(builder, obj, node);
                 return true;
             }
 
@@ -2682,8 +2685,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     }
                 }
 
-                StartAnimationsOnResult(builder, obj, node);
-                WriteObjectFactoryEnd(builder);
+                WriteCompositionObjectFactoryEnd(builder, obj, node);
                 return true;
             }
 
@@ -2696,8 +2698,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 WriteSetPropertyStatement(builder, nameof(obj.Offset), obj.Offset);
                 WriteSetPropertyStatement(builder, nameof(obj.Size), obj.Size);
 
-                StartAnimationsOnResult(builder, obj, node);
-                WriteObjectFactoryEnd(builder);
+                WriteCompositionObjectFactoryEnd(builder, obj, node);
                 return true;
             }
 
@@ -2711,8 +2712,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 WriteSetPropertyStatement(builder, nameof(obj.Offset), obj.Offset);
                 WriteSetPropertyStatement(builder, nameof(obj.Size), obj.Size);
 
-                StartAnimationsOnResult(builder, obj, node);
-                WriteObjectFactoryEnd(builder);
+                WriteCompositionObjectFactoryEnd(builder, obj, node);
                 return true;
             }
 
@@ -2729,8 +2729,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
                 WriteSetPropertyStatement(builder, nameof(obj.Radius), obj.Radius);
 
-                StartAnimationsOnResult(builder, obj, node);
-                WriteObjectFactoryEnd(builder);
+                WriteCompositionObjectFactoryEnd(builder, obj, node);
                 return true;
             }
 
@@ -2754,8 +2753,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     WriteObjectFactoryStart(builder, node);
                     WriteCreateAssignment(builder, node, createPathGeometryText);
                     InitializeCompositionGeometry(builder, obj, node);
-                    StartAnimationsOnResult(builder, obj, node);
-                    WriteObjectFactoryEnd(builder);
+                    WriteCompositionObjectFactoryEnd(builder, obj, node);
                 }
 
                 return true;
@@ -2772,8 +2770,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     WriteObjectFactoryStart(builder, node);
                     WriteCreateAssignment(builder, node, createCallText);
                     InitializeCompositionBrush(builder, obj, node);
-                    StartAnimationsOnResult(builder, obj, node);
-                    WriteObjectFactoryEnd(builder);
+                    WriteCompositionObjectFactoryEnd(builder, obj, node);
                 }
                 else
                 {
@@ -2790,8 +2787,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     WriteObjectFactoryStart(builder, node);
                     WriteCreateAssignment(builder, node, $"_c{Deref}CreateColorGradientStop({Float(obj.Offset)}, {Color(obj.Color)})");
                     InitializeCompositionObject(builder, obj, node);
-                    StartAnimationsOnResult(builder, obj, node);
-                    WriteObjectFactoryEnd(builder);
+                    WriteCompositionObjectFactoryEnd(builder, obj, node);
                 }
                 else
                 {
@@ -2809,8 +2805,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 WriteCreateAssignment(builder, node, $"_c{Deref}CreateShapeVisual()");
                 InitializeContainerVisual(builder, obj, node);
                 WritePopulateShapesCollection(builder, obj.Shapes, node);
-                StartAnimationsOnResult(builder, obj, node);
-                WriteObjectFactoryEnd(builder);
+                WriteCompositionObjectFactoryEnd(builder, obj, node);
                 return true;
             }
 
@@ -2820,13 +2815,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 WriteCreateAssignment(builder, node, $"_c{Deref}CreateSpriteVisual()");
                 InitializeContainerVisual(builder, obj, node);
 
-                if (obj.Brush != null)
-                {
-                    WriteSetPropertyStatement(builder, "Brush", CallFactoryFromFor(node, obj.Brush));
-                }
+                WriteSetPropertyStatement(builder, nameof(obj.Brush), obj.Brush, node);
+                WriteSetPropertyStatement(builder, nameof(obj.Shadow), obj.Shadow, node);
 
-                StartAnimationsOnResult(builder, obj, node);
-                WriteObjectFactoryEnd(builder);
+                WriteCompositionObjectFactoryEnd(builder, obj, node);
                 return true;
             }
 
@@ -2836,8 +2828,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 WriteCreateAssignment(builder, node, $"_c{Deref}CreateContainerShape()");
                 InitializeCompositionShape(builder, obj, node);
                 WritePopulateShapesCollection(builder, obj.Shapes, node);
-                StartAnimationsOnResult(builder, obj, node);
-                WriteObjectFactoryEnd(builder);
+                WriteCompositionObjectFactoryEnd(builder, obj, node);
                 return true;
             }
 
@@ -2872,8 +2863,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                         throw new InvalidOperationException();
                 }
 
-                StartAnimationsOnResult(builder, obj, node);
-                WriteObjectFactoryEnd(builder);
+                WriteCompositionObjectFactoryEnd(builder, obj, node);
                 return true;
             }
 
@@ -2901,12 +2891,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                         {
                             WriteCallHelperCreateSpriteShapeWithFillBrush(builder, obj, node, obj.TransformMatrix.Value);
                         }
-
-                        InitializeCompositionObject(builder, obj, node);
-                        WriteSetPropertyStatement(builder, nameof(obj.CenterPoint), obj.CenterPoint);
-                        WriteSetPropertyStatement(builder, nameof(obj.Offset), obj.Offset);
-                        WriteSetPropertyStatement(builder, nameof(obj.RotationAngleInDegrees), obj.RotationAngleInDegrees);
-                        WriteSetPropertyStatement(builder, nameof(obj.Scale), obj.Scale);
                     }
                     else
                     {
@@ -2915,20 +2899,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     }
                 }
 
-                if (setFillBrush && obj.FillBrush != null)
+                // The CompositionShape properties are now initialized. Initialize the
+                // properties that are specific to CompositionSpriteShape properties.
+                if (setFillBrush)
                 {
-                    WriteSetPropertyStatement(builder, nameof(obj.FillBrush), CallFactoryFromFor(node, obj.FillBrush));
+                    WriteSetPropertyStatement(builder, nameof(obj.FillBrush), obj.FillBrush, node);
                 }
 
-                WriteSetPropertyStatementDefaultIsFalse(builder, nameof(obj.IsStrokeNonScaling), obj.IsStrokeNonScaling);
-
-                if (obj.StrokeBrush != null)
-                {
-                    WriteSetPropertyStatement(builder, nameof(obj.StrokeBrush), CallFactoryFromFor(node, obj.StrokeBrush));
-                }
-
+                WriteSetPropertyStatement(builder, nameof(obj.IsStrokeNonScaling), obj.IsStrokeNonScaling);
+                WriteSetPropertyStatement(builder, nameof(obj.StrokeBrush), obj.StrokeBrush, node);
                 WriteSetPropertyStatement(builder, nameof(obj.StrokeDashCap), obj.StrokeDashCap);
-                WriteSetPropertyStatementDefaultIsZero(builder, nameof(obj.StrokeDashOffset), obj.StrokeDashOffset);
+                WriteSetPropertyStatement(builder, nameof(obj.StrokeDashOffset), obj.StrokeDashOffset);
 
                 if (obj.StrokeDashArray.Count > 0)
                 {
@@ -2941,12 +2922,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
                 WriteSetPropertyStatement(builder, nameof(obj.StrokeStartCap), obj.StrokeStartCap);
                 WriteSetPropertyStatement(builder, nameof(obj.StrokeEndCap), obj.StrokeEndCap);
-                WriteSetPropertyStatement(builder, nameof(obj.StrokeLineJoin), obj.StrokeLineJoin);
-                WriteSetPropertyStatementDefaultIsOne(builder, nameof(obj.StrokeMiterLimit), obj.StrokeMiterLimit);
-                WriteSetPropertyStatementDefaultIsOne(builder, nameof(obj.StrokeThickness), obj.StrokeThickness);
+                WriteSetPropertyStatement(builder, nameof(obj.StrokeLineJoin), obj.StrokeLineJoin, formatter: StrokeLineJoin);
+                WriteSetPropertyStatement(builder, nameof(obj.StrokeMiterLimit), obj.StrokeMiterLimit);
+                WriteSetPropertyStatement(builder, nameof(obj.StrokeThickness), obj.StrokeThickness);
 
-                StartAnimationsOnResult(builder, obj, node);
-                WriteObjectFactoryEnd(builder);
+                WriteCompositionObjectFactoryEnd(builder, obj, node);
                 return true;
             }
 
@@ -2993,8 +2973,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     }
 
                     InitializeCompositionBrush(builder, obj, node);
-                    StartAnimationsOnResult(builder, obj, node);
-                    WriteObjectFactoryEnd(builder);
+                    WriteCompositionObjectFactoryEnd(builder, obj, node);
                 }
 
                 return true;
@@ -3005,9 +2984,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 WriteObjectFactoryStart(builder, node);
                 WriteCreateAssignment(builder, node, $"_c{Deref}CreateViewBox()");
                 InitializeCompositionObject(builder, obj, node);
-                builder.WriteLine($"result.Size = {Vector2(obj.Size)};");
-                StartAnimationsOnResult(builder, obj, node);
-                WriteObjectFactoryEnd(builder);
+
+                WriteSetPropertyStatement(builder, nameof(obj.Size), obj.Size);
+
+                WriteCompositionObjectFactoryEnd(builder, obj, node);
                 return true;
             }
 
@@ -3017,16 +2997,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 WriteCreateAssignment(builder, node, $"_c{Deref}CreateVisualSurface()");
                 InitializeCompositionObject(builder, obj, node);
 
-                if (obj.SourceVisual != null)
-                {
-                    WriteSetPropertyStatement(builder, "SourceVisual", CallFactoryFromFor(node, obj.SourceVisual));
-                }
+                WriteSetPropertyStatement(builder, nameof(obj.SourceVisual), obj.SourceVisual, node);
+                WriteSetPropertyStatement(builder, nameof(obj.SourceSize), obj.SourceSize);
+                WriteSetPropertyStatement(builder, nameof(obj.SourceOffset), obj.SourceOffset);
 
-                WriteSetPropertyStatement(builder, "SourceSize", obj.SourceSize);
-                WriteSetPropertyStatement(builder, "SourceOffset", obj.SourceOffset);
-
-                StartAnimationsOnResult(builder, obj, node);
-                WriteObjectFactoryEnd(builder);
+                WriteCompositionObjectFactoryEnd(builder, obj, node);
                 return true;
             }
 
