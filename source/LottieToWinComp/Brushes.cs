@@ -254,7 +254,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             sprite.StrokeBrush = brush;
         }
 
-        [return: NotNullIfNotNull("shapeFill")]
         public static CompositionBrush? TranslateShapeFill(LayerContext context, ShapeFill? shapeFill, CompositeOpacity opacity)
         {
             if (shapeFill is null)

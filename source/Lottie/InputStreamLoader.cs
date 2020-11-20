@@ -27,7 +27,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             _inputStream = inputStream;
         }
 
-        [return: NotNullIfNotNull("inputStream")]
         internal static async Task<AnimatedVisualFactory?> LoadAsync(
             ImageAssetHandler? imageLoader,
             IInputStream inputStream,

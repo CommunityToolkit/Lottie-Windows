@@ -118,7 +118,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
 
             if (SourceInfo.LoadedImageSurfaces.Count > 0)
             {
-                // IDynamicAnimatedVisualSource is output in multiple places without 
+                // IDynamicAnimatedVisualSource is output in multiple places without
                 // namespace qualification.
                 namespaces.Add("Microsoft.UI.Xaml.Controls");
             }

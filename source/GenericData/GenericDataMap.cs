@@ -6,7 +6,6 @@
 
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.GenericData
@@ -20,7 +19,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.GenericData
 
         GenericDataMap(IDictionary<string, GenericDataObject?> items)
         {
-            _items = items.ToDictionary(x => x.Key, x => x.Value);
+            _items = new Dictionary<string, GenericDataObject?>(items);
         }
 
         public static GenericDataMap Create(IDictionary<string, GenericDataObject?> items)
