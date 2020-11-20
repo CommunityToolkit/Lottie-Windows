@@ -68,12 +68,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 result.Children.Add(rootNode);
             }
 
+#if DropShadows // Drop shadows are not yet supported.
             var dropShadowEffects =
                 context.Layer.Effects.Where(eff => eff.Type == LottieData.Effect.EffectType.DropShadow).ToArray();
 
             if (dropShadowEffects.Length > 0 && dropShadowEffects.All(eff => eff.Type == LottieData.Effect.EffectType.DropShadow))
             {
-#if DropShadows // Drop shadows are not yet supported.
                 // TODO - if they're not all drop shadows, ISSUE.
                 // TODO - ignore if not enabled.
 
@@ -86,8 +86,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 shadow.Offset = new System.Numerics.Vector3(1);
                 layerVisual.Children.Add(result);
                 result = layerVisual;
+        }
 #endif // DropShadows
-            }
 
             return new LayerTranslator.FromVisual(result);
         }
