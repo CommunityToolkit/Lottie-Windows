@@ -14,7 +14,6 @@ using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Microsoft.Graphics.Canvas.Geometry;
-using Windows.UI.Composition;
 using Expr = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions;
 using Mgc = Microsoft.Graphics.Canvas;
 using Mgce = Microsoft.Graphics.Canvas.Effects;
@@ -1549,11 +1548,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         static Windows.UI.Color Color(Wd.Wui.Color color) =>
             Windows.UI.Color.FromArgb(color.A, color.R, color.G, color.B);
 
-        static CompositionDropShadowSourcePolicy DropShadowSourcePolicy(Wd.CompositionDropShadowSourcePolicy value) =>
+        static Wc.CompositionDropShadowSourcePolicy DropShadowSourcePolicy(Wd.CompositionDropShadowSourcePolicy value) =>
             value switch
             {
-                Wd.CompositionDropShadowSourcePolicy.Default => CompositionDropShadowSourcePolicy.Default,
-                Wd.CompositionDropShadowSourcePolicy.InheritFromVisualContent => CompositionDropShadowSourcePolicy.InheritFromVisualContent,
+                Wd.CompositionDropShadowSourcePolicy.Default => Wc.CompositionDropShadowSourcePolicy.Default,
+                Wd.CompositionDropShadowSourcePolicy.InheritFromVisualContent => Wc.CompositionDropShadowSourcePolicy.InheritFromVisualContent,
                 _ => throw new InvalidOperationException(),
             };
 
