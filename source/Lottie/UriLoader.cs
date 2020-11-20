@@ -5,7 +5,6 @@
 #nullable enable
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading.Tasks;
 using Windows.UI.Composition;
@@ -24,7 +23,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             _imageLoader = imageLoader;
         }
 
-        [return: NotNullIfNotNull("uri")]
         internal static async Task<AnimatedVisualFactory?> LoadAsync(
             ImageAssetHandler? imageLoader,
             Uri uri,

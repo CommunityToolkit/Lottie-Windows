@@ -25,6 +25,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
         // overridden.
         public CompositionBorderMode? BorderMode { get; set; }
 
+        // Defaults to Vector3.Zero.
         public Vector3? CenterPoint { get; set; }
 
         public CompositionClip? Clip { get; set; }
@@ -32,7 +33,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
         // Defaults to true.
         public bool? IsVisible { get; set; }
 
-        // Defaults to 0.
+        // Defaults to Vector3.Zero.
         public Vector3? Offset { get; set; }
 
         // Defaults to 1.
@@ -41,13 +42,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
         // Defaults to 0.
         public float? RotationAngleInDegrees { get; set; }
 
+        // Defaults to Vector3.UnitZ.
         public Vector3? RotationAxis { get; set; }
 
-        // Defaults to 1.
+        // Defaults to Vector3.One.
         public Vector3? Scale { get; set; }
 
+        // Defaults to Vector2.Zero.
         public Vector2? Size { get; set; }
 
+        // Defaults to Matrix4x4.Identity.
         public Matrix4x4? TransformMatrix { get; set; }
     }
 }

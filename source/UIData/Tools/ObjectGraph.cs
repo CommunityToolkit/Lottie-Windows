@@ -173,13 +173,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                     VisitContainerVisual((ContainerVisual)obj, node);
                     break;
                 case CompositionObjectType.CubicBezierEasingFunction:
-                    VisitCubicBezierEasingFunction(node, (CubicBezierEasingFunction)obj);
+                    VisitCubicBezierEasingFunction((CubicBezierEasingFunction)obj, node);
+                    break;
+                case CompositionObjectType.DropShadow:
+                    VisitDropShadow((DropShadow)obj, node);
                     break;
                 case CompositionObjectType.ExpressionAnimation:
                     VisitExpressionAnimation((ExpressionAnimation)obj, node);
                     break;
                 case CompositionObjectType.InsetClip:
                     VisitInsetClip((InsetClip)obj, node);
+                    break;
+                case CompositionObjectType.LayerVisual:
+                    VisitLayerVisual((LayerVisual)obj, node);
                     break;
                 case CompositionObjectType.LinearEasingFunction:
                     VisitLinearEasingFunction((LinearEasingFunction)obj, node);
@@ -424,6 +430,23 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             return VisitCompositionGeometry(obj, node);
         }
 
+        bool VisitCompositionShadow(CompositionShadow obj, T node)
+        {
+            return VisitCompositionObject(obj, node);
+        }
+
+        bool VisitDropShadow(DropShadow obj, T node)
+        {
+            VisitCompositionShadow(obj, node);
+
+            if (obj.Mask != null)
+            {
+                Reference(node, obj.Mask);
+            }
+
+            return true;
+        }
+
         bool VisitExpressionAnimation(ExpressionAnimation obj, T node)
         {
             return VisitCompositionAnimation(obj, node);
@@ -444,9 +467,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             return VisitCompositionObject(obj, node);
         }
 
-        bool VisitCubicBezierEasingFunction(T node, CubicBezierEasingFunction obj)
+        bool VisitCubicBezierEasingFunction(CubicBezierEasingFunction obj, T node)
         {
             return VisitCompositionEasingFunction(obj, node);
+        }
+
+        bool VisitLayerVisual(LayerVisual obj, T node)
+        {
+            VisitContainerVisual(obj, node);
+            Reference(node, obj.Shadow);
+            return true;
         }
 
         bool VisitLinearEasingFunction(LinearEasingFunction obj, T node)

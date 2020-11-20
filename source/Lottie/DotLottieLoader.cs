@@ -27,7 +27,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         {
         }
 
-        [return: NotNullIfNotNull("file")]
         internal static async Task<AnimatedVisualFactory?> LoadAsync(
             StorageFile file,
             LottieVisualOptions options)

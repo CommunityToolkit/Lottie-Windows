@@ -28,6 +28,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 switch (obj.Type)
                 {
                     case CompositionObjectType.ContainerVisual:
+                    case CompositionObjectType.LayerVisual:
                     case CompositionObjectType.SpriteVisual:
                     case CompositionObjectType.ShapeVisual:
                         OptimizeVisualProperties((Visual)obj);
@@ -40,10 +41,95 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                     case CompositionObjectType.CompositionContainerShape:
                         OptimizeShapeProperties((CompositionShape)obj);
                         break;
+
+                    case CompositionObjectType.StepEasingFunction:
+                        OptimizeStepEasingFunctionProperties((StepEasingFunction)obj);
+                        break;
+
+                    case CompositionObjectType.CompositionLinearGradientBrush:
+                    case CompositionObjectType.CompositionRadialGradientBrush:
+                        OptimizeGradientBrush((CompositionGradientBrush)obj);
+                        break;
                 }
             }
 
             return root;
+        }
+
+        static void OptimizeGradientBrush(CompositionGradientBrush obj)
+        {
+            if (obj.AnchorPoint == Vector2.Zero)
+            {
+                obj.AnchorPoint = null;
+            }
+
+            if (obj.CenterPoint == Vector2.Zero)
+            {
+                obj.CenterPoint = null;
+            }
+
+            if (obj.ExtendMode == CompositionGradientExtendMode.Clamp)
+            {
+                obj.ExtendMode = null;
+            }
+
+            if (obj.InterpolationSpace == CompositionColorSpace.Rgb)
+            {
+                obj.InterpolationSpace = null;
+            }
+
+            if (obj.MappingMode == CompositionMappingMode.Relative)
+            {
+                obj.MappingMode = null;
+            }
+
+            if (obj.Offset == Vector2.Zero)
+            {
+                obj.Offset = null;
+            }
+
+            if (obj.RotationAngleInDegrees == 0)
+            {
+                obj.RotationAngleInDegrees = null;
+            }
+
+            if (obj.Scale == Vector2.One)
+            {
+                obj.Scale = null;
+            }
+
+            if (obj.TransformMatrix == Matrix3x2.Identity)
+            {
+                obj.TransformMatrix = null;
+            }
+        }
+
+        static void OptimizeStepEasingFunctionProperties(StepEasingFunction obj)
+        {
+            if (obj.StepCount == 1)
+            {
+                obj.StepCount = null;
+            }
+
+            if (obj.IsInitialStepSingleFrame == false)
+            {
+                obj.IsInitialStepSingleFrame = null;
+            }
+
+            if (obj.InitialStep == 0)
+            {
+                obj.InitialStep = null;
+            }
+
+            if (obj.FinalStep == 1)
+            {
+                obj.FinalStep = null;
+            }
+
+            if (obj.IsFinalStepSingleFrame == false)
+            {
+                obj.IsFinalStepSingleFrame = null;
+            }
         }
 
         // Remove the centerpoint property if it's redundant, and convert properties to TransformMatrix if possible.
@@ -104,6 +190,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             OptimizeShapeProperties(sprite);
 
             // Unset properties that are set to their default values.
+            if (sprite.IsStrokeNonScaling == false)
+            {
+                sprite.IsStrokeNonScaling = null;
+            }
+
             if (sprite.StrokeStartCap == CompositionStrokeCap.Flat)
             {
                 sprite.StrokeStartCap = null;
@@ -114,62 +205,154 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 sprite.StrokeDashCap = null;
             }
 
+            if (sprite.StrokeDashOffset == 0)
+            {
+                sprite.StrokeDashOffset = null;
+            }
+
             if (sprite.StrokeEndCap == CompositionStrokeCap.Flat)
             {
                 sprite.StrokeEndCap = null;
             }
 
-            var nonDefaultProperties = GetNonDefaultSpriteShapeProperties(sprite);
-
-            var nonDefaultGeometryProperties = GetNonDefaultGeometryProperties(sprite.Geometry);
-
-            var isTrimmed = (nonDefaultGeometryProperties & (PropertyId.TrimEnd | PropertyId.TrimStart)) != PropertyId.None;
-
-            if (sprite.Geometry?.Type == CompositionObjectType.CompositionEllipseGeometry)
+            if (sprite.StrokeLineJoin == CompositionStrokeLineJoin.Miter)
             {
-                // Remove the StrokeMiterLimit and StrokeLineJoin properties. These properties
-                // only apply to changes of direction in a path, and never to an ellipse.
-                if ((nonDefaultProperties & PropertyId.StrokeMiterLimit) != PropertyId.None)
-                {
-                    sprite.StrokeMiterLimit = null;
-                    sprite.StopAnimation(nameof(sprite.StrokeMiterLimit));
-                }
-
-                if ((nonDefaultProperties & PropertyId.StrokeLineJoin) != PropertyId.None)
-                {
-                    sprite.StrokeLineJoin = null;
-                    sprite.StopAnimation(nameof(sprite.StrokeLineJoin));
-                }
+                sprite.StrokeLineJoin = null;
             }
 
-            if (sprite.Geometry?.Type == CompositionObjectType.CompositionRectangleGeometry ||
-                sprite.Geometry?.Type == CompositionObjectType.CompositionRoundedRectangleGeometry ||
-                sprite.Geometry?.Type == CompositionObjectType.CompositionEllipseGeometry)
+            if (sprite.StrokeMiterLimit == 1)
             {
-                // TODO - this can also be enabled for path geometries that are closed paths.
-                // The geometry is closed. If it's not trimmed then the caps are irrelavent.
-                if (!isTrimmed)
+                sprite.StrokeMiterLimit = null;
+            }
+
+            if (sprite.StrokeThickness == 1)
+            {
+                sprite.StrokeThickness = null;
+            }
+
+            if (sprite.Geometry != null)
+            {
+                OptimizeGeometryProperties(sprite.Geometry);
+
+                var nonDefaultProperties = GetNonDefaultSpriteShapeProperties(sprite);
+
+                var nonDefaultGeometryProperties = GetNonDefaultGeometryProperties(sprite.Geometry);
+
+                var isTrimmed = (nonDefaultGeometryProperties & (PropertyId.TrimEnd | PropertyId.TrimStart)) != PropertyId.None;
+
+                if (sprite.Geometry.Type == CompositionObjectType.CompositionEllipseGeometry)
                 {
-                    if ((nonDefaultProperties & PropertyId.StrokeStartCap) != PropertyId.None)
+                    // Remove the StrokeMiterLimit and StrokeLineJoin properties. These properties
+                    // only apply to changes of direction in a path, and never to an ellipse.
+                    if ((nonDefaultProperties & PropertyId.StrokeMiterLimit) != PropertyId.None)
                     {
-                        sprite.StrokeStartCap = null;
-                        sprite.StopAnimation(nameof(sprite.StrokeStartCap));
+                        sprite.StrokeMiterLimit = null;
+                        sprite.StopAnimation(nameof(sprite.StrokeMiterLimit));
                     }
 
-                    if ((nonDefaultProperties & PropertyId.StrokeEndCap) != PropertyId.None)
+                    if ((nonDefaultProperties & PropertyId.StrokeLineJoin) != PropertyId.None)
                     {
-                        sprite.StrokeEndCap = null;
-                        sprite.StopAnimation(nameof(sprite.StrokeEndCap));
+                        sprite.StrokeLineJoin = null;
+                        sprite.StopAnimation(nameof(sprite.StrokeLineJoin));
+                    }
+                }
+
+                if (sprite.Geometry.Type == CompositionObjectType.CompositionRectangleGeometry ||
+                    sprite.Geometry.Type == CompositionObjectType.CompositionRoundedRectangleGeometry ||
+                    sprite.Geometry.Type == CompositionObjectType.CompositionEllipseGeometry)
+                {
+                    // TODO - this can also be enabled for path geometries that are closed paths.
+                    // The geometry is closed. If it's not trimmed then the caps are irrelavent.
+                    if (!isTrimmed)
+                    {
+                        if ((nonDefaultProperties & PropertyId.StrokeStartCap) != PropertyId.None)
+                        {
+                            sprite.StrokeStartCap = null;
+                            sprite.StopAnimation(nameof(sprite.StrokeStartCap));
+                        }
+
+                        if ((nonDefaultProperties & PropertyId.StrokeEndCap) != PropertyId.None)
+                        {
+                            sprite.StrokeEndCap = null;
+                            sprite.StopAnimation(nameof(sprite.StrokeEndCap));
+                        }
                     }
                 }
             }
         }
 
-        // Remove the CenterPoint and RotationAxis properties if they're redundant,
+        // Remove redundant TrimEnd, TrimOffset, and TrimStart properties.
+        static void OptimizeGeometryProperties(CompositionGeometry obj)
+        {
+            // Unset properties that are set to their default values.
+            if (obj.TrimEnd == 1)
+            {
+                obj.TrimEnd = null;
+            }
+
+            if (obj.TrimOffset == 0)
+            {
+                obj.TrimOffset = null;
+            }
+
+            if (obj.TrimStart == 0)
+            {
+                obj.TrimStart = null;
+            }
+        }
+
+        // Remove the IsVisible, CenterPoint, and RotationAxis properties if they're redundant,
         // and convert properties to TransformMatrix if possible.
         static void OptimizeVisualProperties(Visual obj)
         {
+            // Unset properties that are set to their default values.
+            if (obj.CenterPoint == Vector3.Zero)
+            {
+                obj.CenterPoint = null;
+            }
+
+            if (obj.IsVisible == true)
+            {
+                obj.IsVisible = null;
+            }
+
+            if (obj.Offset == Vector3.Zero)
+            {
+                obj.Offset = null;
+            }
+
+            if (obj.Opacity == 1)
+            {
+                obj.Opacity = null;
+            }
+
+            if (obj.RotationAngleInDegrees == 0)
+            {
+                obj.RotationAngleInDegrees = null;
+            }
+
+            if (obj.RotationAxis == Vector3.UnitZ)
+            {
+                obj.RotationAxis = null;
+            }
+
+            if (obj.Scale == Vector3.One)
+            {
+                obj.Scale = null;
+            }
+
+            if (obj.Size == Vector2.Zero)
+            {
+                obj.Size = null;
+            }
+
+            if (obj.TransformMatrix == Matrix4x4.Identity)
+            {
+                obj.TransformMatrix = null;
+            }
+
             var nonDefaultProperties = GetNonDefaultVisualProperties(obj);
+
             if (obj.CenterPoint.HasValue &&
                 ((nonDefaultProperties & (PropertyId.RotationAngleInDegrees | PropertyId.Scale)) == PropertyId.None))
             {

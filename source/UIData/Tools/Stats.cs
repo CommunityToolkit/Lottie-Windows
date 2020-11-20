@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
+
 using System;
 using System.Linq;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
@@ -107,11 +109,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                     case CompositionObjectType.CubicBezierEasingFunction:
                         CubicBezierEasingFunctionCount++;
                         break;
+                    case CompositionObjectType.DropShadow:
+                        DropShadowCount++;
+                        break;
                     case CompositionObjectType.ExpressionAnimation:
                         ExpressionAnimationCount++;
                         break;
                     case CompositionObjectType.InsetClip:
                         InsetClipCount++;
+                        break;
+                    case CompositionObjectType.LayerVisual:
+                        LayerVisualCount++;
                         break;
                     case CompositionObjectType.LinearEasingFunction:
                         LinearEasingFunctionCount++;
@@ -146,17 +154,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             }
         }
 
-        public int CompositionObjectCount { get; }
-
-        public int CompositionPathCount { get; }
-
-        public int CanvasGeometryCount { get; }
-
         public int AnimationControllerCount { get; }
 
         public int AnimatorCount { get; }
 
         public int BooleanKeyFrameAnimationCount { get; }
+
+        public int CanvasGeometryCount { get; }
 
         public int ColorKeyFrameAnimationCount { get; }
 
@@ -164,7 +168,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
         public int ColorGradientStopCount { get; }
 
+        public int CompositionObjectCount { get; }
+
+        public int CompositionPathCount { get; }
+
         public int ContainerShapeCount { get; }
+
+        public int DropShadowCount { get; }
 
         public int EffectBrushCount { get; }
 
@@ -201,6 +211,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
         public int ExpressionAnimationCount { get; }
 
         public int InsetClipCount { get; }
+
+        public int LayerVisualCount { get; }
 
         public int LinearEasingFunctionCount { get; }
 

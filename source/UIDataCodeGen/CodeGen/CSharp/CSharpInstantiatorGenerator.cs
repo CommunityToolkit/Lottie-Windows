@@ -116,6 +116,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
             namespaces.Add("Windows.UI");
             namespaces.Add($"{_winUiNamespace}.Composition");
 
+            if (SourceInfo.LoadedImageSurfaces.Count > 0)
+            {
+                // IDynamicAnimatedVisualSource is output in multiple places without
+                // namespace qualification.
+                namespaces.Add("Microsoft.UI.Xaml.Controls");
+            }
+
             // Write out each namespace using.
             foreach (var n in namespaces)
             {

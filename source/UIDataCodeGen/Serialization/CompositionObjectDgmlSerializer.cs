@@ -299,6 +299,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                         case CompositionObjectType.CompositionRoundedRectangleGeometry:
                         case CompositionObjectType.CompositionViewBox:
                         case CompositionObjectType.CubicBezierEasingFunction:
+                        case CompositionObjectType.DropShadow:
                         case CompositionObjectType.ExpressionAnimation:
                         case CompositionObjectType.InsetClip:
                         case CompositionObjectType.LinearEasingFunction:
@@ -326,6 +327,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                             Category = GetCategory((CompositionSpriteShape)obj);
                             break;
                         case CompositionObjectType.ContainerVisual:
+                        case CompositionObjectType.LayerVisual:
                             Category = IsAnimatedCompositionObject ? CategoryContainerVisualAnimated : CategoryContainerVisual;
                             break;
                         case CompositionObjectType.ShapeVisual:

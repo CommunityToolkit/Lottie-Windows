@@ -9,7 +9,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
     /// <summary>
     /// An issue that was discovered while reading or translating a Lottie JSON file.
     /// </summary>
-    public sealed class Issue
+    sealed class Issue
     {
         internal Issue(string code, string description)
         {

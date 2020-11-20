@@ -246,6 +246,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal Vector4KeyFrameAnimation CreateVector4KeyFrameAnimation() => _compositor.CreateVector4KeyFrameAnimation();
 
+        internal DropShadow CreateDropShadow() => _compositor.CreateDropShadow();
+
         internal InsetClip CreateInsetClip() => _compositor.CreateInsetClip();
 
         internal CompositionGeometricClip CreateGeometricClip() => _compositor.CreateGeometricClip();
@@ -253,6 +255,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         internal CompositionContainerShape CreateContainerShape() => _compositor.CreateContainerShape();
 
         internal ContainerVisual CreateContainerVisual() => _compositor.CreateContainerVisual();
+
+        internal LayerVisual CreateLayerVisual() => _compositor.CreateLayerVisual();
 
         internal SpriteVisual CreateSpriteVisual() => _compositor.CreateSpriteVisual();
 

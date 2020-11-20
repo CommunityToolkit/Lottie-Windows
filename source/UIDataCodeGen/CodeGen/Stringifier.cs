@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Data;
 using System.Numerics;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgc;
@@ -85,6 +86,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         public abstract string Deref { get; }
 
         public abstract string Double(double value);
+
+        public string DropShadowSourcePolicy(CompositionDropShadowSourcePolicy value)
+        {
+            const string typeName = nameof(CompositionDropShadowSourcePolicy);
+            return value switch
+            {
+                CompositionDropShadowSourcePolicy.Default => $"{typeName}{ScopeResolve}{nameof(CompositionDropShadowSourcePolicy.Default)}",
+                CompositionDropShadowSourcePolicy.InheritFromVisualContent => $"{typeName}{ScopeResolve}{nameof(CompositionDropShadowSourcePolicy.InheritFromVisualContent)}",
+                _ => throw new InvalidOperationException(),
+            };
+        }
 
         public string ExtendMode(CompositionGradientExtendMode value)
         {
