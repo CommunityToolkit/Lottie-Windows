@@ -6,8 +6,6 @@
     <LangVersion>latest</LangVersion>
     <DefineConstants>PUBLIC_UIData</DefineConstants>
   </PropertyGroup>
-
-  <Import Project="..\..\source\NullablesAttributes\NullablesAttributes.projitems" Label="Shared" />
   <Import Project="..\..\source\UIData\UIData.projitems" Label="Shared" />
 
   <ItemGroup>

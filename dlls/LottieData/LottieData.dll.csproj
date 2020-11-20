@@ -8,7 +8,6 @@
   </PropertyGroup>
 
   <Import Project="..\..\source\LottieData\LottieData.projitems" Label="Shared" />
-  <Import Project="..\..\source\NullablesAttributes\NullablesAttributes.projitems" Label="Shared" />
 
   <ItemGroup>
     <PackageReference Include="System.Memory" Version="4.5.4" />
