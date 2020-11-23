@@ -36,7 +36,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             CreateAnimatableParser((in LottieJsonElement element) => element.AsDouble() ?? 0);
 
         static readonly AnimatableParser<Opacity> s_animatableOpacityParser = CreateAnimatableParser(ParseOpacity);
-        static readonly AnimatableParser<Opacity> s_animatableOpacityParserByte = CreateAnimatableParser(ParseOpacityByte);
+        static readonly AnimatableParser<Opacity> s_animatableOpacityByteParser = CreateAnimatableParser(ParseOpacityByte);
         static readonly AnimatableParser<PathGeometry> s_animatableGeometryParser = CreateAnimatableParser(ParseGeometry);
         static readonly AnimatableParser<Rotation> s_animatableRotationParser = CreateAnimatableParser(ParseRotation);
         static readonly AnimatableParser<Trim> s_animatableTrimParser = CreateAnimatableParser(ParseTrim);
@@ -201,7 +201,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         Animatable<Opacity> ReadAnimatableOpacityByte(in LottieJsonObjectElement? obj)
             => obj is null
                 ? s_animatableOpacityOpaque
-                : ReadAnimatable(s_animatableOpacityParserByte, obj.Value);
+                : ReadAnimatable(s_animatableOpacityByteParser, obj.Value);
 
         Animatable<Rotation> ReadAnimatableRotation(in LottieJsonObjectElement? obj)
             => obj is null
