@@ -436,6 +436,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         static Opacity ParseOpacity(in LottieJsonElement jsonValue) => Opacity.FromPercent(jsonValue.AsDouble() ?? 0);
 
+        static Opacity ParseOpacityByte(in LottieJsonElement jsonValue) => Opacity.FromByte(jsonValue.AsDouble() ?? 0);
+
         static Rotation ParseRotation(in LottieJsonElement jsonValue) => Rotation.FromDegrees(jsonValue.AsDouble() ?? 0);
 
         static Trim ParseTrim(in LottieJsonElement jsonValue) => Trim.FromPercent(jsonValue.AsDouble() ?? 0);
