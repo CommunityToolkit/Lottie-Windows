@@ -5,7 +5,7 @@
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 {
     /// <summary>
-    /// A gaussian blur effect.
+    /// A Gaussian blur effect.
     /// </summary>
 #if PUBLIC_LottieData
     public

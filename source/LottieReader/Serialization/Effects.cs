@@ -38,7 +38,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         Effect? ReadEffect(in LottieJsonObjectElement obj, string layerName)
         {
-            var effectType = obj.DoublePropertyOrNull("ty") ?? throw ReaderException("Invalid effect");
+            var effectType = obj.DoublePropertyOrNull("ty") ?? throw ReaderException("Invalid effect.");
 
             switch (effectType)
             {
@@ -125,7 +125,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 blurDimensions: blurDimensions,
                 repeatEdgePixels: repeatEdgePixels);
 
-            static Exception ParseFailure() => ReaderException("Invalid gaussian blur effect");
+            static Exception ParseFailure() => ReaderException("Invalid Gaussian blur effect.");
         }
 
         // Layer effect type 25.
@@ -206,7 +206,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 opacity: opacity,
                 softness: softness);
 
-            static Exception ParseFailure() => ReaderException("Invalid drop shadow effect");
+            static Exception ParseFailure() => ReaderException("Invalid drop shadow effect.");
         }
     }
 }
