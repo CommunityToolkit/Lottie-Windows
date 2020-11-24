@@ -31,7 +31,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
         public enum EffectType
         {
+            // Type = 25.
             DropShadow,
+
+            // Type = 29.
+            GaussianBlur,
         }
     }
 }

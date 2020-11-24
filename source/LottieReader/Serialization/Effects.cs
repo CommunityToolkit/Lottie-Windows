@@ -42,9 +42,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
             switch (effectType)
             {
-                // DropShadows are type 25. This is the only type we currently support.
                 case 25:
                     return ReadDropShadowEffect(obj);
+
+                case 29:
+                    return ReadGaussianBlurEffect(obj);
 
                 default:
                     obj.IgnorePropertyThatIsNotYetSupported(
@@ -60,6 +62,73 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             }
         }
 
+        // Layer effect type 29.
+        GaussianBlurEffect ReadGaussianBlurEffect(in LottieJsonObjectElement obj)
+        {
+            // Index.
+            obj.IgnorePropertyIntentionally("ix");
+
+            // Match name.
+            obj.IgnorePropertyIntentionally("mn");
+
+            // Unknown.
+            obj.IgnorePropertyIntentionally("np");
+
+            var effectName = obj.StringPropertyOrNull("nm") ?? string.Empty;
+
+            var isEnabled = obj.BoolPropertyOrNull("en") ?? true;
+
+            var parameters = obj.ArrayPropertyOrNull("ef") ?? throw ParseFailure();
+
+            Animatable<double>? blurriness = null;
+            Animatable<Enum<BlurDimension>>? blurDimensions = null;
+            Animatable<bool>? repeatEdgePixels = null;
+
+            for (var i = 0; i < parameters.Count; i++)
+            {
+                var p = parameters[i].AsObject() ?? throw ParseFailure();
+
+                var value = p.ObjectPropertyOrNull("v") ?? throw ParseFailure();
+
+                switch (i)
+                {
+                    case 0:
+                        // Blurriness - float 0..50
+                        blurriness = ReadAnimatableFloat(value) ?? throw ParseFailure();
+                        break;
+
+                    case 1:
+                        blurDimensions = ReadAnimatableBlurDimension(value) ?? throw ParseFailure();
+                        break;
+
+                    case 2:
+                        repeatEdgePixels = ReadAnimatableBool(value) ?? throw ParseFailure();
+                        break;
+
+                    default:
+                        throw ParseFailure();
+                }
+            }
+
+            // Ensure all parameter values were provided.
+            if (blurriness is null ||
+                blurDimensions is null ||
+                repeatEdgePixels is null)
+            {
+                throw ParseFailure();
+            }
+
+            return new GaussianBlurEffect(
+                effectName,
+                isEnabled,
+                blurriness: blurriness,
+                blurDimensions: blurDimensions,
+                repeatEdgePixels: repeatEdgePixels);
+
+            static Exception ParseFailure() => ReaderException("Invalid gaussian blur effect");
+        }
+
+        // Layer effect type 25.
         DropShadowEffect ReadDropShadowEffect(in LottieJsonObjectElement obj)
         {
             // Index.
@@ -112,7 +181,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                         break;
 
                     default:
-                        throw ReaderException("Invalid drop shadow effect");
+                        throw ParseFailure();
                 }
             }
 
