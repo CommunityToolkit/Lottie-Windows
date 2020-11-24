@@ -5,7 +5,6 @@
 #nullable enable
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 {
@@ -34,7 +33,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
         public static implicit operator T(Enum<T> value) => value;
 
-        public bool Equals([AllowNull] Enum<T> other) => other._value.CompareTo(_value) == 0;
+        public bool Equals(Enum<T> other) => other._value.CompareTo(_value) == 0;
 
         public override string? ToString() => _value.ToString();
     }
