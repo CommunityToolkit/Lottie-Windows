@@ -11,7 +11,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce;
-
+using static Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp.ConvertTo;
 using Expr = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions.Expression;
 using Sn = System.Numerics;
 
@@ -148,7 +148,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal CompositionColorBrush CreateColorBrush() => _compositor.CreateColorBrush();
 
-        internal CompositionColorBrush CreateColorBrush(Color color) => _compositor.CreateColorBrush(ConvertTo.Color(color));
+        internal CompositionColorBrush CreateColorBrush(Color color) => _compositor.CreateColorBrush(Color(color));
 
         internal CompositionColorBrush CreateNonAnimatedColorBrush(Color color)
         {
@@ -169,7 +169,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal CompositionColorGradientStop CreateColorGradientStop() => _compositor.CreateColorGradientStop();
 
-        internal CompositionColorGradientStop CreateColorGradientStop(float offset, Color color) => _compositor.CreateColorGradientStop(offset, ConvertTo.Color(color));
+        internal CompositionColorGradientStop CreateColorGradientStop(float offset, Color color) => _compositor.CreateColorGradientStop(offset, Color(color));
 
         internal CompositionLinearGradientBrush CreateLinearGradientBrush() => _compositor.CreateLinearGradientBrush();
 
@@ -297,17 +297,5 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             HighestUapVersionUsed = Math.Max(HighestUapVersionUsed, uapVersion);
         }
-
-        static float Clamp(float value, float min, float max)
-        {
-            Debug.Assert(min <= max, "Precondition");
-            return Math.Min(Math.Max(min, value), max);
-        }
-
-        static Sn.Vector2 ClampedVector2(LottieData.Vector2 vector2) => ClampedVector2((float)vector2.X, (float)vector2.Y);
-
-        static Sn.Vector2 ClampedVector2(float x, float y) => Vector2(Clamp(x, 0, 1), Clamp(y, 0, 1));
-
-        static Sn.Vector2 Vector2(float x, float y) => new Sn.Vector2(x, y);
     }
 }
