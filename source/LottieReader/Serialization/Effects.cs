@@ -38,29 +38,32 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         Effect? ReadEffect(in LottieJsonObjectElement obj, string layerName)
         {
-            var effectType = obj.DoublePropertyOrNull("ty") ?? throw ReaderException("Invalid effect");
+            var effectType = obj.DoublePropertyOrNull("ty") ?? throw ReaderException("Invalid effect.");
+            var effectName = obj.StringPropertyOrNull("nm") ?? string.Empty;
+            var isEnabled = obj.BoolPropertyOrNull("en") ?? true;
 
             switch (effectType)
             {
-                // DropShadows are type 25. This is the only type we currently support.
                 case 25:
-                    return ReadDropShadowEffect(obj);
+                    return ReadDropShadowEffect(obj, effectName, isEnabled);
+
+                case 29:
+                    return ReadGaussianBlurEffect(obj, effectName, isEnabled);
 
                 default:
                     obj.IgnorePropertyThatIsNotYetSupported(
-                        "nm",   // name.
                         "mn",   // match name.
-                        "en",   // enabled.
                         "np",   // unknown.
                         "ix",   // index.
                         "ef");  // effect parameters.
 
                     _issues.LayerEffectsIsNotSupported(layerName, effectType.ToString());
-                    return null;
+                    return new Effect.Unknown(effectType, effectName, isEnabled);
             }
         }
 
-        DropShadowEffect ReadDropShadowEffect(in LottieJsonObjectElement obj)
+        // Layer effect type 29.
+        GaussianBlurEffect ReadGaussianBlurEffect(in LottieJsonObjectElement obj, string effectName, bool isEnabled)
         {
             // Index.
             obj.IgnorePropertyIntentionally("ix");
@@ -71,9 +74,67 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             // Unknown.
             obj.IgnorePropertyIntentionally("np");
 
-            var effectName = obj.StringPropertyOrNull("nm") ?? string.Empty;
+            var parameters = obj.ArrayPropertyOrNull("ef") ?? throw ParseFailure();
 
-            var isEnabled = obj.BoolPropertyOrNull("en") ?? true;
+            Animatable<double>? blurriness = null;
+            Animatable<Enum<BlurDimension>>? blurDimensions = null;
+            Animatable<bool>? repeatEdgePixels = null;
+
+            for (var i = 0; i < parameters.Count; i++)
+            {
+                var p = parameters[i].AsObject() ?? throw ParseFailure();
+
+                var value = p.ObjectPropertyOrNull("v") ?? throw ParseFailure();
+
+                switch (i)
+                {
+                    case 0:
+                        // Blurriness - float 0..50
+                        blurriness = ReadAnimatableFloat(value) ?? throw ParseFailure();
+                        break;
+
+                    case 1:
+                        blurDimensions = ReadAnimatableBlurDimension(value) ?? throw ParseFailure();
+                        break;
+
+                    case 2:
+                        repeatEdgePixels = ReadAnimatableBool(value) ?? throw ParseFailure();
+                        break;
+
+                    default:
+                        throw ParseFailure();
+                }
+            }
+
+            // Ensure all parameter values were provided.
+            if (blurriness is null ||
+                blurDimensions is null ||
+                repeatEdgePixels is null)
+            {
+                throw ParseFailure();
+            }
+
+            return new GaussianBlurEffect(
+                effectName,
+                isEnabled,
+                blurriness: blurriness,
+                blurDimensions: blurDimensions,
+                repeatEdgePixels: repeatEdgePixels);
+
+            static Exception ParseFailure() => ReaderException("Invalid Gaussian blur effect.");
+        }
+
+        // Layer effect type 25.
+        DropShadowEffect ReadDropShadowEffect(in LottieJsonObjectElement obj, string effectName, bool isEnabled)
+        {
+            // Index.
+            obj.IgnorePropertyIntentionally("ix");
+
+            // Match name.
+            obj.IgnorePropertyIntentionally("mn");
+
+            // Unknown.
+            obj.IgnorePropertyIntentionally("np");
 
             var parameters = obj.ArrayPropertyOrNull("ef") ?? throw ParseFailure();
 
@@ -112,7 +173,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                         break;
 
                     default:
-                        throw ReaderException("Invalid drop shadow effect");
+                        throw ParseFailure();
                 }
             }
 
@@ -137,7 +198,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 opacity: opacity,
                 softness: softness);
 
-            static Exception ParseFailure() => ReaderException("Invalid drop shadow effect");
+            static Exception ParseFailure() => ReaderException("Invalid drop shadow effect.");
         }
     }
 }

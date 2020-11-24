@@ -43,7 +43,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         internal void IllustratorLayers() => Report("LP0007", "Illustrator layers.");
 
-        internal void LayerEffectsIsNotSupported(string layer, string type) => Report("LP0008", $"{layer} has an unsupported layer effects, type = {type}.");
+        internal void LayerEffectsIsNotSupported(string layer, string type) => Report("LP0008", $"{layer} has an unsupported layer effect, type = {type}.");
 
         // LP0009 has been deprecated.
         // Was: Mattes.

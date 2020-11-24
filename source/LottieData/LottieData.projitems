@@ -13,6 +13,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)AssetCollection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)BezierSegment.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)BlendMode.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BlurDimension.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Char.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Color.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ColorGradientStop.cs" />
@@ -24,9 +25,11 @@
     <Compile Include="$(MSBuildThisFileDirectory)Effect.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Ellipse.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)EmbeddedImageAsset.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Enum.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ExtensionMethods.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ExternalImageAsset.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Font.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)GaussianBlurEffect.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GradientStop.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HoldEasing.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IAnimatableValue.cs" />
