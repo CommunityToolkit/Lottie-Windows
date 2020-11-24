@@ -344,10 +344,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         YamlObject FromEffect(Effect effect, YamlMap superclassContent)
         {
             superclassContent.Add(nameof(effect.Type), effect.Type.ToString());
+            superclassContent.Add(nameof(effect.IsEnabled), effect.IsEnabled);
             return effect.Type switch
             {
                 Effect.EffectType.DropShadow => FromDropShadowEffect((DropShadowEffect)effect, superclassContent),
-                _ => throw Unreachable,
+                Effect.EffectType.GaussianBlur => FromGaussianBlurEffect((GaussianBlurEffect)effect, superclassContent),
+
+                // Handle all unknown effect types.
+                _ => superclassContent,
             };
         }
 
@@ -360,6 +364,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             result.Add(nameof(effect.IsShadowOnly), FromAnimatable(effect.IsShadowOnly));
             result.Add(nameof(effect.Opacity), FromAnimatable(effect.Opacity));
             result.Add(nameof(effect.Softness), FromAnimatable(effect.Softness));
+            return result;
+        }
+
+        YamlObject FromGaussianBlurEffect(GaussianBlurEffect effect, YamlMap superclassContent)
+        {
+            var result = superclassContent;
+            result.Add(nameof(effect.BlurDimensions), FromAnimatable(effect.BlurDimensions));
+            result.Add(nameof(effect.Blurriness), FromAnimatable(effect.Blurriness));
+            result.Add(nameof(effect.RepeatEdgePixels), FromAnimatable(effect.RepeatEdgePixels));
             return result;
         }
 
@@ -467,6 +480,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         YamlObject FromAnimatable(Animatable<Color> animatable) => FromAnimatable(animatable, Scalar);
 
         YamlObject FromAnimatable(Animatable<double> animatable) => FromAnimatable(animatable, Scalar);
+
+        YamlObject FromAnimatable<T>(Animatable<Enum<T>> animatable)
+            where T : struct, IComparable => FromAnimatable(animatable, Scalar);
 
         YamlObject FromAnimatable(Animatable<Opacity> animatable) => FromAnimatable(animatable, Scalar);
 
@@ -675,6 +691,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         YamlScalar Scalar(double value) => value;
 
         YamlScalar Scalar(Enum type) => Scalar(type, type.ToString());
+
+        YamlObject Scalar<T>(Enum<T> value)
+            where T : struct, IComparable => Scalar(value, value.ToString()!);
 
         YamlScalar Scalar(Mask.MaskMode type) => Scalar(type, type.ToString());
 
