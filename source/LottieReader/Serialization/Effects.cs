@@ -165,7 +165,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                         color = ReadAnimatableColor(value) ?? throw ParseFailure();
                         break;
                     case 1:
-                        opacity = ReadAnimatableOpacity(value) ?? throw ParseFailure();
+                        opacity = ReadAnimatableOpacityByte(value) ?? throw ParseFailure();
                         break;
                     case 2:
                         direction = ReadAnimatableRotation(value) ?? throw ParseFailure();
