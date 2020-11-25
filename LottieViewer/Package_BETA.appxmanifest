@@ -1,10 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" IgnorableNamespaces="uap mp">
-  <Identity Name="bc745331-50c8-4303-b915-9f18473cca65" Publisher="CN=9AF86C33-622F-4896-9ED2-78CAE82263F6" Version="1.0.37.0" />
+  <Identity Name="Microsoft.LottieViewerbeta" Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US" Version="7.0.0.0" />
   <mp:PhoneIdentity PhoneProductId="bc745331-50c8-4303-b915-9f18473cca65" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
   <Properties>
-    <DisplayName>Lottie Viewer</DisplayName>
-    <PublisherDisplayName>developer</PublisherDisplayName>
+    <DisplayName>Lottie Viewer (beta)</DisplayName>
+    <PublisherDisplayName>Microsoft Corporation</PublisherDisplayName>
     <Logo>Assets\StoreLogo-BETA.png</Logo>
   </Properties>
   <Dependencies>
@@ -15,8 +15,8 @@
   </Resources>
   <Applications>
     <Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="LottieViewer.App">
-      <uap:VisualElements DisplayName="Lottie Viewer (BETA)" Square150x150Logo="Assets\Square150x150Logo-BETA.png" Square44x44Logo="Assets\Square44x44Logo-BETA.png" Description="Lottie Viewer (BETA)" BackgroundColor="transparent">
-        <uap:LockScreen Notification="badge" BadgeLogo="Assets\BadgeLogo-BETA.png" />
+      <uap:VisualElements DisplayName="Lottie Viewer (beta)" Square150x150Logo="Assets\Square150x150Logo-BETA.png" Square44x44Logo="Assets\Square44x44Logo-BETA.png" Description="Lottie Viewer (beta)" BackgroundColor="transparent">
+        <uap:LockScreen Notification="badge" BadgeLogo="Assets\BadgeLogo.png" />
         <uap:DefaultTile Square310x310Logo="Assets\LargeTile-BETA.png" Wide310x150Logo="Assets\Wide310x150Logo-BETA.png">
           <uap:ShowNameOnTiles>
             <uap:ShowOn Tile="square150x150Logo"/>
