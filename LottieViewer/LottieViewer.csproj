@@ -1,22 +1,21 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+
   <!-- Defaults if not specified. -->
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <TargetPlatformVersion Condition=" '$(TargetPlatformVersion)' == '' ">10.0.18362.0</TargetPlatformVersion>
-    <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
-    <GenerateTestArtifacts>True</GenerateTestArtifacts>
-    <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
   </PropertyGroup>
+
   <PropertyGroup>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <AppInstallerCheckForUpdateFrequency>OnApplicationRun</AppInstallerCheckForUpdateFrequency>
-    <AppInstallerUpdateFrequency>0</AppInstallerUpdateFrequency>
+    <AppInstallerUpdateFrequency>1</AppInstallerUpdateFrequency>
     <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
     <AppxBundle>Always</AppxBundle>
-    <AppxBundlePlatforms>x64</AppxBundlePlatforms>
+    <AppxBundlePlatforms>x86|x64|arm|arm64</AppxBundlePlatforms>
     <AppxPackageSigningEnabled>False</AppxPackageSigningEnabled>
     <AssemblyName>LottieViewer</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
@@ -43,6 +42,7 @@
     <UseVSHostingProcess>false</UseVSHostingProcess>
     <WindowsXamlEnableOverview>true</WindowsXamlEnableOverview>
   </PropertyGroup>
+
   <!-- BETA allows building of a Release build with some small changes (e.g. app name
        and some assets) to make it clear that the code is for BETA testing. -->
   <PropertyGroup Condition=" '$(Configuration)' == 'BETA' ">
@@ -50,17 +50,20 @@
     <Optimize>true</Optimize>
     <UseDotNetNativeToolchain>true</UseDotNetNativeToolchain>
   </PropertyGroup>
+
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
     <DefineConstants>$(DefineConstants);DEBUG</DefineConstants>
     <DebugType>full</DebugType>
   </PropertyGroup>
+
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <DebugType>pdbonly</DebugType>
     <DefineConstants>TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
     <Optimize>true</Optimize>
     <UseDotNetNativeToolchain>true</UseDotNetNativeToolchain>
   </PropertyGroup>
+
   <!-- These PropertyGroups are required to exist so that the VS Configuration Manager
        will recognize these configurations as valid. -->
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'BETA|ARM' ">
@@ -87,6 +90,7 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
   </PropertyGroup>
+
   <ItemGroup>
     <Compile Include="AnimatedVisuals\LottieViewer_04_Playback.cs" />
     <Compile Include="App.xaml.cs">
