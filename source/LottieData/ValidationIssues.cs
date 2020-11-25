@@ -38,6 +38,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
         internal void InvalidLayerParent(string layerParent) => Report("LV0003", $"Invalid layer parent: {layerParent}.");
 
+        internal void NonUniqueMarkerName(string markerName) => Report("LV0004", $"Marker name is not unique: {markerName}.");
+
         void Report(string code, string description)
         {
             _issues.Add((code, description));

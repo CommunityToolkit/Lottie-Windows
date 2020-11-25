@@ -38,6 +38,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
             var validator = new LottieCompositionValidator(lottieComposition);
 
+            validator.ValidateUniqueMarkerNames();
             validator.ValidateLayerInPointBeforeOutPoint();
             validator.ValidateParentPointsToValidLayer();
             validator.ValidateNoParentCycles();
@@ -163,6 +164,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
                 {
                     _issues.InvalidLayerParent(layer.Parent.ToString());
                 }
+            }
+        }
+
+        /// <summary>
+        /// Validates that marker names are unique.
+        /// </summary>
+        void ValidateUniqueMarkerNames()
+        {
+            var nonUniqueMarkersByName = _lottieComposition.Markers.GroupBy(m => m.Name).Where(g => g.Count() > 1);
+            foreach (var group in nonUniqueMarkersByName)
+            {
+                _issues.NonUniqueMarkerName(group.Key);
             }
         }
     }
