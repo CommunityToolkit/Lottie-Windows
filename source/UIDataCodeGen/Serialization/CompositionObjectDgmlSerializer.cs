@@ -26,6 +26,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         static readonly Category CategoryEffectBrush = new Category("EffectBrush", Colors.LightGray);
         static readonly Category CategoryEllipse = new Category("Ellipse", Colors.DarkGoldenrod);
         static readonly Category CategoryEllipseAnimated = new Category("AnimatedEllipse", "Animated Ellipse", Colors.Goldenrod);
+        static readonly Category CategoryLayerVisual = new Category("LayerVisual", Colors.DarkRed);
+        static readonly Category CategoryLayerVisualAnimated = new Category("AnimatedLayerVisual", "Animated LayerVisual", Colors.Crimson);
         static readonly Category CategoryPath = new Category("Path", Colors.DarkOrange);
         static readonly Category CategoryPathAnimated = new Category("AnimatedPath", "Animated Path", Colors.Orange);
         static readonly Category CategoryRectangle = new Category("Rectangle", Colors.SandyBrown);
@@ -270,7 +272,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             internal string? Id { get; private set; }
 
             // The links from this node to its children.
-            internal IEnumerable<ObjectData> Children => _children;
+            internal IReadOnlyList<ObjectData> Children => _children;
 
             // Called after the graph has been created. Do things here that depend on other nodes
             // in the graph.
@@ -327,8 +329,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                             Category = GetCategory((CompositionSpriteShape)obj);
                             break;
                         case CompositionObjectType.ContainerVisual:
-                        case CompositionObjectType.LayerVisual:
                             Category = IsAnimatedCompositionObject ? CategoryContainerVisualAnimated : CategoryContainerVisual;
+                            break;
+                        case CompositionObjectType.LayerVisual:
+                            Category = IsAnimatedCompositionObject ? CategoryLayerVisualAnimated : CategoryLayerVisual;
                             break;
                         case CompositionObjectType.ShapeVisual:
                             Category = IsAnimatedCompositionObject ? CategoryShapeVisualAnimated : CategoryShapeVisual;
@@ -359,7 +363,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 }
             }
 
-            public override string? ToString() => Id;
+            public override string? ToString() => $"{Id} {Name}";
 
             bool IsAnimatedCompositionObject
             {
@@ -367,16 +371,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 {
                     var obj = (CompositionObject)Object;
                     return obj.Animators.Any() || obj.Properties.Animators.Any();
-                }
-            }
-
-            bool IsSpriteShapeWithAnimatedGeometory
-            {
-                get
-                {
-                    var obj = (CompositionSpriteShape)Object;
-                    var geometry = obj.Geometry;
-                    return geometry != null && (geometry.Animators.Any() || geometry.Properties.Animators.Any());
                 }
             }
 
