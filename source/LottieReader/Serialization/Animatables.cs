@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json;
 
@@ -17,6 +16,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         static readonly Sequence<GradientStop> s_defaultGradientStops =
             new Sequence<GradientStop>(new ColorGradientStop(0, Color.Black));
 
+        static readonly Animatable<Enum<BlurDimension>> s_animatableBlurDimensionHorizontalAndVertical =
+            CreateNonAnimatedAnimatable((Enum<BlurDimension>)BlurDimension.HorizontalAndVertical);
+
         static readonly Animatable<Color> s_animatableColorBlack = CreateNonAnimatedAnimatable(Color.Black);
         static readonly Animatable<double> s_animatableDoubleZero = CreateNonAnimatedAnimatable(0.0);
         static readonly Animatable<bool> s_animatableFalse = CreateNonAnimatedAnimatable(false);
@@ -28,6 +30,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         static readonly AnimatableVector3 s_animatableVector3Zero = new AnimatableVector3(Vector3.Zero, null);
         static readonly AnimatableVector3 s_animatableVector3OneHundred = new AnimatableVector3(new Vector3(100, 100, 100), null);
 
+        static readonly AnimatableParser<Enum<BlurDimension>> s_animatableBlurDimensionParser =
+            CreateAnimatableParser((in LottieJsonElement element) => element.AsInt32() switch
+            {
+                1 => (Enum<BlurDimension>)BlurDimension.HorizontalAndVertical,
+                2 => (Enum<BlurDimension>)BlurDimension.Horizontal,
+                3 => (Enum<BlurDimension>)BlurDimension.Vertical,
+                _ => throw ReaderException("Unexpected blur dimension value."),
+            });
+
         // Parses boolean values as 0 or non-0 integers.
         static readonly AnimatableParser<bool> s_animatableBoolParser =
             CreateAnimatableParser((in LottieJsonElement element) => (element.AsInt32() ?? 0) != 0);
@@ -36,6 +47,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             CreateAnimatableParser((in LottieJsonElement element) => element.AsDouble() ?? 0);
 
         static readonly AnimatableParser<Opacity> s_animatableOpacityParser = CreateAnimatableParser(ParseOpacity);
+        static readonly AnimatableParser<Opacity> s_animatableOpacityByteParser = CreateAnimatableParser(ParseOpacityByte);
         static readonly AnimatableParser<PathGeometry> s_animatableGeometryParser = CreateAnimatableParser(ParseGeometry);
         static readonly AnimatableParser<Rotation> s_animatableRotationParser = CreateAnimatableParser(ParseRotation);
         static readonly AnimatableParser<Trim> s_animatableTrimParser = CreateAnimatableParser(ParseTrim);
@@ -67,6 +79,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             => obj is null
                 ? s_animatableFalse
                 : ReadAnimatable(s_animatableBoolParser, obj.Value);
+
+        Animatable<Enum<BlurDimension>> ReadAnimatableBlurDimension(in LottieJsonObjectElement? obj)
+            => obj is null
+                ? s_animatableBlurDimensionHorizontalAndVertical
+                : ReadAnimatable(s_animatableBlurDimensionParser, obj.Value);
 
         Animatable<Color> ReadAnimatableColor(in LottieJsonObjectElement? obj)
             => obj is null
@@ -196,6 +213,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             => obj is null
                 ? s_animatableOpacityOpaque
                 : ReadAnimatable(s_animatableOpacityParser, obj.Value);
+
+        Animatable<Opacity> ReadAnimatableOpacityByte(in LottieJsonObjectElement? obj)
+            => obj is null
+                ? s_animatableOpacityOpaque
+                : ReadAnimatable(s_animatableOpacityByteParser, obj.Value);
 
         Animatable<Rotation> ReadAnimatableRotation(in LottieJsonObjectElement? obj)
             => obj is null

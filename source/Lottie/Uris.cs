@@ -16,7 +16,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         /// Relative URIs are made relative to ms-appx:///.
         /// </summary>
         /// <returns>A Uri or null.</returns>
-        [return: NotNullIfNotNull("uri")]
         public static Uri? StringToUri(string uri)
         {
             if (!Uri.IsWellFormedUriString(uri, UriKind.RelativeOrAbsolute))

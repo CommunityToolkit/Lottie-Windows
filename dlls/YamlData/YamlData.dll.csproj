@@ -1,13 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <Configurations>Debug;Release</Configurations>
     <LangVersion>latest</LangVersion>
     <DefineConstants>PUBLIC_YamlData</DefineConstants>
   </PropertyGroup>
-
-  <Import Project="..\..\source\NullablesAttributes\NullablesAttributes.projitems" Label="Shared" />
   <Import Project="..\..\source\YamlData\YamlData.projitems" Label="Shared" />
 
 </Project>

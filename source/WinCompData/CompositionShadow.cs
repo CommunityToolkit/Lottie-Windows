@@ -6,21 +6,17 @@
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 {
-    [MetaData.UapVersion(2)]
+    /// <summary>
+    /// Data representation of Windows.UI.Composition.CompositionShadow.
+    /// </summary>
+    [MetaData.UapVersion(3)]
 #if PUBLIC_WinCompData
     public
 #endif
-    class SpriteVisual : ContainerVisual
+    abstract class CompositionShadow : CompositionObject
     {
-        internal SpriteVisual()
+        private protected CompositionShadow()
         {
         }
-
-        public CompositionBrush? Brush { get; set; }
-
-        public CompositionShadow? Shadow { get; set; }
-
-        /// <inheritdoc/>
-        public override CompositionObjectType Type => CompositionObjectType.SpriteVisual;
     }
 }

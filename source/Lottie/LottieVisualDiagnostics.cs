@@ -17,7 +17,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
     /// <summary>
     /// Diagnostics information about a Lottie and its translation.
     /// </summary>
-    public sealed class LottieVisualDiagnostics
+    sealed class LottieVisualDiagnostics
     {
         public string FileName { get; internal set; } = string.Empty;
 

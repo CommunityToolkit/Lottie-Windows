@@ -122,6 +122,12 @@ sealed class LottieJsonFileProcessor
             return false;
         }
 
+        // Validate the Lottie.
+        foreach (var issue in LottieCompositionValidator.Validate(lottieComposition))
+        {
+            _reporter.WriteInfo(InfoType.Issue, IssueToString(_jsonFilePath, issue));
+        }
+
         _lottieStats = new Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Tools.Stats(lottieComposition);
 
         var codeGenResult = TryGenerateCode(lottieComposition);
@@ -284,6 +290,7 @@ sealed class LottieJsonFileProcessor
                     ("ExpressionAnimation", translationStats.ExpressionAnimationCount.ToString()),
                     ("GeometricClip", translationStats.GeometricClipCount.ToString()),
                     ("InsetClip", translationStats.InsetClipCount.ToString()),
+                    ("LayerVisual", translationStats.LayerVisualCount.ToString()),
                     ("LinearEasingFunction", translationStats.LinearEasingFunctionCount.ToString()),
                     ("LinearGradientBrush", translationStats.LinearGradientBrushCount.ToString()),
                     ("PathGeometry", translationStats.PathGeometryCount.ToString()),

@@ -231,13 +231,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         static NodeName NameStepEasingFunction(StepEasingFunction obj)
         {
             // Recognize 2 common patterns: HoldThenStep and StepThenHold
-            if (obj.StepCount == 1)
+            if (!obj.StepCount.HasValue || obj.StepCount.Value == 1)
             {
-                if (obj.IsFinalStepSingleFrame && !obj.IsInitialStepSingleFrame)
+                if (obj.IsFinalStepSingleFrame == true && obj.IsInitialStepSingleFrame != true)
                 {
                     return NodeName.FromNonTypeName("HoldThenStepEasingFunction");
                 }
-                else if (obj.IsInitialStepSingleFrame && !obj.IsFinalStepSingleFrame)
+                else if (obj.IsInitialStepSingleFrame == true && obj.IsFinalStepSingleFrame != true)
                 {
                     return NodeName.FromNonTypeName("StepThenHoldEasingFunction");
                 }
@@ -253,7 +253,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             // Replace any disallowed character with underscores.
             var cleanName = new string((from ch in name
-                                               select char.IsLetterOrDigit(ch) ? ch : '_').ToArray());
+                                        select char.IsLetterOrDigit(ch) ? ch : '_').ToArray());
 
             // Remove any duplicated underscores.
             cleanName = cleanName.Replace("__", "_");

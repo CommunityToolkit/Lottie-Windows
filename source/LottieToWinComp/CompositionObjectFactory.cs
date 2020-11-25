@@ -11,7 +11,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce;
-
+using static Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp.ConvertTo;
 using Expr = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions.Expression;
 using Sn = System.Numerics;
 
@@ -148,7 +148,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal CompositionColorBrush CreateColorBrush() => _compositor.CreateColorBrush();
 
-        internal CompositionColorBrush CreateColorBrush(Color color) => _compositor.CreateColorBrush(WuiColor(color));
+        internal CompositionColorBrush CreateColorBrush(Color color) => _compositor.CreateColorBrush(Color(color));
 
         internal CompositionColorBrush CreateNonAnimatedColorBrush(Color color)
         {
@@ -169,7 +169,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal CompositionColorGradientStop CreateColorGradientStop() => _compositor.CreateColorGradientStop();
 
-        internal CompositionColorGradientStop CreateColorGradientStop(float offset, Color color) => _compositor.CreateColorGradientStop(offset, WuiColor(color));
+        internal CompositionColorGradientStop CreateColorGradientStop(float offset, Color color) => _compositor.CreateColorGradientStop(offset, Color(color));
 
         internal CompositionLinearGradientBrush CreateLinearGradientBrush() => _compositor.CreateLinearGradientBrush();
 
@@ -246,6 +246,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal Vector4KeyFrameAnimation CreateVector4KeyFrameAnimation() => _compositor.CreateVector4KeyFrameAnimation();
 
+        internal DropShadow CreateDropShadow() => _compositor.CreateDropShadow();
+
         internal InsetClip CreateInsetClip() => _compositor.CreateInsetClip();
 
         internal CompositionGeometricClip CreateGeometricClip() => _compositor.CreateGeometricClip();
@@ -253,6 +255,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         internal CompositionContainerShape CreateContainerShape() => _compositor.CreateContainerShape();
 
         internal ContainerVisual CreateContainerVisual() => _compositor.CreateContainerVisual();
+
+        internal LayerVisual CreateLayerVisual() => _compositor.CreateLayerVisual();
 
         internal SpriteVisual CreateSpriteVisual() => _compositor.CreateSpriteVisual();
 
@@ -293,20 +297,5 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             HighestUapVersionUsed = Math.Max(HighestUapVersionUsed, uapVersion);
         }
-
-        static float Clamp(float value, float min, float max)
-        {
-            Debug.Assert(min <= max, "Precondition");
-            return Math.Min(Math.Max(min, value), max);
-        }
-
-        static Sn.Vector2 ClampedVector2(LottieData.Vector2 vector2) => ClampedVector2((float)vector2.X, (float)vector2.Y);
-
-        static Sn.Vector2 ClampedVector2(float x, float y) => Vector2(Clamp(x, 0, 1), Clamp(y, 0, 1));
-
-        static WinCompData.Wui.Color WuiColor(Color color) =>
-            WinCompData.Wui.Color.FromArgb((byte)(255 * color.A), (byte)(255 * color.R), (byte)(255 * color.G), (byte)(255 * color.B));
-
-        static Sn.Vector2 Vector2(float x, float y) => new Sn.Vector2(x, y);
     }
 }

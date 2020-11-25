@@ -29,7 +29,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             _storageFile = storageFile;
         }
 
-        [return: NotNullIfNotNull("file")]
         internal static async Task<AnimatedVisualFactory?> LoadAsync(
             ImageAssetHandler? imageLoader,
             StorageFile file,

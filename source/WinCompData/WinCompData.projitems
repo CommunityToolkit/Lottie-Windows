@@ -17,6 +17,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CompositionColorGradientStop.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionColorSpace.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionContainerShape.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CompositionDropShadowSourcePolicy.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionEasingFunction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionEffectBrush.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionEffectFactory.cs" />
@@ -37,6 +38,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CompositionRadialGradientBrush.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionRectangleGeometry.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionRoundedRectangleGeometry.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CompositionShadow.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionShape.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionSpriteShape.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionStrokeCap.cs" />
@@ -47,6 +49,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Compositor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ContainerVisual.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CubicBezierEasingFunction.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DropShadow.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ExpressionAnimation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Expressions\Boolean.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Expressions\Color.cs" />
@@ -66,6 +69,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)KeyFrameAnimation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)KeyFrameAnimation_.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)KeyFrameType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LayerVisual.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LinearEasingFunction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MetaData\PropertySetValueType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MetaData\UapVersionAttribute.cs" />

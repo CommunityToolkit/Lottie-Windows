@@ -31,6 +31,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 
         public CubicBezierEasingFunction CreateCubicBezierEasingFunction(System.Numerics.Vector2 controlPoint1, System.Numerics.Vector2 controlPoint2) => new CubicBezierEasingFunction(controlPoint1, controlPoint2);
 
+        public DropShadow CreateDropShadow() => new DropShadow();
+
         public CompositionEffectFactory CreateEffectFactory(GraphicsEffectBase graphicsEffect) => new CompositionEffectFactory(graphicsEffect);
 
         public CompositionEllipseGeometry CreateEllipseGeometry() => new CompositionEllipseGeometry();
@@ -40,6 +42,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
         public CompositionGeometricClip CreateGeometricClip() => new CompositionGeometricClip();
 
         public InsetClip CreateInsetClip() => new InsetClip();
+
+        public LayerVisual CreateLayerVisual() => new LayerVisual();
 
         public LinearEasingFunction CreateLinearEasingFunction() => new LinearEasingFunction();
 
