@@ -9,6 +9,7 @@ using System.Numerics;
 using Microsoft.Toolkit.Uwp.UI.Lottie.CompMetadata;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.MetaData;
+using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData;
 using Mgce = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce;
@@ -851,17 +852,36 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
         }
 
         /// <inheritdoc/>
-        protected override string WriteCompositeEffectFactory(CodeBuilder builder, Mgce.CompositeEffect compositeEffect)
+        protected override string WriteCompositeEffectFactory(CodeBuilder builder, Mgce.CompositeEffect effect)
         {
-            var compositeEffectString = "compositeEffect";
-            builder.WriteLine($"var {compositeEffectString} = new CompositeEffect();");
-            builder.WriteLine($"{compositeEffectString}.Mode = {_s.CanvasCompositeMode(compositeEffect.Mode)};");
-            foreach (var source in compositeEffect.Sources)
+            var effectVariable = "compositeEffect";
+            builder.WriteLine($"var {effectVariable} = new CompositeEffect();");
+            builder.WriteLine($"{effectVariable}.Mode = {_s.CanvasCompositeMode(effect.Mode)};");
+            foreach (var source in effect.Sources)
             {
-                builder.WriteLine($"{compositeEffectString}.Sources.Add(new CompositionEffectSourceParameter({_s.String(source.Name)}));");
+                builder.WriteLine($"{effectVariable}.Sources.Add(new CompositionEffectSourceParameter({_s.String(source.Name)}));");
             }
 
-            return compositeEffectString;
+            return effectVariable;
+        }
+
+        /// <inheritdoc/>
+        protected override string WriteGaussianBlurEffectFactory(CodeBuilder builder, GaussianBlurEffect effect)
+        {
+            var effectVariable = "guassianBlurEffect";
+            builder.WriteLine($"var {effectVariable} = new GaussianBlurEffect();");
+
+            if (effect.BlurAmount.HasValue)
+            {
+                builder.WriteLine($"{effectVariable}.BlurAmount = {_s.Float(effect.BlurAmount.Value)};");
+            }
+
+            if (effect.Source != null)
+            {
+                builder.WriteLine($"{effectVariable}.Sources.Add(new CompositionEffectSourceParameter({_s.String(effect.Source.Name)}));");
+            }
+
+            return effectVariable;
         }
 
         /// <inheritdoc/>

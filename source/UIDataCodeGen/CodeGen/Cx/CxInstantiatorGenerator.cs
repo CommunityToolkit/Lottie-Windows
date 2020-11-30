@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.MetaData;
+using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData;
 using Mgce = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce;
@@ -528,7 +529,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
 
             if (SourceInfo.UsesCompositeEffect)
             {
-                // The CompsiteEffect class requires std::vector.
+                // The CompositeEffect class requires std::vector.
                 builder.WriteLine("#include <vector>");
             }
 
@@ -600,19 +601,39 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
         }
 
         /// <inheritdoc/>
-        protected override string WriteCompositeEffectFactory(CodeBuilder builder, Mgce.CompositeEffect compositeEffect)
+        protected override string WriteCompositeEffectFactory(CodeBuilder builder, Mgce.CompositeEffect effect)
         {
-            builder.WriteLine("ComPtr<CompositeEffect> compositeEffect(new CompositeEffect());");
-            builder.WriteLine($"compositeEffect->SetMode({_s.CanvasCompositeMode(compositeEffect.Mode)});");
-            foreach (var source in compositeEffect.Sources)
+            var effectVariable = "compositeEffect";
+            builder.WriteLine($"ComPtr<CompositeEffect> {effectVariable}(new CompositeEffect());");
+            builder.WriteLine($"{effectVariable}->SetMode({_s.CanvasCompositeMode(effect.Mode)});");
+            foreach (var source in effect.Sources)
             {
                 builder.OpenScope();
                 builder.WriteLine($"auto sourceParameter = ref new CompositionEffectSourceParameter({_s.String(source.Name)});");
-                builder.WriteLine("compositeEffect->AddSource(reinterpret_cast<ABI::Windows::Graphics::Effects::IGraphicsEffectSource*>(sourceParameter));");
+                builder.WriteLine($"{effectVariable}->AddSource(reinterpret_cast<ABI::Windows::Graphics::Effects::IGraphicsEffectSource*>(sourceParameter));");
                 builder.CloseScope();
             }
 
-            return "reinterpret_cast<Windows::Graphics::Effects::IGraphicsEffect^>(compositeEffect.Get())";
+            return $"reinterpret_cast<Windows::Graphics::Effects::IGraphicsEffect^>({effectVariable}.Get())";
+        }
+
+        /// <inheritdoc/>
+        protected override string WriteGaussianBlurEffectFactory(CodeBuilder builder, GaussianBlurEffect effect)
+        {
+            var effectVariable = "gaussianBlurEffect";
+            builder.WriteLine($"ComPtr<GaussianBlurEffect> {effectVariable}(new GaussianBlurEffect());");
+            if (effect.BlurAmount != null)
+            {
+                builder.WriteLine($"{effectVariable}->SetBlurAmount({_s.Float(effect.BlurAmount.Value)});");
+            }
+
+            if (effect.Source != null)
+            {
+                builder.WriteLine($"auto sourceParameter = ref new CompositionEffectSourceParameter({_s.String(effect.Source.Name)});");
+                builder.WriteLine($"{effectVariable}->AddSource(reinterpret_cast<ABI::Windows::Graphics::Effects::IGraphicsEffectSource*>(sourceParameter));");
+            }
+
+            return $"reinterpret_cast<Windows::Graphics::Effects::IGraphicsEffect^>({effectVariable}.Get())";
         }
 
         /// <inheritdoc/>

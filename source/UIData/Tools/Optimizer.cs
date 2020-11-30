@@ -990,33 +990,58 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 return result;
             }
 
-            var effectBase = obj.GetEffect();
+            IEnumerable<CompositionEffectSourceParameter> sources;
+            GraphicsEffectBase newEffect;
 
+            var effectBase = obj.GetEffect();
             switch (effectBase.Type)
             {
                 case GraphicsEffectType.CompositeEffect:
-                    var compositeEffect = (CompositeEffect)effectBase;
-
-                    var newCompositeEffect = new CompositeEffect
                     {
-                        Mode = compositeEffect.Mode,
-                    };
+                        var effect = (CompositeEffect)effectBase;
 
-                    var effectFactory = _c.CreateEffectFactory(newCompositeEffect);
-                    var compositeEffectBrush = effectFactory.CreateBrush();
+                        var newCompositeEffect = new CompositeEffect
+                        {
+                            Mode = effect.Mode,
+                        };
 
-                    result = CacheAndInitializeCompositionObject(obj, compositeEffectBrush);
+                        foreach (var source in effect.Sources)
+                        {
+                            newCompositeEffect.Sources.Add(source);
+                        }
 
-                    foreach (var source in compositeEffect.Sources)
+                        newEffect = newCompositeEffect;
+                        sources = effect.Sources;
+                    }
+
+                    break;
+                case GraphicsEffectType.GaussianBlurEffect:
                     {
-                        newCompositeEffect.Sources.Add(new CompositionEffectSourceParameter(source.Name));
+                        var effect = (GaussianBlurEffect)effectBase;
 
-                        result.SetSourceParameter(source.Name, GetCompositionBrush(obj.GetSourceParameter(source.Name)));
+                        newEffect = new GaussianBlurEffect
+                        {
+                            BlurAmount = effect.BlurAmount,
+                            Source = effect.Source,
+                        };
+
+                        sources = effect.Source is null
+                                        ? Array.Empty<CompositionEffectSourceParameter>()
+                                        : new[] { effect.Source };
                     }
 
                     break;
                 default:
                     throw new InvalidOperationException();
+            }
+
+            var effectBrush = _c.CreateEffectFactory(newEffect).CreateBrush();
+            result = CacheAndInitializeCompositionObject(obj, effectBrush);
+
+            // Set the sources.
+            foreach (var source in sources)
+            {
+                result.SetSourceParameter(source.Name, GetCompositionBrush(obj.GetSourceParameter(source.Name)));
             }
 
             StartAnimationsAndFreeze(obj, result);

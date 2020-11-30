@@ -14,6 +14,7 @@ using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Microsoft.Graphics.Canvas.Geometry;
+using Windows.Graphics.Effects;
 using Expr = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions;
 using Mgc = Microsoft.Graphics.Canvas;
 using Mgce = Microsoft.Graphics.Canvas.Effects;
@@ -1058,34 +1059,63 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 return result;
             }
 
-            var effect = obj.GetEffect();
-            switch (effect.Type)
+            IEnumerable<Wd.CompositionEffectSourceParameter> sources;
+            IGraphicsEffect graphicsEffect;
+
+            var wdEffect = obj.GetEffect();
+            switch (wdEffect.Type)
             {
                 case Wd.Mgce.GraphicsEffectType.CompositeEffect:
-                    // Initialize the effect.
-                    var compositeEffect = new Mgce.CompositeEffect();
-                    compositeEffect.Mode = CanvasComposite(((Wd.Mgce.CompositeEffect)obj.GetEffect()).Mode);
-                    var wdCompositeEffect = (Wd.Mgce.CompositeEffect)effect;
-                    foreach (var source in wdCompositeEffect.Sources)
                     {
-                        compositeEffect.Sources.Add(new Wc.CompositionEffectSourceParameter(source.Name));
+                        var effect = (Wd.Mgce.CompositeEffect)wdEffect;
+
+                        // Create the effect.
+                        var resultEffect = new Mgce.CompositeEffect
+                        {
+                            Mode = CanvasComposite(effect.Mode),
+                        };
+
+                        foreach (var source in effect.Sources)
+                        {
+                            resultEffect.Sources.Add(new Wc.CompositionEffectSourceParameter(source.Name));
+                        }
+
+                        graphicsEffect = resultEffect;
+                        sources = effect.Sources;
                     }
 
-                    // Create the EffectFactory.
-                    // The IGraphicsEffect must be fully initialized and populated before calling CreateEffectFactory.
-                    var effectFactory = _c.CreateEffectFactory(compositeEffect);
-
-                    // Initialize the brush.
-                    var compositeEffectBrush = effectFactory.CreateBrush();
-                    result = CacheAndInitializeCompositionObject(obj, compositeEffectBrush);
-                    foreach (var source in wdCompositeEffect.Sources)
+                    break;
+                case Wd.Mgce.GraphicsEffectType.GaussianBlurEffect:
                     {
-                        result.SetSourceParameter(source.Name, GetCompositionBrush(obj.GetSourceParameter(source.Name)));
+                        var effect = (Wd.Mgce.GaussianBlurEffect)wdEffect;
+
+                        // Create the effect.
+                        var resultEffect = new Mgce.GaussianBlurEffect();
+
+                        if (effect.BlurAmount.HasValue)
+                        {
+                            resultEffect.BlurAmount = effect.BlurAmount.Value;
+                        }
+
+                        graphicsEffect = resultEffect;
+                        sources = effect.Source is null
+                                    ? Array.Empty<Wd.CompositionEffectSourceParameter>()
+                                    : new[] { effect.Source };
                     }
 
                     break;
                 default:
                     throw new InvalidOperationException();
+            }
+
+            // Create and initialize the effect brush.
+            var effectBrush = _c.CreateEffectFactory(graphicsEffect).CreateBrush();
+            result = CacheAndInitializeCompositionObject(obj, effectBrush);
+
+            // Set the sources.
+            foreach (var source in sources)
+            {
+                result.SetSourceParameter(source.Name, GetCompositionBrush(obj.GetSourceParameter(source.Name)));
             }
 
             StartAnimations(obj, result);

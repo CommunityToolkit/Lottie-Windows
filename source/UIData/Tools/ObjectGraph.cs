@@ -659,6 +659,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                     }
 
                     break;
+                case GraphicsEffectType.GaussianBlurEffect:
+                    {
+                        var source = ((GaussianBlurEffect)effect).Source;
+                        if (source != null)
+                        {
+                            Reference(node, obj.GetSourceParameter(source.Name));
+                        }
+                    }
+
+                    break;
                 default:
                     throw new InvalidOperationException();
             }

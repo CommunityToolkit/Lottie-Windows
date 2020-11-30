@@ -73,6 +73,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)LinearEasingFunction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MetaData\PropertySetValueType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MetaData\UapVersionAttribute.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Mgce\GaussianBlurEffect.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Mgc\CanvasComposite.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Mgce\CompositeEffect.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Mgce\GraphicsEffectBase.cs" />

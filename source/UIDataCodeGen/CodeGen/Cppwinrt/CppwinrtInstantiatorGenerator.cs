@@ -8,6 +8,7 @@ using System.Linq;
 using System.Numerics;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.MetaData;
+using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData;
 using Mgce = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce;
@@ -732,16 +733,34 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
         }
 
         /// <inheritdoc/>
-        protected override string WriteCompositeEffectFactory(CodeBuilder builder, Mgce.CompositeEffect compositeEffect)
+        protected override string WriteCompositeEffectFactory(CodeBuilder builder, Mgce.CompositeEffect effect)
         {
-            builder.WriteLine("auto compositeEffect = winrt::make_self<CompositeEffect>();");
-            builder.WriteLine($"compositeEffect->SetMode({_s.CanvasCompositeMode(compositeEffect.Mode)});");
-            foreach (var source in compositeEffect.Sources)
+            var effectVariable = "compositeEffect";
+            builder.WriteLine($"auto {effectVariable} = winrt::make_self<CompositeEffect>();");
+            builder.WriteLine($"{effectVariable}->SetMode({_s.CanvasCompositeMode(effect.Mode)});");
+            foreach (var source in effect.Sources)
             {
-                builder.WriteLine($"compositeEffect->AddSource(CompositionEffectSourceParameter(L\"{source.Name}\"));");
+                builder.WriteLine($"{effectVariable}->AddSource(CompositionEffectSourceParameter(L\"{source.Name}\"));");
             }
 
-            return "*compositeEffect";
+            return $"*{effectVariable}";
+        }
+
+        protected override string WriteGaussianBlurEffectFactory(CodeBuilder builder, GaussianBlurEffect effect)
+        {
+            var effectVariable = "gaussianBlurEffect";
+            builder.WriteLine($"auto {effectVariable} = winrt::make_self<GaussianBlurEffect>();");
+            if (effect.BlurAmount.HasValue)
+            {
+                builder.WriteLine($"{effectVariable}->SetBlurAmount({_s.Float(effect.BlurAmount.Value)});");
+            }
+
+            if (effect.Source != null)
+            {
+                builder.WriteLine($"{effectVariable}->AddSource(CompositionEffectSourceParameter(L\"{effect.Source.Name}\"));");
+            }
+
+            return $"*{effectVariable}";
         }
 
         /// <inheritdoc/>
