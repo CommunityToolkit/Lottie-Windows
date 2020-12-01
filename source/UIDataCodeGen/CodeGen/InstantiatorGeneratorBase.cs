@@ -306,11 +306,21 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// Write the CompositeEffect factory code.
         /// </summary>
         /// <param name="builder">A <see cref="CodeBuilder"/> used to create the code.</param>
-        /// <param name="compositeEffect">Composite effect object.</param>
+        /// <param name="effect">Composite effect object.</param>
         /// <returns>String that should be used as the parameter for CreateEffectFactory.</returns>
         protected abstract string WriteCompositeEffectFactory(
             CodeBuilder builder,
-            Mgce.CompositeEffect compositeEffect);
+            Mgce.CompositeEffect effect);
+
+        /// <summary>
+        /// Write the GaussianBlurEffect factory code.
+        /// </summary>
+        /// <param name="builder">A <see cref="CodeBuilder"/> used to create the code.</param>
+        /// <param name="effect">Gaussian blur effect object.</param>
+        /// <returns>String that should be used as the parameter for CreateEffectFactory.</returns>
+        protected abstract string WriteGaussianBlurEffectFactory(
+            CodeBuilder builder,
+            Mgce.GaussianBlurEffect effect);
 
         /// <summary>
         /// Writes code that initializes a theme property value in the theme property set.
@@ -2840,8 +2850,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 var effectCreationString = effect.Type switch
                 {
                     Mgce.GraphicsEffectType.CompositeEffect => _owner.WriteCompositeEffectFactory(builder, (Mgce.CompositeEffect)effect),
-
-                    // Unsupported GraphicsEffectType.
+                    Mgce.GraphicsEffectType.GaussianBlurEffect => _owner.WriteGaussianBlurEffectFactory(builder, (Mgce.GaussianBlurEffect)effect),
                     _ => throw new InvalidOperationException(),
                 };
 
@@ -2849,18 +2858,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 WriteCreateAssignment(builder, node, $"effectFactory{Deref}CreateBrush()");
                 InitializeCompositionBrush(builder, obj, node);
 
-                // Perform brush initialization
-                switch (effect.Type)
+                IEnumerable<CompositionEffectSourceParameter> sources = effect.Type switch
                 {
-                    case Mgce.GraphicsEffectType.CompositeEffect:
-                        foreach (var sourceParameters in ((Mgce.CompositeEffect)effect).Sources)
-                        {
-                            builder.WriteLine($"result{Deref}SetSourceParameter({String(sourceParameters.Name)}, {CallFactoryFromFor(node, obj.GetSourceParameter(sourceParameters.Name))});");
-                        }
+                    Mgce.GraphicsEffectType.CompositeEffect => ((Mgce.CompositeEffect)effect).Sources,
+                    Mgce.GraphicsEffectType.GaussianBlurEffect => new[] { ((Mgce.GaussianBlurEffect)effect).Source },
+                    _ => throw new InvalidOperationException(),
+                };
 
-                        break;
-                    default:
-                        throw new InvalidOperationException();
+                // Perform brush initialization.
+                foreach (var source in sources)
+                {
+                    if (source != null)
+                    {
+                        builder.WriteLine($"result{Deref}SetSourceParameter({String(source.Name)}, {CallFactoryFromFor(node, obj.GetSourceParameter(source.Name))});");
+                    }
                 }
 
                 WriteCompositionObjectFactoryEnd(builder, obj, node);
