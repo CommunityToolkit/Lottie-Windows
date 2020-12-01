@@ -868,7 +868,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
         /// <inheritdoc/>
         protected override string WriteGaussianBlurEffectFactory(CodeBuilder builder, GaussianBlurEffect effect)
         {
-            var effectVariable = "guassianBlurEffect";
+            var effectVariable = "gaussianBlurEffect";
             builder.WriteLine($"var {effectVariable} = new GaussianBlurEffect();");
 
             if (effect.BlurAmount.HasValue)
