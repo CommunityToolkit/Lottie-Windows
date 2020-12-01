@@ -73,9 +73,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)LinearEasingFunction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MetaData\PropertySetValueType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MetaData\UapVersionAttribute.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Mgce\GaussianBlurEffect.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Mgc\CanvasComposite.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Mgc\CanvasDevice.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Mgce\CompositeEffect.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Mgce\GaussianBlurEffect.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Mgce\GraphicsEffectBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Mgce\GraphicsEffectType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Mgcg\CanvasFigureLoop.cs" />
@@ -83,7 +84,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Mgcg\CanvasGeometry.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Mgcg\CanvasGeometryCombine.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Mgcg\CanvasPathBuilder.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Mgc\CanvasDevice.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PathKeyFrameAnimation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ScalarKeyFrameAnimation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ShapeVisual.cs" />
