@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
+
 using System;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.YamlData
@@ -27,11 +29,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.YamlData
         public static implicit operator YamlScalar(string value)
         {
             var escapedValue = value;
-            if (escapedValue is null)
-            {
-                return _null;
-            }
-            else if (escapedValue.Length == 0)
+            if (escapedValue.Length == 0)
             {
                 escapedValue = "''";
             }
