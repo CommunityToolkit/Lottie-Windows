@@ -484,7 +484,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
         protected override void WriteAnimatedVisualStart(
             CodeBuilder builder,
             IAnimatedVisualInfo info)
-       {
+        {
             // Start writing the instantiator.
             builder.WriteLine($"class {info.ClassName} : public winrt::implements<{info.ClassName},");
             builder.Indent();
@@ -1479,7 +1479,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
         {
             if (id != nullptr)
             {
-                // CLSID_D2D1Composite value
+                // CLSID_D2D1Composite.
                 *id = { 0x48fc9f51, 0xf6ac, 0x48f1, { 0x8b, 0x58, 0x3b, 0x28, 0xac, 0x46, 0xf7, 0x6d } };
             }
 
@@ -1546,7 +1546,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
 
         static string GaussianBlurEffectClass =>
 @"
-    // This class is a substitute for the Microsoft::Graphics::Canvas::Effects::GuassianBlurEffect
+    // This class is a substitute for the Microsoft::Graphics::Canvas::Effects::GaussianBlurEffect
     // class so that blur effects can be used with 
     // Windows::UI::Composition::CompositionEffectBrush without requiring Win2d.
     class GaussianBlurEffect : public winrt::implements<GaussianBlurEffect,
@@ -1572,7 +1572,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
         {
             if (id != nullptr)
             {
-                // CLSID_D2D1GaussianBlur value
+                // CLSID_D2D1GaussianBlur.
                 *id = { 0x1feb6d69, 0x2fe6, 0x4ac9, { 0x8c, 0x58, 0x1d, 0x7f, 0x93, 0xe7, 0xa6, 0xa5 } };
             }
 
@@ -1580,7 +1580,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
         }
 
         // IGraphicsEffectD2D1Interop.
-        IFACEMETHODIMP GetSourceCount(UINT* count) override 
+        IFACEMETHODIMP GetSourceCount(UINT* count) override
         {
             if (count != nullptr)
             {
@@ -1602,7 +1602,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
             }
 
             m_source.as<::ABI::Windows::Graphics::Effects::IGraphicsEffectSource>().copy_to(source);
-            
+
             return S_OK;
         }
 
@@ -1616,17 +1616,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
         {
             switch (index)
             {
-            case D2D1_GAUSSIANBLUR_PROP_BORDER_MODE: 
+            case D2D1_GAUSSIANBLUR_PROP_BORDER_MODE:
                 winrt::Windows::Foundation::PropertyValue::CreateUInt32(
                     0).as<::ABI::Windows::Foundation::IPropertyValue>().copy_to(value);
             return S_OK;
 
-            case D2D1_GAUSSIANBLUR_PROP_OPTIMIZATION: 
+            case D2D1_GAUSSIANBLUR_PROP_OPTIMIZATION:
                 winrt::Windows::Foundation::PropertyValue::CreateUInt32(
                     1).as<::ABI::Windows::Foundation::IPropertyValue>().copy_to(value);
             return S_OK;
 
-            case D2D1_GAUSSIANBLUR_PROP_STANDARD_DEVIATION: 
+            case D2D1_GAUSSIANBLUR_PROP_STANDARD_DEVIATION:
                 winrt::Windows::Foundation::PropertyValue::CreateSingle(
                     m_blurAmount).as<::ABI::Windows::Foundation::IPropertyValue>().copy_to(value);
             return S_OK;

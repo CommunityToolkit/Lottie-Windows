@@ -1430,7 +1430,7 @@ public:
     { 
         if (id != nullptr)
         {
-            // CLSID_D2D1Composite value
+            // CLSID_D2D1Composite.
             *id = { 0x48fc9f51, 0xf6ac, 0x48f1, { 0x8b, 0x58, 0x3b, 0x28, 0xac, 0x46, 0xf7, 0x6d } };
         }
 
@@ -1626,7 +1626,7 @@ public:
     { 
         if (id != nullptr)
         {
-                // CLSID_D2D1GaussianBlur value
+                // CLSID_D2D1GaussianBlur.
                 *id = { 0x1feb6d69, 0x2fe6, 0x4ac9, { 0x8c, 0x58, 0x1d, 0x7f, 0x93, 0xe7, 0xa6, 0xa5 } };
         }
 
