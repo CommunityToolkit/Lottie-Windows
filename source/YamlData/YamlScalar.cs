@@ -14,10 +14,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.YamlData
 #endif
     sealed class YamlScalar : YamlObject
     {
-        readonly object _value;
+        static readonly YamlScalar _null = new YamlScalar(null, "~");
+        readonly object? _value;
         readonly string _presention;
 
-        internal YamlScalar(object value, string presentation)
+        internal YamlScalar(object? value, string presentation)
         {
             _value = value;
             _presention = presentation;
@@ -28,7 +29,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.YamlData
             var escapedValue = value;
             if (escapedValue is null)
             {
-                escapedValue = "~";
+                return _null;
             }
             else if (escapedValue.Length == 0)
             {
@@ -42,15 +43,25 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.YamlData
             return new YamlScalar(value, escapedValue);
         }
 
-        public static implicit operator YamlScalar(int value) => new YamlScalar(value, value.ToString());
+        public static implicit operator YamlScalar(bool? value) =>
+            value.HasValue
+                ? new YamlScalar(value.Value, value.Value ? "True" : "False")
+                : _null;
 
-        public static implicit operator YamlScalar(double value) => new YamlScalar(value, value.ToString());
+        public static implicit operator YamlScalar(double? value) =>
+            value.HasValue
+                ? new YamlScalar(value.Value, value.Value.ToString())
+                : _null;
 
-        public static implicit operator YamlScalar(bool value) => new YamlScalar(value, value.ToString());
+        public static implicit operator YamlScalar(int? value) =>
+            value.HasValue
+                ? new YamlScalar(value.Value, value.Value.ToString())
+                : _null;
 
-        public static implicit operator YamlScalar(TimeSpan value) => new YamlScalar(value, value.ToString());
-
-        public static implicit operator YamlScalar(Version value) => new YamlScalar(value, value.ToString());
+        public static implicit operator YamlScalar(TimeSpan? value) =>
+            value.HasValue
+                ? new YamlScalar(value.Value, value.Value.ToString())
+                : _null;
 
         public override string ToString() => _presention;
 

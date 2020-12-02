@@ -17,7 +17,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             bool isEnabled,
             Animatable<double> blurriness,
             Animatable<Enum<BlurDimension>> blurDimensions,
-            Animatable<bool> repeatEdgePixels)
+            Animatable<bool> repeatEdgePixels,
+            bool? forceGpuRendering)
             : base(
                   name,
                   isEnabled)
@@ -25,6 +26,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             Blurriness = blurriness;
             BlurDimensions = blurDimensions;
             RepeatEdgePixels = repeatEdgePixels;
+            ForceGpuRendering = forceGpuRendering;
         }
 
         /// <summary>
@@ -36,6 +38,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// Whether the blur is horizontal, vertical, or both.
         /// </summary>
         public Animatable<Enum<BlurDimension>> BlurDimensions { get; }
+
+        /// <summary>
+        /// Whether to force rendering onto the GPU.
+        /// </summary>
+        public bool? ForceGpuRendering { get; }
 
         /// <summary>
         /// Whether or not the blur repeats the pixels at the edge.
