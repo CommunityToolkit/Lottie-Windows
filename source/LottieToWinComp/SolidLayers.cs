@@ -18,7 +18,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
     static class SolidLayers
     {
         public static LayerTranslator CreateSolidLayerTranslator(SolidLayerContext context)
-             => new SolidLayerTranslator(context);
+        {
+            // Emit issues for unupported layer effects.
+            context.Effects.EmitIssueIfDropShadow();
+            context.Effects.EmitIssueIfGaussianBlur();
+
+            return new SolidLayerTranslator(context);
+        }
 
         sealed class SolidLayerTranslator : LayerTranslator
         {

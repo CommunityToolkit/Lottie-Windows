@@ -369,7 +369,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         //         |   |
         //         |   |
         //         |   +----------------------+
-        //         |   | Source Surface Brush | -- Surface brush that will paint with the output of the visual surface
+        //         |   | Source SurfaceBrush  | -- Surface brush that will paint with the output of the visual surface
         //         |   +----------------------+    that has the source visual assigned to it.
         //         |               |
         //         |               |  +-----------------------+

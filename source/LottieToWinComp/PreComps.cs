@@ -9,8 +9,10 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.Versioning;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
+using Mgce = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce;
 
 #if DEBUG
 // For diagnosing issues, give nothing a clip.
@@ -72,15 +74,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 result.Children.Add(rootNode);
             }
 
-            // Get the drop shadow, if any and enabled.
-            var dropShadowEffect =
-                context.Layer.Effects.Where(eff => eff.Type == LottieData.Effect.EffectType.DropShadow && eff.IsEnabled).
-                    Cast<DropShadowEffect>().FirstOrDefault();
+            var dropShadowEffect = context.Effects.DropShadowEffect;
 
             if (dropShadowEffect != null)
             {
-                // TODO - Issue unless all effects are drop shadows, only 1 drop shadow, and drop shadow only on precomp.
                 result = ApplyDropShadow(context, result, dropShadowEffect);
+            }
+
+            var gaussianBlurEffect = context.Effects.GaussianBlurEffect;
+
+            if (gaussianBlurEffect != null)
+            {
+                result = ApplyGaussianBlurEffect(context, result, gaussianBlurEffect);
             }
 
             return new LayerTranslator.FromVisual(result);
@@ -111,11 +116,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var isShadowOnly = Optimizer.TrimAnimatable(context, dropShadowEffect.IsShadowOnly);
             if (!isShadowOnly.IsAlways(true))
             {
-                // TODO - output an issue.
+                context.Issues.ShadowOnlyShadowEffect();
             }
 
             // TODO - it's not clear whether BlurRadius and Softness are equivalent. We may
-            //        need to scale Softness to convert it. to BlurRadius.
+            //        need to scale Softness to convert it to BlurRadius.
             var blurRadius = Optimizer.TrimAnimatable(context, dropShadowEffect.Softness);
             if (blurRadius.IsAnimated)
             {
@@ -198,5 +203,92 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 x: Math.Sin(directionRadians) * distance,
                 y: Math.Cos(directionRadians) * distance,
                 z: 1);
+
+        /// <summary>
+        /// Applies a Gaussian blur effect to the given <paramref name="source"/> and
+        /// returns a new root. This is only designed to work on a <see cref="PreCompLayer"/>
+        /// because the bounds of the <paramref name="source"/> tree must be known.
+        /// </summary>
+        /// <returns>A new subtree that contains <paramref name="source"/>.</returns>
+        internal static SpriteVisual ApplyGaussianBlurEffect(
+            PreCompLayerContext context,
+            Visual source,
+            GaussianBlurEffect gaussianBlurEffect)
+        {
+            Debug.Assert(gaussianBlurEffect.IsEnabled, "Precondition");
+
+            // Gaussian blur:
+            // +--------------+
+            // | SpriteVisual | -- Has the final composited result.
+            // +--------------+
+            //     ^
+            //     |
+            // +--------------+
+            // | EffectBrush  | -- Composition effect brush allows the composite effect result to be used as a brush.
+            // +--------------+
+            //     ^
+            //     |
+            // +--------------------+
+            // | GaussianBlurEffect |
+            // +--------------------+
+            //     ^ Source
+            //     |
+            // +--------------+
+            // | SurfaceBrush | -- Surface brush that will paint with the output of the VisualSurface
+            // +--------------+    that has the source visual assigned to it.
+            //      ^ CompositionEffectSourceParameter("source")
+            //      |
+            // +---------------+
+            // | VisualSurface | -- The visual surface captures the renderable contents of its source visual.
+            // +---------------+
+            //      ^
+            //      |
+            //  +--------+
+            //  | Visual | -- The layer translated to a Visual.
+            //  +--------+
+            var factory = context.ObjectFactory;
+            var size = ConvertTo.Vector2(context.Layer.Width, context.Layer.Height);
+
+            // Build from the bottom up.
+            var visualSurface = factory.CreateVisualSurface();
+            visualSurface.SourceVisual = source;
+            visualSurface.SourceSize = size;
+
+            var surfaceBrush = factory.CreateSurfaceBrush(visualSurface);
+
+            var effect = new Mgce.GaussianBlurEffect();
+
+            var blurriness = Optimizer.TrimAnimatable(context, gaussianBlurEffect.Blurriness);
+            if (blurriness.IsAnimated)
+            {
+                context.Issues.AnimatedLayerEffectParameters("Gaussian blur");
+            }
+
+            effect.BlurAmount = ConvertTo.Float(blurriness.InitialValue / 10.0);
+
+            // We only support HorizontalAndVertical blur dimension.
+            var blurDimensions = Optimizer.TrimAnimatable(context, gaussianBlurEffect.BlurDimensions);
+            var unsupportdBlurDimensions = blurDimensions
+                .KeyFrames
+                .Select(kf => kf.Value)
+                .Distinct()
+                .Where(v => v.Value != BlurDimension.HorizontalAndVertical).ToArray();
+
+            foreach (var value in unsupportdBlurDimensions)
+            {
+                context.Issues.UnsupportedLayerEffectParameter("Guassian blur", "blur dimension", value.Value.ToString());
+            }
+
+            effect.Source = new CompositionEffectSourceParameter("source");
+
+            var effectBrush = factory.CreateEffectFactory(effect).CreateBrush();
+            effectBrush.SetSourceParameter("source", surfaceBrush);
+
+            var result = factory.CreateSpriteVisual();
+            result.Brush = effectBrush;
+            result.Size = size;
+
+            return result;
+        }
     }
 }

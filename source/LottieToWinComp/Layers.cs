@@ -162,11 +162,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 context.Issues.BlendModeNotNormal(layer.Name, layer.BlendMode.ToString());
             }
 
-            foreach (var effect in layer.Effects)
-            {
-                context.Issues.UnsupportedLayerEffect(effect.Type.ToString());
-            }
-
             if (layer.TimeStretch != 1)
             {
                 context.Issues.TimeStretchIsNotSupported();

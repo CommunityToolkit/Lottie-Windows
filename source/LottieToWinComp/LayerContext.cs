@@ -17,6 +17,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
     abstract class LayerContext
     {
         FrameNumberEqualityComparer? _frameNumberEqualityComparer;
+        Effects? _effects;
 
         private protected LayerContext(CompositionContext compositionContext, Layer layer)
         {
@@ -38,6 +39,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         public TranslationIssues Issues { get; }
 
         internal Layer Layer { get; }
+
+        /// <summary>
+        /// The effects that are enabled on this layer.
+        /// </summary>
+        public Effects Effects => _effects ??= new Effects(this);
 
         /// <summary>
         /// Returns the <see cref="Layer"/> from which the current layer inherits transforms

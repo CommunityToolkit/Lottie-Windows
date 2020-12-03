@@ -878,7 +878,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
 
             if (effect.Source != null)
             {
-                builder.WriteLine($"{effectVariable}.Sources.Add(new CompositionEffectSourceParameter({_s.String(effect.Source.Name)}));");
+                builder.WriteLine($"{effectVariable}.Source = new CompositionEffectSourceParameter({_s.String(effect.Source.Name)});");
             }
 
             return effectVariable;

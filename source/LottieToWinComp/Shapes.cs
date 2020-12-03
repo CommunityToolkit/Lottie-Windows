@@ -20,8 +20,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
     /// </summary>
     static class Shapes
     {
-        public static LayerTranslator CreateShapeLayerTranslator(ShapeLayerContext context) =>
-                new ShapeLayerTranslator(context);
+        public static LayerTranslator CreateShapeLayerTranslator(ShapeLayerContext context)
+        {
+            // Emit issues for unupported layer effects.
+            context.Effects.EmitIssueIfDropShadow();
+            context.Effects.EmitIssueIfGaussianBlur();
+
+            return new ShapeLayerTranslator(context);
+        }
 
         public static void TranslateAndApplyShapeContext(
             ShapeContext context,
