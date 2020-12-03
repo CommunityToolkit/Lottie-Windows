@@ -671,7 +671,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
             {
                 // Write the composite effect class that will allow the use
                 // of this effect without win2d.
-                builder.WriteLine($"{CompositionEffectClass}");
+                builder.WriteLine(CompositeEffectClass);
             }
         }
 
@@ -733,11 +733,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
         }
 
         /// <inheritdoc/>
-        protected override string WriteCompositeEffectFactory(CodeBuilder builder, Mgce.CompositeEffect effect)
+        protected override string WriteCompositeEffectFactory(CodeBuilder builder, CompositeEffect effect)
         {
             var effectVariable = "compositeEffect";
             builder.WriteLine($"auto {effectVariable} = winrt::make_self<CompositeEffect>();");
-            builder.WriteLine($"{effectVariable}->SetMode({_s.CanvasCompositeMode(effect.Mode)});");
+            builder.WriteLine($"{effectVariable}->Mode({_s.CanvasCompositeMode(effect.Mode)});");
             foreach (var source in effect.Sources)
             {
                 builder.WriteLine($"{effectVariable}->AddSource(CompositionEffectSourceParameter(L\"{source.Name}\"));");
@@ -752,12 +752,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
             builder.WriteLine($"auto {effectVariable} = winrt::make_self<GaussianBlurEffect>();");
             if (effect.BlurAmount.HasValue)
             {
-                builder.WriteLine($"{effectVariable}->SetBlurAmount({_s.Float(effect.BlurAmount.Value)});");
+                builder.WriteLine($"{effectVariable}->BlurAmount({_s.Float(effect.BlurAmount.Value)});");
             }
 
             if (effect.Source != null)
             {
-                builder.WriteLine($"{effectVariable}->AddSource(CompositionEffectSourceParameter(L\"{effect.Source.Name}\"));");
+                builder.WriteLine($"{effectVariable}->Source(CompositionEffectSourceParameter(L\"{effect.Source.Name}\"));");
             }
 
             return $"*{effectVariable}";
@@ -1430,7 +1430,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
         }
     };";
 
-        static string CompositionEffectClass =>
+        static string CompositeEffectClass =>
 @"
     enum class CanvasComposite : int
     {
@@ -1451,9 +1451,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
 
     // This class is a substitute for the Microsoft::Graphics::Canvas::Effects::CompositeEffect
     // class so that composite effects can be used with 
-    // Windows::UI::Composition::CompositionEffectBrush without requiring Win2d. This is
-    // achieved by implementing the interfaces Windows::UI::Composition requires for it
-    // to consume an effect.
+    // Windows::UI::Composition::CompositionEffectBrush without requiring Win2d.
     class CompositeEffect : public winrt::implements<CompositeEffect,
         winrt::Windows::Graphics::Effects::IGraphicsEffect,
         winrt::Windows::Graphics::Effects::IGraphicsEffectSource,
@@ -1464,7 +1462,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
         std::vector<winrt::Windows::Graphics::Effects::IGraphicsEffectSource> m_sources{};
 
     public:
-        void SetMode(CanvasComposite mode) { m_mode = mode; }
+        void Mode(CanvasComposite mode) { m_mode = mode; }
+        CanvasComposite Mode(){ return m_mode; }
 
         void AddSource(winrt::Windows::Graphics::Effects::IGraphicsEffectSource source)
         {
@@ -1480,13 +1479,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
         {
             if (id != nullptr)
             {
-                // set CLSID_D2D1Composite value
-                *id = { 0x48fc9f51, 0xf6ac, 0x48f1, { 0x8b, 0x58,  0x3b,  0x28,  0xac,  0x46,  0xf7,  0x6d } };
+                // CLSID_D2D1Composite.
+                *id = { 0x48fc9f51, 0xf6ac, 0x48f1, { 0x8b, 0x58, 0x3b, 0x28, 0xac, 0x46, 0xf7, 0x6d } };
             }
 
             return S_OK;
         }
 
+        // IGraphicsEffectD2D1Interop.
         IFACEMETHODIMP GetSourceCount(UINT* count) override
         {
             if (count != nullptr)
@@ -1497,6 +1497,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
             return S_OK;
         }
 
+        // IGraphicsEffectD2D1Interop.
         IFACEMETHODIMP GetSource(
             UINT index,
             ::ABI::Windows::Graphics::Effects::IGraphicsEffectSource** source) override
@@ -1512,8 +1513,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
             return S_OK;
         }
 
+        // IGraphicsEffectD2D1Interop.
         IFACEMETHODIMP GetPropertyCount(UINT* count) override { *count = 1; return S_OK; }
 
+        // IGraphicsEffectD2D1Interop.
         IFACEMETHODIMP GetProperty(
             UINT index,
             ::ABI::Windows::Foundation::IPropertyValue** value) override
@@ -1530,6 +1533,111 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
             }
         }
 
+        // IGraphicsEffectD2D1Interop.
+        IFACEMETHODIMP GetNamedPropertyMapping(
+            LPCWSTR,
+            UINT*,
+            ::ABI::Windows::Graphics::Effects::GRAPHICS_EFFECT_PROPERTY_MAPPING*) override
+        {
+            return E_INVALIDARG;
+        }
+    };
+";
+
+        static string GaussianBlurEffectClass =>
+@"
+    // This class is a substitute for the Microsoft::Graphics::Canvas::Effects::GaussianBlurEffect
+    // class so that blur effects can be used with 
+    // Windows::UI::Composition::CompositionEffectBrush without requiring Win2d.
+    class GaussianBlurEffect : public winrt::implements<GaussianBlurEffect,
+        winrt::Windows::Graphics::Effects::IGraphicsEffect,
+        winrt::Windows::Graphics::Effects::IGraphicsEffectSource,
+        ::ABI::Windows::Graphics::Effects::IGraphicsEffectD2D1Interop>
+    {
+        float m_blurAmount = 3.0f;
+        winrt::hstring m_name{};
+        winrt::Windows::Graphics::Effects::IGraphicsEffectSource m_source{};
+
+    public:
+        void BlurAmount(float amount) { m_blurAmount = amount; }
+
+        void Source(winrt::Windows::Graphics::Effects::IGraphicsEffectSource source) { m_source = source; }
+
+        // IGraphicsEffect.
+        void Name(winrt::hstring name) { m_name = name; }
+        winrt::hstring Name() { return m_name; }
+
+        // IGraphicsEffectD2D1Interop.
+        IFACEMETHODIMP GetEffectId(GUID* id) override
+        {
+            if (id != nullptr)
+            {
+                // CLSID_D2D1GaussianBlur.
+                *id = { 0x1feb6d69, 0x2fe6, 0x4ac9, { 0x8c, 0x58, 0x1d, 0x7f, 0x93, 0xe7, 0xa6, 0xa5 } };
+            }
+
+            return S_OK;
+        }
+
+        // IGraphicsEffectD2D1Interop.
+        IFACEMETHODIMP GetSourceCount(UINT* count) override
+        {
+            if (count != nullptr)
+            {
+                *count = 1;
+            }
+
+            return S_OK;
+        }
+
+        // IGraphicsEffectD2D1Interop.
+        IFACEMETHODIMP GetSource(
+            UINT index,
+            ::ABI::Windows::Graphics::Effects::IGraphicsEffectSource** source) override
+        {
+            if (index != 0 ||
+                source == nullptr)
+            {
+                return E_INVALIDARG;
+            }
+
+            m_source.as<::ABI::Windows::Graphics::Effects::IGraphicsEffectSource>().copy_to(source);
+
+            return S_OK;
+        }
+
+        // IGraphicsEffectD2D1Interop.
+        IFACEMETHODIMP GetPropertyCount(UINT* count) override { *count = 3; return S_OK; }
+
+        // IGraphicsEffectD2D1Interop.
+        IFACEMETHODIMP GetProperty(
+            UINT index,
+            ::ABI::Windows::Foundation::IPropertyValue** value) override
+        {
+            switch (index)
+            {
+            case D2D1_GAUSSIANBLUR_PROP_BORDER_MODE:
+                winrt::Windows::Foundation::PropertyValue::CreateUInt32(
+                    0).as<::ABI::Windows::Foundation::IPropertyValue>().copy_to(value);
+            return S_OK;
+
+            case D2D1_GAUSSIANBLUR_PROP_OPTIMIZATION:
+                winrt::Windows::Foundation::PropertyValue::CreateUInt32(
+                    1).as<::ABI::Windows::Foundation::IPropertyValue>().copy_to(value);
+            return S_OK;
+
+            case D2D1_GAUSSIANBLUR_PROP_STANDARD_DEVIATION:
+                winrt::Windows::Foundation::PropertyValue::CreateSingle(
+                    m_blurAmount).as<::ABI::Windows::Foundation::IPropertyValue>().copy_to(value);
+            return S_OK;
+
+            default:
+                *value = nullptr;
+                return E_INVALIDARG;
+            }
+        }
+
+        // IGraphicsEffectD2D1Interop.
         IFACEMETHODIMP GetNamedPropertyMapping(
             LPCWSTR,
             UINT*,

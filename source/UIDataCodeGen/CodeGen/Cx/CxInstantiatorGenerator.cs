@@ -596,7 +596,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
             {
                 // Write the composite effect class that will allow the use
                 // of this effect without win2d.
-                builder.WriteLine($"{CompositionEffectClass}");
+                builder.WriteLine(CompositeEffectClass);
             }
         }
 
@@ -622,15 +622,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
         {
             var effectVariable = "gaussianBlurEffect";
             builder.WriteLine($"ComPtr<GaussianBlurEffect> {effectVariable}(new GaussianBlurEffect());");
-            if (effect.BlurAmount != null)
+            if (effect.BlurAmount.HasValue)
             {
-                builder.WriteLine($"{effectVariable}->SetBlurAmount({_s.Float(effect.BlurAmount.Value)});");
+                builder.WriteLine($"{effectVariable}->put_BlurAmount({_s.Float(effect.BlurAmount.Value)});");
             }
 
             if (effect.Source != null)
             {
                 builder.WriteLine($"auto sourceParameter = ref new CompositionEffectSourceParameter({_s.String(effect.Source.Name)});");
-                builder.WriteLine($"{effectVariable}->AddSource(reinterpret_cast<ABI::Windows::Graphics::Effects::IGraphicsEffectSource*>(sourceParameter));");
+                builder.WriteLine($"{effectVariable}->put_Source(reinterpret_cast<ABI::Windows::Graphics::Effects::IGraphicsEffectSource*>(sourceParameter));");
             }
 
             return $"reinterpret_cast<Windows::Graphics::Effects::IGraphicsEffect^>({effectVariable}.Get())";
@@ -1311,8 +1311,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
             }
         }
 
-        static string GeoSourceClass =>
-@"class GeoSource final :
+        static string GeoSourceClass => @"
+class GeoSource final :
     public ABI::Windows::Graphics::IGeometrySource2D,
     public ABI::Windows::Graphics::IGeometrySource2DInterop
  {
@@ -1380,7 +1380,7 @@ public:
 };
 ";
 
-        static string CompositionEffectClass =>
+        static string CompositeEffectClass =>
 @"
 
 enum CanvasComposite : int
@@ -1402,14 +1402,17 @@ enum CanvasComposite : int
 
 // This class is a substitute for the Microsoft::Graphics::Canvas::Effects::CompositeEffect
 // class so that composite effects can be used with 
-// Windows::UI::Composition::CompositionEffectBrush without requiring Win2d. This is
-// achieved by implementing the interfaces Windows::UI::Composition requires for it
-// to consume an effect.
+// Windows::UI::Composition::CompositionEffectBrush without requiring Win2d.
 class CompositeEffect final :
     public ABI::Windows::Graphics::Effects::IGraphicsEffect,
     public ABI::Windows::Graphics::Effects::IGraphicsEffectSource,
     public ABI::Windows::Graphics::Effects::IGraphicsEffectD2D1Interop
 {
+    ULONG m_cRef{};
+    CanvasComposite m_mode{};
+    Microsoft::WRL::Wrappers::HString m_name{};
+    std::vector<Microsoft::WRL::ComPtr<IGraphicsEffectSource>> m_sources{};
+
 public:
     void SetMode(CanvasComposite mode) { m_mode = mode; }
 
@@ -1418,23 +1421,23 @@ public:
         m_sources.emplace_back(Microsoft::WRL::ComPtr<IGraphicsEffectSource>(source));
     }
 
-    // IGraphicsEffect
+    // IGraphicsEffect.
     IFACEMETHODIMP get_Name(HSTRING* name) override { return m_name.CopyTo(name); }
-
     IFACEMETHODIMP put_Name(HSTRING name) override { return m_name.Set(name); }
 
-    // IGraphicsEffectD2D1Interop
+    // IGraphicsEffectD2D1Interop.
     IFACEMETHODIMP GetEffectId(GUID* id) override 
     { 
         if (id != nullptr)
         {
-            // set CLSID_D2D1Composite value
-            *id = { 0x48fc9f51, 0xf6ac, 0x48f1, { 0x8b, 0x58,  0x3b,  0x28,  0xac,  0x46,  0xf7,  0x6d } };
+            // CLSID_D2D1Composite.
+            *id = { 0x48fc9f51, 0xf6ac, 0x48f1, { 0x8b, 0x58, 0x3b, 0x28, 0xac, 0x46, 0xf7, 0x6d } };
         }
 
         return S_OK; 
     }
 
+    // IGraphicsEffectD2D1Interop.
     IFACEMETHODIMP GetSourceCount(UINT* count) override
     {
         if (count != nullptr)
@@ -1445,6 +1448,7 @@ public:
         return S_OK;
     }
 
+    // IGraphicsEffectD2D1Interop.
     IFACEMETHODIMP GetSource(
         UINT index, 
         IGraphicsEffectSource** source) override
@@ -1461,8 +1465,10 @@ public:
         return S_OK;
     }
 
+    // IGraphicsEffectD2D1Interop.
     IFACEMETHODIMP GetPropertyCount(UINT * count) override { *count = 1; return S_OK; }
 
+    // IGraphicsEffectD2D1Interop.
     IFACEMETHODIMP GetProperty(
         UINT index, 
         ABI::Windows::Foundation::IPropertyValue ** value) override
@@ -1485,6 +1491,7 @@ public:
         return hr;
     }
 
+    // IGraphicsEffectD2D1Interop.
     IFACEMETHODIMP GetNamedPropertyMapping(
         LPCWSTR, 
         UINT*,
@@ -1493,7 +1500,7 @@ public:
         return E_INVALIDARG;
     }
 
-    // IUnknown
+    // IUnknown.
     IFACEMETHODIMP QueryInterface(
         REFIID iid,
         void ** ppvObject) override
@@ -1533,11 +1540,13 @@ public:
         return E_NOINTERFACE;
     }
 
+    // IUnknown.
     IFACEMETHODIMP_(ULONG) AddRef() override
     {
         return InterlockedIncrement(&m_cRef);
     }
 
+    // IUnknown.
     IFACEMETHODIMP_(ULONG) Release() override
     {
         ULONG cRef = InterlockedDecrement(&m_cRef);
@@ -1549,10 +1558,10 @@ public:
         return cRef;
     }
 
-    // IInspectable
+    // IInspectable.
     IFACEMETHODIMP GetIids(
-        ULONG * iidCount,
-        IID ** iids) override
+        ULONG* iidCount,
+        IID** iids) override
     {
         if (iidCount != nullptr)
         {
@@ -1567,12 +1576,14 @@ public:
         return E_NOTIMPL;
     }
 
+    // IInspectable.
     IFACEMETHODIMP GetRuntimeClassName(
-        HSTRING * /*runtimeName*/) override
+        HSTRING* /*runtimeName*/) override
     {
         return E_NOTIMPL;
     }
 
+    // IInspectable.
     IFACEMETHODIMP GetTrustLevel(
         ::TrustLevel* trustLvl) override
     {
@@ -1583,15 +1594,206 @@ public:
 
         return S_OK;
     }
+};
+";
 
-private:
-    ULONG m_cRef = 0;
+        static string GaussianBlurEffectClass =>
+@"
 
-    CanvasComposite m_mode{};
-
+// This class is a substitute for the Microsoft::Graphics::Canvas::Effects::GaussianBlurEffect
+// class so that composite effects can be used with 
+// Windows::UI::Composition::CompositionEffectBrush without requiring Win2d.
+class GaussianBlurEffect final :
+    public ABI::Windows::Graphics::Effects::IGraphicsEffect,
+    public ABI::Windows::Graphics::Effects::IGraphicsEffectSource,
+    public ABI::Windows::Graphics::Effects::IGraphicsEffectD2D1Interop
+{
+    ULONG m_cRef{};
     Microsoft::WRL::Wrappers::HString m_name{};
+    float m_blurAmount = 3.0f;
+    Microsoft::WRL::ComPtr<IGraphicsEffectSource> m_source{};
 
-    std::vector<Microsoft::WRL::ComPtr<IGraphicsEffectSource>> m_sources;
+public:
+    void put_BlurAmount(float amount) { m_blurAmount = amount; }
+    void put_Source(IGraphicsEffectSource* source) { m_source = source; }
+
+    // IGraphicsEffect.
+    IFACEMETHODIMP get_Name(HSTRING* name) override { return m_name.CopyTo(name); }
+    IFACEMETHODIMP put_Name(HSTRING name) override { return m_name.Set(name); }
+
+    // IGraphicsEffectD2D1Interop.
+    IFACEMETHODIMP GetEffectId(GUID* id) override 
+    { 
+        if (id != nullptr)
+        {
+            // CLSID_D2D1GaussianBlur.
+            *id = { 0x1feb6d69, 0x2fe6, 0x4ac9, { 0x8c, 0x58, 0x1d, 0x7f, 0x93, 0xe7, 0xa6, 0xa5 } };
+        }
+
+        return S_OK; 
+    }
+
+    // IGraphicsEffectD2D1Interop.
+    IFACEMETHODIMP GetSourceCount(UINT* count) override
+    {
+        if (count != nullptr)
+        {
+            *count = 1;
+        }
+
+        return S_OK;
+    }
+
+    // IGraphicsEffectD2D1Interop.
+    IFACEMETHODIMP GetSource(
+        UINT index, 
+        IGraphicsEffectSource** source) override
+    {
+        if (index != 0 ||
+            source == nullptr)
+        {
+            return E_INVALIDARG;
+        }
+
+        *source = m_source.Get();
+        (*source)->AddRef();
+
+        return S_OK;
+    }
+
+    // IGraphicsEffectD2D1Interop.
+    IFACEMETHODIMP GetPropertyCount(UINT * count) override { *count = 3; return S_OK; }
+
+    // IGraphicsEffectD2D1Interop.
+    IFACEMETHODIMP GetProperty(
+        UINT index, 
+        ABI::Windows::Foundation::IPropertyValue ** value) override
+    {
+        Microsoft::WRL::ComPtr<ABI::Windows::Foundation::IPropertyValueStatics> propertyValueFactory;
+        Microsoft::WRL::Wrappers::HStringReference activatableClassId{ RuntimeClass_Windows_Foundation_PropertyValue };
+        HRESULT hr = ABI::Windows::Foundation::GetActivationFactory(activatableClassId.Get(), &propertyValueFactory);
+
+        if (SUCCEEDED(hr))
+        {
+            switch (index)
+            {
+                case D2D1_GAUSSIANBLUR_PROP_BORDER_MODE: 
+                    return propertyValueFactory->CreateUInt32(0, (IInspectable**)value);
+                case D2D1_GAUSSIANBLUR_PROP_OPTIMIZATION: 
+                    return propertyValueFactory->CreateUInt32(1, (IInspectable**)value);
+                case D2D1_GAUSSIANBLUR_PROP_STANDARD_DEVIATION: 
+                    return propertyValueFactory->CreateSingle(m_blurAmount, (IInspectable**)value);
+                default: 
+                    return E_INVALIDARG;
+            }
+        }
+
+        return hr;
+    }
+
+    // IGraphicsEffectD2D1Interop.
+    IFACEMETHODIMP GetNamedPropertyMapping(
+        LPCWSTR, 
+        UINT*,
+        ABI::Windows::Graphics::Effects::GRAPHICS_EFFECT_PROPERTY_MAPPING*) override
+    {
+        return E_INVALIDARG;
+    }
+
+    // IUnknown.
+    IFACEMETHODIMP QueryInterface(
+        REFIID iid,
+        void ** ppvObject) override
+    {
+        if (ppvObject != nullptr)
+        {
+            *ppvObject = nullptr;
+
+            if (iid == __uuidof(IUnknown))
+            {
+                *ppvObject = static_cast<IUnknown*>(static_cast<IGraphicsEffect*>(this));
+            }
+            else if (iid == __uuidof(IInspectable))
+            {
+                *ppvObject = static_cast<IInspectable*>(static_cast<IGraphicsEffect*>(this));
+            }
+            else if (iid == __uuidof(IGraphicsEffect))
+            {
+                *ppvObject = static_cast<IGraphicsEffect*>(this);
+            }
+            else if (iid == __uuidof(IGraphicsEffectSource))
+            {
+                *ppvObject = static_cast<IGraphicsEffectSource*>(this);
+            }
+            else if (iid == __uuidof(IGraphicsEffectD2D1Interop))
+            {
+                *ppvObject = static_cast<IGraphicsEffectD2D1Interop*>(this);
+            }
+
+            if (*ppvObject != nullptr)
+            {
+                AddRef();
+                return S_OK;
+            }
+        }
+
+        return E_NOINTERFACE;
+    }
+
+    // IUnknown.
+    IFACEMETHODIMP_(ULONG) AddRef() override
+    {
+        return InterlockedIncrement(&m_cRef);
+    }
+
+    // IUnknown.
+    IFACEMETHODIMP_(ULONG) Release() override
+    {
+        ULONG cRef = InterlockedDecrement(&m_cRef);
+        if (cRef == 0)
+        {
+            delete this;
+        }
+
+        return cRef;
+    }
+
+    // IInspectable.
+    IFACEMETHODIMP GetIids(
+        ULONG* iidCount,
+        IID** iids) override
+    {
+        if (iidCount != nullptr)
+        {
+            *iidCount = 0;
+        }
+
+        if (iids != nullptr)
+        {
+            *iids = nullptr;
+        }
+
+        return E_NOTIMPL;
+    }
+
+    // IInspectable.
+    IFACEMETHODIMP GetRuntimeClassName(
+        HSTRING* /*runtimeName*/) override
+    {
+        return E_NOTIMPL;
+    }
+
+    // IInspectable.
+    IFACEMETHODIMP GetTrustLevel(
+        ::TrustLevel* trustLvl) override
+    {
+        if (trustLvl != nullptr)
+        {
+            *trustLvl = BaseTrust;
+        }
+
+        return S_OK;
+    }
 };
 ";
     }
