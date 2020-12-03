@@ -95,7 +95,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         YamlObject FromLottieComposition(LottieComposition lottieComposition, YamlMap superclassContent)
         {
             var result = superclassContent;
-            result.Add(nameof(lottieComposition.Version), lottieComposition.Version);
+            result.Add(nameof(lottieComposition.Version), Scalar(lottieComposition.Version));
             result.Add(nameof(lottieComposition.Width), lottieComposition.Width);
             result.Add(nameof(lottieComposition.Height), lottieComposition.Height);
             result.Add(nameof(lottieComposition.FramesPerSecond), lottieComposition.FramesPerSecond);
@@ -373,6 +373,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             result.Add(nameof(effect.BlurDimensions), FromAnimatable(effect.BlurDimensions));
             result.Add(nameof(effect.Blurriness), FromAnimatable(effect.Blurriness));
             result.Add(nameof(effect.RepeatEdgePixels), FromAnimatable(effect.RepeatEdgePixels));
+            result.Add(nameof(effect.ForceGpuRendering), effect.ForceGpuRendering);
             return result;
         }
 
@@ -684,7 +685,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             return result;
         }
 
-        YamlScalar Scalar(bool value) => Scalar(value, value ? "true" : "false");
+        YamlScalar Scalar(bool value) => value;
 
         YamlScalar Scalar(Color value) => Scalar(value, $"'{value}'");
 
@@ -695,13 +696,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         YamlObject Scalar<T>(Enum<T> value)
             where T : struct, IComparable => Scalar(value, value.ToString()!);
 
-        YamlScalar Scalar(Mask.MaskMode type) => Scalar(type, type.ToString());
-
         YamlScalar Scalar(Opacity value) => Scalar(value, $"{value.Percent}%");
 
         YamlScalar Scalar(Rotation value) => Scalar(value, $"{value.Degrees}°");
 
         YamlScalar Scalar(Trim value) => Scalar(value, $"{value.Percent}%");
+
+        YamlScalar Scalar(Version value) => Scalar(value, value.ToString());
 
         // The code we hit is supposed to be unreachable. This indicates a bug.
         static Exception Unreachable => new InvalidOperationException("Unreachable code executed");

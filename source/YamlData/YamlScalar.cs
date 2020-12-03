@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
+
 using System;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.YamlData
@@ -14,10 +16,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.YamlData
 #endif
     sealed class YamlScalar : YamlObject
     {
-        readonly object _value;
+        static readonly YamlScalar _null = new YamlScalar(null, "~");
+        readonly object? _value;
         readonly string _presention;
 
-        internal YamlScalar(object value, string presentation)
+        internal YamlScalar(object? value, string presentation)
         {
             _value = value;
             _presention = presentation;
@@ -26,11 +29,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.YamlData
         public static implicit operator YamlScalar(string value)
         {
             var escapedValue = value;
-            if (escapedValue is null)
-            {
-                escapedValue = "~";
-            }
-            else if (escapedValue.Length == 0)
+            if (escapedValue.Length == 0)
             {
                 escapedValue = "''";
             }
@@ -42,15 +41,25 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.YamlData
             return new YamlScalar(value, escapedValue);
         }
 
-        public static implicit operator YamlScalar(int value) => new YamlScalar(value, value.ToString());
+        public static implicit operator YamlScalar(bool? value) =>
+            value.HasValue
+                ? new YamlScalar(value.Value, value.Value ? "True" : "False")
+                : _null;
 
-        public static implicit operator YamlScalar(double value) => new YamlScalar(value, value.ToString());
+        public static implicit operator YamlScalar(double? value) =>
+            value.HasValue
+                ? new YamlScalar(value.Value, value.Value.ToString())
+                : _null;
 
-        public static implicit operator YamlScalar(bool value) => new YamlScalar(value, value.ToString());
+        public static implicit operator YamlScalar(int? value) =>
+            value.HasValue
+                ? new YamlScalar(value.Value, value.Value.ToString())
+                : _null;
 
-        public static implicit operator YamlScalar(TimeSpan value) => new YamlScalar(value, value.ToString());
-
-        public static implicit operator YamlScalar(Version value) => new YamlScalar(value, value.ToString());
+        public static implicit operator YamlScalar(TimeSpan? value) =>
+            value.HasValue
+                ? new YamlScalar(value.Value, value.Value.ToString())
+                : _null;
 
         public override string ToString() => _presention;
 

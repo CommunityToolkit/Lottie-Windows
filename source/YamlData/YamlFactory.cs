@@ -14,6 +14,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.YamlData
 #endif
     abstract class YamlFactory
     {
-        protected YamlScalar Scalar(object value, string presentation) => new YamlScalar(value, presentation);
+        protected YamlScalar Scalar(object? value, string presentation) => new YamlScalar(value, presentation);
     }
 }

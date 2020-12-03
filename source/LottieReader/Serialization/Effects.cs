@@ -79,6 +79,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             Animatable<double>? blurriness = null;
             Animatable<Enum<BlurDimension>>? blurDimensions = null;
             Animatable<bool>? repeatEdgePixels = null;
+            bool? forceGpuRendering = null;
 
             for (var i = 0; i < parameters.Count; i++)
             {
@@ -101,12 +102,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                         repeatEdgePixels = ReadAnimatableBool(value) ?? throw ParseFailure();
                         break;
 
+                    case 3:
+                        // Optional parameter. Parse it as an animatable because it has the
+                        // animatable format, however it would be very strange if the value
+                        // was actually animated so convert it to non-animated bool.
+                        forceGpuRendering = ReadAnimatableBool(value)?.InitialValue ?? throw ParseFailure();
+                        break;
+
                     default:
                         throw ParseFailure();
                 }
             }
 
-            // Ensure all parameter values were provided.
+            // Ensure all required parameter values were provided.
             if (blurriness is null ||
                 blurDimensions is null ||
                 repeatEdgePixels is null)
@@ -119,7 +127,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 isEnabled,
                 blurriness: blurriness,
                 blurDimensions: blurDimensions,
-                repeatEdgePixels: repeatEdgePixels);
+                repeatEdgePixels: repeatEdgePixels,
+                forceGpuRendering: forceGpuRendering);
 
             static Exception ParseFailure() => ReaderException("Invalid Gaussian blur effect.");
         }
