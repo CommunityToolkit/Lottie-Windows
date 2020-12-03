@@ -103,9 +103,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                         break;
 
                     case 3:
-                        // Optional parameter. Parse it is an animatable because it has the
+                        // Optional parameter. Parse it as an animatable because it has the
                         // animatable format, however it would be very strange if the value
-                        // was actually animated so convert it to non-animated bool;
+                        // was actually animated so convert it to non-animated bool.
                         forceGpuRendering = ReadAnimatableBool(value)?.InitialValue ?? throw ParseFailure();
                         break;
 
