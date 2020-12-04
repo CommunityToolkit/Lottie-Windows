@@ -267,13 +267,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             // We only support HorizontalAndVertical blur dimension.
             var blurDimensions = Optimizer.TrimAnimatable(context, gaussianBlurEffect.BlurDimensions);
-            var unsupportdBlurDimensions = blurDimensions
+            var unsupportedBlurDimensions = blurDimensions
                 .KeyFrames
                 .Select(kf => kf.Value)
                 .Distinct()
                 .Where(v => v.Value != BlurDimension.HorizontalAndVertical).ToArray();
 
-            foreach (var value in unsupportdBlurDimensions)
+            foreach (var value in unsupportedBlurDimensions)
             {
                 context.Issues.UnsupportedLayerEffectParameter("Guassian blur", "blur dimension", value.Value.ToString());
             }

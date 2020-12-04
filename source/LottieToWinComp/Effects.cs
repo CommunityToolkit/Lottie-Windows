@@ -66,31 +66,30 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         /// <summary>
         /// If there is a drop shadow effect, emit an issue about it not being
-        /// supportd.
+        /// supported.
         /// </summary>
-        internal void EmitIssueIfDropShadow()
-        {
-            if (DropShadowEffect != null)
-            {
-                EmitIssueAboutUnsupportedEffect("drop shadow");
-            }
-        }
+        internal void EmitIssueIfDropShadow() =>
+            EmitIssueAboutUnsupportedEffect(DropShadowEffect, "drop shadow");
 
         /// <summary>
         /// If there is a Gaussian blur effect, emit an issue about it not being
-        /// supportd.
+        /// supported.
         /// </summary>
-        internal void EmitIssueIfGaussianBlur()
+        internal void EmitIssueIfGaussianBlur() =>
+            EmitIssueAboutUnsupportedEffect(GaussianBlurEffect, "Gaussian blur");
+
+        // If the given effect is not null, emit an issue about the effect not
+        // being supported on this layer.
+        void EmitIssueAboutUnsupportedEffect(Effect? effect, string effectName)
         {
-            if (GaussianBlurEffect != null)
+            if (effect != null)
             {
-                EmitIssueAboutUnsupportedEffect("Gaussian blur");
+                EmitIssueAboutUnsupportedEffect(effectName);
             }
         }
 
-        void EmitIssueAboutUnsupportedEffect(string effectName)
-        {
-            _context.Issues.LayerEffectNotSupportedOnLayer(effectName, _context.Layer.Type.ToString());
-        }
+        // Emit an issue about the effect not being supported on this layer.
+        void EmitIssueAboutUnsupportedEffect(string effectName) =>
+                _context.Issues.LayerEffectNotSupportedOnLayer(effectName, _context.Layer.Type.ToString());
     }
 }
