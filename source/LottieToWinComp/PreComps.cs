@@ -72,12 +72,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 result.Children.Add(rootNode);
             }
 
+#if EnableDropShadow
             var dropShadowEffect = context.Effects.DropShadowEffect;
 
             if (dropShadowEffect != null)
             {
                 result = ApplyDropShadow(context, result, dropShadowEffect);
             }
+#else
+            context.Effects.EmitIssueIfDropShadow();
+#endif
 
             var gaussianBlurEffect = context.Effects.GaussianBlurEffect;
 
@@ -106,9 +110,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             var shadow = context.ObjectFactory.CreateDropShadow();
 
-#if EnableDropShadow
             result.Shadow = shadow;
-#endif // EnableDropShadow
             shadow.SourcePolicy = CompositionDropShadowSourcePolicy.InheritFromVisualContent;
 
             var isShadowOnly = Optimizer.TrimAnimatable(context, dropShadowEffect.IsShadowOnly);
@@ -275,7 +277,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             foreach (var value in unsupportedBlurDimensions)
             {
-                context.Issues.UnsupportedLayerEffectParameter("Guassian blur", "blur dimension", value.Value.ToString());
+                context.Issues.UnsupportedLayerEffectParameter("guassian blur", "blur dimension", value.Value.ToString());
             }
 
             effect.Source = new CompositionEffectSourceParameter("source");

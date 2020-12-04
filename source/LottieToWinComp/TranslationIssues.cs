@@ -116,7 +116,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal void RepeatedLayerEffect(string type) => Report("LT0039", $"Layer effect of type {type} is specified more than once.");
 
-        internal void ShadowOnlyShadowEffect() => Report("LT0040", "Shadow-only drop shadow are not supported.");
+        internal void ShadowOnlyShadowEffect() => Report("LT0040", "Shadow-only drop shadows are not supported.");
 
         internal void AnimatedLayerEffectParameters(string layerEffectType) => Report("LT0041", $"Animated parameters on {layerEffectType} effect are not supported.");
 
