@@ -9,10 +9,8 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.Versioning;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
-using Mgce = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce;
 
 #if DEBUG
 // For diagnosing issues, give nothing a clip.
@@ -85,7 +83,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             if (gaussianBlurEffect != null)
             {
-                result = ApplyGaussianBlurEffect(context, result, gaussianBlurEffect);
+                result = ApplyGaussianBlur(context, result, gaussianBlurEffect);
             }
 
             return new LayerTranslator.FromVisual(result);
@@ -160,9 +158,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 if (distance.IsAnimated)
                 {
                     // Direction and distance are animated.
-                    // TODO - output an issue. We could support this in some cases. The worst cases
-                    //        are where the keyframes don't line up, and/or the easings are different
-                    //        between distance and direction.
+                    // NOTE: we could support this in some cases. The worst cases are
+                    //       where the keyframes don't line up, and/or the easings are different
+                    //       between distance and direction.
+                    context.Issues.AnimatedLayerEffectParameters("drop shadow");
                 }
                 else
                 {
@@ -210,7 +209,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// because the bounds of the <paramref name="source"/> tree must be known.
         /// </summary>
         /// <returns>A new subtree that contains <paramref name="source"/>.</returns>
-        internal static SpriteVisual ApplyGaussianBlurEffect(
+        internal static SpriteVisual ApplyGaussianBlur(
             PreCompLayerContext context,
             Visual source,
             GaussianBlurEffect gaussianBlurEffect)
@@ -256,7 +255,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             var surfaceBrush = factory.CreateSurfaceBrush(visualSurface);
 
-            var effect = new Mgce.GaussianBlurEffect();
+            var effect = new WinCompData.Mgce.GaussianBlurEffect();
 
             var blurriness = Optimizer.TrimAnimatable(context, gaussianBlurEffect.Blurriness);
             if (blurriness.IsAnimated)
