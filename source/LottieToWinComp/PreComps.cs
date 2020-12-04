@@ -277,7 +277,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             foreach (var value in unsupportedBlurDimensions)
             {
-                context.Issues.UnsupportedLayerEffectParameter("guassian blur", "blur dimension", value.Value.ToString());
+                context.Issues.UnsupportedLayerEffectParameter("gaussian blur", "blur dimension", value.Value.ToString());
             }
 
             effect.Source = new CompositionEffectSourceParameter("source");
