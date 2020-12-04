@@ -673,6 +673,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
                 // of this effect without win2d.
                 builder.WriteLine(CompositeEffectClass);
             }
+
+            if (SourceInfo.UsesGaussianBlurEffect)
+            {
+                // Write the Gaussian blur effect class that will allow the use
+                // of this effect without win2d.
+                builder.WriteLine(GaussianBlurEffectClass);
+            }
         }
 
         /// <inheritdoc/>

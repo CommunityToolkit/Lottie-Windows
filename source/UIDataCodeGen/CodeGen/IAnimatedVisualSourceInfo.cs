@@ -112,6 +112,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         bool UsesCompositeEffect { get; }
 
         /// <summary>
+        /// Gets a value indicating whether the composition depends on a Gaussian blur effect.
+        /// </summary>
+        bool UsesGaussianBlurEffect { get; }
+
+        /// <summary>
         /// Gets the XAML LoadedImageSurface nodes of the composition.
         /// </summary>
         IReadOnlyList<LoadedImageSurfaceInfo> LoadedImageSurfaces { get; }
