@@ -50,6 +50,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                     case CompositionObjectType.CompositionRadialGradientBrush:
                         OptimizeGradientBrush((CompositionGradientBrush)obj);
                         break;
+                    case CompositionObjectType.CompositionVisualSurface:
+                        OptimizeVisualSurfaceProperties((CompositionVisualSurface)obj);
+                        break;
                 }
             }
 
@@ -135,6 +138,27 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
         // Remove the centerpoint property if it's redundant, and convert properties to TransformMatrix if possible.
         static void OptimizeShapeProperties(CompositionShape obj)
         {
+            // Unset properties that are set to their default values.
+            if (obj.CenterPoint == Vector2.Zero)
+            {
+                obj.CenterPoint = null;
+            }
+
+            if (obj.Offset == Vector2.Zero)
+            {
+                obj.Offset = null;
+            }
+
+            if (obj.RotationAngleInDegrees == 0)
+            {
+                obj.RotationAngleInDegrees = null;
+            }
+
+            if (obj.Scale == Vector2.One)
+            {
+                obj.Scale = null;
+            }
+
             // Remove the centerpoint if it's not used by Scale or Rotation.
             var nonDefaultProperties = GetNonDefaultShapeProperties(obj);
             if (obj.CenterPoint.HasValue &&
@@ -405,6 +429,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
                     obj.TransformMatrix = combinedMatrix;
                 }
+            }
+        }
+
+        static void OptimizeVisualSurfaceProperties(CompositionVisualSurface obj)
+        {
+            // Unset properties that are set to their default values.
+            if (obj.SourceOffset == Vector2.Zero)
+            {
+                obj.SourceOffset = null;
+            }
+
+            if (obj.SourceSize == Vector2.Zero)
+            {
+                obj.SourceSize = null;
             }
         }
 

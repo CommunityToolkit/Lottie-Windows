@@ -238,7 +238,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 }
                 else
                 {
-                    sprite.StrokeThickness = ConvertTo.FloatDefaultIsOne(strokeThickness.InitialValue);
+                    sprite.StrokeThickness = ConvertTo.Float(strokeThickness.InitialValue);
                 }
             }
 
@@ -249,7 +249,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             // Lottie (and SVG/CSS) defines miter limit as (miter_length / stroke_thickness).
             // WUC defines miter limit as (miter_length / (2*stroke_thickness).
             // WUC requires the value not be < 1.
-            sprite.StrokeMiterLimit = ConvertTo.FloatDefaultIsOne(Math.Max(shapeStroke.MiterLimit / 2, 1));
+            sprite.StrokeMiterLimit = ConvertTo.Float(Math.Max(shapeStroke.MiterLimit / 2, 1));
 
             sprite.StrokeBrush = brush;
         }
