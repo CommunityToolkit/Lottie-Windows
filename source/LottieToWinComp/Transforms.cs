@@ -473,7 +473,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
             else
             {
-                container.RotationAngleInDegrees = ConvertTo.FloatDefaultIsZero(rotation.InitialValue.Degrees);
+                container.RotationAngleInDegrees = ConvertTo.Float(rotation.InitialValue.Degrees);
             }
 
 #if !NoScaling
@@ -497,7 +497,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
                 if (!trimmedX.IsAnimated || !trimmedY.IsAnimated)
                 {
-                    container.Scale = ConvertTo.Vector2DefaultIsOne(new Vector3(trimmedX.InitialValue, trimmedY.InitialValue, 0) * (1 / 100.0));
+                    container.Scale = ConvertTo.Vector2(new Vector3(trimmedX.InitialValue, trimmedY.InitialValue, 0) * (1 / 100.0));
                 }
             }
             else
@@ -517,7 +517,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 }
                 else
                 {
-                    container.Scale = ConvertTo.Vector2DefaultIsOne(trimmedScale.InitialValue * (1 / 100.0));
+                    container.Scale = ConvertTo.Vector2(trimmedScale.InitialValue * (1 / 100.0));
                 }
             }
 #endif
@@ -586,7 +586,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
             else
             {
-                container.CenterPoint = ConvertTo.Vector2DefaultIsZero(initialAnchor);
+                container.CenterPoint = ConvertTo.Vector2(initialAnchor);
             }
 
             // If the position or anchor are animated, the offset needs to be calculated via an expression.
@@ -609,7 +609,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     {
                         if (!positionX.IsAnimated || !positionY.IsAnimated)
                         {
-                            container.Offset = ConvertTo.Vector2DefaultIsZero(initialPosition - initialAnchor);
+                            container.Offset = ConvertTo.Vector2(initialPosition - initialAnchor);
                         }
 
                         if (positionX.IsAnimated)
@@ -668,7 +668,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             if (!positionIsAnimated && !anchorIsAnimated)
             {
                 // Position and Anchor are static. No expression needed.
-                container.Offset = ConvertTo.Vector2DefaultIsZero(initialPosition - initialAnchor);
+                container.Offset = ConvertTo.Vector2(initialPosition - initialAnchor);
             }
 
             // Position is a Lottie-only concept. It offsets the object relative to the Anchor.

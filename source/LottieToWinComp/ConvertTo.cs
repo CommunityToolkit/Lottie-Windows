@@ -26,10 +26,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         public static float Float(Trim value) => (float)value.Value;
 
-        public static float? FloatDefaultIsZero(double value) => value == 0 ? null : (float?)value;
-
-        public static float? FloatDefaultIsOne(double value) => value == 1 ? null : (float?)value;
-
         public static float Opacity(Opacity value) => (float)value.Value;
 
         public static float PercentF(double value) => (float)value / 100F;
@@ -44,13 +40,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         public static Sn.Vector2 Vector2(float x) => new Sn.Vector2(x, x);
 
-        public static Sn.Vector2? Vector2DefaultIsOne(Vector3 vector2)
-            => vector2.X == 1 && vector2.Y == 1 ? null : (Sn.Vector2?)Vector2(vector2);
-
-        public static Sn.Vector2? Vector2DefaultIsZero(Sn.Vector2 vector2)
-            => vector2.X == 0 && vector2.Y == 0 ? null : (Sn.Vector2?)vector2;
-
-        public static Sn.Vector2 ClampedVector2(Vector3 vector3) => ClampedVector2((float)vector3.X, (float)vector3.Y);
+        public static Sn.Vector2? Vector2(Sn.Vector2 vector2) => (Sn.Vector2?)vector2;
 
         public static Sn.Vector2 ClampedVector2(LottieData.Vector2 vector2) => ClampedVector2((float)vector2.X, (float)vector2.Y);
 
@@ -59,17 +49,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         public static Sn.Vector3 Vector3(double x, double y, double z) => new Sn.Vector3((float)x, (float)y, (float)z);
 
         public static Sn.Vector3 Vector3(Vector3 vector3) => new Sn.Vector3((float)vector3.X, (float)vector3.Y, (float)vector3.Z);
-
-        public static Sn.Vector3? Vector3DefaultIsZero(Sn.Vector2 vector2)
-            => vector2.X == 0 && vector2.Y == 0 ? null : (Sn.Vector3?)Vector3(vector2);
-
-        public static Sn.Vector3? Vector3DefaultIsOne(Sn.Vector3 vector3)
-            => vector3.X == 1 && vector3.Y == 1 && vector3.Z == 1 ? null : (Sn.Vector3?)vector3;
-
-        public static Sn.Vector3? Vector3DefaultIsOne(Vector3 vector3)
-            => Vector3DefaultIsOne(new Sn.Vector3((float)vector3.X, (float)vector3.Y, (float)vector3.Z));
-
-        public static Sn.Vector3 Vector3(Sn.Vector2 vector2) => Vector3(vector2.X, vector2.Y, 0);
 
         public static Sn.Vector4 Vector4(WinCompData.Wui.Color color) => new Sn.Vector4(color.R, color.G, color.B, color.A);
 

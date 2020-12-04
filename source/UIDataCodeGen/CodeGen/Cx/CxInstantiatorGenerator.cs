@@ -793,7 +793,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
                 var propertySetTypeName = PropertySetValueTypeName(properties[0].ActualType);
                 var valueInitializer = properties[0].ExposedType == PropertySetValueType.Color ? "ColorAsVector4(value)" : "value";
 
-                builder.WriteLine($"void {_sourceClassName}::Set{propertyType}Property(String^ propertyName, {typeName} value)");
+                builder.WriteLine($"void {_s.Namespace(SourceInfo.Namespace)}::{_sourceClassName}::Set{propertyType}Property(String^ propertyName, {typeName} value)");
                 builder.OpenScope();
 
                 var firstSeen = false;
@@ -819,7 +819,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
                 builder.WriteLine($"if ({SourceInfo.ThemePropertiesFieldName} != nullptr)");
                 builder.OpenScope();
 
-                builder.WriteLine($"{SourceInfo.ThemePropertiesFieldName}.Insert{propertySetTypeName}(propertyName, {valueInitializer});");
+                builder.WriteLine($"{SourceInfo.ThemePropertiesFieldName}->Insert{propertySetTypeName}(propertyName, {valueInitializer});");
                 builder.CloseScope();
                 builder.CloseScope();
             }
