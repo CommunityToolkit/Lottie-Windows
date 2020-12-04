@@ -112,7 +112,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal void ConflictingRoundnessAndRadiusIsNotSupported() => Report("LT0037", "Rectangle roundness with round corners is not supported.");
 
-        internal void UnsupportedLayerEffect(string type) => Report("LT0038", $"Effects of type {type} are not supported.");
+        internal void LayerEffectNotSupportedOnLayer(string type, string layerType) => Report("LT0038", $"Effects of type {type} are not supported on {layerType} layers.");
+
+        internal void RepeatedLayerEffect(string type) => Report("LT0039", $"Layer effect of type {type} is specified more than once.");
+
+        internal void ShadowOnlyShadowEffect() => Report("LT0040", "Shadow-only drop shadows are not supported.");
+
+        internal void AnimatedLayerEffectParameters(string layerEffectType) => Report("LT0041", $"Animated parameters on {layerEffectType} effect are not supported.");
+
+        internal void UnsupportedLayerEffectParameter(string layerEffectType, string parameterName, string value) => Report("LT0042", $"Layer effects of type {layerEffectType} do not support {parameterName} values of {value}.");
 
         void Report(string code, string description)
         {

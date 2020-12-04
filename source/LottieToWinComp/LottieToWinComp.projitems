@@ -16,6 +16,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)ContainerShapeOrVisual.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConvertTo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CubicBezierFunction2.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Effects.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Ellipses.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ExpressionFactory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Float32.cs" />

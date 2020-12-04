@@ -1098,9 +1098,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                         }
 
                         graphicsEffect = resultEffect;
-                        sources = effect.Source is null
-                                    ? Array.Empty<Wd.CompositionEffectSourceParameter>()
-                                    : new[] { effect.Source };
+                        if (effect.Source is null)
+                        {
+                            sources = Array.Empty<Wd.CompositionEffectSourceParameter>();
+                        }
+                        else
+                        {
+                            resultEffect.Source = new Wc.CompositionEffectSourceParameter(effect.Source.Name);
+                            sources = new[] { effect.Source };
+                        }
                     }
 
                     break;

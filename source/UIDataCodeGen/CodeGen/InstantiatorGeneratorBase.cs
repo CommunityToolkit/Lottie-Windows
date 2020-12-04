@@ -708,19 +708,21 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         Vector2 IAnimatedVisualSourceInfo.CompositionDeclaredSize => _compositionDeclaredSize;
 
-        bool IAnimatedVisualSourceInfo.UsesCanvas => _animatedVisualGenerators.Any(f => f.UsesCanvas);
+        bool IAnimatedVisualSourceInfo.UsesCanvas => Any(f => f.UsesCanvas);
 
-        bool IAnimatedVisualSourceInfo.UsesCanvasEffects => _animatedVisualGenerators.Any(f => f.UsesCanvasEffects);
+        bool IAnimatedVisualSourceInfo.UsesCanvasEffects => Any(f => f.UsesCanvasEffects);
 
-        bool IAnimatedVisualSourceInfo.UsesCanvasGeometry => _animatedVisualGenerators.Any(f => f.UsesCanvasGeometry);
+        bool IAnimatedVisualSourceInfo.UsesCanvasGeometry => Any(f => f.UsesCanvasGeometry);
 
-        bool IAnimatedVisualSourceInfo.UsesNamespaceWindowsUIXamlMedia => _animatedVisualGenerators.Any(f => f.UsesNamespaceWindowsUIXamlMedia);
+        bool IAnimatedVisualSourceInfo.UsesNamespaceWindowsUIXamlMedia => Any(f => f.UsesNamespaceWindowsUIXamlMedia);
 
-        bool IAnimatedVisualSourceInfo.UsesStreams => _animatedVisualGenerators.Any(f => f.UsesStreams);
+        bool IAnimatedVisualSourceInfo.UsesStreams => Any(f => f.UsesStreams);
 
         IReadOnlyList<IAnimatedVisualInfo> IAnimatedVisualSourceInfo.AnimatedVisualInfos => _animatedVisualGenerators;
 
-        bool IAnimatedVisualSourceInfo.UsesCompositeEffect => _animatedVisualGenerators.Any(f => f.UsesCompositeEffect);
+        bool IAnimatedVisualSourceInfo.UsesCompositeEffect => Any(f => f.UsesEffect(Mgce.GraphicsEffectType.CompositeEffect));
+
+        bool IAnimatedVisualSourceInfo.UsesGaussianBlurEffect => Any(f => f.UsesEffect(Mgce.GraphicsEffectType.GaussianBlurEffect));
 
         IReadOnlyList<MarkerInfo> IAnimatedVisualSourceInfo.Markers => _markers;
 
@@ -729,6 +731,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         IReadOnlyList<LoadedImageSurfaceInfo> IAnimatedVisualSourceInfo.LoadedImageSurfaces => _loadedImageSurfaceInfos;
 
         SourceMetadata IAnimatedVisualSourceInfo.SourceMetadata => _sourceMetadata;
+
+        // Return true if any of the AnimatedVisualGenerators match the given predicate.
+        bool Any(Func<AnimatedVisualGenerator, bool> predicate) => _animatedVisualGenerators.Any(predicate);
 
         // Writes code that will return the given GenericDataMap as Windows.Data.Json.
         void WriteJsonFactory(CodeBuilder builder, GenericDataMap jsonData, string factoryName)
@@ -1121,7 +1126,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             internal bool HasLoadedImageSurface => _nodes.Where(n => n.IsLoadedImageSurface).Any();
 
-            internal bool UsesCompositeEffect => _nodes.Where(n => n.UsesCompositeEffect).Any();
+            internal bool UsesEffect(Mgce.GraphicsEffectType effectType) => _nodes.Where(n => n.UsesEffect(effectType)).Any();
 
             string ConstExprField(string type, string name, string value) => _s.ConstExprField(type, name, value);
 
@@ -3227,8 +3232,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             // Set to indicate that the node uses asset file(s).
             internal bool UsesAssetFile => Object is Wmd.LoadedImageSurface lis && lis.Type == Wmd.LoadedImageSurface.LoadedImageSurfaceType.FromUri;
 
-            // Set to indicate that the composition depends on a composite effect.
-            internal bool UsesCompositeEffect => Object is CompositionEffectBrush compositeEffectBrush && compositeEffectBrush.GetEffect().Type == Mgce.GraphicsEffectType.CompositeEffect;
+            // Set to indicate that the composition depends on the given effect type.
+            internal bool UsesEffect(Mgce.GraphicsEffectType effectType) => Object is CompositionEffectBrush compositeEffectBrush && compositeEffectBrush.GetEffect().Type == effectType;
 
             // Identifies the byte array of a LoadedImageSurface.
             internal string? LoadedImageSurfaceBytesFieldName => IsLoadedImageSurface ? $"s_{Name}_Bytes" : null;

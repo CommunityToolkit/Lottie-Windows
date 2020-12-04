@@ -72,15 +72,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 result.Children.Add(rootNode);
             }
 
-            // Get the drop shadow, if any and enabled.
-            var dropShadowEffect =
-                context.Layer.Effects.Where(eff => eff.Type == LottieData.Effect.EffectType.DropShadow && eff.IsEnabled).
-                    Cast<DropShadowEffect>().FirstOrDefault();
+#if EnableDropShadow
+            var dropShadowEffect = context.Effects.DropShadowEffect;
 
             if (dropShadowEffect != null)
             {
-                // TODO - Issue unless all effects are drop shadows, only 1 drop shadow, and drop shadow only on precomp.
                 result = ApplyDropShadow(context, result, dropShadowEffect);
+            }
+#else
+            context.Effects.EmitIssueIfDropShadow();
+#endif
+
+            var gaussianBlurEffect = context.Effects.GaussianBlurEffect;
+
+            if (gaussianBlurEffect != null)
+            {
+                result = ApplyGaussianBlur(context, result, gaussianBlurEffect);
             }
 
             return new LayerTranslator.FromVisual(result);
@@ -103,19 +110,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             var shadow = context.ObjectFactory.CreateDropShadow();
 
-#if EnableDropShadow
             result.Shadow = shadow;
-#endif // EnableDropShadow
             shadow.SourcePolicy = CompositionDropShadowSourcePolicy.InheritFromVisualContent;
 
             var isShadowOnly = Optimizer.TrimAnimatable(context, dropShadowEffect.IsShadowOnly);
             if (!isShadowOnly.IsAlways(true))
             {
-                // TODO - output an issue.
+                context.Issues.ShadowOnlyShadowEffect();
             }
 
             // TODO - it's not clear whether BlurRadius and Softness are equivalent. We may
-            //        need to scale Softness to convert it. to BlurRadius.
+            //        need to scale Softness to convert it to BlurRadius.
             var blurRadius = Optimizer.TrimAnimatable(context, dropShadowEffect.Softness);
             if (blurRadius.IsAnimated)
             {
@@ -155,9 +160,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 if (distance.IsAnimated)
                 {
                     // Direction and distance are animated.
-                    // TODO - output an issue. We could support this in some cases. The worst cases
-                    //        are where the keyframes don't line up, and/or the easings are different
-                    //        between distance and direction.
+                    // NOTE: we could support this in some cases. The worst cases are
+                    //       where the keyframes don't line up, and/or the easings are different
+                    //       between distance and direction.
+                    context.Issues.AnimatedLayerEffectParameters("drop shadow");
                 }
                 else
                 {
@@ -198,5 +204,92 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 x: Math.Sin(directionRadians) * distance,
                 y: Math.Cos(directionRadians) * distance,
                 z: 1);
+
+        /// <summary>
+        /// Applies a Gaussian blur effect to the given <paramref name="source"/> and
+        /// returns a new root. This is only designed to work on a <see cref="PreCompLayer"/>
+        /// because the bounds of the <paramref name="source"/> tree must be known.
+        /// </summary>
+        /// <returns>A new subtree that contains <paramref name="source"/>.</returns>
+        internal static SpriteVisual ApplyGaussianBlur(
+            PreCompLayerContext context,
+            Visual source,
+            GaussianBlurEffect gaussianBlurEffect)
+        {
+            Debug.Assert(gaussianBlurEffect.IsEnabled, "Precondition");
+
+            // Gaussian blur:
+            // +--------------+
+            // | SpriteVisual | -- Has the final composited result.
+            // +--------------+
+            //     ^
+            //     |
+            // +--------------+
+            // | EffectBrush  | -- Composition effect brush allows the composite effect result to be used as a brush.
+            // +--------------+
+            //     ^
+            //     |
+            // +--------------------+
+            // | GaussianBlurEffect |
+            // +--------------------+
+            //     ^ Source
+            //     |
+            // +--------------+
+            // | SurfaceBrush | -- Surface brush that will paint with the output of the VisualSurface
+            // +--------------+    that has the source visual assigned to it.
+            //      ^ CompositionEffectSourceParameter("source")
+            //      |
+            // +---------------+
+            // | VisualSurface | -- The visual surface captures the renderable contents of its source visual.
+            // +---------------+
+            //      ^
+            //      |
+            //  +--------+
+            //  | Visual | -- The layer translated to a Visual.
+            //  +--------+
+            var factory = context.ObjectFactory;
+            var size = ConvertTo.Vector2(context.Layer.Width, context.Layer.Height);
+
+            // Build from the bottom up.
+            var visualSurface = factory.CreateVisualSurface();
+            visualSurface.SourceVisual = source;
+            visualSurface.SourceSize = size;
+
+            var surfaceBrush = factory.CreateSurfaceBrush(visualSurface);
+
+            var effect = new WinCompData.Mgce.GaussianBlurEffect();
+
+            var blurriness = Optimizer.TrimAnimatable(context, gaussianBlurEffect.Blurriness);
+            if (blurriness.IsAnimated)
+            {
+                context.Issues.AnimatedLayerEffectParameters("Gaussian blur");
+            }
+
+            effect.BlurAmount = ConvertTo.Float(blurriness.InitialValue / 10.0);
+
+            // We only support HorizontalAndVertical blur dimension.
+            var blurDimensions = Optimizer.TrimAnimatable(context, gaussianBlurEffect.BlurDimensions);
+            var unsupportedBlurDimensions = blurDimensions
+                .KeyFrames
+                .Select(kf => kf.Value)
+                .Distinct()
+                .Where(v => v.Value != BlurDimension.HorizontalAndVertical).ToArray();
+
+            foreach (var value in unsupportedBlurDimensions)
+            {
+                context.Issues.UnsupportedLayerEffectParameter("gaussian blur", "blur dimension", value.Value.ToString());
+            }
+
+            effect.Source = new CompositionEffectSourceParameter("source");
+
+            var effectBrush = factory.CreateEffectFactory(effect).CreateBrush();
+            effectBrush.SetSourceParameter("source", surfaceBrush);
+
+            var result = factory.CreateSpriteVisual();
+            result.Brush = effectBrush;
+            result.Size = size;
+
+            return result;
+        }
     }
 }

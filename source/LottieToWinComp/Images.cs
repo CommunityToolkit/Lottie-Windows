@@ -68,6 +68,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var imageBrush = context.ObjectFactory.CreateSurfaceBrush(surface);
             content.Brush = imageBrush;
 
+            // Issue for unsupported layer effects.
+            context.Effects.EmitIssueIfDropShadow();
+            context.Effects.EmitIssueIfGaussianBlur();
+
             return new LayerTranslator.FromVisual(containerVisualRootNode);
         }
 
