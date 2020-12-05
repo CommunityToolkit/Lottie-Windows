@@ -117,8 +117,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         context.Issues.ThemePropertyValuesAreInconsistent(
                             bindingName,
                             context.Path,
-                            existingValueAsFloat.ToString(), defaultValueAsFloat
-                            .ToString());
+                            existingValueAsFloat.ToString(),
+                            defaultValueAsFloat.ToString());
                     }
 
                     break;

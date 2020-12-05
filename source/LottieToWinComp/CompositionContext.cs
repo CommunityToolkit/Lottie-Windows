@@ -45,7 +45,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             : this(
                   context,
                   null,
-                  string.IsNullOrWhiteSpace(lottieComposition.Name) ? "/<root>" : lottieComposition.Name,
+                  string.IsNullOrWhiteSpace(lottieComposition.Name) ? "<root>" : lottieComposition.Name,
                   lottieComposition.Layers,
                   new Sn.Vector2((float)lottieComposition.Width, (float)lottieComposition.Height),
                   startTime: lottieComposition.InPoint,
