@@ -106,7 +106,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal void UapVersionNotSupported(string versionDependentFeature, string optimalUapVersion) => Report("LT0034", $"{versionDependentFeature} requires a UAP version of at least {optimalUapVersion}.");
 
-        internal void ThemePropertyValuesAreInconsistent(string themePropertyName, string chosenValue, string requestedValue) => Report("LT0035", $"Theme property \"{themePropertyName}\" has more than one value. Using {chosenValue} in place of {requestedValue}.");
+        internal void ThemePropertyValuesAreInconsistent(string themePropertyName, string layerPath, string chosenValue, string requestedValue) => Report("LT0035", $"Theme property \"{themePropertyName}\" has more than one value at layer: \"{layerPath}\". Using {chosenValue} in place of {requestedValue}.");
 
         internal void CombiningMultipleAnimatedPathsIsNotSupported() => Report("LT0036", "Combining multiple animated paths is not supported.");
 

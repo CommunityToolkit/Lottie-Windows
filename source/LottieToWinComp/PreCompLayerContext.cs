@@ -18,7 +18,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             // Precomps define a new temporal and spatial space for their child layers.
             ChildrenCompositionContext = new CompositionContext(
+                compositionContext.Translation,
                 compositionContext,
+                layer.Name,
                 referencedLayers,
                 size: new Sn.Vector2((float)layer.Width, (float)layer.Height),
                 startTime: compositionContext.StartTime - layer.StartTime,

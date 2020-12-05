@@ -211,12 +211,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// because the bounds of the <paramref name="source"/> tree must be known.
         /// </summary>
         /// <returns>A new subtree that contains <paramref name="source"/>.</returns>
-        internal static SpriteVisual ApplyGaussianBlur(
+        internal static ContainerVisual ApplyGaussianBlur(
             PreCompLayerContext context,
-            Visual source,
+            ContainerVisual source,
             GaussianBlurEffect gaussianBlurEffect)
         {
             Debug.Assert(gaussianBlurEffect.IsEnabled, "Precondition");
+
+            var factory = context.ObjectFactory;
+
+            if (!factory.IsUapApiAvailable(nameof(CompositionVisualSurface), versionDependentFeatureDescription: "Gaussian blur"))
+            {
+                // The effect can't be displayed on the targeted version.
+                return source;
+            }
 
             // Gaussian blur:
             // +--------------+
@@ -247,7 +255,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             //  +--------+
             //  | Visual | -- The layer translated to a Visual.
             //  +--------+
-            var factory = context.ObjectFactory;
             var size = ConvertTo.Vector2(context.Layer.Width, context.Layer.Height);
 
             // Build from the bottom up.
