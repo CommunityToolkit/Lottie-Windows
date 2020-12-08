@@ -16,6 +16,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
     {
         internal CompositionContext(
             TranslationContext context,
+            CompositionContext? parentComposition,
+            string compositionName,
             LayerCollection layers,
             Sn.Vector2 size,
             double startTime,
@@ -27,6 +29,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
 
             Translation = context;
+            ParentComposition = parentComposition;
+            Name = string.IsNullOrWhiteSpace(compositionName) ? "<precomp>" : compositionName;
             Layers = layers;
             Size = size;
             StartTime = startTime;
@@ -40,12 +44,30 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             LottieComposition lottieComposition)
             : this(
                   context,
+                  null,
+                  string.IsNullOrWhiteSpace(lottieComposition.Name) ? "<root>" : lottieComposition.Name,
                   lottieComposition.Layers,
                   new Sn.Vector2((float)lottieComposition.Width, (float)lottieComposition.Height),
                   startTime: lottieComposition.InPoint,
                   durationInFrames: lottieComposition.OutPoint - lottieComposition.InPoint)
         {
         }
+
+        /// <summary>
+        /// The name of the composition. <seealso cref="Path"/>.
+        /// </summary>
+        public string Name { get; }
+
+        /// <summary>
+        /// The path to this <see cref="CompositionContext"/>. Used for issue messages.
+        /// <seealso cref="Name"/>.
+        /// </summary>
+        public string Path => $"{ParentComposition?.Path}/{Name}";
+
+        /// <summary>
+        /// The parent of this composition, or null if this is the root composition.
+        /// </summary>
+        public CompositionContext? ParentComposition { get; }
 
         /// <summary>
         /// The <see cref="Translation"/> in which the contents are being translated.

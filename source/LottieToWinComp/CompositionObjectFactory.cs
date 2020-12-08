@@ -291,6 +291,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         // Call this when consuming a feature that is only available in UAP versions > 7.
         void ConsumeVersionFeature(uint uapVersion)
         {
+            // If this assert fires, it indicates that the caller didn't check that the
+            // feature was available before using some Composition feature.
+            // Call IsUapApiAvailable to prevent calling here with _targetUapVersion
+            // being lower than the uapVersion of the feature being consumed.
             Debug.Assert(
                 _targetUapVersion >= uapVersion,
                 $"UAP version {uapVersion} features are not available.");

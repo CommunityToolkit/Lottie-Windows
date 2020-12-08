@@ -60,11 +60,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     // The property hasn't been added yet. Add it.
                     themePropertySet.InsertVector4(bindingName, ConvertTo.Vector4(defaultValueAsWinUIColor));
                     context.Translation.PropertyBindings.AddPropertyBinding(new CompMetadata.PropertyBinding(
-                        bindingName : bindingName,
-                        displayName : displayName,
-                        actualType : PropertySetValueType.Vector4,
-                        exposedType : PropertySetValueType.Color,
-                        defaultValue : defaultValueAsWinUIColor));
+                        bindingName: bindingName,
+                        displayName: displayName,
+                        actualType: PropertySetValueType.Vector4,
+                        exposedType: PropertySetValueType.Color,
+                        defaultValue: defaultValueAsWinUIColor));
                     break;
 
                 case CompositionGetValueStatus.Succeeded:
@@ -73,7 +73,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
                     if (defaultValueAsVector4 != existingColorAsVector4)
                     {
-                        context.Issues.ThemePropertyValuesAreInconsistent(bindingName, existingValue.ToString(), ConvertTo.Color(ConvertTo.Color(defaultValueAsVector4)).ToString());
+                        context.Issues.ThemePropertyValuesAreInconsistent(
+                            bindingName,
+                            context.CompositionContext.Path,
+                            existingValue.ToString(),
+                            ConvertTo.Color(ConvertTo.Color(defaultValueAsVector4)).ToString());
                     }
 
                     break;
@@ -87,7 +91,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// <summary>
         /// Ensures there is a property in the theme property set with the given name and default value.
         /// </summary>
-        static void EnsureScalarThemePropertyExists(TranslationContext context, string bindingName, string displayName, double defaultValue)
+        static void EnsureScalarThemePropertyExists(CompositionContext context, string bindingName, string displayName, double defaultValue)
         {
             var defaultValueAsFloat = ConvertTo.Float(defaultValue);
             var themePropertySet = GetThemePropertySet(context);
@@ -98,19 +102,23 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 case CompositionGetValueStatus.NotFound:
                     // The property hasn't been added yet. Add it.
                     themePropertySet.InsertScalar(bindingName, defaultValueAsFloat);
-                    context.PropertyBindings.AddPropertyBinding(new CompMetadata.PropertyBinding(
-                        bindingName : bindingName,
-                        displayName : displayName,
-                        actualType : PropertySetValueType.Scalar,
-                        exposedType : PropertySetValueType.Scalar,
-                        defaultValue : ConvertTo.Float(defaultValue)));
+                    context.Translation.PropertyBindings.AddPropertyBinding(new CompMetadata.PropertyBinding(
+                        bindingName: bindingName,
+                        displayName: displayName,
+                        actualType: PropertySetValueType.Scalar,
+                        exposedType: PropertySetValueType.Scalar,
+                        defaultValue: ConvertTo.Float(defaultValue)));
                     break;
 
                 case CompositionGetValueStatus.Succeeded:
                     // The property has already been added.
                     if (existingValueAsFloat != defaultValueAsFloat)
                     {
-                        context.Issues.ThemePropertyValuesAreInconsistent(bindingName, existingValueAsFloat.ToString(), defaultValueAsFloat.ToString());
+                        context.Issues.ThemePropertyValuesAreInconsistent(
+                            bindingName,
+                            context.Path,
+                            existingValueAsFloat.ToString(),
+                            defaultValueAsFloat.ToString());
                     }
 
                     break;
@@ -122,7 +130,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         }
 
         public static bool TryBindScalarPropertyToTheme(
-            TranslationContext context,
+            CompositionContext context,
             CompositionObject target,
             string bindingSpec,
             string lottiePropertyName,
