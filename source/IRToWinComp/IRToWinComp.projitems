@@ -1,0 +1,60 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>3f38c7bb-ec65-4944-89c0-cd7517dd6ac2</SharedGUID>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)AnimatableVector3Rewriter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Animate.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Brushes.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CanvasGeometryCombiner.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CompositionContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CompositeOpacity.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CompositionObjectFactory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ContainerShapeOrVisual.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ConvertTo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CubicBezierFunction2.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Effects.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Ellipses.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ExpressionFactory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Float32.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IDescribableExtensionMethods.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ImageLayerContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Images.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LayerContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Layers.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LayerTranslator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IRToWinCompTranslator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IRToMultiVersionWinCompTranslator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Masks.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MultiVersionTranslationResult.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Optimizer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PathGeometryGroup.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Paths.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PreCompLayerContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PreComps.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ProgressMapFactory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PropertyBindings.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PropertyBindingsParser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RectangleOrRoundedRectangleGeometry.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Rectangles.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ShapeContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ShapeLayerContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Shapes.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SolidLayerContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SolidLayers.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TextLayerContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TextLayers.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ThemePropertyBindings.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Transforms.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TranslationContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TranslationIssue.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TranslationIssues.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TranslationResult.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TranslatorConfiguration.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TrimmedAnimatable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UapVersionRange.cs" />
+  </ItemGroup>
+</Project>
