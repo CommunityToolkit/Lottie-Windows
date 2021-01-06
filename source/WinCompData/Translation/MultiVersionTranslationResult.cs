@@ -5,7 +5,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
+namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Translation
 {
 #if PUBLIC
     public

@@ -29,7 +29,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)LottieToWinCompTranslator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LottieToMultiVersionWinCompTranslator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Masks.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)MultiVersionTranslationResult.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Optimizer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PathGeometryGroup.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Paths.cs" />
@@ -50,11 +49,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)ThemePropertyBindings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transforms.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TranslationContext.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)TranslationIssue.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TranslationIssues.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)TranslationResult.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TranslatorConfiguration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TrimmedAnimatable.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)UapVersionRange.cs" />
   </ItemGroup>
 </Project>

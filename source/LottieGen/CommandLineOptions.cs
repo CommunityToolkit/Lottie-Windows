@@ -63,6 +63,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen
         // old users won't be broken by this change.
         internal Version WinUIVersion => _winUIVersion ?? new Version(2, 4);
 
+
+    // Undocumented - use the intermediate representation and translatore.
+#pragma warning disable SA1300 // Element should begin with upper-case letter
+    internal bool _UseIR { get; private set; }
+#pragma warning restore SA1300 // Element should begin with upper-case letter
+
         // Returns a command line equivalent to the current set of options. This is intended
         // for adding to generated code so that users can regenerate the code and know that
         // they got the set of options the same as a previous run. It does not include the
@@ -183,6 +189,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen
             TargetUapVersion,
             TestMode,
             WinUIVersion,
+
+        // Undocumented keywords. Always start with an underscore.
+#pragma warning disable SA1300 // Element should begin with upper-case letter
+        _UseIR,
+#pragma warning restore SA1300 // Element should begin with upper-case letter
         }
 
         // Returns the parsed command line. If ErrorDescription is non-null, then the parse failed.
@@ -252,7 +263,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen
                 .AddPrefixedKeyword(Keyword.Strict)
                 .AddPrefixedKeyword(Keyword.TargetUapVersion)
                 .AddPrefixedKeyword(Keyword.TestMode)
-                .AddPrefixedKeyword(Keyword.WinUIVersion);
+                .AddPrefixedKeyword(Keyword.WinUIVersion)
+                .AddPrefixedKeyword(Keyword._UseIR);
+
 
             // The last keyword recognized. This defines what the following parameter value is for,
             // or None if not expecting a parameter value.

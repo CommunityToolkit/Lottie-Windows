@@ -1,8 +1,8 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
+namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Translation
 {
     /// <summary>
     /// Describes a range of UAP versions. A <see cref="Start"/> value of <c>null</c>
@@ -11,7 +11,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
     /// than or equal to the <see cref="Start"/> value. Both values being <c>null</c>
     /// indicates all versions.
     /// </summary>
-
 #if PUBLIC
     public
 #endif

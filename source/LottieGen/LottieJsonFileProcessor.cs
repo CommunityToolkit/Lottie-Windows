@@ -778,7 +778,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen
                 return _isTranslatedSuccessfully.Value;
             }
 
-            var configuration = new TranslatorConfiguration
+        MultiVersionTranslationResult translationResult;
+
+        if (_options._UseIR)
+        {
+            var configuration = new Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp.TranslatorConfiguration
             {
                 AddCodegenDescriptions = true,
                 TranslatePropertyBindings = true,
@@ -786,10 +790,26 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen
                 TargetUapVersion = _options.TargetUapVersion ?? uint.MaxValue,
             };
 
-            var translationResult = LottieToMultiVersionWinCompTranslator.TryTranslateLottieComposition(
+            translationResult = IRToMultiVersionWinCompTranslator.TryTranslateLottieComposition(
                 lottieComposition: lottieComposition,
                 configuration: configuration,
                 minimumUapVersion: _options.WinUIVersion.Major >= 3 ? uint.MaxValue : _minimumUapVersion);
+        }
+        else
+        {
+            var configuration = new Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp.TranslatorConfiguration
+            {
+                AddCodegenDescriptions = true,
+                TranslatePropertyBindings = true,
+                GenerateColorBindings = _options.GenerateColorBindings,
+                TargetUapVersion = _options.TargetUapVersion ?? uint.MaxValue,
+            };
+
+            translationResult = LottieToMultiVersionWinCompTranslator.TryTranslateLottieComposition(
+                lottieComposition: lottieComposition,
+                configuration: configuration,
+                minimumUapVersion: _options.WinUIVersion.Major >= 3 ? uint.MaxValue : _minimumUapVersion);
+        }
 
             _translationResults = translationResult.TranslationResults;
             _translationIssues = translationResult.Issues;

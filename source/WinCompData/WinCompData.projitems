@@ -89,6 +89,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)ShapeVisual.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SpriteVisual.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)StepEasingFunction.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Translation\MultiVersionTranslationResult.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Translation\TranslationIssue.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Translation\TranslationResult.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Translation\UapVersionRange.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Vector2KeyFrameAnimation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Vector3KeyFrameAnimation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Vector4KeyFrameAnimation.cs" />
