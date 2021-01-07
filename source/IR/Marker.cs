@@ -7,7 +7,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
 #if PUBLIC_IR
     public
 #endif
-    sealed class Marker : LottieObject
+    sealed class Marker : IRObject
     {
         public Marker(
             string name,
@@ -30,6 +30,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
         public double DurationInFrames { get; }
 
         /// <inheritdoc/>
-        public override LottieObjectType ObjectType => LottieObjectType.Marker;
+        public override IRObjectType ObjectType => IRObjectType.Marker;
     }
 }

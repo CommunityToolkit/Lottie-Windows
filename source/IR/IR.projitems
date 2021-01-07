@@ -38,6 +38,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)ImageAsset.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ImageLayer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IRadialGradient.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IRObject.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IRObjectType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serialization\IRYamlSerializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)KeyFrame.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Layer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LayerCollection.cs" />
@@ -46,9 +49,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)LinearGradientFill.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LinearGradientStroke.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LottieComposition.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)LottieCompositionValidator.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)LottieObject.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)LottieObjectType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Marker.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Mask.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MergePaths.cs" />
@@ -69,7 +69,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Rotation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RoundCorners.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Sequence.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Serialization\LottieCompositionYamlSerializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Shape.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ShapeContentType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ShapeFill.cs" />

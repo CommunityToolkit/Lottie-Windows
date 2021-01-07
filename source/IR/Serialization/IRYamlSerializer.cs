@@ -19,13 +19,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Serialization
     {
         public static void WriteYaml(LottieComposition root, TextWriter writer, string? comment = null)
         {
-            var serializer = new LottieCompositionYamlSerializer();
+            var serializer = new IRYamlSerializer();
 
             // Convert the LottieComposition into the Yaml data model.
             var yaml = serializer.FromLottieObject(root);
 
             var yamlWriter = new YamlWriter(writer);
-            var documentStart = "--- !IR";
+            var documentStart = "--- !LottieComposition";
             if (!string.IsNullOrWhiteSpace(comment))
             {
                 documentStart += $" # {comment}";

@@ -7,13 +7,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
 #if PUBLIC_IR
     public
 #endif
-    enum LottieObjectType
-
+    abstract class IRObject
     {
-        Effect,
-        Layer,
-        LottieComposition,
-        Marker,
-        ShapeLayerContent,
+        private protected IRObject(string name)
+        {
+            Name = name;
+        }
+
+        public string Name { get; }
+
+        public abstract IRObjectType ObjectType { get; }
     }
 }

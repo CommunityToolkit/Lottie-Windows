@@ -7,8 +7,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
 #if PUBLIC_IR
     public
 #endif
-    enum LottieObjectType
-
+    enum IRObjectType
     {
         Effect,
         Layer,

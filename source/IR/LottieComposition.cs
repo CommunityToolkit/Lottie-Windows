@@ -12,7 +12,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
 #if PUBLIC_IR
     public
 #endif
-    sealed class LottieComposition : LottieObject
+    sealed class LottieComposition : IRObject
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="LottieComposition"/> class.
@@ -97,7 +97,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
         public LayerCollection Layers { get; }
 
         /// <inheritdoc/>
-        public override LottieObjectType ObjectType => LottieObjectType.LottieComposition;
+        public override IRObjectType ObjectType => IRObjectType.LottieComposition;
 
         /// <summary>
         /// Gets the Lottie version.

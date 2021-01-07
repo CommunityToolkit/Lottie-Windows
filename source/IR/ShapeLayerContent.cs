@@ -7,7 +7,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
 #if PUBLIC_IR
     public
 #endif
-    abstract class ShapeLayerContent : LottieObject
+    abstract class ShapeLayerContent : IRObject
     {
         private protected ShapeLayerContent(in ShapeLayerContentArgs args)
             : base(args.Name)
@@ -25,7 +25,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
         /// </summary>
         public abstract ShapeContentType ContentType { get; }
 
-        public override sealed LottieObjectType ObjectType => LottieObjectType.ShapeLayerContent;
+        public override sealed IRObjectType ObjectType => IRObjectType.ShapeLayerContent;
 
         public ref struct ShapeLayerContentArgs
         {

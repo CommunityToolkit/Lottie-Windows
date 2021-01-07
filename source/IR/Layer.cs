@@ -16,7 +16,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
 #if PUBLIC_IR
     public
 #endif
-    abstract class Layer : LottieObject
+    abstract class Layer : IRObject
     {
         private protected Layer(in LayerArgs args)
             : base(args.Name)
@@ -88,7 +88,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
         public abstract LayerType Type { get; }
 
         /// <inheritdoc/>
-        public override sealed LottieObjectType ObjectType => LottieObjectType.Layer;
+        public override sealed IRObjectType ObjectType => IRObjectType.Layer;
 
         public ref struct LayerArgs
         {

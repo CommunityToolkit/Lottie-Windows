@@ -12,7 +12,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
 #if PUBLIC_IR
     public
 #endif
-    abstract class Effect : LottieObject
+    abstract class Effect : IRObject
     {
         private protected Effect(
             string name,
@@ -27,7 +27,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
         /// </summary>
         public bool IsEnabled { get; }
 
-        public override sealed LottieObjectType ObjectType => LottieObjectType.Effect;
+        public override sealed IRObjectType ObjectType => IRObjectType.Effect;
 
         public abstract EffectType Type { get; }
 
