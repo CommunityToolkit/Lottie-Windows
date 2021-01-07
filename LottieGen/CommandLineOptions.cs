@@ -309,6 +309,10 @@ sealed class CommandLineOptions
                             Public = true;
                             break;
 
+                        case Keyword._UseIR:
+                            _UseIR = true;
+                            break;
+
                         // The following keywords require a parameter as the next token.
                         case Keyword.AdditionalInterface:
                         case Keyword.InputFile:

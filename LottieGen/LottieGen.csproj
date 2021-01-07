@@ -41,5 +41,6 @@
   <Import Project="..\source\WinStorageStreamsData\WinStorageStreamsData.projitems" Label="Shared" />
   <Import Project="..\source\WinUIXamlMediaData\WinUIXamlMediaData.projitems" Label="Shared" />
   <Import Project="..\source\YamlData\YamlData.projitems" Label="Shared" />
+  <Import Project="..\source\LottieToIR\LottieToIR.projitems" Label="Shared" />
   
 </Project>

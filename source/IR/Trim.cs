@@ -26,6 +26,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
 
         public static Trim None => new Trim(0);
 
+        public static Trim FromFloat(double value) => new Trim(value);
+
         public static Trim FromPercent(double percent) => new Trim(percent / 100);
 
         public bool Equals(Trim other) => other.Value == Value;

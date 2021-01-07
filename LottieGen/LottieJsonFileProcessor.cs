@@ -10,6 +10,7 @@ using System.Text;
 using Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization;
+using Microsoft.Toolkit.Uwp.UI.Lottie.LottieToIR;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp;
 using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen;
 using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt;
@@ -795,8 +796,10 @@ sealed class LottieJsonFileProcessor
                 TargetUapVersion = _options.TargetUapVersion ?? uint.MaxValue,
             };
 
+            var irGraph = LottieToIRTranslator.TranslateLottieToIR(lottieComposition)!;
+
             translationResult = IRToMultiVersionWinCompTranslator.TryTranslateLottieComposition(
-                lottieComposition: lottieComposition,
+                lottieComposition: irGraph,
                 configuration: configuration,
                 minimumUapVersion: _options.WinUIVersion.Major >= 3 ? uint.MaxValue : _minimumUapVersion);
         }
