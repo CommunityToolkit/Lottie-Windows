@@ -13,12 +13,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Translation
     /// <summary>
     /// The result of translating a Lottie animation into an equivalent WinCompData form.
     /// </summary>
-#if PUBLIC
+#if PUBLIC_WinCompData
     public
 #endif
     sealed class TranslationResult
     {
-        internal TranslationResult(
+        public TranslationResult(
             Visual? rootVisual,
             IEnumerable<TranslationIssue> translationIssues,
             uint minimumRequiredUapVersion,

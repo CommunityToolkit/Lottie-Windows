@@ -7,12 +7,12 @@ using System.Linq;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Translation
 {
-#if PUBLIC
+#if PUBLIC_WinCompData
     public
 #endif
     sealed class MultiVersionTranslationResult
     {
-        internal MultiVersionTranslationResult(
+        public MultiVersionTranslationResult(
             IEnumerable<TranslationResult> translationResults,
             IEnumerable<(TranslationIssue, UapVersionRange)> issues)
         {

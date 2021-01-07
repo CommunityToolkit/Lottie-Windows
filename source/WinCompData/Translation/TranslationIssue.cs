@@ -11,12 +11,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Translation
     /// The <see cref="Description"/> gives more detail about the particular
     /// instance of the issue.
     /// </summary>
-#if PUBLIC
+#if PUBLIC_WinCompData
     public
 #endif
     struct TranslationIssue
     {
-        internal TranslationIssue(string code, string description)
+        public TranslationIssue(string code, string description)
         {
             Code = code;
             Description = description;

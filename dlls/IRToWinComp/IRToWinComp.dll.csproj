@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <Configurations>Debug;Release</Configurations>
+    <LangVersion>latest</LangVersion>
+    <DefineConstants>PUBLIC_IRToWinComp</DefineConstants>
+  </PropertyGroup>
+
+  <Import Project="..\..\source\IRToWinComp\IRToWinComp.projitems" Label="Shared" />
+
+  <ItemGroup>
+    <ProjectReference Include="..\CompMetadata\CompMetadata.dll.csproj" />
+    <ProjectReference Include="..\IR\IR.dll.csproj" />
+    <ProjectReference Include="..\LottieMetadata\LottieMetadata.dll.csproj" />
+    <ProjectReference Include="..\WinCompData\WinCompData.dll.csproj" />
+    <ProjectReference Include="..\WinStorageStreamsData\WinStorageStreamsData.dll.csproj" />
+    <ProjectReference Include="..\WinUIXamlMediaData\WinUIXamlMediaData.dll.csproj" />
+  </ItemGroup>
+</Project>

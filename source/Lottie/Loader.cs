@@ -14,6 +14,7 @@ using Microsoft.Toolkit.Uwp.UI.Lottie.CompMetadata;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp;
+using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Translation;
 using Windows.Foundation.Metadata;
 using Windows.UI.Composition;
 

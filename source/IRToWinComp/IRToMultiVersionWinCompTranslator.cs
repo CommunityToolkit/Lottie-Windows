@@ -10,7 +10,7 @@ using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Translation;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
 {
-#if PUBLIC
+#if PUBLIC_IRToWinComp
     public
 #endif
     sealed class IRToMultiVersionWinCompTranslator
