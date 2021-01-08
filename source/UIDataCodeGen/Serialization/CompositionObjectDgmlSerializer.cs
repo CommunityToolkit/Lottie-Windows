@@ -26,6 +26,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         static readonly Category CategoryEffectBrush = new Category("EffectBrush", Colors.LightGray);
         static readonly Category CategoryEllipse = new Category("Ellipse", Colors.DarkGoldenrod);
         static readonly Category CategoryEllipseAnimated = new Category("AnimatedEllipse", "Animated Ellipse", Colors.Goldenrod);
+        static readonly Category CategoryGradientBrush = new Category("GradientBrush", Colors.Orange);
+        static readonly Category CategoryGradientBrushAnimated = new Category("AnimatedGradientBrush", Colors.Red);
         static readonly Category CategoryLayerVisual = new Category("LayerVisual", Colors.DarkRed);
         static readonly Category CategoryLayerVisualAnimated = new Category("AnimatedLayerVisual", "Animated LayerVisual", Colors.Crimson);
         static readonly Category CategoryPath = new Category("Path", Colors.DarkOrange);
@@ -292,11 +294,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                         case CompositionObjectType.CompositionColorBrush:
                         case CompositionObjectType.CompositionColorGradientStop:
                         case CompositionObjectType.CompositionEllipseGeometry:
-                        case CompositionObjectType.CompositionLinearGradientBrush:
                         case CompositionObjectType.CompositionGeometricClip:
                         case CompositionObjectType.CompositionPathGeometry:
                         case CompositionObjectType.CompositionPropertySet:
-                        case CompositionObjectType.CompositionRadialGradientBrush:
                         case CompositionObjectType.CompositionRectangleGeometry:
                         case CompositionObjectType.CompositionRoundedRectangleGeometry:
                         case CompositionObjectType.CompositionViewBox:
@@ -339,6 +339,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                             break;
                         case CompositionObjectType.SpriteVisual:
                             Category = CategorySpriteVisual;
+                            break;
+                        case CompositionObjectType.CompositionLinearGradientBrush:
+                        case CompositionObjectType.CompositionRadialGradientBrush:
+                            Category = GetCategory((CompositionGradientBrush)obj);
                             break;
                         default:
                             throw new InvalidOperationException();
@@ -393,6 +397,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     CompositionObjectType.CompositionRoundedRectangleGeometry => isGeometryAnimated ? CategoryRoundedRectangleAnimated : CategoryRoundedRectangle,
                     _ => throw new InvalidOperationException(),
                 };
+            }
+
+            static Category GetCategory(CompositionGradientBrush brush)
+            {
+                var isAnimated = brush.Animators.Any() || brush.Properties.Animators.Any() ||
+                    brush.ColorStops.Any(cs => cs.Animators.Any() || cs.Properties.Animators.Any());
+
+                return isAnimated ? CategoryGradientBrushAnimated : CategoryGradientBrush;
             }
         }
 
