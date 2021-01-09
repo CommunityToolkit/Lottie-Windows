@@ -7,6 +7,7 @@
 using System;
 using System.Linq;
 using Microsoft.Toolkit.Uwp.UI.Lottie.IR;
+using Microsoft.Toolkit.Uwp.UI.Lottie.IR.Treeful;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToIR
 {
@@ -15,11 +16,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToIR
 #endif
     sealed class LottieToIRTranslator
     {
-        public static LottieComposition? TranslateLottieToIR(LottieData.LottieComposition from)
+        public static IRComposition? TranslateLottieToIR(LottieData.LottieComposition from)
         {
             var translator = new LottieToIRTranslator();
 
-            var result = new LottieComposition(
+            var result = new IRComposition(
                 name: from.Name,
                 width: from.Width,
                 height: from.Height,

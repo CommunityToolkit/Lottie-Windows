@@ -17,7 +17,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Serialization
 #endif
     sealed class IRYamlSerializer : YamlFactory
     {
-        public static void WriteYaml(LottieComposition root, TextWriter writer, string? comment = null)
+        public static void WriteYaml(IRComposition root, TextWriter writer, string? comment = null)
         {
             var serializer = new IRYamlSerializer();
 
@@ -78,8 +78,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Serialization
                 case IRObjectType.Layer:
                     return FromLayer((Layer)obj, superclassContent);
 
-                case IRObjectType.LottieComposition:
-                    return FromLottieComposition((LottieComposition)obj, superclassContent);
+                case IRObjectType.IRComposition:
+                    return FromLottieComposition((IRComposition)obj, superclassContent);
 
                 case IRObjectType.Marker:
                     return FromMarker((Marker)obj, superclassContent);
@@ -92,7 +92,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Serialization
             }
         }
 
-        YamlObject FromLottieComposition(LottieComposition lottieComposition, YamlMap superclassContent)
+        YamlObject FromLottieComposition(IRComposition lottieComposition, YamlMap superclassContent)
         {
             var result = superclassContent;
             result.Add(nameof(lottieComposition.Version), Scalar(lottieComposition.Version));

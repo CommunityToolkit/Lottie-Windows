@@ -11,7 +11,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
     {
         Effect,
         Layer,
-        LottieComposition,
+        IRComposition,
         Marker,
         ShapeLayerContent,
     }

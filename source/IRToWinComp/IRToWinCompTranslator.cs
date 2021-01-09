@@ -9,7 +9,7 @@ using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Translation;
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
 {
     /// <summary>
-    /// Translates a <see cref="LottieComposition"/> to an equivalent <see cref="Visual"/>.
+    /// Translates a <see cref="IRComposition"/> to an equivalent <see cref="Visual"/>.
     /// </summary>
     /// <remarks>
     /// See https://helpx.adobe.com/pdf/after_effects_reference.pdf"/> for the
@@ -28,16 +28,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
         public static uint MinimumTargetUapVersion => 7;
 
         /// <summary>
-        /// Attempts to translates the given <see cref="LottieComposition"/>.
+        /// Attempts to translates the given <see cref="IRComposition"/>.
         /// </summary>
-        /// <param name="lottieComposition">The <see cref="LottieComposition"/> to translate.</param>
+        /// <param name="irComposition">The <see cref="IRComposition"/> to translate.</param>
         /// <param name="configuration">Controls the configuration of the translator.</param>
         /// <returns>The result of the translation.</returns>
         public static TranslationResult TryTranslateLottieComposition(
-            LottieComposition lottieComposition,
+            IRComposition irComposition,
             in TranslatorConfiguration configuration)
         {
-            return TranslationContext.TryTranslateLottieComposition(lottieComposition, configuration);
+            return TranslationContext.TryTranslateLottieComposition(irComposition, configuration);
         }
     }
 }

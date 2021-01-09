@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
+namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Treeful
 {
     /// <summary>
     /// A collection of <see cref="Layer"/>s in drawing order.

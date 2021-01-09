@@ -16,7 +16,7 @@ using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Translation;
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
 {
     /// <summary>
-    /// Translates a <see cref="IR.LottieComposition"/> to an equivalent <see cref="Visual"/>.
+    /// Translates a <see cref="IR.IRComposition"/> to an equivalent <see cref="Visual"/>.
     /// </summary>
     sealed class TranslationContext
     {
@@ -28,7 +28,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
         readonly Dictionary<Type, object> _stateCache = new Dictionary<Type, object>();
 
         TranslationContext(
-            LottieComposition lottieComposition,
+            IRComposition lottieComposition,
             Compositor compositor,
             in TranslatorConfiguration configuration)
         {
@@ -45,13 +45,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
         }
 
         /// <summary>
-        /// Attempts to translates the given <see cref="IR.LottieComposition"/>.
+        /// Attempts to translates the given <see cref="IR.IRComposition"/>.
         /// </summary>
-        /// <param name="lottieComposition">The <see cref="IR.LottieComposition"/> to translate.</param>
+        /// <param name="lottieComposition">The <see cref="IR.IRComposition"/> to translate.</param>
         /// <param name="configuration">Controls the configuration of the translator.</param>
         /// <returns>The result of the translation.</returns>
         internal static TranslationResult TryTranslateLottieComposition(
-            LottieComposition lottieComposition,
+            IRComposition lottieComposition,
             in TranslatorConfiguration configuration)
         {
             // Set up the translator.
@@ -119,9 +119,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
         public TranslationIssues Issues { get; }
 
         /// <summary>
-        /// The <see cref="IR.LottieComposition"/> being translated.
+        /// The <see cref="IR.IRComposition"/> being translated.
         /// </summary>
-        public LottieComposition LottieComposition { get; }
+        public IRComposition LottieComposition { get; }
 
         /// <summary>
         /// Factory used for creating CompositionPropertySet properties

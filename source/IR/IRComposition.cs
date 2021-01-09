@@ -12,10 +12,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
 #if PUBLIC_IR
     public
 #endif
-    sealed class LottieComposition : IRObject
+    sealed class IRComposition : IRObject
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="LottieComposition"/> class.
+        /// Initializes a new instance of the <see cref="IRComposition"/> class.
         /// </summary>
         /// <param name="name">The name of the composition.</param>
         /// <param name="width">Width of animation canvas as specified in After Effects.</param>
@@ -31,7 +31,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
         /// <param name="layers">The layers in the composition.</param>
         /// <param name="markers">Markers that define named portions of the composition.</param>
         /// <param name="extraData">Extra data that is related to the composition but is not part of the BodyMovin schema.</param>
-        public LottieComposition(
+        public IRComposition(
             string name,
             double width,
             double height,
@@ -97,7 +97,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
         public LayerCollection Layers { get; }
 
         /// <inheritdoc/>
-        public override IRObjectType ObjectType => IRObjectType.LottieComposition;
+        public override IRObjectType ObjectType => IRObjectType.IRComposition;
 
         /// <summary>
         /// Gets the Lottie version.

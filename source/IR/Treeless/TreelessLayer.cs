@@ -4,7 +4,7 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
+namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Treeless
 {
     /// <summary>
     /// Base class for layer objects.
@@ -16,9 +16,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
 #if PUBLIC_IR
     public
 #endif
-    abstract class Layer : IRObject
+    abstract class TreelessLayer : IRObject
     {
-        private protected Layer(in LayerArgs args)
+        private protected TreelessLayer(in LayerArgs args)
             : base(args.Name)
         {
             AutoOrient = args.AutoOrient;
@@ -85,7 +85,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
 
         public Transform Transform { get; }
 
-        public abstract LayerType Type { get; }
+        public abstract TreelessLayerType Type { get; }
 
         /// <inheritdoc/>
         public override sealed IRObjectType ObjectType => IRObjectType.Layer;
@@ -122,16 +122,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
 
             public MatteType LayerMatteType { get; set; }
         }
-
-        public enum LayerType
-        {
-            PreComp,
-            Solid,
-            Image,
-            Null,
-            Shape,
-            Text,
-        }
+        
 
         public enum MatteType
         {

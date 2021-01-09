@@ -9,7 +9,7 @@ using Sn = System.Numerics;
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
 {
     /// <summary>
-    /// The context in which the top-level layers of a <see cref="LottieComposition"/> or the layers
+    /// The context in which the top-level layers of a <see cref="IRComposition"/> or the layers
     /// of a <see cref="PreCompLayer"/> are translated.
     /// </summary>
     sealed class CompositionContext
@@ -41,7 +41,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
 
         internal CompositionContext(
             TranslationContext context,
-            LottieComposition lottieComposition)
+            IRComposition lottieComposition)
             : this(
                   context,
                   null,

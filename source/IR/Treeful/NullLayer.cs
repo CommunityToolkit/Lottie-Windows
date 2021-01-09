@@ -2,20 +2,19 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
+namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Treeful
 {
 #if PUBLIC_IR
     public
 #endif
-    abstract class LottieObject
+    sealed class NullLayer : Layer
     {
-        private protected LottieObject(string name)
+        public NullLayer(in LayerArgs args)
+            : base(in args)
         {
-            Name = name;
         }
 
-        public string Name { get; }
-
-        public abstract LottieObjectType ObjectType { get; }
+        /// <inheritdoc/>
+        public override LayerType Type => LayerType.Null;
     }
 }

@@ -2,14 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
+namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Treeless
 {
 #if PUBLIC_IR
     public
 #endif
-    sealed class TextLayer : Layer
+    sealed class TreelessImageLayer : TreelessLayer
     {
-        public TextLayer(
+        public TreelessImageLayer(
             in LayerArgs args,
             string refId)
             : base(in args)
@@ -23,6 +23,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
         public string RefId { get; }
 
         /// <inheritdoc/>
-        public override LayerType Type => LayerType.Text;
+        public override TreelessLayerType Type => TreelessLayerType.Image;
     }
 }

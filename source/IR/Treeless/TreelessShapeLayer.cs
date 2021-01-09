@@ -6,16 +6,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
+namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Treeless
 {
 #if PUBLIC_IR
     public
 #endif
-    sealed class ShapeLayer : Layer
+    sealed class TreelessShapeLayer : TreelessLayer
     {
         readonly ShapeLayerContent[] _contents;
 
-        public ShapeLayer(
+        public TreelessShapeLayer(
             in LayerArgs args,
             IEnumerable<ShapeLayerContent> contents)
          : base(in args)
@@ -26,6 +26,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
         public IReadOnlyList<ShapeLayerContent> Contents => _contents;
 
         /// <inheritdoc/>
-        public override LayerType Type => LayerType.Shape;
+        public override TreelessLayerType Type => TreelessLayerType.Shape;
     }
 }

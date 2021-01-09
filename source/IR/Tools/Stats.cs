@@ -8,7 +8,7 @@ using System.Linq;
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Tools
 {
     /// <summary>
-    /// Calculates stats for a <see cref="LottieComposition"/>.
+    /// Calculates stats for a <see cref="IRComposition"/>.
     /// </summary>
 #if PUBLIC_IR
     public
@@ -16,23 +16,23 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Tools
     sealed class Stats
     {
         // Initializes the Stats from a given LottieComposition.
-        public Stats(LottieComposition lottieComposition)
+        public Stats(IRComposition irComposition)
         {
-            Name = lottieComposition.Name;
-            Version = lottieComposition.Version;
-            Width = lottieComposition.Width;
-            Height = lottieComposition.Height;
-            Duration = lottieComposition.Duration;
+            Name = irComposition.Name;
+            Version = irComposition.Version;
+            Width = irComposition.Width;
+            Height = irComposition.Height;
+            Duration = irComposition.Duration;
 
             // Get the layers stored in assets.
             var layersInAssets =
-                from asset in lottieComposition.Assets
+                from asset in irComposition.Assets
                 where asset.Type == Asset.AssetType.LayerCollection
                 let layerCollection = (LayerCollectionAsset)asset
                 from layer in layerCollection.Layers.GetLayersBottomToTop()
                 select layer;
 
-            foreach (var layer in lottieComposition.Layers.GetLayersBottomToTop().Concat(layersInAssets))
+            foreach (var layer in irComposition.Layers.GetLayersBottomToTop().Concat(layersInAssets))
             {
                 switch (layer.Type)
                 {

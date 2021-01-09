@@ -20,16 +20,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
         const uint LowestValidUapVersion = 7;
 
         /// <summary>
-        /// Attempts to translate the given <see cref="IR.LottieComposition"/> for a range of UAP versions,
+        /// Attempts to translate the given <see cref="IRComposition"/> for a range of UAP versions,
         /// producing one or more translations.
         /// </summary>
-        /// <param name="lottieComposition">The <see cref="LottieComposition"/> to translate.</param>
+        /// <param name="irComposition">The <see cref="IRComposition"/> to translate.</param>
         /// <param name="configuration">Controls optional features of the translator.</param>
         /// <param name="minimumUapVersion">The lowest version of UAP on which the result must run.
         /// Must be &gt;= 7 and &lt;= the target UAP version.</param>
         /// <returns>The results of the translation and the issues.</returns>
         public static MultiVersionTranslationResult TryTranslateLottieComposition(
-            LottieComposition lottieComposition,
+            IRComposition irComposition,
             in TranslatorConfiguration configuration,
             uint minimumUapVersion)
         {
@@ -45,7 +45,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
             }
 
             var translations = Translate(
-                lottieComposition: lottieComposition,
+                irComposition: irComposition,
                 configuration: configuration,
                 minimumUapVersion: minimumUapVersion).ToArray();
 
@@ -88,14 +88,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
         }
 
         static IEnumerable<(TranslationResult translationResult, UapVersionRange versionRange)> Translate(
-            LottieComposition lottieComposition,
+            IRComposition irComposition,
             TranslatorConfiguration configuration,
             uint minimumUapVersion)
         {
             // First, generate code for the target version.
             var translationResult =
                 IRToWinCompTranslator.TryTranslateLottieComposition(
-                    lottieComposition,
+                    irComposition,
                     configuration: configuration);
 
             yield return (
@@ -120,7 +120,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
 
                 translationResult =
                     IRToWinCompTranslator.TryTranslateLottieComposition(
-                        lottieComposition,
+                        irComposition,
                         configuration: nextLowerTargetConfiguration);
 
                 yield return (

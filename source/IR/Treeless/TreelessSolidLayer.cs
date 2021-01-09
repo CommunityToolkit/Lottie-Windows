@@ -2,14 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
+namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Treeless
 {
 #if PUBLIC_IR
     public
 #endif
-    sealed class SolidLayer : Layer
+    sealed class TreelessSolidLayer : TreelessLayer
     {
-        public SolidLayer(
+        public TreelessSolidLayer(
             in LayerArgs args,
             int width,
             int height,
@@ -28,6 +28,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
         public int Width { get; }
 
         /// <inheritdoc/>
-        public override LayerType Type => LayerType.Solid;
+        public override TreelessLayerType Type => TreelessLayerType.Solid;
     }
 }
