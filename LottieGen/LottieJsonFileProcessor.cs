@@ -799,7 +799,7 @@ sealed class LottieJsonFileProcessor
             var irGraph = LottieToIRTranslator.TranslateLottieToIR(lottieComposition)!;
 
             translationResult = IRToMultiVersionWinCompTranslator.TryTranslateLottieComposition(
-                lottieComposition: irGraph,
+                irComposition: irGraph,
                 configuration: configuration,
                 minimumUapVersion: _options.WinUIVersion.Major >= 3 ? uint.MaxValue : _minimumUapVersion);
         }

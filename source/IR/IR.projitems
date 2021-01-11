@@ -36,8 +36,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)IAnimatableVector3.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IGradient.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ImageAsset.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)IR.projitems" />
-    <Compile Include="$(MSBuildThisFileDirectory)IR.shproj" />
     <Compile Include="$(MSBuildThisFileDirectory)IRadialGradient.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IRComposition.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IRObject.cs" />
@@ -78,6 +76,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Vector2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Vector3.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Optimization\GradientStopOptimizer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Optimization\Optimizer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\IRYamlSerializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tools\Stats.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transformers\IRToTreelessTransformer.cs" />

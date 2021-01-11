@@ -10,6 +10,7 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.Toolkit.Uwp.UI.Lottie.IR;
+using Microsoft.Toolkit.Uwp.UI.Lottie.IR.Treeful;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 
 #if DEBUG

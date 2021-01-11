@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Microsoft.Toolkit.Uwp.UI.Lottie.IR.Treeful;
 using Microsoft.Toolkit.Uwp.UI.Lottie.YamlData;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Serialization

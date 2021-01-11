@@ -5,7 +5,7 @@
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Treeful
 {
     /// <summary>
-    /// A <see cref="LayerCollection"/> stored in the assets section of a <see cref="IRCompositionComposition"/>.
+    /// A <see cref="LayerCollection"/> stored in the assets section of a <see cref="IRComposition"/>.
     /// </summary>
 #if PUBLIC_IR
     public

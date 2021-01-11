@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Toolkit.Uwp.UI.Lottie.IR.Treeful;
 using Microsoft.Toolkit.Uwp.UI.Lottie.IR.Treeless;
 
@@ -12,7 +13,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
     static class IRToTreelessTransformer
     {
         public static TreelessComposition Transform(IRComposition source)
-            => new TreelessComposition(source, Detreeify(source.Layers)).ToArray();
+            => new TreelessComposition(source, Detreeify(source.Assets, source.Layers).ToArray());
 
         static IEnumerable<TreelessLayer> Detreeify(AssetCollection assets, LayerCollection layers)
         {

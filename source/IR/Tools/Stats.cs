@@ -4,6 +4,7 @@
 
 using System;
 using System.Linq;
+using Microsoft.Toolkit.Uwp.UI.Lottie.IR.Treeful;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Tools
 {

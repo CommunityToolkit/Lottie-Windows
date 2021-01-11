@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.Toolkit.Uwp.UI.Lottie.IR;
+using Microsoft.Toolkit.Uwp.UI.Lottie.IR.Treeful;
 using Sn = System.Numerics;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
