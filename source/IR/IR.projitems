@@ -70,6 +70,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)SolidColorFill.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SolidColorStroke.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transform.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Treeless\RenderingContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Treeless\VisibilityRenderingContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Trim.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TrimPath.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ValidationIssues.cs" />

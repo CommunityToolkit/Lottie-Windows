@@ -15,7 +15,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
         public static TreelessComposition Transform(IRComposition source)
             => new TreelessComposition(source, Detreeify(source.Assets, source.Layers).ToArray());
 
-        static IEnumerable<TreelessLayer> Detreeify(AssetCollection assets, LayerCollection layers)
+        static IEnumerable<(IReadOnlyList<RenderingContext>, TreelessLayer)> Detreeify(AssetCollection assets, LayerCollection layers)
         {
             // TODO: this needs to return each layer and a chain of transforms for the layer made up
             //       of the transform stuff on each layer linked to a copy of the transform stuff
@@ -31,15 +31,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
                         continue;
 
                     case Layer.LayerType.PreComp:
-                        foreach (var childLayer in DetreeifyPreCompLayer(assets, (PreCompLayer)layer))
+                        foreach (var contextAndLayer in DetreeifyPreCompLayer(assets, (PreCompLayer)layer))
                         {
-                            yield return childLayer;
+                            yield return contextAndLayer;
                         }
 
                         break;
 
-                        // TODO - convert to the equivalent treeless layer.
                     case Layer.LayerType.Image:
+                        yield return DetreeifyImageLayer(assets, (ImageLayer)layer);
+
                     case Layer.LayerType.Shape:
                     case Layer.LayerType.Solid:
                     case Layer.LayerType.Text:
@@ -50,7 +51,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
             }
         }
 
-        static IEnumerable<TreelessLayer> DetreeifyPreCompLayer(AssetCollection assets, PreCompLayer precompLayer)
+        static IReadOnlyList<RenderingContext> GetRenderingContextsForLayer(Layer layer)
+        {
+            var visibiltyContext = new VisibilityRenderingContext { InPoint = layer.InPoint, OutPoint = layer.OutPoint };
+            return new[] { visibiltyContext };
+        }
+
+        static (IReadOnlyList<RenderingContext>, TreelessLayer) DetreeifyImageLayer(AssetCollection assets, ImageLayer imageLayer)
+        {
+            return (GetRenderingContextsForLayer(imageLayer), new TreelessImageLayer());
+        }
+
+        static IEnumerable<(IReadOnlyList<RenderingContext>, TreelessLayer)> DetreeifyPreCompLayer(AssetCollection assets, PreCompLayer precompLayer)
         {
             var asset = assets.GetAssetById(precompLayer.RefId) as LayerCollectionAsset;
             if (asset is null)
@@ -59,12 +71,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
                 yield break;
             }
 
-            foreach (var childLayer in Detreeify(assets, asset.Layers))
+            foreach (var (renderingContexts, childLayer) in Detreeify(assets, asset.Layers))
             {
-                // TODO: this needs to return each layer layer and a chain of transforms including
-                //       a copy of the transform stuff from this precomp (including a clip and
-                //       visiblity animation).
-                yield return childLayer;
+                var precompRenderingContext = GetRenderingContextsForLayer(precompLayer);
+                var combinedRenderingContexts = precompRenderingContext.Concat(renderingContexts).ToArray();
+                yield return (combinedRenderingContexts, childLayer);
             }
         }
 

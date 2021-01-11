@@ -66,12 +66,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Treeless
         public IReadOnlyList<Mask> Masks { get; set; }
 
         /// <summary>
-        /// Gets the frame at which this <see cref="Layer"/> becomes invisible. <see cref="OutPoint"/>.
+        /// Gets the frame at which this <see cref="TreelessLayer"/> becomes invisible. <see cref="OutPoint"/>.
         /// </summary>
         public double OutPoint { get; }
 
         /// <summary>
-        /// Gets the index that identifies the index of the <see cref="Layer"/> from which transforms are inherited,
+        /// Gets the index that identifies the index of the <see cref="TreelessLayer"/> from which transforms are inherited,
         /// or null if no transforms are inherited.
         /// </summary>
         public int? Parent { get; }
