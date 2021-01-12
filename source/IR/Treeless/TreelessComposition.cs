@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using Microsoft.Toolkit.Uwp.UI.Lottie.IR.Treeless.RenderingContexts;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Treeless
 {
@@ -12,11 +13,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Treeless
     sealed class TreelessComposition
     {
         readonly IRComposition _sourceComposition;
-        readonly IReadOnlyList<(RenderingContext, TreelessLayer)> _layers;
+        readonly IReadOnlyList<ContentAndContext> _layers;
 
         public TreelessComposition(
             IRComposition sourceComposition,
-            IReadOnlyList<(RenderingContext, TreelessLayer)> layers)
+            IReadOnlyList<ContentAndContext> layers)
         {
             _sourceComposition = sourceComposition;
             _layers = layers;

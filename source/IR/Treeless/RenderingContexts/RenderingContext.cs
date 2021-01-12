@@ -4,10 +4,10 @@
 
 using System.Linq;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Treeless
+namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Treeless.RenderingContexts
 {
     /// <summary>
-    /// The context in which a <see cref="TreelessLayer"/> is rendered.
+    /// The context in which a <see cref="RenderingContents.RenderingContent"/> is rendered.
     /// </summary>
     abstract class RenderingContext
     {

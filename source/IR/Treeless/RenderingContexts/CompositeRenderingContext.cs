@@ -5,7 +5,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Treeless
+namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Treeless.RenderingContexts
 {
     sealed class CompositeRenderingContext : RenderingContext
     {

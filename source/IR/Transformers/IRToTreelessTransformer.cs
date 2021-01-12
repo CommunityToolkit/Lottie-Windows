@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Toolkit.Uwp.UI.Lottie.IR.Treeful;
 using Microsoft.Toolkit.Uwp.UI.Lottie.IR.Treeless;
+using Microsoft.Toolkit.Uwp.UI.Lottie.IR.Treeless.RenderingContents;
+using Microsoft.Toolkit.Uwp.UI.Lottie.IR.Treeless.RenderingContexts;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
 {
@@ -23,17 +25,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
 
         public static TreelessComposition Transform(IRComposition source)
         {
-            // TODO: insert a clip into the list of RenderingContext in each layer. The clip comes
-            //       from the IRComposition's size.
             var instance = new IRToTreelessTransformer(source.Layers, source.Assets);
             var clip = new ClipRenderingContext { Width = source.Width, Height = source.Height };
             var detreeifiedLayers =
-                (from contextAndLayer in instance.Detreeify(source.Layers)
-                 select (context: clip + contextAndLayer.context, contextAndLayer.layer)).ToArray();
+                (from contentAndContext in instance.Detreeify(source.Layers)
+                 select contentAndContext.WithContext(clip + contentAndContext.Context)).ToArray();
             return new TreelessComposition(source, detreeifiedLayers);
         }
 
-        IEnumerable<(RenderingContext context, TreelessLayer layer)> Detreeify(LayerCollection layers)
+        IEnumerable<ContentAndContext> Detreeify(LayerCollection layers)
         {
             foreach (var layer in layers.GetLayersBottomToTop())
             {
@@ -88,7 +88,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
             yield return new TimeOffsetRenderingContext(layer.StartTime);
             yield return new VisibilityRenderingContext { InPoint = layer.InPoint, OutPoint = layer.OutPoint, IsHidden = layer.IsHidden };
             yield return new OpacityRenderingContext { Opacity = layer.Transform.Opacity };
-            foreach (var context in GetTransformRenderingContextsForLayer(layer))
+            yield return new BlendModeRenderingContext(layer.BlendMode);
+
+            if (layer.Masks.Any())
+            {
+                yield return new MasksRenderingContext(layer.Masks);
+            }
+
+            if (layer.MatteType != MatteType.None)
+            {
+                yield return new MatteTypeRenderingContext(layer.MatteType);
+            }
+
+            foreach (var context in GetInheritableTransformRenderingContextsForLayer(layer))
             {
                 yield return context;
             }
@@ -99,40 +111,37 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
             }
         }
 
-        IEnumerable<RenderingContext> GetTransformRenderingContextsForLayer(Layer layer)
+        IEnumerable<RenderingContext> GetInheritableTransformRenderingContextsForLayer(Layer layer)
         {
             if (layer.Parent.HasValue)
             {
                 var parentLayer = _layers.GetLayerById(layer.Parent.Value);
                 if (parentLayer != null)
                 {
-                    foreach (var inheritedTransform in GetTransformRenderingContextsForLayer(parentLayer))
+                    foreach (var inheritedTransform in GetInheritableTransformRenderingContextsForLayer(parentLayer))
                     {
                         yield return inheritedTransform;
                     }
                 }
             }
 
-            yield return new AnchorRenderingContext { Anchor = layer.Transform.Anchor };
-            yield return new PositionRenderingContext { Position = layer.Transform.Position };
-            yield return new RotationRenderingContext { Rotation = layer.Transform.Rotation };
-            yield return new ScaleRenderingContext { ScalePercent = layer.Transform.ScalePercent };
+            yield return new AnchorRenderingContext(layer.Transform.Anchor);
+            yield return new PositionRenderingContext(layer.Transform.Position);
+            yield return new RotationRenderingContext(layer.Transform.Rotation);
+            yield return new ScaleRenderingContext(layer.Transform.ScalePercent);
         }
 
-        (RenderingContext, TreelessLayer) DetreeifyImageLayer(ImageLayer layer)
+        ContentAndContext DetreeifyImageLayer(ImageLayer layer)
         {
             var imageAsset = (ImageAsset?)_assets.GetAssetById(layer.RefId);
 
             // TODO: if the asset isn't found, report an issue and return null.
-            return (GetRenderingContextForLayer(layer), new TreelessImageLayer(
-                blendMode: layer.BlendMode,
-                is3d: layer.Is3d,
-                matteType: layer.MatteType,
-                masks: layer.Masks,
-                imageAsset!));
+            return new ContentAndContext(
+                        new ImageRenderingContent(imageAsset!),
+                        GetRenderingContextForLayer(layer));
         }
 
-        IEnumerable<(RenderingContext, TreelessLayer)> DetreeifyPreCompLayer(PreCompLayer layer)
+        IEnumerable<ContentAndContext> DetreeifyPreCompLayer(PreCompLayer layer)
         {
             var asset = _assets.GetAssetById(layer.RefId) as LayerCollectionAsset;
 
@@ -142,44 +151,36 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
                 yield break;
             }
 
-            var clipContext = new ClipRenderingContext { Width = layer.Width, Height = layer.Height };
+            var clipContext = new ClipRenderingContext(layer.Width, layer.Height);
 
-            foreach (var (context, childLayer) in Detreeify(asset.Layers))
+            foreach (var child in Detreeify(asset.Layers))
             {
-                yield return (clipContext + GetRenderingContextForLayer(layer) + context, childLayer);
+                yield return child.WithContext(clipContext + GetRenderingContextForLayer(layer) + child.Context);
             }
         }
 
-        (RenderingContext, TreelessLayer) DetreeifyShapeLayer(ShapeLayer layer)
+        ContentAndContext DetreeifyShapeLayer(ShapeLayer layer)
         {
-            return (GetRenderingContextForLayer(layer), new TreelessShapeLayer(
-                blendMode: layer.BlendMode,
-                is3d: layer.Is3d,
-                matteType: layer.MatteType,
-                masks: layer.Masks,
-                layer.Contents));
+            return new ContentAndContext(
+                    new ShapeRenderingContent(layer.Contents),
+                    GetRenderingContextForLayer(layer));
         }
 
-        (RenderingContext, TreelessLayer) DetreeifySolidLayer(SolidLayer layer)
+        ContentAndContext DetreeifySolidLayer(SolidLayer layer)
         {
-            return (GetRenderingContextForLayer(layer),
-                    new TreelessSolidLayer(
-                        blendMode: layer.BlendMode,
-                        is3d: layer.Is3d,
-                        matteType: layer.MatteType,
-                        masks: layer.Masks,
-                        width: layer.Width,
-                        height: layer.Height,
-                        color: layer.Color));
+            return new ContentAndContext(
+                        new SolidRenderingContent(
+                            width: layer.Width,
+                            height: layer.Height,
+                            color: layer.Color),
+                        GetRenderingContextForLayer(layer));
         }
 
-        (RenderingContext, TreelessLayer) DetreeifyTextLayer(TextLayer layer)
+        ContentAndContext DetreeifyTextLayer(TextLayer layer)
         {
-            return (GetRenderingContextForLayer(layer), new TreelessTextLayer(
-                                blendMode: layer.BlendMode,
-                                is3d: layer.Is3d,
-                                matteType: layer.MatteType,
-                                masks: layer.Masks));
+            return new ContentAndContext(
+                        new UnsupportedRenderingContent("Text"),
+                        GetRenderingContextForLayer(layer));
         }
 
         static Exception Unreachable => new InvalidOperationException();
