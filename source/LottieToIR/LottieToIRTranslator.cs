@@ -97,7 +97,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToIR
                 InFrame = from.InPoint,
                 Is3d = from.Is3d,
                 IsHidden = from.IsHidden,
-                LayerMatteType = (Layer.MatteType)from.LayerMatteType,
+                MatteType = (MatteType)from.MatteType,
                 Masks = from.Masks.Select(TranslateMask).ToArray(),
                 Name = from.Name,
                 OutFrame = from.OutPoint,

@@ -16,9 +16,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Treeless
         readonly ShapeLayerContent[] _contents;
 
         public TreelessShapeLayer(
-            in LayerArgs args,
+            BlendMode blendMode,
+            bool is3d,
+            MatteType matteType,
+            IReadOnlyList<Mask> masks,
             IEnumerable<ShapeLayerContent> contents)
-         : base(in args)
+            : base(blendMode, is3d, matteType, masks)
         {
             _contents = contents.ToArray();
         }

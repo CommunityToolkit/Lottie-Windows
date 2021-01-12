@@ -33,6 +33,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)LottieObjectType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Marker.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Mask.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MatteType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MergePaths.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NullLayer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Optimization\GradientStopOptimizer.cs" />

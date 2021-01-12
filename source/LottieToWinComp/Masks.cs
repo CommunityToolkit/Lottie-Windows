@@ -143,14 +143,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             // Save off the visual for the layer to be matted when we encounter it. The very next
             // layer is the matte layer.
             Visual? mattedVisual = null;
-            Layer.MatteType matteType = Layer.MatteType.None;
+            var matteType = MatteType.None;
 
             // NOTE: The items appear in reverse order from how they appear in the original Lottie file.
             // This means that the layer to be matted appears right before the layer that is the matte.
             foreach (var (translatedLayer, layer) in items)
             {
                 var layerIsMattedLayer = false;
-                layerIsMattedLayer = layer.LayerMatteType != Layer.MatteType.None;
+                layerIsMattedLayer = layer.MatteType != MatteType.None;
 
                 Visual? visual = null;
 
@@ -175,13 +175,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     if (layerIsMattedLayer)
                     {
                         mattedVisual = visual;
-                        matteType = layer.LayerMatteType;
+                        matteType = layer.MatteType;
                     }
                     else if (mattedVisual != null)
                     {
-                        var compositedMatteVisual = Masks.TranslateMatteLayer(context, visual, mattedVisual, matteType == Layer.MatteType.Invert);
+                        var compositedMatteVisual = Masks.TranslateMatteLayer(context, visual, mattedVisual, matteType == MatteType.Invert);
                         mattedVisual = null;
-                        matteType = Layer.MatteType.None;
+                        matteType = MatteType.None;
                         yield return compositedMatteVisual;
                     }
                     else

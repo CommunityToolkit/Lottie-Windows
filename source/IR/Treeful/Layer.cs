@@ -28,7 +28,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Treeful
             InPoint = args.InFrame;
             Is3d = args.Is3d;
             IsHidden = args.IsHidden;
-            LayerMatteType = args.LayerMatteType;
+            MatteType = args.MatteType;
             Masks = args.Masks;
             OutPoint = args.OutFrame;
             Parent = args.Parent;
@@ -57,7 +57,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Treeful
 
         public bool IsHidden { get; }
 
-        public MatteType LayerMatteType { get; }
+        public MatteType MatteType { get; }
 
         /// <summary>
         /// Gets the list of masks appplied to the layer.
@@ -120,7 +120,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Treeful
 
             public IReadOnlyList<Mask> Masks { get; set; }
 
-            public MatteType LayerMatteType { get; set; }
+            public MatteType MatteType { get; set; }
         }
 
         public enum LayerType
@@ -131,13 +131,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Treeful
             Null,
             Shape,
             Text,
-        }
-
-        public enum MatteType
-        {
-            None = 0,
-            Add,
-            Invert,
         }
     }
 }

@@ -96,7 +96,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                                     ? ReadMaskProperties(maskProperties.Value).ToArray()
                                     : Array.Empty<Mask>();
 
-            layerArgs.LayerMatteType = TTToMatteType(obj.DoublePropertyOrNull("tt"));
+            layerArgs.MatteType = TTToMatteType(obj.DoublePropertyOrNull("tt"));
 
             Layer.LayerType? layerType = TyToLayerType(obj.DoublePropertyOrNull("ty"));
 

@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Generic;
+
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Treeless
 {
 #if PUBLIC_IR
@@ -10,17 +12,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Treeless
     sealed class TreelessImageLayer : TreelessLayer
     {
         public TreelessImageLayer(
-            in LayerArgs args,
-            string refId)
-            : base(in args)
+            BlendMode blendMode,
+            bool is3d,
+            MatteType matteType,
+            IReadOnlyList<Mask> masks,
+            ImageAsset imageAsset)
+            : base(blendMode, is3d, matteType, masks)
         {
-            RefId = refId;
+            ImageAsset = imageAsset;
         }
 
-        /// <summary>
-        /// Gets the id of an <see cref="Asset"/> referenced by this layer.
-        /// </summary>
-        public string RefId { get; }
+        public ImageAsset ImageAsset { get; }
 
         /// <inheritdoc/>
         public override TreelessLayerType Type => TreelessLayerType.Image;

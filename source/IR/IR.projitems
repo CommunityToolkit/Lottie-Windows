@@ -46,6 +46,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)LinearGradientStroke.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Marker.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Mask.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MatteType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MergePaths.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Opacity.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)OpacityGradientStop.cs" />
@@ -70,7 +71,18 @@
     <Compile Include="$(MSBuildThisFileDirectory)SolidColorFill.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SolidColorStroke.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transform.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Treeless\AnchorRenderingContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Treeless\ClipRenderingContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Treeless\CompositeRenderingContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Treeless\EffectRenderingContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Treeless\MetadataRenderingContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Treeless\OpacityRenderingContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Treeless\PositionRenderingContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Treeless\RenderingContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Treeless\RotationRenderingContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Treeless\ScaleRenderingContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Treeless\TimeOffsetRenderingContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Treeless\TimeStretchRenderingContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Treeless\VisibilityRenderingContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Trim.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TrimPath.cs" />

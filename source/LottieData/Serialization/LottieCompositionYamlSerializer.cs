@@ -200,7 +200,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             superclassContent.Add(nameof(layer.Transform), FromShapeLayerContent(layer.Transform));
             superclassContent.Add(nameof(layer.Effects), FromEnumerable(layer.Effects, FromEffect));
             superclassContent.Add(nameof(layer.Masks), FromEnumerable(layer.Masks, FromMask));
-            superclassContent.Add(nameof(layer.LayerMatteType), Scalar(layer.LayerMatteType));
+            superclassContent.Add(nameof(layer.MatteType), Scalar(layer.MatteType));
 
             return layer.Type switch
             {

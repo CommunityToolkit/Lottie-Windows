@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers;
 using Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization;
@@ -797,6 +798,8 @@ sealed class LottieJsonFileProcessor
             };
 
             var irGraph = LottieToIRTranslator.TranslateLottieToIR(lottieComposition)!;
+
+            _ = IRToTreelessTransformer.Transform(irGraph);
 
             translationResult = IRToMultiVersionWinCompTranslator.TryTranslateLottieComposition(
                 irComposition: irGraph,

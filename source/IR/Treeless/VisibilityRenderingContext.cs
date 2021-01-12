@@ -4,11 +4,17 @@
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Treeless
 {
-    sealed class VisibilityRenderingContext
-        : RenderingContext
+    sealed class VisibilityRenderingContext : RenderingContext
     {
+        public bool IsHidden { get; set; }
+
         public double InPoint { get; set; }
 
         public double OutPoint { get; set; }
+
+        public override string ToString()
+            => IsHidden
+                ? "Hidden"
+                : $"Visible {InPoint}->{OutPoint}";
     }
 }

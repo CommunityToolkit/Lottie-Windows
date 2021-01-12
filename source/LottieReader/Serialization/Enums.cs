@@ -179,7 +179,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             return GradientType.Linear;
         }
 
-        Layer.MatteType TTToMatteType(double? tt)
+        MatteType TTToMatteType(double? tt)
         {
             if (tt.HasValue)
             {
@@ -187,16 +187,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 {
                     switch (intValue)
                     {
-                        case 0: return Layer.MatteType.None;
-                        case 1: return Layer.MatteType.Add;
-                        case 2: return Layer.MatteType.Invert;
+                        case 0: return MatteType.None;
+                        case 1: return MatteType.Add;
+                        case 2: return MatteType.Invert;
                     }
                 }
 
                 _issues.UnexpectedValueForType("MatteType", tt.ToString());
             }
 
-            return Layer.MatteType.None;
+            return MatteType.None;
         }
 
         Layer.LayerType? TyToLayerType(double? ty)

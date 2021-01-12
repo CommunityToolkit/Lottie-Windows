@@ -12,14 +12,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Treeless
     sealed class TreelessComposition
     {
         readonly IRComposition _sourceComposition;
-        readonly IReadOnlyList<(IReadOnlyList<RenderingContext>, TreelessLayer)> _layer;
+        readonly IReadOnlyList<(RenderingContext, TreelessLayer)> _layers;
 
         public TreelessComposition(
             IRComposition sourceComposition,
-            IReadOnlyList<(IReadOnlyList<RenderingContext>, TreelessLayer)> layers)
+            IReadOnlyList<(RenderingContext, TreelessLayer)> layers)
         {
             _sourceComposition = sourceComposition;
-            _layer = layers;
+            _layers = layers;
         }
     }
 }
