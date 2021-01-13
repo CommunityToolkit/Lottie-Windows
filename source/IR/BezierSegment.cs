@@ -47,7 +47,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
             }
             else if (IsALine)
             {
-                return $"Line from {ControlPoint0} to {ControlPoint3}";
+                var lineLength = Math.Sqrt(
+                                    Math.Pow(ControlPoint0.X - ControlPoint3.X, 2) +
+                                    Math.Pow(ControlPoint0.Y - ControlPoint3.Y, 2));
+
+                return $"Line length {lineLength:0.###} from {ControlPoint0} to {ControlPoint3}";
             }
             else
             {

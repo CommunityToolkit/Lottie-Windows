@@ -7,7 +7,7 @@
 using System;
 using System.Linq;
 using Microsoft.Toolkit.Uwp.UI.Lottie.IR;
-using Microsoft.Toolkit.Uwp.UI.Lottie.IR.Treeful;
+using Microsoft.Toolkit.Uwp.UI.Lottie.IR.Layers;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToIR
 {

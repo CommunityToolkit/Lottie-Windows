@@ -5,7 +5,7 @@
 #nullable enable
 
 using System.Collections.Generic;
-using Microsoft.Toolkit.Uwp.UI.Lottie.IR.Treeful;
+using Microsoft.Toolkit.Uwp.UI.Lottie.IR.Layers;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
 {

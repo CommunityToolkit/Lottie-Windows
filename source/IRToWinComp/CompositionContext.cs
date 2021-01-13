@@ -4,7 +4,7 @@
 
 using System;
 using Microsoft.Toolkit.Uwp.UI.Lottie.IR;
-using Microsoft.Toolkit.Uwp.UI.Lottie.IR.Treeful;
+using Microsoft.Toolkit.Uwp.UI.Lottie.IR.Layers;
 using Sn = System.Numerics;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
