@@ -21,5 +21,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContents
         public int Width { get; }
 
         public int Height { get; }
+
+        public override bool IsAnimated => false;
+
+        public override RenderingContent WithTimeOffset(double timeOffset) => this;
     }
 }

@@ -33,6 +33,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
 
         public Brush Brush { get; }
 
+        public override bool IsAnimated => StrokeWidth.IsAnimated || Brush.IsAnimated;
+
+        public override RenderingContext WithTimeOffset(double timeOffset)
+            => IsAnimated
+                ? new StrokeRenderingContext(
+                        Brush.WithTimeOffset(timeOffset),
+                        StrokeWidth.WithTimeOffset(timeOffset),
+                        CapType,
+                        JoinType,
+                        MiterLimit)
+                : this;
+
         public override string ToString() => $"Stroke {Brush}";
     }
 }

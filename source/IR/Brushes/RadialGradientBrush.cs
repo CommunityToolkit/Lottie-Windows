@@ -23,6 +23,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Brushes
 
         public Animatable<double> HighlightDegrees { get; }
 
-        public override string ToString() => $"Radial gradient";
+        public override bool IsAnimated =>
+            base.IsAnimated || HighlightDegrees.IsAnimated || HighlightLength.IsAnimated;
+
+        public override Brush WithTimeOffset(double timeOffset)
+            => IsAnimated
+            ? new RadialGradientBrush(
+                    StartPoint.WithTimeOffset(timeOffset),
+                    EndPoint.WithTimeOffset(timeOffset),
+                    GradientStops.WithTimeOffset(timeOffset),
+                    Opacity.WithTimeOffset(timeOffset),
+                    HighlightLength.WithTimeOffset(timeOffset),
+                    HighlightDegrees.WithTimeOffset(timeOffset))
+            : this;
+
+        public override string ToString() => $"{(IsAnimated ? "Animated" : "Static")} Radial gradient";
     }
 }

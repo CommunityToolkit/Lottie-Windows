@@ -25,18 +25,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
         /// Initializes a new instance of the <see cref="Animatable{T}"/> class with
         /// a non-animated value.
         /// </summary>
-        public Animatable(T value, int? propertyIndex)
+        public Animatable(T value)
         {
             KeyFrames = Array.Empty<KeyFrame<T>>();
             InitialValue = value;
-            PropertyIndex = propertyIndex;
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Animatable{T}"/> class with
         /// the given key frames.
         /// </summary>
-        public Animatable(IEnumerable<KeyFrame<T>> keyFrames, int? propertyIndex)
+        public Animatable(IEnumerable<KeyFrame<T>> keyFrames)
         {
             KeyFrames = keyFrames.ToArray();
 
@@ -49,15 +48,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
                 // saved the value in InitialValue. Might as well ditch the key frames.
                 KeyFrames = Array.Empty<KeyFrame<T>>();
             }
-
-            PropertyIndex = propertyIndex;
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Animatable{T}"/> class with
         /// the given key frames.
         /// </summary>
-        public Animatable(T initialValue, IReadOnlyList<KeyFrame<T>> keyFrames, int? propertyIndex)
+        public Animatable(T initialValue, IReadOnlyList<KeyFrame<T>> keyFrames)
         {
             KeyFrames = keyFrames;
 
@@ -69,8 +66,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
                 // saved the value in InitialValue. Might as well ditch the key frames.
                 KeyFrames = Array.Empty<KeyFrame<T>>();
             }
-
-            PropertyIndex = propertyIndex;
         }
 
         /// <summary>
@@ -82,11 +77,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
         /// Gets the keyframes that describe how the value should be animated.
         /// </summary>
         public IReadOnlyList<KeyFrame<T>> KeyFrames { get; }
-
-        /// <summary>
-        /// Gets the property index used for expressions.
-        /// </summary>
-        public int? PropertyIndex { get; }
 
         /// <summary>
         /// Gets a value indicating whether the <see cref="Animatable{T}"/> has any key frames.
@@ -111,6 +101,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
         /// <returns><c>true</c> if this value is ever not equal to the given value.</returns>
         public bool IsEverNot(T value) => !IsAlways(value);
 
+        public Animatable<T> WithTimeOffset(double timeOffset)
+            => timeOffset == 0
+                ? this
+                : new Animatable<T>(KeyFrames.Select(kf => kf.WithTimeOffset(timeOffset)));
+
+        IAnimatableValue<T> IAnimatableValue<T>.WithTimeOffset(double timeOffset)
+            => WithTimeOffset(timeOffset);
+
+        public Animatable<T> Select(Func<T, T> selector)
+            => new Animatable<T>(KeyFrames.Select(kf => new KeyFrame<T>(kf.Frame, selector(kf.Value), kf.Easing)));
+
         /// <inheritdoc/>
         // Not a great hash code because it ignore the KeyFrames, but quick.
         public override int GetHashCode() => InitialValue.GetHashCode();
@@ -122,11 +123,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
                 var keyframes =
                     from kf in KeyFrames.ToArray()
                     select new KeyFrame<T>(kf.Frame, selector(kf.Value), kf.Easing);
-                return new Animatable<T>(keyframes, PropertyIndex);
+                return new Animatable<T>(keyframes);
             }
             else
             {
-                return new Animatable<T>(selector(InitialValue), PropertyIndex);
+                return new Animatable<T>(selector(InitialValue));
             }
         }
 

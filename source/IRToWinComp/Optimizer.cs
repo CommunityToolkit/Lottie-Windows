@@ -24,8 +24,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
 
             return path.CloneWithNewGeometry(
                 optimizedPathData.IsAnimated
-                    ? new Animatable<PathGeometry>(optimizedPathData.KeyFrames, path.Data.PropertyIndex)
-                    : new Animatable<PathGeometry>(optimizedPathData.InitialValue, path.Data.PropertyIndex));
+                    ? new Animatable<PathGeometry>(optimizedPathData.KeyFrames)
+                    : new Animatable<PathGeometry>(optimizedPathData.InitialValue));
         }
 
         public static TrimmedAnimatable<Vector3> TrimAnimatable(LayerContext context, IAnimatableVector3 animatable)

@@ -11,6 +11,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
 
         public bool IsDrawingReversed { get; }
 
+        public override bool IsAnimated => false;
+
+        public override RenderingContext WithTimeOffset(double timeOffset) => this;
+
         public override string ToString() => $"IsDrawingReversed {IsDrawingReversed}";
     }
 }

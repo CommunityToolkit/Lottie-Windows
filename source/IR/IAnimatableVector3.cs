@@ -10,6 +10,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
     interface IAnimatableVector3 : IAnimatableValue<Vector3>
     {
         AnimatableVector3Type Type { get; }
+
+        /// <summary>
+        /// The animated value with each key frame offset by the given amount.
+        /// </summary>
+        /// <returns>The adjusted animated value.</returns>
+        new IAnimatableVector3 WithTimeOffset(double timeOffset);
     }
 
 #if PUBLIC_IR

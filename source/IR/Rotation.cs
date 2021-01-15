@@ -36,5 +36,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
         public override int GetHashCode() => Degrees.GetHashCode();
 
         public override string ToString() => $"{Degrees}°";
+
+        public static bool operator ==(Rotation left, Rotation right) => left.Degrees == right.Degrees;
+
+        public static bool operator !=(Rotation left, Rotation right) => left.Degrees != right.Degrees;
     }
 }

@@ -18,6 +18,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContents
 
         public IAnimatableVector3 Size { get; }
 
+        public override bool IsAnimated => Roundness.IsAnimated || Size.IsAnimated;
+
+        public override RenderingContent WithTimeOffset(double timeOffset)
+             => IsAnimated
+                ? new RectangleRenderingContent(Size.WithTimeOffset(timeOffset), Roundness.WithTimeOffset(timeOffset))
+                : this;
+
         public override string ToString() => $"Rectangle";
     }
 }

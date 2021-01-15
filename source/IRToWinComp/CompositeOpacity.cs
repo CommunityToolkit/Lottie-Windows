@@ -69,7 +69,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
             var cur = this;
             do
             {
-                yield return new Animatable<Opacity>(initialValue: cur._initialValue, keyFrames: cur._keyFrames, propertyIndex: null);
+                yield return new Animatable<Opacity>(initialValue: cur._initialValue, keyFrames: cur._keyFrames);
                 cur = cur._previous;
             } while (cur != null);
         }

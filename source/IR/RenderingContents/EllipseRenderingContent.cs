@@ -13,6 +13,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContents
 
         public IAnimatableVector3 Diameter { get; }
 
+        public override bool IsAnimated => Diameter.IsAnimated;
+
+        public override RenderingContent WithTimeOffset(double timeOffset)
+        {
+            if (Diameter.IsAnimated)
+            {
+                return new EllipseRenderingContent(Diameter.WithTimeOffset(timeOffset));
+            }
+            else
+            {
+                return this;
+            }
+        }
+
         public override string ToString() => $"Ellipse";
     }
 }

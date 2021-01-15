@@ -13,6 +13,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
 
         public Brush Brush { get; }
 
+        public override bool IsAnimated => Brush.IsAnimated;
+
+        public override RenderingContext WithTimeOffset(double timeOffset)
+            => IsAnimated
+                ? new FillRenderingContext(Brush.WithTimeOffset(timeOffset))
+                : this;
+
         public override string ToString() => $"Fill: {Brush}";
     }
 }

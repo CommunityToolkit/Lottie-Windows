@@ -226,8 +226,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToIR
         static Animatable<T> TranslateAnimatable<T>(LottieData.Animatable<T> from)
             where T : IEquatable<T>
             => from.IsAnimated
-            ? new Animatable<T>(from.KeyFrames.Select(TranslateKeyFrame), from.PropertyIndex)
-            : new Animatable<T>(from.InitialValue, from.PropertyIndex);
+            ? new Animatable<T>(from.KeyFrames.Select(TranslateKeyFrame))
+            : new Animatable<T>(from.InitialValue);
 
         static Animatable<double>? TranslateAnimatableNullable(LottieData.Animatable<double>? from)
             => from is null ? null : TranslateAnimatable(from);
@@ -236,8 +236,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToIR
             where T : IEquatable<T>
             where TFrom : IEquatable<TFrom>
             => from.IsAnimated
-            ? new Animatable<T>(from.KeyFrames.Select(kf => TranslateKeyFrame(kf, selector)), from.PropertyIndex)
-            : new Animatable<T>(selector(from.InitialValue), from.PropertyIndex);
+            ? new Animatable<T>(from.KeyFrames.Select(kf => TranslateKeyFrame(kf, selector)))
+            : new Animatable<T>(selector(from.InitialValue));
 
         static IAnimatableVector3 TranslateAnimatable(LottieData.IAnimatableVector3 from)
             => from.Type switch
@@ -249,8 +249,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToIR
 
         static AnimatableVector3 TranslateAnimatableVector3(LottieData.AnimatableVector3 from)
             => from.IsAnimated
-            ? new AnimatableVector3(from.KeyFrames.Select(kf => TranslateKeyFrame(kf, TranslateVector3)), from.PropertyIndex)
-            : new AnimatableVector3(TranslateVector3(from.InitialValue), from.PropertyIndex);
+            ? new AnimatableVector3(from.KeyFrames.Select(kf => TranslateKeyFrame(kf, TranslateVector3)))
+            : new AnimatableVector3(TranslateVector3(from.InitialValue));
 
         static AnimatableXYZ TranslateAnimatableXYZ(LottieData.AnimatableXYZ from)
             => new AnimatableXYZ(TranslateAnimatable(from.X), TranslateAnimatable(from.Y), TranslateAnimatable(from.Z));

@@ -12,6 +12,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
 
         public string Name { get; }
 
-        public override string ToString() => $"Name: {Name}";
+        public override bool IsAnimated => false;
+
+        public override RenderingContext WithTimeOffset(double timeOffset) => this;
+
+        public override string ToString() => $"Metadata Name:{Name}";
     }
 }

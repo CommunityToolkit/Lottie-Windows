@@ -11,6 +11,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Brushes
             Opacity = opacity;
         }
 
+        public abstract bool IsAnimated { get; }
+
+        public abstract Brush WithTimeOffset(double timeOffset);
+
         public Animatable<Opacity> Opacity { get; }
     }
 }

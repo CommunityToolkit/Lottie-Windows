@@ -9,5 +9,23 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContents
         private protected RenderingContent()
         {
         }
+
+        public abstract bool IsAnimated { get; }
+
+        public static RenderingContent Null { get; } = new NullRenderingContent();
+
+        public abstract RenderingContent WithTimeOffset(double timeOffset);
+
+        /// <summary>
+        /// Renders nothing.
+        /// </summary>
+        sealed class NullRenderingContent : RenderingContent
+        {
+            public override string ToString() => "Null";
+
+            public override bool IsAnimated => false;
+
+            public override RenderingContent WithTimeOffset(double timeOffset) => this;
+        }
     }
 }

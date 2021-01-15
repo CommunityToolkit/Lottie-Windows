@@ -32,6 +32,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
         {
         }
 
+        public KeyFrame<T> WithTimeOffset(double timeOffset) =>
+            new KeyFrame<T>(Frame + timeOffset, Value, SpatialBezier, Easing);
+
         /// <summary>
         /// Returns a <see cref="KeyFrame{T}"/> that is the same as this, but with a new value.
         /// </summary>

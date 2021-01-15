@@ -13,6 +13,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContents
 
         public string Description { get; }
 
+        public override bool IsAnimated => false;
+
+        public override RenderingContent WithTimeOffset(double timeOffset) => this;
+
         public override string ToString() => Description;
     }
 }

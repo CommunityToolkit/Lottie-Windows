@@ -42,9 +42,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
             var zKeyFrames = ExtractKeyFrames(animatableVector3.KeyFrames, v => v.Z, 2);
 
             return new AnimatableXYZ(
-                new Animatable<double>(xKeyFrames, animatableVector3.PropertyIndex),
-                new Animatable<double>(yKeyFrames, animatableVector3.PropertyIndex),
-                new Animatable<double>(zKeyFrames, animatableVector3.PropertyIndex));
+                new Animatable<double>(xKeyFrames),
+                new Animatable<double>(yKeyFrames),
+                new Animatable<double>(zKeyFrames));
         }
 
         // Extracts the key frames from a single channel of a Vector3.

@@ -104,7 +104,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Optimization
             }
 
             // Create a new Animatable<PathGeometry> which has only one segment in each keyframe.
-            return new Animatable<PathGeometry>(optimized.KeyFrames.Select(pg => HackPathGeometry(pg)), optimized.PropertyIndex);
+            return new Animatable<PathGeometry>(optimized.KeyFrames.Select(pg => HackPathGeometry(pg)));
         }
 
         // Returns a KeyFrame<PathGeometry> that contains only the first Bezier segment of the given
@@ -168,7 +168,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Optimization
                     }
                     else
                     {
-                        var optimized = new Animatable<T>(value.InitialValue, keyFrames, null);
+                        var optimized = new Animatable<T>(value.InitialValue, keyFrames);
                         result = optimized;
                     }
                 }

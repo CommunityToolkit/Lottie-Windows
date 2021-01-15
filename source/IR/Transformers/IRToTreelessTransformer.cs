@@ -4,11 +4,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 using Microsoft.Toolkit.Uwp.UI.Lottie.IR.Brushes;
 using Microsoft.Toolkit.Uwp.UI.Lottie.IR.Layers;
-using Microsoft.Toolkit.Uwp.UI.Lottie.IR.Optimization;
 using Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContents;
 using Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts;
 
@@ -25,31 +23,60 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
             _assets = assets;
         }
 
-        public static ContentAndContext Transform(IRComposition source)
+        public static Rendering Transform(IRComposition source)
         {
             var instance = new IRToTreelessTransformer(source.Layers, source.Assets);
 
-            var clip = new ClipRenderingContext(source.Width, source.Height);
+            var clip = new ClipRenderingContext(Vector2.Zero, new Vector2(source.Width, source.Height));
 
-            var detreeifiedLayers =
+            // Convert from layers to Renderings
+            var renderings =
                 (from contentAndContext in instance.Detreeify(source.Layers)
                  select contentAndContext.WithContext(clip + contentAndContext.Context)).ToArray();
 
-            var optimizedDetreeifiedLayers =
-                (from contentAndContext in detreeifiedLayers
-                 select new ContentAndContext(
-                     contentAndContext.Content,
-                     RenderingContextOptimizer.Optimize(contentAndContext.Context))
-                 ).ToArray();
+            // Optimize the contexts.
+            var optimizedRenderings = renderings.Select(Optimize).ToArray();
 
-            var result = new ContentAndContext(
-                                new GroupRenderingContent(optimizedDetreeifiedLayers),
-                                new MetadataRenderingContext("Lottie") { Source = source });
+            // Unify the timebases.
+            optimizedRenderings = optimizedRenderings.Select(item => Rendering.UnifyTimebase(item, 0)).ToArray();
+
+            var result = new Rendering(
+                                new GroupRenderingContent(optimizedRenderings),
+                                new MetadataRenderingContext($"Lottie {source.Name}") { Source = source });
 
             return result;
         }
 
-        IEnumerable<ContentAndContext> Detreeify(LayerCollection layers)
+        static RenderingContext ElideMetadata(RenderingContext input)
+            => input.Filter((MetadataRenderingContext c) => false);
+
+        static Rendering Optimize(Rendering input)
+            => new Rendering(Optimize(input.Content), Optimize(input.Context));
+
+        static RenderingContent Optimize(RenderingContent input)
+            => input is GroupRenderingContent group
+            ? new GroupRenderingContent(group.Items.Select(item => Optimize(item)).ToArray())
+             : input;
+
+        static RenderingContext Optimize(RenderingContext input)
+        {
+            var result = input;
+
+            // Remove the metadata. For now we don't need it and it's easier to
+            // see what's going on without it.
+            result = ElideMetadata(result);
+            result = AnchorRenderingContext.WithoutRedundants(result);
+            result = BlendModeRenderingContext.WithoutRedundants(result);
+            result = OpacityRenderingContext.WithoutRedundants(result);
+            result = PositionRenderingContext.WithoutRedundants(result);
+            result = RotationRenderingContext.WithoutRedundants(result);
+            result = ScaleRenderingContext.WithoutRedundants(result);
+            result = VisibilityRenderingContext.WithoutRedundants(result);
+            result = ClipRenderingContext.WithoutRedundants(result);
+            return result;
+        }
+
+        IEnumerable<Rendering> Detreeify(LayerCollection layers)
         {
             foreach (var layer in layers.GetLayersBottomToTop())
             {
@@ -94,16 +121,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
 
         IEnumerable<RenderingContext> GetRenderingContextsForLayer(Layer layer)
         {
-            yield return new MetadataRenderingContext(name: layer.Name) { Source = layer };
+            yield return new MetadataRenderingContext(name: $"{layer.Type} {layer.Name}") { Source = layer };
 
             if (layer.TimeStretch != 1)
             {
                 yield return new TimeStretchRenderingContext(layer.TimeStretch);
             }
 
-            yield return new TimeOffsetRenderingContext(layer.StartTime);
-            yield return new VisibilityRenderingContext { InPoint = layer.InPoint, OutPoint = layer.OutPoint, IsHidden = layer.IsHidden };
-            yield return new OpacityRenderingContext(layer.Transform.Opacity);
+            yield return new VisibilityRenderingContext(
+                                    layer.IsHidden
+                                        ? Array.Empty<double>()
+                                        : new double[] { layer.InPoint, layer.OutPoint });
+
+            yield return OpacityRenderingContext.Create(layer.Transform.Opacity);
             yield return new BlendModeRenderingContext(layer.BlendMode);
 
             if (layer.Masks.Any())
@@ -125,6 +155,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
             {
                 yield return context;
             }
+
+            // All layers have a StartTime, but it's only relevant on precomps.
+            // It affects only the children.
+            if (layer.Type == Layer.LayerType.PreComp)
+            {
+                yield return new TimeOffsetRenderingContext(layer.StartTime);
+            }
         }
 
         IEnumerable<RenderingContext> GetInheritableTransformRenderingContextsForLayer(Layer layer)
@@ -142,31 +179,31 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
                 }
             }
 
-            yield return new AnchorRenderingContext(layer.Transform.Anchor);
-            yield return new PositionRenderingContext(layer.Transform.Position);
-            yield return new RotationRenderingContext(layer.Transform.Rotation);
-            yield return new ScaleRenderingContext(layer.Transform.ScalePercent);
+            yield return AnchorRenderingContext.Create(layer.Transform.Anchor);
+            yield return PositionRenderingContext.Create(layer.Transform.Position);
+            yield return RotationRenderingContext.Create(layer.Transform.Rotation);
+            yield return ScaleRenderingContext.Create(layer.Transform.ScalePercent);
         }
 
         RenderingContext GetTransformRenderingContexts(Transform transform)
             => RenderingContext.Compose(
-                    new AnchorRenderingContext(transform.Anchor),
-                    new PositionRenderingContext(transform.Position),
-                    new RotationRenderingContext(transform.Rotation),
-                    new ScaleRenderingContext(transform.ScalePercent),
-                    new OpacityRenderingContext(transform.Opacity));
+                    AnchorRenderingContext.Create(transform.Anchor),
+                    PositionRenderingContext.Create(transform.Position),
+                    RotationRenderingContext.Create(transform.Rotation),
+                    ScaleRenderingContext.Create(transform.ScalePercent),
+                    OpacityRenderingContext.Create(transform.Opacity));
 
-        ContentAndContext DetreeifyImageLayer(ImageLayer layer)
+        Rendering DetreeifyImageLayer(ImageLayer layer)
         {
             var imageAsset = (ImageAsset?)_assets.GetAssetById(layer.RefId);
 
             // TODO: if the asset isn't found, report an issue and return null.
-            return new ContentAndContext(
+            return new Rendering(
                         new ImageRenderingContent(imageAsset!),
                         GetRenderingContextForLayer(layer));
         }
 
-        IEnumerable<ContentAndContext> DetreeifyPreCompLayer(PreCompLayer layer)
+        IEnumerable<Rendering> DetreeifyPreCompLayer(PreCompLayer layer)
         {
             var asset = _assets.GetAssetById(layer.RefId) as LayerCollectionAsset;
 
@@ -176,7 +213,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
                 yield break;
             }
 
-            var clipContext = new ClipRenderingContext(layer.Width, layer.Height);
+            var clipContext = new ClipRenderingContext(Vector2.Zero, new Vector2(layer.Width, layer.Height));
 
             foreach (var child in Detreeify(asset.Layers))
             {
@@ -280,22 +317,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
             }
         }
 
-        ContentAndContext DetreeifyShape(Shape shape)
+        Rendering DetreeifyShape(Shape shape)
         {
             RenderingContent content;
-            RenderingContext context = NullRenderingContext.Instance;
+            RenderingContext context = RenderingContext.Null;
 
             switch (shape.ShapeType)
             {
                 case ShapeType.Ellipse:
                     var ellipse = (Ellipse)shape;
                     content = new EllipseRenderingContent(ellipse.Diameter);
-                    context = new PositionRenderingContext(ellipse.Position);
+                    context = PositionRenderingContext.Create(ellipse.Position);
                     break;
 
                 case ShapeType.Path:
                     var path = (Path)shape;
-                    content = new PathRenderingContent(path.Data);
+                    content = PathRenderingContent.Create(path.Data);
                     break;
 
                 case ShapeType.Polystar:
@@ -305,19 +342,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
                 case ShapeType.Rectangle:
                     var rectangle = (Rectangle)shape;
                     content = new RectangleRenderingContent(rectangle.Size, rectangle.Roundness);
-                    context = new PositionRenderingContext(rectangle.Position);
+                    context = PositionRenderingContext.Create(rectangle.Position);
                     break;
 
                 default:
                     throw Unreachable;
             }
 
-            return new ContentAndContext(content, context);
+            return new Rendering(content, context);
         }
 
-        IEnumerable<ContentAndContext> DetreeifyShapeLayerContents(IReadOnlyList<ShapeLayerContent> shapeLayerContents)
+        IEnumerable<Rendering> DetreeifyShapeLayerContents(IReadOnlyList<ShapeLayerContent> shapeLayerContents)
         {
-            RenderingContext context = NullRenderingContext.Instance;
+            var context = RenderingContext.Null;
 
             // The contents are stored in reverse order, i.e. the context for the content
             // is after the content.
@@ -342,7 +379,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
 
                         var detreeifiedShape = DetreeifyShape((Shape)shapeLayerContent);
                         yield return detreeifiedShape.WithContext(context + detreeifiedShape.Context);
-                        context = NullRenderingContext.Instance;
+                        context = RenderingContext.Null;
                         break;
 
                     case ShapeContentType.Group:
@@ -361,11 +398,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
                                     break;
 
                                 default:
-                                    yield return new ContentAndContext(new GroupRenderingContent(groupContents), context);
+                                    yield return new Rendering(new GroupRenderingContent(groupContents), context);
                                     break;
                             }
 
-                            context = NullRenderingContext.Instance;
+                            context = RenderingContext.Null;
                         }
 
                         break;
@@ -398,7 +435,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
             }
         }
 
-        ContentAndContext DetreeifyShapeLayer(ShapeLayer layer)
+        Rendering DetreeifyShapeLayer(ShapeLayer layer)
         {
             var contents = DetreeifyShapeLayerContents(layer.Contents).ToArray();
             var context = GetRenderingContextForLayer(layer);
@@ -406,17 +443,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
             switch (contents.Length)
             {
                 case 0:
-                    return new ContentAndContext(NullRenderingContent.Instance, NullRenderingContext.Instance);
+                    return new Rendering(RenderingContent.Null, RenderingContext.Null);
                 case 1:
                     return contents[0].WithContext(context + contents[0].Context);
                 default:
-                    return new ContentAndContext(new GroupRenderingContent(contents), context);
+                    return new Rendering(new GroupRenderingContent(contents), context);
             }
         }
 
-        ContentAndContext DetreeifySolidLayer(SolidLayer layer)
+        Rendering DetreeifySolidLayer(SolidLayer layer)
         {
-            return new ContentAndContext(
+            return new Rendering(
                         new SolidRenderingContent(
                             width: layer.Width,
                             height: layer.Height,
@@ -424,9 +461,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
                         GetRenderingContextForLayer(layer));
         }
 
-        ContentAndContext DetreeifyTextLayer(TextLayer layer)
+        Rendering DetreeifyTextLayer(TextLayer layer)
         {
-            return new ContentAndContext(
+            return new Rendering(
                         new UnsupportedRenderingContent("Text"),
                         GetRenderingContextForLayer(layer));
         }

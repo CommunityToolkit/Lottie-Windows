@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
 {
     sealed class EffectRenderingContext : RenderingContext
@@ -9,6 +11,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
         internal EffectRenderingContext(Effect effect) => Effect = effect;
 
         public Effect Effect { get; }
+
+        // For now assume true. Need to look at whether the effect is animated.
+        public override bool IsAnimated => true;
+
+        // This needs implementing!
+        public override RenderingContext WithTimeOffset(double timeOffset) => throw new InvalidOperationException();
 
         public override string ToString() => $"Effect: {Effect}";
     }

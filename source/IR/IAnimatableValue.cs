@@ -18,5 +18,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
         /// Gets a value indicating whether the value is animated.
         /// </summary>
         bool IsAnimated { get; }
+
+        /// <summary>
+        /// The animated value with each key frame offset by the given amount.
+        /// </summary>
+        /// <returns>The adjusted animated value.</returns>
+        IAnimatableValue<T> WithTimeOffset(double timeOffset);
     }
 }

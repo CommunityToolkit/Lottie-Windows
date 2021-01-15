@@ -23,5 +23,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Brushes
         public IAnimatableVector3 EndPoint { get; }
 
         public Animatable<Sequence<GradientStop>> GradientStops { get; }
+
+        public override bool IsAnimated =>
+            StartPoint.IsAnimated ||
+            EndPoint.IsAnimated ||
+            GradientStops.IsAnimated ||
+            Opacity.IsAnimated;
     }
 }

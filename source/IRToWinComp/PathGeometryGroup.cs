@@ -88,7 +88,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
             {
                 var group = new PathGeometryGroup(paths.Select(p => p.Data.InitialValue).ToArray());
                 groupingIsPerfect = true;
-                return new Animatable<PathGeometryGroup>(group, propertyIndex: null);
+                return new Animatable<PathGeometryGroup>(group);
             }
 
             // At least some of the paths are animated. Create the data structure.
@@ -127,8 +127,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
                     keyFrames:
                         (from g in records
                          let geometryGroup = new PathGeometryGroup(g.Geometries.Select(h => h!.Value).ToArray())
-                         select new KeyFrame<PathGeometryGroup>(g.Frame, geometryGroup, g.PreferredEasing)).ToArray(),
-                    propertyIndex: null);
+                         select new KeyFrame<PathGeometryGroup>(g.Frame, geometryGroup, g.PreferredEasing)).ToArray());
         }
 
         static KeyFrame<PathGeometry> InterpolateKeyFrame(

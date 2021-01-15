@@ -37,6 +37,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
 
         public MaskMode Mode { get; }
 
+        public bool IsAnimated => Opacity.IsAnimated || Points.IsAnimated;
+
+        public Mask WithTimeOffset(double timeOffset)
+            => IsAnimated
+                ? new Mask(Inverted, Name, Points.WithTimeOffset(timeOffset), Opacity.WithTimeOffset(timeOffset), Mode)
+                : this;
+
         public enum MaskMode
         {
             None = 0,

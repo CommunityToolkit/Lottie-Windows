@@ -14,6 +14,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Brushes
 
         public Animatable<Color> Color { get; }
 
+        public override bool IsAnimated => Color.IsAnimated || Opacity.IsAnimated;
+
+        public override Brush WithTimeOffset(double timeOffset)
+            => IsAnimated
+                ? new SolidColorBrush(Color.WithTimeOffset(timeOffset), Opacity.WithTimeOffset(timeOffset))
+                : this;
+
         public override string ToString() => $"Solid {Color}";
     }
 }

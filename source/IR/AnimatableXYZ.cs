@@ -32,6 +32,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
 
         public Animatable<double> Z { get; }
 
+        public AnimatableXYZ WithOffset(Vector3 offset)
+            => new AnimatableXYZ(X.Select(x => x + offset.X), Y.Select(y => y + offset.Y), Z.Select(z => z + offset.Z));
+
+        public AnimatableXYZ WithTimeOffset(double timeOffset)
+            => timeOffset == 0
+                ? this
+                : new AnimatableXYZ(X.WithTimeOffset(timeOffset), Y.WithTimeOffset(timeOffset), Z.WithTimeOffset(timeOffset));
+
+        IAnimatableVector3 IAnimatableVector3.WithTimeOffset(double timeOffset)
+            => WithTimeOffset(timeOffset);
+
+        IAnimatableValue<Vector3> IAnimatableValue<Vector3>.WithTimeOffset(double timeOffset)
+        {
+            throw new System.NotImplementedException();
+        }
+
         /// <inheritdoc/>
         public bool IsAnimated => X.IsAnimated || Y.IsAnimated || Z.IsAnimated;
     }

@@ -15,6 +15,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Brushes
         {
         }
 
-        public override string ToString() => $"Linear gradient";
+        public override Brush WithTimeOffset(double timeOffset)
+             => IsAnimated
+            ? new LinearGradientBrush(
+                StartPoint.WithTimeOffset(timeOffset),
+                EndPoint.WithTimeOffset(timeOffset),
+                GradientStops.WithTimeOffset(timeOffset),
+                Opacity.WithTimeOffset(timeOffset))
+            : this;
+
+        public override string ToString() => $"{(IsAnimated ? "Animated" : "Static")} Linear gradient";
     }
 }

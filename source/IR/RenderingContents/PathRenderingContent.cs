@@ -4,15 +4,46 @@
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContents
 {
-    sealed class PathRenderingContent : RenderingContent
+    abstract class PathRenderingContent : RenderingContent
     {
-        internal PathRenderingContent(Animatable<PathGeometry> geometry)
+        PathRenderingContent()
         {
-            Geometry = geometry;
         }
 
-        public Animatable<PathGeometry> Geometry { get; }
+        public static PathRenderingContent Create(Animatable<PathGeometry> geometry)
+            => geometry.IsAnimated ? new Animated(geometry) : new Static(geometry.InitialValue);
 
-        public override string ToString() => $"Path";
+        public sealed class Animated : PathRenderingContent
+        {
+            internal Animated(Animatable<PathGeometry> geometry)
+            {
+                Geometry = geometry;
+            }
+
+            public Animatable<PathGeometry> Geometry { get; }
+
+            public override bool IsAnimated => true;
+
+            public override RenderingContent WithTimeOffset(double timeOffset)
+                => new Animated(Geometry.WithTimeOffset(timeOffset));
+
+            public override string ToString() => $"Animated Path";
+        }
+
+        public sealed class Static : PathRenderingContent
+        {
+            internal Static(PathGeometry geometry)
+            {
+                Geometry = geometry;
+            }
+
+            public PathGeometry Geometry { get; }
+
+            public override bool IsAnimated => false;
+
+            public override RenderingContent WithTimeOffset(double timeOffset) => this;
+
+            public override string ToString() => $"Static Path";
+        }
     }
 }

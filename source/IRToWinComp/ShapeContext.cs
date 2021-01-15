@@ -6,7 +6,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using Microsoft.Toolkit.Uwp.UI.Lottie.IR;
 
@@ -19,7 +18,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
     {
         // A RoundCorners with a radius of 0.
         static readonly RoundCorners s_defaultRoundCorners =
-            new RoundCorners(new ShapeLayerContent.ShapeLayerContentArgs { }, new Animatable<double>(0, null));
+            new RoundCorners(new ShapeLayerContent.ShapeLayerContentArgs { }, new Animatable<double>(0));
 
         internal ShapeContext(ShapeLayerContext layer)
         {
