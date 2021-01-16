@@ -71,7 +71,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
             result = result.MoveToTop<FillRenderingContext>();
             result = result.MoveToTop<StrokeRenderingContext>();
 
-            result = AnchorRenderingContext.WithoutRedundants(result);
             result = BlendModeRenderingContext.WithoutRedundants(result);
             result = OpacityRenderingContext.WithoutRedundants(result);
             result = PositionRenderingContext.WithoutRedundants(result);
@@ -79,7 +78,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
             result = ScaleRenderingContext.WithoutRedundants(result);
             result = VisibilityRenderingContext.WithoutRedundants(result);
             result = ClipRenderingContext.WithoutRedundants(result);
-
+            result = CenterPointRenderingContext.WithCenterPointInsteadOfAnchor(result);
+            result = CenterPointRenderingContext.WithoutRedundants(result);
             return result;
         }
 
@@ -187,7 +187,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
             }
 
             // Anchor goes before position, rotation, and scale, because it affects them all.
-            // Position indicates where in the parent the anchor should be drawn.
+            // Position indicates where in the parent the anchor point should be drawn.
             yield return AnchorRenderingContext.Create(layer.Transform.Anchor);
             yield return PositionRenderingContext.Create(layer.Transform.Position);
             yield return RotationRenderingContext.Create(layer.Transform.Rotation);
@@ -449,15 +449,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
             var contents = DetreeifyShapeLayerContents(layer.Contents).ToArray();
             var context = GetRenderingContextForLayer(layer);
 
-            switch (contents.Length)
+            return contents.Length switch
             {
-                case 0:
-                    return new Rendering(RenderingContent.Null, RenderingContext.Null);
-                case 1:
-                    return contents[0].WithContext(context + contents[0].Context);
-                default:
-                    return new Rendering(new GroupRenderingContent(contents), context);
-            }
+                0 => new Rendering(RenderingContent.Null, RenderingContext.Null),
+                1 => contents[0].WithContext(context + contents[0].Context),
+                _ => new Rendering(new GroupRenderingContent(contents), context),
+            };
         }
 
         Rendering DetreeifySolidLayer(SolidLayer layer)

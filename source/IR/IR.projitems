@@ -19,6 +19,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Brushes\LinearGradientBrush.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Brushes\RadialGradientBrush.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Brushes\SolidColorBrush.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CenterPointRenderingContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Char.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Color.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ColorGradientStop.cs" />

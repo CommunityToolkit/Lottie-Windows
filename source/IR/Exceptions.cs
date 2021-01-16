@@ -9,6 +9,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
     static class Exceptions
     {
         // The code we hit is supposed to be unreachable. This indicates a bug.
-        public static Exception Unreachable => new InvalidOperationException("Unreachable code executed");
+        public static Exception Unreachable => new InvalidOperationException("Unreachable code executed.");
+
+        public static Exception TODO => new InvalidOperationException("Not yet implemented.");
     }
 }
