@@ -12,8 +12,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
         public Rectangle(
             in ShapeLayerContentArgs args,
             DrawingDirection drawingDirection,
-            IAnimatableVector3 position,
-            IAnimatableVector3 size,
+            IAnimatableVector2 position,
+            IAnimatableVector2 size,
             Animatable<double> roundness)
             : base(in args, drawingDirection)
         {
@@ -31,9 +31,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
         /// </summary>
         public Animatable<double> Roundness { get; }
 
-        public IAnimatableVector3 Size { get; }
+        public IAnimatableVector2 Size { get; }
 
-        public IAnimatableVector3 Position { get; }
+        public IAnimatableVector2 Position { get; }
 
         /// <inheritdoc/>
         public override ShapeContentType ContentType => ShapeContentType.Rectangle;

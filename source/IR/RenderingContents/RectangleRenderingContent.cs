@@ -7,7 +7,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContents
     sealed class RectangleRenderingContent : RenderingContent
     {
         internal RectangleRenderingContent(
-            IAnimatableVector3 size,
+            IAnimatableVector2 size,
             Animatable<double> roundness)
         {
             Size = size;
@@ -16,7 +16,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContents
 
         public Animatable<double> Roundness { get; }
 
-        public IAnimatableVector3 Size { get; }
+        public IAnimatableVector2 Size { get; }
 
         public override bool IsAnimated => Roundness.IsAnimated || Size.IsAnimated;
 

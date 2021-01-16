@@ -12,18 +12,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
         {
         }
 
-        public static AnchorRenderingContext Create(IAnimatableVector3 anchor)
+        public static AnchorRenderingContext Create(IAnimatableVector2 anchor)
             => anchor.IsAnimated ? new Animated(anchor) : new Static(anchor.InitialValue);
 
         public sealed class Animated : AnchorRenderingContext
         {
-            internal Animated(IAnimatableVector3 anchor) => Anchor = anchor;
+            internal Animated(IAnimatableVector2 anchor) => Anchor = anchor;
 
-            public IAnimatableVector3 Anchor { get; }
+            public IAnimatableVector2 Anchor { get; }
 
             public override bool IsAnimated => true;
 
-            public override RenderingContext WithOffset(Vector3 offset)
+            public override RenderingContext WithOffset(Vector2 offset)
             {
                 if (offset.X == 0 && offset.Y == 0)
                 {
@@ -32,8 +32,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
 
                 return new Animated(Anchor.Type switch
                 {
-                    AnimatableVector3Type.Vector3 => ((AnimatableVector3)Anchor).WithOffset(offset),
-                    AnimatableVector3Type.XYZ => ((AnimatableXYZ)Anchor).WithOffset(offset),
+                    AnimatableVector2Type.Vector2 => ((AnimatableVector2)Anchor).WithOffset(offset),
+                    AnimatableVector2Type.XY => ((AnimatableXY)Anchor).WithOffset(offset),
                     _ => throw Unreachable,
                 });
             }
@@ -47,13 +47,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
 
         public sealed class Static : AnchorRenderingContext
         {
-            internal Static(Vector3 anchor) => Anchor = anchor;
+            internal Static(Vector2 anchor) => Anchor = anchor;
 
-            public Vector3 Anchor { get; }
+            public Vector2 Anchor { get; }
 
             public override bool IsAnimated => false;
 
-            public override RenderingContext WithOffset(Vector3 offset)
+            public override RenderingContext WithOffset(Vector2 offset)
                 => offset.X == 0 && offset.Y == 0
                     ? this
                     : new Static(Anchor + offset);

@@ -30,9 +30,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
 
         public static float PercentF(double value) => (float)value / 100F;
 
-        public static Sn.Vector2 Vector2(Vector3 vector3) => Vector2(vector3.X, vector3.Y);
-
-        public static Sn.Vector2 Vector2(Vector2 vector2) => Vector2(vector2.X, vector2.Y);
+        public static Sn.Vector2 Vector2(Vector2 vector2) => Vector2((double)vector2.X, (double)vector2.Y);
 
         public static Sn.Vector2 Vector2(double x, double y) => new Sn.Vector2((float)x, (float)y);
 
@@ -48,7 +46,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
 
         public static Sn.Vector3 Vector3(double x, double y, double z) => new Sn.Vector3((float)x, (float)y, (float)z);
 
-        public static Sn.Vector3 Vector3(Vector3 vector3) => new Sn.Vector3((float)vector3.X, (float)vector3.Y, (float)vector3.Z);
+        public static Sn.Vector3 Vector3(Vector2 vector2) => new Sn.Vector3((float)vector2.X, (float)vector2.Y, 0);
 
         public static Sn.Vector4 Vector4(WinCompData.Wui.Color color) => new Sn.Vector4(color.R, color.G, color.B, color.A);
 

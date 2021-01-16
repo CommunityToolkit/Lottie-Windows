@@ -21,13 +21,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
 
         public override bool IsAnimated => false;
 
-        public ClipRenderingContext WithOffset(Vector2 offset)
+        public override RenderingContext WithOffset(Vector2 offset)
             => offset.X == 0 && offset.Y == 0
                 ? this
                 : new ClipRenderingContext(Position + offset, Size);
-
-        public override RenderingContext WithOffset(Vector3 offset)
-            => WithOffset(new Vector2(offset.X, offset.Y));
 
         public override RenderingContext WithTimeOffset(double timeOffset) => this;
 

@@ -449,20 +449,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Serialization
             return result;
         }
 
-        YamlObject FromAnimatable(IAnimatableVector3 animatable)
+        YamlObject FromAnimatable(IAnimatableVector2 animatable)
         {
             switch (animatable.Type)
             {
-                case AnimatableVector3Type.Vector3:
-                    return FromAnimatable<Vector3>((AnimatableVector3)animatable, FromVector3);
-                case AnimatableVector3Type.XYZ:
+                case AnimatableVector2Type.Vector2:
+                    return FromAnimatable<Vector2>((AnimatableVector2)animatable, FromVector2);
+                case AnimatableVector2Type.XY:
                     {
-                        var xyz = (AnimatableXYZ)animatable;
+                        var xyz = (AnimatableXY)animatable;
                         var result = new YamlMap
                         {
                             { nameof(xyz.X), FromAnimatable(xyz.X) },
                             { nameof(xyz.Y), FromAnimatable(xyz.Y) },
-                            { nameof(xyz.Z), FromAnimatable(xyz.Z) },
                         };
                         return result;
                     }
@@ -499,17 +498,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Serialization
             {
                 { nameof(value.ControlPoint1), FromVector2(value.ControlPoint1) },
                 { nameof(value.ControlPoint2), FromVector2(value.ControlPoint2) },
-            };
-            return result;
-        }
-
-        static YamlObject FromVector3(Vector3 value)
-        {
-            var result = new YamlMap
-            {
-                { nameof(value.X), value.X },
-                { nameof(value.Y), value.Y },
-                { nameof(value.Z), value.Z },
             };
             return result;
         }
@@ -574,12 +562,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Serialization
                 { nameof(keyFrame.Easing), FromEasing(keyFrame.Easing) },
             };
 
-            if (keyFrame is KeyFrame<Vector3> v3kf)
+            if (keyFrame is KeyFrame<Vector2> v2kf)
             {
-                if (v3kf.SpatialBezier?.IsLinear == false)
+                if (v2kf.SpatialBezier?.IsLinear == false)
                 {
                     // Spatial Bezier
-                    result.Add(nameof(v3kf.SpatialBezier), FromCubicBezier(v3kf.SpatialBezier.Value));
+                    result.Add(nameof(v2kf.SpatialBezier), FromCubicBezier(v2kf.SpatialBezier.Value));
                 }
             }
 

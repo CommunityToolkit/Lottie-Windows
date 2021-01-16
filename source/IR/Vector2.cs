@@ -5,6 +5,7 @@
 #nullable enable
 
 using System;
+using SNVector2 = System.Numerics.Vector2;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
 {
@@ -35,15 +36,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
         public static Vector2 operator +(Vector2 left, Vector2 right) =>
             new Vector2(left.X + right.X, left.Y + right.Y);
 
-        public static Vector2 operator +(Vector2 left, Vector3 right) =>
-            new Vector2(left.X + right.X, left.Y + right.Y);
-
         public static Vector2 operator -(Vector2 left, Vector2 right) =>
             new Vector2(left.X - right.X, left.Y - right.Y);
 
         public static bool operator ==(Vector2 left, Vector2 right) => left.Equals(right);
 
         public static bool operator !=(Vector2 left, Vector2 right) => !left.Equals(right);
+
+        /// <summary>
+        /// Implicit conversion from <see cref="System.Numerics.Vector2"/>.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        public static implicit operator Vector2(SNVector2 value) => new Vector2(value.X, value.Y);
 
         /// <inheritdoc/>
         public override bool Equals(object? obj) => obj is Vector2 other && Equals(other);

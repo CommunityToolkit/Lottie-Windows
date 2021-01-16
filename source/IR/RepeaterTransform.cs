@@ -11,9 +11,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
     {
         public RepeaterTransform(
             in ShapeLayerContentArgs args,
-            IAnimatableVector3 anchor,
-            IAnimatableVector3 position,
-            IAnimatableVector3 scalePercent,
+            IAnimatableVector2 anchor,
+            IAnimatableVector2 position,
+            IAnimatableVector2 scalePercent,
             Animatable<Rotation> rotation,
             Animatable<Opacity> opacity,
             Animatable<Opacity> startOpacity,

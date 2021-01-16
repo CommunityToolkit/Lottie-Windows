@@ -28,8 +28,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
                     : new Animatable<PathGeometry>(optimizedPathData.InitialValue));
         }
 
-        public static TrimmedAnimatable<Vector3> TrimAnimatable(LayerContext context, IAnimatableVector3 animatable)
-            => TrimAnimatable<Vector3>(context, (AnimatableVector3)animatable);
+        public static TrimmedAnimatable<Vector2> TrimAnimatable(LayerContext context, IAnimatableVector2 animatable)
+            => TrimAnimatable<Vector2>(context, (AnimatableVector2)animatable);
 
         public static TrimmedAnimatable<T> TrimAnimatable<T>(LayerContext context, Animatable<T> animatable)
             where T : IEquatable<T>

@@ -9,9 +9,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
 #endif
     interface IGradient
     {
-        IAnimatableVector3 StartPoint { get; }
+        IAnimatableVector2 StartPoint { get; }
 
-        IAnimatableVector3 EndPoint { get; }
+        IAnimatableVector2 EndPoint { get; }
 
         Animatable<Sequence<GradientStop>> GradientStops { get; }
     }

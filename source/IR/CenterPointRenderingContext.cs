@@ -13,7 +13,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
         {
         }
 
-        public static CenterPointRenderingContext Create(IAnimatableVector3 centerPoint)
+        public static CenterPointRenderingContext Create(IAnimatableVector2 centerPoint)
             => centerPoint.IsAnimated ? new Animated(centerPoint) : new Static(centerPoint.InitialValue);
 
         public static RenderingContext WithoutRedundants(RenderingContext context)
@@ -99,7 +99,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
                                     throw TODO;
 
                                 case AnchorRenderingContext.Static _:
-                                    yield return position.WithOffset(Vector3.Zero - ((AnchorRenderingContext.Static)currentAnchor).Anchor);
+                                    yield return position.WithOffset(Vector2.Zero - ((AnchorRenderingContext.Static)currentAnchor).Anchor);
                                     break;
 
                                 default: throw Unreachable;
@@ -119,11 +119,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
                             switch (currentAnchor)
                             {
                                 case AnchorRenderingContext.Animated _:
-                                    yield return PositionRenderingContext.Create(((AnchorRenderingContext.Animated)currentAnchor.WithOffset(Vector3.Zero - position.Position)).Anchor);
+                                    yield return PositionRenderingContext.Create(((AnchorRenderingContext.Animated)currentAnchor.WithOffset(Vector2.Zero - position.Position)).Anchor);
                                     break;
 
                                 case AnchorRenderingContext.Static _:
-                                    yield return position.WithOffset(Vector3.Zero - ((AnchorRenderingContext.Static)currentAnchor).Anchor);
+                                    yield return position.WithOffset(Vector2.Zero - ((AnchorRenderingContext.Static)currentAnchor).Anchor);
                                     break;
 
                                 default: throw Unreachable;
@@ -187,13 +187,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
 
         public sealed class Animated : CenterPointRenderingContext
         {
-            internal Animated(IAnimatableVector3 centerPoint) => CenterPoint = centerPoint;
+            internal Animated(IAnimatableVector2 centerPoint) => CenterPoint = centerPoint;
 
-            public IAnimatableVector3 CenterPoint { get; }
+            public IAnimatableVector2 CenterPoint { get; }
 
             public override bool IsAnimated => true;
 
-            public override RenderingContext WithOffset(Vector3 offset)
+            public override RenderingContext WithOffset(Vector2 offset)
             {
                 if (offset.X == 0 && offset.Y == 0)
                 {
@@ -202,8 +202,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
 
                 return new Animated(CenterPoint.Type switch
                 {
-                    AnimatableVector3Type.Vector3 => ((AnimatableVector3)CenterPoint).WithOffset(offset),
-                    AnimatableVector3Type.XYZ => ((AnimatableXYZ)CenterPoint).WithOffset(offset),
+                    AnimatableVector2Type.Vector2 => ((AnimatableVector2)CenterPoint).WithOffset(offset),
+                    AnimatableVector2Type.XY => ((AnimatableXY)CenterPoint).WithOffset(offset),
                     _ => throw Unreachable,
                 });
             }
@@ -217,13 +217,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
 
         public sealed class Static : CenterPointRenderingContext
         {
-            internal Static(Vector3 centerPoint) => CenterPoint = centerPoint;
+            internal Static(Vector2 centerPoint) => CenterPoint = centerPoint;
 
-            public Vector3 CenterPoint { get; }
+            public Vector2 CenterPoint { get; }
 
             public override bool IsAnimated => false;
 
-            public override RenderingContext WithOffset(Vector3 offset)
+            public override RenderingContext WithOffset(Vector2 offset)
                 => offset.X == 0 && offset.Y == 0
                     ? this
                     : new Static(CenterPoint + offset);

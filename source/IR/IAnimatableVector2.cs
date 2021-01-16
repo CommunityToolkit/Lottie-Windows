@@ -7,23 +7,23 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
 #if PUBLIC_IR
     public
 #endif
-    interface IAnimatableVector3 : IAnimatableValue<Vector3>
+    interface IAnimatableVector2 : IAnimatableValue<Vector2>
     {
-        AnimatableVector3Type Type { get; }
+        AnimatableVector2Type Type { get; }
 
         /// <summary>
         /// The animated value with each key frame offset by the given amount.
         /// </summary>
         /// <returns>The adjusted animated value.</returns>
-        new IAnimatableVector3 WithTimeOffset(double timeOffset);
+        new IAnimatableVector2 WithTimeOffset(double timeOffset);
     }
 
 #if PUBLIC_IR
     public
 #endif
-    enum AnimatableVector3Type
+    enum AnimatableVector2Type
     {
-        Vector3,
-        XYZ,
+        Vector2,
+        XY,
     }
 }

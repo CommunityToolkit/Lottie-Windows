@@ -12,22 +12,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
         {
         }
 
-        public sealed override RenderingContext WithOffset(Vector3 offset) => this;
+        public sealed override RenderingContext WithOffset(Vector2 offset) => this;
 
         public static RenderingContext WithoutRedundants(RenderingContext context)
             => context.Filter((Static c) => c.ScalePercent.X != 100 || c.ScalePercent.Y != 100);
 
-        public static ScaleRenderingContext Create(IAnimatableVector3 scalePercent)
+        public static ScaleRenderingContext Create(IAnimatableVector2 scalePercent)
             => scalePercent.IsAnimated
                 ? new Animated(scalePercent)
                 : new Static(scalePercent.InitialValue);
 
         public sealed class Animated : ScaleRenderingContext
         {
-            internal Animated(IAnimatableVector3 scalePercent)
+            internal Animated(IAnimatableVector2 scalePercent)
                 => ScalePercent = scalePercent;
 
-            public IAnimatableVector3 ScalePercent { get; }
+            public IAnimatableVector2 ScalePercent { get; }
 
             public override bool IsAnimated => true;
 
@@ -40,10 +40,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
 
         public sealed class Static : ScaleRenderingContext
         {
-            internal Static(Vector3 scalePercent)
+            internal Static(Vector2 scalePercent)
                 => ScalePercent = scalePercent;
 
-            public Vector3 ScalePercent { get; }
+            public Vector2 ScalePercent { get; }
 
             public override bool IsAnimated => false;
 

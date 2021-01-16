@@ -35,7 +35,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
 
         public override bool IsAnimated => StrokeWidth.IsAnimated || Brush.IsAnimated;
 
-        public override sealed RenderingContext WithOffset(Vector3 offset) => this;
+        public override sealed RenderingContext WithOffset(Vector2 offset) => this;
 
         public override RenderingContext WithTimeOffset(double timeOffset)
             => IsAnimated

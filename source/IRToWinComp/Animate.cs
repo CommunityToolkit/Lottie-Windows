@@ -438,7 +438,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
         /// </summary>
         public static void Vector2(
             LayerContext context,
-            in TrimmedAnimatable<Vector3> value,
+            in TrimmedAnimatable<Vector2> value,
             CompositionObject targetObject,
             string targetPropertyName,
             string? longDescription = null,
@@ -450,7 +450,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
         /// </summary>
         public static void ScaledVector2(
             LayerContext context,
-            in TrimmedAnimatable<Vector3> value,
+            in TrimmedAnimatable<Vector2> value,
             double scale,
             CompositionObject targetObject,
             string targetPropertyName,
@@ -475,7 +475,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
         /// </summary>
         public static void Vector3(
             LayerContext context,
-            in TrimmedAnimatable<Vector3> value,
+            in TrimmedAnimatable<Vector2> value,
             CompositionObject targetObject,
             string targetPropertyName,
             string? longDescription = null,
@@ -487,7 +487,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
         /// </summary>
         public static void ScaledVector3(
             LayerContext context,
-            in TrimmedAnimatable<Vector3> value,
+            in TrimmedAnimatable<Vector2> value,
             double scale,
             CompositionObject targetObject,
             string targetPropertyName,
@@ -580,17 +580,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
                 if (keyFrame.SpatialBezier?.IsLinear == false)
                 {
                     // TODO - should only be on Vector3. In which case, should they be on Animatable, or on something else?
-                    if (typeof(T) != typeof(Vector3))
+                    if (typeof(T) != typeof(Vector2))
                     {
                         Debug.WriteLine("Spatial control point on non-Vector3 type");
                     }
 
                     var spatialBezier = keyFrame.SpatialBezier.Value;
 
-                    var cp0 = ConvertTo.Vector2((Vector3)(object)previousValue);
+                    var cp0 = ConvertTo.Vector2((Vector2)(object)previousValue);
                     var cp1 = ConvertTo.Vector2(spatialBezier.ControlPoint1);
                     var cp2 = ConvertTo.Vector2(spatialBezier.ControlPoint2);
-                    var cp3 = ConvertTo.Vector2((Vector3)(object)keyFrame.Value);
+                    var cp3 = ConvertTo.Vector2((Vector2)(object)keyFrame.Value);
                     CubicBezierFunction2 cb;
 
                     switch (keyFrame.Easing.Type)

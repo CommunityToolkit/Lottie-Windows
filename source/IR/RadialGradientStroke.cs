@@ -16,8 +16,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
             LineCapType capType,
             LineJoinType joinType,
             double miterLimit,
-            IAnimatableVector3 startPoint,
-            IAnimatableVector3 endPoint,
+            IAnimatableVector2 startPoint,
+            IAnimatableVector2 endPoint,
             Animatable<Sequence<GradientStop>> gradientStops,
             Animatable<double> highlightLength,
             Animatable<double> highlightDegrees)
@@ -30,9 +30,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
             HighlightDegrees = highlightDegrees;
         }
 
-        public IAnimatableVector3 StartPoint { get; }
+        public IAnimatableVector2 StartPoint { get; }
 
-        public IAnimatableVector3 EndPoint { get; }
+        public IAnimatableVector2 EndPoint { get; }
 
         public Animatable<Sequence<GradientStop>> GradientStops { get; }
 

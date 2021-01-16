@@ -7,8 +7,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Animatable.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)AnimatableVector3.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)AnimatableXYZ.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AnimatableVector2.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AnimatableXY.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Asset.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AssetCollection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)BezierSegment.cs" />
@@ -40,7 +40,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)GradientStop.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HoldEasing.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IAnimatableValue.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)IAnimatableVector3.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IAnimatableVector2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IGradient.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ImageAsset.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IRadialGradient.cs" />
@@ -110,7 +110,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)TrimPath.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ValidationIssues.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Vector2.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Vector3.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Optimization\GradientStopOptimizer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Optimization\Optimizer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\IRYamlSerializer.cs" />

@@ -90,16 +90,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
                 optimizeLines: true);
 
             // Create the offsets key frames.
-            var keyFrames = new KeyFrame<Vector3>[offsets.Length];
+            var keyFrames = new KeyFrame<Vector2>[offsets.Length];
 
             for (var i = 0; i < path.KeyFrames.Count; i++)
             {
                 ref var offset = ref offsets[i];
                 var pathKeyFrame = path.KeyFrames[i];
-                keyFrames[i] = new KeyFrame<Vector3>(pathKeyFrame.Frame, new Vector3(offset.X, offset.Y, 0), pathKeyFrame.Easing);
+                keyFrames[i] = new KeyFrame<Vector2>(pathKeyFrame.Frame, new Vector2(offset.X, offset.Y), pathKeyFrame.Easing);
             }
 
-            var offsetAnimatable = new TrimmedAnimatable<Vector3>(context, new Vector3(offsets[0].X, offsets[0].Y, 0), keyFrames);
+            var offsetAnimatable = new TrimmedAnimatable<Vector2>(context, new Vector2(offsets[0].X, offsets[0].Y), keyFrames);
 
             // Apply the offset animation.
             Animate.Vector2(context, offsetAnimatable, shape, nameof(shape.Offset), "Path animation as a translation.");

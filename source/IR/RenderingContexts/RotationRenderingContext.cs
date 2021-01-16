@@ -12,7 +12,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
         {
         }
 
-        public sealed override RenderingContext WithOffset(Vector3 offset) => this;
+        public sealed override RenderingContext WithOffset(Vector2 offset) => this;
 
         public static RenderingContext WithoutRedundants(RenderingContext context)
             => context.Filter((Static c) => c.Rotation != Rotation.None);

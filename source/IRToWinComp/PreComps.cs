@@ -171,8 +171,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
                     // Only direction is animated.
                     var distanceValue = distance.InitialValue;
                     var keyFrames = direction.KeyFrames.Select(
-                        kf => new KeyFrame<Vector3>(kf.Frame, VectorFromRotationAndDistance(kf.Value, distanceValue), kf.Easing)).ToArray();
-                    var directionAnimation = new TrimmedAnimatable<Vector3>(context, keyFrames[0].Value, keyFrames);
+                        kf => new KeyFrame<Vector2>(kf.Frame, VectorFromRotationAndDistance(kf.Value, distanceValue), kf.Easing)).ToArray();
+                    var directionAnimation = new TrimmedAnimatable<Vector2>(context, keyFrames[0].Value, keyFrames);
                     Animate.Vector3(context, directionAnimation, shadow, nameof(shadow.Offset));
                 }
             }
@@ -181,8 +181,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
                 // Only distance is animated.
                 var directionRadians = direction.InitialValue.Radians;
                 var keyFrames = distance.KeyFrames.Select(
-                    kf => new KeyFrame<Vector3>(kf.Frame, VectorFromRotationAndDistance(directionRadians, kf.Value), kf.Easing)).ToArray();
-                var distanceAnimation = new TrimmedAnimatable<Vector3>(context, keyFrames[0].Value, keyFrames);
+                    kf => new KeyFrame<Vector2>(kf.Frame, VectorFromRotationAndDistance(directionRadians, kf.Value), kf.Easing)).ToArray();
+                var distanceAnimation = new TrimmedAnimatable<Vector2>(context, keyFrames[0].Value, keyFrames);
                 Animate.Vector3(context, distanceAnimation, shadow, nameof(shadow.Offset));
             }
             else
@@ -197,14 +197,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
             return result;
         }
 
-        static Vector3 VectorFromRotationAndDistance(Rotation direction, double distance) =>
+        static Vector2 VectorFromRotationAndDistance(Rotation direction, double distance) =>
             VectorFromRotationAndDistance(direction.Radians, distance);
 
-        static Vector3 VectorFromRotationAndDistance(double directionRadians, double distance) =>
-            new Vector3(
+        static Vector2 VectorFromRotationAndDistance(double directionRadians, double distance) =>
+            new Vector2(
                 x: Math.Sin(directionRadians) * distance,
-                y: Math.Cos(directionRadians) * distance,
-                z: 1);
+                y: Math.Cos(directionRadians) * distance);
 
         /// <summary>
         /// Applies a Gaussian blur effect to the given <paramref name="source"/> and

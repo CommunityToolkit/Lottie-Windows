@@ -7,8 +7,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Brushes
     abstract class GradientBrush : Brush
     {
         private protected GradientBrush(
-            IAnimatableVector3 startPoint,
-            IAnimatableVector3 endPoint,
+            IAnimatableVector2 startPoint,
+            IAnimatableVector2 endPoint,
             Animatable<Sequence<GradientStop>> gradientStops,
             Animatable<Opacity> opacity)
             : base(opacity)
@@ -18,9 +18,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Brushes
             GradientStops = gradientStops;
         }
 
-        public IAnimatableVector3 StartPoint { get; }
+        public IAnimatableVector2 StartPoint { get; }
 
-        public IAnimatableVector3 EndPoint { get; }
+        public IAnimatableVector2 EndPoint { get; }
 
         public Animatable<Sequence<GradientStop>> GradientStops { get; }
 

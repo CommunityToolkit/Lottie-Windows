@@ -6,12 +6,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContents
 {
     sealed class EllipseRenderingContent : RenderingContent
     {
-        internal EllipseRenderingContent(IAnimatableVector3 diameter)
+        internal EllipseRenderingContent(IAnimatableVector2 diameter)
         {
             Diameter = diameter;
         }
 
-        public IAnimatableVector3 Diameter { get; }
+        public IAnimatableVector2 Diameter { get; }
 
         public override bool IsAnimated => Diameter.IsAnimated;
 

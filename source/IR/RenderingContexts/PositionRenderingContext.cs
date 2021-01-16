@@ -13,7 +13,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
         {
         }
 
-        public static PositionRenderingContext Create(IAnimatableVector3 position)
+        public static PositionRenderingContext Create(IAnimatableVector2 position)
             => position.IsAnimated ? new Animated(position) : new Static(position.InitialValue);
 
         public static RenderingContext WithoutRedundants(RenderingContext context)
@@ -21,12 +21,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
 
         public sealed class Animated : PositionRenderingContext
         {
-            internal Animated(IAnimatableVector3 position)
+            internal Animated(IAnimatableVector2 position)
                 => Position = position;
 
-            public IAnimatableVector3 Position { get; }
+            public IAnimatableVector2 Position { get; }
 
-            public override RenderingContext WithOffset(Vector3 offset)
+            public override RenderingContext WithOffset(Vector2 offset)
             {
                 if (offset.X == 0 && offset.Y == 0)
                 {
@@ -35,8 +35,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
 
                 return new Animated(Position.Type switch
                 {
-                    AnimatableVector3Type.Vector3 => ((AnimatableVector3)Position).WithOffset(offset),
-                    AnimatableVector3Type.XYZ => ((AnimatableXYZ)Position).WithOffset(offset),
+                    AnimatableVector2Type.Vector2 => ((AnimatableVector2)Position).WithOffset(offset),
+                    AnimatableVector2Type.XY => ((AnimatableXY)Position).WithOffset(offset),
                     _ => throw Unreachable,
                 });
             }
@@ -51,14 +51,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
 
         public sealed class Static : PositionRenderingContext
         {
-            internal Static(Vector3 position)
+            internal Static(Vector2 position)
                 => Position = position;
 
-            public Vector3 Position { get; }
+            public Vector2 Position { get; }
 
             public override bool IsAnimated => false;
 
-            public override RenderingContext WithOffset(Vector3 offset)
+            public override RenderingContext WithOffset(Vector2 offset)
                 => offset.X == 0 && offset.Y == 0
                     ? this
                     : new Static(Position + offset);

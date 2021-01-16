@@ -16,7 +16,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
         public override bool IsAnimated => true;
 
         // This needs implementing!
-        public override sealed RenderingContext WithOffset(Vector3 offset) => throw new InvalidOperationException();
+        public override sealed RenderingContext WithOffset(Vector2 offset) => throw new InvalidOperationException();
 
         // This needs implementing!
         public override RenderingContext WithTimeOffset(double timeOffset) => throw new InvalidOperationException();

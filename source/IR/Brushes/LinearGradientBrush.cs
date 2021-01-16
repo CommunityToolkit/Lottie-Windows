@@ -7,8 +7,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Brushes
     sealed class LinearGradientBrush : GradientBrush
     {
         public LinearGradientBrush(
-            IAnimatableVector3 startPoint,
-            IAnimatableVector3 endPoint,
+            IAnimatableVector2 startPoint,
+            IAnimatableVector2 endPoint,
             Animatable<Sequence<GradientStop>> gradientStops,
             Animatable<Opacity> opacity)
             : base(startPoint, endPoint, gradientStops, opacity)

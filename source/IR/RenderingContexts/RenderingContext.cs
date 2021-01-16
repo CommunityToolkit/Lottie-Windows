@@ -18,7 +18,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
 
         public abstract RenderingContext WithTimeOffset(double timeOffset);
 
-        public abstract RenderingContext WithOffset(Vector3 offset);
+        public abstract RenderingContext WithOffset(Vector2 offset);
 
         public virtual IReadOnlyList<RenderingContext> SubContexts => Array.Empty<RenderingContext>();
 
@@ -152,7 +152,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
 
             public override bool IsAnimated => SubContexts.Any(item => item.IsAnimated);
 
-            public override sealed RenderingContext WithOffset(Vector3 offset)
+            public override sealed RenderingContext WithOffset(Vector2 offset)
                 => new CompositeRenderingContext(SubContexts.Select(item => item.WithOffset(offset)));
 
             public override RenderingContext WithTimeOffset(double timeOffset)
@@ -168,7 +168,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
         {
             public override bool IsAnimated => false;
 
-            public override sealed RenderingContext WithOffset(Vector3 offset) => this;
+            public override sealed RenderingContext WithOffset(Vector2 offset) => this;
 
             public override RenderingContext WithTimeOffset(double timeOffset) => this;
 

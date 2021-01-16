@@ -87,7 +87,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
         static void TranslateAndApplyNonRoundedRectangleContent(
             ShapeContext context,
             Rectangle rectangle,
-            in TrimmedAnimatable<Vector3> position,
+            in TrimmedAnimatable<Vector2> position,
             CompositionSpriteShape compositionShape)
         {
             Debug.Assert(IsNonRounded(context, rectangle), "Precondition");
@@ -95,11 +95,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
             var geometry = context.ObjectFactory.CreateRectangleGeometry();
             compositionShape.Geometry = geometry;
 
-            var size = AnimatableVector3Rewriter.EnsureOneEasingPerChannel(rectangle.Size);
-            if (size is AnimatableXYZ sizeXYZ)
+            var size = AnimatableVector2Rewriter.EnsureOneEasingPerChannel(rectangle.Size);
+            if (size is AnimatableXY sizeXY)
             {
-                var width = Optimizer.TrimAnimatable(context, sizeXYZ.X);
-                var height = Optimizer.TrimAnimatable(context, sizeXYZ.Y);
+                var width = Optimizer.TrimAnimatable(context, sizeXY.X);
+                var height = Optimizer.TrimAnimatable(context, sizeXY.Y);
 
                 if (!(width.IsAnimated || height.IsAnimated))
                 {
@@ -112,7 +112,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
             }
             else
             {
-                var size3 = Optimizer.TrimAnimatable<Vector3>(context, (AnimatableVector3)size);
+                var size3 = Optimizer.TrimAnimatable<Vector2>(context, (AnimatableVector2)size);
 
                 if (!size3.IsAnimated)
                 {
@@ -129,7 +129,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
         static void TranslateAndApplyRoundedRectangleContent(
             ShapeContext context,
             Rectangle rectangle,
-            in TrimmedAnimatable<Vector3> position,
+            in TrimmedAnimatable<Vector2> position,
             CompositionSpriteShape compositionShape)
         {
             // Use a rounded rectangle geometry.
@@ -141,11 +141,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
             var cornerRadius = GetCornerRadius(context, rectangle, out var cornerRadiusIsRectangleRoundness);
 
             // Get the size, converted to an AnimatableXYZ if necessary to handle different easings per channel.
-            var size = AnimatableVector3Rewriter.EnsureOneEasingPerChannel(rectangle.Size);
-            if (size is AnimatableXYZ sizeXYZ)
+            var size = AnimatableVector2Rewriter.EnsureOneEasingPerChannel(rectangle.Size);
+            if (size is AnimatableXY sizeXY)
             {
-                var width = Optimizer.TrimAnimatable(context, sizeXYZ.X);
-                var height = Optimizer.TrimAnimatable(context, sizeXYZ.Y);
+                var width = Optimizer.TrimAnimatable(context, sizeXY.X);
+                var height = Optimizer.TrimAnimatable(context, sizeXY.Y);
 
                 ApplyCornerRadius(
                     context,
@@ -162,7 +162,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
             }
             else
             {
-                var size3 = Optimizer.TrimAnimatable<Vector3>(context, (AnimatableVector3)size);
+                var size3 = Optimizer.TrimAnimatable<Vector2>(context, (AnimatableVector2)size);
 
                 ApplyCornerRadius(
                     context,
@@ -258,8 +258,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
             ShapeContext context,
             Rectangle rectangle,
             CompositionSpriteShape compositionRectangle,
-            in TrimmedAnimatable<Vector3> size,
-            in TrimmedAnimatable<Vector3> position,
+            in TrimmedAnimatable<Vector2> size,
+            in TrimmedAnimatable<Vector2> position,
             RectangleOrRoundedRectangleGeometry geometry)
         {
             if (compositionRectangle.Geometry is null)
@@ -333,7 +333,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
             CompositionSpriteShape compositionRectangle,
             in TrimmedAnimatable<double> width,
             in TrimmedAnimatable<double> height,
-            in TrimmedAnimatable<Vector3> position,
+            in TrimmedAnimatable<Vector2> position,
             RectangleOrRoundedRectangleGeometry geometry)
         {
             if (compositionRectangle.Geometry is null)
@@ -508,15 +508,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
         // This is necessary because a geometry's offset describes its
         // top left corner, whereas a Lottie position describes its centerpoint.
         static Sn.Vector2 InitialOffset(
-            in TrimmedAnimatable<Vector3> size,
-            in TrimmedAnimatable<Vector3> position)
+            in TrimmedAnimatable<Vector2> size,
+            in TrimmedAnimatable<Vector2> position)
             => ConvertTo.Vector2(position.InitialValue - (size.InitialValue / 2));
 
         static Sn.Vector2 InitialOffset(
             in TrimmedAnimatable<double> width,
             in TrimmedAnimatable<double> height,
-            in TrimmedAnimatable<Vector3> position)
-            => ConvertTo.Vector2(position.InitialValue - (new Vector3(width.InitialValue, height.InitialValue, 0) / 2));
+            in TrimmedAnimatable<Vector2> position)
+            => ConvertTo.Vector2(position.InitialValue - (new Vector2(width.InitialValue, height.InitialValue) / 2));
 
         // Returns true if the given rectangle ever has rounded corners.
         static bool IsNonRounded(ShapeContext shapeContext, Rectangle rectangle) =>

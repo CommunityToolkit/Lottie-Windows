@@ -6,7 +6,7 @@
     <SharedGUID>3f38c7bb-ec65-4944-89c0-cd7517dd6ac2</SharedGUID>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)AnimatableVector3Rewriter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AnimatableVector2Rewriter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Animate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Brushes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CanvasGeometryCombiner.cs" />
