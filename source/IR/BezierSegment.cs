@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using static Microsoft.Toolkit.Uwp.UI.Lottie.IR.Exceptions;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
 {
@@ -213,7 +214,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
                     inner1 = ac;
                     break;
                 default:
-                    throw new InvalidOperationException();
+                    throw Unreachable;
             }
 
             var outer = Math.Sqrt(longestSegment);
@@ -311,7 +312,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
                     inner11 = bc;
                     break;
                 default:
-                    throw new InvalidOperationException();
+                    throw Unreachable;
             }
 
             var outer = Math.Sqrt(longestSegment);

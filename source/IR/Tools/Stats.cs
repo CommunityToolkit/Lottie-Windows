@@ -5,6 +5,7 @@
 using System;
 using System.Linq;
 using Microsoft.Toolkit.Uwp.UI.Lottie.IR.Layers;
+using static Microsoft.Toolkit.Uwp.UI.Lottie.IR.Exceptions;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Tools
 {
@@ -57,7 +58,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Tools
                         TextLayerCount++;
                         break;
                     default:
-                        throw new InvalidOperationException();
+                        throw Unreachable;
                 }
 
                 foreach (var mask in layer.Masks)
@@ -192,7 +193,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Tools
                 case ShapeContentType.TrimPath:
                     break;
                 default:
-                    throw new InvalidOperationException();
+                    throw Unreachable;
             }
         }
     }

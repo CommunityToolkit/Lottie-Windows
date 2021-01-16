@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using static Microsoft.Toolkit.Uwp.UI.Lottie.IR.Exceptions;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
 {
@@ -13,9 +14,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
         {
         }
 
+        public override sealed RenderingContext WithOffset(Vector3 offset) => this;
+
         public static RenderingContext WithoutRedundants(RenderingContext context)
-            => context is CompositeRenderingContext composite
-                ? Compose(MoveOpacitiesUp(composite.Items))
+            => context.SubContexts.Count > 0
+                ? Compose(MoveOpacitiesUp(context.SubContexts))
                 : context;
 
         static IEnumerable<RenderingContext> MoveOpacitiesUp(IReadOnlyList<RenderingContext> items)
@@ -88,7 +91,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
                         break;
 
                     default:
-                        throw new InvalidOperationException();
+                        throw Unreachable;
                 }
             }
 

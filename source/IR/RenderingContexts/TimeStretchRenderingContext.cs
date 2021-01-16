@@ -12,6 +12,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
 
         public override bool IsAnimated => false;
 
+        public override sealed RenderingContext WithOffset(Vector3 offset) => this;
+
         public override RenderingContext WithTimeOffset(double timeOffset) => this;
 
         public override string ToString() => $"Time-stretch: {Stretch}";

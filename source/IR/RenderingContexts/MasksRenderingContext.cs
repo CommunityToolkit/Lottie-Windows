@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -15,6 +16,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
         public IReadOnlyList<Mask> Masks { get; }
 
         public override bool IsAnimated => Masks.Any(item => item.IsAnimated);
+
+        // This needs implementing!
+        public override sealed RenderingContext WithOffset(Vector3 offset) => throw new InvalidOperationException();
 
         public override RenderingContext WithTimeOffset(double timeOffset)
             => IsAnimated

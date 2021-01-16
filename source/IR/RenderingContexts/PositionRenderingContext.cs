@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
+using static Microsoft.Toolkit.Uwp.UI.Lottie.IR.Exceptions;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
 {
@@ -37,7 +37,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
                 {
                     AnimatableVector3Type.Vector3 => ((AnimatableVector3)Position).WithOffset(offset),
                     AnimatableVector3Type.XYZ => ((AnimatableXYZ)Position).WithOffset(offset),
-                    _ => throw new InvalidOperationException(),
+                    _ => throw Unreachable,
                 });
             }
 

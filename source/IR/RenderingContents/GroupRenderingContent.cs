@@ -18,7 +18,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContents
 
         public override RenderingContent WithTimeOffset(double timeOffset)
             => IsAnimated
-                ? new GroupRenderingContent(Items.Select(item => Rendering.UnifyTimebase(item, timeOffset)).ToArray())
+                ? new GroupRenderingContent(Items.Select(item => Rendering.UnifyTimebaseWithTimeOffset(item, timeOffset)).ToArray())
                 : this;
 
         public override string ToString() => $"{(IsAnimated ? "Animated" : "Static")} Group[{Items.Count}]";

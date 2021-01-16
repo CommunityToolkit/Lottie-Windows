@@ -25,6 +25,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
 
         public override bool IsAnimated => false;
 
+        public override sealed RenderingContext WithOffset(Vector3 offset) => this;
+
         public override RenderingContext WithTimeOffset(double timeOffset)
              => timeOffset == 0
                 ? this
@@ -33,15 +35,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
 
         public static RenderingContext WithoutRedundants(RenderingContext context)
         {
-            if (context is not CompositeRenderingContext composite)
+            if (context.SubContexts.Count == 0)
             {
                 return context;
             }
 
             // Collect all of the VisibilitiesRenderingContexts, adjusted for time offset.
-            var adjustedVisibilities = new List<VisibilityRenderingContext>(composite.Items.Count);
+            var adjustedVisibilities = new List<VisibilityRenderingContext>(context.SubContexts.Count);
             var timeAdjustment = 0.0;
-            foreach (var subContext in composite.Items)
+            foreach (var subContext in context.SubContexts)
             {
                 switch (subContext)
                 {
@@ -65,7 +67,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
 
             // Return a new composite with the combined visibility at the front and all
             // others removed.
-            var filtered = composite.Filter((VisibilityRenderingContext c) => false);
+            var filtered = context.Filter((VisibilityRenderingContext c) => false);
 
             return combinedContext + filtered;
         }

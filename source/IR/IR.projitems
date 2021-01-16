@@ -31,6 +31,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Ellipse.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)EmbeddedImageAsset.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Enum.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Exceptions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ExtensionMethods.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ExternalImageAsset.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Font.cs" />
@@ -92,7 +93,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)RenderingContexts\AnchorRenderingContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RenderingContexts\BlendModeRenderingContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RenderingContexts\ClipRenderingContext.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)RenderingContexts\CompositeRenderingContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RenderingContexts\EffectRenderingContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RenderingContexts\MasksRenderingContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RenderingContexts\MatteTypeRenderingContext.cs" />

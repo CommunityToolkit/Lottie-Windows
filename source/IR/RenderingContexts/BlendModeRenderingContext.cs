@@ -14,10 +14,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
 
         public override bool IsAnimated => false;
 
+        public override sealed RenderingContext WithOffset(Vector3 offset) => this;
+
         public static RenderingContext WithoutRedundants(RenderingContext context)
-             => context is CompositeRenderingContext composite
-                        ? Compose(WithoutRedundants(composite.Items))
-                        : context;
+             => context.SubContexts.Count > 0
+                    ? Compose(WithoutRedundants(context.SubContexts))
+                    : context;
 
         static IEnumerable<RenderingContext> WithoutRedundants(IEnumerable<RenderingContext> items)
         {

@@ -10,6 +10,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.Toolkit.Uwp.UI.Lottie.IR.Layers;
 using Microsoft.Toolkit.Uwp.UI.Lottie.YamlData;
+using static Microsoft.Toolkit.Uwp.UI.Lottie.IR.Exceptions;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Serialization
 {
@@ -704,8 +705,5 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Serialization
         YamlScalar Scalar(Trim value) => Scalar(value, $"{value.Percent}%");
 
         YamlScalar Scalar(Version value) => Scalar(value, value.ToString());
-
-        // The code we hit is supposed to be unreachable. This indicates a bug.
-        static Exception Unreachable => new InvalidOperationException("Unreachable code executed");
     }
 }

@@ -5,6 +5,7 @@
 #nullable enable
 
 using System;
+using static Microsoft.Toolkit.Uwp.UI.Lottie.IR.Exceptions;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
 {
@@ -48,7 +49,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
                     var yCb = (CubicBezierEasing)other;
                     return xCb.Equals(yCb);
                 default:
-                    throw new InvalidOperationException();
+                    throw Unreachable;
             }
         }
 

@@ -32,10 +32,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
             context = Context;
         }
 
-        public static Rendering UnifyTimebase(Rendering rendering, double timeOffset)
+        public static Rendering UnifyTimebase(Rendering rendering)
+            => UnifyTimebaseWithTimeOffset(rendering, 0);
+
+        public static Rendering UnifyTimebaseWithTimeOffset(Rendering rendering, double timeOffset)
         {
             // Get the accumulated time offsets from the context.
-            var contentOffset = timeOffset + rendering.Context.
+            var contentOffset = timeOffset + rendering.Context.SubContexts.
                                                 OfType<TimeOffsetRenderingContext>().
                                                 Sum(ctx => ctx.TimeOffset);
 
@@ -51,7 +54,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
         {
             var timeOffset = 0.0;
 
-            foreach (var subContext in context)
+            foreach (var subContext in context.SubContexts)
             {
                 switch (subContext)
                 {

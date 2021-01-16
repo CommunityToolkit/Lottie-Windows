@@ -32,8 +32,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
         public override RenderingContext WithTimeOffset(double timeOffset) => this;
 
         public static RenderingContext WithoutRedundants(RenderingContext context)
-            => context is CompositeRenderingContext composite
-                ? Compose(MoveClipsUp(composite.Items))
+            => context.SubContexts.Count > 0
+                ? Compose(MoveClipsUp(context.SubContexts))
                 : context;
 
         static IEnumerable<RenderingContext> MoveClipsUp(IReadOnlyList<RenderingContext> items)

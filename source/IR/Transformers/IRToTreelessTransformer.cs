@@ -9,6 +9,7 @@ using Microsoft.Toolkit.Uwp.UI.Lottie.IR.Brushes;
 using Microsoft.Toolkit.Uwp.UI.Lottie.IR.Layers;
 using Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContents;
 using Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts;
+using static Microsoft.Toolkit.Uwp.UI.Lottie.IR.Exceptions;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
 {
@@ -31,14 +32,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
 
             // Convert from layers to Renderings
             var renderings =
-                (from contentAndContext in instance.Detreeify(source.Layers)
-                 select contentAndContext.WithContext(clip + contentAndContext.Context)).ToArray();
+                (from rendering in instance.Detreeify(source.Layers)
+                 select rendering.WithContext(clip + rendering.Context)).ToArray();
 
             // Optimize the contexts.
             var optimizedRenderings = renderings.Select(Optimize).ToArray();
 
             // Unify the timebases.
-            optimizedRenderings = optimizedRenderings.Select(item => Rendering.UnifyTimebase(item, 0)).ToArray();
+            optimizedRenderings = optimizedRenderings.Select(Rendering.UnifyTimebase).ToArray();
 
             var result = new Rendering(
                                 new GroupRenderingContent(optimizedRenderings),
@@ -65,6 +66,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
             // Remove the metadata. For now we don't need it and it's easier to
             // see what's going on without it.
             result = ElideMetadata(result);
+
+            // Start with the fills and strokes at the start.
+            result = result.MoveToTop<FillRenderingContext>();
+            result = result.MoveToTop<StrokeRenderingContext>();
+
             result = AnchorRenderingContext.WithoutRedundants(result);
             result = BlendModeRenderingContext.WithoutRedundants(result);
             result = OpacityRenderingContext.WithoutRedundants(result);
@@ -73,6 +79,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
             result = ScaleRenderingContext.WithoutRedundants(result);
             result = VisibilityRenderingContext.WithoutRedundants(result);
             result = ClipRenderingContext.WithoutRedundants(result);
+
             return result;
         }
 
@@ -179,6 +186,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
                 }
             }
 
+            // Anchor goes before position, rotation, and scale, because it affects them all.
+            // Position indicates where in the parent the anchor should be drawn.
             yield return AnchorRenderingContext.Create(layer.Transform.Anchor);
             yield return PositionRenderingContext.Create(layer.Transform.Position);
             yield return RotationRenderingContext.Create(layer.Transform.Rotation);
@@ -467,7 +476,5 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
                         new UnsupportedRenderingContent("Text"),
                         GetRenderingContextForLayer(layer));
         }
-
-        static Exception Unreachable => new InvalidOperationException();
     }
 }

@@ -3,6 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using static Microsoft.Toolkit.Uwp.UI.Lottie.IR.Exceptions;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
 {
@@ -12,11 +16,55 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
         {
         }
 
-        public static RenderingContext WithoutRedundants(RenderingContext context)
-            => context.Filter((Static c) => c.Anchor.X != 0 || c.Anchor.Y != 0);
-
         public static AnchorRenderingContext Create(IAnimatableVector3 anchor)
             => anchor.IsAnimated ? new Animated(anchor) : new Static(anchor.InitialValue);
+
+        // Removes all the static AnchorRenderingContexts by adjusting the subsequent
+        // position, scale, and rotations.
+        public static RenderingContext WithoutRedundants(RenderingContext context)
+        {
+            Debug.Assert(context.IsFlattened, "Precondition");
+
+            var anchor = Vector3.Zero;
+
+            var accumulator = new List<RenderingContext>();
+
+            var index = 0;
+            foreach (var subContext in context.SubContexts)
+            {
+                index++;
+
+                switch (subContext)
+                {
+                    case Static anchorContext:
+                        anchor = anchorContext.Anchor;
+                        break;
+
+                    case Animated _:
+                        // We don't currently handle animation. Return what
+                        // we have so far with the rest unchanged.
+                        return Compose(accumulator) + Compose(context.SubContexts.Skip(index - 1));
+
+                    case PositionRenderingContext position:
+                        accumulator.Add(position.WithOffset(Vector3.Zero - anchor));
+                        break;
+
+                    case RotationRenderingContext rotation:
+                        accumulator.Add(rotation.WithOffset(anchor));
+                        break;
+
+                    case ScaleRenderingContext scale:
+                        accumulator.Add(scale.WithOffset(anchor));
+                        break;
+
+                    default:
+                        accumulator.Add(subContext);
+                        break;
+                }
+            }
+
+            return Compose(accumulator);
+        }
 
         public sealed class Animated : AnchorRenderingContext
         {
@@ -37,7 +85,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
                 {
                     AnimatableVector3Type.Vector3 => ((AnimatableVector3)Anchor).WithOffset(offset),
                     AnimatableVector3Type.XYZ => ((AnimatableXYZ)Anchor).WithOffset(offset),
-                    _ => throw new InvalidOperationException(),
+                    _ => throw Unreachable,
                 });
             }
 
