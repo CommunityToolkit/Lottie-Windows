@@ -42,11 +42,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
 
             // Ensure that the diameter is expressed in a form that has only one easing per channel.
-            var diameter = AnimatableVector3Rewriter.EnsureOneEasingPerChannel(shapeContent.Diameter);
-            if (diameter is AnimatableXYZ diameterXYZ)
+            var diameter = AnimatableVector2Rewriter.EnsureOneEasingPerChannel(shapeContent.Diameter);
+            if (diameter is AnimatableXY diameterXY)
             {
-                var diameterX = Optimizer.TrimAnimatable(context, diameterXYZ.X);
-                var diameterY = Optimizer.TrimAnimatable(context, diameterXYZ.Y);
+                var diameterX = Optimizer.TrimAnimatable(context, diameterXY.X);
+                var diameterY = Optimizer.TrimAnimatable(context, diameterXY.Y);
                 if (diameterX.IsAnimated)
                 {
                     Animate.ScaledScalar(context, diameterX, 0.5, compositionEllipseGeometry, $"{nameof(CompositionEllipseGeometry.Radius)}.X");
@@ -64,7 +64,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
             else
             {
-                var diameter3 = Optimizer.TrimAnimatable<Vector3>(context, (AnimatableVector3)diameter);
+                var diameter3 = Optimizer.TrimAnimatable<Vector2>(context, (AnimatableVector2)diameter);
                 if (diameter3.IsAnimated)
                 {
                     Animate.ScaledVector2(context, diameter3, 0.5, compositionEllipseGeometry, nameof(CompositionEllipseGeometry.Radius));

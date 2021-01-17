@@ -16,7 +16,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             DrawingDirection drawingDirection,
             PolyStarType starType,
             Animatable<double> points,
-            IAnimatableVector3 position,
+            IAnimatableVector2 position,
             Animatable<double> rotation,
             Animatable<double>? innerRadius,
             Animatable<double> outerRadius,
@@ -38,7 +38,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
         internal Animatable<double> Points { get; }
 
-        internal IAnimatableVector3 Position { get; }
+        internal IAnimatableVector2 Position { get; }
 
         internal Animatable<double> Rotation { get; }
 

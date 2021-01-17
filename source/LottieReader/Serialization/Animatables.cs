@@ -28,6 +28,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         static readonly Animatable<Rotation> s_animatableRotationNone = CreateNonAnimatedAnimatable(Rotation.None);
         static readonly Animatable<Sequence<GradientStop>> s_animatableGradientStopsSingle = CreateNonAnimatedAnimatable(s_defaultGradientStops);
         static readonly Animatable<Trim> s_animatableTrimNone = CreateNonAnimatedAnimatable(Trim.None);
+        static readonly AnimatableVector2 s_animatableVector2Zero = new AnimatableVector2(Vector2.Zero);
         static readonly AnimatableVector3 s_animatableVector3Zero = new AnimatableVector3(Vector3.Zero);
         static readonly AnimatableVector3 s_animatableVector3OneHundred = new AnimatableVector3(new Vector3(100, 100, 100));
 

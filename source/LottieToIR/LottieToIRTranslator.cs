@@ -145,32 +145,29 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToIR
                 TranslateAnimatable(from.Opacity, TranslateOpacity),
                 (Mask.MaskMode)from.Mode);
 
-        static Color TranslateColor(Animatables.Color from)
+        static Color TranslateColor(Color from)
             => Color.FromArgb(from.A, from.R, from.G, from.B);
 
-        static Opacity TranslateOpacity(Animatables.Opacity from)
+        static Opacity TranslateOpacity(Opacity from)
             => Opacity.FromFloat(from.Value);
 
-        static Rotation TranslateRotation(Animatables.Rotation from)
+        static Rotation TranslateRotation(Rotation from)
             => Rotation.FromDegrees(from.Degrees);
 
-        static Trim TranslateTrim(Animatables.Trim from)
+        static Trim TranslateTrim(Trim from)
             => Trim.FromFloat(from.Value);
 
-        static BezierSegment TranslateBezierSegment(Animatables.BezierSegment from)
+        static BezierSegment TranslateBezierSegment(BezierSegment from)
             => new BezierSegment(
                 TranslateVector2(from.ControlPoint0),
                 TranslateVector2(from.ControlPoint1),
                 TranslateVector2(from.ControlPoint2),
                 TranslateVector2(from.ControlPoint3));
 
-        static Vector2 TranslateVector2(Animatables.Vector2 from)
+        static Vector2 TranslateVector2(Vector2 from)
             => new Vector2(from.X, from.Y);
 
-        static Vector2 TranslateVector2(Animatables.Vector3 from)
-            => new Vector2(from.X, from.Y);
-
-        static PathGeometry TranslatePathGeometry(Animatables.PathGeometry from)
+        static PathGeometry TranslatePathGeometry(PathGeometry from)
             => new PathGeometry(new Sequence<BezierSegment>(from.BezierSegments.Select(TranslateBezierSegment)), from.IsClosed);
 
         static DropShadowEffect TranslateDropShadowEffect(LottieData.DropShadowEffect from)
@@ -193,29 +190,29 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToIR
                  TranslateAnimatable(from.RepeatEdgePixels),
                  from.ForceGpuRendering);
 
-        static Enum<BlurDimension> TranslateBlurDimension(Animatables.Enum<LottieData.BlurDimension> from)
+        static Enum<BlurDimension> TranslateBlurDimension(Enum<LottieData.BlurDimension> from)
             => (BlurDimension)from.Value;
 
-        static Easing TranslateEasing(Animatables.Easing from)
+        static Easing TranslateEasing(Easing from)
             => from.Type switch
             {
-                Animatables.Easing.EasingType.CubicBezier => TranslateCubicBezierEasing((Animatables.CubicBezierEasing)from),
-                Animatables.Easing.EasingType.Hold => HoldEasing.Instance,
-                Animatables.Easing.EasingType.Linear => LinearEasing.Instance,
+                Easing.EasingType.CubicBezier => TranslateCubicBezierEasing((CubicBezierEasing)from),
+                Easing.EasingType.Hold => HoldEasing.Instance,
+                Easing.EasingType.Linear => LinearEasing.Instance,
                 _ => throw Unreachable,
             };
 
-        static CubicBezierEasing TranslateCubicBezierEasing(Animatables.CubicBezierEasing from)
+        static CubicBezierEasing TranslateCubicBezierEasing(CubicBezierEasing from)
             => new CubicBezierEasing(from.Beziers.Select(TranslateCubicBezier));
 
-        static CubicBezier TranslateCubicBezier(Animatables.CubicBezier from)
+        static CubicBezier TranslateCubicBezier(CubicBezier from)
             => new CubicBezier(TranslateVector2(from.ControlPoint1), TranslateVector2(from.ControlPoint2));
 
-        static KeyFrame<T> TranslateKeyFrame<T>(Animatables.KeyFrame<T> from)
+        static KeyFrame<T> TranslateKeyFrame<T>(KeyFrame<T> from)
             where T : IEquatable<T>
             => TranslateKeyFrame(from, kf => kf);
 
-        static KeyFrame<T> TranslateKeyFrame<T, TFrom>(Animatables.KeyFrame<TFrom> from, Func<TFrom, T> selector)
+        static KeyFrame<T> TranslateKeyFrame<T, TFrom>(KeyFrame<TFrom> from, Func<TFrom, T> selector)
             where T : IEquatable<T>
             where TFrom : IEquatable<TFrom>
             => new KeyFrame<T>(
@@ -224,36 +221,36 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToIR
                 from.SpatialBezier.HasValue ? TranslateCubicBezier(from.SpatialBezier.Value) : null,
                 TranslateEasing(from.Easing));
 
-        static Animatable<T> TranslateAnimatable<T>(Animatables.Animatable<T> from)
+        static Animatable<T> TranslateAnimatable<T>(Animatable<T> from)
             where T : IEquatable<T>
             => from.IsAnimated
             ? new Animatable<T>(from.KeyFrames.Select(TranslateKeyFrame))
             : new Animatable<T>(from.InitialValue);
 
-        static Animatable<double>? TranslateAnimatableNullable(Animatables.Animatable<double>? from)
+        static Animatable<double>? TranslateAnimatableNullable(Animatable<double>? from)
             => from is null ? null : TranslateAnimatable(from);
 
-        static Animatable<T> TranslateAnimatable<T, TFrom>(Animatables.Animatable<TFrom> from, Func<TFrom, T> selector)
+        static Animatable<T> TranslateAnimatable<T, TFrom>(Animatable<TFrom> from, Func<TFrom, T> selector)
             where T : IEquatable<T>
             where TFrom : IEquatable<TFrom>
             => from.IsAnimated
             ? new Animatable<T>(from.KeyFrames.Select(kf => TranslateKeyFrame(kf, selector)))
             : new Animatable<T>(selector(from.InitialValue));
 
-        static IAnimatableVector2 TranslateAnimatable(Animatables.IAnimatableVector3 from)
+        static IAnimatableVector2 TranslateAnimatable(IAnimatableVector2 from)
             => from.Type switch
             {
-                Animatables.AnimatableVector3Type.Vector3 => TranslateAnimatableVector3((Animatables.AnimatableVector3)from),
-                Animatables.AnimatableVector3Type.XYZ => TranslateAnimatableXYZ((Animatables.AnimatableXYZ)from),
+                AnimatableVector2Type.Vector2 => TranslateAnimatableVector2((AnimatableVector2)from),
+                AnimatableVector2Type.XY => TranslateAnimatableXY((AnimatableXY)from),
                 _ => throw Unreachable,
             };
 
-        static AnimatableVector2 TranslateAnimatableVector3(Animatables.AnimatableVector3 from)
+        static AnimatableVector2 TranslateAnimatableVector2(AnimatableVector2 from)
             => from.IsAnimated
             ? new AnimatableVector2(from.KeyFrames.Select(kf => TranslateKeyFrame(kf, TranslateVector2)))
             : new AnimatableVector2(TranslateVector2(from.InitialValue));
 
-        static AnimatableXY TranslateAnimatableXYZ(Animatables.AnimatableXYZ from)
+        static AnimatableXY TranslateAnimatableXY(AnimatableXY from)
             => new AnimatableXY(TranslateAnimatable(from.X), TranslateAnimatable(from.Y));
 
         static ShapeLayerContent TranslateShapeLayerContent(LottieData.ShapeLayerContent from)
@@ -299,11 +296,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToIR
                 TranslateShapeLayerContentArgs(from),
                 from.Contents.Select(TranslateShapeLayerContent));
 
-        static GradientStop TranslateGradientStop(Animatables.GradientStop from)
+        static GradientStop TranslateGradientStop(GradientStop from)
             => from.Kind switch
             {
-                Animatables.GradientStop.GradientStopKind.Color => new ColorGradientStop(from.Offset, TranslateColor(((Animatables.ColorGradientStop)from).Color)),
-                Animatables.GradientStop.GradientStopKind.Opacity => new OpacityGradientStop(from.Offset, TranslateOpacity(((Animatables.OpacityGradientStop)from).Opacity)),
+                GradientStop.GradientStopKind.Color => new ColorGradientStop(from.Offset, TranslateColor(((ColorGradientStop)from).Color)),
+                GradientStop.GradientStopKind.Opacity => new OpacityGradientStop(from.Offset, TranslateOpacity(((OpacityGradientStop)from).Opacity)),
                 _ => throw Unreachable,
             };
 
@@ -397,7 +394,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToIR
                 TranslateShapeLayerContentArgs(from),
                 TranslateAnimatable(from.Radius));
 
-        static Sequence<T> TranslateSequence<T, TFrom>(Animatables.Sequence<TFrom> from, Func<TFrom, T> selector)
+        static Sequence<T> TranslateSequence<T, TFrom>(Sequence<TFrom> from, Func<TFrom, T> selector)
             => new Sequence<T>(from.Select(selector));
 
         static SolidColorFill TranslateSolidColorFill(LottieData.SolidColorFill from)

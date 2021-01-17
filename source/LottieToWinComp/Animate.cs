@@ -570,6 +570,43 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 shortDescription);
         }
 
+        /// <summary>
+        /// Animates a Vector3 value.
+        /// </summary>
+        public static void Vector3(
+            LayerContext context,
+            in TrimmedAnimatable<Vector2> value,
+            CompositionObject targetObject,
+            string targetPropertyName,
+            string? longDescription = null,
+            string? shortDescription = null)
+            => ScaledVector3(context, value, 1, targetObject, targetPropertyName, longDescription, shortDescription);
+
+        /// <summary>
+        /// Animates a Vector3 value.
+        /// </summary>
+        public static void ScaledVector3(
+            LayerContext context,
+            in TrimmedAnimatable<Vector2> value,
+            double scale,
+            CompositionObject targetObject,
+            string targetPropertyName,
+            string? longDescription = null,
+            string? shortDescription = null)
+        {
+            Debug.Assert(value.IsAnimated, "Precondition");
+            GenericCreateCompositionKeyFrameAnimation(
+                context,
+                value,
+                context.ObjectFactory.CreateVector3KeyFrameAnimation,
+                (ca, progress, val, easing) => ca.InsertKeyFrame(progress, ConvertTo.Vector3(val) * (float)scale, easing),
+                (ca, progress, expr, easing) => ca.InsertExpressionKeyFrame(progress, scale * expr.AsVector3(), easing),
+                targetObject,
+                targetPropertyName,
+                longDescription,
+                shortDescription);
+        }
+
         static void GenericCreateCompositionKeyFrameAnimation<TCA, T>(
                 LayerContext context,
                 in TrimmedAnimatable<T> value,

@@ -14,17 +14,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         public Ellipse(
             in ShapeLayerContentArgs args,
             DrawingDirection drawingDirection,
-            IAnimatableVector3 position,
-            IAnimatableVector3 diameter)
+            IAnimatableVector2 position,
+            IAnimatableVector2 diameter)
             : base(in args, drawingDirection)
         {
             Position = position;
             Diameter = diameter;
         }
 
-        public IAnimatableVector3 Position { get; }
+        public IAnimatableVector2 Position { get; }
 
-        public IAnimatableVector3 Diameter { get; }
+        public IAnimatableVector2 Diameter { get; }
 
         /// <inheritdoc/>
         public override ShapeContentType ContentType => ShapeContentType.Ellipse;

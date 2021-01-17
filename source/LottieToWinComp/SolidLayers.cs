@@ -5,6 +5,7 @@
 #nullable enable
 
 using System.Linq;
+using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Sn = System.Numerics;
 
