@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
 using Microsoft.Toolkit.Uwp.UI.Lottie.IR.Brushes;
 using Microsoft.Toolkit.Uwp.UI.Lottie.IR.Layers;
 using Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContents;

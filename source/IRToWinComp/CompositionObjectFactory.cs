@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
 using Microsoft.Toolkit.Uwp.UI.Lottie.IR;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce;
@@ -155,7 +156,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
             if (color.A == 0)
             {
                 // Transparent brushes that are never animated are all equivalent.
-                color = IR.Color.TransparentBlack;
+                color = Animatables.Color.TransparentBlack;
             }
 
             if (!_nonAnimatedColorBrushes.TryGetValue(color, out var result))

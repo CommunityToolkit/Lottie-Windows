@@ -4,6 +4,7 @@
 
 using System;
 using System.Diagnostics;
+using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
 using Microsoft.Toolkit.Uwp.UI.Lottie.IR;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;

@@ -251,7 +251,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
 
                 // The mask geometry needs to be colored with something so that it can be used
                 // as a mask.
-                maskSpriteShape.FillBrush = Brushes.CreateNonAnimatedColorBrush(context, IR.Color.Black);
+                maskSpriteShape.FillBrush = Brushes.CreateNonAnimatedColorBrush(context, Animatables.Color.Black);
 
                 resultContainer.Shapes.Add(maskSpriteShape);
             }

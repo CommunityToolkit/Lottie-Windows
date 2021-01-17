@@ -5,7 +5,7 @@
 #nullable enable
 
 using System;
-using SnVector2 = System.Numerics.Vector2;
+using SNVector2 = System.Numerics.Vector2;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.Animatables
 {
@@ -54,7 +54,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.Animatables
         /// Implicit conversion from <see cref="System.Numerics.Vector2"/>.
         /// </summary>
         /// <param name="value">The value.</param>
-        public static implicit operator Vector2(SnVector2 value) => new Vector2(value.X, value.Y);
+        public static implicit operator Vector2(SNVector2 value) => new Vector2(value.X, value.Y);
 
         /// <inheritdoc/>
         public override bool Equals(object? obj) => obj is Vector2 other && Equals(other);

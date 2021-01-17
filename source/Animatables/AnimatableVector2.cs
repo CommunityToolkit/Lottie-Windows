@@ -9,7 +9,6 @@ using System.Linq;
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.Animatables
 {
     /// <summary>
-    /// An animatable Vector2 value expressed as a single animatable Vector2 value.
     /// </summary>
 #if PUBLIC_Animatables
     public

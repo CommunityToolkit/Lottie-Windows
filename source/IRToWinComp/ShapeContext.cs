@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
 using Microsoft.Toolkit.Uwp.UI.Lottie.IR;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
@@ -147,7 +148,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
         {
             if (!b.Color.IsAnimated && !b.Opacity.IsAnimated)
             {
-                if (b.Opacity.InitialValue == IR.Opacity.Opaque &&
+                if (b.Opacity.InitialValue == Animatables.Opacity.Opaque &&
                     b.Color.InitialValue.A == 1)
                 {
                     // b overrides a.
@@ -193,7 +194,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
         LinearGradientStroke ComposeLinearGradientStrokes(LinearGradientStroke a, LinearGradientStroke b)
         {
             if (!a.StrokeWidth.IsAnimated && !b.StrokeWidth.IsAnimated &&
-                a.Opacity.IsAlways(IR.Opacity.Opaque) && b.Opacity.IsAlways(IR.Opacity.Opaque))
+                a.Opacity.IsAlways(Animatables.Opacity.Opaque) && b.Opacity.IsAlways(Animatables.Opacity.Opaque))
             {
                 if (a.StrokeWidth.InitialValue >= b.StrokeWidth.InitialValue)
                 {
@@ -209,7 +210,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
         RadialGradientStroke ComposeRadialGradientStrokes(RadialGradientStroke a, RadialGradientStroke b)
         {
             if (!a.StrokeWidth.IsAnimated && !b.StrokeWidth.IsAnimated &&
-                a.Opacity.IsAlways(IR.Opacity.Opaque) && b.Opacity.IsAlways(IR.Opacity.Opaque))
+                a.Opacity.IsAlways(Animatables.Opacity.Opaque) && b.Opacity.IsAlways(Animatables.Opacity.Opaque))
             {
                 if (a.StrokeWidth.InitialValue >= b.StrokeWidth.InitialValue)
                 {
@@ -226,7 +227,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
         {
             if (!a.StrokeWidth.IsAnimated && !b.StrokeWidth.IsAnimated &&
                 !a.DashPattern.Any() && !b.DashPattern.Any() &&
-                a.Opacity.IsAlways(IR.Opacity.Opaque) && b.Opacity.IsAlways(IR.Opacity.Opaque))
+                a.Opacity.IsAlways(Animatables.Opacity.Opaque) && b.Opacity.IsAlways(Animatables.Opacity.Opaque))
             {
                 if (a.StrokeWidth.InitialValue >= b.StrokeWidth.InitialValue)
                 {

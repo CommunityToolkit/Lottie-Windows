@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
 using Microsoft.Toolkit.Uwp.UI.Lottie.IR.Layers;
 using Microsoft.Toolkit.Uwp.UI.Lottie.YamlData;
 using static Microsoft.Toolkit.Uwp.UI.Lottie.IR.Exceptions;

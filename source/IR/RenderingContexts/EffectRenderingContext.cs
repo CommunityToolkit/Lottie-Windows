@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
 {

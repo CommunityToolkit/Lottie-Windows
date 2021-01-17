@@ -9,6 +9,7 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
 using Microsoft.Toolkit.Uwp.UI.Lottie.IR;
 using Microsoft.Toolkit.Uwp.UI.Lottie.IR.Layers;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;

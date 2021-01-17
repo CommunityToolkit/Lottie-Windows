@@ -4,12 +4,12 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.Toolkit.Uwp.UI.Lottie.IR;
+using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
 {
     /// <summary>
-    /// An <see cref="IR.Animatable{T}"/> that has had its key frames trimmed
+    /// An <see cref="Animatables.Animatable{T}"/> that has had its key frames trimmed
     /// to include only those that affect a particular time period.
     /// </summary>
     /// <typeparam name="T">The type of the key frames.</typeparam>

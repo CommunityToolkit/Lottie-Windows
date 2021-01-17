@@ -5,6 +5,7 @@
 #nullable enable
 
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
 using Microsoft.Toolkit.Uwp.UI.Lottie.IR;
 using Microsoft.Toolkit.Uwp.UI.Lottie.IR.Layers;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
@@ -113,7 +114,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
             var inProgress = context.InPointAsProgress;
             var outProgress = context.OutPointAsProgress;
 
-            if (inProgress > 1 || outProgress <= 0 || inProgress >= outProgress || layerOpacity.IsAlways(IR.Opacity.Transparent))
+            if (inProgress > 1 || outProgress <= 0 || inProgress >= outProgress || layerOpacity.IsAlways(Animatables.Opacity.Transparent))
             {
                 // The layer is never visible. Don't create anything.
                 rootNode = null;
@@ -194,7 +195,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
             var inProgress = context.InPointAsProgress;
             var outProgress = context.OutPointAsProgress;
 
-            if (inProgress > 1 || outProgress <= 0 || inProgress >= outProgress || layerOpacity.IsAlways(IR.Opacity.Transparent))
+            if (inProgress > 1 || outProgress <= 0 || inProgress >= outProgress || layerOpacity.IsAlways(Animatables.Opacity.Transparent))
             {
                 // The layer is never visible. Don't create anything.
                 rootNode = null;
@@ -296,7 +297,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
             var inProgress = context.InPointAsProgress;
             var outProgress = context.OutPointAsProgress;
 
-            if (inProgress > 1 || outProgress <= 0 || inProgress >= outProgress || layerOpacity.IsAlways(IR.Opacity.Transparent))
+            if (inProgress > 1 || outProgress <= 0 || inProgress >= outProgress || layerOpacity.IsAlways(Animatables.Opacity.Transparent))
             {
                 // The layer is never visible. Don't create anything.
                 rootNode = null;
@@ -355,7 +356,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
             ref ContainerVisual root)
         {
             // Implement opacity for the layer.
-            if (opacity.IsAnimated || opacity.InitialValue < IR.Opacity.Opaque)
+            if (opacity.IsAnimated || opacity.InitialValue < Animatables.Opacity.Opaque)
             {
                 // Insert a new node to control opacity at the top of the chain.
                 var opacityNode = context.ObjectFactory.CreateContainerVisual();

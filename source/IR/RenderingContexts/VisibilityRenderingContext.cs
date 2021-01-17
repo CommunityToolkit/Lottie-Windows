@@ -5,6 +5,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
 {

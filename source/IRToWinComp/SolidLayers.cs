@@ -5,6 +5,7 @@
 #nullable enable
 
 using System.Linq;
+using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Sn = System.Numerics;
 
@@ -36,11 +37,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
             }
 
             internal override bool IsShape =>
-                !_context.Layer.Masks.Any() || _context.Layer.IsHidden || _context.Layer.Transform.Opacity.IsAlways(IR.Opacity.Transparent);
+                !_context.Layer.Masks.Any() || _context.Layer.IsHidden || _context.Layer.Transform.Opacity.IsAlways(Animatables.Opacity.Transparent);
 
             internal override CompositionShape? GetShapeRoot(TranslationContext context)
             {
-                if (_context.Layer.IsHidden || _context.Layer.Transform.Opacity.IsAlways(IR.Opacity.Transparent))
+                if (_context.Layer.IsHidden || _context.Layer.Transform.Opacity.IsAlways(Animatables.Opacity.Transparent))
                 {
                     // The layer does not render anything. Nothing to translate. This can happen when someone
                     // creates a solid layer to act like a Null layer.
@@ -76,7 +77,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
             internal override Visual? GetVisualRoot(CompositionContext context)
             {
                 // Translate the SolidLayer to a Visual.
-                if (_context.Layer.IsHidden || _context.Layer.Transform.Opacity.IsAlways(IR.Opacity.Transparent))
+                if (_context.Layer.IsHidden || _context.Layer.Transform.Opacity.IsAlways(Animatables.Opacity.Transparent))
                 {
                     // The layer does not render anything. Nothing to translate. This can happen when someone
                     // creates a solid layer to act like a Null layer.
