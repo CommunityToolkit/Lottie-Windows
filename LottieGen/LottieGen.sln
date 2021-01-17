@@ -129,6 +129,11 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "LottieToIR", "..\source\Lot
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Animatables", "..\source\Animatables\Animatables.shproj", "{FC89273A-B2DA-4625-8A73-EF02A658D65E}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{968228C9-E8D6-4E2D-8040-DD7D5898E818}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		..\source\LottieToWinComp\LottieToWinComp.projitems*{0340244a-683c-405e-838b-f93872779532}*SharedItemsImports = 13
