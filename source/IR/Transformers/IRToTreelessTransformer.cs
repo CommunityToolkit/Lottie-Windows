@@ -68,9 +68,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
             // see what's going on without it.
             result = ElideMetadata(result);
 
-            // Start with the fills and strokes at the start.
-            result = result.MoveToTop<FillRenderingContext>();
-            result = result.MoveToTop<StrokeRenderingContext>();
+            // Group the fills and strokes at the end.
+            result = result.MoveToEnd<FillRenderingContext>();
+            result = result.MoveToEnd<StrokeRenderingContext>();
+
+            result = AnchorRenderingContext.ReplaceAnchorsWithTranslations(result);
 
             result = BlendModeRenderingContext.WithoutRedundants(result);
             result = OpacityRenderingContext.WithoutRedundants(result);
@@ -79,8 +81,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
             result = ScaleRenderingContext.WithoutRedundants(result);
             result = VisibilityRenderingContext.WithoutRedundants(result);
             result = ClipRenderingContext.WithoutRedundants(result);
-            result = CenterPointRenderingContext.WithCenterPointInsteadOfAnchor(result);
-            result = CenterPointRenderingContext.WithoutRedundants(result);
             return result;
         }
 

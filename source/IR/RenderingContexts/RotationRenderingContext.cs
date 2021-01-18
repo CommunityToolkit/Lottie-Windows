@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Collections.Generic;
+using System;
 using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
@@ -20,6 +20,23 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
 
         public static RotationRenderingContext Create(Animatable<Rotation> rotation)
             => rotation.IsAnimated ? new Animated(rotation) : new Static(rotation.InitialValue);
+
+        /// <summary>
+        /// Returns the result of rotating <paramref name="point"/> by <paramref name="radians"/> around
+        /// <paramref name="origin"/>.
+        /// </summary>
+        /// <returns>The resulting point.</returns>
+        internal static Vector2 RotatePointAroundOrigin(Vector2 point, Vector2 origin, double radians)
+        {
+            var cosTheta = Math.Cos(radians);
+            var sinTheta = Math.Sin(radians);
+            var xCenterpoint = point.X - origin.X;
+            var yCenterpoint = point.Y - origin.Y;
+
+            var x = origin.X + (cosTheta * xCenterpoint) - (sinTheta * yCenterpoint);
+            var y = origin.Y + (sinTheta * xCenterpoint) - (cosTheta * yCenterpoint);
+            return new Vector2(x, y);
+        }
 
         public sealed class Animated : RotationRenderingContext
         {

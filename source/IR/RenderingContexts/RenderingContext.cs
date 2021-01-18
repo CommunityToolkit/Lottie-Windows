@@ -67,13 +67,42 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
             }
         }
 
-        // Move all of the contexts of the given type to the start.
-        public RenderingContext MoveToTop<T>()
+        /// <summary>
+        /// Moves all of the contexts of the given type to the start.
+        /// </summary>
+        /// <typeparam name="T">The type of context that will moved.</typeparam>
+        /// <returns>
+        /// A context with the same sub-contexts, but with
+        /// any context of type <typeparamref name="T"/> moved to the start.
+        /// </returns>
+        public RenderingContext MoveToStart<T>()
+            where T : RenderingContext
+        {
+            var (t, notT) = Partition<T>();
+            return t + notT;
+        }
+
+        /// <summary>
+        /// Moves all of the contexts of the given type to the end.
+        /// </summary>
+        /// <typeparam name="T">The type of context that will moved.</typeparam>
+        /// <returns>
+        /// A context with the same sub-contexts, but with
+        /// any context of type <typeparamref name="T"/> moved to the end.
+        /// </returns>
+        public RenderingContext MoveToEnd<T>()
+                where T : RenderingContext
+        {
+            var (t, notT) = Partition<T>();
+            return notT + t;
+        }
+
+        (RenderingContext t, RenderingContext notT) Partition<T>()
             where T : RenderingContext
         {
             if (SubContexts.Count == 0)
             {
-                return this;
+                return (Null, this);
             }
 
             var accumulatorOfT = new List<T>(SubContexts.Count / 2);
@@ -91,7 +120,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
                 }
             }
 
-            return Compose(accumulatorOfT) + Compose(accumulatorOfNotT);
+            return (Compose(accumulatorOfT), Compose(accumulatorOfNotT));
         }
 
         /// <summary>

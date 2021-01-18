@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Collections.Generic;
 using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
@@ -22,6 +21,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
             => scalePercent.IsAnimated
                 ? new Animated(scalePercent)
                 : new Static(scalePercent.InitialValue);
+
+        /// <summary>
+        /// Returns the result of scaling <paramref name="point"/> by <paramref name="scale"/> around
+        /// <paramref name="origin"/>.
+        /// </summary>
+        /// <returns>The resulting point.</returns>
+        internal static Vector2 ScalePointAroundOrigin(Vector2 point, Vector2 origin, Vector2 scale)
+        {
+            var centerPoint = new Vector2(point.X - origin.X, point.Y - origin.Y);
+            return centerPoint * scale;
+        }
 
         public sealed class Animated : ScaleRenderingContext
         {

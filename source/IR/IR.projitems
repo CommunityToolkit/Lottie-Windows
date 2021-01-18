@@ -87,7 +87,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Optimization\GradientStopOptimizer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Optimization\Optimizer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\IRYamlSerializer.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Tools\Stats.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transformers\IRToTreelessTransformer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Layers\ImageLayer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Layers\Layer.cs" />
