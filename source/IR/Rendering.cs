@@ -38,7 +38,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
         public static Rendering UnifyTimebaseWithTimeOffset(Rendering rendering, double timeOffset)
         {
             // Get the accumulated time offsets from the context.
-            var contentOffset = timeOffset + rendering.Context.SubContexts.
+            var contentOffset = timeOffset + rendering.Context.
                                                 OfType<TimeOffsetRenderingContext>().
                                                 Sum(ctx => ctx.TimeOffset);
 
@@ -46,7 +46,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
             var adjustedContext = contentOffset == 0
                                     ? rendering.Context
                                     : RenderingContext.Compose(UnifyTimebase(rendering.Context));
+
             var adjustedContent = rendering.Content.WithTimeOffset(contentOffset);
+
             return new Rendering(adjustedContent, adjustedContext);
         }
 
@@ -54,7 +56,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
         {
             var timeOffset = 0.0;
 
-            foreach (var subContext in context.SubContexts)
+            foreach (var subContext in context)
             {
                 switch (subContext)
                 {
@@ -62,15 +64,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
                         timeOffset += timeOffsetContext.TimeOffset;
                         break;
                     default:
-                        if (subContext.IsAnimated)
-                        {
-                            yield return subContext.WithTimeOffset(timeOffset);
-                        }
-                        else
-                        {
-                            yield return subContext;
-                        }
-
+                        yield return subContext.WithTimeOffset(timeOffset);
                         break;
                 }
             }

@@ -36,11 +36,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
                 (from rendering in instance.Detreeify(source.Layers)
                  select rendering.WithContext(clip + rendering.Context)).ToArray();
 
-            // Optimize the contexts.
-            var optimizedRenderings = renderings.Select(Optimize).ToArray();
-
             // Unify the timebases.
-            optimizedRenderings = optimizedRenderings.Select(Rendering.UnifyTimebase).ToArray();
+            var unifiedTimeBaseRenderings = renderings.Select(Rendering.UnifyTimebase).ToArray();
+
+            // Optimize the contexts.
+            var optimizedRenderings = unifiedTimeBaseRenderings.Select(Optimize).ToArray();
 
             var result = new Rendering(
                                 new GroupRenderingContent(optimizedRenderings),
@@ -62,18 +62,27 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
 
         static RenderingContext Optimize(RenderingContext input)
         {
+            // Keep optimizing as long as we are making the contexts smaller.
+            int previousSubContextCount;
+            var result = input;
+            do
+            {
+                previousSubContextCount = result.SubContextCount;
+                result = OptimizeOnce(result);
+            } while (previousSubContextCount > result.SubContextCount);
+
+            return result;
+        }
+
+        static RenderingContext OptimizeOnce(RenderingContext input)
+        {
             var result = input;
 
             // Remove the metadata. For now we don't need it and it's easier to
             // see what's going on without it.
             result = ElideMetadata(result);
 
-            // Group the fills and strokes at the end.
-            result = result.MoveToEnd<FillRenderingContext>();
-            result = result.MoveToEnd<StrokeRenderingContext>();
-
-            result = AnchorRenderingContext.ReplaceAnchorsWithTranslations(result);
-
+            result = AnchorRenderingContext.ReplaceAnchors(result);
             result = BlendModeRenderingContext.WithoutRedundants(result);
             result = OpacityRenderingContext.WithoutRedundants(result);
             result = PositionRenderingContext.WithoutRedundants(result);

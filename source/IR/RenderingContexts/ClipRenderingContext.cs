@@ -30,58 +30,60 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
         public override RenderingContext WithTimeOffset(double timeOffset) => this;
 
         public static RenderingContext WithoutRedundants(RenderingContext context)
-            => context.SubContexts.Count > 0
-                ? Compose(MoveClipsUp(context.SubContexts))
+        {
+            return context.SubContextCount > 0
+                ? Compose(MoveUp(context))
                 : context;
 
-        static IEnumerable<RenderingContext> MoveClipsUp(IReadOnlyList<RenderingContext> items)
-        {
-            var accumulator = new List<RenderingContext>(items.Count);
-            ClipRenderingContext? currentClip = null;
-            var yieldAccumulatorContents = false;
-            foreach (var item in items)
+            static IEnumerable<RenderingContext> MoveUp(RenderingContext items)
             {
-                switch (item)
+                var accumulator = new List<RenderingContext>(items.SubContextCount);
+                ClipRenderingContext? currentClip = null;
+                var yieldAccumulatorContents = false;
+                foreach (var item in items)
                 {
-                    case ClipRenderingContext clip:
-                        currentClip = clip.WithIntersection(currentClip);
-                        break;
-
-                    case PositionRenderingContext _:
-                    case ScaleRenderingContext _:
-                        yieldAccumulatorContents = true;
-                        goto default;
-
-                    default:
-                        accumulator.Add(item);
-                        break;
-                }
-
-                if (yieldAccumulatorContents)
-                {
-                    if (currentClip is not null)
+                    switch (item)
                     {
-                        yield return currentClip;
+                        case ClipRenderingContext clip:
+                            currentClip = clip.WithIntersection(currentClip);
+                            break;
+
+                        case PositionRenderingContext _:
+                        case ScaleRenderingContext _:
+                            yieldAccumulatorContents = true;
+                            goto default;
+
+                        default:
+                            accumulator.Add(item);
+                            break;
                     }
 
-                    foreach (var c in accumulator)
+                    if (yieldAccumulatorContents)
                     {
-                        yield return c;
+                        if (currentClip is not null)
+                        {
+                            yield return currentClip;
+                        }
+
+                        foreach (var c in accumulator)
+                        {
+                            yield return c;
+                        }
+
+                        currentClip = null;
+                        accumulator.Clear();
                     }
-
-                    currentClip = null;
-                    accumulator.Clear();
                 }
-            }
 
-            if (currentClip is not null)
-            {
-                yield return currentClip;
-            }
+                if (currentClip is not null)
+                {
+                    yield return currentClip;
+                }
 
-            foreach (var c in accumulator)
-            {
-                yield return c;
+                foreach (var c in accumulator)
+                {
+                    yield return c;
+                }
             }
         }
 

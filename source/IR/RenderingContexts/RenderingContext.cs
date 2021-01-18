@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
@@ -12,19 +13,30 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
     /// <summary>
     /// The context in which a <see cref="RenderingContents.RenderingContent"/> is rendered.
     /// </summary>
-    abstract class RenderingContext
+    abstract class RenderingContext : IEnumerable<RenderingContext>
     {
+        readonly IReadOnlyList<RenderingContext> _subContexts = Array.Empty<RenderingContext>();
+
+        RenderingContext(IReadOnlyList<RenderingContext> subContexts)
+        {
+            _subContexts = subContexts;
+        }
+
+        private protected RenderingContext()
+        {
+        }
+
         public static RenderingContext Null { get; } = new NullRenderingContext();
 
         public abstract RenderingContext WithTimeOffset(double timeOffset);
 
         public abstract RenderingContext WithOffset(Vector2 offset);
 
-        public virtual IReadOnlyList<RenderingContext> SubContexts => Array.Empty<RenderingContext>();
+        public int SubContextCount => _subContexts.Count;
 
         public abstract bool IsAnimated { get; }
 
-        public bool IsFlattened => SubContexts.All(context => context.IsFlattened);
+        public bool IsFlattened => _subContexts.All(context => context.IsFlattened);
 
         public static RenderingContext Compose(IEnumerable<RenderingContext> renderingContexts)
             => ComposeAlreadyFlattened(Flatten(renderingContexts).ToArray());
@@ -100,15 +112,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
         (RenderingContext t, RenderingContext notT) Partition<T>()
             where T : RenderingContext
         {
-            if (SubContexts.Count == 0)
+            if (_subContexts.Count == 0)
             {
                 return (Null, this);
             }
 
-            var accumulatorOfT = new List<T>(SubContexts.Count / 2);
-            var accumulatorOfNotT = new List<RenderingContext>(SubContexts.Count);
+            var accumulatorOfT = new List<T>(_subContexts.Count / 2);
+            var accumulatorOfNotT = new List<RenderingContext>(_subContexts.Count);
 
-            foreach (var context in SubContexts)
+            foreach (var context in _subContexts)
             {
                 if (context is T asT)
                 {
@@ -139,7 +151,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
         public RenderingContext GetFlattened()
             => IsFlattened
                 ? this
-                : Compose(Flatten(SubContexts));
+                : Compose(Flatten(_subContexts));
 
         static IEnumerable<RenderingContext> Flatten(IEnumerable<RenderingContext> input)
         {
@@ -147,10 +159,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
             {
                 switch (item)
                 {
-                    case NullRenderingContext nullContext:
+                    case NullRenderingContext _:
                         break;
                     case CompositeRenderingContext compositeContext:
-                        foreach (var subContext in compositeContext.SubContexts)
+                        foreach (var subContext in compositeContext)
                         {
                             yield return subContext;
                         }
@@ -163,13 +175,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
             }
         }
 
+        IEnumerator<RenderingContext> IEnumerable<RenderingContext>.GetEnumerator()
+            => _subContexts.Count == 0
+                ? ((IEnumerable<RenderingContext>)new RenderingContext[] { this }).GetEnumerator()
+                : _subContexts.GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator()
+            => ((IEnumerable<RenderingContext>)this).GetEnumerator();
+
         sealed class CompositeRenderingContext : RenderingContext
         {
-            readonly IReadOnlyList<RenderingContext> _subContexts;
-
             internal CompositeRenderingContext(IReadOnlyList<RenderingContext> subContexts)
+                : base(subContexts)
             {
-                _subContexts = subContexts;
             }
 
             CompositeRenderingContext(IEnumerable<RenderingContext> subContexts)
@@ -177,20 +195,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
             {
             }
 
-            public override IReadOnlyList<RenderingContext> SubContexts => _subContexts;
+            public IReadOnlyList<RenderingContext> SubContexts => _subContexts;
 
-            public override bool IsAnimated => SubContexts.Any(item => item.IsAnimated);
+            public override bool IsAnimated => _subContexts.Any(item => item.IsAnimated);
 
             public override sealed RenderingContext WithOffset(Vector2 offset)
-                => new CompositeRenderingContext(SubContexts.Select(item => item.WithOffset(offset)));
+                => new CompositeRenderingContext(_subContexts.Select(item => item.WithOffset(offset)));
 
             public override RenderingContext WithTimeOffset(double timeOffset)
                  => IsAnimated
-                    ? new CompositeRenderingContext(SubContexts.Select(item => item.WithTimeOffset(timeOffset)))
+                    ? new CompositeRenderingContext(_subContexts.Select(item => item.WithTimeOffset(timeOffset)))
                     : this;
 
             public override string ToString()
-                => $"{(IsAnimated ? "Animated" : "Static")} RenderingContext[{SubContexts.Count}]";
+                => $"{(IsAnimated ? "Animated" : "Static")} RenderingContext[{_subContexts.Count}]";
         }
 
         sealed class NullRenderingContext : RenderingContext

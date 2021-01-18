@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
 using static Microsoft.Toolkit.Uwp.UI.Lottie.IR.Exceptions;
 
@@ -18,7 +19,45 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
             => position.IsAnimated ? new Animated(position) : new Static(position.InitialValue);
 
         public static RenderingContext WithoutRedundants(RenderingContext context)
-            => context.Filter((Static c) => c.Position.X != 0 || c.Position.Y != 0);
+        {
+            return Compose(Without(context));
+
+            static IEnumerable<RenderingContext> Without(RenderingContext context)
+            {
+                var currentPosition = Vector2.Zero;
+
+                foreach (var item in context)
+                {
+                    switch (item)
+                    {
+                        case Static staticPosition:
+                            currentPosition += staticPosition.Position;
+                            break;
+
+                        case Animated _:
+                        case AnchorRenderingContext _:
+                        case CenterPointRenderingContext _:
+                            if (currentPosition != Vector2.Zero)
+                            {
+                                yield return new Static(currentPosition);
+                                currentPosition = Vector2.Zero;
+                            }
+
+                            yield return item;
+                            break;
+
+                        default:
+                            yield return item;
+                            break;
+                    }
+                }
+
+                if (currentPosition != Vector2.Zero)
+                {
+                    yield return new Static(currentPosition);
+                }
+            }
+        }
 
         public sealed class Animated : PositionRenderingContext
         {

@@ -17,42 +17,44 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
         public override sealed RenderingContext WithOffset(Vector2 offset) => this;
 
         public static RenderingContext WithoutRedundants(RenderingContext context)
-            => context.SubContexts.Count > 0
-                ? Compose(MoveOpacitiesUp(context.SubContexts))
+        {
+            return context.SubContextCount > 0
+                ? Compose(MoveUp(context))
                 : context;
 
-        static IEnumerable<RenderingContext> MoveOpacitiesUp(IReadOnlyList<RenderingContext> items)
-        {
-            var accumulator = new List<RenderingContext>(items.Count);
-            var opacitiesAccumulator = new List<OpacityRenderingContext>();
-            var timeOffset = 0.0;
-
-            foreach (var item in items)
+            static IEnumerable<RenderingContext> MoveUp(RenderingContext items)
             {
-                switch (item)
+                var accumulator = new List<RenderingContext>(items.SubContextCount);
+                var opacitiesAccumulator = new List<OpacityRenderingContext>();
+                var timeOffset = 0.0;
+
+                foreach (var item in items)
                 {
-                    case OpacityRenderingContext opacity:
-                        opacitiesAccumulator.Add((OpacityRenderingContext)opacity.WithTimeOffset(timeOffset));
-                        break;
+                    switch (item)
+                    {
+                        case OpacityRenderingContext opacity:
+                            opacitiesAccumulator.Add((OpacityRenderingContext)opacity.WithTimeOffset(timeOffset));
+                            break;
 
-                    case TimeOffsetRenderingContext t:
-                        timeOffset += t.TimeOffset;
-                        goto default;
+                        case TimeOffsetRenderingContext t:
+                            timeOffset += t.TimeOffset;
+                            goto default;
 
-                    default:
-                        accumulator.Add(item);
-                        break;
+                        default:
+                            accumulator.Add(item);
+                            break;
+                    }
                 }
-            }
 
-            foreach (var item in Combine(opacitiesAccumulator))
-            {
-                yield return item;
-            }
+                foreach (var item in Combine(opacitiesAccumulator))
+                {
+                    yield return item;
+                }
 
-            foreach (var item in accumulator)
-            {
-                yield return item;
+                foreach (var item in accumulator)
+                {
+                    yield return item;
+                }
             }
         }
 

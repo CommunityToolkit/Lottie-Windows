@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Generic;
 using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
@@ -15,7 +16,39 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
         public sealed override RenderingContext WithOffset(Vector2 offset) => this;
 
         public static RenderingContext WithoutRedundants(RenderingContext context)
-            => context.Filter((Static c) => c.ScalePercent.X != 100 || c.ScalePercent.Y != 100);
+        {
+            return Compose(Without(context));
+
+            static IEnumerable<RenderingContext> Without(RenderingContext context)
+            {
+                var currentScale = Vector2.One;
+
+                foreach (var item in context)
+                {
+                    switch (item)
+                    {
+                        case Static staticScale:
+                            currentScale *= staticScale.ScalePercent / 100;
+                            break;
+
+                        default:
+                            if (currentScale != Vector2.One)
+                            {
+                                yield return new Static(currentScale * 100);
+                                currentScale = Vector2.One;
+                            }
+
+                            yield return item;
+                            break;
+                    }
+                }
+
+                if (currentScale != Vector2.One)
+                {
+                    yield return new Static(currentScale * 100);
+                }
+            }
+        }
 
         public static ScaleRenderingContext Create(IAnimatableVector2 scalePercent)
             => scalePercent.IsAnimated

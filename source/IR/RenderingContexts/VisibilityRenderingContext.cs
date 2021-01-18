@@ -36,15 +36,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
 
         public static RenderingContext WithoutRedundants(RenderingContext context)
         {
-            if (context.SubContexts.Count == 0)
+            if (context.SubContextCount == 0)
             {
                 return context;
             }
 
             // Collect all of the VisibilitiesRenderingContexts, adjusted for time offset.
-            var adjustedVisibilities = new List<VisibilityRenderingContext>(context.SubContexts.Count);
+            var adjustedVisibilities = new List<VisibilityRenderingContext>(context.SubContextCount);
             var timeAdjustment = 0.0;
-            foreach (var subContext in context.SubContexts)
+            foreach (var subContext in context)
             {
                 switch (subContext)
                 {
