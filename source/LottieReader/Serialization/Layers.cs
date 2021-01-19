@@ -120,7 +120,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                                 _issues.TimeRemappingOfPreComps();
                             }
 
-                            return new PreCompLayer(in layerArgs, refId, width, height);
+                            return new PreCompLayer(in layerArgs, refId, new Vector2(width, height));
                         }
 
                     case Layer.LayerType.Solid:

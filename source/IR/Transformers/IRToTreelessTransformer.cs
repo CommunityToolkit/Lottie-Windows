@@ -209,7 +209,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
             // The size determines the bounding box. Only PreComp layers have a size.
             if (layer is PreCompLayer precomp)
             {
-                yield return new SizeRenderingContext(new Vector2(precomp.Width, precomp.Height));
+                yield return new SizeRenderingContext(precomp.Size);
             }
 
             yield return RotationRenderingContext.Create(layer.Transform.Rotation);

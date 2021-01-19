@@ -217,8 +217,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         YamlObject FromPreCompLayer(PreCompLayer layer, YamlMap superclassContent)
         {
             var result = superclassContent;
-            result.Add(nameof(layer.Width), layer.Width);
-            result.Add(nameof(layer.Height), layer.Height);
+            result.Add(nameof(layer.Size), FromVector2(layer.Size));
             result.Add(nameof(layer.RefId), layer.RefId);
             return result;
         }

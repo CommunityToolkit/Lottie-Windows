@@ -109,7 +109,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToIR
             };
 
         static PreCompLayer TranslatePreCompLayer(LottieData.PreCompLayer from)
-            => new PreCompLayer(TranslateLayerArgs(from), from.RefId, from.Width, from.Height);
+            => new PreCompLayer(TranslateLayerArgs(from), from.RefId, from.Size);
 
         static SolidLayer TranslateSolidLayer(LottieData.SolidLayer from)
             => new SolidLayer(TranslateLayerArgs(from), from.Width, from.Height, TranslateColor(from.Color));

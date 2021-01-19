@@ -256,7 +256,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
             //  +--------+
             //  | Visual | -- The layer translated to a Visual.
             //  +--------+
-            var size = ConvertTo.Vector2(context.Layer.Width, context.Layer.Height);
+            var size = ConvertTo.Vector2(context.Layer.Size);
 
             // Build from the bottom up.
             var visualSurface = factory.CreateVisualSurface();

@@ -23,7 +23,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
                 compositionContext,
                 layer.Name,
                 referencedLayers,
-                size: new Sn.Vector2((float)layer.Width, (float)layer.Height),
+                size: ConvertTo.Vector2(layer.Size),
                 startTime: compositionContext.StartTime - layer.StartTime,
                 durationInFrames: compositionContext.DurationInFrames);
         }
