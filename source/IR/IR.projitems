@@ -70,7 +70,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)RenderingContents\UnsupportedRenderingContent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RenderingContexts\AnchorRenderingContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RenderingContexts\BlendModeRenderingContext.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)RenderingContexts\ClipRenderingContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RenderingContexts\EffectRenderingContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RenderingContexts\MasksRenderingContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RenderingContexts\MatteTypeRenderingContext.cs" />
@@ -79,6 +78,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)RenderingContexts\PositionRenderingContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RenderingContexts\RenderingContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RenderingContexts\RotationRenderingContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RenderingContexts\SizeRenderingContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RenderingContexts\ScaleRenderingContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RenderingContexts\TimeOffsetRenderingContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RenderingContexts\TimeStretchRenderingContext.cs" />

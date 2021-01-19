@@ -29,18 +29,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
         {
             var instance = new IRToTreelessTransformer(source.Layers, source.Assets);
 
-            var clip = new ClipRenderingContext(Vector2.Zero, new Vector2(source.Width, source.Height));
+            var size = new SizeRenderingContext(new Vector2(source.Width, source.Height));
 
             // Convert from layers to Renderings
             var renderings =
                 (from rendering in instance.Detreeify(source.Layers)
-                 select rendering.WithContext(clip + rendering.Context)).ToArray();
+                 select rendering.WithContext(size + rendering.Context)).Take(1).ToArray();
 
             // Unify the timebases.
             var unifiedTimeBaseRenderings = renderings.Select(Rendering.UnifyTimebase).ToArray();
 
             // Optimize the contexts.
-            var optimizedRenderings = unifiedTimeBaseRenderings.Select(Optimize).ToArray();
+            var optimizedRenderings = unifiedTimeBaseRenderings.Select(OptimizeRendering(DefaultContextOptimizer)).ToArray();
 
             var result = new Rendering(
                                 new GroupRenderingContent(optimizedRenderings),
@@ -52,15 +52,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
         static RenderingContext ElideMetadata(RenderingContext input)
             => input.Filter((MetadataRenderingContext c) => false);
 
-        static Rendering Optimize(Rendering input)
-            => new Rendering(Optimize(input.Content), Optimize(input.Context));
+        static Func<Rendering, Rendering> OptimizeRendering(Func<RenderingContext, RenderingContext> contextOptimizer)
+            => r => Optimize(r, contextOptimizer);
 
-        static RenderingContent Optimize(RenderingContent input)
+        static Rendering Optimize(Rendering input, Func<RenderingContext, RenderingContext> contextOptimizer)
+            => new Rendering(Optimize(input.Content, contextOptimizer), Optimize(input.Context, contextOptimizer));
+
+        static RenderingContent Optimize(RenderingContent input, Func<RenderingContext, RenderingContext> contextOptimizer)
             => input is GroupRenderingContent group
-            ? new GroupRenderingContent(group.Items.Select(item => Optimize(item)).ToArray())
+            ? new GroupRenderingContent(group.Items.Select(item => Optimize(item, contextOptimizer)).ToArray())
              : input;
 
-        static RenderingContext Optimize(RenderingContext input)
+        static RenderingContext Optimize(RenderingContext input, Func<RenderingContext, RenderingContext> optimizer)
         {
             // Keep optimizing as long as we are making the contexts smaller.
             int previousSubContextCount;
@@ -68,13 +71,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
             do
             {
                 previousSubContextCount = result.SubContextCount;
-                result = OptimizeOnce(result);
+                result = optimizer(result);
             } while (previousSubContextCount > result.SubContextCount);
 
             return result;
         }
 
-        static RenderingContext OptimizeOnce(RenderingContext input)
+        static RenderingContext DefaultContextOptimizer(RenderingContext input)
         {
             var result = input;
 
@@ -85,11 +88,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
             result = AnchorRenderingContext.ReplaceAnchors(result);
             result = BlendModeRenderingContext.WithoutRedundants(result);
             result = OpacityRenderingContext.WithoutRedundants(result);
+            result = PositionRenderingContext.GroupTogether(result);
             result = PositionRenderingContext.WithoutRedundants(result);
             result = RotationRenderingContext.WithoutRedundants(result);
             result = ScaleRenderingContext.WithoutRedundants(result);
             result = VisibilityRenderingContext.WithoutRedundants(result);
-            result = ClipRenderingContext.WithoutRedundants(result);
+            result = SizeRenderingContext.WithoutRedundants(result);
             return result;
         }
 
@@ -134,7 +138,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
         }
 
         RenderingContext GetRenderingContextForLayer(Layer layer)
-            => RenderingContext.Compose(GetRenderingContextsForLayer(layer).ToArray());
+            => RenderingContext.Compose(GetRenderingContextsForLayer(layer));
 
         IEnumerable<RenderingContext> GetRenderingContextsForLayer(Layer layer)
         {
@@ -196,10 +200,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
                 }
             }
 
-            // Anchor goes before position, rotation, and scale, because it affects them all.
             // Position indicates where in the parent the anchor point should be drawn.
-            yield return AnchorRenderingContext.Create(layer.Transform.Anchor);
             yield return PositionRenderingContext.Create(layer.Transform.Position);
+
+            // Rotation and scale are around the anchor point.
+            yield return AnchorRenderingContext.Create(layer.Transform.Anchor);
+
+            // The size determines the bounding box. Only PreComp layers have a size.
+            if (layer is PreCompLayer precomp)
+            {
+                yield return new SizeRenderingContext(new Vector2(precomp.Width, precomp.Height));
+            }
+
             yield return RotationRenderingContext.Create(layer.Transform.Rotation);
             yield return ScaleRenderingContext.Create(layer.Transform.ScalePercent);
         }
@@ -232,11 +244,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
                 yield break;
             }
 
-            var clipContext = new ClipRenderingContext(Vector2.Zero, new Vector2(layer.Width, layer.Height));
+            var precompContext = GetRenderingContextForLayer(layer);
 
             foreach (var child in Detreeify(asset.Layers))
             {
-                yield return child.WithContext(clipContext + GetRenderingContextForLayer(layer) + child.Context);
+                yield return child.WithContext(precompContext + child.Context);
             }
         }
 

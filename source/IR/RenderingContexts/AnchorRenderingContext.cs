@@ -37,14 +37,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
                     switch (item)
                     {
                         case AnchorRenderingContext anchor:
-                            // Store the anchor. It affects subsequent position, scale, and rotation.
+                            // Store the anchor. It scale, and rotation.
                             currentAnchor = anchor;
-                            break;
 
-                        // Positions are offset by the inverse of the anchor.
-                        case PositionRenderingContext position:
+                            // The anchor moves the position to the inverse of the anchor
+                            // (i.e. the anchor is the point that is positioned by the position).
                             yield return currentAnchor.ToPositionRenderingContext(value => Vector2.Zero - value);
-                            yield return item;
                             break;
 
                         case RotationRenderingContext.Animated rotation:

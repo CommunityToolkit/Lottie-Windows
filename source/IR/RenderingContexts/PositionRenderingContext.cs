@@ -34,9 +34,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
                             currentPosition += staticPosition.Position;
                             break;
 
-                        case Animated _:
-                        case AnchorRenderingContext _:
-                        case CenterPointRenderingContext _:
+                        default:
                             if (currentPosition != Vector2.Zero)
                             {
                                 yield return new Static(currentPosition);
@@ -45,16 +43,65 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
 
                             yield return item;
                             break;
-
-                        default:
-                            yield return item;
-                            break;
                     }
                 }
 
                 if (currentPosition != Vector2.Zero)
                 {
                     yield return new Static(currentPosition);
+                }
+            }
+        }
+
+        public static RenderingContext GroupTogether(RenderingContext context)
+        {
+            return Compose(Group(context));
+
+            static IEnumerable<RenderingContext> Group(RenderingContext items)
+            {
+                var accumulator = new List<RenderingContext>(items.SubContextCount);
+                var positionsAcccumulator = new List<PositionRenderingContext>();
+
+                foreach (var item in items)
+                {
+                    switch (item)
+                    {
+                        case PositionRenderingContext position:
+                            positionsAcccumulator.Add(position);
+                            break;
+
+                        // The position cannot be moved above these types.
+                        case AnchorRenderingContext _:
+                        case SizeRenderingContext _:
+                            foreach (var i in positionsAcccumulator)
+                            {
+                                yield return i;
+                            }
+
+                            foreach (var i in accumulator)
+                            {
+                                yield return i;
+                            }
+
+                            yield return item;
+                            positionsAcccumulator.Clear();
+                            accumulator.Clear();
+                            break;
+
+                        default:
+                            accumulator.Add(item);
+                            break;
+                    }
+                }
+
+                foreach (var item in positionsAcccumulator)
+                {
+                    yield return item;
+                }
+
+                foreach (var item in accumulator)
+                {
+                    yield return item;
                 }
             }
         }
