@@ -13,42 +13,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
         {
         }
 
-        public sealed override RenderingContext WithOffset(Vector2 offset) => this;
-
-        public static RenderingContext WithoutRedundants(RenderingContext context)
-        {
-            return Compose(Without(context));
-
-            static IEnumerable<RenderingContext> Without(RenderingContext context)
+        public override sealed bool DependsOn(RenderingContext other)
+            => other switch
             {
-                var currentScale = Vector2.One;
+                AnchorRenderingContext _ => true,
+                CenterPointRenderingContext _ => true,
+                SizeRenderingContext _ => true,
+                _ => false,
+            };
 
-                foreach (var item in context)
-                {
-                    switch (item)
-                    {
-                        case Static staticScale:
-                            currentScale *= staticScale.ScalePercent / 100;
-                            break;
-
-                        default:
-                            if (currentScale != Vector2.One)
-                            {
-                                yield return new Static(currentScale * 100);
-                                currentScale = Vector2.One;
-                            }
-
-                            yield return item;
-                            break;
-                    }
-                }
-
-                if (currentScale != Vector2.One)
-                {
-                    yield return new Static(currentScale * 100);
-                }
-            }
-        }
+        public sealed override RenderingContext WithOffset(Vector2 offset) => this;
 
         public static ScaleRenderingContext Create(IAnimatableVector2 scalePercent)
             => scalePercent.IsAnimated

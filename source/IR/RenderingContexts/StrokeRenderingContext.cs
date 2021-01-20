@@ -34,6 +34,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
 
         public Brush Brush { get; }
 
+        public override sealed bool DependsOn(RenderingContext other)
+            => other switch
+            {
+                OpacityRenderingContext _ => true,
+                _ => false,
+            };
+
         public override bool IsAnimated => StrokeWidth.IsAnimated || Brush.IsAnimated;
 
         public override sealed RenderingContext WithOffset(Vector2 offset) => this;

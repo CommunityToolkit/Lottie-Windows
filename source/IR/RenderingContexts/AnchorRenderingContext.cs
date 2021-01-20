@@ -18,116 +18,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
         public static AnchorRenderingContext Create(IAnimatableVector2 anchor)
             => anchor.IsAnimated ? new Animated(anchor) : new Static(anchor.InitialValue);
 
-        /// <summary>
-        /// Replaces any <see cref="AnchorRenderingContext"/>s with <see cref="PositionRenderingContext"/>s
-        /// and <see cref="CenterPointRenderingContext"/>s.
-        /// </summary>
-        /// <returns>A new <see cref="RenderingContext"/> that contains no
-        /// <see cref="AnchorRenderingContext"/>s.</returns>
-        internal static RenderingContext ReplaceAnchors(RenderingContext context)
-        {
-            return Compose(Replace(context));
-
-            static IEnumerable<RenderingContext> Replace(RenderingContext context)
+        public override sealed bool DependsOn(RenderingContext other)
+            => other switch
             {
-                AnchorRenderingContext currentAnchor = new Static(Vector2.Zero);
+                CenterPointRenderingContext _ => true,
+                PositionRenderingContext _ => true,
+                RotationRenderingContext _ => true,
+                ScaleRenderingContext _ => true,
+                _ => false,
+            };
 
-                foreach (var item in context)
-                {
-                    switch (item)
-                    {
-                        case AnchorRenderingContext anchor:
-                            // Store the anchor. It scale, and rotation.
-                            currentAnchor = anchor;
-
-                            // The anchor moves the position to the inverse of the anchor
-                            // (i.e. the anchor is the point that is positioned by the position).
-                            yield return currentAnchor.ToPositionRenderingContext(value => Vector2.Zero - value);
-                            break;
-
-                        case RotationRenderingContext.Animated rotation:
-                            switch (currentAnchor)
-                            {
-                                case Animated animatedAnchor:
-                                    // Animated anchor and animated rotation. Use an animated centerpoint.
-                                    yield return new CenterPointRenderingContext.Animated(animatedAnchor.Anchor);
-                                    yield return item;
-
-                                    // Reset the centerpoint.
-                                    yield return new CenterPointRenderingContext.Static(Vector2.Zero);
-                                    break;
-                                case Static staticAnchor:
-                                    // Static anchor and animated rotation.
-                                    yield return new PositionRenderingContext.Animated(new AnimatableVector2(rotation.Rotation.Select(r =>
-                                        r.RotatePointAroundOrigin(point: Vector2.Zero, origin: staticAnchor.Anchor)).KeyFrames));
-                                    yield return item;
-                                    break;
-
-                                default: throw Unreachable;
-                            }
-
-                            break;
-
-                        case RotationRenderingContext.Static rotation:
-                            // Static anchor and static rotation.
-                            yield return currentAnchor.ToPositionRenderingContext(
-                                value => rotation.Rotation.RotatePointAroundOrigin(point: Vector2.Zero, origin: value));
-                            yield return item;
-                            break;
-
-                        case ScaleRenderingContext.Animated scale:
-                            switch (currentAnchor)
-                            {
-                                case Animated animatedAnchor:
-                                    // Animated anchor and animated scale. Use an animated centerpoint.
-                                    yield return new CenterPointRenderingContext.Animated(animatedAnchor.Anchor);
-                                    yield return item;
-
-                                    // Reset the centerpoint.
-                                    yield return new CenterPointRenderingContext.Static(Vector2.Zero);
-                                    break;
-                                case Static staticAnchor:
-                                    // Static anchor and animated scale.
-                                    switch (scale.ScalePercent)
-                                    {
-                                        case AnimatableVector2 scale2:
-                                            yield return new PositionRenderingContext.Animated(new AnimatableVector2(scale2.Select(s =>
-                                                ScaleRenderingContext.ScalePointAroundOrigin(point: Vector2.Zero, origin: staticAnchor.Anchor, scale: s / 100)).KeyFrames));
-                                            break;
-
-                                        case AnimatableXY scaleXY:
-                                            // The scale has X and Y animated separately.
-                                            yield return new PositionRenderingContext.Animated(scaleXY.Select(
-                                                    sX => ScaleRenderingContext.ScalePointAroundOrigin(point: Vector2.Zero, origin: staticAnchor.Anchor, scale: new Vector2(sX / 100, 0)).X,
-                                                    sY => ScaleRenderingContext.ScalePointAroundOrigin(point: Vector2.Zero, origin: staticAnchor.Anchor, scale: new Vector2(0, sY / 100)).Y));
-                                            break;
-
-                                        default: throw Unreachable;
-                                    }
-
-                                    yield return item;
-                                    break;
-
-                                default: throw Unreachable;
-                            }
-
-                            break;
-
-                        case ScaleRenderingContext.Static scale:
-                            yield return currentAnchor.ToPositionRenderingContext(
-                                value => ScaleRenderingContext.ScalePointAroundOrigin(point: Vector2.Zero, origin: value, scale: scale.ScalePercent / 100));
-                            yield return item;
-                            break;
-
-                        default:
-                            yield return item;
-                            break;
-                    }
-                }
-            }
-        }
-
-        PositionRenderingContext ToPositionRenderingContext(Func<Vector2, Vector2> selector)
+        internal PositionRenderingContext ToPositionRenderingContext(Func<Vector2, Vector2> selector)
         {
             switch (this)
             {

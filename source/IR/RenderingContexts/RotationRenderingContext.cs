@@ -13,10 +13,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
         {
         }
 
-        public sealed override RenderingContext WithOffset(Vector2 offset) => this;
+        public override sealed bool DependsOn(RenderingContext other)
+            => other switch
+            {
+                AnchorRenderingContext _ => true,
+                CenterPointRenderingContext _ => true,
+                SizeRenderingContext _ => true,
+                _ => false,
+            };
 
-        public static RenderingContext WithoutRedundants(RenderingContext context)
-            => context.Filter((Static c) => c.Rotation != Rotation.None);
+        public sealed override RenderingContext WithOffset(Vector2 offset) => this;
 
         public static RotationRenderingContext Create(Animatable<Rotation> rotation)
             => rotation.IsAnimated ? new Animated(rotation) : new Static(rotation.InitialValue);

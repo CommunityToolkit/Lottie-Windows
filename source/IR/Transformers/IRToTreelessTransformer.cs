@@ -34,13 +34,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
             // Convert from layers to Renderings
             var renderings =
                 (from rendering in instance.Detreeify(source.Layers)
-                 select rendering.WithContext(size + rendering.Context)).Take(1).ToArray();
+                 select rendering.WithContext(size + rendering.Context)).ToArray();
 
             // Unify the timebases.
             var unifiedTimeBaseRenderings = renderings.Select(Rendering.UnifyTimebase).ToArray();
 
             // Optimize the contexts.
-            var optimizedRenderings = unifiedTimeBaseRenderings.Select(OptimizeRendering(DefaultContextOptimizer)).ToArray();
+            var optimizedRenderings = unifiedTimeBaseRenderings.Select(OptimizeRendering(ContextOptimizers.Optimize)).ToArray();
 
             var result = new Rendering(
                                 new GroupRenderingContent(optimizedRenderings),
@@ -48,9 +48,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
 
             return result;
         }
-
-        static RenderingContext ElideMetadata(RenderingContext input)
-            => input.Filter((MetadataRenderingContext c) => false);
 
         static Func<Rendering, Rendering> OptimizeRendering(Func<RenderingContext, RenderingContext> contextOptimizer)
             => r => Optimize(r, contextOptimizer);
@@ -74,26 +71,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
                 result = optimizer(result);
             } while (previousSubContextCount > result.SubContextCount);
 
-            return result;
-        }
-
-        static RenderingContext DefaultContextOptimizer(RenderingContext input)
-        {
-            var result = input;
-
-            // Remove the metadata. For now we don't need it and it's easier to
-            // see what's going on without it.
-            result = ElideMetadata(result);
-
-            result = AnchorRenderingContext.ReplaceAnchors(result);
-            result = BlendModeRenderingContext.WithoutRedundants(result);
-            result = OpacityRenderingContext.WithoutRedundants(result);
-            result = PositionRenderingContext.GroupTogether(result);
-            result = PositionRenderingContext.WithoutRedundants(result);
-            result = RotationRenderingContext.WithoutRedundants(result);
-            result = ScaleRenderingContext.WithoutRedundants(result);
-            result = VisibilityRenderingContext.WithoutRedundants(result);
-            result = SizeRenderingContext.WithoutRedundants(result);
             return result;
         }
 

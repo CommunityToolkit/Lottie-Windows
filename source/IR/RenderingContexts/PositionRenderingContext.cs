@@ -15,96 +15,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
         {
         }
 
+        public override sealed bool DependsOn(RenderingContext other)
+            => other switch
+            {
+                AnchorRenderingContext _ => true,
+                CenterPointRenderingContext _ => true,
+                _ => false,
+            };
+
         public static PositionRenderingContext Create(IAnimatableVector2 position)
             => position.IsAnimated ? new Animated(position) : new Static(position.InitialValue);
-
-        public static RenderingContext WithoutRedundants(RenderingContext context)
-        {
-            return Compose(Without(context));
-
-            static IEnumerable<RenderingContext> Without(RenderingContext context)
-            {
-                var currentPosition = Vector2.Zero;
-
-                foreach (var item in context)
-                {
-                    switch (item)
-                    {
-                        case Static staticPosition:
-                            currentPosition += staticPosition.Position;
-                            break;
-
-                        default:
-                            if (currentPosition != Vector2.Zero)
-                            {
-                                yield return new Static(currentPosition);
-                                currentPosition = Vector2.Zero;
-                            }
-
-                            yield return item;
-                            break;
-                    }
-                }
-
-                if (currentPosition != Vector2.Zero)
-                {
-                    yield return new Static(currentPosition);
-                }
-            }
-        }
-
-        public static RenderingContext GroupTogether(RenderingContext context)
-        {
-            return Compose(Group(context));
-
-            static IEnumerable<RenderingContext> Group(RenderingContext items)
-            {
-                var accumulator = new List<RenderingContext>(items.SubContextCount);
-                var positionsAcccumulator = new List<PositionRenderingContext>();
-
-                foreach (var item in items)
-                {
-                    switch (item)
-                    {
-                        case PositionRenderingContext position:
-                            positionsAcccumulator.Add(position);
-                            break;
-
-                        // The position cannot be moved above these types.
-                        case AnchorRenderingContext _:
-                        case SizeRenderingContext _:
-                            foreach (var i in positionsAcccumulator)
-                            {
-                                yield return i;
-                            }
-
-                            foreach (var i in accumulator)
-                            {
-                                yield return i;
-                            }
-
-                            yield return item;
-                            positionsAcccumulator.Clear();
-                            accumulator.Clear();
-                            break;
-
-                        default:
-                            accumulator.Add(item);
-                            break;
-                    }
-                }
-
-                foreach (var item in positionsAcccumulator)
-                {
-                    yield return item;
-                }
-
-                foreach (var item in accumulator)
-                {
-                    yield return item;
-                }
-            }
-        }
 
         public sealed class Animated : PositionRenderingContext
         {

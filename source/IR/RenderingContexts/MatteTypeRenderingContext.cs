@@ -13,6 +13,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
 
         public MatteType MatteType { get; }
 
+        public override sealed bool DependsOn(RenderingContext other) => false;
+
         public override bool IsAnimated => false;
 
         public override sealed RenderingContext WithOffset(Vector2 offset) => this;

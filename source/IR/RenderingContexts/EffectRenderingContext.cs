@@ -16,6 +16,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
         // For now assume true. Need to look at whether the effect is animated.
         public override bool IsAnimated => true;
 
+        public override sealed bool DependsOn(RenderingContext other) => true;
+
         // This needs implementing!
         public override sealed RenderingContext WithOffset(Vector2 offset) => throw new InvalidOperationException();
 

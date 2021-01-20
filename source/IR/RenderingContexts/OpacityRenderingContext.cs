@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
 using static Microsoft.Toolkit.Uwp.UI.Lottie.IR.Exceptions;
 
@@ -14,92 +15,47 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
         {
         }
 
+        public override sealed bool DependsOn(RenderingContext other)
+            => other switch
+            {
+                FillRenderingContext _ => true,
+                StrokeRenderingContext _ => true,
+                _ => false,
+            };
+
         public override sealed RenderingContext WithOffset(Vector2 offset) => this;
 
-        public static RenderingContext WithoutRedundants(RenderingContext context)
-        {
-            return context.SubContextCount > 0
-                ? Compose(MoveUp(context))
-                : context;
-
-            static IEnumerable<RenderingContext> MoveUp(RenderingContext items)
-            {
-                var accumulator = new List<RenderingContext>(items.SubContextCount);
-                var opacitiesAccumulator = new List<OpacityRenderingContext>();
-                var timeOffset = 0.0;
-
-                foreach (var item in items)
-                {
-                    switch (item)
-                    {
-                        case OpacityRenderingContext opacity:
-                            opacitiesAccumulator.Add((OpacityRenderingContext)opacity.WithTimeOffset(timeOffset));
-                            break;
-
-                        case TimeOffsetRenderingContext t:
-                            timeOffset += t.TimeOffset;
-                            goto default;
-
-                        default:
-                            accumulator.Add(item);
-                            break;
-                    }
-                }
-
-                foreach (var item in Combine(opacitiesAccumulator))
-                {
-                    yield return item;
-                }
-
-                foreach (var item in accumulator)
-                {
-                    yield return item;
-                }
-            }
-        }
-
         // Combines the given opacities. We could get more clever by interpolating
-        // animations, but for now we'll only multiple with static values.
-        static IEnumerable<OpacityRenderingContext> Combine(IEnumerable<OpacityRenderingContext> items)
+        // animations, but for now we'll only multiply with static values.
+        public static IEnumerable<OpacityRenderingContext> Combine(IEnumerable<OpacityRenderingContext> items)
         {
-            Static? current = null;
+            // Partition into static and animated.
+            var staticOpacties = items.OfType<Static>().ToArray();
+            var animatedOpacties = items.OfType<Animated>().ToArray();
 
-            foreach (var item in items)
+            if (staticOpacties.Length + animatedOpacties.Length == 0)
             {
-                switch (item)
-                {
-                    case Animated a:
-                        if (current != null)
-                        {
-                            yield return new Animated(a.Opacity.Select(o => o * current.Opacity));
-                            current = null;
-                        }
-                        else
-                        {
-                            yield return item;
-                        }
-
-                        break;
-                    case Static s:
-                        if (current is null)
-                        {
-                            current = s;
-                        }
-                        else
-                        {
-                            current = new Static(current.Opacity * s.Opacity);
-                        }
-
-                        break;
-
-                    default:
-                        throw Unreachable;
-                }
+                yield break;
             }
 
-            if (current != null && current.Opacity != Opacity.Opaque)
+            var staticOpacity = staticOpacties.Length > 0
+                ? staticOpacties.Select(op => op.Opacity).Aggregate((a, b) => a * b)
+                : Opacity.Opaque;
+
+            if (animatedOpacties.Length == 0)
             {
-                yield return current;
+                yield return new Static(staticOpacity);
+            }
+            else
+            {
+                // Multiply the first opacity by the static opacity.
+                yield return new Animated(animatedOpacties[0].Opacity.Select(o => o * staticOpacity));
+
+                // And output the rest unchanged.
+                foreach (var opacity in animatedOpacties.Skip(1))
+                {
+                    yield return opacity;
+                }
             }
         }
 

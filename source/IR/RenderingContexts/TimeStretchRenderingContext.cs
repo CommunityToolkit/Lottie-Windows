@@ -10,6 +10,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
     {
         internal TimeStretchRenderingContext(double stretch) => Stretch = stretch;
 
+        public override sealed bool DependsOn(RenderingContext other)
+            => other.IsAnimated;
+
         public double Stretch { get; }
 
         public override bool IsAnimated => false;

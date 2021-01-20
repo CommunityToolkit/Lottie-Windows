@@ -24,6 +24,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
         /// </summary>
         public IReadOnlyList<double> StateChangeTimes { get; }
 
+        public override sealed bool DependsOn(RenderingContext other)
+            => other switch
+            {
+                TimeOffsetRenderingContext _ => true,
+                _ => false,
+            };
+
         public override bool IsAnimated => false;
 
         public override sealed RenderingContext WithOffset(Vector2 offset) => this;
@@ -34,48 +41,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
                 : new VisibilityRenderingContext(
                     StateChangeTimes.Select(t => t + timeOffset).ToArray());
 
-        public static RenderingContext WithoutRedundants(RenderingContext context)
+        public static VisibilityRenderingContext Combine(IReadOnlyList<VisibilityRenderingContext> contexts)
         {
-            if (context.SubContextCount == 0)
-            {
-                return context;
-            }
-
-            // Collect all of the VisibilitiesRenderingContexts, adjusted for time offset.
-            var adjustedVisibilities = new List<VisibilityRenderingContext>(context.SubContextCount);
-            var timeAdjustment = 0.0;
-            foreach (var subContext in context)
-            {
-                switch (subContext)
-                {
-                    case TimeOffsetRenderingContext timeOffset:
-                        timeAdjustment += timeOffset.TimeOffset;
-                        break;
-
-                    case VisibilityRenderingContext visibilityContext:
-                        adjustedVisibilities.Add((VisibilityRenderingContext)visibilityContext.WithTimeOffset(timeAdjustment));
-                        break;
-                }
-            }
-
-            if (adjustedVisibilities.Count == 0)
-            {
-                return context;
-            }
-
-            // Combine the VisiblityReneringContexts into a single context.
-            var combinedContext = Combine(adjustedVisibilities);
-
-            // Return a new composite with the combined visibility at the front and all
-            // others removed.
-            var filtered = context.Filter((VisibilityRenderingContext c) => false);
-
-            return combinedContext + filtered;
-        }
-
-        static VisibilityRenderingContext Combine(IReadOnlyList<VisibilityRenderingContext> contexts)
-        {
-            var ios = contexts.SelectMany(c => InOrOutFrame.ConvertToInOrOutFrame(c.StateChangeTimes)).OrderBy(inOrOut => inOrOut.Offset).ToArray();
+            var ios = contexts.SelectMany(c => InOrOutFrame.ConvertToInOrOutFrame(c.StateChangeTimes)).
+                            OrderBy(inOrOut => inOrOut.Offset).
+                            ToArray();
 
             var states = InOrOutFrame.ConvertToStateChange(ios, contexts.Count).ToArray();
 

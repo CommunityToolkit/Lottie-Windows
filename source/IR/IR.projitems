@@ -83,6 +83,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)RenderingContexts\TimeOffsetRenderingContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RenderingContexts\TimeStretchRenderingContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RenderingContexts\VisibilityRenderingContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Transformers\ContextOptimizers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TrimPath.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Optimization\GradientStopOptimizer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Optimization\Optimizer.cs" />
