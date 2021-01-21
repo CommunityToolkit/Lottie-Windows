@@ -38,12 +38,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
             => other switch
             {
                 OpacityRenderingContext _ => true,
+                PositionRenderingContext _ => Brush is GradientBrush,
+                ScaleRenderingContext _ => Brush is GradientBrush,
+                RotationRenderingContext _ => Brush is GradientBrush,
                 _ => false,
             };
 
         public override bool IsAnimated => StrokeWidth.IsAnimated || Brush.IsAnimated;
 
-        public override sealed RenderingContext WithOffset(Vector2 offset) => this;
+        public override sealed RenderingContext WithOffset(Vector2 offset)
+            => new StrokeRenderingContext(Brush.WithOffset(offset), StrokeWidth, CapType, JoinType, MiterLimit);
 
         public override RenderingContext WithTimeOffset(double timeOffset)
             => IsAnimated

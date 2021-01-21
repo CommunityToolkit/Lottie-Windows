@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContents;
 using Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts;
+using Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
 {
@@ -43,31 +44,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
                                                 Sum(ctx => ctx.TimeOffset);
 
             // Convert the context to a single timebase.
-            var adjustedContext = contentOffset == 0
-                                    ? rendering.Context
-                                    : RenderingContext.Compose(UnifyTimebase(rendering.Context));
+            var adjustedContext = ContextOptimizers.UnifyTimebase(rendering.Context);
 
             var adjustedContent = rendering.Content.WithTimeOffset(contentOffset);
 
             return new Rendering(adjustedContent, adjustedContext);
-        }
-
-        static IEnumerable<RenderingContext> UnifyTimebase(RenderingContext context)
-        {
-            var timeOffset = 0.0;
-
-            foreach (var subContext in context)
-            {
-                switch (subContext)
-                {
-                    case TimeOffsetRenderingContext timeOffsetContext:
-                        timeOffset += timeOffsetContext.TimeOffset;
-                        break;
-                    default:
-                        yield return subContext.WithTimeOffset(timeOffset);
-                        break;
-                }
-            }
         }
 
         public override string ToString() => $"{(IsAnimated ? "Animated" : "Static")} ({Content}, {Context})";

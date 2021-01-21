@@ -123,21 +123,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.Animatables
         // Not a great hash code because it ignore the KeyFrames, but quick.
         public override int GetHashCode() => InitialValue.GetHashCode();
 
-        internal Animatable<T> CloneWithSelectedValue(Func<T, T> selector)
-        {
-            if (IsAnimated)
-            {
-                var keyframes =
-                    from kf in KeyFrames.ToArray()
-                    select new KeyFrame<T>(kf.Frame, selector(kf.Value), kf.Easing);
-                return new Animatable<T>(keyframes);
-            }
-            else
-            {
-                return new Animatable<T>(selector(InitialValue));
-            }
-        }
-
         /// <inheritdoc/>
         public override string? ToString() =>
             IsAnimated

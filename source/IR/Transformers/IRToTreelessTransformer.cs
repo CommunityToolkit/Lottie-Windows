@@ -340,7 +340,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
 
                 case ShapeType.Path:
                     var path = (Path)shape;
-                    content = PathRenderingContent.Create(path.Data);
+
+                    // Normalize the path data so that it has values close to 0. This
+                    // makes debugging easier by removing large offsets from the path,
+                    // and it makes it easier to canonicalize paths that are equivalent
+                    // apart from their offset.
+                    var minXY = path.Data.IsAnimated
+                        ? path.Data.KeyFrames.Min(kf => kf.Value.GetMinimumXandY())
+                        : path.Data.InitialValue.GetMinimumXandY();
+
+                    context = new PositionRenderingContext.Static(minXY);
+                    content = PathRenderingContent.Create(path.WithOffset(-minXY).Data);
+
                     break;
 
                 case ShapeType.Polystar:

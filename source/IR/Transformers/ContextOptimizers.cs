@@ -4,12 +4,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
-using Microsoft.Toolkit.Uwp.UI.Lottie.IR.Brushes;
-using Microsoft.Toolkit.Uwp.UI.Lottie.IR.Layers;
-using Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContents;
 using Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts;
 using static Microsoft.Toolkit.Uwp.UI.Lottie.IR.Exceptions;
 
@@ -19,6 +17,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
     {
         internal static RenderingContext Optimize(RenderingContext input)
         {
+            var result = input;
+            do
+            {
+                input = result;
+                result = OptimizeOnce(input);
+            } while (result.SubContextCount != input.SubContextCount);
+
+            return result;
+        }
+
+        static RenderingContext OptimizeOnce(RenderingContext input)
+        {
             AssertUniformTimebase(input);
 
             var result = input;
@@ -26,15 +36,23 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
             // Eliminate the metadata.
             result = ElideMetadata(result);
 
+            /*            result = DebugCleanup(result);
+                        var dbg = DebugAnchors(result).ToArray(); //.Skip(4).First();
+            */
+
             // Replace any anchors with equivalent centerpoints and positions.
             result = ReplaceAnchors(result);
 
+            // The last blending mode wins.
             result = OptimizeBlendModes(result);
+
             result = OptimizeOpacity(result);
             result = OptimizePosition(result);
             result = OptimizeRotation(result);
             result = OptimizeScale(result);
             result = OptimizeSize(result);
+            result = OptimizeGradientFills(result);
+            result = OptimizeGradientStrokes(result);
             result = OptimizeVisibility(result);
 
             return result;
@@ -42,6 +60,31 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
 
         internal static RenderingContext ElideMetadata(RenderingContext input)
             => input.Filter((MetadataRenderingContext c) => false);
+
+        static IEnumerable<(RenderingContext[], RenderingContext[], RenderingContext[])> DebugAnchors(RenderingContext context)
+        {
+            var cleanContext = DebugCleanup(context);
+
+            for (var i = 0; i < cleanContext.SubContextCount; i++)
+            {
+                var subSequence = RenderingContext.Compose(cleanContext.Take(i + 1));
+                var cleanedUp = DebugCleanup(ReplaceAnchors(subSequence)).ToArray();
+                yield return (subSequence.ToArray(), cleanedUp, OptimizePosition(RenderingContext.Compose(cleanedUp)).ToArray());
+            }
+        }
+
+        // For debugging purposes only, remove some distracting contexts.
+        internal static RenderingContext DebugCleanup(RenderingContext input)
+        {
+            var result = input;
+            result = result.Filter<BlendModeRenderingContext>(r => false);
+            result = result.Filter<RotationRenderingContext.Static>(r => r.Rotation != Rotation.None);
+            result = result.Filter<OpacityRenderingContext>(r => false);
+            result = result.Filter<VisibilityRenderingContext>(r => false);
+            result = result.Filter<FillRenderingContext>(r => false);
+            result = result.Filter<ScaleRenderingContext.Static>(r => r.ScalePercent != new Vector2(100, 100));
+            return result;
+        }
 
         /// <summary>
         /// Replaces any <see cref="AnchorRenderingContext"/>s with <see cref="PositionRenderingContext"/>s
@@ -62,12 +105,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
                     switch (item)
                     {
                         case AnchorRenderingContext anchor:
-                            // Store the anchor. It scale, and rotation.
+                            // Store the anchor.
                             currentAnchor = anchor;
 
                             // The anchor moves the position to the inverse of the anchor
                             // (i.e. the anchor is the point that is positioned by the position).
-                            yield return currentAnchor.ToPositionRenderingContext(value => Vector2.Zero - value);
+                            yield return currentAnchor.ToPositionRenderingContext(value => -value);
                             break;
 
                         case RotationRenderingContext.Animated rotation:
@@ -84,7 +127,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
                                 case AnchorRenderingContext.Static staticAnchor:
                                     // Static anchor and animated rotation.
                                     yield return new PositionRenderingContext.Animated(new AnimatableVector2(rotation.Rotation.Select(r =>
-                                        r.RotatePointAroundOrigin(point: Vector2.Zero, origin: staticAnchor.Anchor)).KeyFrames));
+                                        r.RotatePointAroundAxis(point: Vector2.Zero, axis: staticAnchor.Anchor)).KeyFrames));
                                     yield return item;
                                     break;
 
@@ -96,7 +139,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
                         case RotationRenderingContext.Static rotation:
                             // Static anchor and static rotation.
                             yield return currentAnchor.ToPositionRenderingContext(
-                                value => rotation.Rotation.RotatePointAroundOrigin(point: Vector2.Zero, origin: value));
+                                value => rotation.Rotation.RotatePointAroundAxis(point: Vector2.Zero, axis: value));
                             yield return item;
                             break;
 
@@ -140,7 +183,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
 
                         case ScaleRenderingContext.Static scale:
                             yield return currentAnchor.ToPositionRenderingContext(
-                                value => ScaleRenderingContext.ScalePointAroundOrigin(point: Vector2.Zero, origin: value, scale: scale.ScalePercent / 100));
+                                anchorPoint => ScaleRenderingContext.ScalePointAroundOrigin(point: Vector2.Zero, origin: anchorPoint, scale: scale.ScalePercent / 100));
                             yield return item;
                             break;
 
@@ -181,6 +224,110 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
                 if (lastBlendMode != null && lastBlendMode.BlendMode != BlendMode.Normal)
                 {
                     yield return lastBlendMode;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Moves positions above gradient fills by offsetting
+        /// the fills by the amount of the position.
+        /// </summary>
+        /// <returns>The context with positions moved above the fills.</returns>
+        public static RenderingContext OptimizeGradientFills(RenderingContext context)
+        {
+            AssertUniformTimebase(context);
+
+            return RenderingContext.Compose(OptimizeFills(context.GroupUp<PositionRenderingContext>()));
+
+            static IEnumerable<RenderingContext> OptimizeFills(IEnumerable<RenderingContext> items)
+            {
+                FillRenderingContext? currentFill = null;
+
+                foreach (var item in items)
+                {
+                    switch (item)
+                    {
+                        case FillRenderingContext fill:
+                            currentFill = fill;
+                            break;
+
+                        case PositionRenderingContext.Static position:
+                            yield return position;
+                            if (currentFill != null)
+                            {
+                                yield return currentFill.WithOffset(-position.Position);
+                            }
+
+                            currentFill = null;
+                            break;
+
+                        default:
+                            if (currentFill != null)
+                            {
+                                yield return currentFill;
+                                currentFill = null;
+                            }
+
+                            yield return item;
+                            break;
+                    }
+                }
+
+                if (currentFill != null)
+                {
+                    yield return currentFill;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Moves positions above gradient strokes by offsetting
+        /// the strokes by the amount of the position.
+        /// </summary>
+        /// <returns>The context with positions moved above the strokes.</returns>
+        public static RenderingContext OptimizeGradientStrokes(RenderingContext context)
+        {
+            AssertUniformTimebase(context);
+
+            return RenderingContext.Compose(OptimizeStrokes(context.GroupUp<PositionRenderingContext>()));
+
+            static IEnumerable<RenderingContext> OptimizeStrokes(IEnumerable<RenderingContext> items)
+            {
+                StrokeRenderingContext? currentStroke = null;
+
+                foreach (var item in items)
+                {
+                    switch (item)
+                    {
+                        case StrokeRenderingContext stroke:
+                            currentStroke = stroke;
+                            break;
+
+                        case PositionRenderingContext.Static position:
+                            yield return position;
+                            if (currentStroke != null)
+                            {
+                                yield return currentStroke.WithOffset(-position.Position);
+                            }
+
+                            currentStroke = null;
+                            break;
+
+                        default:
+                            if (currentStroke != null)
+                            {
+                                yield return currentStroke;
+                                currentStroke = null;
+                            }
+
+                            yield return item;
+                            break;
+                    }
+                }
+
+                if (currentStroke != null)
+                {
+                    yield return currentStroke;
                 }
             }
         }
@@ -463,6 +610,29 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
             }
         }
 
+        public static RenderingContext UnifyTimebase(RenderingContext context)
+        {
+            return RenderingContext.Compose(Unify(context));
+
+            static IEnumerable<RenderingContext> Unify(RenderingContext context)
+            {
+                var timeOffset = 0.0;
+
+                foreach (var subContext in context)
+                {
+                    switch (subContext)
+                    {
+                        case TimeOffsetRenderingContext timeOffsetContext:
+                            timeOffset += timeOffsetContext.TimeOffset;
+                            break;
+                        default:
+                            yield return subContext.WithTimeOffset(timeOffset);
+                            break;
+                    }
+                }
+            }
+        }
+
         [Conditional("DEBUG")]
         static void AssertNoAnchors(RenderingContext context)
         {
@@ -473,7 +643,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
         }
 
         [Conditional("DEBUG")]
-        static void AssertUniformTimebase(RenderingContext context)
+        internal static void AssertUniformTimebase(RenderingContext context)
         {
             if (context.Contains<TimeOffsetRenderingContext>())
             {

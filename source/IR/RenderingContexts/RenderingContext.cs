@@ -382,6 +382,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
         }
 
         /// <summary>
+        /// Returns a context with all items except any of <typeparamref name="T"/>.
+        /// </summary>
+        /// <typeparam name="T">The type of the <see cref="RenderingContext"/> to filter.</typeparam>
+        /// <returns>A filtered <see cref="RenderingContext"/>.</returns>
+        public RenderingContext Without<T>()
+            where T : RenderingContext
+            => Where(item => item is not T);
+
+        /// <summary>
         /// Returns a context with all items except any of <typeparamref name="T"/> that
         /// return false for the predicate.
         /// </summary>

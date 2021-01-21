@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Linq;
 using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
@@ -27,6 +28,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
 
         public override ShapeType ShapeType => ShapeType.Path;
 
+        public Path WithOffset(Vector2 offset)
+            => CloneWithNewGeometry(Data.IsAnimated
+                    ? Data.Select(geo => geo.WithOffset(offset))
+                    : new Animatable<PathGeometry>(Data.InitialValue.WithOffset(offset)));
+
         /// <summary>
         /// Returns a path with the same properties except with the given
         /// <paramref name="geometryData"/> in place of <see cref="Data"/>.
@@ -35,7 +41,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
         /// <returns>The cloned path.</returns>
         public Path CloneWithNewGeometry(Animatable<PathGeometry> geometryData)
             => new Path(
-                    new ShapeLayerContent.ShapeLayerContentArgs
+                    new ShapeLayerContentArgs
                     {
                         BlendMode = BlendMode,
                         MatchName = MatchName,

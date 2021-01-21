@@ -28,6 +28,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Brushes
         public override bool IsAnimated =>
             base.IsAnimated || HighlightDegrees.IsAnimated || HighlightLength.IsAnimated;
 
+        public override Brush WithOffset(Vector2 offset) =>
+            new RadialGradientBrush(
+                StartPoint.WithOffset(offset),
+                EndPoint.WithOffset(offset),
+                GradientStops,
+                Opacity,
+                HighlightLength,
+                HighlightDegrees);
+
         public override Brush WithTimeOffset(double timeOffset)
             => IsAnimated
             ? new RadialGradientBrush(

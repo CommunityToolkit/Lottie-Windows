@@ -18,6 +18,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Brushes
 
         public override bool IsAnimated => Color.IsAnimated || Opacity.IsAnimated;
 
+        public override Brush WithOffset(Vector2 offset) => this;
+
         public override Brush WithTimeOffset(double timeOffset)
             => IsAnimated
                 ? new SolidColorBrush(Color.WithTimeOffset(timeOffset), Opacity.WithTimeOffset(timeOffset))

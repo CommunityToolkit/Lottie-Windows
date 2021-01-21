@@ -28,6 +28,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
                 _ => false,
             };
 
+        /// <summary>
+        /// Converts the anchor to a position offset. <paramref name="selector"/> is called for
+        /// each key frame, allowing the caller to translate the anchor value to an offset.
+        /// </summary>
+        /// <returns>A position offset.</returns>
         internal PositionRenderingContext ToPositionRenderingContext(Func<Vector2, Vector2> selector)
         {
             switch (this)

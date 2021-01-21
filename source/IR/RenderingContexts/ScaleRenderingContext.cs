@@ -35,9 +35,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
         /// </summary>
         /// <returns>The resulting point.</returns>
         internal static Vector2 ScalePointAroundOrigin(Vector2 point, Vector2 origin, Vector2 scale)
+            => new Vector2(
+                ScaleAroundOrigin(point.X, origin.X, scale.X),
+                ScaleAroundOrigin(point.Y, origin.Y, scale.Y));
+
+        static double ScaleAroundOrigin(double value, double origin, double scale)
         {
-            var centerPoint = new Vector2(point.X - origin.X, point.Y - origin.Y);
-            return centerPoint * scale;
+            return value + ((origin - value) * (1 - scale));
         }
 
         public sealed class Animated : ScaleRenderingContext
