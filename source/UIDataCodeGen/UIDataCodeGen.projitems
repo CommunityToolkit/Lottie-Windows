@@ -17,7 +17,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\CSharp\CSharpCodegenResult.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\CSharp\CSharpInstantiatorGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\CSharp\CSharpStringifier.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGen\CSharp\DotNetVersion.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\Cx\CppNamespaceListBuilder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\Cx\CxCodegenResult.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGen\Cx\CxInstantiatorGenerator.cs" />

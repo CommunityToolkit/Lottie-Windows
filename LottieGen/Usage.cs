@@ -37,9 +37,6 @@ OVERVIEW:
          -DisableCodeGenOptimizer
                        Disables optimization done by the code generator. This is
                        useful when the generated code is going to be hacked on.
-         -DotNetVersion
-                       CSharp only. Specifies the .NET version. {nameof(DotNetVersion.DotNet5)} or 
-                       {nameof(DotNetVersion.DotNetNative)}. Default to {nameof(DotNetVersion.DotNetNative)}.
          -GenerateColorBindings
                        Generates properties for each distinct color of fills and
                        strokes so that the colors in the animation can be modified
@@ -47,10 +44,6 @@ OVERVIEW:
          -GenerateDependencyObject
                        Generates code that extends DependencyObject. This is useful
                        to allow XAML binding to properties in the Lottie source.
-         -InterfaceBaseName
-                       Specifies the name of the interface to implement in the generated
-                       code. Overrides the default interface base name. The default
-                       is determined by the -WinUIVersion value.
          -MinimumUapVersion
                        The lowest UAP version on which the result must run. Defaults
                        to 7. Must be 7 or higher. Code will be generated that will

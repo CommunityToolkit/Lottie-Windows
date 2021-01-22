@@ -12,8 +12,6 @@ sealed class CommandLineOptions
 {
     readonly List<string> _additionalInterfaces = new List<string>();
     readonly List<string> _languageStrings = new List<string>();
-    DotNetVersion? _dotNetVersion;
-    string? _interfaceBaseName;
     Version? _winUIVersion;
 
     internal IReadOnlyList<string> AdditionalInterfaces => _additionalInterfaces;
@@ -21,8 +19,6 @@ sealed class CommandLineOptions
     internal bool DisableCodeGenOptimizer { get; private set; }
 
     internal bool DisableTranslationOptimizer { get; private set; }
-
-    internal DotNetVersion DotNetVersion => _dotNetVersion ?? DotNetVersion.DotNetNative;
 
     // The parse error, or null if the parse succeeded.
     // The error should be a sentence (starts with a capital letter, and ends with a period).
@@ -35,8 +31,6 @@ sealed class CommandLineOptions
     internal bool HelpRequested { get; private set; }
 
     internal string? InputFile { get; private set; }
-
-    internal string InterfaceBaseName => _interfaceBaseName ?? "Microsoft.UI.Xaml.Controls.IAnimatedVisual";
 
     internal IReadOnlyList<Language> Languages { get; private set; } = Array.Empty<Language>();
 
@@ -95,13 +89,6 @@ sealed class CommandLineOptions
             sb.Append($" -{nameof(DisableTranslationOptimizer)}");
         }
 
-        switch (languageSwitch)
-        {
-            case Language.CSharp:
-                sb.Append($" -{nameof(DotNetVersion)} {DotNetVersion}");
-                break;
-        }
-
         if (GenerateColorBindings)
         {
             sb.Append($" -{nameof(GenerateColorBindings)}");
@@ -111,8 +98,6 @@ sealed class CommandLineOptions
         {
             sb.Append($" -{nameof(GenerateDependencyObject)}");
         }
-
-        sb.Append($" -{nameof(InterfaceBaseName)} {InterfaceBaseName}");
 
         sb.Append($" -Language {languageSwitch}");
 
@@ -182,7 +167,6 @@ sealed class CommandLineOptions
         AdditionalInterface,
         DisableCodeGenOptimizer,
         DisableTranslationOptimizer,
-        DotNetVersion,
         GenerateColorBindings,
         GenerateDependencyObject,
         Help,
@@ -252,7 +236,6 @@ sealed class CommandLineOptions
             .AddPrefixedKeyword(Keyword.AdditionalInterface)
             .AddPrefixedKeyword(Keyword.DisableCodeGenOptimizer)
             .AddPrefixedKeyword(Keyword.DisableTranslationOptimizer)
-            .AddPrefixedKeyword(Keyword.DotNetVersion)
             .AddPrefixedKeyword(Keyword.GenerateColorBindings)
             .AddPrefixedKeyword(Keyword.GenerateDependencyObject)
             .AddPrefixedKeyword(Keyword.Help, "?")
@@ -317,7 +300,6 @@ sealed class CommandLineOptions
 
                         // The following keywords require a parameter as the next token.
                         case Keyword.AdditionalInterface:
-                        case Keyword.DotNetVersion:
                         case Keyword.InputFile:
                         case Keyword.Interface:
                         case Keyword.Language:
@@ -340,37 +322,6 @@ sealed class CommandLineOptions
                     _additionalInterfaces.Add(arg);
                     previousKeyword = Keyword.None;
                     break;
-
-                case Keyword.DotNetVersion:
-                    if (_dotNetVersion.HasValue)
-                    {
-                        ErrorDescription = ArgumentSpecifiedMoreThanOnce(".NET version");
-                        return;
-                    }
-
-                    {
-                        var dotNetVersionTokenizer = new CommandlineTokenizer<DotNetVersion>(DotNetVersion.Ambiguous)
-                            .AddKeyword(DotNetVersion.DotNet5, "5")
-                            .AddKeyword(DotNetVersion.DotNetNative);
-
-                        dotNetVersionTokenizer.TryMatchKeyword(arg, out var dotNetVersion);
-
-                        switch (dotNetVersion)
-                        {
-                            case DotNetVersion.Unknown:
-                                ErrorDescription = $"Unrecognized .NET version: {arg}";
-                                break;
-                            case DotNetVersion.Ambiguous:
-                                ErrorDescription = $"Ambiguous .NET version: {arg}";
-                                break;
-                        }
-
-                        _dotNetVersion = dotNetVersion;
-                    }
-
-                    previousKeyword = Keyword.None;
-                    break;
-
                 case Keyword.InputFile:
                     if (InputFile != null)
                     {
@@ -379,16 +330,6 @@ sealed class CommandLineOptions
                     }
 
                     InputFile = arg;
-                    previousKeyword = Keyword.None;
-                    break;
-                case Keyword.Interface:
-                    if (_interfaceBaseName != null)
-                    {
-                        ErrorDescription = ArgumentSpecifiedMoreThanOnce("Interface base name");
-                        return;
-                    }
-
-                    _interfaceBaseName = arg;
                     previousKeyword = Keyword.None;
                     break;
                 case Keyword.Language:

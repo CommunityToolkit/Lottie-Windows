@@ -25,30 +25,23 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
     sealed class CSharpInstantiatorGenerator : InstantiatorGeneratorBase
     {
         readonly Stringifier _s;
-        readonly DotNetVersion _dotNetVersion;
-        readonly string _interface;
-        readonly string _sourceInterface;
         readonly string _winUiNamespace;
         readonly string _winUi3CastHack;
 
         CSharpInstantiatorGenerator(
             CodegenConfiguration configuration,
-            Stringifier stringifier,
-            DotNetVersion dotNetVersion)
+            Stringifier stringifier)
             : base(
                   configuration,
                   setCommentProperties: false,
                   stringifier: stringifier)
         {
             _s = stringifier;
-            _dotNetVersion = dotNetVersion;
-            _interface = AnimatedVisualSourceInfo.InterfaceType.GetQualifiedName(stringifier);
-            _sourceInterface = _interface + "Source";
-            _winUiNamespace = AnimatedVisualSourceInfo.WinUi3 ? "Microsoft.UI" : "Windows.UI";
+            _winUiNamespace = AnimatedVisualSourceInfo.WinUIVersion.Major >= 3 ? "Microsoft.UI" : "Windows.UI";
 
             // This is a hack that is required to use Win2D with WinUI3 as of August 2020. It
             // will not be necessary when an official Win2D for WinUI3 is released.
-            _winUi3CastHack = AnimatedVisualSourceInfo.WinUi3 ? "(IGeometrySource2D)(object)" : string.Empty;
+            _winUi3CastHack = AnimatedVisualSourceInfo.WinUIVersion.Minor >= 3 ? "(IGeometrySource2D)(object)" : string.Empty;
         }
 
         IAnimatedVisualSourceInfo SourceInfo => AnimatedVisualSourceInfo;
@@ -59,13 +52,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
         /// </summary>
         /// <returns>A tuple containing the C# code and list of referenced asset files.</returns>
         public static CSharpCodegenResult CreateFactoryCode(
-            CodegenConfiguration configuration,
-            DotNetVersion dotNetVersion)
+            CodegenConfiguration configuration)
         {
             var generator = new CSharpInstantiatorGenerator(
                                 configuration: configuration,
-                                stringifier: new CSharpStringifier(),
-                                dotNetVersion);
+                                stringifier: new CSharpStringifier());
 
             return new CSharpCodegenResult(
                 csText: generator.GenerateCode(),
@@ -260,20 +251,28 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
 
             builder.WriteLine($"{visibility}sealed class {SourceInfo.ClassName}");
 
+            builder.Indent();
             if (SourceInfo.GenerateDependencyObject)
             {
-                builder.WriteLine($"    : DependencyObject");
-                builder.WriteLine($"    , {_sourceInterface}");
+                builder.WriteLine($": DependencyObject");
+                builder.WriteLine($", {Interface_IAnimatedVisualSource.GetQualifiedName(_s)}");
             }
             else
             {
-                builder.WriteLine($"    : {_sourceInterface}");
+                builder.WriteLine($": {Interface_IAnimatedVisualSource.GetQualifiedName(_s)}");
+            }
+
+            if (SourceInfo.WinUIVersion >= new Version(2, 6) && SourceInfo.WinUIVersion.Major < 3)
+            {
+                builder.WriteLine($", {Interface_IAnimatedVisualSource2.GetQualifiedName(_s)}");
             }
 
             foreach (var additionalInterface in SourceInfo.AdditionalInterfaces)
             {
-                builder.WriteLine($"    , {additionalInterface.GetQualifiedName(_s)}");
+                builder.WriteLine($", {additionalInterface.GetQualifiedName(_s)}");
             }
+
+            builder.UnIndent();
 
             builder.OpenScope();
 
@@ -303,8 +302,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
             // Add the methods and fields needed for theming.
             WriteThemeMethodsAndFields(builder);
 
+            // Generate the overload of TryCreateAnimatedVisual that doesn't return diagnostics.
+            builder.WriteLine($"public {Interface_IAnimatedVisual.GetQualifiedName(_s)} TryCreateAnimatedVisual(Compositor compositor)");
+            builder.OpenScope();
+            builder.WriteLine("object ignored = null;");
+            builder.WriteLine($"return TryCreateAnimatedVisual(compositor, out ignored);");
+            builder.CloseScope();
+            builder.WriteLine();
+
             // Generate the method that creates an instance of the animated visual.
-            builder.WriteLine($"public {_interface} TryCreateAnimatedVisual(Compositor compositor, out object diagnostics)");
+            builder.WriteLine($"public {Interface_IAnimatedVisual.GetQualifiedName(_s)} TryCreateAnimatedVisual(Compositor compositor, out object diagnostics)");
             builder.OpenScope();
             builder.WriteLine("diagnostics = null;");
             if (SourceInfo.IsThemed)
@@ -316,7 +323,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
 
             // WinUI3 doesn't ever do a version check. It's up to the user to make sure
             // the version they're using is compatible.
-            if (SourceInfo.WinUi3)
+            if (SourceInfo.WinUIVersion.Major >= 3)
             {
                 WriteInstantiateAndReturnAnimatedVisual(builder, SourceInfo.AnimatedVisualInfos.First());
             }
@@ -492,7 +499,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
             builder.WriteLine();
 
             // Generate the method that creates an instance of the animated visual.
-            builder.WriteLine($"public {_interface} TryCreateAnimatedVisual(Compositor compositor, out object diagnostics)");
+            builder.WriteLine($"public {Interface_IAnimatedVisual.GetQualifiedName(_s)} TryCreateAnimatedVisual(Compositor compositor, out object diagnostics)");
             builder.OpenScope();
             builder.WriteLine("_isTryCreateAnimatedVisualCalled = true;");
             builder.WriteLine("diagnostics = null;");
@@ -502,7 +509,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
 
             // WinUI3 doesn't ever do a version check. It's up to the user to make sure
             // the version they're using is compatible.
-            if (!SourceInfo.WinUi3)
+            if (SourceInfo.WinUIVersion.Major < 3)
             {
                 // Check whether the runtime will support the lowest UAP version required.
                 builder.WriteLine($"if (!{animatedVisualInfos[^1].ClassName}.IsRuntimeCompatible())");
@@ -675,7 +682,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
         protected override void WriteAnimatedVisualStart(CodeBuilder builder, IAnimatedVisualInfo info)
         {
             // Start the instantiator class.
-            builder.WriteLine($"sealed class {info.ClassName} : {_interface}");
+            builder.WriteLine($"sealed class {info.ClassName} : {Interface_IAnimatedVisual.GetQualifiedName(_s)}");
             builder.OpenScope();
         }
 
@@ -737,7 +744,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
 
             // WinUI3 doesn't ever do a version check. It's up to the user to make sure
             // the version they're using is compatible.
-            if (!SourceInfo.WinUi3)
+            if (SourceInfo.WinUIVersion.Major < 3)
             {
                 // Write the IsRuntimeCompatible static method.
                 builder.WriteLine("internal static bool IsRuntimeCompatible()");

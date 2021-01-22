@@ -151,7 +151,7 @@ sealed class LottieJsonFileProcessor
             switch (lang)
             {
                 case Language.CSharp:
-                    codeGenSucceeded &= TryGenerateCSharpCode(lottieComposition, $"{outputFileBase}.cs", _options.DotNetVersion);
+                    codeGenSucceeded &= TryGenerateCSharpCode(lottieComposition, $"{outputFileBase}.cs");
                     _profiler.OnCodeGenFinished();
                     break;
 
@@ -436,8 +436,7 @@ sealed class LottieJsonFileProcessor
 
     bool TryGenerateCSharpCode(
         LottieComposition lottieComposition,
-        string outputFilePath,
-        DotNetVersion dotNetVersion)
+        string outputFilePath)
     {
         if (!TryEnsureTranslated(lottieComposition))
         {
@@ -446,8 +445,7 @@ sealed class LottieJsonFileProcessor
 
         var codegenResult =
             CSharpInstantiatorGenerator.CreateFactoryCode(
-                CreateCodeGenConfiguration(lottieComposition, Language.CSharp),
-                dotNetVersion);
+                CreateCodeGenConfiguration(lottieComposition, Language.CSharp));
 
         if (string.IsNullOrWhiteSpace(codegenResult.CsText))
         {
@@ -649,7 +647,6 @@ sealed class LottieJsonFileProcessor
 
         var result = new CodegenConfiguration(
             className: _className,
-            interfaceType: _options.InterfaceBaseName,
             additionalInterfaces: _options.AdditionalInterfaces,
             objectGraphs: _translationResults.Select(
                             tr => ((CompositionObject?)tr.RootVisual!, tr.MinimumRequiredUapVersion)).ToArray(),
