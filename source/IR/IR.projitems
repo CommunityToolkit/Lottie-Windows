@@ -62,6 +62,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)ShapeType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SolidColorFill.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SolidColorStroke.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TimeSegment.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transform.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RenderingContents\GroupRenderingContent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RenderingContents\ImageRenderingContent.cs" />

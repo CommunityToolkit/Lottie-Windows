@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
@@ -18,13 +17,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
         internal static RenderingContext Optimize(RenderingContext input)
         {
             var result = input;
+
+            // Get the metadata.
+            var metadata = MetadataRenderingContext.Compose(result.OfType<MetadataRenderingContext>());
+
+            // Eliminate the metadata.
+            result = result.Without<MetadataRenderingContext>();
+
             do
             {
                 input = result;
                 result = OptimizeOnce(input);
             } while (result.SubContextCount != input.SubContextCount);
 
-            return result;
+            return metadata + result;
         }
 
         static RenderingContext OptimizeOnce(RenderingContext input)
@@ -32,9 +38,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
             AssertUniformTimebase(input);
 
             var result = input;
-
-            // Eliminate the metadata.
-            result = ElideMetadata(result);
 
             /*            result = DebugCleanup(result);
                         var dbg = DebugAnchors(result).ToArray(); //.Skip(4).First();
@@ -57,9 +60,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
 
             return result;
         }
-
-        internal static RenderingContext ElideMetadata(RenderingContext input)
-            => input.Filter((MetadataRenderingContext c) => false);
 
         static IEnumerable<(RenderingContext[], RenderingContext[], RenderingContext[])> DebugAnchors(RenderingContext context)
         {
@@ -349,7 +349,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
                     switch (item)
                     {
                         case OpacityRenderingContext opacity:
-                            opacitiesAccumulator.Add((OpacityRenderingContext)opacity);
+                            opacitiesAccumulator.Add(opacity);
                             break;
 
                         default:

@@ -33,18 +33,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
             var staticOpacties = items.OfType<Static>().ToArray();
             var animatedOpacties = items.OfType<Animated>().ToArray();
 
-            if (staticOpacties.Length + animatedOpacties.Length == 0)
-            {
-                yield break;
-            }
-
             var staticOpacity = staticOpacties.Length > 0
                 ? staticOpacties.Select(op => op.Opacity).Aggregate((a, b) => a * b)
                 : Opacity.Opaque;
 
             if (animatedOpacties.Length == 0)
             {
-                yield return new Static(staticOpacity);
+                // There are no animated opacities. Just output the static opacity,
+                // unless it is 100%.
+                if (!staticOpacity.IsOpaque)
+                {
+                    yield return new Static(staticOpacity);
+                }
             }
             else
             {

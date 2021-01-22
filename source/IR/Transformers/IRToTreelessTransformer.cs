@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
 using Microsoft.Toolkit.Uwp.UI.Lottie.IR.Brushes;
 using Microsoft.Toolkit.Uwp.UI.Lottie.IR.Layers;
@@ -42,9 +43,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
             // Optimize the contexts.
             var optimizedRenderings = unifiedTimeBaseRenderings.Select(OptimizeRendering(ContextOptimizers.Optimize)).ToArray();
 
+            // Get the visibilty segments for each rendering.
+            // TODO - hacky test code - move this into a grouping class.
+            var visibilities = optimizedRenderings.Select(r => VisibilityRenderingContext.Combine(r.Context.OfType<VisibilityRenderingContext>())).ToArray();
+            var timeSegments = VisibilityRenderingContext.GetVisibilitySegments(visibilities).ToArray();
+
+            foreach (var r in optimizedRenderings)
+            {
+                var visibility = VisibilityRenderingContext.Combine(r.Context.OfType<VisibilityRenderingContext>());
+                var segmentsForRendering = timeSegments.Where(ts => visibility.IsVisibleDuring(ts)).ToArray();
+            }
+
             var result = new Rendering(
                                 new GroupRenderingContent(optimizedRenderings),
-                                new MetadataRenderingContext($"Lottie {source.Name}") { Source = source });
+                                new MetadataRenderingContext(name: $"Lottie {source.Name}", source: source));
 
             return result;
         }
@@ -97,7 +109,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
                         break;
 
                     case Layer.LayerType.Shape:
-                        yield return DetreeifyShapeLayer((ShapeLayer)layer);
+                        foreach (var item in DetreeifyShapeLayer((ShapeLayer)layer))
+                        {
+                            yield return item;
+                        }
+
                         break;
 
                     case Layer.LayerType.Solid:
@@ -119,7 +135,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
 
         IEnumerable<RenderingContext> GetRenderingContextsForLayer(Layer layer)
         {
-            yield return new MetadataRenderingContext(name: $"{layer.Type} {layer.Name}") { Source = layer };
+            yield return new MetadataRenderingContext(name: $"{layer.Type} {layer.Name}", source: layer);
 
             if (layer.TimeStretch != 1)
             {
@@ -381,7 +397,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
             {
                 context = RenderingContext.Compose(
                     context,
-                    new MetadataRenderingContext(shapeLayerContent.Name) { Source = shapeLayerContent },
+                    new MetadataRenderingContext(name: shapeLayerContent.Name, source: shapeLayerContent),
                     new BlendModeRenderingContext(shapeLayerContent.BlendMode));
 
                 switch (shapeLayerContent.ContentType)
@@ -417,7 +433,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
                                     break;
 
                                 default:
-                                    yield return new Rendering(new GroupRenderingContent(groupContents), context);
+                                    foreach (var item in groupContents)
+                                    {
+                                        yield return item.WithContext(context + item.Context);
+                                    }
+
+                                    // TODO: if there's group opacity, we will have to return this grouped.
+                                    //yield return new Rendering(new GroupRenderingContent(groupContents), context);
                                     break;
                             }
 
@@ -454,17 +476,43 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
             }
         }
 
-        Rendering DetreeifyShapeLayer(ShapeLayer layer)
+        static bool IsAlwaysOpaque(RenderingContext context)
+        {
+            foreach (var subContext in context.OfType<OpacityRenderingContext>())
+            {
+                switch (subContext)
+                {
+                    case OpacityRenderingContext.Static statc:
+                        if (!statc.Opacity.IsOpaque)
+                        {
+                            return false;
+                        }
+
+                        break;
+                    case OpacityRenderingContext.Animated animated:
+                        if (!animated.Opacity.IsAlways(Opacity.Opaque))
+                        {
+                            return false;
+                        }
+
+                        break;
+                    default: throw Unreachable;
+                }
+            }
+
+            return true;
+        }
+
+        IEnumerable<Rendering> DetreeifyShapeLayer(ShapeLayer layer)
         {
             var contents = DetreeifyShapeLayerContents(layer.Contents).ToArray();
             var context = GetRenderingContextForLayer(layer);
 
-            return contents.Length switch
+            // TODO - if the context is not opaque, we need to group the content.
+            foreach (var item in contents)
             {
-                0 => new Rendering(RenderingContent.Null, RenderingContext.Null),
-                1 => contents[0].WithContext(context + contents[0].Context),
-                _ => new Rendering(new GroupRenderingContent(contents), context),
-            };
+                yield return item.WithContext(context + item.Context);
+            }
         }
 
         Rendering DetreeifySolidLayer(SolidLayer layer)
