@@ -25,18 +25,23 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
     sealed class CSharpInstantiatorGenerator : InstantiatorGeneratorBase
     {
         readonly Stringifier _s;
+        readonly DotNetVersion _dotNetVersion;
         readonly string _interface;
         readonly string _sourceInterface;
         readonly string _winUiNamespace;
         readonly string _winUi3CastHack;
 
-        CSharpInstantiatorGenerator(CodegenConfiguration configuration, Stringifier stringifier)
+        CSharpInstantiatorGenerator(
+            CodegenConfiguration configuration,
+            Stringifier stringifier,
+            DotNetVersion dotNetVersion)
             : base(
                   configuration,
                   setCommentProperties: false,
                   stringifier: stringifier)
         {
             _s = stringifier;
+            _dotNetVersion = dotNetVersion;
             _interface = AnimatedVisualSourceInfo.InterfaceType.GetQualifiedName(stringifier);
             _sourceInterface = _interface + "Source";
             _winUiNamespace = AnimatedVisualSourceInfo.WinUi3 ? "Microsoft.UI" : "Windows.UI";
@@ -53,11 +58,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
         /// Windows.UI.Composition Visual.
         /// </summary>
         /// <returns>A tuple containing the C# code and list of referenced asset files.</returns>
-        public static CSharpCodegenResult CreateFactoryCode(CodegenConfiguration configuration)
+        public static CSharpCodegenResult CreateFactoryCode(
+            CodegenConfiguration configuration,
+            DotNetVersion dotNetVersion)
         {
             var generator = new CSharpInstantiatorGenerator(
                                 configuration: configuration,
-                                stringifier: new CSharpStringifier());
+                                stringifier: new CSharpStringifier(),
+                                dotNetVersion);
 
             return new CSharpCodegenResult(
                 csText: generator.GenerateCode(),

@@ -6,27 +6,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-
-internal enum Lang
-{
-    // Language wasn't recognized.
-    Unknown,
-
-    // Language specified was ambigious.
-    Ambiguous,
-
-    CSharp,
-    Cx,
-    Cppwinrt,
-    LottieYaml,
-    WinCompDgml,
-    Stats,
-}
+using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp;
 
 sealed class CommandLineOptions
 {
     readonly List<string> _additionalInterfaces = new List<string>();
     readonly List<string> _languageStrings = new List<string>();
+    DotNetVersion? _dotNetVersion;
     string? _interfaceBaseName;
     Version? _winUIVersion;
 
@@ -35,6 +21,8 @@ sealed class CommandLineOptions
     internal bool DisableCodeGenOptimizer { get; private set; }
 
     internal bool DisableTranslationOptimizer { get; private set; }
+
+    internal DotNetVersion DotNetVersion => _dotNetVersion ?? DotNetVersion.DotNetNative;
 
     // The parse error, or null if the parse succeeded.
     // The error should be a sentence (starts with a capital letter, and ends with a period).
@@ -50,7 +38,7 @@ sealed class CommandLineOptions
 
     internal string InterfaceBaseName => _interfaceBaseName ?? "Microsoft.UI.Xaml.Controls.IAnimatedVisual";
 
-    internal IReadOnlyList<Lang> Languages { get; private set; } = Array.Empty<Lang>();
+    internal IReadOnlyList<Language> Languages { get; private set; } = Array.Empty<Language>();
 
     internal uint? MinimumUapVersion { get; private set; }
 
@@ -84,7 +72,7 @@ sealed class CommandLineOptions
     // for adding to generated code so that users can regenerate the code and know that
     // they got the set of options the same as a previous run. It does not include the
     // InputFile, OutputFolder, or Language options.
-    internal string ToConfigurationCommandLine(string languageSwitch)
+    internal string ToConfigurationCommandLine(Language languageSwitch)
     {
         var sb = new StringBuilder();
         sb.Append(ThisAssembly.AssemblyName);
@@ -105,6 +93,13 @@ sealed class CommandLineOptions
         if (DisableTranslationOptimizer)
         {
             sb.Append($" -{nameof(DisableTranslationOptimizer)}");
+        }
+
+        switch (languageSwitch)
+        {
+            case Language.CSharp:
+                sb.Append($" -{nameof(DotNetVersion)} {DotNetVersion}");
+                break;
         }
 
         if (GenerateColorBindings)
@@ -131,18 +126,28 @@ sealed class CommandLineOptions
             sb.Append($" -{nameof(Namespace)} {Namespace}");
         }
 
-        // The -Public switch is ignored for c++.
-        if (Public &&
-            !(languageSwitch.Equals("cppwinrt", StringComparison.OrdinalIgnoreCase) ||
-                languageSwitch.Equals("cx", StringComparison.OrdinalIgnoreCase)))
+        switch (languageSwitch)
         {
-            sb.Append($" -{nameof(Public)}");
+            case Language.Cx:
+            case Language.Cppwinrt:
+                // The -Public switch is ignored for c++.
+                break;
+
+            default:
+                sb.Append($" -{nameof(Public)}");
+                break;
         }
 
-        // The -RootNamespace parameter is only used for cppwinrt.
-        if (!string.IsNullOrWhiteSpace(RootNamespace) && languageSwitch.Equals("cppwinrt", StringComparison.OrdinalIgnoreCase))
+        switch (languageSwitch)
         {
-            sb.Append($" -{nameof(RootNamespace)} {RootNamespace}");
+            case Language.Cppwinrt:
+                // The -RootNamespace parameter is only used for cppwinrt.
+                if (!string.IsNullOrWhiteSpace(RootNamespace))
+                {
+                    sb.Append($" -{nameof(RootNamespace)} {RootNamespace}");
+                }
+
+                break;
         }
 
         if (StrictMode)
@@ -177,6 +182,7 @@ sealed class CommandLineOptions
         AdditionalInterface,
         DisableCodeGenOptimizer,
         DisableTranslationOptimizer,
+        DotNetVersion,
         GenerateColorBindings,
         GenerateDependencyObject,
         Help,
@@ -201,17 +207,17 @@ sealed class CommandLineOptions
         result.ParseCommandLineStrings(args);
 
         // Convert the language strings to language values.
-        var languageTokenizer = new CommandlineTokenizer<Lang>(Lang.Ambiguous)
-                .AddKeyword(Lang.CSharp)
-                .AddKeyword(Lang.Cx, "cppcx")
-                .AddKeyword(Lang.Cx)
-                .AddKeyword(Lang.Cppwinrt)
-                .AddKeyword(Lang.Cppwinrt, "winrtcpp")
-                .AddKeyword(Lang.LottieYaml)
-                .AddKeyword(Lang.WinCompDgml, "dgml")
-                .AddKeyword(Lang.Stats);
+        var languageTokenizer = new CommandlineTokenizer<Language>(Language.Ambiguous)
+                .AddKeyword(Language.CSharp)
+                .AddKeyword(Language.Cx, "cppcx")
+                .AddKeyword(Language.Cx)
+                .AddKeyword(Language.Cppwinrt)
+                .AddKeyword(Language.Cppwinrt, "winrtcpp")
+                .AddKeyword(Language.LottieYaml)
+                .AddKeyword(Language.WinCompDgml, "dgml")
+                .AddKeyword(Language.Stats);
 
-        var languages = new List<Lang>();
+        var languages = new List<Language>();
 
         // Parse the language string.
         foreach (var languageString in result._languageStrings)
@@ -220,10 +226,10 @@ sealed class CommandLineOptions
             languages.Add(language);
             switch (language)
             {
-                case Lang.Unknown:
+                case Language.Unknown:
                     result.ErrorDescription = $"Unrecognized language: {languageString}";
                     break;
-                case Lang.Ambiguous:
+                case Language.Ambiguous:
                     result.ErrorDescription = $"Ambiguous language: {languageString}";
                     break;
             }
@@ -246,6 +252,7 @@ sealed class CommandLineOptions
             .AddPrefixedKeyword(Keyword.AdditionalInterface)
             .AddPrefixedKeyword(Keyword.DisableCodeGenOptimizer)
             .AddPrefixedKeyword(Keyword.DisableTranslationOptimizer)
+            .AddPrefixedKeyword(Keyword.DotNetVersion)
             .AddPrefixedKeyword(Keyword.GenerateColorBindings)
             .AddPrefixedKeyword(Keyword.GenerateDependencyObject)
             .AddPrefixedKeyword(Keyword.Help, "?")
@@ -310,6 +317,7 @@ sealed class CommandLineOptions
 
                         // The following keywords require a parameter as the next token.
                         case Keyword.AdditionalInterface:
+                        case Keyword.DotNetVersion:
                         case Keyword.InputFile:
                         case Keyword.Interface:
                         case Keyword.Language:
@@ -332,6 +340,37 @@ sealed class CommandLineOptions
                     _additionalInterfaces.Add(arg);
                     previousKeyword = Keyword.None;
                     break;
+
+                case Keyword.DotNetVersion:
+                    if (_dotNetVersion.HasValue)
+                    {
+                        ErrorDescription = ArgumentSpecifiedMoreThanOnce(".NET version");
+                        return;
+                    }
+
+                    {
+                        var dotNetVersionTokenizer = new CommandlineTokenizer<DotNetVersion>(DotNetVersion.Ambiguous)
+                            .AddKeyword(DotNetVersion.DotNet5, "5")
+                            .AddKeyword(DotNetVersion.DotNetNative);
+
+                        dotNetVersionTokenizer.TryMatchKeyword(arg, out var dotNetVersion);
+
+                        switch (dotNetVersion)
+                        {
+                            case DotNetVersion.Unknown:
+                                ErrorDescription = $"Unrecognized .NET version: {arg}";
+                                break;
+                            case DotNetVersion.Ambiguous:
+                                ErrorDescription = $"Ambiguous .NET version: {arg}";
+                                break;
+                        }
+
+                        _dotNetVersion = dotNetVersion;
+                    }
+
+                    previousKeyword = Keyword.None;
+                    break;
+
                 case Keyword.InputFile:
                     if (InputFile != null)
                     {
@@ -424,6 +463,7 @@ sealed class CommandLineOptions
 
                     previousKeyword = Keyword.None;
                     break;
+
                 case Keyword.WinUIVersion:
                     if (_winUIVersion != null)
                     {
