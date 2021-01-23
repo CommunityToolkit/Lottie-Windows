@@ -134,15 +134,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
 
             if (_isIDynamic)
             {
-                builder.WriteLine($": [default] {Interface_IDynamicAnimatedVisualSource.GetQualifiedName(_s)}");
+                builder.WriteLine($": [default] {Interface_IDynamicAnimatedVisualSource.NormalizedQualifiedName}");
             }
             else
             {
-                builder.WriteLine($": [default] {Interface_IAnimatedVisualSource.GetQualifiedName(_s)}");
+                builder.WriteLine($": [default] {Interface_IAnimatedVisualSource.NormalizedQualifiedName}");
 
                 if (SourceInfo.WinUIVersion >= new Version(2, 6) && SourceInfo.WinUIVersion.Major < 3)
                 {
-                    builder.WriteLine($", {Interface_IAnimatedVisualSource2.GetQualifiedName(_s)}");
+                    builder.WriteLine($", {Interface_IAnimatedVisualSource2.NormalizedQualifiedName}");
                 }
             }
 
@@ -306,7 +306,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
         {
             builder.WriteLine($"winrt::{_animatedVisualTypeName} TryCreateAnimatedVisual(");
             builder.Indent();
-            builder.WriteLine($"winrt::{_wuc}::Compositor const& compositor)");
+            builder.WriteLine($"winrt::{_wuc}::Compositor const& compositor);");
             builder.UnIndent();
             builder.WriteLine();
 
@@ -797,7 +797,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
             builder.UnIndent();
             builder.OpenScope();
             builder.WriteLine("IInspectable diagnostics = nullptr;");
-            builder.WriteLine("return TryCreateAnimatedVisual(compositor, diagnostics)");
+            builder.WriteLine("return TryCreateAnimatedVisual(compositor, diagnostics);");
             builder.CloseScope();
             builder.WriteLine();
 

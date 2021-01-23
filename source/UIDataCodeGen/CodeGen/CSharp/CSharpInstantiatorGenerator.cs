@@ -37,11 +37,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
                   stringifier: stringifier)
         {
             _s = stringifier;
-            _winUiNamespace = AnimatedVisualSourceInfo.WinUIVersion.Major >= 3 ? "Microsoft.UI" : "Windows.UI";
 
-            // This is a hack that is required to use Win2D with WinUI3 as of August 2020. It
-            // will not be necessary when an official Win2D for WinUI3 is released.
-            _winUi3CastHack = AnimatedVisualSourceInfo.WinUIVersion.Minor >= 3 ? "(IGeometrySource2D)(object)" : string.Empty;
+            if (AnimatedVisualSourceInfo.WinUIVersion.Major >= 3)
+            {
+                _winUiNamespace = "Microsoft.UI";
+
+                // This is a hack that is required to use Win2D with WinUI3 as of August 2020. It
+                // will not be necessary when an official Win2D for WinUI3 is released.
+                _winUi3CastHack = "(IGeometrySource2D)(object)";
+            }
+            else
+            {
+                _winUiNamespace = "Windows.UI";
+                _winUi3CastHack = string.Empty;
+            }
         }
 
         IAnimatedVisualSourceInfo SourceInfo => AnimatedVisualSourceInfo;
