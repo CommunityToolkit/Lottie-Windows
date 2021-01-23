@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -6,12 +6,12 @@
 
 using System;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
+namespace Microsoft.Toolkit.Uwp.UI.Lottie.Animatables
 {
     /// <summary>
     /// An opacity value. 0 is transparent, 1 is opaque.
     /// </summary>
-#if PUBLIC_LottieData
+#if PUBLIC_Animatables
     public
 #endif
     readonly struct Opacity : IEquatable<Opacity>

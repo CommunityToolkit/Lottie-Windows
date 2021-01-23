@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
 using Sn = System.Numerics;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization

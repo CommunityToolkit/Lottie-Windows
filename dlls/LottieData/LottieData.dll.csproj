@@ -15,6 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Animatables\Animatables.dll.csproj" />
     <ProjectReference Include="..\GenericData\GenericData.dll.csproj" />
     <ProjectReference Include="..\YamlData\YamlData.dll.csproj" />
   </ItemGroup>

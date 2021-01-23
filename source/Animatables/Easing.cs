@@ -5,10 +5,11 @@
 #nullable enable
 
 using System;
+using static Microsoft.Toolkit.Uwp.UI.Lottie.Animatables.Exceptions;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
+namespace Microsoft.Toolkit.Uwp.UI.Lottie.Animatables
 {
-#if PUBLIC_LottieData
+#if PUBLIC_Animatables
     public
 #endif
     abstract class Easing : IEquatable<Easing>
@@ -48,7 +49,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
                     var yCb = (CubicBezierEasing)other;
                     return xCb.Equals(yCb);
                 default:
-                    throw new InvalidOperationException();
+                    throw Unreachable;
             }
         }
 

@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
 using static Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization.Exceptions;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization

@@ -1,16 +1,16 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 #nullable enable
 using System;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
+namespace Microsoft.Toolkit.Uwp.UI.Lottie.Animatables
 {
     /// <summary>
     /// A trimming amount. Used to describe how much of a path should be trimmed.
     /// </summary>
-#if PUBLIC_LottieData
+#if PUBLIC_Animatables
     public
 #endif
     readonly struct Trim : IEquatable<Trim>
@@ -25,6 +25,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         public double Percent => Value * 100;
 
         public static Trim None => new Trim(0);
+
+        public static Trim FromFloat(double value) => new Trim(value);
 
         public static Trim FromPercent(double percent) => new Trim(percent / 100);
 

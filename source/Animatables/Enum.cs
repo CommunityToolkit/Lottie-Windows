@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -6,7 +6,7 @@
 
 using System;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
+namespace Microsoft.Toolkit.Uwp.UI.Lottie.Animatables
 {
     /// <summary>
     /// Wraps an enum, but implemented as a struct so that
@@ -14,7 +14,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
     /// <see cref="Animatable{T}"/>.
     /// </summary>
     /// <typeparam name="T">An enum type.</typeparam>
-#if PUBLIC_LottieData
+#if PUBLIC_Animatables
     public
 #endif
     readonly struct Enum<T> : IEquatable<Enum<T>>

@@ -2,15 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
+namespace Microsoft.Toolkit.Uwp.UI.Lottie.Animatables
 {
-#if PUBLIC_LottieData
+#if PUBLIC_Animatables
     public
 #endif
-    interface IRadialGradient : IGradient
+    enum AnimatableVector3Type
     {
-        Animatable<double> HighlightLength { get; }
-
-        Animatable<double> HighlightDegrees { get; }
+        Vector3,
+        XYZ,
     }
 }

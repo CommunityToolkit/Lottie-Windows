@@ -4,6 +4,7 @@
 
 using System;
 using System.Diagnostics;
+using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
@@ -20,7 +21,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             WinCompData.Wui.Color.FromArgb((byte)(255 * color.A), (byte)(255 * color.R), (byte)(255 * color.G), (byte)(255 * color.B));
 
         public static Color Color(WinCompData.Wui.Color color) =>
-            LottieData.Color.FromArgb(color.A / 255.0, color.R / 255.0, color.G / 255.0, color.B / 255.0);
+            Animatables.Color.FromArgb(color.A / 255.0, color.R / 255.0, color.G / 255.0, color.B / 255.0);
 
         public static float Float(double value) => (float)value;
 
@@ -42,7 +43,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         public static Sn.Vector2? Vector2(Sn.Vector2 vector2) => (Sn.Vector2?)vector2;
 
-        public static Sn.Vector2 ClampedVector2(LottieData.Vector2 vector2) => ClampedVector2((float)vector2.X, (float)vector2.Y);
+        public static Sn.Vector2 ClampedVector2(Animatables.Vector2 vector2) => ClampedVector2((float)vector2.X, (float)vector2.Y);
 
         public static Sn.Vector2 ClampedVector2(float x, float y) => Vector2(Clamp(x, 0, 1), Clamp(y, 0, 1));
 

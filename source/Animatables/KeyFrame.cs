@@ -6,14 +6,14 @@
 
 using System;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
+namespace Microsoft.Toolkit.Uwp.UI.Lottie.Animatables
 {
     /// <summary>
     /// Describes a value at a particular point in time, and an optional easing function to
     /// interpolate from the previous value.
     /// </summary>
     /// <typeparam name="T">The type of the key frame's value.</typeparam>
-#if PUBLIC_LottieData
+#if PUBLIC_Animatables
     public
 #endif
     sealed class KeyFrame<T> : IEquatable<KeyFrame<T>>
@@ -31,6 +31,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             : this(frame, value, spatialBezier: null, easing)
         {
         }
+
+        public KeyFrame<T> WithTimeOffset(double timeOffset) =>
+            new KeyFrame<T>(Frame + timeOffset, Value, SpatialBezier, Easing);
 
         /// <summary>
         /// Returns a <see cref="KeyFrame{T}"/> that is the same as this, but with a new value.

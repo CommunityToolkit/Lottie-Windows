@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 using LottieOptimizer = Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization.Optimizer;
 
@@ -24,9 +25,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             return path.CloneWithNewGeometry(
                 optimizedPathData.IsAnimated
-                    ? new Animatable<PathGeometry>(optimizedPathData.KeyFrames, path.Data.PropertyIndex)
-                    : new Animatable<PathGeometry>(optimizedPathData.InitialValue, path.Data.PropertyIndex));
+                    ? new Animatable<PathGeometry>(optimizedPathData.KeyFrames)
+                    : new Animatable<PathGeometry>(optimizedPathData.InitialValue));
         }
+
+        public static TrimmedAnimatable<Vector2> TrimAnimatable(LayerContext context, IAnimatableVector2 animatable)
+            => TrimAnimatable<Vector2>(context, (AnimatableVector2)animatable);
 
         public static TrimmedAnimatable<Vector3> TrimAnimatable(LayerContext context, IAnimatableVector3 animatable)
             => TrimAnimatable<Vector3>(context, (AnimatableVector3)animatable);

@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Expr = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions.Expression;
@@ -427,6 +428,43 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         optimizeLines: false),
                     easing),
                 null,
+                targetObject,
+                targetPropertyName,
+                longDescription,
+                shortDescription);
+        }
+
+        /// <summary>
+        /// Animates a Vector2 value.
+        /// </summary>
+        public static void Vector2(
+            LayerContext context,
+            in TrimmedAnimatable<Vector2> value,
+            CompositionObject targetObject,
+            string targetPropertyName,
+            string? longDescription = null,
+            string? shortDescription = null)
+            => ScaledVector2(context, value, 1, targetObject, targetPropertyName, longDescription, shortDescription);
+
+        /// <summary>
+        /// Animates a Vector2 value.
+        /// </summary>
+        public static void ScaledVector2(
+            LayerContext context,
+            in TrimmedAnimatable<Vector2> value,
+            double scale,
+            CompositionObject targetObject,
+            string targetPropertyName,
+            string? longDescription = null,
+            string? shortDescription = null)
+        {
+            Debug.Assert(value.IsAnimated, "Precondition");
+            GenericCreateCompositionKeyFrameAnimation(
+                context,
+                value,
+                context.ObjectFactory.CreateVector2KeyFrameAnimation,
+                (ca, progress, val, easing) => ca.InsertKeyFrame(progress, ConvertTo.Vector2(val * scale), easing),
+                (ca, progress, expr, easing) => ca.InsertExpressionKeyFrame(progress, scale * expr, easing),
                 targetObject,
                 targetPropertyName,
                 longDescription,

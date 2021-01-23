@@ -6,8 +6,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
+using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
@@ -19,7 +19,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
     {
         // A RoundCorners with a radius of 0.
         static readonly RoundCorners s_defaultRoundCorners =
-            new RoundCorners(new ShapeLayerContent.ShapeLayerContentArgs { }, new Animatable<double>(0, null));
+            new RoundCorners(new ShapeLayerContent.ShapeLayerContentArgs { }, new Animatable<double>(0));
 
         internal ShapeContext(ShapeLayerContext layer)
         {
@@ -148,7 +148,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         {
             if (!b.Color.IsAnimated && !b.Opacity.IsAnimated)
             {
-                if (b.Opacity.InitialValue == LottieData.Opacity.Opaque &&
+                if (b.Opacity.InitialValue == Animatables.Opacity.Opaque &&
                     b.Color.InitialValue.A == 1)
                 {
                     // b overrides a.
@@ -194,7 +194,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         LinearGradientStroke ComposeLinearGradientStrokes(LinearGradientStroke a, LinearGradientStroke b)
         {
             if (!a.StrokeWidth.IsAnimated && !b.StrokeWidth.IsAnimated &&
-                a.Opacity.IsAlways(LottieData.Opacity.Opaque) && b.Opacity.IsAlways(LottieData.Opacity.Opaque))
+                a.Opacity.IsAlways(Animatables.Opacity.Opaque) && b.Opacity.IsAlways(Animatables.Opacity.Opaque))
             {
                 if (a.StrokeWidth.InitialValue >= b.StrokeWidth.InitialValue)
                 {
@@ -210,7 +210,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         RadialGradientStroke ComposeRadialGradientStrokes(RadialGradientStroke a, RadialGradientStroke b)
         {
             if (!a.StrokeWidth.IsAnimated && !b.StrokeWidth.IsAnimated &&
-                a.Opacity.IsAlways(LottieData.Opacity.Opaque) && b.Opacity.IsAlways(LottieData.Opacity.Opaque))
+                a.Opacity.IsAlways(Animatables.Opacity.Opaque) && b.Opacity.IsAlways(Animatables.Opacity.Opaque))
             {
                 if (a.StrokeWidth.InitialValue >= b.StrokeWidth.InitialValue)
                 {
@@ -227,7 +227,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         {
             if (!a.StrokeWidth.IsAnimated && !b.StrokeWidth.IsAnimated &&
                 !a.DashPattern.Any() && !b.DashPattern.Any() &&
-                a.Opacity.IsAlways(LottieData.Opacity.Opaque) && b.Opacity.IsAlways(LottieData.Opacity.Opaque))
+                a.Opacity.IsAlways(Animatables.Opacity.Opaque) && b.Opacity.IsAlways(Animatables.Opacity.Opaque))
             {
                 if (a.StrokeWidth.InitialValue >= b.StrokeWidth.InitialValue)
                 {

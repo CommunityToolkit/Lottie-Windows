@@ -36,11 +36,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
 
             internal override bool IsShape =>
-                !_context.Layer.Masks.Any() || _context.Layer.IsHidden || _context.Layer.Transform.Opacity.IsAlways(LottieData.Opacity.Transparent);
+                !_context.Layer.Masks.Any() || _context.Layer.IsHidden || _context.Layer.Transform.Opacity.IsAlways(Animatables.Opacity.Transparent);
 
             internal override CompositionShape? GetShapeRoot(TranslationContext context)
             {
-                if (_context.Layer.IsHidden || _context.Layer.Transform.Opacity.IsAlways(LottieData.Opacity.Transparent))
+                if (_context.Layer.IsHidden || _context.Layer.Transform.Opacity.IsAlways(Animatables.Opacity.Transparent))
                 {
                     // The layer does not render anything. Nothing to translate. This can happen when someone
                     // creates a solid layer to act like a Null layer.
@@ -76,7 +76,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             internal override Visual? GetVisualRoot(CompositionContext context)
             {
                 // Translate the SolidLayer to a Visual.
-                if (_context.Layer.IsHidden || _context.Layer.Transform.Opacity.IsAlways(LottieData.Opacity.Transparent))
+                if (_context.Layer.IsHidden || _context.Layer.Transform.Opacity.IsAlways(Animatables.Opacity.Transparent))
                 {
                     // The layer does not render anything. Nothing to translate. This can happen when someone
                     // creates a solid layer to act like a Null layer.

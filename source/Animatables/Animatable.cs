@@ -6,16 +6,15 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
+namespace Microsoft.Toolkit.Uwp.UI.Lottie.Animatables
 {
     /// <summary>
     /// A value that may be animated.
     /// </summary>
     /// <typeparam name="T">The type of the value.</typeparam>
-#if PUBLIC_LottieData
+#if PUBLIC_Animatables
     public
 #endif
     class Animatable<T> : IAnimatableValue<T>
@@ -25,18 +24,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// Initializes a new instance of the <see cref="Animatable{T}"/> class with
         /// a non-animated value.
         /// </summary>
-        public Animatable(T value, int? propertyIndex)
+        public Animatable(T value)
         {
             KeyFrames = Array.Empty<KeyFrame<T>>();
             InitialValue = value;
-            PropertyIndex = propertyIndex;
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Animatable{T}"/> class with
         /// the given key frames.
         /// </summary>
-        public Animatable(IEnumerable<KeyFrame<T>> keyFrames, int? propertyIndex)
+        public Animatable(IEnumerable<KeyFrame<T>> keyFrames)
         {
             KeyFrames = keyFrames.ToArray();
 
@@ -49,15 +47,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
                 // saved the value in InitialValue. Might as well ditch the key frames.
                 KeyFrames = Array.Empty<KeyFrame<T>>();
             }
-
-            PropertyIndex = propertyIndex;
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Animatable{T}"/> class with
         /// the given key frames.
         /// </summary>
-        public Animatable(T initialValue, IReadOnlyList<KeyFrame<T>> keyFrames, int? propertyIndex)
+        public Animatable(T initialValue, IReadOnlyList<KeyFrame<T>> keyFrames)
         {
             KeyFrames = keyFrames;
 
@@ -69,8 +65,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
                 // saved the value in InitialValue. Might as well ditch the key frames.
                 KeyFrames = Array.Empty<KeyFrame<T>>();
             }
-
-            PropertyIndex = propertyIndex;
         }
 
         /// <summary>
@@ -82,11 +76,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// Gets the keyframes that describe how the value should be animated.
         /// </summary>
         public IReadOnlyList<KeyFrame<T>> KeyFrames { get; }
-
-        /// <summary>
-        /// Gets the property index used for expressions.
-        /// </summary>
-        public int? PropertyIndex { get; }
 
         /// <summary>
         /// Gets a value indicating whether the <see cref="Animatable{T}"/> has any key frames.
@@ -111,24 +100,24 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// <returns><c>true</c> if this value is ever not equal to the given value.</returns>
         public bool IsEverNot(T value) => !IsAlways(value);
 
+        public Animatable<T> WithTimeOffset(double timeOffset)
+            => timeOffset == 0
+                ? this
+                : new Animatable<T>(KeyFrames.Select(kf => kf.WithTimeOffset(timeOffset)));
+
+        IAnimatableValue<T> IAnimatableValue<T>.WithTimeOffset(double timeOffset)
+            => WithTimeOffset(timeOffset);
+
+        public Animatable<T> Select(Func<T, T> selector)
+            => new Animatable<T>(KeyFrames.Select(kf => new KeyFrame<T>(kf.Frame, selector(kf.Value), kf.Easing)));
+
+        public Animatable<Tnew> Select<Tnew>(Func<T, Tnew> selector)
+            where Tnew : IEquatable<Tnew>
+            => new Animatable<Tnew>(KeyFrames.Select(kf => new KeyFrame<Tnew>(kf.Frame, selector(kf.Value), kf.Easing)));
+
         /// <inheritdoc/>
         // Not a great hash code because it ignore the KeyFrames, but quick.
         public override int GetHashCode() => InitialValue.GetHashCode();
-
-        internal Animatable<T> CloneWithSelectedValue(Func<T, T> selector)
-        {
-            if (IsAnimated)
-            {
-                var keyframes =
-                    from kf in KeyFrames.ToArray()
-                    select new KeyFrame<T>(kf.Frame, selector(kf.Value), kf.Easing);
-                return new Animatable<T>(keyframes, PropertyIndex);
-            }
-            else
-            {
-                return new Animatable<T>(selector(InitialValue), PropertyIndex);
-            }
-        }
 
         /// <inheritdoc/>
         public override string? ToString() =>

@@ -6,43 +6,25 @@
     <SharedGUID>b3db16ee-a821-4474-a188-e64926529bbd</SharedGUID>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)Animatable.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)AnimatableVector3.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)AnimatableXYZ.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Asset.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AssetCollection.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)BezierSegment.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)BlendMode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)BlurDimension.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Char.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Color.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ColorGradientStop.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CubicBezier.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CubicBezierEasing.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DrawingDirection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DropShadowEffect.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Easing.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Effect.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Ellipse.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)EmbeddedImageAsset.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Enum.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ExtensionMethods.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ExternalImageAsset.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Font.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GaussianBlurEffect.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)GradientStop.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)HoldEasing.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)IAnimatableValue.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)IAnimatableVector3.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)IGradient.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ImageAsset.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ImageLayer.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)IRadialGradient.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)KeyFrame.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Layer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LayerCollection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LayerCollectionAsset.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)LinearEasing.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LinearGradientFill.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LinearGradientStroke.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LottieComposition.cs" />
@@ -53,12 +35,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Mask.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MergePaths.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NullLayer.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Opacity.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)OpacityGradientStop.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Optimization\GradientStopOptimizer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Optimization\Optimizer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Path.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)PathGeometry.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Polystar.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PreCompLayer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RadialGradientFill.cs" />
@@ -66,9 +45,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Rectangle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Repeater.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RepeaterTransform.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Rotation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RoundCorners.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Sequence.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serialization\LottieCompositionYamlSerializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Shape.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ShapeContentType.cs" />
@@ -84,10 +61,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)TextLayer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tools\Stats.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transform.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Trim.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TrimPath.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ValidationIssues.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Vector2.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Vector3.cs" />
   </ItemGroup>
 </Project>
