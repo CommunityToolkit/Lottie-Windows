@@ -49,7 +49,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         readonly bool _disableFieldOptimization;
         readonly bool _generateDependencyObject;
         readonly bool _generatePublicClass;
-        readonly bool _generateForWinui3;
+        readonly Version _winUIVersion;
         readonly Stringifier _s;
         readonly IReadOnlyList<AnimatedVisualGenerator> _animatedVisualGenerators;
         readonly LoadedImageSurfaceInfo[] _loadedImageSurfaceInfos;
@@ -57,9 +57,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         readonly SourceMetadata _sourceMetadata;
         readonly bool _isThemed;
         readonly IReadOnlyList<string> _toolInfo;
-        readonly TypeName _interfaceType;
         readonly IReadOnlyList<TypeName> _additionalInterfaces;
-        readonly bool _isInterfaceCustom;
         readonly IReadOnlyList<MarkerInfo> _markers;
         readonly IReadOnlyList<NamedConstant> _internalConstants;
 
@@ -79,11 +77,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             _disableFieldOptimization = configuration.DisableOptimization;
             _generateDependencyObject = configuration.GenerateDependencyObject;
             _generatePublicClass = configuration.Public;
-            _generateForWinui3 = configuration.WinUIVersion.Major >= 3;
+            _winUIVersion = configuration.WinUIVersion;
             _s = stringifier;
             _toolInfo = configuration.ToolInfo;
-            _interfaceType = new TypeName(configuration.InterfaceType);
-            _isInterfaceCustom = _interfaceType.NormalizedQualifiedName != "Microsoft.UI.Xaml.Controls.IAnimatedVisual";
             _additionalInterfaces = configuration.AdditionalInterfaces.Select(n => new TypeName(n)).ToArray();
             _markers = MarkerInfo.GetMarkerInfos(_sourceMetadata.LottieMetadata.FilteredMarkers).ToArray();
             _internalConstants = GetInternalConstants().ToArray();
@@ -155,6 +151,26 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             _loadedImageSurfaceInfosByNode = sharedLoadedImageSurfaceInfos.ToDictionary(n => n.node, n => n.loadedImageSurfaceNode);
         }
+
+        /// <summary>
+        /// Well-known interface type.
+        /// </summary>
+        protected TypeName Interface_IAnimatedVisual { get; } = new TypeName("Microsoft.UI.Xaml.Controls.IAnimatedVisual");
+
+        /// <summary>
+        /// Well-known interface type.
+        /// </summary>
+        protected TypeName Interface_IAnimatedVisualSource { get; } = new TypeName("Microsoft.UI.Xaml.Controls.IAnimatedVisualSource");
+
+        /// <summary>
+        /// Well-known interface type.
+        /// </summary>
+        protected TypeName Interface_IDynamicAnimatedVisualSource { get; } = new TypeName("Microsoft.UI.Xaml.Controls.IDynamicAnimatedVisualSource");
+
+        /// <summary>
+        /// Well-known interface type.
+        /// </summary>
+        protected TypeName Interface_IAnimatedVisualSource2 { get; } = new TypeName("Microsoft.UI.Xaml.Controls.IAnimatedVisualSource2");
 
         /// <summary>
         /// Information about the IAnimatedVisualSourceInfo implementation.
@@ -686,11 +702,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         string IAnimatedVisualSourceInfo.Namespace => _namespace;
 
-        TypeName IAnimatedVisualSourceInfo.InterfaceType => _interfaceType;
-
         IReadOnlyList<TypeName> IAnimatedVisualSourceInfo.AdditionalInterfaces => _additionalInterfaces;
-
-        bool IAnimatedVisualSourceInfo.IsInterfaceCustom => _isInterfaceCustom;
 
         string IAnimatedVisualSourceInfo.ReusableExpressionAnimationFieldName => SingletonExpressionAnimationName;
 
@@ -700,7 +712,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         bool IAnimatedVisualSourceInfo.Public => _generatePublicClass;
 
-        bool IAnimatedVisualSourceInfo.WinUi3 => _generateForWinui3;
+        Version IAnimatedVisualSourceInfo.WinUIVersion => _winUIVersion;
 
         string IAnimatedVisualSourceInfo.ThemePropertiesFieldName => ThemePropertiesFieldName;
 

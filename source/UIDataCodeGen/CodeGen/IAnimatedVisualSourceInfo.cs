@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.Numerics;
 
@@ -26,19 +27,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         string Namespace { get; }
 
         /// <summary>
-        /// Gets the name of the interface for the generated code.
-        /// </summary>
-        TypeName InterfaceType { get; }
-
-        /// <summary>
         /// 0 or more additional interfaces that the class will claim to implement.
         /// </summary>
         IReadOnlyList<TypeName> AdditionalInterfaces { get; }
-
-        /// <summary>
-        /// True iff the interface type is not the default Microsoft.UI.Xaml interface.
-        /// </summary>
-        bool IsInterfaceCustom { get; }
 
         /// <summary>
         /// Gets the name of the field in the instantiator class that holds the reusable ExpressionAnimation.
@@ -51,7 +42,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         string DurationTicksFieldName { get; }
 
         /// <summary>
-        /// True if the IAnimatedVisualSource should be a DependencyObject.
+        /// <c>true</c> if the IAnimatedVisualSource should be a DependencyObject.
         /// </summary>
         bool GenerateDependencyObject { get; }
 
@@ -71,7 +62,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         Vector2 CompositionDeclaredSize { get; }
 
         /// <summary>
-        /// True if the IAnimatedVisualSource should be public.
+        /// <c>true</c> if the IAnimatedVisualSource should be public.
         /// </summary>
         bool Public { get; }
 
@@ -141,9 +132,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         SourceMetadata SourceMetadata { get; }
 
         /// <summary>
-        /// Gets a value indicating whether the generated code should target WinUI3. This
-        /// is an experimental feature.
+        /// The version of WinUI to generate code for.
         /// </summary>
-        bool WinUi3 { get; }
+        Version WinUIVersion { get; }
     }
 }

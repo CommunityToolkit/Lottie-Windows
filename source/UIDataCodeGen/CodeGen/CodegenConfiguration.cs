@@ -18,7 +18,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
     {
         public CodegenConfiguration(
             string className,
-            string interfaceType,
             IReadOnlyList<string> additionalInterfaces,
             IReadOnlyList<(CompositionObject graphRoot, uint requiredUapVersion)> objectGraphs,
             string nameSpace,
@@ -29,7 +28,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             )
         {
             ClassName = className;
-            InterfaceType = interfaceType;
             AdditionalInterfaces = additionalInterfaces;
             ObjectGraphs = objectGraphs;
             Namespace = nameSpace;
@@ -77,13 +75,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// implemented as DependencyPropertys.
         /// </summary>
         public bool GenerateDependencyObject { get; set; }
-
-        /// <summary>
-        /// Defines the interface used in the generated code. Setting this to
-        /// "Microsoft.UI.Xaml.Controls.IAnimatedVisual" will cause the generation
-        /// of code for IAnimatedVisualSource and IAnimatedVisual.
-        /// </summary>
-        public string InterfaceType { get; }
 
         /// <summary>
         /// 0 or more additional interfaces that the generated class will claim

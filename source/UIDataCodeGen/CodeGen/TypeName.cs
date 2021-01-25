@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 {
@@ -12,7 +13,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 #if PUBLIC_UIDataCodeGen
     public
 #endif
-    sealed class TypeName
+    sealed class TypeName : IEquatable<TypeName>
     {
         internal TypeName(string namespaceName, string unqualifiedName)
         {
@@ -63,5 +64,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// and comparison.
         /// </summary>
         public string NormalizedNamespace { get; }
+
+        public override bool Equals(object? obj)
+            => obj is TypeName other && Equals(other);
+
+        public override int GetHashCode() => UnqualifiedName.GetHashCode();
+
+        public override string ToString() => NormalizedQualifiedName;
+
+        public bool Equals([AllowNull] TypeName other)
+            => !(other is null) &&
+                other.NormalizedNamespace == NormalizedNamespace &&
+                other.UnqualifiedName == UnqualifiedName;
     }
 }
