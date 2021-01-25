@@ -144,18 +144,18 @@ sealed class LottieJsonFileProcessor
 
         var codeGenSucceeded = true;
 
-        var areBothCppwinrtAndCxRequested = _options.Languages.Where(l => l == Lang.Cppwinrt || l == Lang.Cx).Count() == 2;
+        var areBothCppwinrtAndCxRequested = _options.Languages.Where(l => l == Language.Cppwinrt || l == Language.Cx).Count() == 2;
 
         foreach (var lang in _options.Languages)
         {
             switch (lang)
             {
-                case Lang.CSharp:
+                case Language.CSharp:
                     codeGenSucceeded &= TryGenerateCSharpCode(lottieComposition, $"{outputFileBase}.cs");
                     _profiler.OnCodeGenFinished();
                     break;
 
-                case Lang.Cx:
+                case Language.Cx:
                     {
                         // If both cppwinrt and cx files were requested, add a differentiator to
                         // the folder name for the cx files to make their names distinct from the
@@ -176,22 +176,22 @@ sealed class LottieJsonFileProcessor
                         break;
                     }
 
-                case Lang.Cppwinrt:
+                case Language.Cppwinrt:
                     codeGenSucceeded &= TryGenerateCppwinrtCode(lottieComposition, _outputFolder);
                     _profiler.OnCodeGenFinished();
                     break;
 
-                case Lang.LottieYaml:
+                case Language.LottieYaml:
                     codeGenSucceeded &= TryGenerateLottieYaml(lottieComposition, $"{outputFileBase}-Lottie.yaml");
                     _profiler.OnSerializationFinished();
                     break;
 
-                case Lang.WinCompDgml:
+                case Language.WinCompDgml:
                     codeGenSucceeded &= TryGenerateWincompDgml(lottieComposition, $"{outputFileBase}.dgml");
                     _profiler.OnSerializationFinished();
                     break;
 
-                case Lang.Stats:
+                case Language.Stats:
                     codeGenSucceeded &= TryGenerateStats(lottieComposition);
                     break;
 
@@ -434,7 +434,9 @@ sealed class LottieJsonFileProcessor
         return result;
     }
 
-    bool TryGenerateCSharpCode(LottieComposition lottieComposition, string outputFilePath)
+    bool TryGenerateCSharpCode(
+        LottieComposition lottieComposition,
+        string outputFilePath)
     {
         if (!TryEnsureTranslated(lottieComposition))
         {
@@ -442,7 +444,8 @@ sealed class LottieJsonFileProcessor
         }
 
         var codegenResult =
-            CSharpInstantiatorGenerator.CreateFactoryCode(CreateCodeGenConfiguration(lottieComposition, "CSharp"));
+            CSharpInstantiatorGenerator.CreateFactoryCode(
+                CreateCodeGenConfiguration(lottieComposition, Language.CSharp));
 
         if (string.IsNullOrWhiteSpace(codegenResult.CsText))
         {
@@ -478,7 +481,7 @@ sealed class LottieJsonFileProcessor
         }
 
         var codegenResult =
-                    CppwinrtInstantiatorGenerator.CreateFactoryCode(CreateCodeGenConfiguration(lottieComposition, "Cppwinrt"));
+                    CppwinrtInstantiatorGenerator.CreateFactoryCode(CreateCodeGenConfiguration(lottieComposition, Language.Cppwinrt));
 
         if (string.IsNullOrWhiteSpace(codegenResult.CppText))
         {
@@ -532,7 +535,7 @@ sealed class LottieJsonFileProcessor
         }
 
         var codegenResult =
-            CxInstantiatorGenerator.CreateFactoryCode(CreateCodeGenConfiguration(lottieComposition, "CX"));
+            CxInstantiatorGenerator.CreateFactoryCode(CreateCodeGenConfiguration(lottieComposition, Language.Cx));
 
         if (string.IsNullOrWhiteSpace(codegenResult.CppText))
         {
@@ -635,7 +638,7 @@ sealed class LottieJsonFileProcessor
 
     CodegenConfiguration CreateCodeGenConfiguration(
         LottieComposition lottieComposition,
-        string languageSwitch)
+        Language languageSwitch)
     {
         if (_translationResults is null)
         {
@@ -644,7 +647,6 @@ sealed class LottieJsonFileProcessor
 
         var result = new CodegenConfiguration(
             className: _className,
-            interfaceType: _options.InterfaceBaseName,
             additionalInterfaces: _options.AdditionalInterfaces,
             objectGraphs: _translationResults.Select(
                             tr => ((CompositionObject?)tr.RootVisual!, tr.MinimumRequiredUapVersion)).ToArray(),
@@ -674,7 +676,7 @@ sealed class LottieJsonFileProcessor
     // Returns lines that describe the invocation of this tool.
     // This information is passed to the code generator so that it can
     // be included in the generated output.
-    IEnumerable<string> GetToolInvocationInfo(string languageSwitch)
+    IEnumerable<string> GetToolInvocationInfo(Language languageSwitch)
     {
         var inputFile = new FileInfo(_sourceFilePath);
 
