@@ -6,28 +6,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-
-internal enum Lang
-{
-    // Language wasn't recognized.
-    Unknown,
-
-    // Language specified was ambigious.
-    Ambiguous,
-
-    CSharp,
-    Cx,
-    Cppwinrt,
-    LottieYaml,
-    WinCompDgml,
-    Stats,
-}
+using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp;
 
 sealed class CommandLineOptions
 {
     readonly List<string> _additionalInterfaces = new List<string>();
     readonly List<string> _languageStrings = new List<string>();
-    string? _interfaceBaseName;
     Version? _winUIVersion;
 
     internal IReadOnlyList<string> AdditionalInterfaces => _additionalInterfaces;
@@ -48,9 +32,7 @@ sealed class CommandLineOptions
 
     internal string? InputFile { get; private set; }
 
-    internal string InterfaceBaseName => _interfaceBaseName ?? "Microsoft.UI.Xaml.Controls.IAnimatedVisual";
-
-    internal IReadOnlyList<Lang> Languages { get; private set; } = Array.Empty<Lang>();
+    internal IReadOnlyList<Language> Languages { get; private set; } = Array.Empty<Language>();
 
     internal uint? MinimumUapVersion { get; private set; }
 
@@ -84,7 +66,7 @@ sealed class CommandLineOptions
     // for adding to generated code so that users can regenerate the code and know that
     // they got the set of options the same as a previous run. It does not include the
     // InputFile, OutputFolder, or Language options.
-    internal string ToConfigurationCommandLine(string languageSwitch)
+    internal string ToConfigurationCommandLine(Language languageSwitch)
     {
         var sb = new StringBuilder();
         sb.Append(ThisAssembly.AssemblyName);
@@ -117,8 +99,6 @@ sealed class CommandLineOptions
             sb.Append($" -{nameof(GenerateDependencyObject)}");
         }
 
-        sb.Append($" -{nameof(InterfaceBaseName)} {InterfaceBaseName}");
-
         sb.Append($" -Language {languageSwitch}");
 
         if (MinimumUapVersion.HasValue)
@@ -131,18 +111,28 @@ sealed class CommandLineOptions
             sb.Append($" -{nameof(Namespace)} {Namespace}");
         }
 
-        // The -Public switch is ignored for c++.
-        if (Public &&
-            !(languageSwitch.Equals("cppwinrt", StringComparison.OrdinalIgnoreCase) ||
-                languageSwitch.Equals("cx", StringComparison.OrdinalIgnoreCase)))
+        switch (languageSwitch)
         {
-            sb.Append($" -{nameof(Public)}");
+            case Language.Cx:
+            case Language.Cppwinrt:
+                // The -Public switch is ignored for c++.
+                break;
+
+            default:
+                sb.Append($" -{nameof(Public)}");
+                break;
         }
 
-        // The -RootNamespace parameter is only used for cppwinrt.
-        if (!string.IsNullOrWhiteSpace(RootNamespace) && languageSwitch.Equals("cppwinrt", StringComparison.OrdinalIgnoreCase))
+        switch (languageSwitch)
         {
-            sb.Append($" -{nameof(RootNamespace)} {RootNamespace}");
+            case Language.Cppwinrt:
+                // The -RootNamespace parameter is only used for cppwinrt.
+                if (!string.IsNullOrWhiteSpace(RootNamespace))
+                {
+                    sb.Append($" -{nameof(RootNamespace)} {RootNamespace}");
+                }
+
+                break;
         }
 
         if (StrictMode)
@@ -201,17 +191,17 @@ sealed class CommandLineOptions
         result.ParseCommandLineStrings(args);
 
         // Convert the language strings to language values.
-        var languageTokenizer = new CommandlineTokenizer<Lang>(Lang.Ambiguous)
-                .AddKeyword(Lang.CSharp)
-                .AddKeyword(Lang.Cx, "cppcx")
-                .AddKeyword(Lang.Cx)
-                .AddKeyword(Lang.Cppwinrt)
-                .AddKeyword(Lang.Cppwinrt, "winrtcpp")
-                .AddKeyword(Lang.LottieYaml)
-                .AddKeyword(Lang.WinCompDgml, "dgml")
-                .AddKeyword(Lang.Stats);
+        var languageTokenizer = new CommandlineTokenizer<Language>(Language.Ambiguous)
+                .AddKeyword(Language.CSharp)
+                .AddKeyword(Language.Cx, "cppcx")
+                .AddKeyword(Language.Cx)
+                .AddKeyword(Language.Cppwinrt)
+                .AddKeyword(Language.Cppwinrt, "winrtcpp")
+                .AddKeyword(Language.LottieYaml)
+                .AddKeyword(Language.WinCompDgml, "dgml")
+                .AddKeyword(Language.Stats);
 
-        var languages = new List<Lang>();
+        var languages = new List<Language>();
 
         // Parse the language string.
         foreach (var languageString in result._languageStrings)
@@ -220,10 +210,10 @@ sealed class CommandLineOptions
             languages.Add(language);
             switch (language)
             {
-                case Lang.Unknown:
+                case Language.Unknown:
                     result.ErrorDescription = $"Unrecognized language: {languageString}";
                     break;
-                case Lang.Ambiguous:
+                case Language.Ambiguous:
                     result.ErrorDescription = $"Ambiguous language: {languageString}";
                     break;
             }
@@ -342,16 +332,6 @@ sealed class CommandLineOptions
                     InputFile = arg;
                     previousKeyword = Keyword.None;
                     break;
-                case Keyword.Interface:
-                    if (_interfaceBaseName != null)
-                    {
-                        ErrorDescription = ArgumentSpecifiedMoreThanOnce("Interface base name");
-                        return;
-                    }
-
-                    _interfaceBaseName = arg;
-                    previousKeyword = Keyword.None;
-                    break;
                 case Keyword.Language:
                     _languageStrings.Add(arg);
                     previousKeyword = Keyword.None;
@@ -424,6 +404,7 @@ sealed class CommandLineOptions
 
                     previousKeyword = Keyword.None;
                     break;
+
                 case Keyword.WinUIVersion:
                     if (_winUIVersion != null)
                     {
