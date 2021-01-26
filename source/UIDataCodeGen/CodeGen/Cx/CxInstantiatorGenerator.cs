@@ -154,6 +154,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
             WriteMarkersPropertyDecl(builder.Public);
 
             builder.Public.WriteLine();
+            WriteFrameCountDecl(builder.Public);
+
+            builder.Public.WriteLine();
+            WriteFramerateDecl(builder.Public);
+
+            builder.Public.WriteLine();
+            WriteDurationDecl(builder.Public);
+
+            builder.Public.WriteLine();
             WriteFrameToProgressDecl(builder.Public);
 
             builder.Public.WriteLine();
@@ -699,6 +708,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
 
             builder.WriteLine();
 
+            WriteFrameCountImpl(builder);
+            builder.WriteLine();
+
+            WriteFramerateImpl(builder);
+            builder.WriteLine();
+
+            WriteDurationImpl(builder);
+            builder.WriteLine();
+
             WriteFrameToProgressImpl(builder);
             builder.WriteLine();
 
@@ -712,11 +730,80 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
         }
 
         /// <summary>
+        /// Generates the FrameCount property declaration.
+        /// </summary>
+        void WriteFrameCountDecl(CodeBuilder builder)
+        {
+            builder.WriteComment("Gets the number of frames in the animation.");
+            builder.WriteLine($"property double FrameCount");
+            builder.OpenScope();
+            builder.WriteLine("double get();");
+            builder.CloseScope();
+        }
+
+        /// <summary>
+        /// Generates the FrameCount property implementation.
+        /// </summary>
+        void WriteFrameCountImpl(CodeBuilder builder)
+        {
+            builder.WriteLine($"double {_s.Namespace(SourceInfo.Namespace)}::{_sourceClassName}::FrameCount::get()");
+            builder.OpenScope();
+            builder.WriteLine($"return {_s.Double(SourceInfo.SourceMetadata.LottieMetadata.Duration.Frames)};");
+            builder.CloseScope();
+        }
+
+        /// <summary>
+        /// Generates the Framerate property declaration.
+        /// </summary>
+        void WriteFramerateDecl(CodeBuilder builder)
+        {
+            builder.WriteComment("Gets the framerate of the animation.");
+            builder.WriteLine($"property double Framerate");
+            builder.OpenScope();
+            builder.WriteLine("double get();");
+            builder.CloseScope();
+        }
+
+        /// <summary>
+        /// Generates the Framerate property implementation.
+        /// </summary>
+        void WriteFramerateImpl(CodeBuilder builder)
+        {
+            builder.WriteLine($"double {_s.Namespace(SourceInfo.Namespace)}::{_sourceClassName}::Framerate::get()");
+            builder.OpenScope();
+            builder.WriteLine($"return {_s.Double(SourceInfo.SourceMetadata.LottieMetadata.Duration.FPS)};");
+            builder.CloseScope();
+        }
+
+        /// <summary>
+        /// Generates the Framerate property declaration.
+        /// </summary>
+        void WriteDurationDecl(CodeBuilder builder)
+        {
+            builder.WriteComment("Gets the duration of the animation.");
+            builder.WriteLine($"property Windows::Foundation::TimeSpan Duration");
+            builder.OpenScope();
+            builder.WriteLine("Windows::Foundation::TimeSpan get();");
+            builder.CloseScope();
+        }
+
+        /// <summary>
+        /// Generates the Duration property implementation.
+        /// </summary>
+        void WriteDurationImpl(CodeBuilder builder)
+        {
+            builder.WriteLine($"TimeSpan {_s.Namespace(SourceInfo.Namespace)}::{_sourceClassName}::Duration::get()");
+            builder.OpenScope();
+            builder.WriteLine($"return {_s.TimeSpan(SourceInfo.SourceMetadata.LottieMetadata.Duration.Time)};");
+            builder.CloseScope();
+        }
+
+        /// <summary>
         /// Generates the FrameToProgress(...) declaration.
         /// </summary>
         void WriteFrameToProgressDecl(CodeBuilder builder)
         {
-            builder.WriteComment("Converts a frame number to the corresponding progress value.");
+            builder.WriteComment("Converts a zero-based frame number to the corresponding progress value denoting the start of the frame.");
             builder.WriteLine($"double FrameToProgress(double frameNumber);");
         }
 
