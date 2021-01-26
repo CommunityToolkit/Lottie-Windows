@@ -24,5 +24,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
 
             return Offset < otherEnd && myEnd > otherOffset;
         }
+
+        public override string ToString() => $"{Offset}->{Offset + Duration}";
     }
 }

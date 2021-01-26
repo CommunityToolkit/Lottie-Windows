@@ -64,7 +64,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)SolidColorStroke.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TimeSegment.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transform.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)RenderingContents\GroupRenderingContent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RenderingContents\ContainerRenderingContent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RenderingContents\ImageRenderingContent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RenderingContents\RenderingContent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RenderingContents\SolidRenderingContent.cs" />
@@ -85,6 +85,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)RenderingContexts\TimeStretchRenderingContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RenderingContexts\VisibilityRenderingContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transformers\ContextOptimizers.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Transformers\VisibilityGrouping.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TrimPath.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Optimization\GradientStopOptimizer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Optimization\Optimizer.cs" />

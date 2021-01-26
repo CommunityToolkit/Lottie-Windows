@@ -5,7 +5,6 @@
 #nullable enable
 
 using System;
-using System.Diagnostics.Contracts;
 using System.Linq;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.Animatables

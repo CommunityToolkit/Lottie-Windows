@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
 using Microsoft.Toolkit.Uwp.UI.Lottie.IR.Brushes;
 using Microsoft.Toolkit.Uwp.UI.Lottie.IR.Layers;
@@ -43,19 +42,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
             // Optimize the contexts.
             var optimizedRenderings = unifiedTimeBaseRenderings.Select(OptimizeRendering(ContextOptimizers.Optimize)).ToArray();
 
-            // Get the visibilty segments for each rendering.
-            // TODO - hacky test code - move this into a grouping class.
-            var visibilities = optimizedRenderings.Select(r => VisibilityRenderingContext.Combine(r.Context.OfType<VisibilityRenderingContext>())).ToArray();
-            var timeSegments = VisibilityRenderingContext.GetVisibilitySegments(visibilities).ToArray();
-
-            foreach (var r in optimizedRenderings)
-            {
-                var visibility = VisibilityRenderingContext.Combine(r.Context.OfType<VisibilityRenderingContext>());
-                var segmentsForRendering = timeSegments.Where(ts => visibility.IsVisibleDuring(ts)).ToArray();
-            }
+            VisibilityGrouping.CreateVisibilityGroups(optimizedRenderings);
 
             var result = new Rendering(
-                                new GroupRenderingContent(optimizedRenderings),
+                                new ContainerRenderingContent(optimizedRenderings),
                                 new MetadataRenderingContext(name: $"Lottie {source.Name}", source: source));
 
             return result;
@@ -68,8 +58,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
             => new Rendering(Optimize(input.Content, contextOptimizer), Optimize(input.Context, contextOptimizer));
 
         static RenderingContent Optimize(RenderingContent input, Func<RenderingContext, RenderingContext> contextOptimizer)
-            => input is GroupRenderingContent group
-            ? new GroupRenderingContent(group.Items.Select(item => Optimize(item, contextOptimizer)).ToArray())
+            => input is ContainerRenderingContent group
+            ? new ContainerRenderingContent(group.Items.Select(item => Optimize(item, contextOptimizer)).ToArray())
              : input;
 
         static RenderingContext Optimize(RenderingContext input, Func<RenderingContext, RenderingContext> optimizer)

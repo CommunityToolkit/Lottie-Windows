@@ -16,6 +16,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
     {
         internal static RenderingContext Optimize(RenderingContext input)
         {
+            AssertUniformTimebase(input);
+
             var result = input;
 
             // Get the metadata.
@@ -39,10 +41,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
 
             var result = input;
 
-            /*            result = DebugCleanup(result);
-                        var dbg = DebugAnchors(result).ToArray(); //.Skip(4).First();
-            */
-
             // Replace any anchors with equivalent centerpoints and positions.
             result = ReplaceAnchors(result);
 
@@ -58,31 +56,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
             result = OptimizeGradientStrokes(result);
             result = OptimizeVisibility(result);
 
-            return result;
-        }
-
-        static IEnumerable<(RenderingContext[], RenderingContext[], RenderingContext[])> DebugAnchors(RenderingContext context)
-        {
-            var cleanContext = DebugCleanup(context);
-
-            for (var i = 0; i < cleanContext.SubContextCount; i++)
-            {
-                var subSequence = RenderingContext.Compose(cleanContext.Take(i + 1));
-                var cleanedUp = DebugCleanup(ReplaceAnchors(subSequence)).ToArray();
-                yield return (subSequence.ToArray(), cleanedUp, OptimizePosition(RenderingContext.Compose(cleanedUp)).ToArray());
-            }
-        }
-
-        // For debugging purposes only, remove some distracting contexts.
-        internal static RenderingContext DebugCleanup(RenderingContext input)
-        {
-            var result = input;
-            result = result.Filter<BlendModeRenderingContext>(r => false);
-            result = result.Filter<RotationRenderingContext.Static>(r => r.Rotation != Rotation.None);
-            result = result.Filter<OpacityRenderingContext>(r => false);
-            result = result.Filter<VisibilityRenderingContext>(r => false);
-            result = result.Filter<FillRenderingContext>(r => false);
-            result = result.Filter<ScaleRenderingContext.Static>(r => r.ScalePercent != new Vector2(100, 100));
             return result;
         }
 
