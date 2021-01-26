@@ -1,14 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
-
   <!-- Defaults if not specified. -->
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <TargetPlatformVersion Condition=" '$(TargetPlatformVersion)' == '' ">10.0.18362.0</TargetPlatformVersion>
   </PropertyGroup>
-
   <PropertyGroup>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <AppInstallerCheckForUpdateFrequency>OnApplicationRun</AppInstallerCheckForUpdateFrequency>
@@ -42,7 +40,6 @@
     <UseVSHostingProcess>false</UseVSHostingProcess>
     <WindowsXamlEnableOverview>true</WindowsXamlEnableOverview>
   </PropertyGroup>
-
   <!-- BETA allows building of a Release build with some small changes (e.g. app name
        and some assets) to make it clear that the code is for BETA testing. -->
   <PropertyGroup Condition=" '$(Configuration)' == 'BETA' ">
@@ -50,20 +47,17 @@
     <Optimize>true</Optimize>
     <UseDotNetNativeToolchain>true</UseDotNetNativeToolchain>
   </PropertyGroup>
-
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
     <DefineConstants>$(DefineConstants);DEBUG</DefineConstants>
     <DebugType>full</DebugType>
   </PropertyGroup>
-
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <DebugType>pdbonly</DebugType>
     <DefineConstants>TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
     <Optimize>true</Optimize>
     <UseDotNetNativeToolchain>true</UseDotNetNativeToolchain>
   </PropertyGroup>
-
   <!-- These PropertyGroups are required to exist so that the VS Configuration Manager
        will recognize these configurations as valid. -->
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'BETA|ARM' ">
@@ -90,7 +84,6 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
   </PropertyGroup>
-
   <ItemGroup>
     <Compile Include="AnimatedVisuals\LottieViewer_04_Playback.cs" />
     <Compile Include="App.xaml.cs">
@@ -247,6 +240,7 @@
   <Import Project="..\source\WinUIXamlMediaData\WinUIXamlMediaData.projitems" Label="Shared" />
   <Import Project="..\source\YamlData\YamlData.projitems" Label="Shared" />
   <Import Project="..\source\DotLottie\DotLottie.projitems" Label="Shared" />
+  <Import Project="..\source\Animatables\Animatables.projitems" Label="Shared" />
   <Target Name="Pack">
     <!-- Dummy target to mute warnings about attempts to create a NuPkg -->
   </Target>

@@ -173,6 +173,7 @@ Global
 		source\WinUIXamlMediaData\WinUIXamlMediaData.projitems*{30059ca7-0745-4eec-8d11-b14850a70c98}*SharedItemsImports = 13
 		source\YamlData\YamlData.projitems*{39c6b7f3-5e75-4019-82ab-00fd8a0a06e2}*SharedItemsImports = 13
 		source\LottieReader\LottieReader.projitems*{4e7d8957-3f5f-46e1-99a8-2012b806c9b0}*SharedItemsImports = 13
+		source\Animatables\Animatables.projitems*{5120efd7-a556-46bf-8d56-f65f1ef9a305}*SharedItemsImports = 4
 		source\CompMetadata\CompMetadata.projitems*{5120efd7-a556-46bf-8d56-f65f1ef9a305}*SharedItemsImports = 4
 		source\DotLottie\DotLottie.projitems*{5120efd7-a556-46bf-8d56-f65f1ef9a305}*SharedItemsImports = 4
 		source\GenericData\GenericData.projitems*{5120efd7-a556-46bf-8d56-f65f1ef9a305}*SharedItemsImports = 4
@@ -222,6 +223,7 @@ Global
 		source\WinCompData\WinCompData.projitems*{d02870de-7ded-4916-85d4-3175ceedef74}*SharedItemsImports = 13
 		source\UIDataCodeGen\UIDataCodeGen.projitems*{d02be6c8-14db-4b4f-8600-f3c9b69c104d}*SharedItemsImports = 13
 		source\NullablesAttributes\NullablesAttributes.projitems*{e32587a8-94e8-4b68-91ad-f3612a48a62b}*SharedItemsImports = 13
+		source\Animatables\Animatables.projitems*{e392bad0-f936-4b64-a445-552597795cc7}*SharedItemsImports = 5
 		source\CompMetadata\CompMetadata.projitems*{e392bad0-f936-4b64-a445-552597795cc7}*SharedItemsImports = 5
 		source\DotLottie\DotLottie.projitems*{e392bad0-f936-4b64-a445-552597795cc7}*SharedItemsImports = 5
 		source\GenericData\GenericData.projitems*{e392bad0-f936-4b64-a445-552597795cc7}*SharedItemsImports = 5
