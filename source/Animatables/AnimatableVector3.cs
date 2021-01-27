@@ -30,15 +30,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.Animatables
             => Select(vector3 => vector3 + new Vector3(offset.X, offset.Y, 0));
 
         public new AnimatableVector3 WithTimeOffset(double timeOffset)
-            => timeOffset == 0
-                ? this
-                : new AnimatableVector3(KeyFrames.Select(kf => kf.WithTimeOffset(timeOffset)));
+            => timeOffset != 0 || IsAnimated
+                ? new AnimatableVector3(KeyFrames.Select(kf => kf.WithTimeOffset(timeOffset)))
+                : this;
 
         IAnimatableVector3 IAnimatableVector3.WithTimeOffset(double timeOffset)
             => WithTimeOffset(timeOffset);
 
-        public new AnimatableVector3 Select(Func<Vector3, Vector3> selector)
-            => new AnimatableVector3(KeyFrames.Select(kf => new KeyFrame<Vector3>(kf.Frame, selector(kf.Value), kf.Easing)));
+        public AnimatableVector3 Select(Func<Vector3, Vector3> selector)
+            => IsAnimated
+                    ? new AnimatableVector3(KeyFrames.Select(kf => kf.CloneWithNewValue(selector(kf.Value))))
+                    : new AnimatableVector3(selector(InitialValue));
 
         /// <inheritdoc/>
         public AnimatableVector3Type Type => AnimatableVector3Type.Vector3;
