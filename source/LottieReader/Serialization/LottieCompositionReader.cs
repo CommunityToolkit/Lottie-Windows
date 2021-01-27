@@ -14,6 +14,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
 using Microsoft.Toolkit.Uwp.UI.Lottie.GenericData;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization

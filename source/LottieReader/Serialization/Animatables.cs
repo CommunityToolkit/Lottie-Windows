@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 {
@@ -27,8 +28,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         static readonly Animatable<Rotation> s_animatableRotationNone = CreateNonAnimatedAnimatable(Rotation.None);
         static readonly Animatable<Sequence<GradientStop>> s_animatableGradientStopsSingle = CreateNonAnimatedAnimatable(s_defaultGradientStops);
         static readonly Animatable<Trim> s_animatableTrimNone = CreateNonAnimatedAnimatable(Trim.None);
-        static readonly AnimatableVector3 s_animatableVector3Zero = new AnimatableVector3(Vector3.Zero, null);
-        static readonly AnimatableVector3 s_animatableVector3OneHundred = new AnimatableVector3(new Vector3(100, 100, 100), null);
+        static readonly AnimatableVector3 s_animatableVector3Zero = new AnimatableVector3(Vector3.Zero);
+        static readonly AnimatableVector3 s_animatableVector3OneHundred = new AnimatableVector3(new Vector3(100, 100, 100));
 
         static readonly AnimatableParser<Enum<BlurDimension>> s_animatableBlurDimensionParser =
             CreateAnimatableParser((in LottieJsonElement element) => element.AsInt32() switch
@@ -56,13 +57,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
         static Animatable<T> CreateNonAnimatedAnimatable<T>(T value)
             where T : IEquatable<T>
-            => new Animatable<T>(value, null);
+            => new Animatable<T>(value);
 
-        static Animatable<T> CreateAnimatable<T>(T initialValue, IEnumerable<KeyFrame<T>> keyFrames, int? propertyIndex)
+        static Animatable<T> CreateAnimatable<T>(T initialValue, IEnumerable<KeyFrame<T>> keyFrames)
             where T : IEquatable<T>
             => keyFrames.Any()
-                ? new Animatable<T>(keyFrames, propertyIndex)
-                : new Animatable<T>(initialValue, propertyIndex);
+                ? new Animatable<T>(keyFrames)
+                : new Animatable<T>(initialValue);
 
         static SimpleAnimatableParser<T> CreateAnimatableParser<T>(LottieJsonElementReader<T> valueReader)
             where T : IEquatable<T>
@@ -71,8 +72,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         Animatable<T> ReadAnimatable<T>(AnimatableParser<T> parser, in LottieJsonObjectElement obj)
             where T : IEquatable<T>
         {
+            obj.IgnorePropertyIntentionally("ix");
             parser.ParseJson(this, obj, out var keyFrames, out var initialValue);
-            return CreateAnimatable(initialValue, keyFrames, obj.Int32PropertyOrNull("ix"));
+
+            return CreateAnimatable(initialValue, keyFrames);
         }
 
         Animatable<bool> ReadAnimatableBool(in LottieJsonObjectElement? obj)
@@ -116,19 +119,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             }
             else
             {
+                obj.IgnorePropertyIntentionally("ix");
+
                 // Get the number of color stops. This is optional unless there are opacity stops.
                 // If this value doesn't exist, all the stops are color stops. If the value exists
                 // then this is the number of color stops, and the remaining stops are opacity stops.
                 var numberOfColorStops = obj.Int32PropertyOrNull("p");
-                var propertyIndex = obj.Int32PropertyOrNull("ix");
-                return ReadAnimatableGradientStops(kObj.Value, numberOfColorStops, propertyIndex);
+                return ReadAnimatableGradientStops(kObj.Value, numberOfColorStops);
             }
         }
 
         Animatable<Sequence<GradientStop>> ReadAnimatableGradientStops(
                 in LottieJsonObjectElement obj,
-                int? numberOfColorStops,
-                int? propertyIndex)
+                int? numberOfColorStops)
         {
             var animatableColorStopsParser = new AnimatableColorStopsParser(numberOfColorStops);
 
@@ -153,8 +156,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     // There are opacity key frames. The number of color key frames should be the same
                     // (this is asserted in ConcatGradientStopKeyFrames).
                     return new Animatable<Sequence<GradientStop>>(
-                                            ConcatGradientStopKeyFrames(colorKeyFrames, opacityKeyFrames),
-                                            propertyIndex);
+                                            ConcatGradientStopKeyFrames(colorKeyFrames, opacityKeyFrames));
                 }
                 else
                 {
@@ -167,16 +169,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     }
 
                     return new Animatable<Sequence<GradientStop>>(
-                                            new Sequence<GradientStop>(colorInitialValue.Concat(opacityInitialValue)),
-                                            propertyIndex);
+                                            new Sequence<GradientStop>(colorInitialValue.Concat(opacityInitialValue)));
                 }
             }
             else
             {
                 // There are only color stops.
                 return colorKeyFrames.Any()
-                    ? new Animatable<Sequence<GradientStop>>(colorKeyFrames, propertyIndex)
-                    : new Animatable<Sequence<GradientStop>>(colorInitialValue, propertyIndex);
+                    ? new Animatable<Sequence<GradientStop>>(colorKeyFrames)
+                    : new Animatable<Sequence<GradientStop>>(colorInitialValue);
             }
         }
 
@@ -244,15 +245,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             // Expressions not supported.
             obj.IgnorePropertyThatIsNotYetSupported("x");
 
-            var propertyIndex = obj.Int32PropertyOrNull("ix");
+            obj.IgnorePropertyIntentionally("ix");
+
             if (obj.ContainsProperty("k"))
             {
                 s_animatableVector3Parser.ParseJson(this, obj, out var keyFrames, out var initialValue);
                 obj.AssertAllPropertiesRead();
 
                 return keyFrames.Any()
-                    ? new AnimatableVector3(keyFrames, propertyIndex)
-                    : new AnimatableVector3(initialValue, propertyIndex);
+                    ? new AnimatableVector3(keyFrames)
+                    : new AnimatableVector3(initialValue);
             }
             else
             {

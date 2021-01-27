@@ -10,6 +10,7 @@
   <Import Project="..\..\source\LottieToWinComp\LottieToWinComp.projitems" Label="Shared" />
 
   <ItemGroup>
+    <ProjectReference Include="..\Animatables\Animatables.dll.csproj" />
     <ProjectReference Include="..\CompMetadata\CompMetadata.dll.csproj" />
     <ProjectReference Include="..\LottieData\LottieData.dll.csproj" />
     <ProjectReference Include="..\LottieMetadata\LottieMetadata.dll.csproj" />

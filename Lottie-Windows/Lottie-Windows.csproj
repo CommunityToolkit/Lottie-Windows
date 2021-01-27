@@ -47,6 +47,7 @@
     </PackageReference>
   </ItemGroup>
 
+  <Import Project="..\source\Animatables\Animatables.projitems" Label="Shared" />
   <Import Project="..\source\DotLottie\DotLottie.projitems" Label="Shared" />
   <Import Project="..\source\CompMetadata\CompMetadata.projitems" Label="Shared" />
   <Import Project="..\source\GenericData\GenericData.projitems" Label="Shared" />

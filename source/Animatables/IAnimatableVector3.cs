@@ -2,22 +2,19 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
+namespace Microsoft.Toolkit.Uwp.UI.Lottie.Animatables
 {
-#if PUBLIC_LottieData
+#if PUBLIC_Animatables
     public
 #endif
     interface IAnimatableVector3 : IAnimatableValue<Vector3>
     {
         AnimatableVector3Type Type { get; }
-    }
 
-#if PUBLIC_LottieData
-    public
-#endif
-    enum AnimatableVector3Type
-    {
-        Vector3,
-        XYZ,
+        /// <summary>
+        /// The animated value with each key frame offset by the given amount.
+        /// </summary>
+        /// <returns>The adjusted animated value.</returns>
+        new IAnimatableVector3 WithTimeOffset(double timeOffset);
     }
 }

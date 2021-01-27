@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -6,13 +6,13 @@
 
 using System;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
+namespace Microsoft.Toolkit.Uwp.UI.Lottie.Animatables
 {
     /// <summary>
     /// Describes a cubic Bezier function as the 2nd and 3rd control points where
     /// the 1st and 4th control points are 0,0 and 1,1 respectively.
     /// </summary>
-#if PUBLIC_LottieData
+#if PUBLIC_Animatables
     public
 #endif
     readonly struct CubicBezier : IEquatable<CubicBezier>

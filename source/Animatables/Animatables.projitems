@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>fc89273a-b2da-4625-8a73-ef02a658d65e</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>Animatables</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Animatable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AnimatableVector2.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AnimatableVector2Type.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AnimatableVector3.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AnimatableVector3Type.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AnimatableXY.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AnimatableXYZ.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BezierSegment.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Color.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ColorGradientStop.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CubicBezier.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CubicBezierEasing.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Easing.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Enum.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Exceptions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ExtensionMethods.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)GradientStop.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)HoldEasing.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IAnimatableValue.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IAnimatableVector2.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IAnimatableVector3.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IGradient.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IRadialGradient.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)KeyFrame.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinearEasing.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Opacity.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)OpacityGradientStop.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PathGeometry.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Rotation.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Sequence.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Trim.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Vector2.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Vector3.cs" />
+  </ItemGroup>
+</Project>

@@ -5,10 +5,11 @@
 #nullable enable
 
 using System;
+using SnVector2 = System.Numerics.Vector2;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
+namespace Microsoft.Toolkit.Uwp.UI.Lottie.Animatables
 {
-#if PUBLIC_LottieData
+#if PUBLIC_Animatables
     public
 #endif
     readonly struct Vector2 : IEquatable<Vector2>
@@ -20,6 +21,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         }
 
         public readonly double X;
+
         public readonly double Y;
 
         public static readonly Vector2 Zero = new Vector2(0, 0);
@@ -38,9 +40,21 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         public static Vector2 operator -(Vector2 left, Vector2 right) =>
             new Vector2(left.X - right.X, left.Y - right.Y);
 
+        public static Vector2 operator -(Vector2 value) =>
+            new Vector2(-value.X, -value.Y);
+
+        public static Vector2 operator *(Vector2 left, Vector2 right) =>
+            new Vector2(left.X * right.X, left.Y * right.Y);
+
         public static bool operator ==(Vector2 left, Vector2 right) => left.Equals(right);
 
         public static bool operator !=(Vector2 left, Vector2 right) => !left.Equals(right);
+
+        /// <summary>
+        /// Implicit conversion from <see cref="System.Numerics.Vector2"/>.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        public static implicit operator Vector2(SnVector2 value) => new Vector2(value.X, value.Y);
 
         /// <inheritdoc/>
         public override bool Equals(object? obj) => obj is Vector2 other && Equals(other);

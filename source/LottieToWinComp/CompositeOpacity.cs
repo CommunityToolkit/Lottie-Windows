@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
@@ -69,7 +70,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var cur = this;
             do
             {
-                yield return new Animatable<Opacity>(initialValue: cur._initialValue, keyFrames: cur._keyFrames, propertyIndex: null);
+                yield return new Animatable<Opacity>(initialValue: cur._initialValue, keyFrames: cur._keyFrames);
                 cur = cur._previous;
             } while (cur != null);
         }

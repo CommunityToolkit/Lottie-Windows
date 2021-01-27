@@ -2,8 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Linq;
+using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 {
@@ -48,13 +47,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         public TrimPath CloneWithReversedDirection()
         {
             // Start = 1 - end
-            var start = End.CloneWithSelectedValue(trim => Trim.FromPercent(100 - trim.Percent));
+            var start = End.Select(trim => Trim.FromPercent(100 - trim.Percent));
 
             // End = 1 - start
-            var end = Start.CloneWithSelectedValue(trim => Trim.FromPercent(100 - trim.Percent));
+            var end = Start.Select(trim => Trim.FromPercent(100 - trim.Percent));
 
             // Offset = offset * -1
-            var offset = Offset.CloneWithSelectedValue(rotation => Rotation.FromDegrees(rotation.Degrees * -1));
+            var offset = Offset.Select(rotation => Rotation.FromDegrees(rotation.Degrees * -1));
 
             return new TrimPath(
                 new ShapeLayerContentArgs { BlendMode = BlendMode, MatchName = MatchName, Name = Name },

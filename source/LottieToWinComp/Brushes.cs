@@ -6,8 +6,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;

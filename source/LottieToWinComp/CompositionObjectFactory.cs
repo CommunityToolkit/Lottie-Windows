@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
+using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce;
 using static Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp.ConvertTo;
@@ -155,7 +155,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             if (color.A == 0)
             {
                 // Transparent brushes that are never animated are all equivalent.
-                color = LottieData.Color.TransparentBlack;
+                color = Animatables.Color.TransparentBlack;
             }
 
             if (!_nonAnimatedColorBrushes.TryGetValue(color, out var result))

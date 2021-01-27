@@ -5,6 +5,7 @@
 #nullable enable
 
 using System;
+using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 {

@@ -1,17 +1,17 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
+namespace Microsoft.Toolkit.Uwp.UI.Lottie.Animatables
 {
-#if PUBLIC_LottieData
+#if PUBLIC_Animatables
     public
 #endif
     interface IGradient
     {
-        IAnimatableVector3 StartPoint { get; }
+        IAnimatableVector2 StartPoint { get; }
 
-        IAnimatableVector3 EndPoint { get; }
+        IAnimatableVector2 EndPoint { get; }
 
         Animatable<Sequence<GradientStop>> GradientStops { get; }
     }

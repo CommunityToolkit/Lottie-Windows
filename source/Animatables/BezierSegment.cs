@@ -6,13 +6,14 @@
 
 using System;
 using System.Collections.Generic;
+using static Microsoft.Toolkit.Uwp.UI.Lottie.Animatables.Exceptions;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
+namespace Microsoft.Toolkit.Uwp.UI.Lottie.Animatables
 {
     /// <summary>
     /// A segment defined as a cubic Bezier curve from <see cref="ControlPoint0"/> to <see cref="ControlPoint3"/>.
     /// </summary>
-#if PUBLIC_LottieData
+#if PUBLIC_Animatables
     public
 #endif
     sealed class BezierSegment : IEquatable<BezierSegment>
@@ -36,6 +37,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// <inheritdoc/>
         public bool Equals(BezierSegment? other) => !(other is null) && EqualityComparer.Equals(this, other);
 
+        public BezierSegment WithOffset(Vector2 offset)
+            => new BezierSegment(ControlPoint0 + offset, ControlPoint1 + offset, ControlPoint2 + offset, ControlPoint3 + offset);
+
         internal static IEqualityComparer<BezierSegment> EqualityComparer { get; } = new Comparer();
 
         /// <inheritdoc/>
@@ -47,7 +51,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             }
             else if (IsALine)
             {
-                return $"Line from {ControlPoint0} to {ControlPoint3}";
+                var lineLength = Math.Sqrt(
+                                    Math.Pow(ControlPoint0.X - ControlPoint3.X, 2) +
+                                    Math.Pow(ControlPoint0.Y - ControlPoint3.Y, 2));
+
+                return $"Line length {lineLength:0.###} from {ControlPoint0} to {ControlPoint3}";
             }
             else
             {
@@ -209,7 +217,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
                     inner1 = ac;
                     break;
                 default:
-                    throw new InvalidOperationException();
+                    throw Unreachable;
             }
 
             var outer = Math.Sqrt(longestSegment);
@@ -307,7 +315,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
                     inner11 = bc;
                     break;
                 default:
-                    throw new InvalidOperationException();
+                    throw Unreachable;
             }
 
             var outer = Math.Sqrt(longestSegment);

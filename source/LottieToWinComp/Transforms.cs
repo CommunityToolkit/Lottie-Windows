@@ -5,6 +5,7 @@
 #nullable enable
 
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Expr = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions.Expression;
@@ -112,7 +113,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var inProgress = context.InPointAsProgress;
             var outProgress = context.OutPointAsProgress;
 
-            if (inProgress > 1 || outProgress <= 0 || inProgress >= outProgress || layerOpacity.IsAlways(LottieData.Opacity.Transparent))
+            if (inProgress > 1 || outProgress <= 0 || inProgress >= outProgress || layerOpacity.IsAlways(Animatables.Opacity.Transparent))
             {
                 // The layer is never visible. Don't create anything.
                 rootNode = null;
@@ -193,7 +194,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var inProgress = context.InPointAsProgress;
             var outProgress = context.OutPointAsProgress;
 
-            if (inProgress > 1 || outProgress <= 0 || inProgress >= outProgress || layerOpacity.IsAlways(LottieData.Opacity.Transparent))
+            if (inProgress > 1 || outProgress <= 0 || inProgress >= outProgress || layerOpacity.IsAlways(Animatables.Opacity.Transparent))
             {
                 // The layer is never visible. Don't create anything.
                 rootNode = null;
@@ -295,7 +296,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var inProgress = context.InPointAsProgress;
             var outProgress = context.OutPointAsProgress;
 
-            if (inProgress > 1 || outProgress <= 0 || inProgress >= outProgress || layerOpacity.IsAlways(LottieData.Opacity.Transparent))
+            if (inProgress > 1 || outProgress <= 0 || inProgress >= outProgress || layerOpacity.IsAlways(Animatables.Opacity.Transparent))
             {
                 // The layer is never visible. Don't create anything.
                 rootNode = null;
@@ -354,7 +355,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             ref ContainerVisual root)
         {
             // Implement opacity for the layer.
-            if (opacity.IsAnimated || opacity.InitialValue < LottieData.Opacity.Opaque)
+            if (opacity.IsAnimated || opacity.InitialValue < Animatables.Opacity.Opaque)
             {
                 // Insert a new node to control opacity at the top of the chain.
                 var opacityNode = context.ObjectFactory.CreateContainerVisual();

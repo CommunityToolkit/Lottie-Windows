@@ -46,7 +46,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                                                                         MyPosition.Y - MyAnchor.Y,
                                                                         0);
 
-        internal static Color ThemedColorMultipliedByOpacity(string bindingName, LottieData.Opacity opacity)
+        internal static Color ThemedColorMultipliedByOpacity(string bindingName, Animatables.Opacity opacity)
             => ColorAsVector4MultipliedByOpacity(ThemedColor4Property(bindingName), opacity.Value);
 
         internal static Color ThemedColorAsVector4MultipliedByOpacities(string bindingName, Scalar[] opacities)

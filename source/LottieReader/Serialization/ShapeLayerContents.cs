@@ -4,6 +4,7 @@
 
 #nullable enable
 using System.Collections.Generic;
+using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
 using static Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization.Exceptions;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
@@ -159,8 +160,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             var capType = LcToLineCapType(obj.DoublePropertyOrNull("lc"));
             var joinType = LjToLineJoinType(obj.DoublePropertyOrNull("lj"));
             var miterLimit = obj.DoublePropertyOrNull("ml") ?? 4; // Default miter limit in After Effects is 4
-            var startPoint = ReadAnimatableVector3(obj.ObjectPropertyOrNull("s"));
-            var endPoint = ReadAnimatableVector3(obj.ObjectPropertyOrNull("e"));
+            var startPoint = ReadAnimatableVector3(obj.ObjectPropertyOrNull("s")).WithoutZ();
+            var endPoint = ReadAnimatableVector3(obj.ObjectPropertyOrNull("e")).WithoutZ();
             var gradientStops = ReadAnimatableGradientStops(obj.ObjectPropertyOrNull("g"));
 
             obj.AssertAllPropertiesRead();
@@ -194,8 +195,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             var capType = LcToLineCapType(obj.DoublePropertyOrNull("lc"));
             var joinType = LjToLineJoinType(obj.DoublePropertyOrNull("lj"));
             var miterLimit = obj.DoublePropertyOrNull("ml") ?? 4; // Default miter limit in After Effects is 4
-            var startPoint = ReadAnimatableVector3(obj.ObjectPropertyOrNull("s"));
-            var endPoint = ReadAnimatableVector3(obj.ObjectPropertyOrNull("e"));
+            var startPoint = ReadAnimatableVector3(obj.ObjectPropertyOrNull("s")).WithoutZ();
+            var endPoint = ReadAnimatableVector3(obj.ObjectPropertyOrNull("e")).WithoutZ();
             var gradientStops = ReadAnimatableGradientStops(obj.ObjectPropertyOrNull("g"));
 
             obj.AssertAllPropertiesRead();
@@ -249,8 +250,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
             var fillType = ReadFillType(obj);
             var opacity = ReadAnimatableOpacity(obj.ObjectPropertyOrNull("o"));
-            var startPoint = ReadAnimatableVector3(obj.ObjectPropertyOrNull("s"));
-            var endPoint = ReadAnimatableVector3(obj.ObjectPropertyOrNull("e"));
+            var startPoint = ReadAnimatableVector3(obj.ObjectPropertyOrNull("s")).WithoutZ();
+            var endPoint = ReadAnimatableVector3(obj.ObjectPropertyOrNull("e")).WithoutZ();
             var gradientStops = ReadAnimatableGradientStops(obj.ObjectPropertyOrNull("g"));
 
             var highlightLengthObject = obj.ObjectPropertyOrNull("h");
@@ -280,8 +281,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
             var fillType = ReadFillType(obj);
             var opacity = ReadAnimatableOpacity(obj.ObjectPropertyOrNull("o"));
-            var startPoint = ReadAnimatableVector3(obj.ObjectPropertyOrNull("s"));
-            var endPoint = ReadAnimatableVector3(obj.ObjectPropertyOrNull("e"));
+            var startPoint = ReadAnimatableVector3(obj.ObjectPropertyOrNull("s")).WithoutZ();
+            var endPoint = ReadAnimatableVector3(obj.ObjectPropertyOrNull("e")).WithoutZ();
             var gradientStops = ReadAnimatableGradientStops(obj.ObjectPropertyOrNull("g"));
 
             obj.AssertAllPropertiesRead();

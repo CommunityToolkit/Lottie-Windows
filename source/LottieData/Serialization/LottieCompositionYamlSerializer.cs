@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
 using Microsoft.Toolkit.Uwp.UI.Lottie.YamlData;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
@@ -445,6 +446,28 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             result.Add(nameof(content.Opacity), FromAnimatable(content.Opacity));
             result.Add(nameof(content.Rotation), FromAnimatable(content.Rotation));
             return result;
+        }
+
+        YamlObject FromAnimatable(IAnimatableVector2 animatable)
+        {
+            switch (animatable.Type)
+            {
+                case AnimatableVector2Type.Vector2:
+                    return FromAnimatable<Vector2>((AnimatableVector2)animatable, FromVector2);
+                case AnimatableVector2Type.XY:
+                    {
+                        var xy = (AnimatableXY)animatable;
+                        var result = new YamlMap
+                        {
+                            { nameof(xy.X), FromAnimatable(xy.X) },
+                            { nameof(xy.Y), FromAnimatable(xy.Y) },
+                        };
+                        return result;
+                    }
+
+                default:
+                    throw Unreachable;
+            }
         }
 
         YamlObject FromAnimatable(IAnimatableVector3 animatable)
