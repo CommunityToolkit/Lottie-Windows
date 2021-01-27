@@ -102,19 +102,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.Animatables
         public bool IsEverNot(T value) => !IsAlways(value);
 
         public Animatable<T> WithTimeOffset(double timeOffset)
-            => timeOffset == 0
-                ? this
-                : new Animatable<T>(KeyFrames.Select(kf => kf.WithTimeOffset(timeOffset)));
+            => timeOffset != 0 || IsAnimated
+                ? new Animatable<T>(KeyFrames.Select(kf => kf.WithTimeOffset(timeOffset)))
+                : this;
 
         IAnimatableValue<T> IAnimatableValue<T>.WithTimeOffset(double timeOffset)
             => WithTimeOffset(timeOffset);
 
-        public Animatable<T> Select(Func<T, T> selector)
-            => new Animatable<T>(KeyFrames.Select(kf => new KeyFrame<T>(kf.Frame, selector(kf.Value), kf.Easing)));
-
         public Animatable<Tnew> Select<Tnew>(Func<T, Tnew> selector)
             where Tnew : IEquatable<Tnew>
-            => new Animatable<Tnew>(KeyFrames.Select(kf => new KeyFrame<Tnew>(kf.Frame, selector(kf.Value), kf.Easing)));
+            => IsAnimated
+                    ? new Animatable<Tnew>(KeyFrames.Select(kf => kf.CloneWithNewValue(selector(kf.Value))))
+                    : new Animatable<Tnew>(selector(InitialValue));
 
         /// <inheritdoc/>
         // Not a great hash code because it ignore the KeyFrames, but quick.
