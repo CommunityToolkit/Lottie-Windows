@@ -282,6 +282,7 @@ Global
 		source\YamlData\YamlData.projitems*{e91e3cde-3088-4b12-8472-d2c1c05b7229}*SharedItemsImports = 5
 		source\Animatables\Animatables.projitems*{fc89273a-b2da-4625-8a73-ef02a658d65e}*SharedItemsImports = 13
 		source\IR\IR.projitems*{f5c7502d-e37f-48e5-82c7-76bfce2e20a8}*SharedItemsImports = 5
+		source\Animatables\Animatables.projitems*{fc89273a-b2da-4625-8a73-ef02a658d65e}*SharedItemsImports = 13
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		BETA|Any CPU = BETA|Any CPU
@@ -742,7 +743,6 @@ Global
 		{AB7FA57E-80D8-416C-B3BF-F948226A7D89}.Release|x64.Build.0 = Release|Any CPU
 		{AB7FA57E-80D8-416C-B3BF-F948226A7D89}.Release|x86.ActiveCfg = Release|Any CPU
 		{AB7FA57E-80D8-416C-B3BF-F948226A7D89}.Release|x86.Build.0 = Release|Any CPU
->>>>>>> 3d1287f (Enable the DLL projects for IR and IRToWinComp)
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

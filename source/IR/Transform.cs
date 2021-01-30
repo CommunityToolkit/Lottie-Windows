@@ -13,9 +13,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
     {
         public Transform(
             in ShapeLayerContentArgs args,
-            IAnimatableVector2 anchor,
-            IAnimatableVector2 position,
-            IAnimatableVector2 scalePercent,
+            IAnimatableVector3 anchor,
+            IAnimatableVector3 position,
+            IAnimatableVector3 scalePercent,
             Animatable<Rotation> rotation,
             Animatable<Opacity> opacity)
             : base(in args)
@@ -30,14 +30,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR
         /// <summary>
         /// Gets the point around which scaling and rotation is performed, and from which the position is offset.
         /// </summary>
-        public IAnimatableVector2 Anchor { get; }
+        public IAnimatableVector3 Anchor { get; }
 
         /// <summary>
         /// Gets the position, specified as the offset from the <see cref="Anchor"/>.
         /// </summary>
-        public IAnimatableVector2 Position { get; }
+        public IAnimatableVector3 Position { get; }
 
-        public IAnimatableVector2 ScalePercent { get; }
+        public IAnimatableVector3 ScalePercent { get; }
 
         public Animatable<Rotation> Rotation { get; }
 

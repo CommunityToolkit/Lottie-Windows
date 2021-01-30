@@ -14,27 +14,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
 {
     sealed class VisibilityGrouping
     {
-        static IEnumerable<VisibilitySegmentWithRendering> GetVisibilitySegmentWithRenderings(IReadOnlyList<RenderingWithVisibility> renderings)
-        {
-            var timeSegments =
-                VisibilityRenderingContext.GetVisibilitySegments(
-                    renderings.Select(r => r.Visibility)).ToArray();
-
-            // For each time segment, get the renderings that are contained in it.
-            foreach (var ts in timeSegments)
-            {
-                var result = new VisibilitySegmentWithRendering(ts, renderings.Where(r => r.Visibility.IsVisibleDuring(ts)).ToArray());
-
-                foreach (var r in result.Renderings)
-                {
-                    // Associate the time segment with the rendering.
-                    r.AddVisibilitySegment(result);
-                }
-
-                yield return result;
-            }
-        }
-
         internal static void CreateVisibilityGroups(IEnumerable<Rendering> input)
         {
             var renderingsWithVisibility =
@@ -62,7 +41,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
             }
 
             // Calculate the set of orthogonal renderings for each rendering.
-            // And orthogonal rendering is one that has no drawing order
+            // An orthogonal rendering is one that has no drawing order
             // relationship.
             foreach (var rendering in renderingsWithVisibility)
             {
@@ -73,6 +52,27 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
             foreach (var layer in layers)
             {
                 Console.WriteLine(string.Join(", ", layer.Select(r => r.Id).OrderBy(i => i)));
+            }
+        }
+
+        static IEnumerable<VisibilitySegmentWithRendering> GetVisibilitySegmentWithRenderings(IReadOnlyList<RenderingWithVisibility> renderings)
+        {
+            var timeSegments =
+                VisibilityRenderingContext.GetVisibilitySegments(
+                    renderings.Select(r => r.Visibility)).ToArray();
+
+            // For each time segment, get the renderings that are contained in it.
+            foreach (var ts in timeSegments)
+            {
+                var result = new VisibilitySegmentWithRendering(ts, renderings.Where(r => r.Visibility.IsVisibleDuring(ts)).ToArray());
+
+                foreach (var r in result.Renderings)
+                {
+                    // Associate the time segment with the rendering.
+                    r.AddVisibilitySegment(result);
+                }
+
+                yield return result;
             }
         }
 

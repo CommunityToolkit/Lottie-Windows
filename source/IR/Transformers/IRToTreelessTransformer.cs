@@ -40,7 +40,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
             var unifiedTimeBaseRenderings = renderings.Select(Rendering.UnifyTimebase).ToArray();
 
             // Optimize the contexts.
-            var optimizedRenderings = unifiedTimeBaseRenderings.Select(OptimizeRendering(ContextOptimizers.Optimize)).ToArray();
+            var optimizedRenderings = unifiedTimeBaseRenderings.Select(CreateRenderingOptimizer(ContextOptimizers.Optimize)).ToArray();
 
             VisibilityGrouping.CreateVisibilityGroups(optimizedRenderings);
 
@@ -51,30 +51,32 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
             return result;
         }
 
-        static Func<Rendering, Rendering> OptimizeRendering(Func<RenderingContext, RenderingContext> contextOptimizer)
-            => r => Optimize(r, contextOptimizer);
+        /// <summary>
+        /// Creates an optimizer that optimizers renderings by optimizing their contexts
+        /// with the given optimizer.
+        /// </summary>
+        static Func<Rendering, Rendering> CreateRenderingOptimizer(ContextTransformer contextOptimizer)
+            => r => OptimizeRendering(r, contextOptimizer);
 
-        static Rendering Optimize(Rendering input, Func<RenderingContext, RenderingContext> contextOptimizer)
-            => new Rendering(Optimize(input.Content, contextOptimizer), Optimize(input.Context, contextOptimizer));
+        /// <summary>
+        /// Optimizes a rendering by optimizing its contexts.
+        /// </summary>
+        static Rendering OptimizeRendering(Rendering input, ContextTransformer contextOptimizer)
+            => new Rendering(OptimizeContent(input.Content, contextOptimizer), OptimizeContext(input.Context, contextOptimizer));
 
-        static RenderingContent Optimize(RenderingContent input, Func<RenderingContext, RenderingContext> contextOptimizer)
+        /// <summary>
+        /// Optimizes content by optimizing its contexts.
+        /// </summary>
+        static RenderingContent OptimizeContent(RenderingContent input, ContextTransformer contextOptimizer)
             => input is ContainerRenderingContent group
-            ? new ContainerRenderingContent(group.Items.Select(item => Optimize(item, contextOptimizer)).ToArray())
+             ? new ContainerRenderingContent(group.Items.Select(item => OptimizeRendering(item, contextOptimizer)).ToArray())
              : input;
 
-        static RenderingContext Optimize(RenderingContext input, Func<RenderingContext, RenderingContext> optimizer)
-        {
-            // Keep optimizing as long as we are making the contexts smaller.
-            int previousSubContextCount;
-            var result = input;
-            do
-            {
-                previousSubContextCount = result.SubContextCount;
-                result = optimizer(result);
-            } while (previousSubContextCount > result.SubContextCount);
-
-            return result;
-        }
+        /// <summary>
+        /// Optimizes a context with the given optimizer.
+        /// </summary>
+        static RenderingContext OptimizeContext(RenderingContext input, ContextTransformer optimizer)
+             => optimizer(input);
 
         IEnumerable<Rendering> Detreeify(LayerCollection layers)
         {
@@ -184,10 +186,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
             }
 
             // Position indicates where in the parent the anchor point should be drawn.
-            yield return PositionRenderingContext.Create(layer.Transform.Position);
+            yield return PositionRenderingContext.Create(layer.Transform.Position.WithoutZ());
 
             // Rotation and scale are around the anchor point.
-            yield return AnchorRenderingContext.Create(layer.Transform.Anchor);
+            yield return AnchorRenderingContext.Create(layer.Transform.Anchor.WithoutZ());
 
             // The size determines the bounding box. Only PreComp layers have a size.
             if (layer is PreCompLayer precomp)
@@ -196,15 +198,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
             }
 
             yield return RotationRenderingContext.Create(layer.Transform.Rotation);
-            yield return ScaleRenderingContext.Create(layer.Transform.ScalePercent);
+            yield return ScaleRenderingContext.Create(layer.Transform.ScalePercent.WithoutZ());
         }
 
         RenderingContext GetTransformRenderingContexts(Transform transform)
             => RenderingContext.Compose(
-                    AnchorRenderingContext.Create(transform.Anchor),
-                    PositionRenderingContext.Create(transform.Position),
+                    AnchorRenderingContext.Create(transform.Anchor.WithoutZ()),
+                    PositionRenderingContext.Create(transform.Position.WithoutZ()),
                     RotationRenderingContext.Create(transform.Rotation),
-                    ScaleRenderingContext.Create(transform.ScalePercent),
+                    ScaleRenderingContext.Create(transform.ScalePercent.WithoutZ()),
                     OpacityRenderingContext.Create(transform.Opacity));
 
         Rendering DetreeifyImageLayer(ImageLayer layer)

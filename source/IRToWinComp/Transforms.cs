@@ -440,10 +440,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
         {
             TranslateAndApplyAnchorPositionRotationAndScale(
                 context,
-                transform.Anchor,
-                transform.Position,
+                transform.Anchor.WithoutZ(),
+                transform.Position.WithoutZ(),
                 Optimizer.TrimAnimatable(context, transform.Rotation),
-                transform.ScalePercent,
+                transform.ScalePercent.WithoutZ(),
                 container);
 
             // TODO: set Skew and Skew Axis

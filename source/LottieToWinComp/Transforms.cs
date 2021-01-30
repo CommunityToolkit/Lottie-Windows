@@ -450,10 +450,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         static void TranslateAndApplyAnchorPositionRotationAndScale(
             LayerContext context,
-            IAnimatableVector2 anchor,
-            IAnimatableVector2 position,
+            IAnimatableVector3 anchor,
+            IAnimatableVector3 position,
             in TrimmedAnimatable<Rotation> rotation,
-            IAnimatableVector2 scalePercent,
+            IAnimatableVector3 scalePercent,
             ContainerShapeOrVisual container)
         {
             // There are many different cases to consider in order to do this optimally:
@@ -479,7 +479,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
 #if !NoScaling
             // If the channels have separate easings, convert to an AnimatableXY.
-            var scale = AnimatableVector2Rewriter.EnsureOneEasingPerChannel(scalePercent);
+            var scale = AnimatableVector2Rewriter.EnsureOneEasingPerChannel(scalePercent.WithoutZ());
 
             if (scale is AnimatableXY scaleXY)
             {
@@ -527,7 +527,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var anchorY = default(TrimmedAnimatable<double>);
             var anchor2 = default(TrimmedAnimatable<Vector2>);
 
-            var xyAnchor = anchor as AnimatableXY;
+            var xyAnchor = anchor.WithoutZ() as AnimatableXY;
             if (xyAnchor != null)
             {
                 anchorX = Optimizer.TrimAnimatable(context, xyAnchor.X);
@@ -535,13 +535,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
             else
             {
-                anchor2 = Optimizer.TrimAnimatable(context, anchor);
+                anchor2 = Optimizer.TrimAnimatable(context, anchor.WithoutZ());
             }
 
             var positionX = default(TrimmedAnimatable<double>);
             var positionY = default(TrimmedAnimatable<double>);
             var position2 = default(TrimmedAnimatable<Vector2>);
-            var positionWithSeparateEasings = AnimatableVector2Rewriter.EnsureOneEasingPerChannel(position);
+            var positionWithSeparateEasings = AnimatableVector2Rewriter.EnsureOneEasingPerChannel(position.WithoutZ());
 
             var xyPosition = positionWithSeparateEasings as AnimatableXY;
             if (xyPosition != null)
@@ -680,7 +680,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     // The anchor isn't animated and the position is an animated Vector3. This is a very
                     // common case, and can be simplified to an Offset animation by subtracting the Anchor from the Position.
                     offsetExpression = null;
-                    var anchoredPosition = PositionAndAnchorToOffset(context, position2, anchor.InitialValue);
+                    var anchoredPosition = PositionAndAnchorToOffset(context, position2, anchor.InitialValue.WithoutZ());
                     if (container.IsShape)
                     {
                         Animate.Vector2(context, anchoredPosition, container, "Offset");

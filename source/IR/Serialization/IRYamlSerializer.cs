@@ -471,6 +471,29 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Serialization
             }
         }
 
+        YamlObject FromAnimatable(IAnimatableVector3 animatable)
+        {
+            switch (animatable.Type)
+            {
+                case AnimatableVector3Type.Vector3:
+                    return FromAnimatable<Vector3>((AnimatableVector3)animatable, FromVector3);
+                case AnimatableVector3Type.XYZ:
+                    {
+                        var xyz = (AnimatableXYZ)animatable;
+                        var result = new YamlMap
+                        {
+                            { nameof(xyz.X), FromAnimatable(xyz.X) },
+                            { nameof(xyz.Y), FromAnimatable(xyz.Y) },
+                            { nameof(xyz.Z), FromAnimatable(xyz.Z) },
+                        };
+                        return result;
+                    }
+
+                default:
+                    throw Unreachable;
+            }
+        }
+
         YamlObject FromAnimatable<T>(Animatable<T> animatable, Func<T, YamlObject> valueSelector)
             where T : IEquatable<T>
             => animatable.IsAnimated
@@ -498,6 +521,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Serialization
             {
                 { nameof(value.ControlPoint1), FromVector2(value.ControlPoint1) },
                 { nameof(value.ControlPoint2), FromVector2(value.ControlPoint2) },
+            };
+            return result;
+        }
+
+        static YamlObject FromVector3(Vector3 value)
+        {
+            var result = new YamlMap
+            {
+                { nameof(value.X), value.X },
+                { nameof(value.Y), value.Y },
+                { nameof(value.Z), value.Z },
             };
             return result;
         }

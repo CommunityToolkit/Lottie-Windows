@@ -7,7 +7,7 @@ using System;
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.Animatables
 {
     /// <summary>
-    /// An animatable Vector3 value expressed as 2 animatable floating point values.
+    /// An animatable Vector2 value expressed as 2 animatable floating point values.
     /// </summary>
 #if PUBLIC_Animatables
     public

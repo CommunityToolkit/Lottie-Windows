@@ -88,6 +88,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
         {
             internal Static(Vector2 anchor) => Anchor = anchor;
 
+            public static Static Zero { get; } = new Static(Vector2.Zero);
+
             public Vector2 Anchor { get; }
 
             public override bool IsAnimated => false;

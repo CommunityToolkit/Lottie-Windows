@@ -236,6 +236,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 ? defaultValue
                 : ReadAnimatableVector3(obj.Value);
 
+        IAnimatableVector2 ReadAnimatableVector2(in LottieJsonObjectElement? obj)
+            => ReadAnimatableVector3(obj, s_animatableVector3Zero).WithoutZ();
+
         IAnimatableVector3 ReadAnimatableVector3(in LottieJsonObjectElement? obj)
             => ReadAnimatableVector3(obj, s_animatableVector3Zero);
 

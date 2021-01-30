@@ -12,6 +12,11 @@ using static Microsoft.Toolkit.Uwp.UI.Lottie.IR.Exceptions;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
 {
+    /// <summary>
+    /// Methods that optimize <see cref="RenderingContext"/>s by precalculating
+    /// values, combining contexts, replacing contexts with equivalent alternative
+    /// contexts, and removing redundant context.
+    /// </summary>
     static class ContextOptimizers
     {
         internal static RenderingContext Optimize(RenderingContext input)
@@ -26,52 +31,51 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
             // Eliminate the metadata.
             result = result.Without<MetadataRenderingContext>();
 
-            do
+            while (TryOptimizeOnce(ref result))
             {
-                input = result;
-                result = OptimizeOnce(input);
-            } while (result.SubContextCount != input.SubContextCount);
+            }
 
             return metadata + result;
         }
 
-        static RenderingContext OptimizeOnce(RenderingContext input)
+        static bool TryOptimizeOnce(ref RenderingContext context)
         {
-            AssertUniformTimebase(input);
+            AssertUniformTimebase(context);
 
-            var result = input;
+            var success = false;
 
             // Replace any anchors with equivalent centerpoints and positions.
-            result = ReplaceAnchors(result);
+            success |= TryReplaceAnchors(ref context);
 
             // The last blending mode wins.
-            result = OptimizeBlendModes(result);
+            success |= TryOptimizeBlendModes(ref context);
 
-            result = OptimizeOpacity(result);
-            result = OptimizePosition(result);
-            result = OptimizeRotation(result);
-            result = OptimizeScale(result);
-            result = OptimizeSize(result);
-            result = OptimizeGradientFills(result);
-            result = OptimizeGradientStrokes(result);
-            result = OptimizeVisibility(result);
+            success |= TryOptimizeOpacity(ref context);
+            success |= TryOptimizePosition(ref context);
+            success |= TryOptimizeRotation(ref context);
+            success |= TryOptimizeScale(ref context);
+            success |= TryOptimizeSize(ref context);
+            success |= TryOptimizeGradientFillsWithPosition(ref context);
+            success |= TryOptimizeGradientStrokesWithPosition(ref context);
+            success |= TryOptimizeVisibility(ref context);
 
-            return result;
+            return success;
         }
 
         /// <summary>
         /// Replaces any <see cref="AnchorRenderingContext"/>s with <see cref="PositionRenderingContext"/>s
         /// and <see cref="CenterPointRenderingContext"/>s.
         /// </summary>
-        /// <returns>A new <see cref="RenderingContext"/> that contains no
-        /// <see cref="AnchorRenderingContext"/>s.</returns>
-        internal static RenderingContext ReplaceAnchors(RenderingContext context)
+        /// <returns><c>true</c> if the context was modified.</returns>
+        internal static bool TryReplaceAnchors(ref RenderingContext context)
         {
-            return RenderingContext.Compose(Replace(context));
+            var success = false;
+            context = RenderingContext.Compose(Replace(context));
+            return success;
 
-            static IEnumerable<RenderingContext> Replace(RenderingContext context)
+            IEnumerable<RenderingContext> Replace(RenderingContext context)
             {
-                AnchorRenderingContext currentAnchor = new AnchorRenderingContext.Static(Vector2.Zero);
+                AnchorRenderingContext currentAnchor = AnchorRenderingContext.Static.Zero;
 
                 foreach (var item in context)
                 {
@@ -83,6 +87,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
 
                             // The anchor moves the position to the inverse of the anchor
                             // (i.e. the anchor is the point that is positioned by the position).
+                            success = true;
                             yield return currentAnchor.ToPositionRenderingContext(value => -value);
                             break;
 
@@ -168,14 +173,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
             }
         }
 
-        internal static RenderingContext OptimizeBlendModes(RenderingContext context)
+        internal static bool TryOptimizeBlendModes(ref RenderingContext context)
         {
             AssertUniformTimebase(context);
 
-            // Remove all but the last BlendMode.
-            return context.SubContextCount > 0
-                    ? RenderingContext.Compose(Optimize(context))
-                    : context;
+            var initialCount = context.SubContextCount;
+            context = RenderingContext.Compose(Optimize(context));
+            return initialCount != context.SubContextCount;
 
             static IEnumerable<RenderingContext> Optimize(RenderingContext items)
             {
@@ -206,14 +210,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
         /// the fills by the amount of the position.
         /// </summary>
         /// <returns>The context with positions moved above the fills.</returns>
-        public static RenderingContext OptimizeGradientFills(RenderingContext context)
+        public static bool TryOptimizeGradientFillsWithPosition(ref RenderingContext context)
         {
             AssertUniformTimebase(context);
 
-            return RenderingContext.Compose(OptimizeFills(context.GroupUp<PositionRenderingContext>()));
+            var success = false;
+            context = RenderingContext.Compose(OptimizeFills(context.GroupUp<PositionRenderingContext>()));
+            return success;
 
-            static IEnumerable<RenderingContext> OptimizeFills(IEnumerable<RenderingContext> items)
+            IEnumerable<RenderingContext> OptimizeFills(IEnumerable<RenderingContext> items)
             {
+                var lastWasFill = false;
                 FillRenderingContext? currentFill = null;
 
                 foreach (var item in items)
@@ -222,16 +229,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
                     {
                         case FillRenderingContext fill:
                             currentFill = fill;
+                            lastWasFill = true;
                             break;
 
                         case PositionRenderingContext.Static position:
                             yield return position;
                             if (currentFill != null)
                             {
+                                success = true;
                                 yield return currentFill.WithOffset(-position.Position);
                             }
 
                             currentFill = null;
+                            lastWasFill = false;
                             break;
 
                         default:
@@ -242,12 +252,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
                             }
 
                             yield return item;
+                            lastWasFill = false;
                             break;
                     }
                 }
 
                 if (currentFill != null)
                 {
+                    if (!lastWasFill)
+                    {
+                        success = true;
+                    }
+
                     yield return currentFill;
                 }
             }
@@ -258,14 +274,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
         /// the strokes by the amount of the position.
         /// </summary>
         /// <returns>The context with positions moved above the strokes.</returns>
-        public static RenderingContext OptimizeGradientStrokes(RenderingContext context)
+        public static bool TryOptimizeGradientStrokesWithPosition(ref RenderingContext context)
         {
             AssertUniformTimebase(context);
 
-            return RenderingContext.Compose(OptimizeStrokes(context.GroupUp<PositionRenderingContext>()));
+            var success = false;
+            context = RenderingContext.Compose(OptimizeStrokes(context.GroupUp<PositionRenderingContext>()));
+            return success;
 
-            static IEnumerable<RenderingContext> OptimizeStrokes(IEnumerable<RenderingContext> items)
+            IEnumerable<RenderingContext> OptimizeStrokes(IEnumerable<RenderingContext> items)
             {
+                var lastWasStroke = false;
                 StrokeRenderingContext? currentStroke = null;
 
                 foreach (var item in items)
@@ -274,47 +293,60 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
                     {
                         case StrokeRenderingContext stroke:
                             currentStroke = stroke;
+                            lastWasStroke = true;
                             break;
 
                         case PositionRenderingContext.Static position:
                             yield return position;
                             if (currentStroke != null)
                             {
+                                success = true;
                                 yield return currentStroke.WithOffset(-position.Position);
                             }
 
                             currentStroke = null;
+                            lastWasStroke = false;
                             break;
 
                         default:
                             if (currentStroke != null)
                             {
+                                success = true;
                                 yield return currentStroke;
                                 currentStroke = null;
                             }
 
                             yield return item;
+                            lastWasStroke = false;
                             break;
                     }
                 }
 
                 if (currentStroke != null)
                 {
+                    if (!lastWasStroke)
+                    {
+                        success = true;
+                    }
+
                     yield return currentStroke;
                 }
             }
         }
 
-        public static RenderingContext OptimizeOpacity(RenderingContext context)
+        public static bool TryOptimizeOpacity(ref RenderingContext context)
         {
             AssertUniformTimebase(context);
+            var success = false;
 
-            return RenderingContext.Compose(Optimize(context.GroupUp<OpacityRenderingContext>()));
+            context = RenderingContext.Compose(Optimize(context.GroupUp<OpacityRenderingContext>()));
+
+            return success;
 
             // Assumes the opacities have already been grouped.
-            static IEnumerable<RenderingContext> Optimize(RenderingContext items)
+            IEnumerable<RenderingContext> Optimize(RenderingContext items)
             {
-                var previousOpacityIsOpaque = true;
+                var lastWasOpacity = false;
                 var opacitiesAccumulator = new List<OpacityRenderingContext>();
 
                 foreach (var item in items)
@@ -323,51 +355,65 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
                     {
                         case OpacityRenderingContext opacity:
                             opacitiesAccumulator.Add(opacity);
+                            lastWasOpacity = true;
                             break;
 
                         default:
-                            if (opacitiesAccumulator.Count > 0)
+                            switch (opacitiesAccumulator.Count)
                             {
-                                foreach (var opacity in OpacityRenderingContext.Combine(opacitiesAccumulator))
-                                {
-                                    var opacityIsOpaque = opacity is OpacityRenderingContext.Static staticOpacity && staticOpacity.Opacity == Opacity.Opaque;
+                                case 0:
+                                    break;
 
-                                    if (previousOpacityIsOpaque && opacityIsOpaque)
+                                case 1:
+                                    yield return opacitiesAccumulator[0];
+                                    if (!lastWasOpacity)
                                     {
-                                        // No point outputing a static opaque opacity if the last one was
-                                        // opaque.
+                                        success = true;
                                     }
-                                    else
+
+                                    break;
+
+                                default:
+                                    success = true;
+                                    foreach (var opacity in OpacityRenderingContext.Combine(opacitiesAccumulator))
                                     {
                                         yield return opacity;
-                                        previousOpacityIsOpaque = opacityIsOpaque;
                                     }
-                                }
 
-                                opacitiesAccumulator.Clear();
+                                    break;
                             }
 
                             yield return item;
+                            opacitiesAccumulator.Clear();
+                            lastWasOpacity = false;
                             break;
                     }
                 }
 
                 foreach (var opacity in OpacityRenderingContext.Combine(opacitiesAccumulator))
                 {
+                    if (!lastWasOpacity)
+                    {
+                        success = true;
+                    }
+
                     yield return opacity;
                 }
             }
         }
 
-        public static RenderingContext OptimizePosition(RenderingContext context)
+        public static bool TryOptimizePosition(ref RenderingContext context)
         {
             AssertUniformTimebase(context);
             AssertNoAnchors(context);
 
-            return RenderingContext.Compose(Optimize(context.GroupUp<PositionRenderingContext>()));
+            var success = false;
+            context = RenderingContext.Compose(Optimize(context.GroupUp<PositionRenderingContext>()));
+            return success;
 
-            static IEnumerable<RenderingContext> Optimize(RenderingContext context)
+            IEnumerable<RenderingContext> Optimize(RenderingContext context)
             {
+                var lastWasStaticPosition = false;
                 var currentOffset = Vector2.Zero;
 
                 foreach (var item in context)
@@ -376,40 +422,60 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
                     {
                         case PositionRenderingContext.Static staticPosition:
                             currentOffset += staticPosition.Position;
+                            lastWasStaticPosition = true;
                             break;
 
                         case PositionRenderingContext.Animated animatedPosition:
+                            if (currentOffset != Vector2.Zero)
+                            {
+                                success = true;
+                            }
+
                             yield return animatedPosition.WithOffset(currentOffset);
                             currentOffset = Vector2.Zero;
+                            lastWasStaticPosition = false;
                             break;
 
                         default:
                             if (currentOffset != Vector2.Zero)
                             {
+                                if (!lastWasStaticPosition)
+                                {
+                                    success = true;
+                                }
+
                                 yield return new PositionRenderingContext.Static(currentOffset);
                                 currentOffset = Vector2.Zero;
                             }
 
                             yield return item;
+                            lastWasStaticPosition = false;
                             break;
                     }
                 }
 
                 if (currentOffset != Vector2.Zero)
                 {
+                    if (!lastWasStaticPosition)
+                    {
+                        success = true;
+                    }
+
                     yield return new PositionRenderingContext.Static(currentOffset);
                 }
             }
         }
 
-        public static RenderingContext OptimizeRotation(RenderingContext context)
+        public static bool TryOptimizeRotation(ref RenderingContext context)
         {
             AssertUniformTimebase(context);
             AssertNoAnchors(context);
 
-            return RenderingContext.Compose(Optimize(context.GroupUp<RotationRenderingContext>()));
+            var success = false;
+            context = RenderingContext.Compose(Optimize(context.GroupUp<RotationRenderingContext>()));
+            return success;
 
-            static IEnumerable<RenderingContext> Optimize(RenderingContext context)
+            IEnumerable<RenderingContext> Optimize(RenderingContext context)
             {
                 var currentRotation = Rotation.None;
 
@@ -422,6 +488,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
                             break;
 
                         case RotationRenderingContext.Animated animatedRotation:
+                            success = true;
                             yield return new RotationRenderingContext.Animated(animatedRotation.Rotation.Select(r => r + currentRotation));
                             currentRotation = Rotation.None;
                             break;
@@ -429,6 +496,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
                         default:
                             if (currentRotation != Rotation.None)
                             {
+                                success = true;
                                 yield return new RotationRenderingContext.Static(currentRotation);
                                 currentRotation = Rotation.None;
                             }
@@ -440,20 +508,28 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
 
                 if (currentRotation != Rotation.None)
                 {
+                    success = true;
                     yield return new RotationRenderingContext.Static(currentRotation);
                 }
             }
         }
 
-        public static RenderingContext OptimizeScale(RenderingContext context)
+        /// <summary>
+        /// Combines multiple scales.
+        /// </summary>
+        /// <returns>Optimized <see cref="RenderingContext"/>.</returns>
+        public static bool TryOptimizeScale(ref RenderingContext context)
         {
             AssertUniformTimebase(context);
             AssertNoAnchors(context);
 
-            return RenderingContext.Compose(Optimize(context.GroupUp<ScaleRenderingContext>()));
+            var success = false;
+            context = RenderingContext.Compose(Optimize(context.GroupUp<ScaleRenderingContext>()));
+            return success;
 
-            static IEnumerable<RenderingContext> Optimize(RenderingContext context)
+            IEnumerable<RenderingContext> Optimize(RenderingContext context)
             {
+                var lastWasStaticScale = false;
                 var currentScale = Vector2.One;
 
                 foreach (var item in context)
@@ -462,9 +538,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
                     {
                         case ScaleRenderingContext.Static staticScale:
                             currentScale *= staticScale.ScalePercent / 100;
+                            lastWasStaticScale = true;
                             break;
 
                         case ScaleRenderingContext.Animated animatedScale:
+                            if (currentScale != Vector2.One && !lastWasStaticScale)
+                            {
+                                success = true;
+                            }
+
                             switch (animatedScale.ScalePercent.Type)
                             {
                                 case AnimatableVector2Type.Vector2:
@@ -478,37 +560,52 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
                                 default: throw Unreachable;
                             }
 
+                            lastWasStaticScale = false;
                             break;
 
                         default:
                             if (currentScale != Vector2.One)
                             {
+                                if (!lastWasStaticScale)
+                                {
+                                    success = true;
+                                }
+
                                 yield return new ScaleRenderingContext.Static(currentScale * 100);
                                 currentScale = Vector2.One;
                             }
 
                             yield return item;
+                            lastWasStaticScale = false;
                             break;
                     }
                 }
 
                 if (currentScale != Vector2.One)
                 {
+                    if (!lastWasStaticScale)
+                    {
+                        success = true;
+                    }
+
                     yield return new ScaleRenderingContext.Static(currentScale * 100);
                 }
             }
         }
 
-        public static RenderingContext OptimizeSize(RenderingContext context)
+        public static bool TryOptimizeSize(ref RenderingContext context)
         {
             AssertUniformTimebase(context);
             AssertNoAnchors(context);
 
-            return RenderingContext.Compose(Optimize(context.GroupUp<SizeRenderingContext>()));
+            var success = false;
+            context = RenderingContext.Compose(Optimize(context.GroupUp<SizeRenderingContext>()));
+            return success;
 
-            static IEnumerable<RenderingContext> Optimize(RenderingContext items)
+            IEnumerable<RenderingContext> Optimize(RenderingContext items)
             {
                 // Keep track of the bounding box.
+                var boundingBoxAdjusted = false;
                 var topLeft = Vector2.Zero;
                 var bottomRight = new Vector2(double.PositiveInfinity, double.PositiveInfinity);
 
@@ -520,6 +617,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
                             var newBottomRight = new Vector2(Math.Min(bottomRight.X, size.Size.X), Math.Min(bottomRight.Y, size.Size.Y));
                             if (newBottomRight != bottomRight)
                             {
+                                if (boundingBoxAdjusted)
+                                {
+                                    success = true;
+                                }
+
                                 yield return size;
                                 bottomRight = newBottomRight;
                             }
@@ -530,12 +632,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
                             // Update the bounding box.
                             topLeft *= staticScale.ScalePercent / 100;
                             bottomRight *= staticScale.ScalePercent / 100;
+                            boundingBoxAdjusted = true;
                             break;
 
                         case PositionRenderingContext.Static staticPosition:
                             // Update the bounding box.
                             topLeft += staticPosition.Position;
                             bottomRight += staticPosition.Position;
+                            boundingBoxAdjusted = true;
                             break;
 
                         case RotationRenderingContext _:
@@ -544,6 +648,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
                             // Reset the bounding box.
                             topLeft = Vector2.Zero;
                             bottomRight = new Vector2(double.PositiveInfinity, double.PositiveInfinity);
+                            boundingBoxAdjusted = true;
                             break;
                     }
 
@@ -552,14 +657,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
             }
         }
 
-        public static RenderingContext OptimizeVisibility(RenderingContext context)
+        public static bool TryOptimizeVisibility(ref RenderingContext context)
         {
             AssertUniformTimebase(context);
 
-            return RenderingContext.Compose(Optimize(context.GroupUp<VisibilityRenderingContext>()));
+            var success = false;
+            context = RenderingContext.Compose(Optimize(context.GroupUp<VisibilityRenderingContext>()));
+            return success;
 
-            static IEnumerable<RenderingContext> Optimize(RenderingContext context)
+            IEnumerable<RenderingContext> Optimize(RenderingContext context)
             {
+                var lastWasVisibility = false;
                 var visibilities = new List<VisibilityRenderingContext>();
                 foreach (var subContext in context)
                 {
@@ -567,16 +675,34 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
                     {
                         case VisibilityRenderingContext visibilityContext:
                             visibilities.Add(visibilityContext);
+                            lastWasVisibility = true;
                             break;
 
                         default:
-                            if (visibilities.Count > 0)
+                            switch (visibilities.Count)
                             {
-                                yield return VisibilityRenderingContext.Combine(visibilities);
-                                visibilities.Clear();
+                                case 0:
+                                    break;
+
+                                case 1:
+                                    yield return visibilities[0];
+
+                                    if (!lastWasVisibility)
+                                    {
+                                        success = true;
+                                    }
+
+                                    break;
+
+                                default:
+                                    yield return VisibilityRenderingContext.Combine(visibilities);
+                                    success = true;
+                                    break;
                             }
 
                             yield return subContext;
+                            lastWasVisibility = false;
+                            visibilities.Clear();
                             break;
                     }
                 }

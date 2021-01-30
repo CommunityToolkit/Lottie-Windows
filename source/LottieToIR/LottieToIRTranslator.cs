@@ -167,6 +167,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToIR
         static Vector2 TranslateVector2(Vector2 from)
             => new Vector2(from.X, from.Y);
 
+        static Vector3 TranslateVector3(Vector3 from)
+            => new Vector3(from.X, from.Y, from.Z);
+
         static PathGeometry TranslatePathGeometry(PathGeometry from)
             => new PathGeometry(new Sequence<BezierSegment>(from.BezierSegments.Select(TranslateBezierSegment)), from.IsClosed);
 
@@ -237,6 +240,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToIR
             ? new Animatable<T>(from.KeyFrames.Select(kf => TranslateKeyFrame(kf, selector)))
             : new Animatable<T>(selector(from.InitialValue));
 
+        static IAnimatableVector3 TranslateAnimatable(IAnimatableVector3 from)
+            => from.Type switch
+            {
+                AnimatableVector3Type.Vector3 => TranslateAnimatableVector3((AnimatableVector3)from),
+                AnimatableVector3Type.XYZ => TranslateAnimatableXYZ((AnimatableXYZ)from),
+                _ => throw Unreachable,
+            };
+
         static IAnimatableVector2 TranslateAnimatable(IAnimatableVector2 from)
             => from.Type switch
             {
@@ -252,6 +263,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToIR
 
         static AnimatableXY TranslateAnimatableXY(AnimatableXY from)
             => new AnimatableXY(TranslateAnimatable(from.X), TranslateAnimatable(from.Y));
+
+        static AnimatableVector3 TranslateAnimatableVector3(AnimatableVector3 from)
+            => from.IsAnimated
+            ? new AnimatableVector3(from.KeyFrames.Select(kf => TranslateKeyFrame(kf, TranslateVector3)))
+            : new AnimatableVector3(TranslateVector3(from.InitialValue));
+
+        static AnimatableXYZ TranslateAnimatableXYZ(AnimatableXYZ from)
+            => new AnimatableXYZ(TranslateAnimatable(from.X), TranslateAnimatable(from.Y), TranslateAnimatable(from.Z));
 
         static ShapeLayerContent TranslateShapeLayerContent(LottieData.ShapeLayerContent from)
          =>

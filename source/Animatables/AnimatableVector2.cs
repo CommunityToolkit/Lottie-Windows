@@ -9,6 +9,7 @@ using System.Linq;
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.Animatables
 {
     /// <summary>
+    /// An animatable Vector2 value expressed as a single animatable Vector2 value.
     /// </summary>
 #if PUBLIC_Animatables
     public
@@ -32,9 +33,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.Animatables
             => timeOffset != 0 || IsAnimated
                 ? new AnimatableVector2(KeyFrames.Select(kf => kf.WithTimeOffset(timeOffset)))
                 : this;
-
-        IAnimatableVector2 IAnimatableVector2.WithOffset(Vector2 offset)
-            => WithOffset(offset);
 
         IAnimatableVector2 IAnimatableVector2.WithOffset(Vector2 offset)
             => WithOffset(offset);

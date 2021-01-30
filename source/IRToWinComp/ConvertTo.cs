@@ -31,6 +31,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
 
         public static float PercentF(double value) => (float)value / 100F;
 
+        public static Sn.Vector2 Vector2(Vector3 vector3) => Vector2(vector3.X, vector3.Y);
+
         public static Sn.Vector2 Vector2(Vector2 vector2) => Vector2((double)vector2.X, (double)vector2.Y);
 
         public static Sn.Vector2 Vector2(double x, double y) => new Sn.Vector2((float)x, (float)y);
