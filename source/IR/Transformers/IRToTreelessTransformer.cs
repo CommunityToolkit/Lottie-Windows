@@ -68,8 +68,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
         /// Optimizes content by optimizing its contexts.
         /// </summary>
         static RenderingContent OptimizeContent(RenderingContent input, ContextTransformer contextOptimizer)
-            => input is ContainerRenderingContent group
-             ? new ContainerRenderingContent(group.Items.Select(item => OptimizeRendering(item, contextOptimizer)).ToArray())
+            => input is ContainerRenderingContent container
+             ? new ContainerRenderingContent(container.Items.Select(item => OptimizeRendering(item, contextOptimizer)).ToArray())
              : input;
 
         /// <summary>
