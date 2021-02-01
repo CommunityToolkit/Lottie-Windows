@@ -34,11 +34,16 @@ sealed class LottieJsonFileProcessor
     bool _reportedErrors;
     bool? _isTranslatedSuccessfully;
     Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Tools.Stats? _lottieStats;
-    IReadOnlyList<(string Code, string Description)>? _readerIssues;
     Stats? _beforeOptimizationStats;
     Stats? _afterOptimizationStats;
-    IReadOnlyList<TranslationResult>? _translationResults;
-    IReadOnlyList<(TranslationIssue issue, UapVersionRange versionRange)>? _translationIssues;
+    IReadOnlyList<TranslationResult> _translationResults
+        = Array.Empty<TranslationResult>();
+
+    IReadOnlyList<(string Code, string Description)> _readerIssues
+        = Array.Empty<(string, string)>();
+
+    IReadOnlyList<(TranslationIssue issue, UapVersionRange versionRange)> _translationIssues
+        = Array.Empty<(TranslationIssue, UapVersionRange)>();
 
     LottieJsonFileProcessor(
         CommandLineOptions options,
@@ -412,11 +417,6 @@ sealed class LottieJsonFileProcessor
             return false;
         }
 
-        if (_translationResults is null)
-        {
-            throw new InvalidOperationException();
-        }
-
         // NOTE: this only writes the latest version of a multi-version translation.
         var result = TryWriteTextFile(
             outputFilePath,
@@ -640,11 +640,6 @@ sealed class LottieJsonFileProcessor
         LottieComposition lottieComposition,
         Language languageSwitch)
     {
-        if (_translationResults is null)
-        {
-            throw new InvalidOperationException();
-        }
-
         var result = new CodegenConfiguration(
             className: _className,
             additionalInterfaces: _options.AdditionalInterfaces,
@@ -808,7 +803,7 @@ sealed class LottieJsonFileProcessor
         }
 
         // NOTE: this is only reporting on the latest version in a multi-version translation.
-        _beforeOptimizationStats = new Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools.Stats(_translationResults[0].RootVisual);
+        _beforeOptimizationStats = new Stats(_translationResults[0].RootVisual);
         _profiler.OnUnmeasuredFinished();
 
         if (_isTranslatedSuccessfully.Value)
@@ -820,7 +815,7 @@ sealed class LottieJsonFileProcessor
                 _profiler.OnOptimizationFinished();
 
                 // NOTE: this is only reporting on the latest version in a multi-version translation.
-                _afterOptimizationStats = new Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools.Stats(_translationResults[0].RootVisual);
+                _afterOptimizationStats = new Stats(_translationResults[0].RootVisual);
                 _profiler.OnUnmeasuredFinished();
             }
         }

@@ -52,15 +52,14 @@ void MSBuildSolution(
     string target,
     params (string Name, string Value)[] properties)
 {
-    MSBuildSettings SettingsWithTarget() =>
+    MSBuildSettings SettingsWithTarget(PlatformTarget platformTarget) =>
         new MSBuildSettings
         {
-            // Restrict to a single CPU. There is some
-            // race condition that is causing files
-            // to be in use when they need to be
-            // overwritten. Restricting to a single
-            // CPU fixes this.
-            MaxCpuCount = 1,
+            // Restrict to a single CPU for non-MSIL compilation.
+            // There is some race condition that is causing files
+            // to be in use when they need to be overwritten. 
+            // Restricting to a single CPU fixes this.
+            MaxCpuCount = platformTarget == PlatformTarget.MSIL ? 0 : 1,
         }.WithTarget(target);
 
     MSBuildSettings SetProperties(MSBuildSettings settings)
@@ -72,14 +71,14 @@ void MSBuildSolution(
         return settings;
     }
 
-    var msBuildSettings = SetProperties(SettingsWithTarget().SetConfiguration(configuration));
-
+    // Build one native and one MSIL version of each project.
     foreach (var platformTarget in new []
     {
         PlatformTarget.x86,
         PlatformTarget.MSIL,
     })
     {
+        var msBuildSettings = SetProperties(SettingsWithTarget(platformTarget).SetConfiguration(configuration));
         msBuildSettings.PlatformTarget = platformTarget;
         MSBuild($"{baseDir}/Lottie-Windows.sln", msBuildSettings);
     }

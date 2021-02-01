@@ -11,8 +11,6 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "LottieToWinComp", "..\sourc
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "WinCompData", "..\source\WinCompData\WinCompData.shproj", "{D02870DE-7DED-4916-85D4-3175CEEDEF74}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LottieGen", "LottieGen.csproj", "{CB12D5BA-A6FE-41E2-B555-83C903CCE92A}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "source", "source", "{AB232F35-AAF7-4AE2-B1D2-45DD9BC2F7D7}"
 	ProjectSection(SolutionItems) = preProject
 		source\README.md = source\README.md
@@ -107,6 +105,12 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "DotLottie", "..\source\DotL
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Animatables", "..\source\Animatables\Animatables.shproj", "{FC89273A-B2DA-4625-8A73-EF02A658D65E}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LottieGen.win-x64", "win-x64\LottieGen.win-x64.csproj", "{FD20C604-C757-46F4-9A8C-711C39F79A46}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "LottieGen.Common", "Common\LottieGen.Common.shproj", "{54FB5765-962C-432C-B001-56D20EBE8C8E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LottieGen", "DotnetTool\LottieGen.csproj", "{A435DD2A-942F-4D95-9E3F-216FFA5FBC4D}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		..\source\LottieToWinComp\LottieToWinComp.projitems*{0340244a-683c-405e-838b-f93872779532}*SharedItemsImports = 13
@@ -115,25 +119,12 @@ Global
 		..\source\WinUIXamlMediaData\WinUIXamlMediaData.projitems*{30059ca7-0745-4eec-8d11-b14850a70c98}*SharedItemsImports = 13
 		..\source\YamlData\YamlData.projitems*{39c6b7f3-5e75-4019-82ab-00fd8a0a06e2}*SharedItemsImports = 13
 		..\source\LottieReader\LottieReader.projitems*{4e7d8957-3f5f-46e1-99a8-2012b806c9b0}*SharedItemsImports = 13
+		Common\LottieGen.Common.projitems*{54fb5765-962c-432c-b001-56d20ebe8c8e}*SharedItemsImports = 13
 		..\source\DotLottie\DotLottie.projitems*{7012420d-624c-4bd4-a1d2-1c6c1655ed3a}*SharedItemsImports = 13
 		..\source\UIData\UIData.projitems*{74601e6c-2dfe-4842-b170-047941abff2c}*SharedItemsImports = 13
 		..\source\GenericData\GenericData.projitems*{77bcd724-8555-463b-985f-f8e8110164c4}*SharedItemsImports = 13
 		..\source\CompMetadata\CompMetadata.projitems*{b0197c19-bdf5-473e-a022-e21f6122eee5}*SharedItemsImports = 13
 		..\source\LottieData\LottieData.projitems*{b3db16ee-a821-4474-a188-e64926529bbd}*SharedItemsImports = 13
-		..\source\Animatables\Animatables.projitems*{cb12d5ba-a6fe-41e2-b555-83c903cce92a}*SharedItemsImports = 5
-		..\source\CompMetadata\CompMetadata.projitems*{cb12d5ba-a6fe-41e2-b555-83c903cce92a}*SharedItemsImports = 5
-		..\source\DotLottie\DotLottie.projitems*{cb12d5ba-a6fe-41e2-b555-83c903cce92a}*SharedItemsImports = 5
-		..\source\GenericData\GenericData.projitems*{cb12d5ba-a6fe-41e2-b555-83c903cce92a}*SharedItemsImports = 5
-		..\source\LottieData\LottieData.projitems*{cb12d5ba-a6fe-41e2-b555-83c903cce92a}*SharedItemsImports = 5
-		..\source\LottieMetadata\LottieMetadata.projitems*{cb12d5ba-a6fe-41e2-b555-83c903cce92a}*SharedItemsImports = 5
-		..\source\LottieReader\LottieReader.projitems*{cb12d5ba-a6fe-41e2-b555-83c903cce92a}*SharedItemsImports = 5
-		..\source\LottieToWinComp\LottieToWinComp.projitems*{cb12d5ba-a6fe-41e2-b555-83c903cce92a}*SharedItemsImports = 5
-		..\source\UIDataCodeGen\UIDataCodeGen.projitems*{cb12d5ba-a6fe-41e2-b555-83c903cce92a}*SharedItemsImports = 5
-		..\source\UIData\UIData.projitems*{cb12d5ba-a6fe-41e2-b555-83c903cce92a}*SharedItemsImports = 5
-		..\source\WinCompData\WinCompData.projitems*{cb12d5ba-a6fe-41e2-b555-83c903cce92a}*SharedItemsImports = 5
-		..\source\WinStorageStreamsData\WinStorageStreamsData.projitems*{cb12d5ba-a6fe-41e2-b555-83c903cce92a}*SharedItemsImports = 5
-		..\source\WinUIXamlMediaData\WinUIXamlMediaData.projitems*{cb12d5ba-a6fe-41e2-b555-83c903cce92a}*SharedItemsImports = 5
-		..\source\YamlData\YamlData.projitems*{cb12d5ba-a6fe-41e2-b555-83c903cce92a}*SharedItemsImports = 5
 		..\source\WinCompData\WinCompData.projitems*{d02870de-7ded-4916-85d4-3175ceedef74}*SharedItemsImports = 13
 		..\source\UIDataCodeGen\UIDataCodeGen.projitems*{d02be6c8-14db-4b4f-8600-f3c9b69c104d}*SharedItemsImports = 13
 		..\source\Animatables\Animatables.projitems*{fc89273a-b2da-4625-8a73-ef02a658d65e}*SharedItemsImports = 13
@@ -151,19 +142,46 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{CB12D5BA-A6FE-41E2-B555-83C903CCE92A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CB12D5BA-A6FE-41E2-B555-83C903CCE92A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CB12D5BA-A6FE-41E2-B555-83C903CCE92A}.Debug|ARM.ActiveCfg = Debug|Any CPU
-		{CB12D5BA-A6FE-41E2-B555-83C903CCE92A}.Debug|ARM64.ActiveCfg = Debug|Any CPU
-		{CB12D5BA-A6FE-41E2-B555-83C903CCE92A}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{CB12D5BA-A6FE-41E2-B555-83C903CCE92A}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{CB12D5BA-A6FE-41E2-B555-83C903CCE92A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CB12D5BA-A6FE-41E2-B555-83C903CCE92A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CB12D5BA-A6FE-41E2-B555-83C903CCE92A}.Release|ARM.ActiveCfg = Release|Any CPU
-		{CB12D5BA-A6FE-41E2-B555-83C903CCE92A}.Release|ARM64.ActiveCfg = Release|Any CPU
-		{CB12D5BA-A6FE-41E2-B555-83C903CCE92A}.Release|x64.ActiveCfg = Release|Any CPU
-		{CB12D5BA-A6FE-41E2-B555-83C903CCE92A}.Release|x86.ActiveCfg = Release|Any CPU
-		{CB12D5BA-A6FE-41E2-B555-83C903CCE92A}.Release|x86.Build.0 = Release|Any CPU
+		{FD20C604-C757-46F4-9A8C-711C39F79A46}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FD20C604-C757-46F4-9A8C-711C39F79A46}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FD20C604-C757-46F4-9A8C-711C39F79A46}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{FD20C604-C757-46F4-9A8C-711C39F79A46}.Debug|ARM.Build.0 = Debug|Any CPU
+		{FD20C604-C757-46F4-9A8C-711C39F79A46}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{FD20C604-C757-46F4-9A8C-711C39F79A46}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{FD20C604-C757-46F4-9A8C-711C39F79A46}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{FD20C604-C757-46F4-9A8C-711C39F79A46}.Debug|x64.Build.0 = Debug|Any CPU
+		{FD20C604-C757-46F4-9A8C-711C39F79A46}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{FD20C604-C757-46F4-9A8C-711C39F79A46}.Debug|x86.Build.0 = Debug|Any CPU
+		{FD20C604-C757-46F4-9A8C-711C39F79A46}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FD20C604-C757-46F4-9A8C-711C39F79A46}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FD20C604-C757-46F4-9A8C-711C39F79A46}.Release|ARM.ActiveCfg = Release|Any CPU
+		{FD20C604-C757-46F4-9A8C-711C39F79A46}.Release|ARM.Build.0 = Release|Any CPU
+		{FD20C604-C757-46F4-9A8C-711C39F79A46}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{FD20C604-C757-46F4-9A8C-711C39F79A46}.Release|ARM64.Build.0 = Release|Any CPU
+		{FD20C604-C757-46F4-9A8C-711C39F79A46}.Release|x64.ActiveCfg = Release|Any CPU
+		{FD20C604-C757-46F4-9A8C-711C39F79A46}.Release|x64.Build.0 = Release|Any CPU
+		{FD20C604-C757-46F4-9A8C-711C39F79A46}.Release|x86.ActiveCfg = Release|Any CPU
+		{FD20C604-C757-46F4-9A8C-711C39F79A46}.Release|x86.Build.0 = Release|Any CPU
+		{A435DD2A-942F-4D95-9E3F-216FFA5FBC4D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A435DD2A-942F-4D95-9E3F-216FFA5FBC4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A435DD2A-942F-4D95-9E3F-216FFA5FBC4D}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{A435DD2A-942F-4D95-9E3F-216FFA5FBC4D}.Debug|ARM.Build.0 = Debug|Any CPU
+		{A435DD2A-942F-4D95-9E3F-216FFA5FBC4D}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{A435DD2A-942F-4D95-9E3F-216FFA5FBC4D}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{A435DD2A-942F-4D95-9E3F-216FFA5FBC4D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A435DD2A-942F-4D95-9E3F-216FFA5FBC4D}.Debug|x64.Build.0 = Debug|Any CPU
+		{A435DD2A-942F-4D95-9E3F-216FFA5FBC4D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A435DD2A-942F-4D95-9E3F-216FFA5FBC4D}.Debug|x86.Build.0 = Debug|Any CPU
+		{A435DD2A-942F-4D95-9E3F-216FFA5FBC4D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A435DD2A-942F-4D95-9E3F-216FFA5FBC4D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A435DD2A-942F-4D95-9E3F-216FFA5FBC4D}.Release|ARM.ActiveCfg = Release|Any CPU
+		{A435DD2A-942F-4D95-9E3F-216FFA5FBC4D}.Release|ARM.Build.0 = Release|Any CPU
+		{A435DD2A-942F-4D95-9E3F-216FFA5FBC4D}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{A435DD2A-942F-4D95-9E3F-216FFA5FBC4D}.Release|ARM64.Build.0 = Release|Any CPU
+		{A435DD2A-942F-4D95-9E3F-216FFA5FBC4D}.Release|x64.ActiveCfg = Release|Any CPU
+		{A435DD2A-942F-4D95-9E3F-216FFA5FBC4D}.Release|x64.Build.0 = Release|Any CPU
+		{A435DD2A-942F-4D95-9E3F-216FFA5FBC4D}.Release|x86.ActiveCfg = Release|Any CPU
+		{A435DD2A-942F-4D95-9E3F-216FFA5FBC4D}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

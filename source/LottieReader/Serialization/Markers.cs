@@ -14,7 +14,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         {
             reader.ExpectToken(JsonTokenType.StartObject);
 
-            string name = string.Empty;
+            string? name = null;
             double durationInFrames = 0;
             double frame = 0;
 
@@ -46,7 +46,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
                         break;
                     case JsonTokenType.EndObject:
-                        return new Marker(name: name, frame: frame, durationInFrames: durationInFrames);
+                        return new Marker(name: name ?? string.Empty, frame: frame, durationInFrames: durationInFrames);
                     default:
                         throw reader.ThrowUnexpectedToken();
                 }

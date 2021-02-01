@@ -11,7 +11,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
     /// than or equal to the <see cref="Start"/> value. Both values being <c>null</c>
     /// indicates all versions.
     /// </summary>
-
 #if PUBLIC
     public
 #endif

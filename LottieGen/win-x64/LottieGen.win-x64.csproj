@@ -1,0 +1,83 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\Common\CommonImports.proj" />
+
+  <PropertyGroup>
+    <PackageId>LottieGen.win-x64</PackageId>
+    <AssemblyName>LottieGen</AssemblyName>
+    <IsPackable>true</IsPackable>
+    <NoBuild>true</NoBuild>
+    <!--
+      Prevent the nuget package from containing the build output. Needed
+      because we are putting the Publish target output in the .nupkg rather
+      than the Build targe output.
+    -->
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <!--
+      Use our .nuspec generating target instead of the built-in generator.
+    -->
+    <GenerateNuspecDependsOn>LottieGenGenerateNuspec</GenerateNuspecDependsOn>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <PublishTrimmed>true</PublishTrimmed>
+    <TrimMode>link</TrimMode>
+    <SuppressTrimAnalysisWarnings>true</SuppressTrimAnalysisWarnings>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <DebugType>None</DebugType>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <!--
+      Disable warning about analysis of documentation files due to documentation
+      not being generated.  
+    -->
+    <NoWarn>SA0001</NoWarn>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <Target Name="EnsurePublush" BeforeTargets="GenerateNuspec">
+      <Message Text="InSimeonsTestTarget"/>
+      <PropertyGroup>
+        <IsPackable>false</IsPackable>
+      </PropertyGroup>
+      <CallTarget Targets="Publish"/>
+  </Target>
+
+  <!-- Generates the .nuspec file. -->
+  <Target
+    Name="LottieGenGenerateNuspec" 
+    Outputs="$(IntermediateOutputPath)$(PackageId).nuspec">
+    <PropertyGroup>
+       <NuspecFile>$(IntermediateOutputPath)$(PackageId).nuspec</NuspecFile>
+    </PropertyGroup>
+    <ItemGroup>
+      <_NuSpecContent Include="_">
+           <Text><![CDATA[<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>]]>$(PackageId)<![CDATA[</id>
+    <authors>]]>$(Authors)<![CDATA[</authors>
+    <version>]]>$(Version)<![CDATA[</version>
+    <requireLicenseAcceptance>]]>$(PackageRequireLicenseAcceptance)<![CDATA[</requireLicenseAcceptance>
+    <licenseUrl>]]>$(PackageLicenseUrl)<![CDATA[</licenseUrl>
+    <projectUrl>]]>$(PackageProjectUrl)<![CDATA[</projectUrl>
+    <iconUrl>]]>$(PackageIconUrl)<![CDATA[</iconUrl>
+    <description>]]>$(PackageDescription)<![CDATA[</description>
+    <releaseNotes>]]>$(PackageReleaseNotes)<![CDATA[</releaseNotes>
+    <copyright>]]>$(Copyright)<![CDATA[</copyright>
+    <tags>]]>$(PackageTags)<![CDATA[</tags>
+  </metadata>
+  <files>
+    <file src="]]>$([MsBuild]::NormalizePath('$(MsBuildThisFileDirectory)', '$(PublishDir)', 'LottieGen.exe'))<![CDATA[" target="]]>bin/LottieGen.exe<![CDATA[" />
+    <file src="]]>$(MsBuildThisFileDirectory)LottieGen.win-x64.props<![CDATA[" target="]]>build/native/LottieGen.win-x64.props<![CDATA[" />
+    <file src="]]>$(MsBuildThisFileDirectory)LottieGen.win-x64.props<![CDATA[" target="]]>build/win10/LottieGen.win-x64.props<![CDATA[" />
+  </files>
+</package>
+]]></Text>
+      </_NuSpecContent>
+    </ItemGroup>
+    <Message Text="Writing nuspecfile $(NuspecFile)"/>
+    <WriteLinesToFile File="$(NuspecFile)" Lines="@(_NuSpecContent->'%(Text)')" Overwrite="true"/>
+  </Target>
+</Project>

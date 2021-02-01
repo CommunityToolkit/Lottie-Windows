@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\Common\LottieGen.Common.projitems" Label="Shared" />
+  <Import Project="..\..\source\CompMetadata\CompMetadata.projitems" Label="Shared" />
+  <Import Project="..\..\source\DotLottie\DotLottie.projitems" Label="Shared" />
+  <Import Project="..\..\source\GenericData\GenericData.projitems" Label="Shared" />
+  <Import Project="..\..\source\LottieData\LottieData.projitems" Label="Shared" />
+  <Import Project="..\..\source\LottieMetadata\LottieMetadata.projitems" Label="Shared" />
+  <Import Project="..\..\source\LottieReader\LottieReader.projitems" Label="Shared" />
+  <Import Project="..\..\source\LottieToWinComp\LottieToWinComp.projitems" Label="Shared" />
+  <Import Project="..\..\source\UIData\UIData.projitems" Label="Shared" />
+  <Import Project="..\..\source\WinCompData\WinCompData.projitems" Label="Shared" />
+  <Import Project="..\..\source\WinStorageStreamsData\WinStorageStreamsData.projitems" Label="Shared" />
+  <Import Project="..\..\source\WinUIXamlMediaData\WinUIXamlMediaData.projitems" Label="Shared" />
+  <Import Project="..\..\source\YamlData\YamlData.projitems" Label="Shared" />
+  <Import Project="..\..\source\UIDataCodeGen\UIDataCodeGen.projitems" Label="Shared" />
+  <Import Project="..\..\source\Animatables\Animatables.projitems" Label="Shared" />
+</Project>

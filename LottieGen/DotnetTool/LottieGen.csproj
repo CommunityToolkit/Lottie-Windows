@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>LottieGen</PackageId>
+    <AssemblyName>LottieGen</AssemblyName>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>LottieGen</ToolCommandName>
+  </PropertyGroup>
+
+  <Import Project="..\Common\CommonImports.proj" />
+
+</Project>

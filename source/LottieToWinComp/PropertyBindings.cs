@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,7 +36,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         // one match).
         // This is used to retrieve property bindings from binding expressions embedded in Lottie
         // object names.
-        internal static string FindFirstBindingNameForProperty(string bindingString, string propertyName)
+        internal static string? FindFirstBindingNameForProperty(string bindingString, string propertyName)
                 => PropertyBindingsParser.ParseBindings(bindingString)
                     .Where(p => p.propertyName == propertyName)
                     .Select(p => p.bindingName).FirstOrDefault();

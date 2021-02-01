@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp;
 
 sealed class CommandLineOptions
 {

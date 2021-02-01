@@ -35,6 +35,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.DotLottie
         /// </summary>
         public string Path => $"/animations/{Id}.json";
 
-        public Stream Open() => _owner.ZipArchive.GetEntry(Path.Substring(1)).Open();
+        public Stream Open()
+        {
+            // Eliminate the leading "/"
+            var path = Path.Substring(1);
+            var entry = _owner.ZipArchive.GetEntry(path);
+            if (entry is null)
+            {
+                // The manifest said that the entry would be there, but
+                // it's not.
+                throw new InvalidLottieFileException();
+            }
+
+            return entry.Open();
+        }
     }
 }

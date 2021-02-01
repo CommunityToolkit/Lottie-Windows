@@ -660,7 +660,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                        && obj.Animators.Count == 1
                     let animator = obj.Animators[0]
                     where animator.AnimatedProperty == "Path"
-                    select (Node:item.Node, Object:obj);
+                    select (Node: item.Node, Object: obj);
 
                 var grouping =
                     from item in items
@@ -823,6 +823,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                     {
                         var canonical = nodes.OrderBy(n => n.Position).FirstOrDefault();
 
+                        if (canonical is null)
+                        {
+                            throw new InvalidOperationException();
+                        }
+
                         // Point every node to the designated canonical node.
                         foreach (var node in nodes)
                         {
@@ -841,7 +846,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 internal static ByteArrayComparer Instance { get; } = new ByteArrayComparer();
 
                 bool IEqualityComparer<byte[]>.Equals(byte[]? x, byte[]? y) =>
-                    x is null ? y is null : x.SequenceEqual(y);
+                    x is null ? y is null : (y is null ? true : x.SequenceEqual(y));
 
                 int IEqualityComparer<byte[]>.GetHashCode(byte[] obj)
                 {

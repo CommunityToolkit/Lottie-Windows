@@ -691,10 +691,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 var visibilityController = visual.TryGetAnimationController("IsVisible");
                 if (visibilityController != null)
                 {
+                    var animator = TryGetAnimatorByPropertyName(visibilityController, "Progress");
+                    if (animator is null)
+                    {
+                        throw new InvalidOperationException();
+                    }
+
                     ApplyVisibility(
                         parent,
                         GetVisiblityAnimationDescription(visual),
-                        TryGetAnimatorByPropertyName(visibilityController, "Progress").Animation);
+                        animator.Animation);
 
                     // Clear out the visibility property and animation from the visual.
                     visual.IsVisible = null;
@@ -848,7 +854,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 var visibilityController = shape.TryGetAnimationController("Scale");
                 if (visibilityController != null)
                 {
-                    ApplyVisibility(visual, GetVisiblityAnimationDescription(shape), TryGetAnimatorByPropertyName(visibilityController, "Progress").Animation);
+                    var animator = TryGetAnimatorByPropertyName(visibilityController, "Progress");
+                    if (animator is null)
+                    {
+                        throw new InvalidOperationException();
+                    }
+
+                    ApplyVisibility(visual, GetVisiblityAnimationDescription(shape), animator.Animation);
 
                     // Clear out the Scale properties and animations from the shape.
                     shape.Scale = null;
@@ -1498,7 +1510,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
         }
 
         // Gets the animator targeting the given named property, or null if not found.
-        static CompositionObject.Animator TryGetAnimatorByPropertyName(CompositionObject obj, string name) =>
+        static CompositionObject.Animator? TryGetAnimatorByPropertyName(CompositionObject obj, string name) =>
             obj.Animators.Where(anim => anim.AnimatedProperty == name).FirstOrDefault();
 
         readonly struct VisibilityDescription

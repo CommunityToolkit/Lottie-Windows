@@ -2,9 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.IO;
-using System.Reflection;
-using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp;
 
 sealed class Usage
 {
@@ -12,8 +11,9 @@ sealed class Usage
     {
         get
         {
-            var exeName =
-                Path.GetFileNameWithoutExtension(Assembly.GetEntryAssembly()?.ManifestModule.Name ?? "LottieGen");
+            // Note that we can't get the assembly name from Assembly.GetEntryAssembly
+            // because we may be running as a .NET single file app.
+            var exeName = Path.GetFileNameWithoutExtension(Environment.GetCommandLineArgs()[0]);
 
             return
 @$"
