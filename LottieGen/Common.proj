@@ -1,10 +1,5 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup>
-    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-    <HasSharedItems>true</HasSharedItems>
-    <SharedGUID>54fb5765-962c-432c-b001-56d20ebe8c8e</SharedGUID>
-  </PropertyGroup>
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <PropertyGroup Label="Configuration">
     <Import_RootNamespace>LottieGen</Import_RootNamespace>
@@ -26,8 +21,4 @@
   <ItemGroup>
     <RuntimeHostConfigurationOption Include="System.Globalization.Invariant" Value="true" />
   </ItemGroup> 
-
-  <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)*.cs" />
-  </ItemGroup>
 </Project>

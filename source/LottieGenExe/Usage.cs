@@ -5,18 +5,20 @@
 using System;
 using System.IO;
 
-sealed class Usage
+namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGenExe
 {
-    internal static string Text
+    sealed class Usage
     {
-        get
+        internal static string Text
         {
-            // Note that we can't get the assembly name from Assembly.GetEntryAssembly
-            // because we may be running as a .NET single file app.
-            var exeName = Path.GetFileNameWithoutExtension(Environment.GetCommandLineArgs()[0]);
+            get
+            {
+                // Note that we can't get the assembly name from Assembly.GetEntryAssembly
+                // because we may be running as a .NET single file app.
+                var exeName = Path.GetFileNameWithoutExtension(Environment.GetCommandLineArgs()[0]);
 
-            return
-@$"
+                return
+    @$"
 Usage: {exeName} -InputFile LOTTIEFILE -Language LANG [Other options]
 
 OVERVIEW:
@@ -86,6 +88,7 @@ EXAMPLES:
        Generate Bar.cs in the C:\temp directory from the Lottie file Bar.json:
 
          {exeName} -inp Bar.json -L cs -o C:\temp";
+            }
         }
     }
 }

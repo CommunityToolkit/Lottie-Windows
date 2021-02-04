@@ -11,6 +11,29 @@
     <ToolCommandName>LottieGen</ToolCommandName>
   </PropertyGroup>
 
-  <Import Project="..\Common\CommonImports.proj" />
-
+  <PropertyGroup>
+    <_SourceDir>..\..\source\</_SourceDir>
+    <StartupObject>Program</StartupObject>
+  </PropertyGroup>
+  <Import Project="..\Common.proj" />
+  <Import Project="$(_SourceDir)Animatables\Animatables.projitems" Label="Shared" />
+  <Import Project="$(_SourceDir)CommandLine\CommandLine.projitems" Label="Shared" />
+  <Import Project="$(_SourceDir)CompMetadata\CompMetadata.projitems" Label="Shared" />
+  <Import Project="$(_SourceDir)DotLottie\DotLottie.projitems" Label="Shared" />
+  <Import Project="$(_SourceDir)GenericData\GenericData.projitems" Label="Shared" />
+  <Import Project="$(_SourceDir)LottieData\LottieData.projitems" Label="Shared" />
+  <Import Project="$(_SourceDir)LottieGen\LottieGen.projitems" Label="Shared" />
+  <Import Project="$(_SourceDir)LottieGenExe\LottieGenExe.projitems" Label="Shared" />
+  <Import Project="$(_SourceDir)LottieMetadata\LottieMetadata.projitems" Label="Shared" />
+  <Import Project="$(_SourceDir)LottieReader\LottieReader.projitems" Label="Shared" />
+  <Import Project="$(_SourceDir)LottieToWinComp\LottieToWinComp.projitems" Label="Shared" />
+  <Import Project="$(_SourceDir)UIData\UIData.projitems" Label="Shared" />
+  <Import Project="$(_SourceDir)WinCompData\WinCompData.projitems" Label="Shared" />
+  <Import Project="$(_SourceDir)WinStorageStreamsData\WinStorageStreamsData.projitems" Label="Shared" />
+  <Import Project="$(_SourceDir)WinUIXamlMediaData\WinUIXamlMediaData.projitems" Label="Shared" />
+  <Import Project="$(_SourceDir)YamlData\YamlData.projitems" Label="Shared" />
+  <Import Project="$(_SourceDir)UIDataCodeGen\UIDataCodeGen.projitems" Label="Shared" />
+  <ItemGroup>
+    <Compile Include="..\..\source\LottieGenExe\Main.cs" />
+  </ItemGroup>
 </Project>

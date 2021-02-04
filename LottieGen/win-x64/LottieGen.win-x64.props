@@ -1,7 +1,7 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <LottieGenPackageDir Condition="'$(LottieGenPackageDir)'==''">$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)))..\..\</LottieGenPackageDir>
-    <LottieGenExePath Condition="'$(LottieGenExePath)'==''">$(LottieGenPackageDir)bin\LottieGen.exe"</LottieGenExePath>
+    <LottieGenExePath Condition="'$(LottieGenExePath)'==''">$(LottieGenPackageDir)bin\LottieGen.exe</LottieGenExePath>
   </PropertyGroup>
 </Project>
 

@@ -1,0 +1,10 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\Common\CommonImports.proj" />
+
+  <PropertyGroup>
+    <PackageId>LottieGen.Task</PackageId>
+    <AssemblyName>LottieGen.Task</AssemblyName>
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
+
+</Project>
