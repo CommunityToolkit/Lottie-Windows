@@ -5,7 +5,7 @@
     <PackageId>LottieGen.win-x64</PackageId>
     <AssemblyName>LottieGen</AssemblyName>
     <IsPackable>true</IsPackable>
-	<NoBuild>true</NoBuild>
+    <NoBuild>true</NoBuild>
     <!--
       Prevent the nuget package from containing the build output. Needed
       because we are putting the Publish target output in the .nupkg rather
