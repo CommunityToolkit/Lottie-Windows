@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Configuration">
+    <Authors>Microsoft</Authors>
+    <Company>Microsoft</Company>
+    <Product>Lottie for Windows</Product>
+    <Description>Generates code from a Lottie file. This is the most efficient way to render Lottie files on Windows.</Description>
+    <PackageTags>Lottie UWP Animations C++ C#</PackageTags>
+  </PropertyGroup>
+</Project>

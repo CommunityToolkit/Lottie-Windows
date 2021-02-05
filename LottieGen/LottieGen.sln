@@ -118,7 +118,7 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "LottieGen", "..\source\Lott
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "LottieGenExe", "..\source\LottieGenExe\LottieGenExe.shproj", "{DC7F7A39-B7A7-40B4-937A-601460CAE38C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LottieGen.Task", "MSBuildTask\LottieGen.Task.csproj", "{9E1EBC4F-EAF5-4034-A373-9C69849B0575}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LottieGen.MsBuild", "MSBuildTask\LottieGen.MsBuild.csproj", "{9E1EBC4F-EAF5-4034-A373-9C69849B0575}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "NullablesAttributes", "..\source\NullablesAttributes\NullablesAttributes.shproj", "{E32587A8-94E8-4B68-91AD-F3612A48A62B}"
 EndProject

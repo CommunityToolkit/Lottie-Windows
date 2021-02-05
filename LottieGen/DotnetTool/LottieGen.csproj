@@ -1,5 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
+  <Import Project="..\CommonNupkg.props" />
   <PropertyGroup>
     <PackageId>LottieGen</PackageId>
     <AssemblyName>LottieGen</AssemblyName>
@@ -32,7 +32,4 @@
   <Import Project="$(_SourceDir)WinUIXamlMediaData\WinUIXamlMediaData.projitems" Label="Shared" />
   <Import Project="$(_SourceDir)YamlData\YamlData.projitems" Label="Shared" />
   <Import Project="$(_SourceDir)UIDataCodeGen\UIDataCodeGen.projitems" Label="Shared" />
-  <ItemGroup>
-    <Compile Include="..\..\source\LottieGenExe\Main.cs" />
-  </ItemGroup>
 </Project>
