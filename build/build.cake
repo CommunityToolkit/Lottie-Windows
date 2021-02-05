@@ -55,11 +55,7 @@ void MSBuildSolution(
     MSBuildSettings SettingsWithTarget(PlatformTarget platformTarget) =>
         new MSBuildSettings
         {
-            // Restrict to a single CPU for non-MSIL compilation.
-            // There is some race condition that is causing files
-            // to be in use when they need to be overwritten. 
-            // Restricting to a single CPU fixes this.
-            MaxCpuCount = platformTarget == PlatformTarget.MSIL ? 0 : 1,
+            MaxCpuCount = 0,
         }.WithTarget(target);
 
     MSBuildSettings SetProperties(MSBuildSettings settings)

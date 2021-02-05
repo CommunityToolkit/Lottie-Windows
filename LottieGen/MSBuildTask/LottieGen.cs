@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using Microsoft.Build.Framework;
 
 namespace LottieGen.Task
@@ -188,7 +189,9 @@ namespace LottieGen.Task
 
         // Provides the default path to the tool. Ignored if
         // the <ToolPath/> property is set.
+        // By default we expect the tool to be in the same directory
+        // as the assembly that this class is in.
         protected override string GenerateFullPathToTool()
-            => Path.Combine(".", ToolName);
+            => Path.Combine(Assembly.GetExecutingAssembly().Location, ToolName);
     }
 }

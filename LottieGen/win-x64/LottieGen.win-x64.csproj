@@ -1,27 +1,16 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk" DefaultTargets="Publish">
 
   <PropertyGroup>
     <PackageId>LottieGen.win-x64</PackageId>
     <AssemblyName>LottieGen</AssemblyName>
-    <IsPackable>true</IsPackable>
-    <NoBuild>true</NoBuild>
-    <!--
-      Prevent the nuget package from containing the build output. Needed
-      because we are putting the Publish target output in the .nupkg rather
-      than the Build target output.
-    -->
-    <IncludeBuildOutput>false</IncludeBuildOutput>
-    <!--
-      Use our .nuspec generating target instead of the built-in generator.
-    -->
-    <GenerateNuspecDependsOn>LottieGenGenerateNuspec</GenerateNuspecDependsOn>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <PropertyGroup>
-  <!--
-    These properties cause the Publish target to convert the build output
-    into a single .exe file that will run on Windows x64 with no dependencies.
-  -->
+    <!--
+      These properties cause the Publish target to convert the build output
+      into a single .exe file that will run on Windows x64 with no dependencies.
+     -->
     <SelfContained>true</SelfContained>
     <PublishSingleFile>true</PublishSingleFile>
     <PublishTrimmed>true</PublishTrimmed>
@@ -39,56 +28,11 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
-  <!-- 
-    Ensures the Publish target has been run before Pack. Usually
-    Publish depends on Pack, but in our case we want to pack the
-    result of Publish.
-  -->
-  <Target Name="EnsurePublish" BeforeTargets="GenerateNuspec">
-      <PropertyGroup>
-        <!-- Set IsPackable false so that Publish doesn't depend on Pack. -->
-        <IsPackable>false</IsPackable>
-      </PropertyGroup>
-      <CallTarget Targets="Publish" />
-  </Target>
-
-  <!-- Generates the .nuspec file. -->
-  <Target Name="LottieGenGenerateNuspec" Outputs="$(IntermediateOutputPath)$(PackageId).nuspec">
-    <PropertyGroup>
-      <NuspecFile>$(IntermediateOutputPath)$(PackageId).nuspec</NuspecFile>
-      <_LottieGenNuspecPropsFile>$(PackageId).props</_LottieGenNuspecPropsFile>
-      <_NuSpecContent>
-<![CDATA[<?xml version="1.0" encoding="utf-8"?>
-<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
-  <metadata>
-    <id>]]>$(PackageId)<![CDATA[</id>
-    <authors>]]>$(Authors)<![CDATA[</authors>
-    <version>]]>$(Version)<![CDATA[</version>
-    <requireLicenseAcceptance>]]>$(PackageRequireLicenseAcceptance)<![CDATA[</requireLicenseAcceptance>
-    <licenseUrl>]]>$(PackageLicenseUrl)<![CDATA[</licenseUrl>
-    <projectUrl>]]>$(PackageProjectUrl)<![CDATA[</projectUrl>
-    <iconUrl>]]>$(PackageIconUrl)<![CDATA[</iconUrl>
-    <description>]]>$(PackageDescription)<![CDATA[</description>
-    <releaseNotes>]]>$(PackageReleaseNotes)<![CDATA[</releaseNotes>
-    <copyright>]]>$(Copyright)<![CDATA[</copyright>
-    <tags>]]>$(PackageTags)<![CDATA[</tags>
-  </metadata>
-  <files>
-    <file src="]]>$([MsBuild]::NormalizePath('$(MsBuildThisFileDirectory)$(PublishDir)$(AssemblyName).exe'))<![CDATA[" target="]]>bin/$(AssemblyName).exe<![CDATA[" />
-    <file src="]]>$(MsBuildThisFileDirectory)$(_LottieGenNuspecPropsFile)<![CDATA[" target="]]>build/native/$(_LottieGenNuspecPropsFile)<![CDATA[" />
-    <file src="]]>$(MsBuildThisFileDirectory)$(_LottieGenNuspecPropsFile)<![CDATA[" target="]]>build/win10/$(_LottieGenNuspecPropsFile)<![CDATA[" />
-  </files>
-</package>
-]]>
-      </_NuSpecContent>
-    </PropertyGroup>
-    <WriteLinesToFile File="$(NuspecFile)" Lines="$(_NuSpecContent)" Overwrite="true" />
-  </Target>
-
   <PropertyGroup>
     <_SourceDir>..\..\source\</_SourceDir>
     <StartupObject>Microsoft.Toolkit.Uwp.UI.Lottie.LottieGenExe.Program</StartupObject>
   </PropertyGroup>
+
   <Import Project="..\Common.proj" />
   <Import Project="$(_SourceDir)Animatables\Animatables.projitems" Label="Shared" />
   <Import Project="$(_SourceDir)CompMetadata\CompMetadata.projitems" Label="Shared" />

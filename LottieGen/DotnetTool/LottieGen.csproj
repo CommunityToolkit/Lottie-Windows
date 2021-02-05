@@ -15,6 +15,7 @@
     <_SourceDir>..\..\source\</_SourceDir>
     <StartupObject>Program</StartupObject>
   </PropertyGroup>
+
   <Import Project="..\Common.proj" />
   <Import Project="$(_SourceDir)Animatables\Animatables.projitems" Label="Shared" />
   <Import Project="$(_SourceDir)CompMetadata\CompMetadata.projitems" Label="Shared" />

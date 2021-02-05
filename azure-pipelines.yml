@@ -24,9 +24,9 @@ steps:
 
 # Install NuGet tools.  
 - task: NuGetToolInstaller@1
-  displayName: Use NuGet 5.5.1
+  displayName: Use NuGet 5.8.1
   inputs:
-    versionSpec: 5.5.1
+    versionSpec: 5.8.1
 
 # Install Nerbank.GitVersioning.
 - task: DotNetCoreCLI@2  
