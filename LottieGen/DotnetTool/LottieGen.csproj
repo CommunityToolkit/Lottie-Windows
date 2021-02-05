@@ -17,7 +17,6 @@
   </PropertyGroup>
   <Import Project="..\Common.proj" />
   <Import Project="$(_SourceDir)Animatables\Animatables.projitems" Label="Shared" />
-  <Import Project="$(_SourceDir)CommandLine\CommandLine.projitems" Label="Shared" />
   <Import Project="$(_SourceDir)CompMetadata\CompMetadata.projitems" Label="Shared" />
   <Import Project="$(_SourceDir)DotLottie\DotLottie.projitems" Label="Shared" />
   <Import Project="$(_SourceDir)GenericData\GenericData.projitems" Label="Shared" />

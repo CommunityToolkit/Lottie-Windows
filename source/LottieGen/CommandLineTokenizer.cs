@@ -5,7 +5,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.CommandLine
+namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen
 {
     // Recognizes command line argument keywords such as "-help" or "-include". Matches partial
     // strings as long as they uniquely identify the keyword. Matching is case insenstive.

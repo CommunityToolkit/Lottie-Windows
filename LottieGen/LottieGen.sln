@@ -116,9 +116,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "LottieGen", "..\source\LottieGen\LottieGen.shproj", "{7654A857-9A99-4185-9F8E-DD0CE662AF23}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "CommandLine", "..\source\CommandLine\CommandLine.shproj", "{DB8248EB-8DD0-4EE0-86E3-F0BA9A405933}"
-EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "LottieGenExe", "..\source\LottieGenExe\LottieGenExe.shproj", "{DC7F7A39-B7A7-40B4-937A-601460CAE38C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LottieGen.Task", "MSBuildTask\LottieGen.Task.csproj", "{9E1EBC4F-EAF5-4034-A373-9C69849B0575}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "NullablesAttributes", "..\source\NullablesAttributes\NullablesAttributes.shproj", "{E32587A8-94E8-4B68-91AD-F3612A48A62B}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -133,7 +135,6 @@ Global
 		..\source\LottieGen\LottieGen.projitems*{7654a857-9a99-4185-9f8e-dd0ce662af23}*SharedItemsImports = 13
 		..\source\GenericData\GenericData.projitems*{77bcd724-8555-463b-985f-f8e8110164c4}*SharedItemsImports = 13
 		..\source\Animatables\Animatables.projitems*{a435dd2a-942f-4d95-9e3f-216ffa5fbc4d}*SharedItemsImports = 5
-		..\source\CommandLine\CommandLine.projitems*{a435dd2a-942f-4d95-9e3f-216ffa5fbc4d}*SharedItemsImports = 5
 		..\source\CompMetadata\CompMetadata.projitems*{a435dd2a-942f-4d95-9e3f-216ffa5fbc4d}*SharedItemsImports = 5
 		..\source\DotLottie\DotLottie.projitems*{a435dd2a-942f-4d95-9e3f-216ffa5fbc4d}*SharedItemsImports = 5
 		..\source\GenericData\GenericData.projitems*{a435dd2a-942f-4d95-9e3f-216ffa5fbc4d}*SharedItemsImports = 5
@@ -153,11 +154,10 @@ Global
 		..\source\LottieData\LottieData.projitems*{b3db16ee-a821-4474-a188-e64926529bbd}*SharedItemsImports = 13
 		..\source\WinCompData\WinCompData.projitems*{d02870de-7ded-4916-85d4-3175ceedef74}*SharedItemsImports = 13
 		..\source\UIDataCodeGen\UIDataCodeGen.projitems*{d02be6c8-14db-4b4f-8600-f3c9b69c104d}*SharedItemsImports = 13
-		..\source\CommandLine\CommandLine.projitems*{db8248eb-8dd0-4ee0-86e3-f0ba9a405933}*SharedItemsImports = 13
 		..\source\LottieGenExe\LottieGenExe.projitems*{dc7f7a39-b7a7-40b4-937a-601460cae38c}*SharedItemsImports = 13
+		..\source\NullablesAttributes\NullablesAttributes.projitems*{e32587a8-94e8-4b68-91ad-f3612a48a62b}*SharedItemsImports = 13
 		..\source\Animatables\Animatables.projitems*{fc89273a-b2da-4625-8a73-ef02a658d65e}*SharedItemsImports = 13
 		..\source\Animatables\Animatables.projitems*{fd20c604-c757-46f4-9a8c-711c39f79a46}*SharedItemsImports = 5
-		..\source\CommandLine\CommandLine.projitems*{fd20c604-c757-46f4-9a8c-711c39f79a46}*SharedItemsImports = 5
 		..\source\CompMetadata\CompMetadata.projitems*{fd20c604-c757-46f4-9a8c-711c39f79a46}*SharedItemsImports = 5
 		..\source\DotLottie\DotLottie.projitems*{fd20c604-c757-46f4-9a8c-711c39f79a46}*SharedItemsImports = 5
 		..\source\GenericData\GenericData.projitems*{fd20c604-c757-46f4-9a8c-711c39f79a46}*SharedItemsImports = 5
@@ -227,6 +227,26 @@ Global
 		{A435DD2A-942F-4D95-9E3F-216FFA5FBC4D}.Release|x64.Build.0 = Release|Any CPU
 		{A435DD2A-942F-4D95-9E3F-216FFA5FBC4D}.Release|x86.ActiveCfg = Release|Any CPU
 		{A435DD2A-942F-4D95-9E3F-216FFA5FBC4D}.Release|x86.Build.0 = Release|Any CPU
+		{9E1EBC4F-EAF5-4034-A373-9C69849B0575}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9E1EBC4F-EAF5-4034-A373-9C69849B0575}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9E1EBC4F-EAF5-4034-A373-9C69849B0575}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{9E1EBC4F-EAF5-4034-A373-9C69849B0575}.Debug|ARM.Build.0 = Debug|Any CPU
+		{9E1EBC4F-EAF5-4034-A373-9C69849B0575}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{9E1EBC4F-EAF5-4034-A373-9C69849B0575}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{9E1EBC4F-EAF5-4034-A373-9C69849B0575}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{9E1EBC4F-EAF5-4034-A373-9C69849B0575}.Debug|x64.Build.0 = Debug|Any CPU
+		{9E1EBC4F-EAF5-4034-A373-9C69849B0575}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{9E1EBC4F-EAF5-4034-A373-9C69849B0575}.Debug|x86.Build.0 = Debug|Any CPU
+		{9E1EBC4F-EAF5-4034-A373-9C69849B0575}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9E1EBC4F-EAF5-4034-A373-9C69849B0575}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9E1EBC4F-EAF5-4034-A373-9C69849B0575}.Release|ARM.ActiveCfg = Release|Any CPU
+		{9E1EBC4F-EAF5-4034-A373-9C69849B0575}.Release|ARM.Build.0 = Release|Any CPU
+		{9E1EBC4F-EAF5-4034-A373-9C69849B0575}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{9E1EBC4F-EAF5-4034-A373-9C69849B0575}.Release|ARM64.Build.0 = Release|Any CPU
+		{9E1EBC4F-EAF5-4034-A373-9C69849B0575}.Release|x64.ActiveCfg = Release|Any CPU
+		{9E1EBC4F-EAF5-4034-A373-9C69849B0575}.Release|x64.Build.0 = Release|Any CPU
+		{9E1EBC4F-EAF5-4034-A373-9C69849B0575}.Release|x86.ActiveCfg = Release|Any CPU
+		{9E1EBC4F-EAF5-4034-A373-9C69849B0575}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -248,8 +268,8 @@ Global
 		{7012420D-624C-4BD4-A1D2-1C6C1655ED3A} = {AB232F35-AAF7-4AE2-B1D2-45DD9BC2F7D7}
 		{FC89273A-B2DA-4625-8A73-EF02A658D65E} = {AB232F35-AAF7-4AE2-B1D2-45DD9BC2F7D7}
 		{7654A857-9A99-4185-9F8E-DD0CE662AF23} = {AB232F35-AAF7-4AE2-B1D2-45DD9BC2F7D7}
-		{DB8248EB-8DD0-4EE0-86E3-F0BA9A405933} = {AB232F35-AAF7-4AE2-B1D2-45DD9BC2F7D7}
 		{DC7F7A39-B7A7-40B4-937A-601460CAE38C} = {AB232F35-AAF7-4AE2-B1D2-45DD9BC2F7D7}
+		{E32587A8-94E8-4B68-91AD-F3612A48A62B} = {AB232F35-AAF7-4AE2-B1D2-45DD9BC2F7D7}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {51B9BB4C-5196-41CF-950C-12B04AD8A61C}

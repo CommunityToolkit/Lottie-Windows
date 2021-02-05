@@ -17,6 +17,16 @@
 namespace System.Diagnostics.CodeAnalysis
 {
     [AttributeUsage(
+        AttributeTargets.Property | AttributeTargets.Field | 
+        AttributeTargets.Parameter, Inherited = false)]
+    public sealed class AllowNullAttribute : Attribute
+    {
+        public AllowNullAttribute()
+        {
+        }
+    }
+
+    [AttributeUsage(
         AttributeTargets.Field | AttributeTargets.Parameter |
         AttributeTargets.Property | AttributeTargets.ReturnValue
     )]

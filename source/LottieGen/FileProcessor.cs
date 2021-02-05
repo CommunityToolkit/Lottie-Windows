@@ -7,7 +7,6 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using Microsoft.Toolkit.Uwp.UI.Lottie.DotLottie;
-using Microsoft.Toolkit.Uwp.UI.Lottie.LottieGenExe;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen
 {

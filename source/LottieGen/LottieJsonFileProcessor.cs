@@ -9,7 +9,6 @@ using System.Linq;
 using System.Text;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization;
-using Microsoft.Toolkit.Uwp.UI.Lottie.LottieGenExe;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp;
 using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen;
 using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt;

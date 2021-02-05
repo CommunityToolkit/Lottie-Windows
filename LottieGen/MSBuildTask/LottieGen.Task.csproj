@@ -1,10 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\Common\CommonImports.proj" />
 
   <PropertyGroup>
-    <PackageId>LottieGen.Task</PackageId>
+    <TargetFramework>net472</TargetFramework>
+    <LangVersion>8.0</LangVersion>
+    <Nullable>enable</Nullable>
     <AssemblyName>LottieGen.Task</AssemblyName>
-    <IsPackable>true</IsPackable>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.8.0" />
+  </ItemGroup>
 
 </Project>
