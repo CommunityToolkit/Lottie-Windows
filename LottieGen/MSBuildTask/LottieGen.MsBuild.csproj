@@ -13,6 +13,7 @@
 	<PlatformTarget>AnyCPU</PlatformTarget>
 	<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 	<IsPackable>true</IsPackable>
+    <Description>MsBuild Task for LottieGen. $(Description)</Description>
 
 	<!--
 	  Use our .nuspec generating target instead of the built-in generator.
@@ -28,7 +29,6 @@
   <Target Name="LottieGenGenerateNuspec" Outputs="$(IntermediateOutputPath)$(PackageId).nuspec">
     <PropertyGroup>
       <NuspecFile>$(IntermediateOutputPath)$(PackageId).nuspec</NuspecFile>
-      <_DotNetToolSettingsFile>$(IntermediateOutputPath)DotnetToolSettings.xml</_DotNetToolSettingsFile>
       <_LottieGenNuspecPropsFile>$(PackageId).props</_LottieGenNuspecPropsFile>
       <_NuSpecContent>
         <![CDATA[<?xml version="1.0" encoding="utf-8"?>
@@ -45,8 +45,8 @@
     <releaseNotes>]]>$(PackageReleaseNotes)<![CDATA[</releaseNotes>
     <copyright>]]>$(Copyright)<![CDATA[</copyright>
     <tags>]]>$(PackageTags)<![CDATA[</tags>
-	<packageTypes>
-      <packageType name="DotnetTool" />
+    <packageTypes>
+      <packageType name="Dependency" />
     </packageTypes>
   </metadata>
   <files>
