@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
 
 namespace LottieGen.Task
 {
@@ -25,12 +26,19 @@ namespace LottieGen.Task
     /// </remarks>
     public sealed class LottieGen : Microsoft.Build.Utilities.ToolTask
     {
+        readonly List<string> _outputFiles = new List<string>();
+        bool _nextEventIsOutputFile;
+
         protected override string ToolName => "LottieGen.exe";
 
+        /// <summary>
+        /// Optional path to LottieGen.exe. If not specified, LottieGen.exe
+        /// is expected to be in the same directory as the task's DLL.
+        /// </summary>
         public string? LottieGenExePath { get; set; }
 
         /// <summary>
-        /// The Lottie file to process. May contain wildcards.
+        /// The Lottie file to process.
         /// </summary>
         [Required]
         public string? InputFile { get; set; }
@@ -95,6 +103,12 @@ namespace LottieGen.Task
         public string? OutputFolder { get; set; }
 
         /// <summary>
+        /// Contains the items that were produced by the task.
+        /// </summary>
+        [Output]
+        public ITaskItem[] OutputFiles { get; private set; } = new ITaskItem[0];
+
+        /// <summary>
         /// Makes the generated class public rather than internal. Ignored
         /// for c++.
         /// </summary>
@@ -134,6 +148,61 @@ namespace LottieGen.Task
         /// Generates code for a particular WinUI version. Defaults to 2.4.
         /// </summary>
         public Version? WinUIVersion { get; set; }
+
+        public override bool Execute()
+        {
+            var result = base.Execute();
+
+            if (result)
+            {
+                // Set the [Output]. We infer the output based on the
+                // language, the input file, and the output folder. This
+                // is currently a best guess and doesn't deal with the fact
+                // the input file might contain a wildcard, or that the namespace
+                // has been overridden, etc.
+                switch (GetNormalizedLanguage())
+                {
+                    case Lang.CSharp:
+                        OutputFiles = new ITaskItem[]
+                        {
+                            new TaskItem($"{Path.Combine(OutputFolder, InputFile)}.cs"),
+                        };
+                        break;
+                    case Lang.Cppwinrt:
+                        {
+                            var outputFileBase = Path.Combine(OutputFolder, $"AnimatedVisuals.{InputFile}");
+                            OutputFiles = new ITaskItem[]
+                            {
+                            new TaskItem($"{outputFileBase}.idl"),
+                            new TaskItem($"{outputFileBase}.cpp"),
+                            new TaskItem($"{outputFileBase}.h"),
+                            };
+                        }
+
+                        break;
+
+                    case Lang.Cx:
+                        {
+                            var outputFileBase = Path.Combine(OutputFolder, $"AnimatedVisuals.{InputFile}");
+                            OutputFiles = new ITaskItem[]
+                            {
+                            new TaskItem($"{outputFileBase}.cpp"),
+                            new TaskItem($"{outputFileBase}.h"),
+                            };
+                        }
+
+                        break;
+                    default:
+                        throw new InvalidOperationException();
+                }
+            }
+            else
+            {
+                OutputFiles = new ITaskItem[0];
+            }
+
+            return result;
+        }
 
         protected override string GenerateCommandLineCommands()
         {
@@ -193,5 +262,86 @@ namespace LottieGen.Task
         // as the assembly that this class is in.
         protected override string GenerateFullPathToTool()
             => Path.Combine(Assembly.GetExecutingAssembly().Location, ToolName);
+
+        protected override bool ValidateParameters()
+        {
+            var hasErrors = false;
+
+            if (InputFile is null)
+            {
+                Log.LogError($"{nameof(InputFile)} not specified.");
+                hasErrors = true;
+            }
+            else
+            {
+                if (!File.Exists(InputFile))
+                {
+                    Log.LogError($"{nameof(InputFile)} \"{InputFile}\" not found.");
+                }
+            }
+
+            switch (GetNormalizedLanguage())
+            {
+                case Lang.Cppwinrt:
+                case Lang.CSharp:
+                case Lang.Cx:
+                    break;
+
+                default:
+                    Log.LogError($"Unrecognized language \"{Language!}\".");
+                    hasErrors = true;
+                    break;
+            }
+
+            return hasErrors;
+        }
+
+        protected override void LogEventsFromTextOutput(string singleLine, MessageImportance messageImportance)
+        {
+            base.LogEventsFromTextOutput(singleLine, messageImportance);
+
+            if (_nextEventIsOutputFile)
+            {
+                _outputFiles.Add(singleLine.Trim());
+            }
+
+            // Read the line to determine what LottieGen is up to.
+            // This allows us to find out what files were written.
+            _nextEventIsOutputFile =
+                singleLine.StartsWith("CX header for class ") ||
+                singleLine.StartsWith("CX source for class ") ||
+                singleLine.StartsWith("C# code for class ") ||
+                singleLine.StartsWith("Cppwinrt header for class ") ||
+                singleLine.StartsWith("Cppwinrt source for class ") ||
+                singleLine.StartsWith("Cppwinrt IDL for class ");
+        }
+
+        Lang GetNormalizedLanguage()
+        {
+            var lang = Language?.ToLowerInvariant();
+
+            switch (lang)
+            {
+                case "cs":
+                    return Lang.CSharp;
+
+                case "cppwinrt":
+                    return Lang.Cppwinrt;
+
+                case "cx":
+                    return Lang.Cx;
+
+                default:
+                    return Lang.Unknown;
+            }
+        }
+
+        enum Lang
+        {
+            Unknown,
+            CSharp,
+            Cx,
+            Cppwinrt,
+        }
     }
 }
