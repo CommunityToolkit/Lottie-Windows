@@ -200,7 +200,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                                                 break;
 
                                             default:
-                                                _issues.UnexpectedField(currentProperty);
+                                                _issues.UnexpectedField(currentProperty ?? "null");
                                                 break;
                                         }
 
@@ -213,7 +213,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                                         var subDocumentAsGenericDataObject = subDocument.RootElement.ToGenericDataObject();
                                         if (!(subDocumentAsGenericDataObject is null))
                                         {
-                                            extraData.Add(currentProperty, subDocumentAsGenericDataObject);
+                                            extraData.Add(currentProperty ?? "null", subDocumentAsGenericDataObject);
                                         }
                                     }
 

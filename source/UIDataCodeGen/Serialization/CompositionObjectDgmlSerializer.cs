@@ -112,19 +112,30 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             var links =
                 from n in objectNodes
                 from otherNode in n.Children
-                select new XElement(ns + "Link", new XAttribute("Source", n.Id), new XAttribute("Target", otherNode.Id));
+                select new XElement(
+                    ns + "Link",
+                    new XAttribute("Source", n.Id),
+                    new XAttribute("Target", otherNode.Id));
 
             // Create the "contains" links for the nodes contained in groups.
             var containsLinks =
                 (from g in groups
                  from member in g.ItemsInGroup
-                 select new XElement(ns + "Link", new XAttribute("Source", g.Id), new XAttribute("Target", member.Id), new XAttribute("Category", "Contains"))).ToArray();
+                 select new XElement(
+                     ns + "Link",
+                     new XAttribute("Source", g.Id),
+                     new XAttribute("Target", member.Id),
+                     new XAttribute("Category", "Contains"))).ToArray();
 
             // Create the "contains" links for the groups contained in groups
             var groupContainsGroupsLinks =
                 (from g in groups
                  from member in g.GroupsInGroup
-                 select new XElement(ns + "Link", new XAttribute("Source", g.Id), new XAttribute("Target", member.Id), new XAttribute("Category", "Contains"))).ToArray();
+                 select new XElement(
+                     ns + "Link",
+                     new XAttribute("Source", g.Id),
+                     new XAttribute("Target", member.Id),
+                     new XAttribute("Category", "Contains"))).ToArray();
 
             containsLinks = containsLinks.Concat(groupContainsGroupsLinks).ToArray();
 
@@ -271,7 +282,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             internal bool IsDgmlNode { get; private set; }
 
-            internal string? Id { get; private set; }
+            internal string Id { get; private set; } = string.Empty;
 
             // The links from this node to its children.
             internal IReadOnlyList<ObjectData> Children => _children;
@@ -421,9 +432,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             internal List<GroupNode> GroupsInGroup { get; } = new List<GroupNode>();
 
-            internal string? Id { get; set; }
+            internal string Id { get; set; } = string.Empty;
 
-            internal string? GroupName { get; set; }
+            internal string GroupName { get; set; } = string.Empty;
 
             public override string? ToString() => Id;
         }

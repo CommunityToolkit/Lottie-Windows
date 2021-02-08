@@ -2,18 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-enum Language
+static class Program
 {
-    // Language wasn't recognized.
-    Unknown,
-
-    // Language specified was ambigious.
-    Ambiguous,
-
-    CSharp,
-    Cx,
-    Cppwinrt,
-    LottieYaml,
-    WinCompDgml,
-    Stats,
+    static int Main(string[] args)
+        => Microsoft.Toolkit.Uwp.UI.Lottie.LottieGenExe.Main.Run(args);
 }

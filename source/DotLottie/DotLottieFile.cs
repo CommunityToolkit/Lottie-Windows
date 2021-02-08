@@ -169,7 +169,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.DotLottie
         static ZipArchiveEntry? GetManifestEntry(ZipArchive zipArchive)
             => zipArchive.GetEntry("manifest.json");
 
-        ZipArchiveEntry GetEntryForPath(string path)
+        ZipArchiveEntry? GetEntryForPath(string path)
         {
             if (path.StartsWith("/"))
             {
@@ -235,7 +235,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.DotLottie
                                     break;
 
                                 case "themeColor":
-                                    themeColor = reader.GetString();
+                                    themeColor = reader.GetString() ?? themeColor;
                                     break;
 
                                 case "loop":

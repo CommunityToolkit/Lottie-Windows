@@ -2,21 +2,23 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.IO;
-using System.Reflection;
-using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp;
 
-sealed class Usage
+namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGenExe
 {
-    internal static string Text
+    sealed class Usage
     {
-        get
+        internal static string Text
         {
-            var exeName =
-                Path.GetFileNameWithoutExtension(Assembly.GetEntryAssembly()?.ManifestModule.Name ?? "LottieGen");
+            get
+            {
+                // Note that we can't get the assembly name from Assembly.GetEntryAssembly
+                // because we may be running as a .NET single file app.
+                var exeName = Path.GetFileNameWithoutExtension(Environment.GetCommandLineArgs()[0]);
 
-            return
-@$"
+                return
+    @$"
 Usage: {exeName} -InputFile LOTTIEFILE -Language LANG [Other options]
 
 OVERVIEW:
@@ -86,6 +88,7 @@ EXAMPLES:
        Generate Bar.cs in the C:\temp directory from the Lottie file Bar.json:
 
          {exeName} -inp Bar.json -L cs -o C:\temp";
+            }
         }
     }
 }

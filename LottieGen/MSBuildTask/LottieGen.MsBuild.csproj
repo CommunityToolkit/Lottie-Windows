@@ -1,0 +1,72 @@
+﻿<Project Sdk="Microsoft.NET.Sdk" DefaultTargets="Pack">
+    <Import Project="..\CommonNupkg.props" />
+
+    <PropertyGroup>
+        <TargetFramework>net472</TargetFramework>
+        <OutputType>Library</OutputType>
+        <LangVersion>8.0</LangVersion>
+        <Nullable>enable</Nullable>
+        <AssemblyName>LottieGen.MsBuild</AssemblyName>
+        <PackageId>LottieGen.MsBuild</PackageId>
+        <RootNamespace>LottieGen</RootNamespace>
+        <Configurations>Debug;Release</Configurations>
+        <LangVersion>latest</LangVersion>
+        <PlatformTarget>AnyCPU</PlatformTarget>
+        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+        <IsPackable>true</IsPackable>
+        <Description>MsBuild Task for LottieGen. $(Description)</Description>
+
+        <!-- Use our .nuspec generating target instead of the built-in generator. -->
+        <GenerateNuspecDependsOn>LottieGenGenerateNuspec</GenerateNuspecDependsOn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.8.0" />
+    </ItemGroup>
+
+    <!--
+      Ensure the LottieGen.exe single-file app with no dependencies has
+      been built and published so we can copy its outputs.
+    -->
+    <Target Name="EnsureLottieGenExeIsBuilt">
+        <MSBuild Projects="..\win-x64\LottieGen.win-x64.csproj" Targets="Publish"/>
+    </Target>
+
+    <!-- Generates the .nuspec file. -->
+    <Target Name="LottieGenGenerateNuspec" Outputs="$(IntermediateOutputPath)$(PackageId).nuspec" DependsOnTargets="EnsureLottieGenExeIsBuilt">
+
+        <PropertyGroup>
+            <NuspecFile>$(IntermediateOutputPath)$(PackageId).nuspec</NuspecFile>
+            <_LottieGenNuspecPropsFile>$(PackageId).props</_LottieGenNuspecPropsFile>
+             <_NuSpecContent>
+                <![CDATA[<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>]]>$(PackageId)<![CDATA[</id>
+    <authors>]]>$(Authors)<![CDATA[</authors>
+    <version>]]>$(Version)<![CDATA[</version>
+    <requireLicenseAcceptance>]]>$(PackageRequireLicenseAcceptance)<![CDATA[</requireLicenseAcceptance>
+    <licenseUrl>]]>$(PackageLicenseUrl)<![CDATA[</licenseUrl>
+    <projectUrl>]]>$(PackageProjectUrl)<![CDATA[</projectUrl>
+    <iconUrl>]]>$(PackageIconUrl)<![CDATA[</iconUrl>
+    <description>]]>$(PackageDescription)<![CDATA[</description>
+    <releaseNotes>]]>$(PackageReleaseNotes)<![CDATA[</releaseNotes>
+    <copyright>]]>$(Copyright)<![CDATA[</copyright>
+    <tags>]]>$(PackageTags)<![CDATA[</tags>
+    <packageTypes>
+      <packageType name="Dependency" />
+    </packageTypes>
+  </metadata>
+  <files>
+    <file src="]]>$([MsBuild]::NormalizePath('$(MsBuildThisFileDirectory)..\win-x64\bin\AnyCPU\$(Configuration)\net5.0\win-x64\publish\LottieGen.exe'))<![CDATA[" target="bin" />
+    <file src="]]>$(MsBuildThisFileDirectory)$(_LottieGenNuspecPropsFile)<![CDATA[" target="build/native/" />
+    <file src="]]>$(MsBuildThisFileDirectory)$(_LottieGenNuspecPropsFile)<![CDATA[" target="build/win/" />
+    <file src="]]>$([MsBuild]::NormalizePath('$(MsBuildThisFileDirectory)..\MSBuildTask\bin\AnyCPU\$(Configuration)\net472\$(AssemblyName).dll'))<![CDATA[" target="bin/" />
+  </files>
+</package>
+]]>
+            </_NuSpecContent>
+        </PropertyGroup>
+        <WriteLinesToFile File="$(NuspecFile)" Lines="$(_NuSpecContent)" Overwrite="true" />
+    </Target>
+</Project>

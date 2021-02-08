@@ -57,7 +57,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 
             internal void Skip() => _jsonReader.Skip();
 
-            internal string GetString() => _jsonReader.GetString();
+            internal string? GetString() => _jsonReader.GetString();
 
             internal LottieJsonDocument ParseElement()
                 => JsonDocument.TryParseValue(ref _jsonReader, out var document)

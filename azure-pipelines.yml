@@ -24,9 +24,9 @@ steps:
 
 # Install NuGet tools.  
 - task: NuGetToolInstaller@1
-  displayName: Use NuGet 5.5.1
+  displayName: Use NuGet 5.8.1
   inputs:
-    versionSpec: 5.5.1
+    versionSpec: 5.8.1
 
 # Install Nerbank.GitVersioning.
 - task: DotNetCoreCLI@2  
@@ -38,7 +38,7 @@ steps:
 
 # .NET Core SDK Installer.
 # 2.2.x is needed to build the UWP code.
-# 3.1.x is used for everything else that the UWP apps don't depend on.
+# 5.0.x is used for everything else that the UWP apps don't depend on.
 - task: UseDotNet@2
   inputs:
     packageType: 'sdk' # Options: runtime, sdk
@@ -47,7 +47,7 @@ steps:
 - task: UseDotNet@2
   inputs:
     packageType: 'sdk' # Options: runtime, sdk
-    version: '3.1.x'
+    version: '5.0.x'
 
 # Nerdbank.GitVersioning
 - script: nbgv cloud
