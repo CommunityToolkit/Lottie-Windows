@@ -28,6 +28,27 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.Animatables
 
         public static readonly Vector2 One = new Vector2(1, 1);
 
+        /// <summary>
+        /// Returns the result of scaling the point by <paramref name="scale"/> around
+        /// <paramref name="origin"/>.
+        /// </summary>
+        /// <returns>The resulting point.</returns>
+        public Vector2 Scaled(Vector2 scale, Vector2 origin)
+            => new Vector2(
+                ScaleAroundOrigin(X, origin.X, scale.X),
+                ScaleAroundOrigin(Y, origin.Y, scale.Y));
+
+        /// <summary>
+        /// Returns the result of rotating the point by <paramref name="rotation"/> around
+        /// <paramref name="axis"/>.
+        /// </summary>
+        /// <returns>The resulting point.</returns>
+        public Vector2 Rotated(Rotation rotation, Vector2 axis)
+            => rotation.RotatePoint(this, axis);
+
+        static double ScaleAroundOrigin(double value, double origin, double scale)
+            => value + ((origin - value) * (1 - scale));
+
         public static Vector2 operator *(Vector2 left, double right) =>
             new Vector2(left.X * right, left.Y * right);
 

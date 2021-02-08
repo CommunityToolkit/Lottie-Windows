@@ -35,7 +35,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.Animatables
         /// Returns the result of rotating <paramref name="point"/> around <paramref name="axis"/>.
         /// </summary>
         /// <returns>The resulting point.</returns>
-        public Vector2 RotatePointAroundAxis(Vector2 point, Vector2 axis)
+        public Vector2 RotatePoint(Vector2 point, Vector2 axis)
         {
             var cosTheta = Math.Cos(-Radians);
             var sinTheta = Math.Sin(-Radians);
@@ -52,13 +52,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.Animatables
 
             return result;
         }
-
-        /// <summary>
-        /// Returns the result of rotating point 0,0 around <paramref name="axis"/>.
-        /// </summary>
-        /// <returns>The resulting point.</returns>
-        public Vector2 RotateZeroAroundAxis(Vector2 axis)
-            => RotatePointAroundAxis(Vector2.Zero, axis);
 
         public bool Equals(Rotation other) => other.Degrees == Degrees;
 
