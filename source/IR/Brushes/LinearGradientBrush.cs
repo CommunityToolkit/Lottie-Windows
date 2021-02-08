@@ -24,6 +24,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Brushes
                 GradientStops,
                 Opacity);
 
+        public override Brush WithScale(Vector2 scale) =>
+            new LinearGradientBrush(
+                StartPoint.WithScale(scale),
+                EndPoint.WithScale(scale),
+                GradientStops,
+                Opacity);
+
         public override Brush WithTimeOffset(double timeOffset)
              => IsAnimated
             ? new LinearGradientBrush(

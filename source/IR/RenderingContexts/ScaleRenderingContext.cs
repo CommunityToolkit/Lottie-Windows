@@ -39,6 +39,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
                 ScaleAroundOrigin(point.X, origin.X, scale.X),
                 ScaleAroundOrigin(point.Y, origin.Y, scale.Y));
 
+        /// <summary>
+        /// Returns the result of scaling point 0,0 by <paramref name="scale"/> around
+        /// <paramref name="origin"/>.
+        /// </summary>
+        /// <returns>The resulting point.</returns>
+        internal static Vector2 ScaleZeroAroundOrigin(Vector2 origin, Vector2 scale)
+            => ScalePointAroundOrigin(Vector2.Zero, origin, scale);
+
         static double ScaleAroundOrigin(double value, double origin, double scale)
         {
             return value + ((origin - value) * (1 - scale));

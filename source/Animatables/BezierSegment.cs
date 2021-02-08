@@ -37,6 +37,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.Animatables
         /// <inheritdoc/>
         public bool Equals(BezierSegment? other) => !(other is null) && EqualityComparer.Equals(this, other);
 
+        public BezierSegment WithScale(Vector2 scale)
+            => new BezierSegment(ControlPoint0 * scale, ControlPoint1 * scale, ControlPoint2 * scale, ControlPoint3 * scale);
+
         public BezierSegment WithOffset(Vector2 offset)
             => new BezierSegment(ControlPoint0 + offset, ControlPoint1 + offset, ControlPoint2 + offset, ControlPoint3 + offset);
 

@@ -15,6 +15,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Brushes
 
         public abstract bool IsAnimated { get; }
 
+        public abstract Brush WithScale(Vector2 scale);
+
         public abstract Brush WithTimeOffset(double timeOffset);
 
         public abstract Brush WithOffset(Vector2 offset);

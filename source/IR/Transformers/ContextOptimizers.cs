@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
+using Microsoft.Toolkit.Uwp.UI.Lottie.IR.Brushes;
 using Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts;
 using static Microsoft.Toolkit.Uwp.UI.Lottie.IR.Exceptions;
 
@@ -28,9 +29,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
             // Get the metadata.
             var metadata = MetadataRenderingContext.Compose(result.OfType<MetadataRenderingContext>());
 
+            var beforeOptimization = result;
+
             // Eliminate the metadata.
             result = result.Without<MetadataRenderingContext>();
 
+            // Keep running the optimizer as long as it makes progress.
             while (TryOptimizeOnce(ref result))
             {
             }
@@ -58,6 +62,45 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
             success |= TryOptimizeGradientFillsWithPosition(ref context);
             success |= TryOptimizeGradientStrokesWithPosition(ref context);
             success |= TryOptimizeVisibility(ref context);
+
+            return success;
+        }
+
+        /// <summary>
+        /// Attempts to move the static scale to the bottom of the context. This
+        /// makes it easy to remove the scale from the context and apply it to
+        /// the content instead.
+        /// </summary>
+        /// <returns><c>true</c> if the context was modified.</returns>
+        internal static bool TryMoveStaticScaleToBottom(ref RenderingContext context)
+        {
+            var success = false;
+
+            // Move the scales as low as they can be.
+            success |= context.TryGroupDown<ScaleRenderingContext>(out context);
+
+            // See if we can move the bottom scale lower.
+            if (context.SubContextCount > 1)
+            {
+                var subContexts = context.ToArray();
+                ref var secondLast = ref subContexts[subContexts.Length - 2];
+                ref var last = ref subContexts[subContexts.Length - 1];
+
+                if (secondLast is ScaleRenderingContext.Static staticscale)
+                {
+                    // For now we only handle one case.
+                    if (last is FillRenderingContext fill)
+                    {
+                        // This is the case we can handle. The bottom context is a fill
+                        // and the context above it is a static scale. Swap the scale and
+                        // the fill, and scale the fill.
+                        secondLast = new FillRenderingContext(fill.Brush.WithScale(staticscale.ScalePercent / 100.0));
+                        last = staticscale;
+                        context = RenderingContext.Compose(subContexts);
+                        success = true;
+                    }
+                }
+            }
 
             return success;
         }
@@ -91,78 +134,38 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
                             yield return currentAnchor.ToPositionRenderingContext(value => -value);
                             break;
 
-                        case RotationRenderingContext.Animated rotation:
+                        case RotationRenderingContext:
+                        case ScaleRenderingContext:
+                            // Rotation/scale is done around the anchor or centerpoint (or 0,0 if neither is specified).
+                            // Instead of an anchor, output the position offset that is equivalent to the anchor,
+                            // then the rotation/scale, then the inverse of the position offset that is equivalent to
+                            // the anchor.
                             switch (currentAnchor)
                             {
                                 case AnchorRenderingContext.Animated animatedAnchor:
-                                    // Animated anchor and animated rotation. Use an animated centerpoint.
-                                    yield return new CenterPointRenderingContext.Animated(animatedAnchor.Anchor);
+                                    // Animated anchor. Use an animated position.
+                                    yield return new PositionRenderingContext.Animated(animatedAnchor.Anchor);
                                     yield return item;
-
-                                    // Reset the centerpoint.
-                                    yield return new CenterPointRenderingContext.Static(Vector2.Zero);
+                                    yield return new PositionRenderingContext.Animated(animatedAnchor.Anchor.Inverted());
                                     break;
+
                                 case AnchorRenderingContext.Static staticAnchor:
-                                    // Static anchor and animated rotation.
-                                    yield return new PositionRenderingContext.Animated(new AnimatableVector2(rotation.Rotation.Select(r =>
-                                        r.RotatePointAroundAxis(point: Vector2.Zero, axis: staticAnchor.Anchor)).KeyFrames));
-                                    yield return item;
-                                    break;
-
-                                default: throw Unreachable;
-                            }
-
-                            break;
-
-                        case RotationRenderingContext.Static rotation:
-                            // Static anchor and static rotation.
-                            yield return currentAnchor.ToPositionRenderingContext(
-                                value => rotation.Rotation.RotatePointAroundAxis(point: Vector2.Zero, axis: value));
-                            yield return item;
-                            break;
-
-                        case ScaleRenderingContext.Animated scale:
-                            switch (currentAnchor)
-                            {
-                                case AnchorRenderingContext.Animated animatedAnchor:
-                                    // Animated anchor and animated scale. Use an animated centerpoint.
-                                    yield return new CenterPointRenderingContext.Animated(animatedAnchor.Anchor);
-                                    yield return item;
-
-                                    // Reset the centerpoint.
-                                    yield return new CenterPointRenderingContext.Static(Vector2.Zero);
-                                    break;
-                                case AnchorRenderingContext.Static staticAnchor:
-                                    // Static anchor and animated scale.
-                                    switch (scale.ScalePercent)
+                                    if (staticAnchor.Anchor == Vector2.Zero)
                                     {
-                                        case AnimatableVector2 scale2:
-                                            yield return new PositionRenderingContext.Animated(new AnimatableVector2(scale2.Select(s =>
-                                                ScaleRenderingContext.ScalePointAroundOrigin(point: Vector2.Zero, origin: staticAnchor.Anchor, scale: s / 100)).KeyFrames));
-                                            break;
-
-                                        case AnimatableXY scaleXY:
-                                            // The scale has X and Y animated separately.
-                                            yield return new PositionRenderingContext.Animated(scaleXY.Select(
-                                                    sX => ScaleRenderingContext.ScalePointAroundOrigin(point: Vector2.Zero, origin: staticAnchor.Anchor, scale: new Vector2(sX / 100, 0)).X,
-                                                    sY => ScaleRenderingContext.ScalePointAroundOrigin(point: Vector2.Zero, origin: staticAnchor.Anchor, scale: new Vector2(0, sY / 100)).Y));
-                                            break;
-
-                                        default: throw Unreachable;
+                                        yield return item;
+                                    }
+                                    else
+                                    {
+                                        yield return new PositionRenderingContext.Static(staticAnchor.Anchor);
+                                        yield return item;
+                                        yield return new PositionRenderingContext.Static(-staticAnchor.Anchor);
                                     }
 
-                                    yield return item;
                                     break;
 
                                 default: throw Unreachable;
                             }
 
-                            break;
-
-                        case ScaleRenderingContext.Static scale:
-                            yield return currentAnchor.ToPositionRenderingContext(
-                                anchorPoint => ScaleRenderingContext.ScalePointAroundOrigin(point: Vector2.Zero, origin: anchorPoint, scale: scale.ScalePercent / 100));
-                            yield return item;
                             break;
 
                         default:
@@ -488,9 +491,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
                             break;
 
                         case RotationRenderingContext.Animated animatedRotation:
-                            success = true;
-                            yield return new RotationRenderingContext.Animated(animatedRotation.Rotation.Select(r => r + currentRotation));
-                            currentRotation = Rotation.None;
+                            if (currentRotation == Rotation.None)
+                            {
+                                yield return item;
+                            }
+                            else
+                            {
+                                // Multiply the current rotation into this animated rotation.
+                                success = true;
+                                yield return new RotationRenderingContext.Animated(animatedRotation.Rotation.Select(r => r + currentRotation));
+                                currentRotation = Rotation.None;
+                            }
+
                             break;
 
                         default:

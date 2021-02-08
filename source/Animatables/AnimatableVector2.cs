@@ -26,16 +26,28 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.Animatables
         {
         }
 
+        public AnimatableVector2 Inverted()
+            => Select(vector2 => -vector2);
+
         public AnimatableVector2 WithOffset(Vector2 offset)
             => Select(vector2 => vector2 + offset);
+
+        public AnimatableVector2 WithScale(Vector2 scale)
+            => Select(vector2 => vector2 * scale);
 
         public new AnimatableVector2 WithTimeOffset(double timeOffset)
             => timeOffset != 0 || IsAnimated
                 ? new AnimatableVector2(KeyFrames.Select(kf => kf.WithTimeOffset(timeOffset)))
                 : this;
 
+        IAnimatableVector2 IAnimatableVector2.Inverted()
+            => Inverted();
+
         IAnimatableVector2 IAnimatableVector2.WithOffset(Vector2 offset)
             => WithOffset(offset);
+
+        IAnimatableVector2 IAnimatableVector2.WithScale(Vector2 scale)
+            => WithScale(scale);
 
         IAnimatableVector2 IAnimatableVector2.WithTimeOffset(double timeOffset)
             => WithTimeOffset(timeOffset);
@@ -45,7 +57,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.Animatables
                     ? new AnimatableVector2(KeyFrames.Select(kf => kf.CloneWithNewValue(selector(kf.Value))))
                     : new AnimatableVector2(selector(InitialValue));
 
-        /// <inheritdoc/>
         public AnimatableVector2Type Type => AnimatableVector2Type.Vector2;
+
+        AnimatableVector2Type IAnimatableVector2.Type => AnimatableVector2Type.Vector2;
     }
 }

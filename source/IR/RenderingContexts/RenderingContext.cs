@@ -203,7 +203,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
         public RenderingContext GroupDown<T>()
             where T : RenderingContext
         {
-            TryGroupUp<T>(out var result);
+            TryGroupDown<T>(out var result);
             return result;
         }
 

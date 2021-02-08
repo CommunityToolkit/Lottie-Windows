@@ -36,6 +36,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContents
 
             public override int BezierSegmentCount => Geometry.InitialValue.BezierSegments.Count;
 
+            public override RenderingContent WithScale(Vector2 scale) => throw new System.NotImplementedException();
+
             public override RenderingContent WithTimeOffset(double timeOffset)
                 => new Animated(Geometry.WithTimeOffset(timeOffset));
 
@@ -65,6 +67,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContents
             public override bool IsAnimated => false;
 
             public override int BezierSegmentCount => Geometry.BezierSegments.Count;
+
+            public override RenderingContent WithScale(Vector2 scale)
+                 => new Static(Geometry.WithScale(scale));
 
             public override RenderingContent WithTimeOffset(double timeOffset) => this;
 

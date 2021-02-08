@@ -53,6 +53,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.Animatables
             return result;
         }
 
+        /// <summary>
+        /// Returns the result of rotating point 0,0 around <paramref name="axis"/>.
+        /// </summary>
+        /// <returns>The resulting point.</returns>
+        public Vector2 RotateZeroAroundAxis(Vector2 axis)
+            => RotatePointAroundAxis(Vector2.Zero, axis);
+
         public bool Equals(Rotation other) => other.Degrees == Degrees;
 
         public override bool Equals(object? obj) => obj is Rotation other && Equals(other);

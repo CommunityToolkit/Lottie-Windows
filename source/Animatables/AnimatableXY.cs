@@ -21,10 +21,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.Animatables
             Y = y;
         }
 
-        /// <inheritdoc/>
         public AnimatableVector2Type Type => AnimatableVector2Type.XY;
 
-        /// <inheritdoc/>
         public Vector2 InitialValue { get; }
 
         public Animatable<double> X { get; }
@@ -39,8 +37,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.Animatables
                 X.Select(selectorX),
                 Y.Select(selectorY));
 
+        public AnimatableXY Inverted()
+            => Select(x => -x, y => -y);
+
         public AnimatableXY WithOffset(Vector2 offset)
             => Select(x => x + offset.X, y => y + offset.Y);
+
+        public AnimatableXY WithScale(Vector2 scale)
+            => Select(x => x * scale.X, y => y * scale.Y);
 
         public AnimatableXY WithTimeOffset(double timeOffset)
             => timeOffset == 0
@@ -50,6 +54,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.Animatables
         IAnimatableVector2 IAnimatableVector2.WithOffset(Vector2 offset)
             => WithOffset(offset);
 
+        IAnimatableVector2 IAnimatableVector2.WithScale(Vector2 scale)
+            => WithScale(scale);
+
         IAnimatableVector2 IAnimatableVector2.WithTimeOffset(double timeOffset)
             => WithTimeOffset(timeOffset);
 
@@ -58,7 +65,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.Animatables
             throw Exceptions.TODO;
         }
 
-        /// <inheritdoc/>
+        IAnimatableVector2 IAnimatableVector2.Inverted()
+            => Inverted();
+
         public bool IsAnimated => X.IsAnimated || Y.IsAnimated;
+
+        AnimatableVector2Type IAnimatableVector2.Type => throw new NotImplementedException();
+
+        Vector2 IAnimatableValue<Vector2>.InitialValue => throw new NotImplementedException();
+
+        bool IAnimatableValue<Vector2>.IsAnimated => throw new NotImplementedException();
     }
 }

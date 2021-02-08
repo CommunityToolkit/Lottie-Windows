@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContents;
 using Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts;
-using Microsoft.VisualBasic;
 using static Microsoft.Toolkit.Uwp.UI.Lottie.IR.Exceptions;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers

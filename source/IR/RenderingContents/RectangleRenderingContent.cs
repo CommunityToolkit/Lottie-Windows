@@ -22,6 +22,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContents
 
         public override bool IsAnimated => Roundness.IsAnimated || Size.IsAnimated;
 
+        public override RenderingContent WithScale(Vector2 scale) => throw new System.NotImplementedException();
+
         public override RenderingContent WithTimeOffset(double timeOffset)
              => IsAnimated
                 ? new RectangleRenderingContent(Size.WithTimeOffset(timeOffset), Roundness.WithTimeOffset(timeOffset))

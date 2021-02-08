@@ -63,6 +63,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.Animatables
             return new Vector2(largestX, largestY);
         }
 
+        public PathGeometry WithScale(Vector2 scale)
+            => scale == Vector2.One
+                ? this
+                : new PathGeometry(
+                    new Sequence<BezierSegment>(
+                        BezierSegments.Select(seg => seg.WithScale(scale))),
+                    IsClosed);
+
         public PathGeometry WithOffset(Vector2 offset)
             => offset == Vector2.Zero
                 ? this

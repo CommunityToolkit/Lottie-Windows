@@ -17,6 +17,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContents
 
         public override bool IsAnimated => Diameter.IsAnimated;
 
+        public override RenderingContent WithScale(Vector2 scale) => throw new System.NotImplementedException();
+
         public override RenderingContent WithTimeOffset(double timeOffset)
         {
             if (Diameter.IsAnimated)

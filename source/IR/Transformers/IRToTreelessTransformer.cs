@@ -42,6 +42,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
             // Optimize the contexts.
             var optimizedRenderings = unifiedTimeBaseRenderings.Select(CreateRenderingOptimizer(ContextOptimizers.Optimize)).ToArray();
 
+            // Try to pre-scale the content. This is possible if a static scale
+            // can be moved to the bottom of the context.
+            optimizedRenderings = optimizedRenderings.Select(PreScale).ToArray();
+
+            // Group the renderings that have orthogonal visitility.
             VisibilityGrouping.CreateVisibilityGroups(optimizedRenderings);
 
             var result = new Rendering(
@@ -49,6 +54,34 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
                                 new MetadataRenderingContext(name: $"Lottie {source.Name}", source: source));
 
             return result;
+        }
+
+        /// <summary>
+        /// Scales the content in the rendering with the static scale in the context.
+        /// </summary>
+        static Rendering PreScale(Rendering rendering)
+        {
+            var context = rendering.Context;
+            var content = rendering.Content;
+
+            if (content is PathRenderingContent.Static staticPath &&
+                ContextOptimizers.TryMoveStaticScaleToBottom(ref context))
+            {
+                // Create a new Rendering with the content scaled and
+                // the scale removed from the bottom of the context.
+                var subContexts = context.ToArray();
+
+                // Scaled content.
+                content = staticPath.WithScale(((ScaleRenderingContext.Static)subContexts[subContexts.Length - 1]).ScalePercent / 100.0);
+
+                // Context without the scale.
+                context = RenderingContext.Compose(subContexts.Take(subContexts.Length - 1));
+                return new Rendering(content, context);
+            }
+            else
+            {
+                return rendering;
+            }
         }
 
         /// <summary>

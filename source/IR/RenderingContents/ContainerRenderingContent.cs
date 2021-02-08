@@ -4,6 +4,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContents
 {
@@ -22,6 +23,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContents
         public IReadOnlyList<Rendering> Items { get; }
 
         public override bool IsAnimated => Items.Any(item => item.IsAnimated);
+
+        public override RenderingContent WithScale(Vector2 scale) => throw new System.NotImplementedException();
 
         public override RenderingContent WithTimeOffset(double timeOffset)
             => IsAnimated

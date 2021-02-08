@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
+using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Brushes
 {
@@ -32,6 +33,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Brushes
             new RadialGradientBrush(
                 StartPoint.WithOffset(offset),
                 EndPoint.WithOffset(offset),
+                GradientStops,
+                Opacity,
+                HighlightLength,
+                HighlightDegrees);
+
+        public override Brush WithScale(Vector2 scale) =>
+            new RadialGradientBrush(
+                StartPoint.WithScale(scale),
+                EndPoint.WithScale(scale),
                 GradientStops,
                 Opacity,
                 HighlightLength,
