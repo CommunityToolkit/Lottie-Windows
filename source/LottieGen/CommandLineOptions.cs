@@ -63,10 +63,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen
         // old users won't be broken by this change.
         internal Version WinUIVersion => _winUIVersion ?? new Version(2, 4);
 
-
-    // Undocumented - use the intermediate representation and translatore.
+        // Undocumented - use the intermediate representation and translatore.
 #pragma warning disable SA1300 // Element should begin with upper-case letter
-    internal bool _UseIR { get; private set; }
+        internal bool _UseIR { get; private set; }
 #pragma warning restore SA1300 // Element should begin with upper-case letter
 
         // Returns a command line equivalent to the current set of options. This is intended
@@ -190,9 +189,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen
             TestMode,
             WinUIVersion,
 
-        // Undocumented keywords. Always start with an underscore.
+            // Undocumented keywords. Always start with an underscore.
 #pragma warning disable SA1300 // Element should begin with upper-case letter
-        _UseIR,
+            _UseIR,
 #pragma warning restore SA1300 // Element should begin with upper-case letter
         }
 
@@ -266,7 +265,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen
                 .AddPrefixedKeyword(Keyword.WinUIVersion)
                 .AddPrefixedKeyword(Keyword._UseIR);
 
-
             // The last keyword recognized. This defines what the following parameter value is for,
             // or None if not expecting a parameter value.
             var previousKeyword = Keyword.None;
@@ -310,6 +308,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen
                                 break;
                             case Keyword.Public:
                                 Public = true;
+                                break;
+                            case Keyword._UseIR:
+                                _UseIR = true;
                                 break;
 
                             // The following keywords require a parameter as the next token.

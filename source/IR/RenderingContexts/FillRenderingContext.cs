@@ -14,7 +14,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
 
         public Brush Brush { get; }
 
-        public override sealed bool DependsOn(RenderingContext other)
+        protected override sealed bool DependsOn(RenderingContext other)
             => other switch
             {
                 OpacityRenderingContext _ => true,

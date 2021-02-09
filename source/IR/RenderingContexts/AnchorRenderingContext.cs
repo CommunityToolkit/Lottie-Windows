@@ -18,7 +18,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
         public static AnchorRenderingContext Create(IAnimatableVector2 anchor)
             => anchor.IsAnimated ? new Animated(anchor) : new Static(anchor.InitialValue);
 
-        public override sealed bool DependsOn(RenderingContext other)
+        protected override sealed bool DependsOn(RenderingContext other)
             => other switch
             {
                 CenterPointRenderingContext _ => true,

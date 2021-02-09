@@ -13,7 +13,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
         {
         }
 
-        public override sealed bool DependsOn(RenderingContext other)
+        protected override sealed bool DependsOn(RenderingContext other)
             => other switch
             {
                 AnchorRenderingContext _ => true,

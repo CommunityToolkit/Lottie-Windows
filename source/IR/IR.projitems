@@ -48,6 +48,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)RenderingContents\RectangleRenderingContent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RenderingContexts\DrawingDirectionRenderingContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RenderingContexts\FillRenderingContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RenderingContexts\NormalFormContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RenderingContexts\StrokeRenderingContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RenderingContexts\UnsupportedRenderingContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Repeater.cs" />

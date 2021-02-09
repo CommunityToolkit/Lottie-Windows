@@ -68,7 +68,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
         /// Returns a value indicating whether it is safe to move <paramref name="other"/>
         /// after this <see cref="RenderingContext"/>.
         /// </summary>
-        /// <returns><c>true</c> if this <see cref="RenderingContext"/> depends <paramref name="other"/>
+        /// <returns><c>true</c> if this <see cref="RenderingContext"/> depends on <paramref name="other"/>
         /// such that changing the order relative to each other would change the semantics.</returns>
         /// <remarks>When the <see cref="GroupUp{T}"/> and <see cref="GroupDown{T}"/> methods
         /// move a <see cref="RenderingContext"/>, it will check whether a depends on b and
@@ -76,7 +76,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
         /// not need to be symmetrical. This is useful as it allows any context to declare that
         /// another context should not be moved past it, without requiring that both context
         /// types know about each other.</remarks>
-        public abstract bool DependsOn(RenderingContext other);
+        protected abstract bool DependsOn(RenderingContext other);
+
+        /// <summary>
+        /// Returns a value indicating whether it is safe to move <paramref name="other"/>
+        /// before this <see cref="RenderingContext"/>.
+        /// </summary>
+        /// <returns><c>true</c> if this <see cref="RenderingContext"/> depends on <paramref name="other"/>
+        /// such that changing the order relative to each other would change the semantics.</returns>
+        public bool IsOrderDependentWith(RenderingContext? other) =>
+            other is not null && (other.DependsOn(this) || DependsOn(other));
 
         /// <summary>
         /// Groups the <see cref="RenderingContext"/>s of type <typeparamref name="T"/> by
@@ -160,7 +169,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
                 for (var i = lastNonTIndex; i >= firstNonTIndex; i--)
                 {
                     var candidateNonT = subContexts[i];
-                    if (!candidateNonT.DependsOn(t) && !t.DependsOn(candidateNonT))
+                    if (!candidateNonT.IsOrderDependentWith(t))
                     {
                         // Success. We can move t up to this position.
                         insertionIndex = i;
@@ -274,7 +283,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
                 for (var i = lastNonTIndex; i <= firstNonTIndex; i++)
                 {
                     var candidateNonT = subContexts[i];
-                    if (!candidateNonT.DependsOn(t) && !t.DependsOn(candidateNonT))
+                    if (!candidateNonT.IsOrderDependentWith(t))
                     {
                         // Success. We can move t down to this position.
                         insertionIndex = i;
@@ -452,7 +461,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
 
             public IReadOnlyList<RenderingContext> SubContexts => _subContexts;
 
-            public override sealed bool DependsOn(RenderingContext other) => true;
+            protected override sealed bool DependsOn(RenderingContext other) => true;
 
             public override bool IsAnimated => _subContexts.Any(item => item.IsAnimated);
 
@@ -470,7 +479,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
 
         sealed class NullRenderingContext : RenderingContext
         {
-            public override sealed bool DependsOn(RenderingContext other) => false;
+            protected override sealed bool DependsOn(RenderingContext other) => false;
 
             public override bool IsAnimated => false;
 

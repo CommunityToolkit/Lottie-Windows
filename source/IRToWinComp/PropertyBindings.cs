@@ -34,7 +34,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IRToWinComp
         // one match).
         // This is used to retrieve property bindings from binding expressions embedded in Lottie
         // object names.
-        internal static string FindFirstBindingNameForProperty(string bindingString, string propertyName)
+        internal static string? FindFirstBindingNameForProperty(string bindingString, string propertyName)
                 => PropertyBindingsParser.ParseBindings(bindingString)
                     .Where(p => p.propertyName == propertyName)
                     .Select(p => p.bindingName).FirstOrDefault();

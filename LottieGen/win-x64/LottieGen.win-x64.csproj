@@ -50,4 +50,7 @@
   <Import Project="$(_SourceDir)WinUIXamlMediaData\WinUIXamlMediaData.projitems" Label="Shared" />
   <Import Project="$(_SourceDir)YamlData\YamlData.projitems" Label="Shared" />
   <Import Project="$(_SourceDir)UIDataCodeGen\UIDataCodeGen.projitems" Label="Shared" />
+  <Import Project="..\..\source\IRToWinComp\IRToWinComp.projitems" Label="Shared" />
+  <Import Project="..\..\source\IR\IR.projitems" Label="Shared" />
+  <Import Project="..\..\source\LottieToIR\LottieToIR.projitems" Label="Shared" />
 </Project>

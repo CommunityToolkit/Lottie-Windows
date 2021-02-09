@@ -107,13 +107,13 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "IR", "..\source\IR\IR.shpro
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "IRToWinComp", "..\source\IRToWinComp\IRToWinComp.shproj", "{3F38C7BB-EC65-4944-89C0-CD7517DD6AC2}"
 EndProject
-<<<<<<< HEAD
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LottieGen.win-x64", "win-x64\LottieGen.win-x64.csproj", "{FD20C604-C757-46F4-9A8C-711C39F79A46}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LottieGen", "DotnetTool\LottieGen.csproj", "{A435DD2A-942F-4D95-9E3F-216FFA5FBC4D}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{83310E27-6098-4DC2-8EFE-EC7D9418E2E5}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{968228C9-E8D6-4E2D-8040-DD7D5898E818}"
 	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
 		README.md = README.md
 	EndProjectSection
 EndProject
@@ -132,6 +132,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{968228C9-E8D6-4E2D-8040-DD7D5898E818}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		README.md = README.md
 	EndProjectSection
 EndProject
 Global
@@ -152,14 +153,14 @@ Global
 		..\source\CompMetadata\CompMetadata.projitems*{a435dd2a-942f-4d95-9e3f-216ffa5fbc4d}*SharedItemsImports = 5
 		..\source\DotLottie\DotLottie.projitems*{a435dd2a-942f-4d95-9e3f-216ffa5fbc4d}*SharedItemsImports = 5
 		..\source\GenericData\GenericData.projitems*{a435dd2a-942f-4d95-9e3f-216ffa5fbc4d}*SharedItemsImports = 5
-		..\source\IR\IR.projitems*{a5e90a6c-a27a-4550-8572-64e1d0c320ea}*SharedItemsImports = 13
-		..\source\IRToWinComp\IRToWinComp.projitems*{cb12d5ba-a6fe-41e2-b555-83c903cce92a}*SharedItemsImports = 5
+		..\source\IRToWinComp\IRToWinComp.projitems*{a435dd2a-942f-4d95-9e3f-216ffa5fbc4d}*SharedItemsImports = 5
+		..\source\IR\IR.projitems*{a435dd2a-942f-4d95-9e3f-216ffa5fbc4d}*SharedItemsImports = 5
 		..\source\LottieData\LottieData.projitems*{a435dd2a-942f-4d95-9e3f-216ffa5fbc4d}*SharedItemsImports = 5
 		..\source\LottieGenExe\LottieGenExe.projitems*{a435dd2a-942f-4d95-9e3f-216ffa5fbc4d}*SharedItemsImports = 5
 		..\source\LottieGen\LottieGen.projitems*{a435dd2a-942f-4d95-9e3f-216ffa5fbc4d}*SharedItemsImports = 5
 		..\source\LottieMetadata\LottieMetadata.projitems*{a435dd2a-942f-4d95-9e3f-216ffa5fbc4d}*SharedItemsImports = 5
 		..\source\LottieReader\LottieReader.projitems*{a435dd2a-942f-4d95-9e3f-216ffa5fbc4d}*SharedItemsImports = 5
-   	        ..\source\LottieToIR\LottieToIR.projitems*{cb12d5ba-a6fe-41e2-b555-83c903cce92a}*SharedItemsImports = 5
+		..\source\LottieToIR\LottieToIR.projitems*{a435dd2a-942f-4d95-9e3f-216ffa5fbc4d}*SharedItemsImports = 5
 		..\source\LottieToWinComp\LottieToWinComp.projitems*{a435dd2a-942f-4d95-9e3f-216ffa5fbc4d}*SharedItemsImports = 5
 		..\source\UIDataCodeGen\UIDataCodeGen.projitems*{a435dd2a-942f-4d95-9e3f-216ffa5fbc4d}*SharedItemsImports = 5
 		..\source\UIData\UIData.projitems*{a435dd2a-942f-4d95-9e3f-216ffa5fbc4d}*SharedItemsImports = 5
@@ -167,6 +168,7 @@ Global
 		..\source\WinStorageStreamsData\WinStorageStreamsData.projitems*{a435dd2a-942f-4d95-9e3f-216ffa5fbc4d}*SharedItemsImports = 5
 		..\source\WinUIXamlMediaData\WinUIXamlMediaData.projitems*{a435dd2a-942f-4d95-9e3f-216ffa5fbc4d}*SharedItemsImports = 5
 		..\source\YamlData\YamlData.projitems*{a435dd2a-942f-4d95-9e3f-216ffa5fbc4d}*SharedItemsImports = 5
+		..\source\IR\IR.projitems*{a5e90a6c-a27a-4550-8572-64e1d0c320ea}*SharedItemsImports = 13
 		..\source\CompMetadata\CompMetadata.projitems*{b0197c19-bdf5-473e-a022-e21f6122eee5}*SharedItemsImports = 13
 		..\source\LottieData\LottieData.projitems*{b3db16ee-a821-4474-a188-e64926529bbd}*SharedItemsImports = 13
 		..\source\WinCompData\WinCompData.projitems*{d02870de-7ded-4916-85d4-3175ceedef74}*SharedItemsImports = 13
@@ -178,11 +180,14 @@ Global
 		..\source\CompMetadata\CompMetadata.projitems*{fd20c604-c757-46f4-9a8c-711c39f79a46}*SharedItemsImports = 5
 		..\source\DotLottie\DotLottie.projitems*{fd20c604-c757-46f4-9a8c-711c39f79a46}*SharedItemsImports = 5
 		..\source\GenericData\GenericData.projitems*{fd20c604-c757-46f4-9a8c-711c39f79a46}*SharedItemsImports = 5
+		..\source\IRToWinComp\IRToWinComp.projitems*{fd20c604-c757-46f4-9a8c-711c39f79a46}*SharedItemsImports = 5
+		..\source\IR\IR.projitems*{fd20c604-c757-46f4-9a8c-711c39f79a46}*SharedItemsImports = 5
 		..\source\LottieData\LottieData.projitems*{fd20c604-c757-46f4-9a8c-711c39f79a46}*SharedItemsImports = 5
 		..\source\LottieGenExe\LottieGenExe.projitems*{fd20c604-c757-46f4-9a8c-711c39f79a46}*SharedItemsImports = 5
 		..\source\LottieGen\LottieGen.projitems*{fd20c604-c757-46f4-9a8c-711c39f79a46}*SharedItemsImports = 5
 		..\source\LottieMetadata\LottieMetadata.projitems*{fd20c604-c757-46f4-9a8c-711c39f79a46}*SharedItemsImports = 5
 		..\source\LottieReader\LottieReader.projitems*{fd20c604-c757-46f4-9a8c-711c39f79a46}*SharedItemsImports = 5
+		..\source\LottieToIR\LottieToIR.projitems*{fd20c604-c757-46f4-9a8c-711c39f79a46}*SharedItemsImports = 5
 		..\source\LottieToWinComp\LottieToWinComp.projitems*{fd20c604-c757-46f4-9a8c-711c39f79a46}*SharedItemsImports = 5
 		..\source\UIDataCodeGen\UIDataCodeGen.projitems*{fd20c604-c757-46f4-9a8c-711c39f79a46}*SharedItemsImports = 5
 		..\source\UIData\UIData.projitems*{fd20c604-c757-46f4-9a8c-711c39f79a46}*SharedItemsImports = 5
@@ -285,11 +290,11 @@ Global
 		{7012420D-624C-4BD4-A1D2-1C6C1655ED3A} = {AB232F35-AAF7-4AE2-B1D2-45DD9BC2F7D7}
 		{A5E90A6C-A27A-4550-8572-64E1D0C320EA} = {AB232F35-AAF7-4AE2-B1D2-45DD9BC2F7D7}
 		{3F38C7BB-EC65-4944-89C0-CD7517DD6AC2} = {AB232F35-AAF7-4AE2-B1D2-45DD9BC2F7D7}
-		{285F13C7-9B2C-481D-855E-31C8098337CA} = {AB232F35-AAF7-4AE2-B1D2-45DD9BC2F7D7}
-		{FC89273A-B2DA-4625-8A73-EF02A658D65E} = {AB232F35-AAF7-4AE2-B1D2-45DD9BC2F7D7}
 		{7654A857-9A99-4185-9F8E-DD0CE662AF23} = {AB232F35-AAF7-4AE2-B1D2-45DD9BC2F7D7}
 		{DC7F7A39-B7A7-40B4-937A-601460CAE38C} = {AB232F35-AAF7-4AE2-B1D2-45DD9BC2F7D7}
 		{E32587A8-94E8-4B68-91AD-F3612A48A62B} = {AB232F35-AAF7-4AE2-B1D2-45DD9BC2F7D7}
+		{285F13C7-9B2C-481D-855E-31C8098337CA} = {AB232F35-AAF7-4AE2-B1D2-45DD9BC2F7D7}
+		{FC89273A-B2DA-4625-8A73-EF02A658D65E} = {AB232F35-AAF7-4AE2-B1D2-45DD9BC2F7D7}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {51B9BB4C-5196-41CF-950C-12B04AD8A61C}

@@ -148,16 +148,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
             public IReadOnlyList<RenderingWithVisibility> Renderings { get; }
         }
 
+        /// <summary>
+        /// Extracts a <see cref="VisibilityRenderingContext"/>s from a <see cref="Rendering"/>
+        /// and provides helpers for determining orthogonal visibility layers.
+        /// </summary>
         sealed class RenderingWithVisibility
         {
             static int s_counter;
-            readonly List<VisibilitySegmentWithRendering> _visbilitySegments = new List<VisibilitySegmentWithRendering>();
+            readonly List<VisibilitySegmentWithRendering> _visibilitySegments =
+                new List<VisibilitySegmentWithRendering>();
 
             internal RenderingWithVisibility(Rendering rendering)
             {
                 Id = s_counter++;
-
-                Rendering = rendering;
 
                 // Calculate the visiblity of the rendering by evaluating
                 // all of its visiblity contexts and combining into a single
@@ -165,19 +168,29 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
                 Visibility =
                     VisibilityRenderingContext.Combine(
                         rendering.Context.OfType<VisibilityRenderingContext>());
+
+                Content = rendering.Content;
+
+                // Convert the context to normal form, but without the visibility contexts.
+                NormalFormContexts =
+                    NormalFormContext.ToNormalForm(
+                        rendering.Context.Without<VisibilityRenderingContext>(),
+                        Visibility.GetVisibleSegments()).ToArray();
             }
 
             public int Id { get; }
 
-            public Rendering Rendering { get; }
+            public RenderingContent Content { get; }
+
+            public IReadOnlyList<NormalFormContext> NormalFormContexts { get; }
 
             public VisibilityRenderingContext Visibility { get; }
 
-            public IReadOnlyList<VisibilitySegmentWithRendering> VisibilitySegments => _visbilitySegments;
+            public IReadOnlyList<VisibilitySegmentWithRendering> VisibilitySegments => _visibilitySegments;
 
             public void AddVisibilitySegment(VisibilitySegmentWithRendering segment)
             {
-                _visbilitySegments.Add(segment);
+                _visibilitySegments.Add(segment);
             }
 
             internal HashSet<RenderingWithVisibility> Above { get; } = new HashSet<RenderingWithVisibility>();
@@ -202,7 +215,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
                 Orthogonal = new HashSet<RenderingWithVisibility>(allRenderings);
                 Orthogonal.Remove(this);
 
-                if (!(Rendering.Content is PathRenderingContent myPath))
+                if (!(Content is PathRenderingContent myPath))
                 {
                     // For now we only support paths.
                     throw TODO;
@@ -212,7 +225,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
                 var rejects = new List<RenderingWithVisibility>();
                 foreach (var candidate in Orthogonal)
                 {
-                    var candidateContent = candidate.Rendering.Content;
+                    var candidateContent = candidate.Content;
 
                     // For now we only support paths.
                     if (candidateContent is PathRenderingContent candidatePath)

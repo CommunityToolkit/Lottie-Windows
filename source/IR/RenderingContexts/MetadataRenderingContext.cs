@@ -22,7 +22,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
 
         /// <summary>
         /// Creates a <see cref="MetadataRenderingContext"/> from a list of
-        /// <see cref="MetadataRenderingContext"/>. This it typically used
+        /// <see cref="MetadataRenderingContext"/>. This is typically used
         /// to represent a path.
         /// </summary>
         /// <returns>A composite <see cref="MetadataRenderingContext"/>.</returns>
@@ -40,7 +40,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
             return new MetadataRenderingContext(name, source);
         }
 
-        public override sealed bool DependsOn(RenderingContext other) => true;
+        protected override sealed bool DependsOn(RenderingContext other) => true;
 
         public override bool IsAnimated => false;
 

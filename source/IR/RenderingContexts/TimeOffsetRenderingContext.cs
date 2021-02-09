@@ -15,7 +15,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
         // Animated because it depends on time.
         public override bool IsAnimated => true;
 
-        public override bool DependsOn(RenderingContext other)
+        protected override bool DependsOn(RenderingContext other)
             => other.IsAnimated;
 
         public override sealed RenderingContext WithOffset(Vector2 offset) => this;

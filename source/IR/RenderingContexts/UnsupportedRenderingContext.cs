@@ -15,7 +15,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
 
         public override bool IsAnimated => false;
 
-        public override sealed bool DependsOn(RenderingContext other) => true;
+        protected override sealed bool DependsOn(RenderingContext other) => true;
 
         public override sealed RenderingContext WithOffset(Vector2 offset) => this;
 
