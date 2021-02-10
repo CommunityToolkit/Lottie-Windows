@@ -347,7 +347,7 @@ namespace LottieViewer
                 }
 
                 var duration = lottieVisualDiagnostics.Duration;
-                return $"    {_owner.Value:0.00}\r\n{_owner.Value * duration.TotalSeconds:0.00} secs";
+                return $"    {_owner.Value:0.000}\r\n{_owner.Value * duration.TotalSeconds:0.00} secs";
             }
 
             object IValueConverter.ConvertBack(object value, Type targetType, object parameter, string language)
