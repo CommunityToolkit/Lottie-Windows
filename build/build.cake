@@ -55,7 +55,7 @@ void MSBuildSolution(
     MSBuildSettings SettingsWithTarget(PlatformTarget platformTarget) =>
         new MSBuildSettings
         {
-            MaxCpuCount = 0,
+            MaxCpuCount = 1,
         }.WithTarget(target);
 
     MSBuildSettings SetProperties(MSBuildSettings settings)
