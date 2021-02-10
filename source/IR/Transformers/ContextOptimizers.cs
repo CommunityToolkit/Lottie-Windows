@@ -707,7 +707,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
                                     break;
 
                                 default:
-                                    yield return VisibilityRenderingContext.Combine(visibilities);
+                                    yield return VisibilityRenderingContext.CombineAnd(visibilities);
                                     success = true;
                                     break;
                             }

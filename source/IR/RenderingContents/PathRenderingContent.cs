@@ -18,6 +18,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContents
 
         public abstract int BezierSegmentCount { get; }
 
+        public abstract bool IsClosed { get; }
+
         public static PathRenderingContent Create(Animatable<PathGeometry> geometry)
             => geometry.IsAnimated ? new Animated(geometry) : new Static(geometry.InitialValue);
 
@@ -33,6 +35,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContents
             public Animatable<PathGeometry> Geometry { get; }
 
             public override bool IsAnimated => true;
+
+            public override bool IsClosed => Geometry.InitialValue.IsClosed;
 
             public override int BezierSegmentCount => Geometry.InitialValue.BezierSegments.Count;
 
@@ -65,6 +69,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContents
             public PathGeometry Geometry { get; }
 
             public override bool IsAnimated => false;
+
+            public override bool IsClosed => Geometry.IsClosed;
 
             public override int BezierSegmentCount => Geometry.BezierSegments.Count;
 

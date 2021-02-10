@@ -80,13 +80,27 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
                 : new VisibilityRenderingContext(
                     StateChangeTimes.Select(t => t + timeOffset).ToArray());
 
-        public static VisibilityRenderingContext Combine(IEnumerable<VisibilityRenderingContext> contexts)
-        {
-            var ios = contexts.SelectMany(c => InOrOutFrame.ConvertToInOrOutFrame(c.StateChangeTimes)).
-                            OrderBy(inOrOut => inOrOut.Offset).
-                            ToArray();
+        /// <summary>
+        /// Combines the given contexts such that the resulting context is visible only when
+        /// all of the contexts are visible.
+        /// </summary>
+        /// <returns>A context that ANDs the given contexts.</returns>
+        public static VisibilityRenderingContext CombineAnd(IEnumerable<VisibilityRenderingContext> contexts)
+            => CombineAndOr(contexts, isAnd: true);
 
-            var states = InOrOutFrame.ConvertToStateChange(ios, contexts.Count()).ToArray();
+        /// <summary>
+        /// Combines the given contexts such that the resulting context is visible when
+        /// any of the contexts are visible.
+        /// </summary>
+        /// <returns>A context that ORs the given contexts.</returns>
+        public static VisibilityRenderingContext CombineOr(IEnumerable<VisibilityRenderingContext> contexts)
+            => CombineAndOr(contexts, isAnd: false);
+
+        static VisibilityRenderingContext CombineAndOr(IEnumerable<VisibilityRenderingContext> contexts, bool isAnd)
+        {
+            var ios = contexts.SelectMany(c => InOrOutFrame.ConvertToInOrOutFrame(c.StateChangeTimes)).ToArray();
+
+            var states = InOrOutFrame.ConvertToStateChange(ios, isAnd ? contexts.Count() : 1).ToArray();
 
             return new VisibilityRenderingContext(states);
         }
@@ -153,30 +167,30 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts
                 }
             }
 
-            internal static IEnumerable<double> ConvertToStateChange(IEnumerable<InOrOutFrame> inOrOutFrames, int threshold)
+            internal static IEnumerable<double> ConvertToStateChange(
+                                                    IEnumerable<InOrOutFrame> inOrOutFrames,
+                                                    int threshold)
             {
-                var counter = 0;
-                foreach (var io in inOrOutFrames)
-                {
-                    if (io.IsIn)
-                    {
-                        counter++;
-                        if (counter == threshold)
-                        {
-                            yield return io.Offset;
-                        }
-                    }
-                    else
-                    {
-                        if (counter == threshold)
-                        {
-                            yield return io.Offset;
-                        }
+                var frames = inOrOutFrames.GroupBy(f => f.Offset).OrderBy(g => g.Key).ToArray();
 
-                        counter--;
+                var counter = 0;
+                var wasIn = false;
+                foreach (var io in frames)
+                {
+                    var netValue = io.Sum(ioFrame => ioFrame.IsIn ? 1 : -1);
+                    if (netValue != 0)
+                    {
+                        counter += netValue;
+                        if ((wasIn && counter < threshold) || (!wasIn && counter >= threshold))
+                        {
+                            wasIn = !wasIn;
+                            yield return io.Key;
+                        }
                     }
                 }
             }
+
+            public override string ToString() => $"{(IsIn ? "In" : "Out")}@{Offset}";
         }
 
         public override string ToString()

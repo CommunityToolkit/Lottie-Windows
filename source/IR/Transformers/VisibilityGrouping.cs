@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
 using Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContents;
 using Microsoft.Toolkit.Uwp.UI.Lottie.IR.RenderingContexts;
 using static Microsoft.Toolkit.Uwp.UI.Lottie.IR.Exceptions;
@@ -50,8 +51,130 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
             var layers = GroupRenderings(renderingsWithVisibility).ToArray();
             foreach (var layer in layers)
             {
+                Smoosh(layer);
                 Console.WriteLine(string.Join(", ", layer.Select(r => r.Id).OrderBy(i => i)));
             }
+        }
+
+        static void Smoosh(IReadOnlyList<RenderingWithVisibility> layer)
+        {
+            var smooshedContent = layer.Select(rwv => (rwv.Content, rwv.Visibility)).Aggregate(SmooshContent);
+        }
+
+        static (RenderingContent content, VisibilityRenderingContext visibility) SmooshContent(
+            (RenderingContent content, VisibilityRenderingContext visibility) a,
+            (RenderingContent content, VisibilityRenderingContext visibility) b)
+        {
+            // Create a new combined visibility context.
+            var smooshedVisibility = VisibilityRenderingContext.CombineOr(new[] { a.visibility, b.visibility });
+
+            // Create a new combined content.
+            switch (a.content)
+            {
+                case PathRenderingContent pathRenderingContent:
+                    if (b.content is not PathRenderingContent)
+                    {
+                        throw TODO;
+                    }
+
+                    return (content: SmooshPathRenderingContent(
+                                        (pathRenderingContent, a.visibility),
+                                        ((PathRenderingContent)b.content, b.visibility)),
+                        visibility: smooshedVisibility);
+
+                default:
+                    throw TODO;
+            }
+        }
+
+        static PathRenderingContent SmooshPathRenderingContent(
+            (PathRenderingContent content, VisibilityRenderingContext visibilty) a,
+            (PathRenderingContent content, VisibilityRenderingContext visibilty) b)
+        {
+            if (a.content.BezierSegmentCount != b.content.BezierSegmentCount ||
+                a.content.IsClosed != b.content.IsClosed)
+            {
+                // Grouping should not have been allowed if the paths
+                // are not compatible.
+                throw Unreachable;
+            }
+
+            if (a.content.IsAnimated)
+            {
+                var animatedA = (PathRenderingContent.Animated)a.content;
+                if (b.content.IsAnimated)
+                {
+                    return SmooshPathRenderingContent((animatedA, a.visibilty), ((PathRenderingContent.Animated)b.content, b.visibilty));
+                }
+                else
+                {
+                    return SmooshPathRenderingContent((animatedA, a.visibilty), ((PathRenderingContent.Static)b.content, b.visibilty));
+                }
+            }
+            else
+            {
+                var staticA = (PathRenderingContent.Static)a.content;
+                if (b.content.IsAnimated)
+                {
+                    return SmooshPathRenderingContent((staticA, a.visibilty), ((PathRenderingContent.Animated)b.content, b.visibilty));
+                }
+                else
+                {
+                    return SmooshPathRenderingContent((staticA, a.visibilty), ((PathRenderingContent.Static)b.content, b.visibilty));
+                }
+            }
+        }
+
+        static PathRenderingContent SmooshPathRenderingContent(
+            (PathRenderingContent.Static content, VisibilityRenderingContext visibilty) a,
+            (PathRenderingContent.Static content, VisibilityRenderingContext visibilty) b)
+        {
+            // If both contents are the same, just return one.
+            if (a.content.Geometry.BezierSegments.Equals(b.content.Geometry.BezierSegments))
+            {
+                return a.content;
+            }
+
+            // The contents are different. Convert to animated.
+            var keyFrames = new KeyFrame<PathGeometry>[] {
+                                    new KeyFrame<PathGeometry>(0, a.content.Geometry, HoldEasing.Instance),
+                                    new KeyFrame<PathGeometry>(b.visibilty.GetVisibleSegments().First().Offset, b.content.Geometry, HoldEasing.Instance),
+                                    };
+            var animatedGeometry = new Animatable<PathGeometry>(keyFrames);
+            return new PathRenderingContent.Animated(animatedGeometry);
+        }
+
+        static PathRenderingContent SmooshPathRenderingContent(
+            (PathRenderingContent.Animated content, VisibilityRenderingContext visibilty) a,
+            (PathRenderingContent.Animated content, VisibilityRenderingContext visibilty) b)
+        {
+            throw TODO;
+        }
+
+        static PathRenderingContent SmooshPathRenderingContent(
+            (PathRenderingContent.Static content, VisibilityRenderingContext visibilty) a,
+            (PathRenderingContent.Animated content, VisibilityRenderingContext visibilty) b)
+        {
+            throw TODO;
+        }
+
+        static PathRenderingContent SmooshPathRenderingContent(
+            (PathRenderingContent.Animated content, VisibilityRenderingContext visibilty) a,
+            (PathRenderingContent.Static content, VisibilityRenderingContext visibilty) b)
+        {
+            // If the new static content is the same as the last key frame in the animated content
+            // just return the animated content.
+            var lastKeyFrame = a.content.Geometry.KeyFrames.Last();
+            if (lastKeyFrame.Value.Equals(b.content.Geometry))
+            {
+                return a.content;
+            }
+
+            var keyFrames = a.content.Geometry.KeyFrames.Append(
+                                new KeyFrame<PathGeometry>(b.visibilty.GetVisibleSegments().First().Offset, b.content.Geometry, HoldEasing.Instance));
+
+            var animatedGeometry = new Animatable<PathGeometry>(keyFrames);
+            return new PathRenderingContent.Animated(animatedGeometry);
         }
 
         static IEnumerable<VisibilitySegmentWithRendering> GetVisibilitySegmentWithRenderings(IReadOnlyList<RenderingWithVisibility> renderings)
@@ -166,7 +289,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
                 // all of its visiblity contexts and combining into a single
                 // composite visibility.
                 Visibility =
-                    VisibilityRenderingContext.Combine(
+                    VisibilityRenderingContext.CombineAnd(
                         rendering.Context.OfType<VisibilityRenderingContext>());
 
                 Content = rendering.Content;
