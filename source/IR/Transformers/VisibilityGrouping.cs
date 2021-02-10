@@ -59,6 +59,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.IR.Transformers
         static void Smoosh(IReadOnlyList<RenderingWithVisibility> layer)
         {
             var smooshedContent = layer.Select(rwv => (rwv.Content, rwv.Visibility)).Aggregate(SmooshContent);
+            var smooshedContext = layer.Select(rwv => (rwv.NormalFormContexts, rwv.Visibility)).Aggregate(SmooshContext);
+        }
+
+        static (IReadOnlyList<NormalFormContext>, VisibilityRenderingContext visibility) SmooshContext(
+            (IReadOnlyList<NormalFormContext> context, VisibilityRenderingContext visibility) a,
+            (IReadOnlyList<NormalFormContext> context, VisibilityRenderingContext visibility) b)
+        {
+            throw TODO;
         }
 
         static (RenderingContent content, VisibilityRenderingContext visibility) SmooshContent(
