@@ -224,7 +224,8 @@ msbuild.binlog
 *.project.lock.json
 
 # Cake build directories
-/build/tools/
+/build/tools/**
+!/build/tools/packages.config
 
 # Lottie project internal development directories
 /internal/
