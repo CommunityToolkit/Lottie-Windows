@@ -42,7 +42,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Tables
                 select (Row)new Row.ColumnData(
                     ColumnData.Create(m.Name, TextAlignment.Left),
                     ColumnData.Create(m.StartConstant, TextAlignment.Left),
-                    ColumnData.Create(m.StartFrame),
+                    ColumnData.Create((int)m.StartFrame),
                     ColumnData.Create(m.StartTime.TotalMilliseconds),
                     ColumnData.Create(stringifier.Float(m.StartProgress), TextAlignment.Left)
                 );
