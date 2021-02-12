@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieMetadata;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
