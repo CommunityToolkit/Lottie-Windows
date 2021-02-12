@@ -709,79 +709,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             }
         }
 
-        static VisibilityDescription ComposeVisibilities(in VisibilityDescription a, in VisibilityDescription b)
-        {
-            if (a.Sequence.Length == 0)
-            {
-                return b;
-            }
-
-            if (b.Sequence.Length == 0)
-            {
-                return a;
-            }
-
-            if (a.Duration != b.Duration)
-            {
-                throw new InvalidOperationException();
-            }
-
-            if (a.Sequence.SequenceEqual(b.Sequence))
-            {
-                // They're identical.
-                return a;
-            }
-
-            // Combine and optimize the 2 sequences.
-            var composedSequence = ComposeVisibilitySequences(a.Sequence, b.Sequence).ToArray();
-
-            return new VisibilityDescription(a.Duration, composedSequence);
-        }
-
-        // Composes 2 visibility sequence.
-        static IEnumerable<(bool isVisible, float progress)> ComposeVisibilitySequences(
-                                                                (bool isVisible, float progress)[] a,
-                                                                (bool isVisible, float progress)[] b)
-        {
-            var currentVisibility = false;
-            var currentProgress = 0F;
-
-            var ai = 0;
-            var bi = 0;
-
-            while (ai < a.Length || bi < b.Length)
-            {
-                var cura = ai < a.Length ? a[ai] : (a[a.Length - 1].isVisible, progress: float.MaxValue);
-                var curb = bi < b.Length ? b[bi] : (b[b.Length - 1].isVisible, progress: float.MaxValue);
-
-                // Is the visibility changing?
-                if ((cura.isVisible & curb.isVisible) != currentVisibility)
-                {
-                    yield return (currentVisibility, currentProgress);
-                    currentVisibility = !currentVisibility;
-                }
-
-                if (cura.progress == curb.progress)
-                {
-                    currentProgress = cura.progress;
-                    ai++;
-                    bi++;
-                }
-                else if (cura.progress < curb.progress)
-                {
-                    currentProgress = cura.progress;
-                    ai++;
-                }
-                else
-                {
-                    currentProgress = curb.progress;
-                    bi++;
-                }
-            }
-
-            yield return (currentVisibility, currentProgress);
-        }
-
         // Find ContainerVisuals that have a single ShapeVisual child with orthongonal properties and
         // push the properties down to the ShapeVisual.
         static void PushPropertiesDownToShapeVisual(ObjectGraph<Node> graph)
@@ -875,7 +802,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
         {
             var toVisibility = GetVisiblityAnimationDescription(to);
 
-            var compositeVisibility = ComposeVisibilities(fromVisibility, toVisibility);
+            var compositeVisibility = VisibilityDescription.Compose(fromVisibility, toVisibility);
 
             if (compositeVisibility.Sequence.Length > 0)
             {
@@ -883,10 +810,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 var c = new Compositor();
                 var animation = c.CreateBooleanKeyFrameAnimation();
                 animation.Duration = compositeVisibility.Duration;
-                if (compositeVisibility.Sequence[0].progress == 0)
+                if (compositeVisibility.Sequence[0].Progress == 0)
                 {
                     // Set the initial visiblity.
-                    to.IsVisible = compositeVisibility.Sequence[0].isVisible;
+                    to.IsVisible = compositeVisibility.Sequence[0].IsVisible;
                 }
 
                 foreach (var (isVisible, progress) in compositeVisibility.Sequence)
@@ -919,14 +846,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
             if (animator is null)
             {
-                return new VisibilityDescription(TimeSpan.Zero, Array.Empty<(bool, float)>());
+                return new VisibilityDescription(TimeSpan.Zero, Array.Empty<VisibilityAtProgress>());
             }
 
             var visibilityAnimation = (BooleanKeyFrameAnimation)animator.Animation;
 
             return new VisibilityDescription(visibilityAnimation.Duration, GetDescription().ToArray());
 
-            IEnumerable<(bool isVisible, float progress)> GetDescription()
+            IEnumerable<VisibilityAtProgress> GetDescription()
             {
                 if (animator is null)
                 {
@@ -947,11 +874,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                         if (kf.Progress != 0 && visual.IsVisible == false)
                         {
                             // Output an initial keyframe.
-                            yield return (false, 0);
+                            yield return new VisibilityAtProgress(false, 0);
                         }
                     }
 
-                    yield return (kf.Value, kf.Progress);
+                    yield return new VisibilityAtProgress(kf.Value, kf.Progress);
                 }
             }
         }
@@ -980,7 +907,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
             return new VisibilityDescription(scaleAnimation.Duration, GetDescription().ToArray());
 
-            IEnumerable<(bool isVisible, float progress)> GetDescription()
+            IEnumerable<VisibilityAtProgress> GetDescription()
             {
                 foreach (KeyFrameAnimation<Vector2, Expr.Vector2>.ValueKeyFrame kf in scaleAnimation.KeyFrames)
                 {
@@ -1004,11 +931,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                         // add a non-visible state at 0.
                         if (kf.Progress != 0 && shape.Scale == Vector2.Zero)
                         {
-                            yield return (false, 0);
+                            yield return new VisibilityAtProgress(false, 0);
                         }
                     }
 
-                    yield return (kf.Value == Vector2.One, kf.Progress);
+                    yield return new VisibilityAtProgress(kf.Value == Vector2.One, kf.Progress);
                 }
             }
         }
@@ -1512,16 +1439,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
         // Gets the animator targeting the given named property, or null if not found.
         static CompositionObject.Animator? TryGetAnimatorByPropertyName(CompositionObject obj, string name) =>
             obj.Animators.Where(anim => anim.AnimatedProperty == name).FirstOrDefault();
-
-        readonly struct VisibilityDescription
-        {
-            internal VisibilityDescription(TimeSpan duration, (bool isVisible, float progress)[] sequence)
-                => (Duration, Sequence) = (duration, sequence);
-
-            internal TimeSpan Duration { get; }
-
-            internal (bool isVisible, float progress)[] Sequence { get; }
-        }
 
         sealed class Node : Graph.Node<Node>
         {

@@ -16,5 +16,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Tools\PropertyValueOptimizer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tools\PropertyId.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tools\Stats.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tools\VisibilityAtProgress.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tools\VisibilityDescription.cs" />
   </ItemGroup>
 </Project>
