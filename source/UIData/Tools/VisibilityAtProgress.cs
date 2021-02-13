@@ -4,6 +4,7 @@
 
 #nullable enable
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -24,9 +25,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             progress = Progress;
         }
 
-        // Composes 2 list sequences of VisibilityAtProgress by ANDing them together.
-        // The resulting sequence is initially invisible, then visible when both a and
-        // b are visible, and invisible if either a or b are invisible.
+        // Composes 2 lists of VisibilityAtProgress by ANDing them together.
+        // The resulting sequence always has a value at progress 0. There will
+        // be no consective items with the same visibility (i.e. each item describes
+        // a change of visibility state). The visibility will be visibile when
+        // both a AND b are visible, and invisible if either a OR b is invisible.
         internal static IEnumerable<VisibilityAtProgress> Compose(
             VisibilityAtProgress[] a,
             VisibilityAtProgress[] b)
@@ -37,7 +40,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             // The output is visible any time both a and b are visible at the same time.
             var visibilityCounter = 0;
 
-            var initialInvisibilityOutput = false;
+            var has0ProgressBeenOutput = false;
 
             foreach (var item in items)
             {
@@ -45,13 +48,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 if (visibilityCounter == 2)
                 {
                     // Both a and b are now visible.
-                    if (!initialInvisibilityOutput)
+                    if (!has0ProgressBeenOutput)
                     {
-                        initialInvisibilityOutput = true;
+                        // If we haven't output a value for progress 0, and the current
+                        // item isn't for 0, output a progress 0 value now.
                         if (item.Progress != 0)
                         {
                             yield return new VisibilityAtProgress(false, 0);
                         }
+
+                        has0ProgressBeenOutput = true;
                     }
 
                     yield return new VisibilityAtProgress(true, item.Progress);
@@ -70,13 +76,23 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             // Sequences start implicitly invisible.
             var previousVisibility = false;
 
-            foreach (var item in sequence.OrderBy(v => v.Progress).ThenBy(v => !v.IsVisible))
+            foreach (var item in sequence.GroupBy(v => v.Progress).OrderBy(v => v.Key))
             {
-                // Ignore any repeats of the same visibility state.
-                if (previousVisibility != item.IsVisible)
+                // Do not allow multiple visibilities at the same progress. It should
+                // never happen, and if it did it's not clear what it means.
+                var group = item.ToArray();
+                if (group.Length > 1)
                 {
-                    yield return item;
-                    previousVisibility = item.IsVisible;
+                    throw new ArgumentException();
+                }
+
+                var visibility = group[0];
+
+                // Ignore any repeats of the same visibility state.
+                if (previousVisibility != visibility.IsVisible)
+                {
+                    yield return visibility;
+                    previousVisibility = visibility.IsVisible;
                 }
             }
         }

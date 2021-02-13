@@ -15,7 +15,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             => (Duration, Sequence) = (duration, sequence);
 
         /// <summary>
-        /// The time over which the <see cref="VisibilityDescription"/> is valide.
+        /// The time over which the <see cref="VisibilityDescription"/> is valid.
         /// </summary>
         internal TimeSpan Duration { get; }
 
