@@ -12,7 +12,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieMetadata
 #endif
     readonly struct Marker
     {
-        internal Marker(string name, Frame frame, Duration duration)
+        public Marker(string name, Frame frame, Duration duration)
         {
             Name = name;
             Frame = frame;

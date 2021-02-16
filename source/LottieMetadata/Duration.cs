@@ -16,7 +16,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieMetadata
 #endif
     readonly struct Duration
     {
-        internal Duration(double frames, double fps)
+        public Duration(double frames, double fps)
         {
             if (frames < 0 || fps < 0)
             {
@@ -27,7 +27,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieMetadata
             FPS = fps;
         }
 
-        internal Duration(double frames, Duration other)
+        public Duration(double frames, Duration other)
         {
             Frames = frames;
             FPS = other.FPS;
