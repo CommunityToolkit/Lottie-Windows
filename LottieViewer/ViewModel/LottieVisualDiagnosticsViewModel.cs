@@ -10,6 +10,7 @@ using System.ComponentModel;
 using System.Linq;
 using Microsoft.Toolkit.Uwp.UI.Lottie;
 using Microsoft.Toolkit.Uwp.UI.Lottie.CompMetadata;
+using Microsoft.Toolkit.Uwp.UI.Lottie.LottieMetadata;
 
 namespace LottieViewer.ViewModel
 {
@@ -48,31 +49,40 @@ namespace LottieViewer.ViewModel
                     var composition = LottieVisualDiagnostics.LottieComposition;
                     if (composition != null)
                     {
+                        var metadata = new LottieCompositionMetadata(
+                            composition.Name,
+                            composition.FramesPerSecond,
+                            composition.InPoint,
+                            composition.OutPoint,
+                            composition.Markers.Select(m => (m.Name, m.Frame, m.DurationInFrames)));
+
                         var framesPerSecond = composition.FramesPerSecond;
                         var duration = composition.Duration.TotalSeconds;
                         var totalFrames = framesPerSecond * duration;
 
-                        var isFirst = true;
-                        foreach (var m in composition.Markers)
-                        {
-                            var progress = m.Frame / totalFrames;
-                            Marker marker;
+                        var nudgeFrameProportion = 0.05;
 
+                        var isFirst = true;
+                        foreach (var m in metadata.FilteredMarkers)
+                        {
+                            var inProgress = m.Frame.GetSafeNudgedProgress(nudgeFrameProportion);
+                            Marker marker;
                             var propertyName = isFirst ? $"Marker{(composition.Markers.Count > 1 ? "s" : string.Empty)}" : string.Empty;
 
-                            if (m.DurationInFrames == 0)
+                            if (m.Duration.Frames == 0)
                             {
-                                marker = new Marker(m.Name, propertyName, progress, $"{progress:0.000#}");
+                                marker = new Marker(m.Name, propertyName, (int)m.Frame.Number, inProgress);
                             }
                             else
                             {
-                                var toProgress = progress + (m.DurationInFrames / totalFrames);
+                                var outProgress = (m.Frame + m.Duration).GetSafeNudgedProgress(nudgeFrameProportion);
                                 marker = new MarkerWithDuration(
                                     m.Name,
-                                    propertyName, progress,
-                                    $"{progress:0.000#}",
-                                    toProgress,
-                                    $"{toProgress:0.000#}");
+                                    propertyName,
+                                    (int)m.Frame.Number,
+                                    inProgress,
+                                    (int)(m.Frame + m.Duration).Number,
+                                    outProgress);
                             }
 
                             isFirst = false;
@@ -122,6 +132,8 @@ namespace LottieViewer.ViewModel
                 }
             }
         }
+
+        public string FrameCountText => LottieVisualDiagnostics?.LottieComposition?.FrameCount.ToString() ?? string.Empty;
 
         public string Name => LottieVisualDiagnostics?.LottieComposition?.Name ?? string.Empty;
 

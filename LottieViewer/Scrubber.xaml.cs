@@ -207,7 +207,7 @@ namespace LottieViewer
                 {
                     var topRect = (Rectangle)_markersTop.Children[i];
                     var bottomRect = (Rectangle)_markersBottom.Children[i];
-                    var offset = _diagnostics.Markers[i].ConstrainedProgress;
+                    var offset = _diagnostics.Markers[i].ConstrainedInProgress;
                     topRect.Margin = new Thickness((offset * barWidth) + c_trackMargin, 0, 0, 0);
                     bottomRect.Margin = new Thickness((offset * barWidth) + c_trackMargin, 0, 0, 0);
                 }

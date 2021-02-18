@@ -60,6 +60,8 @@ namespace LottieViewer
 
         public ObservableCollection<object> PropertiesList { get; } = new ObservableCollection<object>();
 
+        public ObservableCollection<object> MarkersList { get; } = new ObservableCollection<object>();
+
         public string AppVersion
         {
             get
@@ -98,10 +100,12 @@ namespace LottieViewer
             if (viewModel is null)
             {
                 list.Clear();
+                MarkersList.Clear();
             }
             else if (e.PropertyName == nameof(viewModel.FileName))
             {
                 list.Clear();
+                MarkersList.Clear();
                 if (!string.IsNullOrWhiteSpace(viewModel.FileName))
                 {
                     list.Add(new PairOfStrings("File", viewModel.FileName));
@@ -119,10 +123,16 @@ namespace LottieViewer
 
                     list.Add(new PairOfStrings("Size", viewModel.SizeText));
                     list.Add(new PairOfStrings("Duration", viewModel.DurationText));
+                    list.Add(new PairOfStrings("Frames", viewModel.FrameCountText));
 
-                    foreach (var marker in viewModel.Markers)
+                    if (viewModel.Markers.Count > 0)
                     {
-                        list.Add(marker);
+                        list.Add(new PairOfStrings("Markers", string.Empty));
+
+                        foreach (var marker in viewModel.Markers)
+                        {
+                            MarkersList.Add(marker);
+                        }
                     }
                 }
             }
@@ -417,10 +427,7 @@ namespace LottieViewer
         {
             var dataContext = ((FrameworkElement)sender.ElementStart.Parent).DataContext;
             var marker = (Marker)dataContext;
-
-            // Set the progress to the marker value.
-            UncheckPlayStopButton();
-            _stage.Player.SetProgress(marker.Progress);
+            SeekToProgressValue(marker.ConstrainedInProgress);
         }
 
         // Called when the user clicks on a marker-with-duration hyperlink.
@@ -429,9 +436,19 @@ namespace LottieViewer
             var dataContext = ((FrameworkElement)sender.ElementStart.Parent).DataContext;
             var marker = (MarkerWithDuration)dataContext;
 
-            // Set the progress to the marker value.
+            SeekToProgressValue(marker.ConstrainedOutProgress);
+        }
+
+        // Sets the progress to the given value, and sets the focus to the scrubber
+        // so that the arrow keys will control the position of the scrubber.
+        void SeekToProgressValue(double progress)
+        {
             UncheckPlayStopButton();
-            _stage.Player.SetProgress(marker.ToProgress);
+
+            // Set focus to the scrubber so that the arrow keys will move the
+            // position of the scrubber.
+            _scrubber.Focus(FocusState.Programmatic);
+            _scrubber.Value = progress;
         }
     }
 
@@ -450,9 +467,9 @@ namespace LottieViewer
                 boolValue = !(value is null);
             }
 
-            // The "not" parameter inverts the logic.
             if ((string)parameter == "not")
             {
+                // The "not" parameter inverts the logic.
                 boolValue = !boolValue;
             }
 

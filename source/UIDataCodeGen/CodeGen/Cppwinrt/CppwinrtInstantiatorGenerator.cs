@@ -142,7 +142,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
 
                 if (SourceInfo.WinUIVersion >= new Version(2, 6) && SourceInfo.WinUIVersion.Major < 3)
                 {
-                    builder.WriteLine($", {Interface_IAnimatedVisualSource2.NormalizedQualifiedName}");
+                    builder.WriteLine($", {Interface_IRichAnimatedVisualSource.NormalizedQualifiedName}");
                 }
             }
 

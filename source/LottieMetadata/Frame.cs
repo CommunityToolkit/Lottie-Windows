@@ -33,6 +33,33 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieMetadata
         public double Progress => Number / _context.Frames;
 
         /// <summary>
+        /// Gets the progress value that is the given <paramref name="frameProportion"/> greater
+        /// than the actual progress value. This is used to compensate for rounding of floating
+        /// point values that may cause the progress value to refer to an animation value from
+        /// the previous frame.
+        /// </summary>
+        /// <param name="frameProportion">The proportion of a frame time to nudge.</param>
+        /// <returns>The nudged progress.</returns>
+        /// <remarks>In most cases <see cref="GetSafeNudgedProgress(double)"/> should be
+        /// used as it prevents the nudged value from being greater than 1, and it has
+        /// special handling for the 0 value.</remarks>
+        public double GetNudgedProgress(double frameProportion)
+             => (Number + frameProportion) / _context.Frames;
+
+        /// <summary>
+        /// Gets a nudged progress value, but handles 0 values specially, and ensures the nudge
+        /// will never result in a value that is greater than 1.
+        /// </summary>
+        /// <param name="frameProportion">The proportion of a frame time to nudge.</param>
+        /// <returns>The nudged progress.</returns>
+        /// <remarks>This method does not nudge zero values because they there is no
+        /// chance that they could refer to the previous frame.</remarks>
+        public double GetSafeNudgedProgress(double frameProportion)
+            => Number == 0
+                ? 0
+                : Math.Min(1, GetNudgedProgress(frameProportion));
+
+        /// <summary>
         /// The location as a time offset from the start of the Lottie composition.
         /// </summary>
         public TimeSpan Time => Progress * _context.Time;

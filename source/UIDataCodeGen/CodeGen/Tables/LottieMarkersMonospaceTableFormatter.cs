@@ -91,7 +91,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Tables
                     ColumnData.Create(m.StartTime.TotalMilliseconds),
                     m.DurationInFrames > 0 ? ColumnData.Create(m.Duration.TotalMilliseconds) : ColumnData.Empty,
                     ColumnData.Create(stringifier.Float(m.StartProgress), TextAlignment.Left),
-                    m.DurationInFrames > 0 ? ColumnData.Create(stringifier.Float(m.EndProgress), TextAlignment.Left) : ColumnData.Empty
+                    m.DurationInFrames > 0 ? ColumnData.Create(stringifier.Double(m.EndProgress), TextAlignment.Left) : ColumnData.Empty
                 );
 
             records = records.Append(Row.BodyBottom);

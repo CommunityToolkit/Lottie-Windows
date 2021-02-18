@@ -14,20 +14,22 @@ namespace LottieViewer.ViewModel
         internal MarkerWithDuration(
             string name,
             string propertyName,
-            double progress,
-            string progressText,
-            double toProgress,
-            string toProgressText)
-            : base(name, propertyName, progress, progressText)
+            int inFrame,
+            double inProgress,
+            int outFrame,
+            double outProgress)
+            : base(name, propertyName, inFrame, inProgress)
         {
-            ToProgress = toProgress;
-            ToProgressText = toProgressText;
+            OutFrame = outFrame;
+            OutProgress = outProgress;
         }
 
-        public double ToProgress { get; }
+        public int OutFrame { get; }
 
-        public string ToProgressText { get; }
+        public double OutProgress { get; }
 
-        public double ConstrainedToProgress => Math.Max(0, Math.Min(1, ToProgress));
+        public string OutProgressText => $"{OutProgress:0.000#}";
+
+        public double ConstrainedOutProgress => Math.Max(0, Math.Min(1, OutProgress));
     }
 }

@@ -166,9 +166,10 @@
                         <Border Style="{StaticResource SeparatorStyle}"/>
 
                         <!-- Properties list. Only visible if there is a Diagnostics object. -->
-                        <Grid Visibility="{x:Bind _stage.DiagnosticsViewModel.DiagnosticsObject, Converter={StaticResource VisibilityConverter}, ConverterParameter=whatthe, Mode=OneWay}">
+                        <Grid Visibility="{x:Bind _stage.DiagnosticsViewModel.DiagnosticsObject, Converter={StaticResource VisibilityConverter}, Mode=OneWay}">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="26"/>
+                                <RowDefinition/>
                                 <RowDefinition/>
                             </Grid.RowDefinitions>
                             <Grid.Resources>
@@ -179,38 +180,49 @@
                                     </StackPanel>
                                 </DataTemplate>
 
-                                <DataTemplate x:Key="MarkerTemplate" x:DataType="viewmodel:Marker">
-                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,2">
-                                        <TextBlock Foreground="LightGray" MinWidth="60" Text="{x:Bind PropertyName}"/>
-                                        <TextBlock Foreground="White" TextWrapping="Wrap" MaxWidth="250">
-                                        <Hyperlink Click="MarkerClick"><Run Text="{x:Bind ProgressText}"/></Hyperlink> <Run Text="{x:Bind Name}"/>
-                                        </TextBlock>
-                                    </StackPanel>
-                                </DataTemplate>
-
-                                <DataTemplate x:Key="MarkerWithDurationTemplate" x:DataType="viewmodel:MarkerWithDuration">
-                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,2">
-                                        <TextBlock Foreground="LightGray" MinWidth="60" Text="{x:Bind PropertyName}"/>
-                                        <TextBlock Foreground="White" TextWrapping="Wrap" MaxWidth="250">
-                                        <Hyperlink Click="MarkerClick"><Run Text="{x:Bind ProgressText}"/></Hyperlink> -
-                                        <Hyperlink Click="MarkerEndClick"><Run Text="{x:Bind ToProgressText}"/></Hyperlink> <Run Text="{x:Bind Name}"/>
-                                        </TextBlock>
-                                    </StackPanel>
-                                </DataTemplate>
-
                                 <local:PropertiesTemplateSelector 
                                     x:Key="PropertiesTemplateSelector"
-                                    Normal="{StaticResource NormalTemplate}"
-                                    Marker="{StaticResource MarkerTemplate}"
-                                    MarkerWithDuration="{StaticResource MarkerWithDurationTemplate}"/>
+                                    Normal="{StaticResource NormalTemplate}" />
                             </Grid.Resources>
                             <TextBlock FontWeight="Bold" >Lottie properties</TextBlock>
-                            <ItemsControl x:Name="InfoList" Grid.Row="1" ItemsSource="{x:Bind PropertiesList}" ItemTemplateSelector="{StaticResource PropertiesTemplateSelector}"/>
+
+                            <!-- The list of Lottie properties. -->
+                            <ItemsControl Grid.Row="1" ItemsSource="{x:Bind PropertiesList}" ItemTemplateSelector="{StaticResource PropertiesTemplateSelector}"/>
+
+                            <!-- Markers list. -->
+                            <Grid Grid.Row="2">
+                                <Grid.Resources>
+                                    <DataTemplate x:Key="MarkerTemplate" x:DataType="viewmodel:Marker">
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,2" MaxWidth="310">
+                                            <TextBlock Foreground="White" TextAlignment="Right" TextWrapping="Wrap" MaxWidth="250" MinWidth="60" Padding="0,0,8,0">
+                                                <Hyperlink Click="MarkerClick"><Run Text="{x:Bind InFrame}"/></Hyperlink>
+                                            </TextBlock>
+                                            <TextBlock Foreground="White" TextAlignment="Right" TextWrapping="Wrap" Text="{x:Bind Name}"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+
+                                    <DataTemplate x:Key="MarkerWithDurationTemplate" x:DataType="viewmodel:MarkerWithDuration">
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,2" MaxWidth="310">
+                                            <TextBlock Foreground="White" TextWrapping="Wrap" MaxWidth="250" MinWidth="60" Padding="0,0,8,0">
+                                                <Hyperlink Click="MarkerClick"><Run Text="{x:Bind InFrame}"/></Hyperlink> -
+                                                <Hyperlink Click="MarkerEndClick"><Run Text="{x:Bind OutFrame}"/></Hyperlink>
+                                            </TextBlock>
+                                            <TextBlock Foreground="White" TextWrapping="Wrap" Text="{x:Bind Name}"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+
+                                    <local:PropertiesTemplateSelector 
+                                        x:Key="PropertiesTemplateSelector"
+                                        Marker="{StaticResource MarkerTemplate}"
+                                        MarkerWithDuration="{StaticResource MarkerWithDurationTemplate}"/>
+                                </Grid.Resources>
+                                <ItemsControl ItemsSource="{x:Bind MarkersList}" ItemTemplateSelector="{StaticResource PropertiesTemplateSelector}"/>
+                            </Grid>
                         </Grid>
 
                         <!-- Separator -->
                         <Border Style="{StaticResource SeparatorStyle}"
-                            Visibility="{x:Bind _stage.DiagnosticsViewModel.DiagnosticsObject, Converter={StaticResource VisibilityConverter}, ConverterParameter=whatthe, Mode=OneWay}"/>
+                            Visibility="{x:Bind _stage.DiagnosticsViewModel.DiagnosticsObject, Converter={StaticResource VisibilityConverter}, Mode=OneWay}"/>
 
                         <!-- App version info. -->
                         <Grid>

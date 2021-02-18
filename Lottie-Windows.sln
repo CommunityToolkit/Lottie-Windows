@@ -170,8 +170,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LottieGen", "LottieGen\Dotn
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LottieGen.win-x64", "LottieGen\win-x64\LottieGen.win-x64.csproj", "{E91E3CDE-3088-4B12-8472-D2C1C05B7229}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "CommandLine", "source\CommandLine\CommandLine.shproj", "{DB8248EB-8DD0-4EE0-86E3-F0BA9A405933}"
-EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "LottieGen", "source\LottieGen\LottieGen.shproj", "{7654A857-9A99-4185-9F8E-DD0CE662AF23}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "LottieGenExe", "source\LottieGenExe\LottieGenExe.shproj", "{DC7F7A39-B7A7-40B4-937A-601460CAE38C}"
@@ -241,7 +239,6 @@ Global
 		source\YamlData\YamlData.projitems*{cb587630-3cfd-4bb3-867c-3f5b1ffbc738}*SharedItemsImports = 5
 		source\WinCompData\WinCompData.projitems*{d02870de-7ded-4916-85d4-3175ceedef74}*SharedItemsImports = 13
 		source\UIDataCodeGen\UIDataCodeGen.projitems*{d02be6c8-14db-4b4f-8600-f3c9b69c104d}*SharedItemsImports = 13
-		source\CommandLine\CommandLine.projitems*{db8248eb-8dd0-4ee0-86e3-f0ba9a405933}*SharedItemsImports = 13
 		source\LottieGenExe\LottieGenExe.projitems*{dc7f7a39-b7a7-40b4-937a-601460cae38c}*SharedItemsImports = 13
 		source\NullablesAttributes\NullablesAttributes.projitems*{e32587a8-94e8-4b68-91ad-f3612a48a62b}*SharedItemsImports = 13
 		source\Animatables\Animatables.projitems*{e392bad0-f936-4b64-a445-552597795cc7}*SharedItemsImports = 5
@@ -712,7 +709,6 @@ Global
 		{AB2ACC11-DE31-4E47-8A5B-895D6934684F} = {C75BD686-21A6-4EB3-8D4B-D5A01C019C52}
 		{88C07427-E8AF-4F9D-A4FE-07EB2D975723} = {C75BD686-21A6-4EB3-8D4B-D5A01C019C52}
 		{FC89273A-B2DA-4625-8A73-EF02A658D65E} = {AB232F35-AAF7-4AE2-B1D2-45DD9BC2F7D7}
-		{DB8248EB-8DD0-4EE0-86E3-F0BA9A405933} = {AB232F35-AAF7-4AE2-B1D2-45DD9BC2F7D7}
 		{7654A857-9A99-4185-9F8E-DD0CE662AF23} = {AB232F35-AAF7-4AE2-B1D2-45DD9BC2F7D7}
 		{DC7F7A39-B7A7-40B4-937A-601460CAE38C} = {AB232F35-AAF7-4AE2-B1D2-45DD9BC2F7D7}
 	EndGlobalSection

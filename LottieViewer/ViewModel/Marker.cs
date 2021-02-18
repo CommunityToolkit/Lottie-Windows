@@ -10,11 +10,11 @@ namespace LottieViewer.ViewModel
 {
     class Marker
     {
-        internal Marker(string name, string propertyName, double progress, string progressText)
+        internal Marker(string name, string propertyName, int inFrame, double inProgress)
         {
             Name = name;
-            Progress = progress;
-            ProgressText = progressText;
+            InProgress = inProgress;
+            InFrame = inFrame;
             PropertyName = propertyName;
         }
 
@@ -22,10 +22,12 @@ namespace LottieViewer.ViewModel
 
         public string Name { get; }
 
-        public double Progress { get; }
+        public int InFrame { get; }
 
-        public string ProgressText { get; }
+        public double InProgress { get; }
 
-        public double ConstrainedProgress => Math.Max(0, Math.Min(1, Progress));
+        public string InProgressText => $"{InProgress:0.000#}";
+
+        public double ConstrainedInProgress => Math.Max(0, Math.Min(1, InProgress));
     }
 }
