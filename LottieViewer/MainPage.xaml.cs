@@ -6,6 +6,7 @@
 
 //#define DebugDragDrop
 using System;
+using System.Collections;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -17,11 +18,14 @@ using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation.Metadata;
 using Windows.Storage;
 using Windows.Storage.Pickers;
+using Windows.System;
 using Windows.UI;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
+using Windows.UI.Xaml.Input;
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 #pragma warning disable SA1402 // File may only contain a single type
@@ -127,8 +131,6 @@ namespace LottieViewer
 
                     if (viewModel.Markers.Count > 0)
                     {
-                        list.Add(new PairOfStrings("Markers", string.Empty));
-
                         foreach (var marker in viewModel.Markers)
                         {
                             MarkersList.Add(marker);
@@ -461,9 +463,17 @@ namespace LottieViewer
             {
                 // The value is already a boolean.
             }
+            else if (value is int count)
+            {
+                boolValue = count > 0;
+            }
+            else if (value is ICollection collection)
+            {
+                boolValue = collection.Count > 0;
+            }
             else
             {
-                // The value is not a boolean. Used !null to convert to a boolean.
+                // Used !null to convert to a boolean.
                 boolValue = !(value is null);
             }
 

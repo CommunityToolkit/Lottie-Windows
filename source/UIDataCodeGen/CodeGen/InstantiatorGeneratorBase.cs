@@ -170,7 +170,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// <summary>
         /// Well-known interface type.
         /// </summary>
-        protected TypeName Interface_IRichAnimatedVisualSource { get; } = new TypeName("Microsoft.UI.Xaml.Controls.IRichAnimatedVisualSource");
+        protected TypeName Interface_IAnimatedVisualSource2 { get; } = new TypeName("Microsoft.UI.Xaml.Controls.IAnimatedVisualSource2");
 
         /// <summary>
         /// Information about the IAnimatedVisualSourceInfo implementation.

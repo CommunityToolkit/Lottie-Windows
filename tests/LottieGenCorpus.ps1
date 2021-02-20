@@ -25,7 +25,7 @@ Param(
 
 # Find the most recently built LottieGen.dll.
 $lottieGenExe = 
-    Get-ChildItem LottieGen.exe -r -path "$PSScriptRoot\..\LottieGen\bin\" | 
+    Get-ChildItem LottieGen.exe -r -path "$PSScriptRoot\..\LottieGen\dotnettool\bin\" | 
     Sort-Object -Property 'CreationTime' -Desc | 
     Select-Object -first 1
 

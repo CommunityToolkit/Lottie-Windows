@@ -282,7 +282,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
 
             if (SourceInfo.WinUIVersion >= new Version(2, 6) && SourceInfo.WinUIVersion.Major < 3)
             {
-                builder.WriteLine($", {Interface_IRichAnimatedVisualSource.GetQualifiedName(_s)}");
+                builder.WriteLine($", {Interface_IAnimatedVisualSource2.GetQualifiedName(_s)}");
             }
 
             foreach (var additionalInterface in SourceInfo.AdditionalInterfaces)

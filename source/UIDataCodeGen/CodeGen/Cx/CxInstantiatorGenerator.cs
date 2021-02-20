@@ -134,7 +134,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
 
             if (SourceInfo.WinUIVersion >= new Version(2, 6) && SourceInfo.WinUIVersion.Major < 3)
             {
-                inherits.Add(Interface_IRichAnimatedVisualSource.GetQualifiedName(_s));
+                inherits.Add(Interface_IAnimatedVisualSource2.GetQualifiedName(_s));
             }
 
             inherits.AddRange(SourceInfo.AdditionalInterfaces.Select(n => n.GetQualifiedName(_s)));
@@ -373,7 +373,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
 
             if (SourceInfo.WinUIVersion >= new Version(2, 6) && SourceInfo.WinUIVersion.Major < 3)
             {
-                inherits.Add(Interface_IRichAnimatedVisualSource.GetQualifiedName(_s));
+                inherits.Add(Interface_IAnimatedVisualSource2.GetQualifiedName(_s));
             }
 
             inherits.Add("INotifyPropertyChanged");

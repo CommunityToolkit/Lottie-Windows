@@ -11,6 +11,7 @@ using System.Linq;
 using Microsoft.Toolkit.Uwp.UI.Lottie;
 using Microsoft.Toolkit.Uwp.UI.Lottie.CompMetadata;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieMetadata;
+using Windows.Media.Audio;
 
 namespace LottieViewer.ViewModel
 {
@@ -19,6 +20,12 @@ namespace LottieViewer.ViewModel
     /// </summary>
     sealed class LottieVisualDiagnosticsViewModel : INotifyPropertyChanged
     {
+        // How much past the start of the frame we consider to be the actual start of the
+        // frame. Nudging is done to compensate for frames being integers, but progress
+        // is floating point, which can cause math done to the progress value to round
+        // down to the previous frame value.
+        public const double NudgeFrameProportion = 0.05;
+
         public event PropertyChangedEventHandler? PropertyChanged;
 
         public object? DiagnosticsObject
@@ -60,12 +67,10 @@ namespace LottieViewer.ViewModel
                         var duration = composition.Duration.TotalSeconds;
                         var totalFrames = framesPerSecond * duration;
 
-                        var nudgeFrameProportion = 0.05;
-
                         var isFirst = true;
                         foreach (var m in metadata.FilteredMarkers)
                         {
-                            var inProgress = m.Frame.GetSafeNudgedProgress(nudgeFrameProportion);
+                            var inProgress = m.Frame.GetNudgedProgress(NudgeFrameProportion);
                             Marker marker;
                             var propertyName = isFirst ? $"Marker{(composition.Markers.Count > 1 ? "s" : string.Empty)}" : string.Empty;
 
@@ -75,7 +80,7 @@ namespace LottieViewer.ViewModel
                             }
                             else
                             {
-                                var outProgress = (m.Frame + m.Duration).GetSafeNudgedProgress(nudgeFrameProportion);
+                                var outProgress = (m.Frame + m.Duration).GetNudgedProgress(NudgeFrameProportion);
                                 marker = new MarkerWithDuration(
                                     m.Name,
                                     propertyName,
@@ -115,7 +120,7 @@ namespace LottieViewer.ViewModel
             }
         }
 
-        public LottieVisualDiagnostics? LottieVisualDiagnostics { get; private set; }
+        internal LottieVisualDiagnostics? LottieVisualDiagnostics { get; private set; }
 
         public string DurationText
         {
@@ -133,7 +138,13 @@ namespace LottieViewer.ViewModel
             }
         }
 
-        public string FrameCountText => LottieVisualDiagnostics?.LottieComposition?.FrameCount.ToString() ?? string.Empty;
+        public Duration Duration => new Duration(FrameCount, FramesPerSecond);
+
+        public double FramesPerSecond => LottieVisualDiagnostics?.LottieComposition?.FramesPerSecond ?? 0;
+
+        public double FrameCount => LottieVisualDiagnostics?.LottieComposition?.FrameCount ?? 0;
+
+        public string FrameCountText => FrameCount.ToString();
 
         public string Name => LottieVisualDiagnostics?.LottieComposition?.Name ?? string.Empty;
 
@@ -162,6 +173,16 @@ namespace LottieViewer.ViewModel
                 return $"{LottieVisualDiagnostics.LottieWidth}x{LottieVisualDiagnostics.LottieHeight} ({aspectRatio.Item1:0.##}:{aspectRatio.Item2:0.##})";
             }
         }
+
+        public Frame GetFrame(double frameNumber)
+            => LottieVisualDiagnostics is null ? default : new Frame(Duration, frameNumber);
+
+        public double GetNudgedFrameAsProgress(double frameNumber)
+            => LottieVisualDiagnostics is null ? default : new Frame(Duration, frameNumber).GetNudgedProgress(NudgeFrameProportion);
+
+        // Converts the given progress value to a frame number.
+        public Frame ProgressToFrame(double progress)
+            => LottieVisualDiagnostics is null ? default : Duration.GetFrameFromNudgedProgress(progress, NudgeFrameProportion);
 
         // Returns a pleasantly simplified ratio for the given value.
         // For example an aspect ratio of 800 x 600 will result in a call to here

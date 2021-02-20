@@ -21,7 +21,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         readonly Marker _marker;
         readonly double _nudgeFrameProportion;
 
-        MarkerInfo(Marker marker, string name, string startConstant, string? endConstant, double nudgeFrameProportion = 0.05)
+        MarkerInfo(Marker marker, string name, string startConstant, string? endConstant, double nudgeFrameProportion)
         {
             _marker = marker;
             _nudgeFrameProportion = nudgeFrameProportion;
@@ -40,11 +40,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         public TimeSpan StartTime => _marker.Frame.Time;
 
-        public double StartProgress => _marker.Frame.GetSafeNudgedProgress(_nudgeFrameProportion);
+        public double StartProgress => _marker.Frame.GetNudgedProgress(_nudgeFrameProportion);
 
         public string? EndConstant { get; }
 
-        public double EndProgress => (_marker.Frame + _marker.Duration).GetSafeNudgedProgress(_nudgeFrameProportion);
+        public double EndProgress => (_marker.Frame + _marker.Duration).GetNudgedProgress(_nudgeFrameProportion);
 
         public string Name { get; }
 

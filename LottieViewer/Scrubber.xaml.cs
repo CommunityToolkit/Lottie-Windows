@@ -6,15 +6,18 @@
 
 using System;
 using System.Collections.Specialized;
+using System.Linq;
 using System.Numerics;
 using LottieViewer.ViewModel;
 using Windows.Foundation;
+using Windows.System;
 using Windows.UI;
 using Windows.UI.Composition;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Hosting;
+using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 
@@ -55,25 +58,6 @@ namespace LottieViewer
         string _currentVisualStateName = string.Empty;
 
         public event TypedEventHandler<Scrubber, ScrubberValueChangedEventArgs>? ValueChanged;
-
-        internal LottieVisualDiagnosticsViewModel? DiagnosticsViewModel
-        {
-            get => _diagnostics;
-            set
-            {
-                if (_diagnostics != null)
-                {
-                    _diagnostics.Markers.CollectionChanged -= Markers_CollectionChanged;
-                }
-
-                _diagnostics = value;
-
-                if (_diagnostics != null)
-                {
-                    _diagnostics.Markers.CollectionChanged += Markers_CollectionChanged;
-                }
-            }
-        }
 
         public Scrubber()
         {
@@ -149,6 +133,28 @@ namespace LottieViewer
 
             // Set the initial colors.
             UpdateColors();
+
+            // Intercept keys so we can customize what the keys do.
+            ScrubberNavigationKeyHandler.InterceptKeys(this);
+        }
+
+        internal LottieVisualDiagnosticsViewModel? DiagnosticsViewModel
+        {
+            get => _diagnostics;
+            set
+            {
+                if (_diagnostics != null)
+                {
+                    _diagnostics.Markers.CollectionChanged -= Markers_CollectionChanged;
+                }
+
+                _diagnostics = value;
+
+                if (_diagnostics != null)
+                {
+                    _diagnostics.Markers.CollectionChanged += Markers_CollectionChanged;
+                }
+            }
         }
 
         /// <summary>
@@ -214,6 +220,74 @@ namespace LottieViewer
             }
 
             return result;
+        }
+
+        // Called when a keypress indicates that the scrubber should move its position to the left.
+        void OnScrubberLeftKey(VirtualKeyModifiers modifiers)
+        {
+            if (_diagnostics is null)
+            {
+                return;
+            }
+
+            var frame = _diagnostics.ProgressToFrame(Value).Number;
+
+            // Round the frame down to an integral value.
+            var roundedFrame = Math.Floor(frame);
+
+            if (frame - roundedFrame > 0.3333)
+            {
+                // Rounding caused the frame to move more than 1/3 of a frame.
+                // Snap to that value rather than the previous frame.
+                Value = _diagnostics.GetNudgedFrameAsProgress(roundedFrame);
+            }
+            else
+            {
+                var previousFrame = roundedFrame - 1;
+                if (previousFrame < 0)
+                {
+                    // Wrap around - go to the end.
+                    Value = 1;
+                }
+                else
+                {
+                    Value = _diagnostics.GetNudgedFrameAsProgress(previousFrame);
+                }
+            }
+        }
+
+        // Called when a keypress indicates that the scrubber should move its position to the right.
+        void OnScrubberRightKey(VirtualKeyModifiers modifiers)
+        {
+            if (_diagnostics is null)
+            {
+                return;
+            }
+
+            var frame = _diagnostics.ProgressToFrame(Value).Number;
+
+            // Round the frame up to an integral value.
+            var roundedFrame = Math.Ceiling(frame);
+
+            if (roundedFrame - frame > 0.3333)
+            {
+                // Rounding caused the frame to move more than 1/3 of a frame.
+                // Snap to that value rather than the next frame.
+                Value = _diagnostics.GetNudgedFrameAsProgress(roundedFrame);
+            }
+            else
+            {
+                var nextFrame = roundedFrame + 1;
+                if (nextFrame > _diagnostics.FrameCount)
+                {
+                    // Wrap around - go to the start.
+                    Value = 0;
+                }
+                else
+                {
+                    Value = _diagnostics.GetNudgedFrameAsProgress(nextFrame);
+                }
+            }
         }
 
         // Returns a color brush which has its color bound to the property with the given name.
@@ -353,6 +427,110 @@ namespace LottieViewer
             object IValueConverter.ConvertBack(object value, Type targetType, object parameter, string language)
             {
                 throw new NotImplementedException();
+            }
+        }
+
+        // Intercepts and interprets keys that would normally be used to move the slider, so that
+        // the policy for what each key does can be implemented outside of the control.
+        sealed class ScrubberNavigationKeyHandler
+        {
+            readonly Scrubber _owner;
+            bool _isMenuPressed;
+            bool _isControlPressed;
+            bool _isShiftPressed;
+
+            internal static void InterceptKeys(Scrubber owner)
+               => new ScrubberNavigationKeyHandler(owner);
+
+            ScrubberNavigationKeyHandler(Scrubber owner)
+            {
+                _owner = owner;
+                owner.PreviewKeyDown += OnKeyDown;
+                owner.PreviewKeyUp += OnKeyUp;
+            }
+
+            VirtualKeyModifiers GetModifiers()
+            {
+                var result = VirtualKeyModifiers.None;
+                if (_isControlPressed)
+                {
+                    result |= VirtualKeyModifiers.Control;
+                }
+
+                if (_isMenuPressed)
+                {
+                    result |= VirtualKeyModifiers.Menu;
+                }
+
+                if (_isShiftPressed)
+                {
+                    result |= VirtualKeyModifiers.Shift;
+                }
+
+                return result;
+            }
+
+            void OnKeyDown(object sender, KeyRoutedEventArgs e)
+            {
+                switch (e.Key)
+                {
+                    case VirtualKey.Left:
+                    case VirtualKey.Down:
+                        if (_owner.IsEnabled)
+                        {
+                            _owner.OnScrubberLeftKey(GetModifiers());
+                            e.Handled = true;
+                        }
+
+                        break;
+
+                    case VirtualKey.Right:
+                    case VirtualKey.Up:
+                        if (_owner.IsEnabled)
+                        {
+                            _owner.OnScrubberRightKey(GetModifiers());
+                            e.Handled = true;
+                        }
+
+                        break;
+
+                    case VirtualKey.Control:
+                        _isControlPressed = true;
+                        break;
+
+                    case VirtualKey.Menu:
+                        _isMenuPressed = true;
+                        break;
+
+                    case VirtualKey.Shift:
+                        _isShiftPressed = true;
+                        break;
+                }
+            }
+
+            void OnKeyUp(object sender, KeyRoutedEventArgs e)
+            {
+                switch (e.Key)
+                {
+                    case VirtualKey.Left:
+                    case VirtualKey.Right:
+                    case VirtualKey.Down:
+                    case VirtualKey.Up:
+                        e.Handled = true;
+                        break;
+
+                    case VirtualKey.Control:
+                        _isControlPressed = false;
+                        break;
+
+                    case VirtualKey.Menu:
+                        _isMenuPressed = false;
+                        break;
+
+                    case VirtualKey.Shift:
+                        _isShiftPressed = false;
+                        break;
+                }
             }
         }
     }

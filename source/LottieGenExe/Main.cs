@@ -5,6 +5,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Runtime;
 using System.Threading.Tasks;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp;
@@ -54,6 +55,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGenExe
 
         RunResult Run()
         {
+            // Tune GC for highest throughput. This overrides the default
+            // value (Interactive) that compromises throughput in favor of
+            // smaller pauses. We are not interactive, so we might as well
+            // run as fast as possible.
+            GCSettings.LatencyMode = GCLatencyMode.Batch;
+
             // Sign on
             var assemblyVersion = ThisAssembly.AssemblyInformationalVersion;
 
