@@ -6,7 +6,6 @@
 
 using System;
 using System.Collections.Specialized;
-using System.Linq;
 using System.Numerics;
 using LottieViewer.ViewModel;
 using Windows.Foundation;
@@ -230,16 +229,14 @@ namespace LottieViewer
                 return;
             }
 
-            var frame = _diagnostics.ProgressToFrame(Value).Number;
+            var frame = _diagnostics.NudgedProgressToFrame(Value).Number;
 
             // Round the frame down to an integral value.
             var roundedFrame = Math.Floor(frame);
 
-            if (frame - roundedFrame > 0.3333)
+            if (!IsEffectivelyTheSameFrame(roundedFrame, frame))
             {
-                // Rounding caused the frame to move more than 1/3 of a frame.
-                // Snap to that value rather than the previous frame.
-                Value = _diagnostics.GetNudgedFrameAsProgress(roundedFrame);
+                Value = _diagnostics.FrameToNudgedProgress(roundedFrame);
             }
             else
             {
@@ -251,7 +248,7 @@ namespace LottieViewer
                 }
                 else
                 {
-                    Value = _diagnostics.GetNudgedFrameAsProgress(previousFrame);
+                    Value = _diagnostics.FrameToNudgedProgress(previousFrame);
                 }
             }
         }
@@ -264,16 +261,14 @@ namespace LottieViewer
                 return;
             }
 
-            var frame = _diagnostics.ProgressToFrame(Value).Number;
+            var frame = _diagnostics.NudgedProgressToFrame(Value).Number;
 
             // Round the frame up to an integral value.
             var roundedFrame = Math.Ceiling(frame);
 
-            if (roundedFrame - frame > 0.3333)
+            if (!IsEffectivelyTheSameFrame(roundedFrame, frame))
             {
-                // Rounding caused the frame to move more than 1/3 of a frame.
-                // Snap to that value rather than the next frame.
-                Value = _diagnostics.GetNudgedFrameAsProgress(roundedFrame);
+                Value = _diagnostics.FrameToNudgedProgress(roundedFrame);
             }
             else
             {
@@ -285,10 +280,17 @@ namespace LottieViewer
                 }
                 else
                 {
-                    Value = _diagnostics.GetNudgedFrameAsProgress(nextFrame);
+                    Value = _diagnostics.FrameToNudgedProgress(nextFrame);
                 }
             }
         }
+
+        // Returns true if the 2 frame numbers are effectively the same frame.
+        // This encapsulates a policy about how far off the frame the scrubber
+        // needs to be moved before we consider it a different frame for arrow
+        // key navigation purposes.
+        static bool IsEffectivelyTheSameFrame(double frameA, double frameB)
+            => Math.Abs(frameA - frameB) < 0.1;
 
         // Returns a color brush which has its color bound to the property with the given name.
         static CompositionColorBrush CreateBoundColorBrush(CompositionPropertySet propertySet, string propertyName)
@@ -414,14 +416,10 @@ namespace LottieViewer
                     return string.Empty;
                 }
 
-                var lottieVisualDiagnostics = ownerDiagnostics.LottieVisualDiagnostics;
-                if (lottieVisualDiagnostics is null)
-                {
-                    return string.Empty;
-                }
-
-                var duration = lottieVisualDiagnostics.Duration;
-                return $"    {_owner.Value:0.000}\r\n{_owner.Value * duration.TotalSeconds:0.00} secs";
+                // Convert the current progress value to a frame number, taking into account the
+                // nudge factor, and rounding to 1 decimal place.
+                var currentFrame = ownerDiagnostics.NudgedProgressToFrame(_owner.Value);
+                return $"{currentFrame.Number:0.#}";
             }
 
             object IValueConverter.ConvertBack(object value, Type targetType, object parameter, string language)
@@ -576,18 +574,5 @@ namespace LottieViewer
             var parent = VisualTreeHelper.GetParent(descendant);
             return parent is Scrubber scrubber ? scrubber : GetOwner(parent);
         }
-    }
-
-    public sealed class ScrubberValueChangedEventArgs
-    {
-        internal ScrubberValueChangedEventArgs(double oldValue, double newValue)
-        {
-            OldValue = oldValue;
-            NewValue = newValue;
-        }
-
-        public double NewValue { get; }
-
-        public double OldValue { get; }
     }
 }

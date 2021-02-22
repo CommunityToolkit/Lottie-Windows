@@ -6,9 +6,10 @@
       xmlns:lottie="using:Microsoft.Toolkit.Uwp.UI.Lottie"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:viewmodel="using:LottieViewer.ViewModel" 
       Visibility="Visible"
-      mc:Ignorable="d">
+      mc:Ignorable="d" 
+      PointerPressed="Page_PointerPressed" >
     <Page.Resources>
-        <local:VisiblityConverter x:Key="VisibilityConverter" />
+        <local:VisibilityConverter x:Key="VisibilityConverter" />
         <local:FloatFormatter x:Key="floatFormatter" />
         <SolidColorBrush x:Name="ArtboardBrush"
                          Color="{x:Bind BackgroundColor.Color, Mode=OneWay}" />
@@ -315,8 +316,8 @@
 
                 <!--  Play/stop button  -->
                 <local:PlayStopButton
-                    Margin="0,4,0,0"
                     x:Name="_playStopButton"
+                    Margin="0,4,0,0"
                     IsEnabled="{x:Bind _stage.Player.IsAnimatedVisualLoaded, Mode=OneWay}"
                     Toggled="_playControl_Toggled"
                     VerticalAlignment="Center"
@@ -327,18 +328,18 @@
                     />
 
                 <!--  Scrubber  -->
-                <!--  IsEnabled="{x:Bind _playStopButton.IsChecked, Mode=OneWay}"  -->
-                <local:Scrubber x:Name="_scrubber"
-                                AutomationProperties.Name="Animation progress"
-                                Margin="0,5,0,0"
-                                VerticalAlignment="Center"
-                                IsEnabled="{x:Bind _stage.Player.IsAnimatedVisualLoaded, Mode=OneWay}"
-                                RelativePanel.AlignBottomWithPanel="True"
-                                RelativePanel.AlignRightWithPanel="True"
-                                RelativePanel.AlignTopWithPanel="True"
-                                RelativePanel.RightOf="_playStopButton"
-                                ValueChanged="ProgressSliderChanged"
-                                DiagnosticsViewModel="{x:Bind _stage.DiagnosticsViewModel, Mode=OneWay}" />
+                <local:Scrubber 
+                    x:Name="_scrubber"
+                    AutomationProperties.Name="Animation progress"
+                    Margin="0,5,0,0"
+                    VerticalAlignment="Center"
+                    IsEnabled="{x:Bind _stage.Player.IsAnimatedVisualLoaded, Mode=OneWay}"
+                    RelativePanel.AlignBottomWithPanel="True"
+                    RelativePanel.AlignTopWithPanel="True"
+                    RelativePanel.RightOf="_playStopButton"
+                    RelativePanel.AlignRightWithPanel="True"
+                    ValueChanged="ProgressSliderChanged"
+                    DiagnosticsViewModel="{x:Bind _stage.DiagnosticsViewModel, Mode=OneWay}" />
             </RelativePanel>
         </Grid>
     </RelativePanel>

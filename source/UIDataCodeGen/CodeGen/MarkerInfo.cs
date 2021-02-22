@@ -62,7 +62,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 var baseName = $"M_{constantBaseName}";
                 var startConstant = isZeroDuration ? baseName : $"{baseName}_start";
                 var endConstant = isZeroDuration ? null : $"{baseName}_end";
-                yield return new MarkerInfo(m, name, startConstant, endConstant);
+                yield return new MarkerInfo(m, name, startConstant, endConstant, nudgeFrameProportion: 0.05);
             }
         }
 
