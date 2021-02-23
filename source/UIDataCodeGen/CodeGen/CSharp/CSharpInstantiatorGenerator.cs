@@ -599,7 +599,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
         void WriteFrameCountPropertyImpl(CodeBuilder builder)
         {
             builder.WriteSummaryComment("Gets the number of frames in the animation.");
-            builder.WriteLine($"public readonly double FrameCount => {_s.Double(SourceInfo.SourceMetadata.LottieMetadata.Duration.Frames)};");
+            builder.WriteLine($"public double FrameCount => {_s.Double(SourceInfo.SourceMetadata.LottieMetadata.Duration.Frames)};");
         }
 
         /// <summary>
@@ -608,7 +608,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
         void WriteFrameratePropertyImpl(CodeBuilder builder)
         {
             builder.WriteSummaryComment("Gets the frame rate of the animation.");
-            builder.WriteLine($"public readonly double Framerate => {_s.Double(SourceInfo.SourceMetadata.LottieMetadata.Duration.FPS)};");
+            builder.WriteLine($"public double Framerate => {_s.Double(SourceInfo.SourceMetadata.LottieMetadata.Duration.FPS)};");
         }
 
         /// <summary>
@@ -617,7 +617,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
         void WriteDurationPropertyImpl(CodeBuilder builder)
         {
             builder.WriteSummaryComment("Gets the duration of the animation.");
-            builder.WriteLine($"public readonly TimeSpan Duration => {_s.TimeSpan(SourceInfo.SourceMetadata.LottieMetadata.Duration.Time)};");
+            builder.WriteLine($"public TimeSpan Duration => {_s.TimeSpan(SourceInfo.SourceMetadata.LottieMetadata.Duration.Time)};");
         }
 
         /// <summary>
