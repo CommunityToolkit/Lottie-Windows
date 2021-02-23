@@ -6,13 +6,23 @@
       xmlns:lottie="using:Microsoft.Toolkit.Uwp.UI.Lottie"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:viewmodel="using:LottieViewer.ViewModel" 
       Visibility="Visible"
-      mc:Ignorable="d" 
+      mc:Ignorable="d"
+      RequestedTheme="Dark"
       PointerPressed="Page_PointerPressed" >
     <Page.Resources>
         <local:VisibilityConverter x:Key="VisibilityConverter" />
         <local:FloatFormatter x:Key="floatFormatter" />
         <SolidColorBrush x:Name="ArtboardBrush"
                          Color="{x:Bind BackgroundColor.Color, Mode=OneWay}" />
+        
+        <!-- 
+          Color for Hyperlink. Use this to override the default Foreground
+          color on Hyperlink so that it is visible on the gray background
+          (otherwise the Hyperlink color will be themed and may become
+          unreadable).
+        -->        
+        <StaticResource x:Key="LottieHyperlinkForegroundBrush"
+                         ResourceKey="LottieBasicBrush" />
     </Page.Resources>
 
     <RelativePanel AllowDrop="True"
@@ -128,7 +138,7 @@
                                     <DataTemplate x:DataType="lottie:Issue">
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock MinWidth="60">
-                                                        <Hyperlink NavigateUri="{x:Bind Url}"><Run FontWeight="Bold"
+                                                        <Hyperlink Foreground="{StaticResource LottieHyperlinkForegroundBrush}" NavigateUri="{x:Bind Url}"><Run FontWeight="Bold"
                                                                  Text="{x:Bind Code}" Foreground="Orange" /></Hyperlink>
                                             </TextBlock>
                                             <TextBlock Text="{x:Bind Description}" TextWrapping="Wrap" MaxWidth="240" Foreground="White"/>
@@ -149,16 +159,28 @@
                                     <ColumnDefinition Width="50"/>
                                 </Grid.ColumnDefinitions>
                                 <Slider 
-                                Padding="10, 0, 10, 0"
-                                HorizontalAlignment="Stretch"
-                                LargeChange="1"
-                                Maximum="2.0"
-                                Minimum="-2.0"
-                                SmallChange="0.1"
-                                StepFrequency="0.1"
-                                TickFrequency="0.5"
-                                TickPlacement="TopLeft"
-                                Value="{x:Bind _stage.Player.PlaybackRate, Mode=TwoWay}" />
+                                    Padding="10, 0, 10, 0"
+                                    HorizontalAlignment="Stretch"
+                                    LargeChange="1"
+                                    Maximum="2.0"
+                                    Minimum="-2.0"
+                                    SmallChange="0.1"
+                                    StepFrequency="0.1"
+                                    TickFrequency="0.5"
+                                    TickPlacement="TopLeft"
+                                    Value="{x:Bind _stage.Player.PlaybackRate, Mode=TwoWay}">
+                                    <Slider.Resources>
+                                        <!-- 
+                                            Override the themed slider resources so that control ignores the accent colors.
+                                            This is desirable because the accent colors may make the control hard to see
+                                            on the gray background.
+                                        -->
+                                        <StaticResource x:Key="SliderThumbBackground" ResourceKey="LottieBasicBrush" />
+                                        <StaticResource x:Key="SliderThumbBackgroundPointerOver" ResourceKey="LottieBasicBrush" />
+                                        <StaticResource x:Key="SliderThumbBackgroundPressed" ResourceKey="LottieBasicBrush" />
+                                        <StaticResource x:Key="SliderThumbBackgroundDisabled" ResourceKey="LottieBasicBrush" />
+                                    </Slider.Resources>
+                                </Slider>
                                 <TextBlock Grid.Column="1" Margin="10,0,0,0">x <Run Text="{x:Bind _stage.Player.PlaybackRate, Mode=OneWay, Converter={StaticResource floatFormatter}}"/></TextBlock>
                             </Grid>
                         </StackPanel>
@@ -196,7 +218,7 @@
                                     <DataTemplate x:Key="MarkerTemplate" x:DataType="viewmodel:Marker">
                                         <StackPanel Orientation="Horizontal" Margin="0,0,0,2" MaxWidth="310">
                                             <TextBlock Foreground="White" TextAlignment="Right" TextWrapping="Wrap" MaxWidth="250" MinWidth="60" Padding="0,0,12,0">
-                                                <Hyperlink Click="MarkerClick"><Run Text="{x:Bind InFrame}"/></Hyperlink>
+                                                <Hyperlink Foreground="{StaticResource LottieHyperlinkForegroundBrush}" Click="MarkerClick"><Run Text="{x:Bind InFrame}"/></Hyperlink>
                                             </TextBlock>
                                             <TextBlock Foreground="White" TextAlignment="Right" TextWrapping="Wrap" Text="{x:Bind Name}"/>
                                         </StackPanel>
@@ -205,8 +227,8 @@
                                     <DataTemplate x:Key="MarkerWithDurationTemplate" x:DataType="viewmodel:MarkerWithDuration">
                                         <StackPanel Orientation="Horizontal" Margin="0,0,0,2" MaxWidth="310">
                                             <TextBlock Foreground="White" TextAlignment="Right" TextWrapping="Wrap" MaxWidth="250" MinWidth="60" Padding="0,0,12,0">
-                                                <Hyperlink Click="MarkerClick"><Run Text="{x:Bind InFrame}"/></Hyperlink> -
-                                                <Hyperlink Click="MarkerEndClick"><Run Text="{x:Bind OutFrame}"/></Hyperlink>
+                                                <Hyperlink Foreground="{StaticResource LottieHyperlinkForegroundBrush}" Click="MarkerClick"><Run Text="{x:Bind InFrame}"/></Hyperlink> -
+                                                <Hyperlink Foreground="{StaticResource LottieHyperlinkForegroundBrush}" Click="MarkerEndClick"><Run Text="{x:Bind OutFrame}"/></Hyperlink>
                                             </TextBlock>
                                             <TextBlock Foreground="White" TextWrapping="Wrap" Text="{x:Bind Name}"/>
                                         </StackPanel>
