@@ -54,5 +54,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 return _propertyBindings;
             }
         }
+
+        internal double ProgressToFrameNumber(double progress)
+            => LottieMetadata.Duration.Frames * progress;
     }
 }
