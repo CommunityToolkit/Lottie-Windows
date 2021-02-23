@@ -208,7 +208,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.YamlData
                 result = null;
             }
 
-            return result != null;
+            return result is not null;
         }
 
         bool TryInlineMap(YamlMap obj, int maximumWidth, [MaybeNullWhen(false)] out string result)
@@ -253,7 +253,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.YamlData
                 result = sb.ToString();
             }
 
-            return result != null;
+            return result is not null;
         }
 
         bool TryInlineSequence(YamlSequence obj, int maximumWidth, [MaybeNullWhen(false)] out string result)
@@ -296,7 +296,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.YamlData
                 result = sb.ToString();
             }
 
-            return result != null;
+            return result is not null;
         }
 
         bool TryWriteComment(YamlObject obj)

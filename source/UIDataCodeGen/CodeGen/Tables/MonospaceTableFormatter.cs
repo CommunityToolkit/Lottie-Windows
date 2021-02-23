@@ -25,7 +25,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Tables
             // required by each column.
             var columnWidths =
                 (from row in rows.Select(r => GetRequiredMinimumWidths(r))
-                 where row != null
+                 where row is not null
                  select row).Aggregate((w1, w2) => w1.Select((w, i) => Math.Max(w2[i], w)).ToArray()).ToArray();
 
             // The total width includes space for the column separators.

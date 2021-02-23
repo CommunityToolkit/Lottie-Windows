@@ -42,7 +42,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             bool reverseDirection,
             double trimOffsetDegrees)
         {
-            Debug.Assert(shape.Geometry != null, "Precondition");
+            Debug.Assert(shape.Geometry is not null, "Precondition");
 
             shape.FillBrush = Brushes.TranslateShapeFill(context, context.Fill, context.Opacity);
             Brushes.TranslateAndApplyStroke(context, context.Stroke, shape, context.Opacity);
@@ -158,7 +158,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         break;
                     case ShapeContentType.MergePaths:
                         var mergedPaths = TranslateMergePathsContent(context, stack, ((MergePaths)shapeContent).Mode);
-                        if (mergedPaths != null)
+                        if (mergedPaths is not null)
                         {
                             container.Shapes.Add(mergedPaths);
                         }
@@ -241,7 +241,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         static CompositionShape? TranslateMergePathsContent(ShapeContext context, Stack<ShapeLayerContent> stack, MergePaths.MergeMode mergeMode)
         {
             var mergedGeometry = MergeShapeLayerContent(context, stack, mergeMode);
-            if (mergedGeometry != null)
+            if (mergedGeometry is not null)
             {
                 var result = context.ObjectFactory.CreateSpriteShape();
                 result.Geometry = context.ObjectFactory.CreatePathGeometry(new CompositionPath(mergedGeometry));
@@ -345,7 +345,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         break;
                     case ShapeContentType.MergePaths:
                         var mergedShapeLayerContent = MergeShapeLayerContent(context, stack, ((MergePaths)shapeContent).Mode);
-                        if (mergedShapeLayerContent != null)
+                        if (mergedShapeLayerContent is not null)
                         {
                             yield return mergedShapeLayerContent;
                         }

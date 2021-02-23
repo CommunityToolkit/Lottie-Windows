@@ -22,7 +22,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
         private protected KeyFrameAnimation(KeyFrameAnimation<T, TExpression>? other)
             : base(other)
         {
-            if (other != null)
+            if (other is not null)
             {
                 CopyStateFrom(other);
             }

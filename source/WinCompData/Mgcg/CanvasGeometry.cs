@@ -122,7 +122,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg
             public bool Equals(Combination? other)
             {
                 return
-                    other != null &&
+                    other is not null &&
                     CombineMode == other.CombineMode &&
                     Matrix == other.Matrix &&
                     A.Equals(B);
@@ -161,7 +161,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg
             public bool Equals(Ellipse? other)
             {
                 return
-                    other != null &&
+                    other is not null &&
                     X == other.X &&
                     Y == other.Y &&
                     RadiusX == other.RadiusX &&
@@ -313,7 +313,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg
             public bool Equals(RoundedRectangle? other)
             {
                 return
-                    other != null &&
+                    other is not null &&
                     X == other.X &&
                     Y == other.Y &&
                     W == other.W &&
@@ -346,7 +346,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg
             public bool Equals(TransformedGeometry? other)
             {
                 return
-                    other != null &&
+                    other is not null &&
                     SourceGeometry.Equals(other.SourceGeometry) &&
                     TransformMatrix == other.TransformMatrix;
             }

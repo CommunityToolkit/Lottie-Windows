@@ -75,7 +75,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 return Array.Empty<T>();
             }
 
-            Debug.Assert(_array != null, "ToArray() can only be called once");
+            Debug.Assert(_array is not null, "ToArray() can only be called once");
 
             T[] result;
             if (_array!.Length == _count)

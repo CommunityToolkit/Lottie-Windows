@@ -28,7 +28,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 switch (effect.Type)
                 {
                     case Effect.EffectType.DropShadow:
-                        if (DropShadowEffect != null)
+                        if (DropShadowEffect is not null)
                         {
                             // Emit an issue about there being more than one.
                             context.Issues.RepeatedLayerEffect("Drop shadow");
@@ -43,7 +43,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         var trimmedBlurriness = Optimizer.TrimAnimatable(context, gaussianBlurEffect.Blurriness);
                         if (!trimmedBlurriness.IsAlways(0))
                         {
-                            if (GaussianBlurEffect != null)
+                            if (GaussianBlurEffect is not null)
                             {
                                 // Emit an issue about there being more than one.
                                 context.Issues.RepeatedLayerEffect("Gaussian blur");
@@ -82,7 +82,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         // being supported on this layer.
         void EmitIssueAboutUnsupportedEffect(Effect? effect, string effectName)
         {
-            if (effect != null)
+            if (effect is not null)
             {
                 EmitIssueAboutUnsupportedEffect(effectName);
             }

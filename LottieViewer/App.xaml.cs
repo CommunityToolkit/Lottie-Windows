@@ -87,11 +87,11 @@ namespace LottieViewer
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             var titleBar = ApplicationView.GetForCurrentView().TitleBar;
-            if (titleBar != null)
+            if (titleBar is not null)
             {
                 var backgroundColor = (SolidColorBrush)Current.Resources["BackgroundBrush"];
                 var foregroundColor = (SolidColorBrush)Current.Resources["ForegroundBrush"];
-                var inactiveBackgroundColor = (SolidColorBrush)Current.Resources["ToolsBackgroundBrush"];
+
                 titleBar.ButtonBackgroundColor = backgroundColor.Color;
                 titleBar.ButtonForegroundColor = foregroundColor.Color;
                 titleBar.BackgroundColor = backgroundColor.Color;

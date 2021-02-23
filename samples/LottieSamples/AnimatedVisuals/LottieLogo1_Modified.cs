@@ -86,7 +86,7 @@ namespace AnimatedVisuals
             set
             {
                 _themeBackgroundColor = value;
-                if (_themeProperties != null)
+                if (_themeProperties is not null)
                 {
                     _themeProperties.InsertVector4("BackgroundColor", ColorAsVector4((Color)_themeBackgroundColor));
                 }
@@ -99,7 +99,7 @@ namespace AnimatedVisuals
             set
             {
                 _themeHighlightColor = value;
-                if (_themeProperties != null)
+                if (_themeProperties is not null)
                 {
                     _themeProperties.InsertVector4("HighlightColor", ColorAsVector4((Color)_themeHighlightColor));
                 }
@@ -112,7 +112,7 @@ namespace AnimatedVisuals
             set
             {
                 _themeTextColor = value;
-                if (_themeProperties != null)
+                if (_themeProperties is not null)
                 {
                     _themeProperties.InsertVector4("TextColor", ColorAsVector4((Color)_themeTextColor));
                 }

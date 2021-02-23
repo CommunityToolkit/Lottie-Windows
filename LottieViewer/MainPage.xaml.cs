@@ -157,9 +157,9 @@ namespace LottieViewer
                     // Ignore PickSingleFileAsync exceptions so they don't crash the process.
                 }
 
-                if (file == null)
+                if (file is null)
                 {
-                    // Used declined to pick anything.
+                    // User declined to pick anything.
                     return;
                 }
 

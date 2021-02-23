@@ -20,7 +20,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
 
         private protected CompositionAnimation(CompositionAnimation? other)
         {
-            if (other != null)
+            if (other is not null)
             {
                 foreach (var pair in other._referencedParameters)
                 {

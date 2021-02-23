@@ -103,7 +103,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             Animatable<double>? offset = null;
             var dashPattern = new List<double>();
             var dashes = obj.ArrayPropertyOrNull("d");
-            if (dashes != null)
+            if (dashes is not null)
             {
                 var dashesArray = dashes.Value;
 

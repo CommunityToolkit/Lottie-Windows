@@ -154,7 +154,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen
 
                 using var jsonStream = animation.Open();
 
-                if (jsonStream == null)
+                if (jsonStream is null)
                 {
                     reporter.WriteError($"Failed to read from {jsonPath}.");
                     succeeded = false;

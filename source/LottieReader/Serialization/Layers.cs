@@ -92,7 +92,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
             // NOTE: The spec specifies this as 'maskProperties' but the BodyMovin tool exports
             // 'masksProperties' with the plural 'masks'.
             var maskProperties = obj.ArrayPropertyOrNull("masksProperties");
-            layerArgs.Masks = maskProperties != null
+            layerArgs.Masks = maskProperties is not null
                                     ? ReadMaskProperties(maskProperties.Value).ToArray()
                                     : Array.Empty<Mask>();
 
@@ -115,7 +115,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                             var width = obj.DoublePropertyOrNull("w") ?? double.NaN;
                             var height = obj.DoublePropertyOrNull("h") ?? double.NaN;
                             var tm = obj.ObjectPropertyOrNull("tm");
-                            if (tm != null)
+                            if (tm is not null)
                             {
                                 _issues.TimeRemappingOfPreComps();
                             }
@@ -191,7 +191,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         ShapeLayerContent[] ReadShapesList(in LottieJsonArrayElement? shapesJson)
         {
             ArrayBuilder<ShapeLayerContent> result = default;
-            if (shapesJson != null)
+            if (shapesJson is not null)
             {
                 var shapesJsonCount = shapesJson.Value.Count;
                 if (shapesJsonCount > 0)
@@ -200,7 +200,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     for (var i = 0; i < shapesJsonCount; i++)
                     {
                         var shapeObject = shapesJson.Value[i].AsObject();
-                        if (shapeObject != null)
+                        if (shapeObject is not null)
                         {
                             result.AddItemIfNotNull(ReadShapeContent(shapeObject.Value));
                         }

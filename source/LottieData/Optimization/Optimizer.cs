@@ -271,7 +271,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                     }
                 }
 
-                if (optimizedFrames != null)
+                if (optimizedFrames is not null)
                 {
                     if (redundantCount > 0)
                     {

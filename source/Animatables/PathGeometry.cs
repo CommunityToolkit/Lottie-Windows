@@ -78,7 +78,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.Animatables
         public static PathGeometry Empty { get; } = new PathGeometry(Sequence<BezierSegment>.Empty, false);
 
         public bool Equals(PathGeometry? other) =>
-            other != null && other.IsClosed == IsClosed && other.BezierSegments.Equals(BezierSegments);
+            other is not null && other.IsClosed == IsClosed && other.BezierSegments.Equals(BezierSegments);
 
         public override bool Equals(object? obj) => Equals(obj as PathGeometry);
 

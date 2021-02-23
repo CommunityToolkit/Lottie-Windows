@@ -326,7 +326,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen
             }
 
             // Write the WinComp optimization stats table.
-            if (_afterOptimizationStats != null)
+            if (_afterOptimizationStats is not null)
             {
                 _reporter.WriteDataTableRow(
                     "WinCompOptimization",
@@ -465,7 +465,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen
                     _reporter.WriteInfo(InfoType.FilePath, $" {outputFilePath}");
                 }
 
-                if (codegenResult.Assets != null)
+                if (codegenResult.Assets is not null)
                 {
                     // Write out the list of asset files referenced by the code.
                     WriteAssetFiles(codegenResult.Assets);
@@ -519,7 +519,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen
                 _reporter.WriteInfo($"Cppwinrt IDL for class {_className} written to:");
                 _reporter.WriteInfo(InfoType.FilePath, $" {idlFilePath}");
 
-                if (codegenResult.Assets != null)
+                if (codegenResult.Assets is not null)
                 {
                     // Write out the list of asset files referenced by the code.
                     WriteAssetFiles(codegenResult.Assets);
@@ -568,7 +568,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen
                 _reporter.WriteInfo($"CX source for class {_className} written to:");
                 _reporter.WriteInfo(InfoType.FilePath, $" {cppFilePath}");
 
-                if (codegenResult.Assets != null)
+                if (codegenResult.Assets is not null)
                 {
                     // Write out the list of asset files referenced by the code.
                     WriteAssetFiles(codegenResult.Assets);

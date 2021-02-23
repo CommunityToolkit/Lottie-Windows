@@ -16,7 +16,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
         Effect[] ReadEffectsList(in LottieJsonArrayElement? array, string layerName)
         {
             ArrayBuilder<Effect> result = default;
-            if (array != null)
+            if (array is not null)
             {
                 var effectsJsonCount = array.Value.Count;
                 if (effectsJsonCount > 0)
@@ -26,7 +26,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                     for (var i = 0; i < effectsJsonCount; i++)
                     {
                         var effectObject = array.Value[i].AsObject();
-                        if (effectObject != null)
+                        if (effectObject is not null)
                         {
                             result.AddItemIfNotNull(ReadEffect(effectObject.Value, layerName));
                         }

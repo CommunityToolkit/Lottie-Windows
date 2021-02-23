@@ -101,7 +101,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
             _animatedVisualTypeName = Interface_IAnimatedVisual.GetQualifiedName(_s);
         }
 
-        static string FieldAssignment(string fieldName) => fieldName != null ? $"{fieldName} = " : string.Empty;
+        static string FieldAssignment(string fieldName) => fieldName is not null ? $"{fieldName} = " : string.Empty;
 
         IAnimatedVisualSourceInfo SourceInfo => AnimatedVisualSourceInfo;
 
@@ -772,7 +772,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
                 builder.WriteLine($"{effectVariable}->BlurAmount({_s.Float(effect.BlurAmount.Value)});");
             }
 
-            if (effect.Source != null)
+            if (effect.Source is not null)
             {
                 builder.WriteLine($"{effectVariable}->Source(CompositionEffectSourceParameter(L\"{effect.Source.Name}\"));");
             }

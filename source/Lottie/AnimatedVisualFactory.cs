@@ -59,7 +59,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                                                 Select(n => (WinCompData.CompositionPropertySet)n.Object).FirstOrDefault();
         }
 
-        internal bool CanInstantiate => _wincompDataRootVisual != null;
+        internal bool CanInstantiate => _wincompDataRootVisual is not null;
 
         public IAnimatedVisual? TryCreateAnimatedVisual(Compositor compositor, [MaybeNull] out object diagnostics)
         {
@@ -78,21 +78,21 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
 
                 var instantiator = new Instantiator(compositor, surfaceResolver: LoadImageFromUri);
 
-                // _wincompDataRootVisual != null is implied by CanInstantiate.
+                // _wincompDataRootVisual is not null is implied by CanInstantiate.
                 var result = new DisposableAnimatedVisual((Visual)instantiator.GetInstance(_wincompDataRootVisual!))
                 {
                     Size = new System.Numerics.Vector2((float)_width, (float)_height),
                     Duration = _duration,
                 };
 
-                if (diags != null)
+                if (diags is not null)
                 {
-                    if (_wincompDataThemingPropertySet != null && _themingPropertySet is null)
+                    if (_wincompDataThemingPropertySet is not null && _themingPropertySet is null)
                     {
                         // Instantiate the theming property set. This is shared by all of the instantiations.
                         _themingPropertySet = (CompositionPropertySet)instantiator.GetInstance(_wincompDataThemingPropertySet);
 
-                        // _diagnostics != null is implied by diags != null;
+                        // _diagnostics is not null is implied by diags is not null;
                         diags.ThemingPropertySet = _diagnostics!.ThemingPropertySet = _themingPropertySet;
                     }
 
