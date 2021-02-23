@@ -48,7 +48,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         public string Name { get; }
 
-        internal static IEnumerable<MarkerInfo> GetMarkerInfos(IEnumerable<Marker> markers)
+        internal static IEnumerable<MarkerInfo> GetMarkerInfos(IEnumerable<Marker> markers, double nudgeFrameProportion)
         {
             // Ensure the names are valid and distinct.
             var nameMap = markers.ToDictionary(m => m, m => SanitizeMarkerName(m.Name));
@@ -62,7 +62,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 var baseName = $"M_{constantBaseName}";
                 var startConstant = isZeroDuration ? baseName : $"{baseName}_start";
                 var endConstant = isZeroDuration ? null : $"{baseName}_end";
-                yield return new MarkerInfo(m, name, startConstant, endConstant, nudgeFrameProportion: 0.05);
+                yield return new MarkerInfo(m, name, startConstant, endConstant, nudgeFrameProportion);
             }
         }
 

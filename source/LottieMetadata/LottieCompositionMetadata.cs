@@ -28,7 +28,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieMetadata
             Markers = markers.Select(
                 m => new Marker(
                     m.name,
-                    Duration.GetFrame(m.frame - inPoint),
+                    Duration.GetFrameFromFrameNumber(m.frame - inPoint),
                     new Duration(m.durationInFrames, Duration))).ToArray();
         }
 

@@ -229,14 +229,14 @@ namespace LottieViewer
                 return;
             }
 
-            var frame = _diagnostics.NudgedProgressToFrame(Value).Number;
+            var frame = _diagnostics.GetFrameFromNudgedProgress(Value).Number;
 
             // Round the frame down to an integral value.
             var roundedFrame = Math.Floor(frame);
 
             if (!IsEffectivelyTheSameFrame(roundedFrame, frame))
             {
-                Value = _diagnostics.FrameToNudgedProgress(roundedFrame);
+                Value = _diagnostics.GetNudgedProgressFromFrame(roundedFrame);
             }
             else
             {
@@ -248,7 +248,7 @@ namespace LottieViewer
                 }
                 else
                 {
-                    Value = _diagnostics.FrameToNudgedProgress(previousFrame);
+                    Value = _diagnostics.GetNudgedProgressFromFrame(previousFrame);
                 }
             }
         }
@@ -261,14 +261,14 @@ namespace LottieViewer
                 return;
             }
 
-            var frame = _diagnostics.NudgedProgressToFrame(Value).Number;
+            var frame = _diagnostics.GetFrameFromNudgedProgress(Value).Number;
 
             // Round the frame up to an integral value.
             var roundedFrame = Math.Ceiling(frame);
 
             if (!IsEffectivelyTheSameFrame(roundedFrame, frame))
             {
-                Value = _diagnostics.FrameToNudgedProgress(roundedFrame);
+                Value = _diagnostics.GetNudgedProgressFromFrame(roundedFrame);
             }
             else
             {
@@ -280,7 +280,7 @@ namespace LottieViewer
                 }
                 else
                 {
-                    Value = _diagnostics.FrameToNudgedProgress(nextFrame);
+                    Value = _diagnostics.GetNudgedProgressFromFrame(nextFrame);
                 }
             }
         }
@@ -418,7 +418,7 @@ namespace LottieViewer
 
                 // Convert the current progress value to a frame number, taking into account the
                 // nudge factor, and rounding to 1 decimal place.
-                var currentFrame = ownerDiagnostics.NudgedProgressToFrame(_owner.Value);
+                var currentFrame = ownerDiagnostics.GetFrameFromNudgedProgress(_owner.Value);
                 return $"{currentFrame.Number:0.#}";
             }
 

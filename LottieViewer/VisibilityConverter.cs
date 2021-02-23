@@ -22,16 +22,18 @@ namespace LottieViewer
             }
             else if (value is int count)
             {
-                boolValue = count > 0;
+                // True if the value is != 0.
+                boolValue = count != 0;
             }
             else if (value is ICollection collection)
             {
-                boolValue = collection.Count > 0;
+                // True if the count is != 0.
+                boolValue = collection.Count != 0;
             }
             else
             {
-                // Used !null to convert to a boolean.
-                boolValue = !(value is null);
+                // True if the value is not null.
+                boolValue = value is not null;
             }
 
             if ((string)parameter == "not")

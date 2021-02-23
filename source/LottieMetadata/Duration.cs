@@ -5,7 +5,6 @@
 #nullable enable
 
 using System;
-using System.Reflection.Metadata.Ecma335;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieMetadata
 {
@@ -45,7 +44,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieMetadata
         /// </summary>
         /// <param name="frameNumber">The frame number.</param>
         /// <returns>The frame in this <see cref="Duration"/>.</returns>
-        public Frame GetFrame(double frameNumber)
+        public Frame GetFrameFromFrameNumber(double frameNumber)
             => new Frame(this, Math.Min(Frames, Math.Max(frameNumber, 0)));
 
         /// <summary>
@@ -69,7 +68,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieMetadata
             var nudgedFrameNumber = progress * Frames;
             var unnudgedFrameNumber = nudgedFrameNumber - frameProportion;
             var safeUnnudgedFrameNumber = Math.Min(Frames, Math.Max(0, unnudgedFrameNumber));
-            return GetFrame(safeUnnudgedFrameNumber);
+            return GetFrameFromFrameNumber(safeUnnudgedFrameNumber);
         }
 
         public static Duration operator +(Duration a, Duration b)

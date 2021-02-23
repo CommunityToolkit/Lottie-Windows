@@ -175,16 +175,16 @@ namespace LottieViewer.ViewModel
         }
 
         // Get the frame with the given number.
-        public Frame GetFrame(double frameNumber)
+        public Frame GetFrameFromFrameNumber(double frameNumber)
             => LottieVisualDiagnostics is null ? default : new Frame(Duration, frameNumber);
 
         // Returns the nudged progress that is equivalent to the given frame number.
-        public double FrameToNudgedProgress(double frameNumber)
-            => LottieVisualDiagnostics is null ? default : GetFrame(frameNumber).GetNudgedProgress(NudgeFrameProportion);
+        public double GetNudgedProgressFromFrame(double frameNumber)
+            => LottieVisualDiagnostics is null ? default : GetFrameFromFrameNumber(frameNumber).GetNudgedProgress(NudgeFrameProportion);
 
         // Converts the given nudged progress value to a frame number.
-        public Frame NudgedProgressToFrame(double progress)
-            => LottieVisualDiagnostics is null ? default : Duration.GetFrameFromNudgedProgress(progress, NudgeFrameProportion);
+        public Frame GetFrameFromNudgedProgress(double nudgedProgress)
+            => LottieVisualDiagnostics is null ? default : Duration.GetFrameFromNudgedProgress(nudgedProgress, NudgeFrameProportion);
 
         // Returns a pleasantly simplified ratio for the given value.
         // For example an aspect ratio of 800 x 600 will result in a call to here

@@ -38,19 +38,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
             AssertGraphsAreDisjoint(result, root);
 
-            //// Un-set properties that are set to their default values, and convert
-            //// non-default scalar properties to Matrix properties where possible.
-            //result = PropertyValueOptimizer.OptimizePropertyValues(result);
+            // Un-set properties that are set to their default values, and convert
+            // non-default scalar properties to Matrix properties where possible.
+            result = PropertyValueOptimizer.OptimizePropertyValues(result);
 
-            //// Try to optimize away redundant parts of the graph.
-            //result = GraphCompactor.Compact(result);
+            // Try to optimize away redundant parts of the graph.
+            result = GraphCompactor.Compact(result);
 
-            //// Re-run the property value optimizer because the compactor may have set new properties.
-            //result = PropertyValueOptimizer.OptimizePropertyValues(result);
+            // Re-run the property value optimizer because the compactor may have set new properties.
+            result = PropertyValueOptimizer.OptimizePropertyValues(result);
 
-            //// The graph compactor may create new CompositionObjects (e.g. BooleanKeyFrameAnimations).
-            //// Re-run the canonicalizer so that the new objects are canonicalized.
-            //result = CanonicalizeGraph(result, ignoreCommentProperties);
+            // The graph compactor may create new CompositionObjects (e.g. BooleanKeyFrameAnimations).
+            // Re-run the canonicalizer so that the new objects are canonicalized.
+            result = CanonicalizeGraph(result, ignoreCommentProperties);
+
             return result;
         }
 
