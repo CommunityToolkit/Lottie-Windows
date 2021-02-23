@@ -1511,6 +1511,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 }
             }
 
+            void WriteFrameNumberComment(CodeBuilder builder, double progress)
+            {
+                builder.WriteComment($"Frame {_owner._sourceMetadata.ProgressToFrameNumber(progress):0.##}.");
+            }
+
             internal void WriteAnimatedVisualCode(CodeBuilder builder)
             {
                 _owner._currentAnimatedVisualGenerator = this;
@@ -2419,6 +2424,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     // Call the helper to create the animation. This will also set the duration and
                     // take the first key frame.
                     var kf = (KeyFrameAnimation<bool, Expr.Boolean>.ValueKeyFrame)firstKeyFrame;
+                    WriteFrameNumberComment(builder, kf.Progress);
                     WriteCreateAssignment(builder, node, $"Create{obj.Type}({Float(kf.Progress)}, {Bool(kf.Value)})");
                     InitializeCompositionAnimation(builder, obj, node);
                     keyFrames = keyFrames.Skip(1);
@@ -2430,6 +2436,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
                 foreach (var kf in keyFrames)
                 {
+                    WriteFrameNumberComment(builder, kf.Progress);
+
                     switch (kf.Type)
                     {
                         case KeyFrameType.Expression:
@@ -2466,6 +2474,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     // Call the helper to create the animation. This will also set the duration and
                     // take the first key frame.
                     var kf = (KeyFrameAnimation<Wui.Color, Expr.Color>.ValueKeyFrame)firstKeyFrame;
+                    WriteFrameNumberComment(builder, kf.Progress);
                     WriteCreateAssignment(builder, node, $"Create{obj.Type}({Float(kf.Progress)}, {Color(kf.Value)}, {CallFactoryFromFor(node, kf.Easing)})");
                     InitializeCompositionAnimation(builder, obj, node);
                     keyFrames = keyFrames.Skip(1);
@@ -2482,6 +2491,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
                 foreach (var kf in keyFrames)
                 {
+                    WriteFrameNumberComment(builder, kf.Progress);
+
                     switch (kf.Type)
                     {
                         case KeyFrameType.Expression:
@@ -2518,6 +2529,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     // Call the helper to create the animation. This will also set the duration and
                     // take the first key frame.
                     var kf = (KeyFrameAnimation<Vector2, Expr.Vector2>.ValueKeyFrame)firstKeyFrame;
+                    WriteFrameNumberComment(builder, kf.Progress);
                     WriteCreateAssignment(builder, node, $"Create{obj.Type}({Float(kf.Progress)}, {Vector2(kf.Value)}, {CallFactoryFromFor(node, kf.Easing)})");
                     InitializeCompositionAnimation(builder, obj, node);
                     keyFrames = keyFrames.Skip(1);
@@ -2529,6 +2541,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
                 foreach (var kf in keyFrames)
                 {
+                    WriteFrameNumberComment(builder, kf.Progress);
+
                     switch (kf.Type)
                     {
                         case KeyFrameType.Expression:
@@ -2563,6 +2577,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     // Call the helper to create the animation. This will also set the duration and
                     // take the first key frame.
                     var kf = (KeyFrameAnimation<Vector3, Expr.Vector3>.ValueKeyFrame)firstKeyFrame;
+                    WriteFrameNumberComment(builder, kf.Progress);
                     WriteCreateAssignment(builder, node, $"Create{obj.Type}({Float(kf.Progress)}, {Vector3(kf.Value)}, {CallFactoryFromFor(node, kf.Easing)})");
                     InitializeCompositionAnimation(builder, obj, node);
                     keyFrames = keyFrames.Skip(1);
@@ -2574,6 +2589,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
                 foreach (var kf in keyFrames)
                 {
+                    WriteFrameNumberComment(builder, kf.Progress);
+
                     switch (kf.Type)
                     {
                         case KeyFrameType.Expression:
@@ -2608,6 +2625,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     // Call the helper to create the animation. This will also set the duration and
                     // take the first key frame.
                     var kf = (KeyFrameAnimation<Vector4, Expr.Vector4>.ValueKeyFrame)firstKeyFrame;
+                    WriteFrameNumberComment(builder, kf.Progress);
                     WriteCreateAssignment(builder, node, $"Create{obj.Type}({Float(kf.Progress)}, {Vector4(kf.Value)}, {CallFactoryFromFor(node, kf.Easing)})");
                     InitializeCompositionAnimation(builder, obj, node);
                     keyFrames = keyFrames.Skip(1);
@@ -2619,6 +2637,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
                 foreach (var kf in keyFrames)
                 {
+                    WriteFrameNumberComment(builder, kf.Progress);
+
                     switch (kf.Type)
                     {
                         case KeyFrameType.Expression:
@@ -2652,6 +2672,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     // Call the helper to create the animation. This will also set the duration and
                     // take the first key frame.
                     var kf = (PathKeyFrameAnimation.ValueKeyFrame)firstKeyFrame;
+                    WriteFrameNumberComment(builder, kf.Progress);
                     WriteCreateAssignment(builder, node, $"Create{obj.Type}({Float(kf.Progress)}, {CallFactoryFromFor(node, kf.Value)}, {CallFactoryFromFor(node, kf.Easing)})");
                     InitializeCompositionAnimation(builder, obj, node);
                     keyFrames = keyFrames.Skip(1);
@@ -2663,6 +2684,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
                 foreach (var kf in keyFrames)
                 {
+                    WriteFrameNumberComment(builder, kf.Progress);
                     var valueKeyFrame = (PathKeyFrameAnimation.ValueKeyFrame)kf;
                     builder.WriteLine($"result{Deref}InsertKeyFrame({Float(kf.Progress)}, {CallFactoryFromFor(node, valueKeyFrame.Value)}, {CallFactoryFromFor(node, kf.Easing)});");
                 }
@@ -2686,6 +2708,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     // Call the helper to create the animation. This will also set the duration and
                     // take the first key frame.
                     var kf = (KeyFrameAnimation<float, Expr.Scalar>.ValueKeyFrame)firstKeyFrame;
+                    WriteFrameNumberComment(builder, kf.Progress);
                     WriteCreateAssignment(builder, node, $"Create{obj.Type}({Float(kf.Progress)}, {Float(kf.Value)}, {CallFactoryFromFor(node, kf.Easing)})");
                     InitializeCompositionAnimation(builder, obj, node);
                     keyFrames = keyFrames.Skip(1);
@@ -2697,6 +2720,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
                 foreach (var kf in keyFrames)
                 {
+                    WriteFrameNumberComment(builder, kf.Progress);
+
                     switch (kf.Type)
                     {
                         case KeyFrameType.Expression:
