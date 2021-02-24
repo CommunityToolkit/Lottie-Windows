@@ -108,11 +108,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
                 var m32 = _32.Simplified;
 
                 return
-                    m11 != _11 || m12 != _12 ||
-                    m21 != _21 || m22 != _22 ||
-                    m31 != _31 || m32 != _32
-                        ? new Constructed(m11, m12, m21, m22, m31, m32)
-                        : this;
+                    ReferenceEquals(m11, _11) && ReferenceEquals(m12, _12) &&
+                    ReferenceEquals(m21, _21) && ReferenceEquals(m22, _22) &&
+                    ReferenceEquals(m31, _31) && ReferenceEquals(m32, _32)
+                        ? this
+                        : new Constructed(m11, m12, m21, m22, m31, m32);
             }
 
             /// <inheritdoc/>

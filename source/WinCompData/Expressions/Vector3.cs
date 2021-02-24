@@ -57,9 +57,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
                     return left;
                 }
 
-                return left != Left || right != Right
-                    ? new Add(left, right)
-                    : this;
+                return ReferenceEquals(left, Left) && ReferenceEquals(right, Right)
+                    ? this
+                    : new Add(left, right);
             }
 
             /// <inheritdoc/>
@@ -133,7 +133,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
                 var y = Y.Simplified;
                 var z = Z.Simplified;
 
-                return x == X && y == Y && z == Z
+                return ReferenceEquals(x, X) && ReferenceEquals(y, Y) && ReferenceEquals(z, Z)
                     ? this
                     : Vector3(x, y, z);
             }
@@ -176,9 +176,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
                     return right;
                 }
 
-                return left != Left || right != Right
-                    ? new ScalarMultiply(left, right)
-                    : this;
+                return ReferenceEquals(left, Left) && ReferenceEquals(right, Right)
+                    ? this
+                    : new ScalarMultiply(left, right);
             }
 
             /// <inheritdoc/>

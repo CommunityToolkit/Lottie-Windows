@@ -72,9 +72,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
                 var b = B.Simplified;
                 var a = A.Simplified;
 
-                return r != R || g != G || b != B || a != A
-                            ? new Constructed(r, g, b, a)
-                            : this;
+                return
+                    ReferenceEquals(r, R) &&
+                    ReferenceEquals(g, G) &&
+                    ReferenceEquals(b, B) &&
+                    ReferenceEquals(a, A)
+                        ? this
+                        : new Constructed(r, g, b, a);
             }
 
             /// <inheritdoc/>

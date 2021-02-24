@@ -78,9 +78,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
                     return new Literal(literalLeft.Value < literalRight.Value);
                 }
 
-                return left != Left || right != Right
-                    ? new LessThan(left, right)
-                    : this;
+                return ReferenceEquals(left, Left) && ReferenceEquals(right, Right)
+                    ? this
+                    : new LessThan(left, right);
             }
 
             /// <inheritdoc/>

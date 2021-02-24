@@ -61,9 +61,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
                     return left;
                 }
 
-                return left != Left || right != Right
-                    ? new Add(left, right)
-                    : this;
+                return ReferenceEquals(left, Left) && ReferenceEquals(right, Right)
+                    ? this
+                    : new Add(left, right);
             }
 
             /// <inheritdoc/>
@@ -133,9 +133,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
                 var x = X.Simplified;
                 var y = Y.Simplified;
 
-                return x != X || y != Y
-                    ? new Constructed(x, y)
-                    : this;
+                return ReferenceEquals(x, X) && ReferenceEquals(y, Y)
+                    ? this
+                    : new Constructed(x, y);
             }
 
             /// <inheritdoc/>
@@ -173,9 +173,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
                     return left;
                 }
 
-                return left != Left || right != Right
-                    ? new Divide(left, right)
-                    : this;
+                return ReferenceEquals(left, Left) && ReferenceEquals(right, Right)
+                    ? this
+                    : new Divide(left, right);
             }
 
             /// <inheritdoc/>
@@ -216,9 +216,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
                     return left;
                 }
 
-                return left != Left || right != Right
-                    ? new Multiply(left, right)
-                    : this;
+                return ReferenceEquals(left, Left) && ReferenceEquals(right, Right)
+                    ? this
+                    : new Multiply(left, right);
             }
 
             /// <inheritdoc/>
@@ -261,9 +261,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
                     return right;
                 }
 
-                return left != Left || right != Right
-                    ? new ScalarMultiply(left, right)
-                    : this;
+                return ReferenceEquals(left, Left) && ReferenceEquals(right, Right)
+                    ? this
+                    : new ScalarMultiply(left, right);
             }
 
             /// <inheritdoc/>
@@ -291,9 +291,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
                     return left;
                 }
 
-                return left != Left || right != Right
-                    ? new Subtract(left, right)
-                    : this;
+                return ReferenceEquals(left, Left) && ReferenceEquals(right, Right)
+                    ? this
+                    : new Subtract(left, right);
             }
 
             /// <inheritdoc/>
