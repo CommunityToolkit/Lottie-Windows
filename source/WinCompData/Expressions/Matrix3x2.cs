@@ -57,8 +57,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
                 _text = text;
             }
 
-            /// <inheritdoc/>
-            protected override bool IsAtomic => true;
+            internal override Precedence Precedence => Precedence.Atomic;
 
             /// <inheritdoc/>
             // We don't actually know the operation count because the text could
@@ -119,7 +118,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
             protected override string CreateExpressionText()
                 => $"Matrix3x2({Parenthesize(_11)},{Parenthesize(_12)},{Parenthesize(_21)},{Parenthesize(_22)},{Parenthesize(_31)},{Parenthesize(_32)})";
 
-            protected override bool IsAtomic => true;
+            internal override Precedence Precedence => Precedence.Atomic;
         }
 
         Scalar Channel(string channelName) => Expressions.Scalar.Channel(this, channelName);
