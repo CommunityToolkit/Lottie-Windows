@@ -257,7 +257,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
                     ? Parenthesize(Right)
                     : Right.ToText();
 
-                return $"Max({left}, {right})";
+                return $"Max({left},{right})";
             }
         }
 
@@ -297,7 +297,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
                     ? Parenthesize(Right)
                     : Right.ToText();
 
-                return $"Min({left}, {right})";
+                return $"Min({left},{right})";
             }
         }
 
