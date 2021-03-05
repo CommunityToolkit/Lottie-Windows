@@ -41,8 +41,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
                 _text = text;
             }
 
-            /// <inheritdoc/>
-            protected override bool IsAtomic => true;
+            internal override Precedence Precedence => Precedence.Atomic;
 
             /// <inheritdoc/>
             // We don't actually know the operation count because the text could
@@ -71,6 +70,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
 
             public override Scalar W { get; }
 
+            internal override Precedence Precedence => Precedence.Atomic;
+
             /// <inheritdoc/>
             public override int OperationsCount => X.OperationsCount + Y.OperationsCount + Z.OperationsCount + W.OperationsCount;
 
@@ -82,16 +83,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
                 var z = Z.Simplified;
                 var w = W.Simplified;
 
-                return x == X && y == Y && z == Z && w == W
-                    ? this
-                    : new Constructed(x, y, z, w);
+                return
+                    ReferenceEquals(x, X) &&
+                    ReferenceEquals(y, Y) &&
+                    ReferenceEquals(z, Z) &&
+                    ReferenceEquals(w, W)
+                        ? this
+                        : new Constructed(x, y, z, w);
             }
 
             /// <inheritdoc/>
             protected override string CreateExpressionText()
                 => $"Vector4({X},{Y},{Z},{W})";
-
-            protected override bool IsAtomic => true;
         }
 
         Scalar Channel(string channelName) => Expressions.Scalar.Channel(this, channelName);
