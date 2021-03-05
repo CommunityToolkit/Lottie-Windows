@@ -57,8 +57,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
                 _text = text;
             }
 
-            /// <inheritdoc/>
-            protected override bool IsAtomic => true;
+            internal override Precedence Precedence => Precedence.Atomic;
 
             /// <inheritdoc/>
             // We don't actually know the operation count because the text could
@@ -108,18 +107,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
                 var m32 = _32.Simplified;
 
                 return
-                    m11 != _11 || m12 != _12 ||
-                    m21 != _21 || m22 != _22 ||
-                    m31 != _31 || m32 != _32
-                        ? new Constructed(m11, m12, m21, m22, m31, m32)
-                        : this;
+                    ReferenceEquals(m11, _11) && ReferenceEquals(m12, _12) &&
+                    ReferenceEquals(m21, _21) && ReferenceEquals(m22, _22) &&
+                    ReferenceEquals(m31, _31) && ReferenceEquals(m32, _32)
+                        ? this
+                        : new Constructed(m11, m12, m21, m22, m31, m32);
             }
 
             /// <inheritdoc/>
             protected override string CreateExpressionText()
                 => $"Matrix3x2({Parenthesize(_11)},{Parenthesize(_12)},{Parenthesize(_21)},{Parenthesize(_22)},{Parenthesize(_31)},{Parenthesize(_32)})";
 
-            protected override bool IsAtomic => true;
+            internal override Precedence Precedence => Precedence.Atomic;
         }
 
         Scalar Channel(string channelName) => Expressions.Scalar.Channel(this, channelName);

@@ -31,8 +31,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
                 _text = text;
             }
 
-            /// <inheritdoc/>
-            protected override bool IsAtomic => true;
+            internal override Precedence Precedence => Precedence.Atomic;
 
             /// <inheritdoc/>
             // We don't actually know the operation count because the text could
@@ -78,9 +77,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
                     return new Literal(literalLeft.Value < literalRight.Value);
                 }
 
-                return left != Left || right != Right
-                    ? new LessThan(left, right)
-                    : this;
+                return ReferenceEquals(left, Left) && ReferenceEquals(right, Right)
+                    ? this
+                    : new LessThan(left, right);
             }
 
             /// <inheritdoc/>
@@ -97,8 +96,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
                 Value = value;
             }
 
-            /// <inheritdoc/>
-            protected override bool IsAtomic => true;
+            internal override Precedence Precedence => Precedence.Atomic;
 
             /// <inheritdoc/>
             public override int OperationsCount => 0;

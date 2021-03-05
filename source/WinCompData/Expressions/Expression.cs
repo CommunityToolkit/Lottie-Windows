@@ -71,10 +71,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
         public abstract string ToText();
 
         /// <summary>
-        /// Gets a value indicating whether the string form of the expression can be unambigiously
-        /// parsed without parentheses.
+        /// Gets a value indicating the relative precedence of the string form of the expression.
+        /// This is used to determine whether parentheses are necessary in order to
+        /// override the left-to-right evaluation of the parent expression.
         /// </summary>
-        protected virtual bool IsAtomic => false;
+        internal virtual Precedence Precedence => Precedence.Unknown;
 
         /// <summary>
         /// The number of operations in this <see cref="Expression"/>. An operation is something that
@@ -83,7 +84,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
         public abstract int OperationsCount { get; }
 
         protected static string Parenthesize(Expression expression)
-            => expression.IsAtomic
+            => expression.Precedence == Precedence.Atomic
                 ? expression.ToText()
                 : $"({expression.ToText()})";
 

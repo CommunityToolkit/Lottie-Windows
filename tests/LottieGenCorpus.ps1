@@ -24,9 +24,12 @@ Param(
 )
 
 # Find the most recently built LottieGen.dll.
+# Sort by LastWriteTime rather than CreationTime because the compiler will
+#  reuse existing output files such that the CreationTime does not represent
+#  the time when the compilation was done.
 $lottieGenExe = 
     Get-ChildItem LottieGen.exe -r -path "$PSScriptRoot\..\LottieGen\dotnettool\bin\" | 
-    Sort-Object -Property 'CreationTime' -Desc | 
+    Sort-Object -Property 'LastWriteTime' -Desc | 
     Select-Object -first 1
 
 if (!$lottieGenExe)
