@@ -41,6 +41,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
             {
             }
 
+            private protected override string ExpressionOperator => "+";
+
+            internal override Precedence Precedence => Precedence.Addition;
+
             /// <inheritdoc/>
             protected override Vector3 Simplify()
             {
@@ -57,17 +61,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
                     return left;
                 }
 
-                return left != Left || right != Right
-                    ? new Add(left, right)
-                    : this;
-            }
-
-            /// <inheritdoc/>
-            protected override string CreateExpressionText()
-            {
-                var left = Left is Add ? Left.ToText() : Parenthesize(Left);
-                var right = Right is Add ? Right.ToText() : Parenthesize(Right);
-                return $"{left}+{right}";
+                return ReferenceEquals(left, Left) && ReferenceEquals(right, Right)
+                    ? this
+                    : new Add(left, right);
             }
         }
 
@@ -80,8 +76,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
                 _text = text;
             }
 
-            /// <inheritdoc/>
-            protected override bool IsAtomic => true;
+            internal override Precedence Precedence => Precedence.Atomic;
 
             /// <inheritdoc/>
             // We don't actually know the operation count because the text could
@@ -104,8 +99,24 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
 
             public Vector3 Right { get; }
 
+            private protected abstract string ExpressionOperator { get; }
+
             /// <inheritdoc/>
             public override int OperationsCount => Left.OperationsCount + Right.OperationsCount;
+
+            /// <inheritdoc/>
+            protected override sealed string CreateExpressionText()
+            {
+                var left = Left.Precedence == Precedence.Unknown
+                    ? Parenthesize(Left)
+                    : Left.ToText();
+
+                var right = Right.Precedence != Precedence && Right.Precedence != Precedence.Atomic
+                    ? Parenthesize(Right)
+                    : Right.ToText();
+
+                return $"{left}{ExpressionOperator}{right}";
+            }
         }
 
         internal sealed class Constructed : Vector3
@@ -126,6 +137,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
             /// <inheritdoc/>
             public override int OperationsCount => X.OperationsCount + Y.OperationsCount + Z.OperationsCount;
 
+            internal override Precedence Precedence => Precedence.Atomic;
+
             /// <inheritdoc/>
             protected override Vector3 Simplify()
             {
@@ -133,7 +146,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
                 var y = Y.Simplified;
                 var z = Z.Simplified;
 
-                return x == X && y == Y && z == Z
+                return ReferenceEquals(x, X) && ReferenceEquals(y, Y) && ReferenceEquals(z, Z)
                     ? this
                     : Vector3(x, y, z);
             }
@@ -141,8 +154,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
             /// <inheritdoc/>
             protected override string CreateExpressionText()
                 => $"Vector3({X},{Y},{Z})";
-
-            protected override bool IsAtomic => true;
         }
 
         internal sealed class ScalarMultiply : Vector3
@@ -160,6 +171,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
             /// <inheritdoc/>
             public override int OperationsCount => Left.OperationsCount + Right.OperationsCount;
 
+            internal override Precedence Precedence => Precedence.Multiplication;
+
             /// <inheritdoc/>
             protected override Vector3 Simplify()
             {
@@ -176,16 +189,24 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
                     return right;
                 }
 
-                return left != Left || right != Right
-                    ? new ScalarMultiply(left, right)
-                    : this;
+                return ReferenceEquals(left, Left) && ReferenceEquals(right, Right)
+                    ? this
+                    : new ScalarMultiply(left, right);
             }
 
             /// <inheritdoc/>
             protected override string CreateExpressionText()
-                => Left is Scalar.BinaryExpression.Multiply left
-                    ? $"{left.ToText()}*{Parenthesize(Right)}"
-                    : $"{Parenthesize(Left)}*{Parenthesize(Right)}";
+            {
+                var left = Left.Precedence == Precedence.Unknown
+                    ? Parenthesize(Left)
+                    : Left.ToText();
+
+                var right = Right.Precedence != Precedence && Right.Precedence != Precedence.Atomic
+                    ? Parenthesize(Right)
+                    : Right.ToText();
+
+                return $"{left}*{right}";
+            }
         }
 
         Scalar Channel(string channelName) => Expressions.Scalar.Channel(this, channelName);

@@ -54,6 +54,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Expressions\Boolean.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Expressions\Color.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Expressions\Expression_.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Expressions\Precedence.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Expressions\Scalar.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Expressions\Expression.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Expressions\ExpressionType.cs" />
