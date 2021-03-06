@@ -159,7 +159,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     // If the layer is a shape then we need to wrap it
                     // in a shape visual so that it can be used for matte
                     // composition.
-                    if (layerIsMattedLayer || mattedVisual != null)
+                    if (layerIsMattedLayer || mattedVisual is not null)
                     {
                         visual = translatedLayer.GetVisualRoot(context);
                     }
@@ -169,7 +169,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     visual = translatedLayer.GetVisualRoot(context);
                 }
 
-                if (visual != null)
+                if (visual is not null)
                 {
                     // The layer to be matted comes first. The matte layer is the very next layer.
                     if (layerIsMattedLayer)
@@ -177,7 +177,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         mattedVisual = visual;
                         matteType = layer.LayerMatteType;
                     }
-                    else if (mattedVisual != null)
+                    else if (mattedVisual is not null)
                     {
                         var compositedMatteVisual = Masks.TranslateMatteLayer(context, visual, mattedVisual, matteType == Layer.MatteType.Invert);
                         mattedVisual = null;

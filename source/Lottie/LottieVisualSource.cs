@@ -245,7 +245,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             var oldFactory = _animatedVisualFactory;
             _animatedVisualFactory = null;
 
-            if (oldFactory != null)
+            if (oldFactory is not null)
             {
                 // Notify all listeners that their existing content is no longer valid.
                 // They should stop showing the content. We will notify them again when the

@@ -61,7 +61,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 // Get the file name and JSON contents.
                 (var fileName, var jsonStream) = await jsonLoader();
 
-                if (diagnostics != null)
+                if (diagnostics is not null)
                 {
                     diagnostics.FileName = fileName ?? string.Empty;
                     diagnostics.ReadTime = timeMeasurer.GetElapsedAndRestart();
@@ -84,13 +84,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                             LottieCompositionReader.Options.IgnoreMatchNames,
                             out var readerIssues);
 
-                    if (diagnostics != null)
+                    if (diagnostics is not null)
                     {
                         diagnostics.JsonParsingIssues = ToIssues(readerIssues);
                     }
                 });
 
-                if (diagnostics != null)
+                if (diagnostics is not null)
                 {
                     diagnostics.ParseTime = timeMeasurer.GetElapsedAndRestart();
                 }
@@ -101,7 +101,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                     return result;
                 }
 
-                if (diagnostics != null)
+                if (diagnostics is not null)
                 {
                     // Save the LottieComposition in the diagnostics so that the xml and codegen
                     // code can be derived from it.
@@ -129,7 +129,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                     // This is because the binding information is output in the diagnostics object
                     // so there's no point translating bindings if the diagnostics object
                     // isn't available.
-                    var makeColorsBindable = diagnostics != null && options.HasFlag(LottieVisualOptions.BindableColors);
+                    var makeColorsBindable = diagnostics is not null && options.HasFlag(LottieVisualOptions.BindableColors);
                     translationResult = LottieToWinCompTranslator.TryTranslateLottieComposition(
                         lottieComposition: lottieComposition,
                         configuration: new TranslatorConfiguration
@@ -142,7 +142,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                     wincompDataRootVisual = translationResult.RootVisual;
                     requiredUapVersion = translationResult.MinimumRequiredUapVersion;
 
-                    if (diagnostics != null)
+                    if (diagnostics is not null)
                     {
                         diagnostics.TranslationIssues = ToIssues(translationResult.TranslationIssues);
                         diagnostics.TranslationTime = timeMeasurer.GetElapsedAndRestart();
@@ -156,12 +156,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
 
                     // Optimize the resulting translation. This will usually significantly reduce the size of
                     // the Composition code, however it might slow down loading too much on complex Lotties.
-                    if (wincompDataRootVisual != null && optimizationEnabled)
+                    if (wincompDataRootVisual is not null && optimizationEnabled)
                     {
                         // Optimize.
                         wincompDataRootVisual = UIData.Tools.Optimizer.Optimize(wincompDataRootVisual, ignoreCommentProperties: true);
 
-                        if (diagnostics != null)
+                        if (diagnostics is not null)
                         {
                             diagnostics.OptimizationTime = timeMeasurer.GetElapsedAndRestart();
                         }
@@ -175,7 +175,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 }
                 else
                 {
-                    if (diagnostics != null)
+                    if (diagnostics is not null)
                     {
                         // Save the root visual so diagnostics can generate XML and codegen.
                         diagnostics.RootVisual = wincompDataRootVisual;

@@ -49,7 +49,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             {
                 get
                 {
-                    Debug.Assert(_obj != null, "Precondition");
+                    Debug.Assert(_obj is not null, "Precondition");
                     return _obj!;
                 }
             }
@@ -59,7 +59,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             /// </summary>
             public void SetObject(object obj)
             {
-                if (_obj != null)
+                if (_obj is not null)
                 {
                     throw new InvalidOperationException();
                 }

@@ -87,7 +87,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                             {
                                 return new LayerCollectionAsset(id, new LayerCollection(layers));
                             }
-                            else if (imagePath != null && fileName != null)
+                            else if (imagePath is not null && fileName is not null)
                             {
                                 return CreateImageAsset(id, width, height, imagePath, fileName);
                             }

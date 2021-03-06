@@ -54,7 +54,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             {
                 var ranges =
                     (from range in entry.Ranges
-                     where range.Easing != null
+                     where range.Easing is not null
                      select range).ToArray();
 
                 yield return (entry.VariableName, entry.Scale, entry.Offset, ranges);
@@ -88,7 +88,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 get
                 {
                     var cur = _rangesHead;
-                    while (cur != null)
+                    while (cur is not null)
                     {
                         yield return cur;
                         cur = cur.Next;
@@ -110,7 +110,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
                 var cur = _rangesHead;
 
-                while (cur.Start > range.Start && cur.Next != null)
+                while (cur.Start > range.Start && cur.Next is not null)
                 {
                     cur = cur.Next;
                 }

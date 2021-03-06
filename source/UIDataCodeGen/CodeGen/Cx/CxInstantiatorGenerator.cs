@@ -73,7 +73,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
             _isAnimatedIcon = SourceInfo.WinUIVersion >= new Version(2, 6) && SourceInfo.WinUIVersion.Major < 3;
         }
 
-        static string FieldAssignment(string fieldName) => fieldName != null ? $"{fieldName} = " : string.Empty;
+        static string FieldAssignment(string fieldName) => fieldName is not null ? $"{fieldName} = " : string.Empty;
 
         IAnimatedVisualSourceInfo SourceInfo => AnimatedVisualSourceInfo;
 
@@ -639,7 +639,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
                 builder.WriteLine($"{effectVariable}->put_BlurAmount({_s.Float(effect.BlurAmount.Value)});");
             }
 
-            if (effect.Source != null)
+            if (effect.Source is not null)
             {
                 builder.WriteLine($"auto sourceParameter = ref new CompositionEffectSourceParameter({_s.String(effect.Source.Name)});");
                 builder.WriteLine($"{effectVariable}->put_Source(reinterpret_cast<ABI::Windows::Graphics::Effects::IGraphicsEffectSource*>(sourceParameter));");

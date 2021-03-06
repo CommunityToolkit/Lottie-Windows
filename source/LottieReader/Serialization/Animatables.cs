@@ -505,7 +505,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                                 if (k.Kind == JsonValueKind.Array)
                                 {
                                     var kArray = k.AsArray();
-                                    if (kArray != null && HasKeyframes(kArray))
+                                    if (kArray is not null && HasKeyframes(kArray))
                                     {
                                         keyFrames = ReadKeyFrames(kArray.Value).ToArray();
                                         initialValue = keyFrames.First().Value;
@@ -619,7 +619,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                         if (!lottieKeyFrame.TryGetProperty("s", out var finalStartValue))
                         {
                             // Old format.
-                            if (endValue != null)
+                            if (endValue is not null)
                             {
                                 yield return new KeyFrame<T>(startFrame, endValue, spatialBezier, easing);
                             }
@@ -664,7 +664,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                         // Read the easing function parameters. If there are any parameters, it's a CubicBezierEasing.
                         var cp1Json = lottieKeyFrame.ObjectPropertyOrNull("o");
                         var cp2Json = lottieKeyFrame.ObjectPropertyOrNull("i");
-                        if (cp1Json != null && cp2Json != null)
+                        if (cp1Json is not null && cp2Json is not null)
                         {
                             var cp1s = cp1Json.Value.AsVector2Array();
                             var cp2s = cp2Json.Value.AsVector2Array();

@@ -290,7 +290,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                             return false;
                         }
 
-                        if (thisKf.Easing != null)
+                        if (thisKf.Easing is not null)
                         {
                             if (otherKf.Easing is null || _owner.NodeFor(thisKf.Easing) != _owner.NodeFor(otherKf.Easing))
                             {

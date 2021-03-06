@@ -68,7 +68,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGenExe
             _reporter.WriteInfo(InfoType.Signon, toolNameAndVersion);
             _reporter.WriteInfoNewLine();
 
-            if (_options.ErrorDescription != null)
+            if (_options.ErrorDescription is not null)
             {
                 // Failed to parse the command line.
                 _reporter.WriteError("Invalid arguments.");

@@ -59,7 +59,7 @@ namespace LottieSamples
 
         private void NavView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
         {
-            if (args.InvokedItemContainer != null)
+            if (args.InvokedItemContainer is not null)
             {
                 var navItemTag = args.InvokedItemContainer.Tag.ToString();
                 NavView_Navigate(navItemTag, args.RecommendedNavigationTransitionInfo);
@@ -79,7 +79,7 @@ namespace LottieSamples
 
         private void On_Navigated(object sender, NavigationEventArgs e)
         {
-            if (ContentFrame.SourcePageType != null)
+            if (ContentFrame.SourcePageType is not null)
             {
                 var item = _pages.FirstOrDefault(p => p.Page == e.SourcePageType);
 
