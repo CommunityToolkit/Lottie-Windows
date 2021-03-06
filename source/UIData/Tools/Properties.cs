@@ -97,7 +97,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 result |= PropertyId.CenterPoint;
             }
 
-            if (obj.Comment != null)
+            if (obj.Comment is not null)
             {
                 result |= PropertyId.Comment;
             }
@@ -175,17 +175,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 result |= PropertyId.CenterPoint;
             }
 
-            if (obj.Clip != null)
+            if (obj.Clip is not null)
             {
                 result |= PropertyId.Clip;
             }
 
-            if (obj.Comment != null)
+            if (obj.Comment is not null)
             {
                 result |= PropertyId.Comment;
             }
 
-            if (obj.IsVisible != null)
+            if (obj.IsVisible is not null)
             {
                 result |= PropertyId.IsVisible;
             }

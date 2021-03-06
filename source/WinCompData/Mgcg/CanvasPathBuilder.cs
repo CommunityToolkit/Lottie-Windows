@@ -110,7 +110,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg
                 public Vector2 StartPoint { get; }
 
                 /// <inheritdoc/>
-                public bool Equals(BeginFigure? other) => other != null && other.StartPoint.Equals(StartPoint);
+                public bool Equals(BeginFigure? other) => other is not null && other.StartPoint.Equals(StartPoint);
             }
 
             public sealed class EndFigure : Command, IEquatable<EndFigure>
@@ -126,7 +126,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg
                 public CanvasFigureLoop FigureLoop { get; }
 
                 /// <inheritdoc/>
-                public bool Equals(EndFigure? other) => other != null && other.FigureLoop == FigureLoop;
+                public bool Equals(EndFigure? other) => other is not null && other.FigureLoop == FigureLoop;
             }
 
             public sealed class AddCubicBezier : Command, IEquatable<AddCubicBezier>
@@ -149,7 +149,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg
 
                 /// <inheritdoc/>
                 public bool Equals(AddCubicBezier? other) =>
-                    other != null &&
+                    other is not null &&
                     other.ControlPoint1.Equals(ControlPoint1) &&
                     other.ControlPoint2.Equals(ControlPoint2) &&
                     other.EndPoint.Equals(EndPoint);
@@ -168,7 +168,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg
                 public Vector2 EndPoint { get; }
 
                 /// <inheritdoc/>
-                public bool Equals(AddLine? other) => other != null && other.EndPoint.Equals(EndPoint);
+                public bool Equals(AddLine? other) => other is not null && other.EndPoint.Equals(EndPoint);
             }
         }
 

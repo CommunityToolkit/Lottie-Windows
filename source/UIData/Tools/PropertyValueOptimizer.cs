@@ -254,7 +254,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 sprite.StrokeThickness = null;
             }
 
-            if (sprite.Geometry != null)
+            if (sprite.Geometry is not null)
             {
                 OptimizeGeometryProperties(sprite.Geometry);
 

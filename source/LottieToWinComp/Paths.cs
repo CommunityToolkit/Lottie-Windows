@@ -12,6 +12,8 @@ using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
 using Sn = System.Numerics;
 
+#nullable enable
+
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 {
     /// <summary>
@@ -156,7 +158,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             if (context.Translation.AddDescriptions)
             {
-                var shapeContentName = string.Join("+", paths.Select(sh => sh.Name).Where(a => a != null));
+                var shapeContentName = string.Join("+", paths.Select(sh => sh.Name).Where(a => a is not null));
                 compositionSpriteShape.SetDescription(context, shapeContentName);
                 compositionPathGeometry.SetDescription(context, $"{shapeContentName}.PathGeometry");
             }

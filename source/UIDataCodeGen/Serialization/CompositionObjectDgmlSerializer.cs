@@ -208,7 +208,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         {
             foreach (var (name, value) in attrs)
             {
-                if (value != null)
+                if (value is not null)
                 {
                     yield return new XAttribute(name, value);
                 }
@@ -217,7 +217,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         IEnumerable<GroupNode> GroupTree(ObjectData node, GroupNode? group)
         {
-            if (group != null)
+            if (group is not null)
             {
                 group.ItemsInGroup.Add(node);
             }
@@ -228,7 +228,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             {
                 GroupNode childGroup;
                 var childObject = child.Object as CompositionObject;
-                var childDescription = (childObject != null && !string.IsNullOrWhiteSpace(ShortDescription(childObject)))
+                var childDescription = (childObject is not null && !string.IsNullOrWhiteSpace(ShortDescription(childObject)))
                     ? ShortDescription(childObject)
                     : string.Empty;
 
@@ -244,7 +244,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                         GroupName = childDescription,
                     };
 
-                    if (group != null)
+                    if (group is not null)
                     {
                         group.GroupsInGroup.Add(childGroup);
                     }
@@ -295,7 +295,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 // to be displayed in the graph.
                 _owner = owner;
                 var obj = Object as CompositionObject;
-                if (obj != null)
+                if (obj is not null)
                 {
                     switch (obj.Type)
                     {
@@ -371,7 +371,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 {
                     _parent = InReferences.Select(v => v.Node).Where(n => n.IsDgmlNode).FirstOrDefault();
 
-                    if (_parent != null)
+                    if (_parent is not null)
                     {
                         _parent._children.Add(this);
                     }

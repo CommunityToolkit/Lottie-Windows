@@ -85,7 +85,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui
         public bool TryGetFriendlyName([MaybeNullWhen(false)] out string name)
         {
             name = GetFriendlyName(A, R, G, B);
-            return name != null;
+            return name is not null;
         }
 
         /// <summary>
@@ -111,7 +111,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui
                 {
                     // The value has some transparency. Try again ignoring alpha.
                     result = GetWellKnownName(255, r, g, b);
-                    if (result != null)
+                    if (result is not null)
                     {
                         result = a == 0 ? $"Transparent{result}" : $"SemiTransparent{result}";
                     }

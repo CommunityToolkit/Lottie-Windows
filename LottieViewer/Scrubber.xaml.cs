@@ -61,14 +61,14 @@ namespace LottieViewer
             get => _diagnostics;
             set
             {
-                if (_diagnostics != null)
+                if (_diagnostics is not null)
                 {
                     _diagnostics.Markers.CollectionChanged -= Markers_CollectionChanged;
                 }
 
                 _diagnostics = value;
 
-                if (_diagnostics != null)
+                if (_diagnostics is not null)
                 {
                     _diagnostics.Markers.CollectionChanged += Markers_CollectionChanged;
                 }
@@ -201,7 +201,7 @@ namespace LottieViewer
             // Adjust the position of the markers.
             // Set the margin on each of the rectangles in the grid so that they match
             // the offsets of the markers in the view model.
-            if (_diagnostics != null)
+            if (_diagnostics is not null)
             {
                 for (var i = 0; i < _diagnostics.Markers.Count; i++)
                 {
@@ -381,7 +381,7 @@ namespace LottieViewer
                 var newState = state?.Name;
 
                 // Check whether we have already reported this state.
-                if (newState != null && _previousCommonState != newState)
+                if (newState is not null && _previousCommonState != newState)
                 {
                     _previousCommonState = newState;
                     scrubber.OnSliderVisualStateChange(newState);

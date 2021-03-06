@@ -304,7 +304,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             // TODO - this only works correctly if Size and TrimOffset are not animated. A complete solution requires
             //        adding another property.
-            var isPartialTrimPath = context.TrimPath != null &&
+            var isPartialTrimPath = context.TrimPath is not null &&
                 (context.TrimPath.Start.IsAnimated || context.TrimPath.End.IsAnimated || context.TrimPath.Offset.IsAnimated ||
                 context.TrimPath.Start.InitialValue.Value != 0 || context.TrimPath.End.InitialValue.Value != 1);
 
@@ -394,7 +394,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             // TODO - this only works correctly if Size and TrimOffset are not animated. A complete solution requires
             //        adding another property.
-            var isPartialTrimPath = context.TrimPath != null &&
+            var isPartialTrimPath = context.TrimPath is not null &&
                 (context.TrimPath.Start.IsAnimated || context.TrimPath.End.IsAnimated || context.TrimPath.Offset.IsAnimated ||
                 context.TrimPath.Start.InitialValue.Value != 0 || context.TrimPath.End.InitialValue.Value != 1);
 

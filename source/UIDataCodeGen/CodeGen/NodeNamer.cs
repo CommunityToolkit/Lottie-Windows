@@ -122,7 +122,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         {
             var name = NameOf(obj);
 
-            if (name != null)
+            if (name is not null)
             {
                 // The object has a name, so use it.
                 return NodeName.FromNonTypeName(name);

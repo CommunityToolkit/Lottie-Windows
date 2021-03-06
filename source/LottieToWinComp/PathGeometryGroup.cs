@@ -28,7 +28,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// </summary>
         public IReadOnlyList<PathGeometry> Data { get; }
 
-        public bool Equals(PathGeometryGroup? other) => other != null && Enumerable.SequenceEqual(Data, other.Data);
+        public bool Equals(PathGeometryGroup? other) => other is not null && Enumerable.SequenceEqual(Data, other.Data);
 
         /// <summary>
         /// Takes a group of possibly-animated paths and returns an animatable
@@ -248,7 +248,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
                 // There should always be at least one keyframe for each frame number, so we will
                 // always end up with a non-null preferred easing here.
-                Debug.Assert(preferredEasing != null, "Invariant");
+                Debug.Assert(preferredEasing is not null, "Invariant");
 
                 yield return new PathGeometryGroupKeyFrames(currentFrame, geometries, preferredEasing!, easingIsCorrect);
 

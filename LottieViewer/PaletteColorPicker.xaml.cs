@@ -47,7 +47,7 @@ namespace LottieViewer
                     return;
                 }
 
-                if (_diagnosticsViewModel != null)
+                if (_diagnosticsViewModel is not null)
                 {
                     // Unhook form the previous DiagnosticsViewModel.
                     value.ThemePropertyBindings.CollectionChanged -= Value_CollectionChanged;
@@ -55,7 +55,7 @@ namespace LottieViewer
 
                 _diagnosticsViewModel = value;
 
-                if (_diagnosticsViewModel != null)
+                if (_diagnosticsViewModel is not null)
                 {
                     value.ThemePropertyBindings.CollectionChanged += Value_CollectionChanged;
                 }
@@ -182,7 +182,7 @@ namespace LottieViewer
             // the data context.
             static object? GetDataContext(DependencyObject obj)
             {
-                if (obj is FrameworkElement fe && fe.DataContext != null)
+                if (obj is FrameworkElement fe && fe.DataContext is not null)
                 {
                     return fe.DataContext;
                 }

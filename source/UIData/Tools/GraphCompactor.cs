@@ -449,7 +449,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 {
                     var childProperties = GetNonDefaultShapeProperties(child);
 
-                    if (TryGetAnimatorByPropertyName(child, nameof(CompositionShape.TransformMatrix)) != null)
+                    if (TryGetAnimatorByPropertyName(child, nameof(CompositionShape.TransformMatrix)) is not null)
                     {
                         // Ignore this container if any of the children has an animated transform.
                         return false;
@@ -679,9 +679,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             var visualsWithSingleParents =
                 from n in graph.CompositionObjectNodes
                 let visual = n.Object as Visual
-                where visual != null
+                where visual is not null
                 let parent = n.Node.Parent as ContainerVisual
-                where parent != null &&
+                where parent is not null &&
                       parent.Children.Count == 1 &&
                       !IsVisualSurfaceSourceVisual(graph, parent)
                 select (visual, parent);
@@ -689,7 +689,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             foreach (var (visual, parent) in visualsWithSingleParents)
             {
                 var visibilityController = visual.TryGetAnimationController("IsVisible");
-                if (visibilityController != null)
+                if (visibilityController is not null)
                 {
                     var animator = TryGetAnimatorByPropertyName(visibilityController, "Progress");
                     if (animator is null)
@@ -717,7 +717,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 (from n in graph.CompositionObjectNodes
                  let parent = n.Node.Parent
                  where n.Object.Type == CompositionObjectType.ShapeVisual
-                 where parent != null
+                 where parent is not null
                  let parentContainerVisual = (ContainerVisual)parent
                  where parentContainerVisual.Children.Count == 1
                  select (n.Node, (ShapeVisual)n.Object, parentContainerVisual)).ToArray();
@@ -769,7 +769,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             var candidate =
                 (from n in graph.CompositionObjectNodes
                  let sv = n.Object as ShapeVisual
-                 where sv != null && sv.Shapes.Count == 1
+                 where sv is not null && sv.Shapes.Count == 1
                  let shape = sv.Shapes[0]
                  where IsScaleUsedForVisibility(shape)
                  select sv).ToArray();
@@ -779,7 +779,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 var shape = visual.Shapes[0];
 
                 var visibilityController = shape.TryGetAnimationController("Scale");
-                if (visibilityController != null)
+                if (visibilityController is not null)
                 {
                     var animator = TryGetAnimatorByPropertyName(visibilityController, "Progress");
                     if (animator is null)
@@ -1074,7 +1074,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
                  // The parent may have been removed already.
                  let parent = n.Node.Parent
-                 where parent != null
+                 where parent is not null
                  select ((ContainerVisual)parent, containerVisual)).ToArray();
 
             // Pull the children of the container into the parent of the container. Remove the unnecessary containers.
@@ -1294,7 +1294,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 where T : class
             {
                 var fromValue = get(from);
-                if (fromValue != null)
+                if (fromValue is not null)
                 {
                     Debug.Assert(get(to) is null, "Precondition");
                     set(to, fromValue);
@@ -1305,7 +1305,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 where T : struct
             {
                 var fromValue = get(from);
-                if (fromValue != null)
+                if (fromValue is not null)
                 {
                     Debug.Assert(get(to) is null, "Precondition");
                     set(to, fromValue.Value);
@@ -1323,7 +1323,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             foreach (var anim in from.Animators)
             {
                 to.StartAnimation(anim.AnimatedProperty, anim.Animation);
-                if (anim.Controller != null && (anim.Controller.IsPaused || anim.Controller.Animators.Count > 0))
+                if (anim.Controller is not null && (anim.Controller.IsPaused || anim.Controller.Animators.Count > 0))
                 {
                     var controller = to.TryGetAnimationController(anim.AnimatedProperty)!;
                     if (anim.Controller.IsPaused)
@@ -1345,7 +1345,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 where T : class
             {
                 var fromValue = get(from);
-                if (fromValue != null)
+                if (fromValue is not null)
                 {
                     Debug.Assert(get(to) is null, "Precondition");
                     set(to, fromValue);
@@ -1356,7 +1356,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 where T : struct
             {
                 var fromValue = get(from);
-                if (fromValue != null)
+                if (fromValue is not null)
                 {
                     Debug.Assert(get(to) is null, "Precondition");
                     set(to, fromValue.Value);
@@ -1380,7 +1380,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             foreach (var anim in from.Animators)
             {
                 to.StartAnimation(anim.AnimatedProperty, anim.Animation);
-                if (anim.Controller != null && (anim.Controller.IsPaused || anim.Controller.Animators.Count > 0))
+                if (anim.Controller is not null && (anim.Controller.IsPaused || anim.Controller.Animators.Count > 0))
                 {
                     var controller = to.TryGetAnimationController(anim.AnimatedProperty)!;
                     if (anim.Controller.IsPaused)

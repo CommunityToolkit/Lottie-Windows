@@ -179,7 +179,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 target.CenterPoint = source.CenterPoint.Value;
             }
 
-            if (source.Clip != null)
+            if (source.Clip is not null)
             {
                 target.Clip = GetCompositionClip(source.Clip);
             }
@@ -290,7 +290,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
 
             result = CacheAndInitializeVisual(obj, _c.CreateLayerVisual());
 
-            if (obj.Shadow != null)
+            if (obj.Shadow is not null)
             {
                 result.Shadow = GetCompositionShadow(obj.Shadow);
             }
@@ -309,7 +309,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
 
             result = CacheAndInitializeVisual(obj, _c.CreateShapeVisual());
 
-            if (obj.ViewBox != null)
+            if (obj.ViewBox is not null)
             {
                 result.ViewBox = GetCompositionViewBox(obj.ViewBox);
             }
@@ -334,7 +334,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
 
             result = CacheAndInitializeVisual(obj, _c.CreateSpriteVisual());
 
-            if (obj.Brush != null)
+            if (obj.Brush is not null)
             {
                 result.Brush = GetCompositionBrush(obj.Brush);
             }
@@ -377,7 +377,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 GetCompositionPropertySet(source.Properties);
             }
 
-            if (source.Comment != null)
+            if (source.Comment is not null)
             {
                 target.Comment = source.Comment;
             }
@@ -398,7 +398,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 var animation = GetCompositionAnimation(animator.Animation);
                 target.StartAnimation(animator.AnimatedProperty, animation);
                 var controller = animator.Controller;
-                if (controller != null)
+                if (controller is not null)
                 {
                     var animationController = GetAnimationController(controller);
                     if (controller.IsPaused)
@@ -961,7 +961,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 result.Color = Color(obj.Color.Value);
             }
 
-            if (obj.Mask != null)
+            if (obj.Mask is not null)
             {
                 result.Mask = GetCompositionBrush(obj.Mask);
             }
@@ -1007,7 +1007,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
 
             result = CacheAndInitializeCompositionObject(obj, _c.CreateVisualSurface());
 
-            if (obj.SourceVisual != null)
+            if (obj.SourceVisual is not null)
             {
                 result.SourceVisual = GetVisual(obj.SourceVisual);
             }
@@ -1137,7 +1137,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
 
             result = CacheAndInitializeShape(obj, _c.CreateSpriteShape());
 
-            if (obj.StrokeBrush != null)
+            if (obj.StrokeBrush is not null)
             {
                 result.StrokeBrush = GetCompositionBrush(obj.StrokeBrush);
 
@@ -1189,7 +1189,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             }
 
             result.Geometry = GetCompositionGeometry(obj.Geometry);
-            if (obj.FillBrush != null)
+            if (obj.FillBrush is not null)
             {
                 result.FillBrush = GetCompositionBrush(obj.FillBrush);
             }
@@ -1220,7 +1220,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
 
             result = CacheAndInitializeCompositionObject(obj, _c.CreateSurfaceBrush());
 
-            if (obj.Surface != null)
+            if (obj.Surface is not null)
             {
                 result.Surface = GetCompositionSurface(obj.Surface);
             }
@@ -1544,7 +1544,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                     throw new InvalidOperationException();
             }
 
-            if (result != null)
+            if (result is not null)
             {
                 Cache(obj, result);
             }

@@ -76,7 +76,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 #if EnableDropShadow
             var dropShadowEffect = context.Effects.DropShadowEffect;
 
-            if (dropShadowEffect != null)
+            if (dropShadowEffect is not null)
             {
                 result = ApplyDropShadow(context, result, dropShadowEffect);
             }
@@ -86,7 +86,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             var gaussianBlurEffect = context.Effects.GaussianBlurEffect;
 
-            if (gaussianBlurEffect != null)
+            if (gaussianBlurEffect is not null)
             {
                 result = ApplyGaussianBlur(context, result, gaussianBlurEffect);
             }

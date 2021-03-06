@@ -87,7 +87,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             if (_compositionObjectReferences.TryGetValue(obj, out var node))
             {
                 // Object has been seen before. Just add the reference.
-                if (_includeVertices && from != null)
+                if (_includeVertices && from is not null)
                 {
                     AddVertex(from, node);
                 }
@@ -103,7 +103,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             InitializeNode(node, NodeType.CompositionObject, _positionCounter++);
 
             // Link the nodes in the graph.
-            if (_includeVertices && from != null)
+            if (_includeVertices && from is not null)
             {
                 AddVertex(from, node);
             }
@@ -439,7 +439,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
         {
             VisitCompositionShadow(obj, node);
 
-            if (obj.Mask != null)
+            if (obj.Mask is not null)
             {
                 Reference(node, obj.Mask);
             }
@@ -595,7 +595,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
         bool VisitCompositionPathGeometry(CompositionPathGeometry obj, T node)
         {
             VisitCompositionGeometry(obj, node);
-            if (obj.Path != null)
+            if (obj.Path is not null)
             {
                 Reference(node, obj.Path);
             }
@@ -662,7 +662,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 case GraphicsEffectType.GaussianBlurEffect:
                     {
                         var source = ((GaussianBlurEffect)effect).Source;
-                        if (source != null)
+                        if (source is not null)
                         {
                             Reference(node, obj.GetSourceParameter(source.Name));
                         }

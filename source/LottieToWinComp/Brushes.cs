@@ -311,14 +311,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             // Look for a color binding embedded into the name of the fill or stroke.
             var bindingName = ThemePropertyBindings.GetThemeBindingNameForLottieProperty(context, bindingSpec, "Color");
 
-            if (bindingName != null)
+            if (bindingName is not null)
             {
                 // A color binding string was found. Bind the color to a property with the
                 // name described by the binding string.
                 return TranslateBoundSolidColor(context, opacity, bindingName, displayName: bindingName, DefaultValueOf(color));
             }
 
-            if (context.Translation.ColorPalette != null && !color.IsAnimated)
+            if (context.Translation.ColorPalette is not null && !color.IsAnimated)
             {
                 // Color palette binding is enabled. Bind the color to a property with
                 // the name of the color in the palette.
@@ -487,7 +487,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             result.EllipseRadius = new Sn.Vector2(Sn.Vector2.Distance(ConvertTo.Vector2(startPoint.InitialValue), ConvertTo.Vector2(endPoint.InitialValue)));
 
-            if (gradient.HighlightLength != null &&
+            if (gradient.HighlightLength is not null &&
                 (gradient.HighlightLength.InitialValue != 0 || gradient.HighlightLength.IsAnimated))
             {
                 // We don't yet support animated HighlightLength.

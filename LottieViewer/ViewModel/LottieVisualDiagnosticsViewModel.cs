@@ -32,7 +32,7 @@ namespace LottieViewer.ViewModel
                 ThemePropertyBindings.Clear();
                 ThemingPropertySet = null;
 
-                if (LottieVisualDiagnostics != null)
+                if (LottieVisualDiagnostics is not null)
                 {
                     // Populate the issues list.
                     foreach (var issue in LottieVisualDiagnostics.JsonParsingIssues.
@@ -46,7 +46,7 @@ namespace LottieViewer.ViewModel
 
                     // Populate the marker info.
                     var composition = LottieVisualDiagnostics.LottieComposition;
-                    if (composition != null)
+                    if (composition is not null)
                     {
                         var framesPerSecond = composition.FramesPerSecond;
                         var duration = composition.Duration.TotalSeconds;
@@ -81,7 +81,7 @@ namespace LottieViewer.ViewModel
                     }
 
                     ThemingPropertySet = LottieVisualDiagnostics.ThemingPropertySet;
-                    if (LottieVisualDiagnostics.ThemePropertyBindings != null)
+                    if (LottieVisualDiagnostics.ThemePropertyBindings is not null)
                     {
                         foreach (var binding in LottieVisualDiagnostics.ThemePropertyBindings)
                         {
@@ -91,7 +91,7 @@ namespace LottieViewer.ViewModel
                 }
 
                 var propertyChangedCallback = PropertyChanged;
-                if (propertyChangedCallback != null)
+                if (propertyChangedCallback is not null)
                 {
                     propertyChangedCallback(this, new PropertyChangedEventArgs(nameof(DurationText)));
                     propertyChangedCallback(this, new PropertyChangedEventArgs(nameof(FileName)));

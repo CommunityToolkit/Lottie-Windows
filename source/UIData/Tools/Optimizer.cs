@@ -135,19 +135,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
         bool GetExistingCanvasGeometry(CanvasGeometry key, [MaybeNullWhen(false)] out CanvasGeometry result)
         {
             result = (CanvasGeometry?)NodeFor(key).Copied;
-            return result != null;
+            return result is not null;
         }
 
         bool GetExisting(CompositionPath key, [MaybeNullWhen(false)] out CompositionPath result)
         {
             result = (CompositionPath?)NodeFor(key).Copied;
-            return result != null;
+            return result is not null;
         }
 
         bool GetExisting(LoadedImageSurface key, [MaybeNullWhen(false)] out LoadedImageSurface result)
         {
             result = (LoadedImageSurface?)NodeFor(key).Copied;
-            return result != null;
+            return result is not null;
         }
 
         T CacheAndInitializeCompositionObject<T>(T key, T obj)
@@ -202,7 +202,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
         {
             CacheAndInitializeCompositionObject(source, target);
 
-            if (source.Clip != null)
+            if (source.Clip is not null)
             {
                 target.Clip = GetCompositionClip(source.Clip);
             }
@@ -335,7 +335,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
             result = CacheAndInitializeVisual(obj, _c.CreateLayerVisual());
 
-            if (obj.Shadow != null)
+            if (obj.Shadow is not null)
             {
                 result.Shadow = GetCompositionShadow(obj.Shadow);
             }
@@ -354,7 +354,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
             result = CacheAndInitializeVisual(obj, _c.CreateShapeVisual());
 
-            if (obj.ViewBox != null)
+            if (obj.ViewBox is not null)
             {
                 result.ViewBox = GetCompositionViewBox(obj.ViewBox);
             }
@@ -379,7 +379,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
             result = CacheAndInitializeVisual(obj, _c.CreateSpriteVisual());
 
-            if (obj.Brush != null)
+            if (obj.Brush is not null)
             {
                 result.Brush = GetCompositionBrush(obj.Brush);
             }
@@ -446,7 +446,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 animation.Freeze();
                 target.StartAnimation(animator.AnimatedProperty, animation);
                 var controller = animator.Controller;
-                if (controller != null)
+                if (controller is not null)
                 {
                     var animationController = GetAnimationController(controller);
                     if (controller.IsPaused)
@@ -944,7 +944,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
             result = CacheAndInitializeCompositionObject(obj, _c.CreateVisualSurface());
 
-            if (obj.SourceVisual != null)
+            if (obj.SourceVisual is not null)
             {
                 result.SourceVisual = GetVisual(obj.SourceVisual);
             }
@@ -1132,7 +1132,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
             result = CacheAndInitializeShape(obj, _c.CreateSpriteShape());
 
-            if (obj.StrokeBrush != null)
+            if (obj.StrokeBrush is not null)
             {
                 result.IsStrokeNonScaling = obj.IsStrokeNonScaling;
                 result.StrokeBrush = GetCompositionBrush(obj.StrokeBrush);
@@ -1152,7 +1152,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             }
 
             result.Geometry = GetCompositionGeometry(obj.Geometry);
-            if (obj.FillBrush != null)
+            if (obj.FillBrush is not null)
             {
                 result.FillBrush = GetCompositionBrush(obj.FillBrush);
             }
@@ -1170,7 +1170,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
             result = CacheAndInitializeCompositionObject(obj, _c.CreateSurfaceBrush(obj.Surface));
 
-            if (obj.Surface != null)
+            if (obj.Surface is not null)
             {
                 result.Surface = GetCompositionSurface(obj.Surface);
             }
@@ -1223,7 +1223,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             }
 
             result = CacheAndInitializeCompositionGeometry(obj, _c.CreateRectangleGeometry());
-            if (obj.Offset != null)
+            if (obj.Offset is not null)
             {
                 result.Offset = obj.Offset;
             }
@@ -1241,7 +1241,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             }
 
             result = CacheAndInitializeCompositionGeometry(obj, _c.CreateRoundedRectangleGeometry());
-            if (obj.Offset != null)
+            if (obj.Offset is not null)
             {
                 result.Offset = obj.Offset;
             }
@@ -1407,7 +1407,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             }
 
             result = CacheAndInitializeCompositionObject(obj, _c.CreateColorBrush());
-            if (obj.Color != null)
+            if (obj.Color is not null)
             {
                 result.Color = obj.Color;
             }

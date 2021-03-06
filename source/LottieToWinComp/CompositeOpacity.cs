@@ -72,7 +72,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             {
                 yield return new Animatable<Opacity>(initialValue: cur._initialValue, keyFrames: cur._keyFrames);
                 cur = cur._previous;
-            } while (cur != null);
+            } while (cur is not null);
         }
 
         // Gets the value of the opacity. Only valid to call if the opacity is not animated.

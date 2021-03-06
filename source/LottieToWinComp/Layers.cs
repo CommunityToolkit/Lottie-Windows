@@ -25,7 +25,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var layerTranslators =
                 (from layer in context.Layers.GetLayersBottomToTop()
                  let layerTranslator = CreateTranslatorForLayer(context, layer)
-                 where layerTranslator != null
+                 where layerTranslator is not null
                  select (layerTranslator: layerTranslator, layer: layer)).ToArray();
 
             // Set descriptions on each translate layer so that it's clear where the layer starts.
@@ -56,7 +56,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         {
             Debug.Assert(shapes.All(s => s.IsShape), "Precondition");
 
-            var compositionShapes = shapes.Select(s => (shape: s.GetShapeRoot(context), subgraph: s)).Where(s => s.shape != null).ToArray();
+            var compositionShapes = shapes.Select(s => (shape: s.GetShapeRoot(context), subgraph: s)).Where(s => s.shape is not null).ToArray();
 
             switch (compositionShapes.Length)
             {
@@ -102,7 +102,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     {
                         var visual = GetVisualForLayerTranslators(context, shapeSubGraphs);
 
-                        if (visual != null)
+                        if (visual is not null)
                         {
                             yield return visual;
                         }
@@ -111,7 +111,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     }
 
                     var visualRoot = item.GetVisualRoot(context);
-                    if (visualRoot != null)
+                    if (visualRoot is not null)
                     {
                         yield return visualRoot;
                     }
@@ -121,7 +121,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             if (shapeSubGraphs.Count > 0)
             {
                 var visual = GetVisualForLayerTranslators(context, shapeSubGraphs);
-                if (visual != null)
+                if (visual is not null)
                 {
                     yield return visual;
                 }

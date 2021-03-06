@@ -392,7 +392,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             leafTransformNode.SetDescription(context, () => $"Transforms for {layer.Name}");
 
             // Translate the parent transform, if any.
-            if (layer.Parent != null)
+            if (layer.Parent is not null)
             {
                 var parentLayer = context.CompositionContext.Layers.GetLayerById(layer.Parent.Value);
                 TranslateTransformOnContainerVisualForLayer(context, parentLayer!, out rootTransformNode, out var parentLeafTransform);
@@ -419,7 +419,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             TranslateAndApplyTransform(context, layer.Transform, leafTransformNode);
 
             // Recurse to translate the parent transform, if any.
-            if (layer.Parent != null)
+            if (layer.Parent is not null)
             {
                 var parentLayer = context.CompositionContext.Layers.GetLayerById(layer.Parent.Value);
                 TranslateTransformOnContainerShapeForLayer(context, parentLayer!, out rootTransformNode, out var parentLeafTransform);
@@ -528,7 +528,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var anchor3 = default(TrimmedAnimatable<Vector3>);
 
             var xyzAnchor = anchor as AnimatableXYZ;
-            if (xyzAnchor != null)
+            if (xyzAnchor is not null)
             {
                 anchorX = Optimizer.TrimAnimatable(context, xyzAnchor.X);
                 anchorY = Optimizer.TrimAnimatable(context, xyzAnchor.Y);
@@ -544,7 +544,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var positionWithSeparateEasings = AnimatableVector3Rewriter.EnsureOneEasingPerChannel(position);
 
             var xyzPosition = positionWithSeparateEasings as AnimatableXYZ;
-            if (xyzPosition != null)
+            if (xyzPosition is not null)
             {
                 positionX = Optimizer.TrimAnimatable(context, xyzPosition.X);
                 positionY = Optimizer.TrimAnimatable(context, xyzPosition.Y);
@@ -557,8 +557,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var anchorIsAnimated = anchorX.IsAnimated || anchorY.IsAnimated || anchor3.IsAnimated;
             var positionIsAnimated = positionX.IsAnimated || positionY.IsAnimated || position3.IsAnimated;
 
-            var initialAnchor = xyzAnchor != null ? ConvertTo.Vector2(anchorX.InitialValue, anchorY.InitialValue) : ConvertTo.Vector2(anchor3.InitialValue);
-            var initialPosition = xyzPosition != null ? ConvertTo.Vector2(positionX.InitialValue, positionY.InitialValue) : ConvertTo.Vector2(position3.InitialValue);
+            var initialAnchor = xyzAnchor is not null ? ConvertTo.Vector2(anchorX.InitialValue, anchorY.InitialValue) : ConvertTo.Vector2(anchor3.InitialValue);
+            var initialPosition = xyzPosition is not null ? ConvertTo.Vector2(positionX.InitialValue, positionY.InitialValue) : ConvertTo.Vector2(position3.InitialValue);
 
             // The Lottie Anchor is the centerpoint of the object and is used for rotation and scaling.
             if (anchorIsAnimated)
@@ -568,7 +568,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 centerPointExpression.SetReferenceParameter("my", container);
                 Animate.WithExpression(container, centerPointExpression, nameof(container.CenterPoint));
 
-                if (xyzAnchor != null)
+                if (xyzAnchor is not null)
                 {
                     if (anchorX.IsAnimated)
                     {
@@ -606,7 +606,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     // We don't need to animate a Position property - we can animate Offset directly.
                     positionIsAnimated = false;
 
-                    if (xyzPosition != null)
+                    if (xyzPosition is not null)
                     {
                         if (!positionX.IsAnimated || !positionY.IsAnimated)
                         {
@@ -695,7 +695,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     // Anchor and Position are both animated.
                     container.Properties.InsertVector2("Position", initialPosition);
 
-                    if (xyzPosition != null)
+                    if (xyzPosition is not null)
                     {
                         if (positionX.IsAnimated)
                         {
@@ -714,7 +714,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 }
             }
 
-            if (offsetExpression != null)
+            if (offsetExpression is not null)
             {
                 offsetExpression.SetReferenceParameter("my", container);
                 Animate.WithExpression(container, offsetExpression, nameof(container.Offset));

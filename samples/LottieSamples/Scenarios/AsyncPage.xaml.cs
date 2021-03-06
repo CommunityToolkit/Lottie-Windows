@@ -92,7 +92,7 @@ namespace LottieSamples.Scenarios
             var tasks = new[] { segmentForPlayerA?.PlayAsync(PlayerA), segmentForPlayerB?.PlayAsync(PlayerB) };
 
             // Wait for the segments to finish.
-            await Task.WhenAll(tasks.Where(t => t != null).ToArray());
+            await Task.WhenAll(tasks.Where(t => t is not null).ToArray());
 
             // Remove the highlight drawn around the playing players.
             UpdatePlayerHighlights(false, false);

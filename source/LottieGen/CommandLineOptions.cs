@@ -324,7 +324,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen
                         previousKeyword = Keyword.None;
                         break;
                     case Keyword.InputFile:
-                        if (InputFile != null)
+                        if (InputFile is not null)
                         {
                             ErrorDescription = ArgumentSpecifiedMoreThanOnce("Input");
                             return;
@@ -338,7 +338,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen
                         previousKeyword = Keyword.None;
                         break;
                     case Keyword.Namespace:
-                        if (Namespace != null)
+                        if (Namespace is not null)
                         {
                             ErrorDescription = ArgumentSpecifiedMoreThanOnce("Namespace");
                             return;
@@ -348,7 +348,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen
                         previousKeyword = Keyword.None;
                         break;
                     case Keyword.OutputFolder:
-                        if (OutputFolder != null)
+                        if (OutputFolder is not null)
                         {
                             ErrorDescription = ArgumentSpecifiedMoreThanOnce("Output folder");
                             return;
@@ -358,7 +358,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen
                         previousKeyword = Keyword.None;
                         break;
                     case Keyword.MinimumUapVersion:
-                        if (MinimumUapVersion != null)
+                        if (MinimumUapVersion is not null)
                         {
                             ErrorDescription = ArgumentSpecifiedMoreThanOnce("Minimum UAP version");
                             return;
@@ -377,7 +377,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen
                         previousKeyword = Keyword.None;
                         break;
                     case Keyword.RootNamespace:
-                        if (RootNamespace != null)
+                        if (RootNamespace is not null)
                         {
                             ErrorDescription = ArgumentSpecifiedMoreThanOnce("Output folder");
                             return;
@@ -387,7 +387,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen
                         previousKeyword = Keyword.None;
                         break;
                     case Keyword.TargetUapVersion:
-                        if (TargetUapVersion != null)
+                        if (TargetUapVersion is not null)
                         {
                             ErrorDescription = ArgumentSpecifiedMoreThanOnce("Target UAP version");
                             return;
@@ -407,7 +407,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen
                         break;
 
                     case Keyword.WinUIVersion:
-                        if (_winUIVersion != null)
+                        if (_winUIVersion is not null)
                         {
                             ErrorDescription = ArgumentSpecifiedMoreThanOnce("WinUI version");
                             return;

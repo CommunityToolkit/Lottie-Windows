@@ -36,7 +36,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.Animatables
         static string ToHex(double value) => ((byte)(value * 255)).ToString("X2");
 
         public bool Equals(ColorGradientStop? other)
-            => other != null && other.Offset == Offset && other.Color.Equals(Color);
+            => other is not null && other.Offset == Offset && other.Color.Equals(Color);
 
         public override bool Equals(object? obj)
             => Equals(obj as ColorGradientStop);

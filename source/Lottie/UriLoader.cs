@@ -54,7 +54,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         static async Task<(string?, Stream?)> GetJsonStreamAsync(Uri uri)
         {
             var absoluteUri = Uris.GetAbsoluteUri(uri);
-            if (absoluteUri != null)
+            if (absoluteUri is not null)
             {
                 var winrtClient = new Windows.Web.Http.HttpClient();
                 var response = await winrtClient.GetAsync(absoluteUri);

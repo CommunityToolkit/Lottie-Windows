@@ -211,7 +211,7 @@ namespace LottieGen.Task
             AddArg(nameof(InputFile), InputFile!);
             AddArg(nameof(Language), Language!);
 
-            if (AdditionalInterface != null)
+            if (AdditionalInterface is not null)
             {
                 foreach (var value in AdditionalInterface)
                 {
@@ -238,7 +238,7 @@ namespace LottieGen.Task
 
             void AddOptional(string parameterName, object? value)
             {
-                if (value != null)
+                if (value is not null)
                 {
                     AddArg(parameterName, value.ToString());
                 }

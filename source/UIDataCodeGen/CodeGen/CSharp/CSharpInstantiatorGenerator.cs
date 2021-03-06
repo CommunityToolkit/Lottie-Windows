@@ -73,7 +73,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
             );
         }
 
-        static string FieldAssignment(string fieldName) => fieldName != null ? $"{fieldName} = " : string.Empty;
+        static string FieldAssignment(string fieldName) => fieldName is not null ? $"{fieldName} = " : string.Empty;
 
         /// <inheritdoc/>
         // Called by the base class to write the start of the file (i.e. everything up to the body of the Instantiator class).
@@ -211,7 +211,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
                     builder.WriteLine("set");
                     builder.OpenScope();
                     builder.WriteLine($"_theme{prop.BindingName} = value;");
-                    builder.WriteLine($"if ({SourceInfo.ThemePropertiesFieldName} != null)");
+                    builder.WriteLine($"if ({SourceInfo.ThemePropertiesFieldName} is not null)");
                     builder.OpenScope();
                     WriteThemePropertyInitialization(builder, SourceInfo.ThemePropertiesFieldName, prop);
                     builder.CloseScope();
@@ -714,7 +714,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
                 builder.WriteLine();
 
                 // Update the CompositionPropertySet if it has been created.
-                builder.WriteLine($"if ({SourceInfo.ThemePropertiesFieldName} != null)");
+                builder.WriteLine($"if ({SourceInfo.ThemePropertiesFieldName} is not null)");
                 builder.OpenScope();
 
                 builder.WriteLine($"{SourceInfo.ThemePropertiesFieldName}.Insert{propertySetTypeName}(propertyName, {valueInitializer});");
@@ -936,7 +936,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
                 builder.WriteLine($"{effectVariable}.BlurAmount = {_s.Float(effect.BlurAmount.Value)};");
             }
 
-            if (effect.Source != null)
+            if (effect.Source is not null)
             {
                 builder.WriteLine($"{effectVariable}.Source = new CompositionEffectSourceParameter({_s.String(effect.Source.Name)});");
             }
