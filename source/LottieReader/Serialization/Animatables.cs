@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -588,7 +590,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                 // An initial keyframe is created to describe the initial value. It has no easing function.
                 //
                 // -
-                T endValue = default(T);
+                T? endValue = default(T);
 
                 // The initial keyframe has the same value as the initial value. Easing therefore doesn't
                 // matter, but might as well use hold as it's the simplest (it does not interpolate).
