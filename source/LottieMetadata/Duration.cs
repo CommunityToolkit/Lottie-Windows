@@ -39,6 +39,38 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieMetadata
 
         public double FPS { get; }
 
+        /// <summary>
+        /// Gets the <see cref="Frame"/> with the given <paramref name="frameNumber"/>.
+        /// </summary>
+        /// <param name="frameNumber">The frame number.</param>
+        /// <returns>The frame in this <see cref="Duration"/>.</returns>
+        public Frame GetFrameFromFrameNumber(double frameNumber)
+            => new Frame(this, Math.Min(Frames, Math.Max(frameNumber, 0)));
+
+        /// <summary>
+        /// Gets the <see cref="Frame"/> that corresponds to the given progress.
+        /// </summary>
+        /// <param name="progress">The progress value.</param>
+        /// <returns>The frame in this <see cref="Duration"/>.</returns>
+        public Frame GetFrameFromProgress(double progress)
+            => new Frame(this, Math.Min(Frames, Math.Max(progress * Frames, 0)));
+
+        /// <summary>
+        /// Gets the <see cref="Frame"/> that corresponds to the given nudged progress.
+        /// For a description of nudged progress, see
+        /// <seealso cref="Frame.GetNudgedProgress(double)"/>.</summary>
+        /// <param name="progress">The nudged progress value.</param>
+        /// <param name="frameProportion">The proportion of a frame by which the frame
+        /// has been nudged.</param>
+        /// <returns>The frame in this <see cref="Duration"/>.</returns>
+        public Frame GetFrameFromNudgedProgress(double progress, double frameProportion)
+        {
+            var nudgedFrameNumber = progress * Frames;
+            var unnudgedFrameNumber = nudgedFrameNumber - frameProportion;
+            var safeUnnudgedFrameNumber = Math.Min(Frames, Math.Max(0, unnudgedFrameNumber));
+            return GetFrameFromFrameNumber(safeUnnudgedFrameNumber);
+        }
+
         public static Duration operator +(Duration a, Duration b)
         {
             if (a.FPS == b.FPS)

@@ -21,10 +21,10 @@ using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
+using Windows.UI.Xaml.Documents;
+using Windows.UI.Xaml.Input;
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
-#pragma warning disable SA1402 // File may only contain a single type
 
 namespace LottieViewer
 {
@@ -59,6 +59,8 @@ namespace LottieViewer
         }
 
         public ObservableCollection<object> PropertiesList { get; } = new ObservableCollection<object>();
+
+        public ObservableCollection<object> MarkersList { get; } = new ObservableCollection<object>();
 
         public string AppVersion
         {
@@ -98,10 +100,12 @@ namespace LottieViewer
             if (viewModel is null)
             {
                 list.Clear();
+                MarkersList.Clear();
             }
             else if (e.PropertyName == nameof(viewModel.FileName))
             {
                 list.Clear();
+                MarkersList.Clear();
                 if (!string.IsNullOrWhiteSpace(viewModel.FileName))
                 {
                     list.Add(new PairOfStrings("File", viewModel.FileName));
@@ -119,10 +123,14 @@ namespace LottieViewer
 
                     list.Add(new PairOfStrings("Size", viewModel.SizeText));
                     list.Add(new PairOfStrings("Duration", viewModel.DurationText));
+                    list.Add(new PairOfStrings("Frames", $"{viewModel.FrameCountText} @ {viewModel.FramesPerSecond:0.#}fps"));
 
-                    foreach (var marker in viewModel.Markers)
+                    if (viewModel.Markers.Count > 0)
                     {
-                        list.Add(marker);
+                        foreach (var marker in viewModel.Markers)
+                        {
+                            MarkersList.Add(marker);
+                        }
                     }
                 }
             }
@@ -413,95 +421,39 @@ namespace LottieViewer
         }
 
         // Called when the user clicks on a marker hyperlink.
-        void MarkerClick(Windows.UI.Xaml.Documents.Hyperlink sender, Windows.UI.Xaml.Documents.HyperlinkClickEventArgs args)
+        void MarkerClick(Hyperlink sender, HyperlinkClickEventArgs args)
         {
             var dataContext = ((FrameworkElement)sender.ElementStart.Parent).DataContext;
             var marker = (Marker)dataContext;
-
-            // Set the progress to the marker value.
-            UncheckPlayStopButton();
-            _stage.Player.SetProgress(marker.Progress);
+            SeekToProgressValue(marker.ConstrainedInProgress);
         }
 
         // Called when the user clicks on a marker-with-duration hyperlink.
-        void MarkerEndClick(Windows.UI.Xaml.Documents.Hyperlink sender, Windows.UI.Xaml.Documents.HyperlinkClickEventArgs args)
+        void MarkerEndClick(Hyperlink sender, HyperlinkClickEventArgs args)
         {
             var dataContext = ((FrameworkElement)sender.ElementStart.Parent).DataContext;
             var marker = (MarkerWithDuration)dataContext;
+            SeekToProgressValue(marker.ConstrainedOutProgress);
+        }
 
-            // Set the progress to the marker value.
+        // Sets the progress to the given value, and sets the focus to the scrubber
+        // so that the arrow keys will control the position of the scrubber.
+        void SeekToProgressValue(double progress)
+        {
             UncheckPlayStopButton();
-            _stage.Player.SetProgress(marker.ToProgress);
-        }
-    }
 
-    // Converts bool and null values into Visibility values.
-    public sealed class VisiblityConverter : IValueConverter
-    {
-        object IValueConverter.Convert(object value, Type targetType, object parameter, string language)
-        {
-            if (value is bool boolValue)
-            {
-                // The value is already a boolean.
-            }
-            else
-            {
-                // The value is not a boolean. Used !null to convert to a boolean.
-                boolValue = !(value is null);
-            }
-
-            // The "not" parameter inverts the logic.
-            if ((string)parameter == "not")
-            {
-                boolValue = !boolValue;
-            }
-
-            return boolValue ? Visibility.Visible : Visibility.Collapsed;
+            // Set focus to the scrubber so that the arrow keys will move the
+            // position of the scrubber.
+            _scrubber.Focus(FocusState.Programmatic);
+            _scrubber.Value = progress;
         }
 
-        object IValueConverter.ConvertBack(object value, Type targetType, object parameter, string language)
+        void Page_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            // Only support one way binding.
-            throw new NotImplementedException();
-        }
-    }
-
-    public sealed class FloatFormatter : IValueConverter
-    {
-        object IValueConverter.Convert(object value, Type targetType, object parameter, string language)
-        {
-            return ((double)value).ToString("0.#");
-        }
-
-        object IValueConverter.ConvertBack(object value, Type targetType, object parameter, string language)
-        {
-            // Only support one way binding.
-            throw new NotImplementedException();
-        }
-    }
-
-    public sealed class PropertiesTemplateSelector : DataTemplateSelector
-    {
-        public DataTemplate? Normal { get; set; }
-
-        public DataTemplate? Marker { get; set; }
-
-        public DataTemplate? MarkerWithDuration { get; set; }
-
-        protected override DataTemplate? SelectTemplateCore(object item, DependencyObject container)
-        {
-            if (item is PairOfStrings)
-            {
-                return Normal;
-            }
-            else if (item is Marker)
-            {
-                return Marker;
-            }
-            else
-            {
-                return MarkerWithDuration;
-            }
+            // By default, when the pointer is pressed, focus on the scrubber so
+            // that the arrow keys can move the scrubber.
+            e.Handled = true;
+            _scrubber.Focus(FocusState.Pointer);
         }
     }
 }

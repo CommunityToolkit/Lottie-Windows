@@ -54,7 +54,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             InPoint = inPoint;
             OutPoint = outPoint;
             FramesPerSecond = framesPerSecond;
-            Duration = TimeSpan.FromSeconds((outPoint - inPoint) / framesPerSecond);
+            FrameCount = outPoint - inPoint;
+            Duration = TimeSpan.FromSeconds(FrameCount / framesPerSecond);
             Version = version;
             Layers = layers;
             Assets = assets;
@@ -65,6 +66,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         }
 
         public bool Is3d { get; }
+
+        public double FrameCount { get; }
 
         public double FramesPerSecond { get; }
 

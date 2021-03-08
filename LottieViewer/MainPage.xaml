@@ -6,12 +6,23 @@
       xmlns:lottie="using:Microsoft.Toolkit.Uwp.UI.Lottie"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:viewmodel="using:LottieViewer.ViewModel" 
       Visibility="Visible"
-      mc:Ignorable="d">
+      mc:Ignorable="d"
+      RequestedTheme="Dark"
+      PointerPressed="Page_PointerPressed" >
     <Page.Resources>
-        <local:VisiblityConverter x:Key="VisibilityConverter" />
+        <local:VisibilityConverter x:Key="VisibilityConverter" />
         <local:FloatFormatter x:Key="floatFormatter" />
         <SolidColorBrush x:Name="ArtboardBrush"
                          Color="{x:Bind BackgroundColor.Color, Mode=OneWay}" />
+        
+        <!-- 
+          Color for Hyperlink. Use this to override the default Foreground
+          color on Hyperlink so that it is visible on the gray background
+          (otherwise the Hyperlink color will be themed and may become
+          unreadable).
+        -->        
+        <StaticResource x:Key="LottieHyperlinkForegroundBrush"
+                         ResourceKey="LottieBasicBrush" />
     </Page.Resources>
 
     <RelativePanel AllowDrop="True"
@@ -127,7 +138,7 @@
                                     <DataTemplate x:DataType="lottie:Issue">
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock MinWidth="60">
-                                                        <Hyperlink NavigateUri="{x:Bind Url}"><Run FontWeight="Bold"
+                                                        <Hyperlink Foreground="{StaticResource LottieHyperlinkForegroundBrush}" NavigateUri="{x:Bind Url}"><Run FontWeight="Bold"
                                                                  Text="{x:Bind Code}" Foreground="Orange" /></Hyperlink>
                                             </TextBlock>
                                             <TextBlock Text="{x:Bind Description}" TextWrapping="Wrap" MaxWidth="240" Foreground="White"/>
@@ -148,16 +159,28 @@
                                     <ColumnDefinition Width="50"/>
                                 </Grid.ColumnDefinitions>
                                 <Slider 
-                                Padding="10, 0, 10, 0"
-                                HorizontalAlignment="Stretch"
-                                LargeChange="1"
-                                Maximum="2.0"
-                                Minimum="-2.0"
-                                SmallChange="0.1"
-                                StepFrequency="0.1"
-                                TickFrequency="0.5"
-                                TickPlacement="TopLeft"
-                                Value="{x:Bind _stage.Player.PlaybackRate, Mode=TwoWay}" />
+                                    Padding="10, 0, 10, 0"
+                                    HorizontalAlignment="Stretch"
+                                    LargeChange="1"
+                                    Maximum="2.0"
+                                    Minimum="-2.0"
+                                    SmallChange="0.1"
+                                    StepFrequency="0.1"
+                                    TickFrequency="0.5"
+                                    TickPlacement="TopLeft"
+                                    Value="{x:Bind _stage.Player.PlaybackRate, Mode=TwoWay}">
+                                    <Slider.Resources>
+                                        <!-- 
+                                            Override the themed slider resources so that control ignores the accent colors.
+                                            This is desirable because the accent colors may make the control hard to see
+                                            on the gray background.
+                                        -->
+                                        <StaticResource x:Key="SliderThumbBackground" ResourceKey="LottieBasicBrush" />
+                                        <StaticResource x:Key="SliderThumbBackgroundPointerOver" ResourceKey="LottieBasicBrush" />
+                                        <StaticResource x:Key="SliderThumbBackgroundPressed" ResourceKey="LottieBasicBrush" />
+                                        <StaticResource x:Key="SliderThumbBackgroundDisabled" ResourceKey="LottieBasicBrush" />
+                                    </Slider.Resources>
+                                </Slider>
                                 <TextBlock Grid.Column="1" Margin="10,0,0,0">x <Run Text="{x:Bind _stage.Player.PlaybackRate, Mode=OneWay, Converter={StaticResource floatFormatter}}"/></TextBlock>
                             </Grid>
                         </StackPanel>
@@ -166,9 +189,10 @@
                         <Border Style="{StaticResource SeparatorStyle}"/>
 
                         <!-- Properties list. Only visible if there is a Diagnostics object. -->
-                        <Grid Visibility="{x:Bind _stage.DiagnosticsViewModel.DiagnosticsObject, Converter={StaticResource VisibilityConverter}, ConverterParameter=whatthe, Mode=OneWay}">
+                        <Grid Visibility="{x:Bind _stage.DiagnosticsViewModel.DiagnosticsObject, Converter={StaticResource VisibilityConverter}, Mode=OneWay}">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="26"/>
+                                <RowDefinition/>
                                 <RowDefinition/>
                             </Grid.RowDefinitions>
                             <Grid.Resources>
@@ -179,38 +203,59 @@
                                     </StackPanel>
                                 </DataTemplate>
 
-                                <DataTemplate x:Key="MarkerTemplate" x:DataType="viewmodel:Marker">
-                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,2">
-                                        <TextBlock Foreground="LightGray" MinWidth="60" Text="{x:Bind PropertyName}"/>
-                                        <TextBlock Foreground="White" TextWrapping="Wrap" MaxWidth="250">
-                                        <Hyperlink Click="MarkerClick"><Run Text="{x:Bind ProgressText}"/></Hyperlink> <Run Text="{x:Bind Name}"/>
-                                        </TextBlock>
-                                    </StackPanel>
-                                </DataTemplate>
-
-                                <DataTemplate x:Key="MarkerWithDurationTemplate" x:DataType="viewmodel:MarkerWithDuration">
-                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,2">
-                                        <TextBlock Foreground="LightGray" MinWidth="60" Text="{x:Bind PropertyName}"/>
-                                        <TextBlock Foreground="White" TextWrapping="Wrap" MaxWidth="250">
-                                        <Hyperlink Click="MarkerClick"><Run Text="{x:Bind ProgressText}"/></Hyperlink> -
-                                        <Hyperlink Click="MarkerEndClick"><Run Text="{x:Bind ToProgressText}"/></Hyperlink> <Run Text="{x:Bind Name}"/>
-                                        </TextBlock>
-                                    </StackPanel>
-                                </DataTemplate>
-
                                 <local:PropertiesTemplateSelector 
                                     x:Key="PropertiesTemplateSelector"
-                                    Normal="{StaticResource NormalTemplate}"
-                                    Marker="{StaticResource MarkerTemplate}"
-                                    MarkerWithDuration="{StaticResource MarkerWithDurationTemplate}"/>
+                                    Normal="{StaticResource NormalTemplate}" />
                             </Grid.Resources>
                             <TextBlock FontWeight="Bold" >Lottie properties</TextBlock>
-                            <ItemsControl x:Name="InfoList" Grid.Row="1" ItemsSource="{x:Bind PropertiesList}" ItemTemplateSelector="{StaticResource PropertiesTemplateSelector}"/>
+
+                            <!-- The list of Lottie properties. -->
+                            <ItemsControl Grid.Row="1" ItemsSource="{x:Bind PropertiesList}" ItemTemplateSelector="{StaticResource PropertiesTemplateSelector}"/>
+
+                            <!-- Markers list. -->
+                            <Grid Grid.Row="2" Visibility="{x:Bind MarkersList.Count, Converter={StaticResource VisibilityConverter}, Mode=OneWay}">
+                                <Grid.Resources>
+                                    <DataTemplate x:Key="MarkerTemplate" x:DataType="viewmodel:Marker">
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,2" MaxWidth="310">
+                                            <TextBlock Foreground="White" TextAlignment="Right" TextWrapping="Wrap" MaxWidth="250" MinWidth="60" Padding="0,0,12,0">
+                                                <Hyperlink Foreground="{StaticResource LottieHyperlinkForegroundBrush}" Click="MarkerClick"><Run Text="{x:Bind InFrame}"/></Hyperlink>
+                                            </TextBlock>
+                                            <TextBlock Foreground="White" TextAlignment="Right" TextWrapping="Wrap" Text="{x:Bind Name}"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+
+                                    <DataTemplate x:Key="MarkerWithDurationTemplate" x:DataType="viewmodel:MarkerWithDuration">
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,2" MaxWidth="310">
+                                            <TextBlock Foreground="White" TextAlignment="Right" TextWrapping="Wrap" MaxWidth="250" MinWidth="60" Padding="0,0,12,0">
+                                                <Hyperlink Foreground="{StaticResource LottieHyperlinkForegroundBrush}" Click="MarkerClick"><Run Text="{x:Bind InFrame}"/></Hyperlink> -
+                                                <Hyperlink Foreground="{StaticResource LottieHyperlinkForegroundBrush}" Click="MarkerEndClick"><Run Text="{x:Bind OutFrame}"/></Hyperlink>
+                                            </TextBlock>
+                                            <TextBlock Foreground="White" TextWrapping="Wrap" Text="{x:Bind Name}"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+
+                                    <local:PropertiesTemplateSelector 
+                                        x:Key="PropertiesTemplateSelector"
+                                        Marker="{StaticResource MarkerTemplate}"
+                                        MarkerWithDuration="{StaticResource MarkerWithDurationTemplate}"/>
+                                </Grid.Resources>
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,2">
+                                        <TextBlock Foreground="LightGray" MinWidth="60" Text="Markers"/>
+                                        <TextBlock Foreground="White" TextWrapping="Wrap" MaxWidth="250" />
+                                    </StackPanel>
+                                    <!--<StackPanel Orientation="Horizontal" Margin="0,0,0,2">
+                                        <TextBlock Foreground="DimGray" MinWidth="60" Text="Frame" TextAlignment="Right"/>
+                                        <TextBlock Foreground="DimGray" Text="Name" Margin="10,0,0,0"/>
+                                    </StackPanel>-->
+                                    <ItemsControl ItemsSource="{x:Bind MarkersList}" ItemTemplateSelector="{StaticResource PropertiesTemplateSelector}"/>
+                                </StackPanel>
+                            </Grid>
                         </Grid>
 
                         <!-- Separator -->
                         <Border Style="{StaticResource SeparatorStyle}"
-                            Visibility="{x:Bind _stage.DiagnosticsViewModel.DiagnosticsObject, Converter={StaticResource VisibilityConverter}, ConverterParameter=whatthe, Mode=OneWay}"/>
+                            Visibility="{x:Bind _stage.DiagnosticsViewModel.DiagnosticsObject, Converter={StaticResource VisibilityConverter}, Mode=OneWay}"/>
 
                         <!-- App version info. -->
                         <Grid>
@@ -293,8 +338,8 @@
 
                 <!--  Play/stop button  -->
                 <local:PlayStopButton
-                    Margin="0,4,0,0"
                     x:Name="_playStopButton"
+                    Margin="0,4,0,0"
                     IsEnabled="{x:Bind _stage.Player.IsAnimatedVisualLoaded, Mode=OneWay}"
                     Toggled="_playControl_Toggled"
                     VerticalAlignment="Center"
@@ -305,18 +350,18 @@
                     />
 
                 <!--  Scrubber  -->
-                <!--  IsEnabled="{x:Bind _playStopButton.IsChecked, Mode=OneWay}"  -->
-                <local:Scrubber x:Name="_scrubber"
-                                AutomationProperties.Name="Animation progress"
-                                Margin="0,5,0,0"
-                                VerticalAlignment="Center"
-                                IsEnabled="{x:Bind _stage.Player.IsAnimatedVisualLoaded, Mode=OneWay}"
-                                RelativePanel.AlignBottomWithPanel="True"
-                                RelativePanel.AlignRightWithPanel="True"
-                                RelativePanel.AlignTopWithPanel="True"
-                                RelativePanel.RightOf="_playStopButton"
-                                ValueChanged="ProgressSliderChanged"
-                                DiagnosticsViewModel="{x:Bind _stage.DiagnosticsViewModel, Mode=OneWay}" />
+                <local:Scrubber 
+                    x:Name="_scrubber"
+                    AutomationProperties.Name="Animation progress"
+                    Margin="0,5,0,0"
+                    VerticalAlignment="Center"
+                    IsEnabled="{x:Bind _stage.Player.IsAnimatedVisualLoaded, Mode=OneWay}"
+                    RelativePanel.AlignBottomWithPanel="True"
+                    RelativePanel.AlignTopWithPanel="True"
+                    RelativePanel.RightOf="_playStopButton"
+                    RelativePanel.AlignRightWithPanel="True"
+                    ValueChanged="ProgressSliderChanged"
+                    DiagnosticsViewModel="{x:Bind _stage.DiagnosticsViewModel, Mode=OneWay}" />
             </RelativePanel>
         </Grid>
     </RelativePanel>

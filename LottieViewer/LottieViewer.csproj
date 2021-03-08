@@ -95,9 +95,12 @@
     <Compile Include="FeedbackLottie.xaml.cs">
       <DependentUpon>FeedbackLottie.xaml</DependentUpon>
     </Compile>
+    <Compile Include="FloatFormatter.cs" />
     <Compile Include="PlayStopButton.xaml.cs">
       <DependentUpon>PlayStopButton.xaml</DependentUpon>
     </Compile>
+    <Compile Include="PropertiesTemplateSelector.cs" />
+    <Compile Include="ScrubberValueChangedEventArgs.cs" />
     <Compile Include="ViewModel\LottieVisualDiagnosticsViewModel.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
@@ -114,6 +117,7 @@
     <Compile Include="ViewModel\Marker.cs" />
     <Compile Include="ViewModel\MarkerWithDuration.cs" />
     <Compile Include="ViewModel\PairOfStrings.cs" />
+    <Compile Include="VisibilityConverter.cs" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Condition="'$(Configuration)' != 'BETA'" Include="Package.appxmanifest">

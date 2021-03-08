@@ -10,6 +10,8 @@ using System.ComponentModel;
 using System.Linq;
 using Microsoft.Toolkit.Uwp.UI.Lottie;
 using Microsoft.Toolkit.Uwp.UI.Lottie.CompMetadata;
+using Microsoft.Toolkit.Uwp.UI.Lottie.LottieMetadata;
+using Windows.Media.Audio;
 
 namespace LottieViewer.ViewModel
 {
@@ -18,6 +20,12 @@ namespace LottieViewer.ViewModel
     /// </summary>
     sealed class LottieVisualDiagnosticsViewModel : INotifyPropertyChanged
     {
+        // How much past the start of the frame we consider to be the actual start of the
+        // frame. Nudging is done to compensate for frames being integers, but progress
+        // is floating point, which can cause math done to the progress value to round
+        // down to the previous frame value.
+        public const double NudgeFrameProportion = 0.05;
+
         public event PropertyChangedEventHandler? PropertyChanged;
 
         public object? DiagnosticsObject
@@ -48,31 +56,38 @@ namespace LottieViewer.ViewModel
                     var composition = LottieVisualDiagnostics.LottieComposition;
                     if (composition is not null)
                     {
+                        var metadata = new LottieCompositionMetadata(
+                            composition.Name,
+                            composition.FramesPerSecond,
+                            composition.InPoint,
+                            composition.OutPoint,
+                            composition.Markers.Select(m => (m.Name, m.Frame, m.DurationInFrames)));
+
                         var framesPerSecond = composition.FramesPerSecond;
                         var duration = composition.Duration.TotalSeconds;
                         var totalFrames = framesPerSecond * duration;
 
                         var isFirst = true;
-                        foreach (var m in composition.Markers)
+                        foreach (var m in metadata.FilteredMarkers)
                         {
-                            var progress = m.Frame / totalFrames;
+                            var inProgress = m.Frame.GetNudgedProgress(NudgeFrameProportion);
                             Marker marker;
-
                             var propertyName = isFirst ? $"Marker{(composition.Markers.Count > 1 ? "s" : string.Empty)}" : string.Empty;
 
-                            if (m.DurationInFrames == 0)
+                            if (m.Duration.Frames == 0)
                             {
-                                marker = new Marker(m.Name, propertyName, progress, $"{progress:0.000#}");
+                                marker = new Marker(m.Name, propertyName, (int)m.Frame.Number, inProgress);
                             }
                             else
                             {
-                                var toProgress = progress + (m.DurationInFrames / totalFrames);
+                                var outProgress = (m.Frame + m.Duration).GetNudgedProgress(NudgeFrameProportion);
                                 marker = new MarkerWithDuration(
                                     m.Name,
-                                    propertyName, progress,
-                                    $"{progress:0.000#}",
-                                    toProgress,
-                                    $"{toProgress:0.000#}");
+                                    propertyName,
+                                    (int)m.Frame.Number,
+                                    inProgress,
+                                    (int)(m.Frame + m.Duration).Number,
+                                    outProgress);
                             }
 
                             isFirst = false;
@@ -105,7 +120,7 @@ namespace LottieViewer.ViewModel
             }
         }
 
-        public LottieVisualDiagnostics? LottieVisualDiagnostics { get; private set; }
+        internal LottieVisualDiagnostics? LottieVisualDiagnostics { get; private set; }
 
         public string DurationText
         {
@@ -122,6 +137,14 @@ namespace LottieViewer.ViewModel
                 }
             }
         }
+
+        public Duration Duration => new Duration(FrameCount, FramesPerSecond);
+
+        public double FramesPerSecond => LottieVisualDiagnostics?.LottieComposition?.FramesPerSecond ?? 0;
+
+        public double FrameCount => LottieVisualDiagnostics?.LottieComposition?.FrameCount ?? 0;
+
+        public string FrameCountText => FrameCount.ToString();
 
         public string Name => LottieVisualDiagnostics?.LottieComposition?.Name ?? string.Empty;
 
@@ -150,6 +173,18 @@ namespace LottieViewer.ViewModel
                 return $"{LottieVisualDiagnostics.LottieWidth}x{LottieVisualDiagnostics.LottieHeight} ({aspectRatio.Item1:0.##}:{aspectRatio.Item2:0.##})";
             }
         }
+
+        // Get the frame with the given number.
+        public Frame GetFrameFromFrameNumber(double frameNumber)
+            => LottieVisualDiagnostics is null ? default : new Frame(Duration, frameNumber);
+
+        // Returns the nudged progress that is equivalent to the given frame number.
+        public double GetNudgedProgressFromFrame(double frameNumber)
+            => LottieVisualDiagnostics is null ? default : GetFrameFromFrameNumber(frameNumber).GetNudgedProgress(NudgeFrameProportion);
+
+        // Converts the given nudged progress value to a frame number.
+        public Frame GetFrameFromNudgedProgress(double nudgedProgress)
+            => LottieVisualDiagnostics is null ? default : Duration.GetFrameFromNudgedProgress(nudgedProgress, NudgeFrameProportion);
 
         // Returns a pleasantly simplified ratio for the given value.
         // For example an aspect ratio of 800 x 600 will result in a call to here

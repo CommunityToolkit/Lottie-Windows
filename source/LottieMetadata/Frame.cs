@@ -33,6 +33,35 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieMetadata
         public double Progress => Number / _context.Frames;
 
         /// <summary>
+        /// Gets a nudged progress value. This gets the progress value that
+        /// is the given <paramref name="frameProportion"/> greater than the
+        /// actual progress value, unless this frame is frame 0.
+        /// This is used to compensate for rounding of floating point values
+        /// that may otherwise cause the progress value to refer to an
+        /// animation value from the previous frame. Frame 0 is never nudged
+        /// because it has no previous frame.
+        /// </summary>
+        /// <param name="frameProportion">The proportion of a frame
+        /// time to nudge. Must be non-negative and less than 1.</param>
+        /// <returns>The nudged progress.</returns>
+        public double GetNudgedProgress(double frameProportion)
+        {
+            if (frameProportion < 0 || frameProportion >= 1)
+            {
+                throw new ArgumentException();
+            }
+
+            if (Number == 0)
+            {
+                // Do not nudge 0 values. There is no chance of
+                // them referring to the next or previous frame.
+                return 0;
+            }
+
+            return Math.Max(0, Math.Min(1, GetNudgedProgressUnsafe(frameProportion)));
+        }
+
+        /// <summary>
         /// The location as a time offset from the start of the Lottie composition.
         /// </summary>
         public TimeSpan Time => Progress * _context.Time;
@@ -61,6 +90,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieMetadata
 
             return Number.CompareTo(other.Number);
         }
+
+        /// <summary>
+        /// Gets the progress value that is the given <paramref name="frameProportion"/> greater
+        /// than the actual progress value. This is used to compensate for rounding of floating
+        /// point values that may cause the progress value to refer to an animation value from
+        /// the previous frame.
+        /// </summary>
+        /// <param name="frameProportion">The proportion of a frame time to nudge.</param>
+        /// <returns>The nudged progress.</returns>
+        double GetNudgedProgressUnsafe(double frameProportion)
+             => (Number + frameProportion) / _context.Frames;
 
         static void AssertSameContext(Frame frameA, Frame frameB)
         {

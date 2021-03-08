@@ -19,10 +19,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
     sealed class MarkerInfo
     {
         readonly Marker _marker;
+        readonly double _nudgeFrameProportion;
 
-        MarkerInfo(Marker marker, string name, string startConstant, string? endConstant)
+        MarkerInfo(Marker marker, string name, string startConstant, string? endConstant, double nudgeFrameProportion)
         {
             _marker = marker;
+            _nudgeFrameProportion = nudgeFrameProportion;
             Name = name;
             StartConstant = startConstant;
             EndConstant = endConstant;
@@ -38,20 +40,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         public TimeSpan StartTime => _marker.Frame.Time;
 
-        public double StartProgress => _marker.Frame.Progress;
+        public double StartProgress => _marker.Frame.GetNudgedProgress(_nudgeFrameProportion);
 
         public string? EndConstant { get; }
 
-        public double EndProgress => (_marker.Frame + _marker.Duration).Progress;
+        public double EndProgress => (_marker.Frame + _marker.Duration).GetNudgedProgress(_nudgeFrameProportion);
 
         public string Name { get; }
 
-        internal static IEnumerable<MarkerInfo> GetMarkerInfos(IEnumerable<Marker> markers)
+        internal static IEnumerable<MarkerInfo> GetMarkerInfos(IEnumerable<Marker> markers, double nudgeFrameProportion)
         {
-            // Nudge the markers to prevent them from referring to the previous frame
-            // as a result of floating point imprecision.
-            markers = NudgeMarkersUp(markers);
-
             // Ensure the names are valid and distinct.
             var nameMap = markers.ToDictionary(m => m, m => SanitizeMarkerName(m.Name));
             EnsureNamesAreDistinct(nameMap);
@@ -64,28 +62,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 var baseName = $"M_{constantBaseName}";
                 var startConstant = isZeroDuration ? baseName : $"{baseName}_start";
                 var endConstant = isZeroDuration ? null : $"{baseName}_end";
-                yield return new MarkerInfo(m, name, startConstant, endConstant);
-            }
-        }
-
-        // Adjust the frame numbers up by 1/100 of a frame. This is done
-        // to nudge the marker past any errors caused by floating point imprecision.
-        // It's always better to nudge a marker forward than to allow it to be
-        // rounded down, because even a small amount of rounding down can result in
-        // the previous frame being shown, whereas rounding up won't show the next
-        // frame until the error is as big as a whole frame.
-        static IEnumerable<Marker> NudgeMarkersUp(IEnumerable<Marker> markers)
-        {
-            foreach (var marker in markers)
-            {
-                var adjustedFrame = marker.Frame;
-
-                if (adjustedFrame.Number > 0)
-                {
-                    adjustedFrame += new Duration(0.01, marker.Duration);
-                }
-
-                yield return new Marker(marker.Name, adjustedFrame, marker.Duration);
+                yield return new MarkerInfo(m, name, startConstant, endConstant, nudgeFrameProportion);
             }
         }
 

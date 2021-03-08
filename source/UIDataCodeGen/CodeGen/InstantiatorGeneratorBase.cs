@@ -40,6 +40,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         // The name of the constant holding the duration of the animation in ticks.
         const string DurationTicksFieldName = "c_durationTicks";
 
+        // The proportion of a frame by which markers will be nudged. This compensates
+        // for loss of precision in floating point math that can cause the progress
+        // value that corresponds to the start of a Lottie frame to refer to the end
+        // of the previous frame. Without this compensation there can be flashing when
+        // playing from a particular frame, as the previous frame shows briefly. By
+        // nudging the progress value forward slightly, the progress value is guaranteed
+        // to not point to the previous frame.
+        const double NudgeFrameProportion = 0.05;
+
         // The name of the IAnimatedVisualSource class.
         readonly string _className;
         readonly string _namespace;
@@ -81,7 +90,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             _s = stringifier;
             _toolInfo = configuration.ToolInfo;
             _additionalInterfaces = configuration.AdditionalInterfaces.Select(n => new TypeName(n)).ToArray();
-            _markers = MarkerInfo.GetMarkerInfos(_sourceMetadata.LottieMetadata.FilteredMarkers).ToArray();
+            _markers = MarkerInfo.GetMarkerInfos(
+                _sourceMetadata.LottieMetadata.FilteredMarkers,
+                NudgeFrameProportion).ToArray();
             _internalConstants = GetInternalConstants().ToArray();
 
             var graphs = configuration.ObjectGraphs;
