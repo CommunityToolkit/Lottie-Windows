@@ -21,7 +21,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.8.0" />
+        <PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.9.0" />
     </ItemGroup>
 
     <!--
@@ -29,7 +29,7 @@
       been built and published so we can copy its outputs.
     -->
     <Target Name="EnsureLottieGenExeIsBuilt">
-        <MSBuild Projects="..\win-x64\LottieGen.win-x64.csproj" Targets="Publish"/>
+        <MSBuild Projects="..\win-x64\LottieGen.win-x64.csproj" Targets="Publish" />
     </Target>
 
     <!-- Generates the .nuspec file. -->
