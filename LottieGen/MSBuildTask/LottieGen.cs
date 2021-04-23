@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Text;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
@@ -31,11 +32,8 @@ namespace LottieGen.Task
 
         protected override string ToolName => "LottieGen.exe";
 
-        /// <summary>
-        /// Optional path to LottieGen.exe. If not specified, LottieGen.exe
-        /// is expected to be in the same directory as the task's DLL.
-        /// </summary>
-        public string? LottieGenExePath { get; set; }
+        // WARNING: Nullable value types are not supported by MSBuild and will result in an error
+        // when passed into the task through an MSBuild project file.
 
         /// <summary>
         /// The Lottie file to process.
@@ -82,12 +80,12 @@ namespace LottieGen.Task
 
         /// <summary>
         /// The lowest UAP version on which the result must run.Defaults
-        /// to 7. Must be 7 or higher.Code will be generated that will
+        /// to 7. Must be 7 or higher. Code will be generated that will
         /// run down to this version.If less than TargetUapVersion,
         /// extra code will be generated if necessary to support the
         /// lower versions.
         /// </summary>
-        public uint? MinimumUapVersion { get; set; }
+        public uint MinimumUapVersion { get; set; }
 
         /// <summary>
         /// Specifies the namespace for the generated code. Defaults to
@@ -134,7 +132,7 @@ namespace LottieGen.Task
         /// minimum SDK version required to compile the generated code.
         /// If not specified, defaults to the latest UAP version.
         /// </summary>
-        public uint? TargetUapVersion { get; set; }
+        public uint TargetUapVersion { get; set; }
 
         /// <summary>
         /// Prevents any information from being included that could change
@@ -147,7 +145,7 @@ namespace LottieGen.Task
         /// <summary>
         /// Generates code for a particular WinUI version. Defaults to 2.4.
         /// </summary>
-        public Version? WinUIVersion { get; set; }
+        public string? WinUIVersion { get; set; }
 
         public override bool Execute()
         {
@@ -223,13 +221,13 @@ namespace LottieGen.Task
             AddOptionalBool(nameof(DisableTranslationOptimizer), DisableTranslationOptimizer);
             AddOptionalBool(nameof(GenerateColorBindings), GenerateColorBindings);
             AddOptionalBool(nameof(GenerateDependencyObject), GenerateDependencyObject);
-            AddOptional(nameof(MinimumUapVersion), MinimumUapVersion);
+            AddOptional(nameof(MinimumUapVersion), MinimumUapVersion > 0 ? MinimumUapVersion : null);
             AddOptional(nameof(Namespace), Namespace);
             AddArg(nameof(OutputFolder), OutputFolder!);
             AddOptionalBool(nameof(Public), Public);
             AddOptional(nameof(RootNamespace), RootNamespace);
             AddOptionalBool(nameof(StrictMode), StrictMode);
-            AddOptional(nameof(TargetUapVersion), TargetUapVersion);
+            AddOptional(nameof(TargetUapVersion), TargetUapVersion > 0 ? TargetUapVersion : null);
             AddOptional(nameof(WinUIVersion), WinUIVersion);
 
             var result = string.Join(" ", args);
@@ -253,7 +251,65 @@ namespace LottieGen.Task
             }
 
             void AddArg(string parameterName, string value)
-                => args.Add($"-{parameterName} {value}");
+            {
+                args.Add($"-{parameterName}");
+                args.Add(EscapeCmdLineArg(value));
+            }
+        }
+
+        /// <summary>
+        /// Escapes a command-line argument to ensure that it can be passed through to another application without mangling.
+        /// </summary>
+        /// <remarks>
+        /// The string is wrapped in quotes to ensure that any spaces are considered part of the value. Backslashes and quotes
+        /// are escaped to ensure they are not interpreted as metacharacters.
+        /// </remarks>
+        /// <param name="arg">The argument to escape.</param>
+        /// <returns>The escaped argument.</returns>
+        string EscapeCmdLineArg(string arg)
+        {
+            // From MSDN "Everyone quotes command line arguments the wrong way"
+            StringBuilder result = new StringBuilder();
+
+            // Wrap the arg in quotes
+            result.Append('\"');
+
+            for (int i = 0; ; ++i)
+            {
+                int numBackslashes = 0;
+                while (i < arg.Length && arg[i] == '\\')
+                {
+                    ++i;
+                    ++numBackslashes;
+                }
+
+                if (i >= arg.Length)
+                {
+                    // End of string.
+                    // Doubling any trailing backslashes gives us an even number followed by our final double-quote.
+                    // Cmdline will replace each pair with a single backslash (back to where we started), but treat
+                    // the quote as a metacharacter and remove it.
+                    result.Append('\\', numBackslashes * 2);
+                    break;
+                }
+                else if (arg[i] == '"')
+                {
+                    // Found a double-quote in the string.
+                    // Doubling any preceding backslashes and adding one gives us an odd number followed by the double-quote.
+                    // Cmdline will replace each pair with a single backslash and convert the ending \" to a literal quote.
+                    result.Append('\\', (numBackslashes * 2) + 1);
+                    result.Append(arg[i]);
+                }
+                else
+                {
+                    // In all other cases, just pass through the characters as-is.
+                    result.Append('\\', numBackslashes);
+                    result.Append(arg[i]);
+                }
+            }
+
+            result.Append('\"');
+            return result.ToString();
         }
 
         // Provides the default path to the tool. Ignored if
@@ -261,7 +317,7 @@ namespace LottieGen.Task
         // By default we expect the tool to be in the same directory
         // as the assembly that this class is in.
         protected override string GenerateFullPathToTool()
-            => Path.Combine(Assembly.GetExecutingAssembly().Location, ToolName);
+            => Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), ToolName);
 
         protected override bool ValidateParameters()
         {
@@ -293,7 +349,17 @@ namespace LottieGen.Task
                     break;
             }
 
-            return hasErrors;
+            if (WinUIVersion is not null)
+            {
+                Version version;
+                if (!Version.TryParse(WinUIVersion, out version))
+                {
+                    Log.LogError($"Invalid version string \"{WinUIVersion!}\".");
+                    hasErrors = true;
+                }
+            }
+
+            return !hasErrors;
         }
 
         protected override void LogEventsFromTextOutput(string singleLine, MessageImportance messageImportance)
