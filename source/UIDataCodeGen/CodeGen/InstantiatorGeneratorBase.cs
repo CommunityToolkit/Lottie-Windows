@@ -2911,7 +2911,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 WriteCreateAssignment(builder, node, $"effectFactory{Deref}CreateBrush()");
                 InitializeCompositionBrush(builder, obj, node);
 
-                IEnumerable<CompositionEffectSourceParameter> sources = effect.Type switch
+                IEnumerable<CompositionEffectSourceParameter?> sources = effect.Type switch
                 {
                     Mgce.GraphicsEffectType.CompositeEffect => ((Mgce.CompositeEffect)effect).Sources,
                     Mgce.GraphicsEffectType.GaussianBlurEffect => new[] { ((Mgce.GaussianBlurEffect)effect).Source },
