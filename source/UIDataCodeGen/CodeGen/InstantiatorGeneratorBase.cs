@@ -2914,17 +2914,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 IEnumerable<CompositionEffectSourceParameter> sources = effect.Type switch
                 {
                     Mgce.GraphicsEffectType.CompositeEffect => ((Mgce.CompositeEffect)effect).Sources,
-                    Mgce.GraphicsEffectType.GaussianBlurEffect => new[] { ((Mgce.GaussianBlurEffect)effect).Source },
+                    Mgce.GraphicsEffectType.GaussianBlurEffect => ((Mgce.GaussianBlurEffect)effect).Source is not null ?
+                        new[] { ((Mgce.GaussianBlurEffect)effect).Source! } : Enumerable.Empty<CompositionEffectSourceParameter>(),
                     _ => throw new InvalidOperationException(),
                 };
 
                 // Perform brush initialization.
                 foreach (var source in sources)
                 {
-                    if (source is not null)
-                    {
-                        builder.WriteLine($"result{Deref}SetSourceParameter({String(source.Name)}, {CallFactoryFromFor(node, obj.GetSourceParameter(source.Name))});");
-                    }
+                    builder.WriteLine($"result{Deref}SetSourceParameter({String(source.Name)}, {CallFactoryFromFor(node, obj.GetSourceParameter(source.Name))});");
                 }
 
                 WriteCompositionObjectFactoryEnd(builder, obj, node);
