@@ -168,7 +168,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             ApplyCommonStrokeProperties(
                 context,
                 shapeStroke,
-                TranslateLinearGradient(context, shapeStroke, contextOpacity),
+                TranslateLinearGradient(context, shapeStroke, contextOpacity, null),
                 sprite);
         }
 
@@ -181,7 +181,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             ApplyCommonStrokeProperties(
                 context,
                 shapeStroke,
-                TranslateRadialGradient(context, shapeStroke, contextOpacity),
+                TranslateRadialGradient(context, shapeStroke, contextOpacity, null),
                 sprite);
         }
 
@@ -254,7 +254,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             sprite.StrokeBrush = brush;
         }
 
-        public static CompositionBrush? TranslateShapeFill(LayerContext context, ShapeFill? shapeFill, CompositeOpacity opacity)
+        public static CompositionBrush? TranslateShapeFill(
+            LayerContext context,
+            ShapeFill? shapeFill,
+            CompositeOpacity opacity,
+            Rectangles.InternalOffset? internalOffset)
         {
             if (shapeFill is null)
             {
@@ -264,8 +268,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return shapeFill.FillKind switch
             {
                 ShapeFill.ShapeFillKind.SolidColor => TranslateSolidColorFill(context, (SolidColorFill)shapeFill, opacity),
-                ShapeFill.ShapeFillKind.LinearGradient => TranslateLinearGradient(context, (LinearGradientFill)shapeFill, opacity),
-                ShapeFill.ShapeFillKind.RadialGradient => TranslateRadialGradient(context, (RadialGradientFill)shapeFill, opacity),
+                ShapeFill.ShapeFillKind.LinearGradient => TranslateLinearGradient(context, (LinearGradientFill)shapeFill, opacity, internalOffset),
+                ShapeFill.ShapeFillKind.RadialGradient => TranslateRadialGradient(context, (RadialGradientFill)shapeFill, opacity, internalOffset),
                 _ => throw new InvalidOperationException(),
             };
         }
@@ -406,10 +410,40 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return result;
         }
 
+        static void TranslateVector2AnimatableWithInternalOffset(
+            LayerContext context,
+            CompositionObject obj,
+            string propertyName,
+            TrimmedAnimatable<Vector2> value,
+            Rectangles.InternalOffset offset)
+        {
+            // anomate source property first
+            string sourcePropertyName = propertyName + "Source";
+            obj.Properties.InsertVector2(sourcePropertyName, ConvertTo.Vector2(value.InitialValue));
+            Animate.Vector2(context, value, obj, sourcePropertyName);
+
+            // create expression that offsets source property by internal offset
+            WinCompData.Expressions.Vector2 expression = offset.IsAnimated ?
+                ExpressionFactory.InternalOffsetExressionAdded(sourcePropertyName, offset.OffsetExpression!) :
+                ExpressionFactory.InternalOffsetValueAdded(sourcePropertyName, (Sn.Vector2)offset.OffsetValue!);
+
+            var expressionAnimation = context.ObjectFactory.CreateExpressionAnimation(expression);
+            expressionAnimation.SetReferenceParameter("my", obj);
+            if (offset.IsAnimated)
+            {
+                // expression can use geometry
+                expressionAnimation.SetReferenceParameter("geometry", offset.Geometry);
+            }
+
+            // animate original property with expression that applies  internal offset to it
+            Animate.WithExpression(obj, expressionAnimation, propertyName);
+        }
+
         static CompositionLinearGradientBrush? TranslateLinearGradient(
             LayerContext context,
             IGradient linearGradient,
-            CompositeOpacity opacity)
+            CompositeOpacity opacity,
+            Rectangles.InternalOffset? internalOffset)
         {
             var result = context.ObjectFactory.CreateLinearGradientBrush();
 
@@ -419,7 +453,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var startPoint = Optimizer.TrimAnimatable(context, linearGradient.StartPoint);
             var endPoint = Optimizer.TrimAnimatable(context, linearGradient.EndPoint);
 
-            if (startPoint.IsAnimated)
+            if (internalOffset is not null)
+            {
+                TranslateVector2AnimatableWithInternalOffset(context, result, nameof(result.StartPoint), startPoint, internalOffset);
+            }
+            else if (startPoint.IsAnimated)
             {
                 Animate.Vector2(context, startPoint, result, nameof(result.StartPoint));
             }
@@ -428,7 +466,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 result.StartPoint = ConvertTo.Vector2(startPoint.InitialValue);
             }
 
-            if (endPoint.IsAnimated)
+            if (internalOffset is not null)
+            {
+                TranslateVector2AnimatableWithInternalOffset(context, result, nameof(result.EndPoint), endPoint, internalOffset);
+            }
+            else if (endPoint.IsAnimated)
             {
                 Animate.Vector2(context, endPoint, result, nameof(result.EndPoint));
             }
@@ -453,13 +495,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         static CompositionGradientBrush? TranslateRadialGradient(
             LayerContext context,
             IRadialGradient gradient,
-            CompositeOpacity opacity)
+            CompositeOpacity opacity,
+            Rectangles.InternalOffset? internalOffset)
         {
             if (!context.ObjectFactory.IsUapApiAvailable(nameof(CompositionRadialGradientBrush), versionDependentFeatureDescription: "Radial gradient fill"))
             {
                 // CompositionRadialGradientBrush didn't exist until UAP v8. If the target OS doesn't support
                 // UAP v8 then fall back to linear gradients as a compromise.
-                return TranslateLinearGradient(context, gradient, opacity);
+                return TranslateLinearGradient(context, gradient, opacity, internalOffset);
             }
 
             var result = context.ObjectFactory.CreateRadialGradientBrush();
@@ -470,7 +513,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var startPoint = Optimizer.TrimAnimatable(context, gradient.StartPoint);
             var endPoint = Optimizer.TrimAnimatable(context, gradient.EndPoint);
 
-            if (startPoint.IsAnimated)
+            if (internalOffset is not null)
+            {
+                TranslateVector2AnimatableWithInternalOffset(context, result, nameof(result.EllipseCenter), startPoint, internalOffset);
+            }
+            else if (startPoint.IsAnimated)
             {
                 Animate.Vector2(context, startPoint, result, nameof(result.EllipseCenter));
             }

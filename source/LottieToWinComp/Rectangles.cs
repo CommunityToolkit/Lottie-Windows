@@ -18,6 +18,41 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
     /// </summary>
     static class Rectangles
     {
+        // Rectangles are implemented differently in WinComp API
+        // and Lottie. In WinComp API coordinates inside rectangle start in
+        // top left corner and in Lottie they start in the middle
+        // To account for this we need to offset all the internal points
+        // for (Rectangle.Size / 2)
+        // This class represents this offset (static or animated)
+        public class InternalOffset
+        {
+            public RectangleOrRoundedRectangleGeometry Geometry { get; }
+
+            // Use expression if size is animated
+#nullable enable
+            public Expressions.Vector2? OffsetExpression { get; }
+#nullable disable
+
+            // Use constant value if size if static
+            public Sn.Vector2? OffsetValue { get; }
+
+            public bool IsAnimated => OffsetExpression is not null;
+
+            public InternalOffset(RectangleOrRoundedRectangleGeometry geometry, Expressions.Vector2 expression)
+            {
+                Geometry = geometry;
+                OffsetExpression = expression;
+                OffsetValue = null;
+            }
+
+            public InternalOffset(RectangleOrRoundedRectangleGeometry geometry, Sn.Vector2 value)
+            {
+                Geometry = geometry;
+                OffsetExpression = null;
+                OffsetValue = value;
+            }
+        }
+
         // NOTES ABOUT RECTANGLE DRAWING AND CORNERS:
         // ==========================================
         // A rectangle can be thought of as having 8 components -
@@ -318,10 +353,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var height = size.InitialValue.Y;
             var trimOffsetDegrees = (width / (2 * (width + height))) * 360;
 
+            InternalOffset internalOffset = size.IsAnimated ?
+                new InternalOffset(geometry, ExpressionFactory.GeometryHalfSize) :
+                new InternalOffset(geometry, ConvertTo.Vector2(size.InitialValue / 2));
+
             Shapes.TranslateAndApplyShapeContextWithTrimOffset(
                 context,
                 compositionRectangle,
                 rectangle.DrawingDirection == DrawingDirection.Reverse,
+                internalOffset,
                 trimOffsetDegrees: trimOffsetDegrees);
 
             compositionRectangle.SetDescription(context, () => rectangle.Name);
@@ -408,10 +448,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var initialHeight = height.InitialValue;
             var trimOffsetDegrees = (initialWidth / (2 * (initialWidth + initialHeight))) * 360;
 
+            InternalOffset internalOffset = width.IsAnimated || height.IsAnimated ?
+                new InternalOffset(geometry, ExpressionFactory.GeometryHalfSize) :
+                new InternalOffset(geometry, ConvertTo.Vector2(width.InitialValue / 2, height.InitialValue / 2));
+
             Shapes.TranslateAndApplyShapeContextWithTrimOffset(
                 context,
                 compositionRectangle,
                 rectangle.DrawingDirection == DrawingDirection.Reverse,
+                internalOffset,
                 trimOffsetDegrees: trimOffsetDegrees);
 
             compositionRectangle.SetDescription(context, () => rectangle.Name);
