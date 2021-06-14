@@ -330,8 +330,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 rectangle.DrawingDirection == DrawingDirection.Reverse,
                 trimOffsetDegrees: trimOffsetDegrees);
 
-            context.LayerContext.OriginOffset = null;
-
             compositionRectangle.SetDescription(context, () => rectangle.Name);
             compositionRectangle.Geometry.SetDescription(context, () => $"{rectangle.Name}.RectangleGeometry");
         }
@@ -426,8 +424,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 compositionRectangle,
                 rectangle.DrawingDirection == DrawingDirection.Reverse,
                 trimOffsetDegrees: trimOffsetDegrees);
-
-            context.LayerContext.OriginOffset = null;
 
             compositionRectangle.SetDescription(context, () => rectangle.Name);
             compositionRectangle.Geometry.SetDescription(context, () => $"{rectangle.Name}.RectangleGeometry");
