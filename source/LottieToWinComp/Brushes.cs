@@ -431,7 +431,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             if (!offset.IsAnimated && !value.IsAnimated)
             {
-                return ConvertTo.Vector2(value.InitialValue) + offset.OffsetValue!;
+                return ConvertTo.Vector2(value.InitialValue) + offset.OffsetValue;
             }
 
             // Animate source property first.
@@ -443,8 +443,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             // Create expression that offsets source property by origin offset.
             WinCompData.Expressions.Vector2 expression = offset.IsAnimated ?
-                ExpressionFactory.OriginOffsetExressionAdded(sourcePropertyName, offset.OffsetExpression!) :
-                ExpressionFactory.OriginOffsetValueAdded(sourcePropertyName, (Sn.Vector2)offset.OffsetValue!);
+                ExpressionFactory.OriginOffsetExressionAdded(sourcePropertyName, offset.OffsetExpression) :
+                ExpressionFactory.OriginOffsetValueAdded(sourcePropertyName, offset.OffsetValue);
 
             var expressionAnimation = context.ObjectFactory.CreateExpressionAnimation(expression);
             expressionAnimation.SetReferenceParameter("my", obj);

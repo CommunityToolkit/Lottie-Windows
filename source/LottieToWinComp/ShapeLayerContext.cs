@@ -26,24 +26,28 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             public RectangleOrRoundedRectangleGeometry Geometry { get; }
 
             // Use expression if size is animated
-            public WinCompData.Expressions.Vector2? OffsetExpression { get; }
+            public WinCompData.Expressions.Vector2 OffsetExpression { get; }
 
             // Use constant value if size is static
-            public Sn.Vector2? OffsetValue { get; }
+            public Sn.Vector2 OffsetValue { get; }
 
-            public bool IsAnimated => OffsetValue is null;
+            // IsAnimated = true means that we have to use OffsetExpression.
+            // IsAnimated = false means that we can use OffsetValue instead of OffsetExpression to optimize the code.
+            public bool IsAnimated { get; }
 
             public OriginOffsetContainer(RectangleOrRoundedRectangleGeometry geometry, WinCompData.Expressions.Vector2 expression)
             {
+                IsAnimated = true;
                 Geometry = geometry;
                 OffsetExpression = expression;
-                OffsetValue = null;
+                OffsetValue = new Sn.Vector2(0, 0);
             }
 
             public OriginOffsetContainer(RectangleOrRoundedRectangleGeometry geometry, Sn.Vector2 value)
             {
+                IsAnimated = false;
                 Geometry = geometry;
-                OffsetExpression = null;
+                OffsetExpression = new WinCompData.Expressions.Vector2.Constructed(value.X, value.Y);
                 OffsetValue = value;
             }
         }
