@@ -34,11 +34,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             ShapeContext context,
             CompositionSpriteShape shape,
             bool reverseDirection) =>
-            TranslateAndApplyShapeContextWithTrimOffset(
-                context,
-                shape,
-                reverseDirection,
-                trimOffsetDegrees: 0);
+            TranslateAndApplyShapeContextWithTrimOffset(context, shape, reverseDirection, 0);
 
         public static void TranslateAndApplyShapeContextWithTrimOffset(
             ShapeContext context,

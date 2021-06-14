@@ -254,10 +254,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             sprite.StrokeBrush = brush;
         }
 
-        public static CompositionBrush? TranslateShapeFill(
-            LayerContext context,
-            ShapeFill? shapeFill,
-            CompositeOpacity opacity)
+        public static CompositionBrush? TranslateShapeFill(LayerContext context, ShapeFill? shapeFill, CompositeOpacity opacity)
         {
             if (shapeFill is null)
             {
@@ -266,12 +263,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             return shapeFill.FillKind switch
             {
-                ShapeFill.ShapeFillKind.SolidColor =>
-                    TranslateSolidColorFill(context, (SolidColorFill)shapeFill, opacity),
-                ShapeFill.ShapeFillKind.LinearGradient =>
-                    TranslateLinearGradient(context, (LinearGradientFill)shapeFill, opacity),
-                ShapeFill.ShapeFillKind.RadialGradient =>
-                    TranslateRadialGradient(context, (RadialGradientFill)shapeFill, opacity),
+                ShapeFill.ShapeFillKind.SolidColor => TranslateSolidColorFill(context, (SolidColorFill)shapeFill, opacity),
+                ShapeFill.ShapeFillKind.LinearGradient => TranslateLinearGradient(context, (LinearGradientFill)shapeFill, opacity),
+                ShapeFill.ShapeFillKind.RadialGradient => TranslateRadialGradient(context, (RadialGradientFill)shapeFill, opacity),
                 _ => throw new InvalidOperationException(),
             };
         }
