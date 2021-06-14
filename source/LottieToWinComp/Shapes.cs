@@ -38,19 +38,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 context,
                 shape,
                 reverseDirection,
-                originOffset: null,
                 trimOffsetDegrees: 0);
 
         public static void TranslateAndApplyShapeContextWithTrimOffset(
             ShapeContext context,
             CompositionSpriteShape shape,
             bool reverseDirection,
-            Rectangles.OriginOffset? originOffset,
             double trimOffsetDegrees)
         {
             Debug.Assert(shape.Geometry is not null, "Precondition");
 
-            shape.FillBrush = Brushes.TranslateShapeFill(context, context.Fill, context.Opacity, originOffset);
+            shape.FillBrush = Brushes.TranslateShapeFill(context, context.Fill, context.Opacity);
             Brushes.TranslateAndApplyStroke(context, context.Stroke, shape, context.Opacity);
 
             TranslateAndApplyTrimPath(

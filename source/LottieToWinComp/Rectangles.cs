@@ -8,6 +8,7 @@ using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
+using static Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp.ShapeLayerContext;
 using Expressions = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions;
 using Sn = System.Numerics;
 
@@ -18,39 +19,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
     /// </summary>
     static class Rectangles
     {
-        // Rectangles are implemented differently in WinComp API
-        // and Lottie. In WinComp API coordinates inside rectangle start in
-        // top left corner and in Lottie they start in the middle
-        // To account for this we need to offset all the points inside 
-        // the rectangle for (Rectangle.Size / 2).
-        // This class represents this offset (static or animated)
-        public class OriginOffset
-        {
-            public RectangleOrRoundedRectangleGeometry Geometry { get; }
-
-            // Use expression if size is animated
-            public Expressions.Vector2? OffsetExpression { get; }
-
-            // Use constant value if size if static
-            public Sn.Vector2? OffsetValue { get; }
-
-            public bool IsAnimated => OffsetValue is null;
-
-            public OriginOffset(RectangleOrRoundedRectangleGeometry geometry, Expressions.Vector2 expression)
-            {
-                Geometry = geometry;
-                OffsetExpression = expression;
-                OffsetValue = null;
-            }
-
-            public OriginOffset(RectangleOrRoundedRectangleGeometry geometry, Sn.Vector2 value)
-            {
-                Geometry = geometry;
-                OffsetExpression = null;
-                OffsetValue = value;
-            }
-        }
-
         // NOTES ABOUT RECTANGLE DRAWING AND CORNERS:
         // ==========================================
         // A rectangle can be thought of as having 8 components -
@@ -352,16 +320,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var trimOffsetDegrees = (width / (2 * (width + height))) * 360;
 
             // If offset is not animated then other computations for fill brush can be optimized.
-            OriginOffset originOffset = size.IsAnimated ?
-                new OriginOffset(geometry, ExpressionFactory.GeometryHalfSize) :
-                new OriginOffset(geometry, ConvertTo.Vector2(size.InitialValue / 2));
+            context.LayerContext.OriginOffset = size.IsAnimated ?
+                new OriginOffsetContainer(geometry, ExpressionFactory.GeometryHalfSize) :
+                new OriginOffsetContainer(geometry, ConvertTo.Vector2(size.InitialValue / 2));
 
             Shapes.TranslateAndApplyShapeContextWithTrimOffset(
                 context,
                 compositionRectangle,
                 rectangle.DrawingDirection == DrawingDirection.Reverse,
-                originOffset,
                 trimOffsetDegrees: trimOffsetDegrees);
+
+            context.LayerContext.OriginOffset = null;
 
             compositionRectangle.SetDescription(context, () => rectangle.Name);
             compositionRectangle.Geometry.SetDescription(context, () => $"{rectangle.Name}.RectangleGeometry");
@@ -448,16 +417,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var trimOffsetDegrees = (initialWidth / (2 * (initialWidth + initialHeight))) * 360;
 
             // If offset is not animated then other computations for fill brush can be optimized.
-            OriginOffset originOffset = width.IsAnimated || height.IsAnimated ?
-                new OriginOffset(geometry, ExpressionFactory.GeometryHalfSize) :
-                new OriginOffset(geometry, ConvertTo.Vector2(width.InitialValue / 2, height.InitialValue / 2));
+            context.LayerContext.OriginOffset = width.IsAnimated || height.IsAnimated ?
+                new OriginOffsetContainer(geometry, ExpressionFactory.GeometryHalfSize) :
+                new OriginOffsetContainer(geometry, ConvertTo.Vector2(width.InitialValue / 2, height.InitialValue / 2));
 
             Shapes.TranslateAndApplyShapeContextWithTrimOffset(
                 context,
                 compositionRectangle,
                 rectangle.DrawingDirection == DrawingDirection.Reverse,
-                originOffset,
                 trimOffsetDegrees: trimOffsetDegrees);
+
+            context.LayerContext.OriginOffset = null;
 
             compositionRectangle.SetDescription(context, () => rectangle.Name);
             compositionRectangle.Geometry.SetDescription(context, () => $"{rectangle.Name}.RectangleGeometry");
