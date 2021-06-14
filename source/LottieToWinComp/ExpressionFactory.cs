@@ -47,9 +47,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                                                                         MyPosition.Y - MyAnchor.Y,
                                                                         0);
 
-        internal static Vector2 InternalOffsetExressionAdded(string property, Vector2 offsetExpression) => MyVector2(property) + offsetExpression;
+        internal static Vector2 OriginOffsetExressionAdded(string property, Vector2 offsetExpression) => MyVector2(property) + offsetExpression;
 
-        internal static Vector2 InternalOffsetValueAdded(string property, Sn.Vector2 offsetValue) => MyVector2(property) + Vector2(offsetValue);
+        internal static Vector2 OriginOffsetValueAdded(string property, Sn.Vector2 offsetValue) => MyVector2(property) + Vector2(offsetValue);
 
         internal static Color ThemedColorMultipliedByOpacity(string bindingName, Animatables.Opacity opacity)
             => ColorAsVector4MultipliedByOpacity(ThemedColor4Property(bindingName), opacity.Value);
