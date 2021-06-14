@@ -33,7 +33,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         internal static readonly Scalar RootProgress = RootScalar(TranslationContext.ProgressPropertyName);
         internal static readonly Scalar MaxTStartTEnd = Max(MyTStart, MyTEnd);
         internal static readonly Scalar MinTStartTEnd = Min(MyTStart, MyTEnd);
-        static readonly Vector2 HalfMySize = MySize / Vector2(2, 2);
+        internal static readonly Vector2 HalfMySize = MySize / Vector2(2, 2);
+        internal static readonly Vector2 GeometryHalfSize = NamedVector2("geometry", "Size") / Vector2(2, 2);
         internal static readonly Color AnimatedColorWithAnimatedOpacity =
             ColorAsVector4MultipliedByOpacities(MyColor, new[] { MyOpacity });
 
@@ -45,6 +46,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                                                                         MyPosition.X - MyAnchor.X,
                                                                         MyPosition.Y - MyAnchor.Y,
                                                                         0);
+
+        internal static Vector2 OriginOffsetExressionAdded(string property, Vector2 offsetExpression) => MyVector2(property) + offsetExpression;
+
+        internal static Vector2 OriginOffsetValueAdded(string property, Sn.Vector2 offsetValue) => MyVector2(property) + Vector2(offsetValue);
 
         internal static Color ThemedColorMultipliedByOpacity(string bindingName, Animatables.Opacity opacity)
             => ColorAsVector4MultipliedByOpacity(ThemedColor4Property(bindingName), opacity.Value);
@@ -248,9 +253,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         static Vector2 MyVector2(string propertyName) => Vector2(My(propertyName));
 
+        static Vector2 NamedVector2(string name, string propertyName) => Vector2(Named(name, propertyName));
+
         static Vector4 MyVector4(string propertyName) => Vector4(My(propertyName));
 
         static string My(string propertyName) => $"my.{propertyName}";
+
+        static string Named(string name, string propertyName) => $"{name}.{propertyName}";
 
         // A property on the root property set. Used to bind to the property set that contains the Progress property.
         static string RootProperty(string propertyName) => $"{RootName}.{propertyName}";

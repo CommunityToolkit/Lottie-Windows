@@ -8,6 +8,7 @@ using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
+using static Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp.ShapeLayerContext;
 using Expressions = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions;
 using Sn = System.Numerics;
 
@@ -318,6 +319,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var height = size.InitialValue.Y;
             var trimOffsetDegrees = (width / (2 * (width + height))) * 360;
 
+            // If offset is not animated then other computations for fill brush can be optimized.
+            context.LayerContext.OriginOffset = size.IsAnimated ?
+                new OriginOffsetContainer(geometry, ExpressionFactory.GeometryHalfSize) :
+                new OriginOffsetContainer(geometry, ConvertTo.Vector2(size.InitialValue / 2));
+
             Shapes.TranslateAndApplyShapeContextWithTrimOffset(
                 context,
                 compositionRectangle,
@@ -407,6 +413,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var initialWidth = width.InitialValue;
             var initialHeight = height.InitialValue;
             var trimOffsetDegrees = (initialWidth / (2 * (initialWidth + initialHeight))) * 360;
+
+            // If offset is not animated then other computations for fill brush can be optimized.
+            context.LayerContext.OriginOffset = width.IsAnimated || height.IsAnimated ?
+                new OriginOffsetContainer(geometry, ExpressionFactory.GeometryHalfSize) :
+                new OriginOffsetContainer(geometry, ConvertTo.Vector2(width.InitialValue / 2, height.InitialValue / 2));
 
             Shapes.TranslateAndApplyShapeContextWithTrimOffset(
                 context,

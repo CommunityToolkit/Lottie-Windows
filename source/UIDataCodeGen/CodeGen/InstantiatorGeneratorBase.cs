@@ -2130,7 +2130,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
                 // Call the helper and initialize the remaining CompositionShape properties.
                 WriteMatrixComment(builder, obj.TransformMatrix);
-                builder.WriteLine($"{ConstVar} result = CreateSpriteShape({CallFactoryFromFor(node, obj.Geometry)}, {Matrix3x2(transformMatrix)}, {CallFactoryFromFor(node, obj.FillBrush)});");
+
+                // We need to instantiate geometry first because sometimes it initializes fields
+                // that are used in FillBrush, but CreateSpriteShape(GetGeometry(), ..., GetFillBrush()) code
+                // will result in evaluating GetFillBrush() first which may cause null dereferencing
+                builder.WriteLine($"{ConstVar} geometry = {CallFactoryFromFor(node, obj.Geometry)};");
+
+                builder.WriteLine($"{ConstVar} result = CreateSpriteShape(geometry, {Matrix3x2(transformMatrix)}, {CallFactoryFromFor(node, obj.FillBrush)});");
                 InitializeCompositionObject(builder, obj, node);
                 WriteSetPropertyStatement(builder, nameof(obj.CenterPoint), obj.CenterPoint);
                 WriteSetPropertyStatement(builder, nameof(obj.Offset), obj.Offset);

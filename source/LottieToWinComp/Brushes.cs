@@ -406,6 +406,60 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return result;
         }
 
+        // Animate Vector2 property of object with TrimmedAnimatable while applying OriginOffset to it.
+        // Returns non-null Sn.Vector2 value if no animation is needed (and no animation was applied).
+        static Sn.Vector2? AnimateVector2WithOriginOffsetOrGetValue(
+            LayerContext context,
+            CompositionObject obj,
+            string propertyName,
+            TrimmedAnimatable<Vector2> value)
+        {
+            if (context is not ShapeLayerContext || ((ShapeLayerContext)context).OriginOffset is null)
+            {
+                if (value.IsAnimated)
+                {
+                    Animate.Vector2(context, value, obj, propertyName);
+                    return null;
+                }
+                else
+                {
+                    return ConvertTo.Vector2(value.InitialValue);
+                }
+            }
+
+            var offset = ((ShapeLayerContext)context).OriginOffset!;
+
+            if (!offset.IsAnimated && !value.IsAnimated)
+            {
+                return ConvertTo.Vector2(value.InitialValue) + offset.OffsetValue;
+            }
+
+            // Animate source property first.
+            // We are using this auxiliary property to store original animation,
+            // so that its value can be used in expression animation of property itself.
+            string sourcePropertyName = propertyName + "Source";
+            obj.Properties.InsertVector2(sourcePropertyName, ConvertTo.Vector2(value.InitialValue));
+            Animate.Vector2(context, value, obj, sourcePropertyName);
+
+            // Create expression that offsets source property by origin offset.
+            WinCompData.Expressions.Vector2 expression = offset.IsAnimated ?
+                ExpressionFactory.OriginOffsetExressionAdded(sourcePropertyName, offset.OffsetExpression) :
+                ExpressionFactory.OriginOffsetValueAdded(sourcePropertyName, offset.OffsetValue);
+
+            var expressionAnimation = context.ObjectFactory.CreateExpressionAnimation(expression);
+            expressionAnimation.SetReferenceParameter("my", obj);
+            if (offset.IsAnimated)
+            {
+                // Expression can use geometry.
+                expressionAnimation.SetReferenceParameter("geometry", offset.Geometry);
+            }
+
+            // Animate original property with expression that applies origin offset to it.
+            Animate.WithExpression(obj, expressionAnimation, propertyName);
+
+            return null;
+        }
+
         static CompositionLinearGradientBrush? TranslateLinearGradient(
             LayerContext context,
             IGradient linearGradient,
@@ -419,22 +473,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var startPoint = Optimizer.TrimAnimatable(context, linearGradient.StartPoint);
             var endPoint = Optimizer.TrimAnimatable(context, linearGradient.EndPoint);
 
-            if (startPoint.IsAnimated)
+            var startPointValue = AnimateVector2WithOriginOffsetOrGetValue(context, result, nameof(result.StartPoint), startPoint);
+            if (startPointValue is not null)
             {
-                Animate.Vector2(context, startPoint, result, nameof(result.StartPoint));
-            }
-            else
-            {
-                result.StartPoint = ConvertTo.Vector2(startPoint.InitialValue);
+                result.StartPoint = startPointValue!;
             }
 
-            if (endPoint.IsAnimated)
+            var endPointValue = AnimateVector2WithOriginOffsetOrGetValue(context, result, nameof(result.EndPoint), endPoint);
+            if (endPointValue is not null)
             {
-                Animate.Vector2(context, endPoint, result, nameof(result.EndPoint));
-            }
-            else
-            {
-                result.EndPoint = ConvertTo.Vector2(endPoint.InitialValue);
+                result.EndPoint = endPointValue!;
             }
 
             var gradientStops = Optimizer.TrimAnimatable(context, linearGradient.GradientStops);
@@ -470,13 +518,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var startPoint = Optimizer.TrimAnimatable(context, gradient.StartPoint);
             var endPoint = Optimizer.TrimAnimatable(context, gradient.EndPoint);
 
-            if (startPoint.IsAnimated)
+            var startPointValue = AnimateVector2WithOriginOffsetOrGetValue(context, result, nameof(result.EllipseCenter), startPoint);
+            if (startPointValue is not null)
             {
-                Animate.Vector2(context, startPoint, result, nameof(result.EllipseCenter));
-            }
-            else
-            {
-                result.EllipseCenter = ConvertTo.Vector2(startPoint.InitialValue);
+                result.EllipseCenter = startPointValue!;
             }
 
             if (endPoint.IsAnimated)

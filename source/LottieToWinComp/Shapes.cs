@@ -45,6 +45,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             Debug.Assert(shape.Geometry is not null, "Precondition");
 
             shape.FillBrush = Brushes.TranslateShapeFill(context, context.Fill, context.Opacity);
+
+            // OriginOffset is used to adjust cordinates of FillBrush for Rectangle shapes.
+            // It is not needed afterwards, so we clean it up to not affect other code.
+            context.LayerContext.OriginOffset = null;
+
             Brushes.TranslateAndApplyStroke(context, context.Stroke, shape, context.Opacity);
 
             TranslateAndApplyTrimPath(
