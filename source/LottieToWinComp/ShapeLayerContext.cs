@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
+using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions;
 using Sn = System.Numerics;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
@@ -47,7 +48,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             {
                 IsAnimated = false;
                 Geometry = geometry;
-                OffsetExpression = new WinCompData.Expressions.Vector2.Constructed(value.X, value.Y);
+                OffsetExpression = Expression.Vector2(value.X, value.Y);
                 OffsetValue = value;
             }
         }
