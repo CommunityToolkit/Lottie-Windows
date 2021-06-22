@@ -117,6 +117,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             geometry.SetDescription(context, () => $"{path.Name}.PathGeometry");
 
             var pathData = Optimizer.TrimAnimatable(context, Optimizer.GetOptimized(context, path.Data));
+            pathData = TranslateRoundCorners(context, pathData);
 
             var compositionSpriteShape = TranslatePath(context, pathData, GetPathFillType(context.Fill));
             compositionSpriteShape.SetDescription(context, () => path.Name);
@@ -127,6 +128,21 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 path.DrawingDirection == DrawingDirection.Reverse);
 
             return compositionSpriteShape;
+        }
+
+        private static TrimmedAnimatable<PathGeometry> TranslateRoundCorners(ShapeContext context, TrimmedAnimatable<PathGeometry> pathGeometry)
+        {
+            if (context.RoundCorners.Radius.IsAlways(0) || context.RoundCorners.Radius.IsAnimated)
+            {
+                return pathGeometry;
+            }
+
+            if (!pathGeometry.IsAnimated)
+            {
+                return new TrimmedAnimatable<PathGeometry>(pathGeometry.Context, MakeRoundCorners(pathGeometry.InitialValue, context.RoundCorners.Radius.InitialValue));
+            }
+
+            return pathGeometry;
         }
 
         /// <summary>
@@ -409,6 +425,114 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             // Paths are shareable.
             public Dictionary<(PathGeometry, ShapeFill.PathFillType, bool), CompositionPath> CompositionPaths { get; }
                 = new Dictionary<(PathGeometry, ShapeFill.PathFillType, bool), CompositionPath>();
+        }
+
+        static BezierSegment MakeCubicBezier(Vector2 cp0, Vector2 cp1, Vector2 cp2)
+        {
+            // This is similar to converting QudraticBezier to CubicBezier, but instead of
+            // coefficiet 2/3 we are using 0.55 . This coefficient was found experimentally by comparing
+            // images from AfterEffects and LottieViewer
+            return new BezierSegment(cp0, cp0 + ((cp1 - cp0) * 0.55), cp2 + ((cp1 - cp2) * 0.55), cp2);
+        }
+
+        static PathGeometry MakeRoundCorners(PathGeometry pathGeometry, double radius)
+        {
+            // There is no corners if we have less than two segments
+            if (pathGeometry.BezierSegments.Count < 2)
+            {
+                return pathGeometry;
+            }
+
+            var count = pathGeometry.BezierSegments.Count;
+
+            // We treat array of segments as a circular array, so that first and last elements are adjacent
+            Func<int, int> getCircularIndex = (i) => ((i % count) + count) % count;
+
+            // Initial value does not matter, it is guranteed that is will be reassigned before use
+            Vector2 prevControlPoint = new Vector2(0, 0);
+
+            List<BezierSegment> resultSegments = new List<BezierSegment>();
+
+            // If path is closed we are processing last segment at the beggining to get
+            // proper value for prevControlPoint for first segment.
+            for (var i = pathGeometry.IsClosed ? -1 : 0; i < count; i++)
+            {
+                var segment = pathGeometry.BezierSegments[getCircularIndex(i)];
+                var prevSegment = pathGeometry.BezierSegments[getCircularIndex(i - 1)];
+                var nextSegment = pathGeometry.BezierSegments[getCircularIndex(i + 1)];
+
+                // We can make rounded corner at the beggining of the segment if we do not have any curvature
+                // at point ControlPoint0 except if path is not closed and this segment is the first
+                bool canRoundBegin =
+                    segment.ControlPoint0 == segment.ControlPoint1 &&
+                    prevSegment.ControlPoint2 == prevSegment.ControlPoint3 &&
+                    (getCircularIndex(i) != 0 || pathGeometry.IsClosed);
+
+                // We can make rounded corner at the end of the segment if we do not have any curvature
+                // at point ControlPoint3 except if path is not closed and this segment is the last
+                bool canRoundEnd = segment.ControlPoint2 == segment.ControlPoint3 &&
+                    nextSegment.ControlPoint0 == nextSegment.ControlPoint1 &&
+                    (getCircularIndex(i) != count - 1 || pathGeometry.IsClosed);
+
+                if (!canRoundBegin && !canRoundEnd)
+                {
+                    resultSegments.Add(segment);
+                }
+                else if (canRoundBegin && canRoundEnd)
+                {
+                    var length = (segment.ControlPoint0 - segment.ControlPoint3).Length();
+
+                    var radiusVector = (segment.ControlPoint3 - segment.ControlPoint0) / length * radius;
+
+                    Vector2 point0 = segment.ControlPoint0 + radiusVector;
+                    Vector2 point1 = segment.ControlPoint3 - radiusVector;
+
+                    if (length <= 2 * radius)
+                    {
+                        point0 = point1 = (segment.ControlPoint0 + segment.ControlPoint3) * 0.5;
+                    }
+
+                    resultSegments.Add(MakeCubicBezier(prevControlPoint, segment.ControlPoint0, point0));
+
+                    if (point0 != point1)
+                    {
+                        resultSegments.Add(new BezierSegment(point0, point0, point1, point1));
+                    }
+
+                    prevControlPoint = point1;
+                }
+                else if (canRoundBegin)
+                {
+                    var cp0cp2 = segment.ControlPoint2 - segment.ControlPoint0;
+                    var length = cp0cp2.Length();
+                    var radiusVector = cp0cp2.Normalized() * radius;
+
+                    Vector2 point = length > radius ? segment.ControlPoint0 + radiusVector : segment.ControlPoint2;
+
+                    resultSegments.Add(MakeCubicBezier(prevControlPoint, segment.ControlPoint0, point));
+                    resultSegments.Add(MakeCubicBezier(point, segment.ControlPoint2, segment.ControlPoint3));
+                }
+                else if (canRoundEnd)
+                {
+                    var cp3cp1 = segment.ControlPoint1 - segment.ControlPoint3;
+                    var length = cp3cp1.Length();
+                    var radiusVector = cp3cp1.Normalized() * radius;
+
+                    Vector2 point = length > radius ? segment.ControlPoint3 + radiusVector : segment.ControlPoint1;
+
+                    resultSegments.Add(MakeCubicBezier(segment.ControlPoint0, segment.ControlPoint1, point));
+                    prevControlPoint = point;
+                }
+
+                if (i == -1)
+                {
+                    // If i = -1 then is was special pre-pass to get the valid value of prevControlPoint,
+                    // all generated segments should be ignored.
+                    resultSegments.Clear();
+                }
+            }
+
+            return new PathGeometry(new Sequence<BezierSegment>(resultSegments), pathGeometry.IsClosed);
         }
     }
 }
