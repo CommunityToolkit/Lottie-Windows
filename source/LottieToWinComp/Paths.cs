@@ -482,9 +482,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 else if (canRoundBegin && canRoundEnd)
                 {
                     // Both ends are not curved, so we can make them rounded.
-                    var length = (segment.ControlPoint0 - segment.ControlPoint3).Length();
-
-                    var radiusVector = (segment.ControlPoint3 - segment.ControlPoint0) / length * radius;
+                    var cp0cp3 = segment.ControlPoint3 - segment.ControlPoint0;
+                    var length = cp0cp3.Length();
+                    var radiusVector = cp0cp3.Normalized() * radius;
 
                     Vector2 point0 = segment.ControlPoint0 + radiusVector;
                     Vector2 point1 = segment.ControlPoint3 - radiusVector;
@@ -541,7 +541,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
                 if (i == -1)
                 {
-                    // If i = -1 then is was special pre-pass to get the valid value of prevControlPoint,
+                    // If i = -1 then it was special pre-pass to get the valid value of prevControlPoint,
                     // all generated segments should be ignored.
                     resultSegments.Clear();
                 }
