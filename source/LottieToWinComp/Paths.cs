@@ -431,13 +431,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         {
             // This is similar to converting QudraticBezier to CubicBezier, but instead of
             // coefficiet 2/3 we are using 0.55 . This coefficient was found experimentally by comparing
-            // images from AfterEffects and LottieViewer
+            // images from AfterEffects and LottieViewer.
             return new BezierSegment(cp0, cp0 + ((cp1 - cp0) * 0.55), cp2 + ((cp1 - cp2) * 0.55), cp2);
         }
 
         static PathGeometry MakeRoundCorners(PathGeometry pathGeometry, double radius)
         {
-            // There is no corners if we have less than two segments
+            // There is no corners if we have less than two segments.
             if (pathGeometry.BezierSegments.Count < 2)
             {
                 return pathGeometry;
@@ -445,16 +445,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             var count = pathGeometry.BezierSegments.Count;
 
-            // We treat array of segments as a circular array, so that first and last elements are adjacent
+            // We treat array of segments as a circular array, so that first and last elements are adjacent.
             Func<int, int> getCircularIndex = (i) => ((i % count) + count) % count;
 
-            // Initial value does not matter, it is guranteed that is will be reassigned before use
+            // Initial value does not matter, it is guranteed that it will be reassigned before use.
             Vector2 prevControlPoint = new Vector2(0, 0);
 
             List<BezierSegment> resultSegments = new List<BezierSegment>();
 
             // If path is closed we are processing last segment at the beggining to get
-            // proper value for prevControlPoint for first segment.
+            // proper value for prevControlPoint for first segment, so we are starting from -1.
             for (var i = pathGeometry.IsClosed ? -1 : 0; i < count; i++)
             {
                 var segment = pathGeometry.BezierSegments[getCircularIndex(i)];
@@ -476,10 +476,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
                 if (!canRoundBegin && !canRoundEnd)
                 {
+                    // Both ends are curved, just adding current segment to the result.
                     resultSegments.Add(segment);
                 }
                 else if (canRoundBegin && canRoundEnd)
                 {
+                    // Both ends are not curved, so we can make them rounded.
                     var length = (segment.ControlPoint0 - segment.ControlPoint3).Length();
 
                     var radiusVector = (segment.ControlPoint3 - segment.ControlPoint0) / length * radius;
@@ -487,40 +489,53 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     Vector2 point0 = segment.ControlPoint0 + radiusVector;
                     Vector2 point1 = segment.ControlPoint3 - radiusVector;
 
+                    // If doubled radius is greater than length, then both points collapse into
+                    // one point right in the middle of the segment.
                     if (length <= 2 * radius)
                     {
                         point0 = point1 = (segment.ControlPoint0 + segment.ControlPoint3) * 0.5;
                     }
 
+                    // Rounded corner.
                     resultSegments.Add(MakeCubicBezier(prevControlPoint, segment.ControlPoint0, point0));
 
+                    // Straigt line that connects point0 and point1.
                     if (point0 != point1)
                     {
                         resultSegments.Add(new BezierSegment(point0, point0, point1, point1));
                     }
 
+                    // In the next iteration we will use this to make the next rounded corner.
                     prevControlPoint = point1;
                 }
                 else if (canRoundBegin)
                 {
+                    // Second end is curved, so we can make only one rounded corner.
                     var cp0cp2 = segment.ControlPoint2 - segment.ControlPoint0;
                     var length = cp0cp2.Length();
                     var radiusVector = cp0cp2.Normalized() * radius;
 
                     Vector2 point = length > radius ? segment.ControlPoint0 + radiusVector : segment.ControlPoint2;
 
+                    // Rounded corner.
                     resultSegments.Add(MakeCubicBezier(prevControlPoint, segment.ControlPoint0, point));
+
+                    // Adusted bezier segment.
                     resultSegments.Add(MakeCubicBezier(point, segment.ControlPoint2, segment.ControlPoint3));
                 }
                 else if (canRoundEnd)
                 {
+                    // Second end is curved, so we can make only one rounded corner.
                     var cp3cp1 = segment.ControlPoint1 - segment.ControlPoint3;
                     var length = cp3cp1.Length();
                     var radiusVector = cp3cp1.Normalized() * radius;
 
                     Vector2 point = length > radius ? segment.ControlPoint3 + radiusVector : segment.ControlPoint1;
 
+                    // Adjusted bezier segment.
                     resultSegments.Add(MakeCubicBezier(segment.ControlPoint0, segment.ControlPoint1, point));
+
+                    // In the next iteration we will use this to make the next rounded corner.
                     prevControlPoint = point;
                 }
 
