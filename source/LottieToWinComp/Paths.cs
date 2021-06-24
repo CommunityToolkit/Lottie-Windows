@@ -435,6 +435,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return new BezierSegment(cp0, cp0 + ((cp1 - cp0) * 0.55), cp2 + ((cp1 - cp2) * 0.55), cp2);
         }
 
+        // The way this function works is it detects if two segments form a corner (if they do not have smooth connection)
+        // Then it duplicates this point (shared by two segments) and moves newlt generated points in different directions
+        // for "radius" pixels along the segment.
+        // After that we are joining both new points with a bezier curve to make the corner look rounded.
+        //
+        // There are 3 possible cases:
+        // 1. When the segment is curved from both sides, then we can just keep it as it is
+        // 2. When the segment is not curved from both sides, then we can make two rounded corners, from both ends.
+        // 3. When the segment curved from one side (begin or end) we are making only one rounded corner.
+        //
+        // In order to make a rounded corner we also need two points on segments next to the current segment.
+        // In this algortihm we are processing segments one by one, and passing one point from one segment to another,
+        // so that currently processed segment can create rounded corner using this point, and pass new point
+        // to the next segment, so that it can create next rounded corner and so on.
         static PathGeometry MakeRoundCorners(PathGeometry pathGeometry, double radius)
         {
             // There is no corners if we have less than two segments.
@@ -449,7 +463,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             Func<int, int> getCircularIndex = (i) => ((i % count) + count) % count;
 
             // Initial value does not matter, it is guranteed that it will be reassigned before use.
-            Vector2 prevControlPoint = new Vector2(0, 0);
+            Vector2 prevControlPoint = Vector2.Zero;
 
             List<BezierSegment> resultSegments = new List<BezierSegment>();
 
@@ -486,11 +500,21 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     var length = cp0cp3.Length();
                     var radiusVector = cp0cp3.Normalized() * radius;
 
+                    // We are moving both ends of the segment, towards the center for "radius" pixels
+                    // Example:
+                    // Segment of length 13: p0-------------p1
+                    // #1 Radius 2:          --p0---------p1--
+                    // #2 Radius 8:          ------p0-p1------
+                    // In case #2 points has changed their relative order along the segment, so in this case
+                    // if doubled radius is greater than the length, we are moving both point to the middle:
+                    //                       -------p01------- (p0 = p1)
+                    // Case #1:
                     Vector2 point0 = segment.ControlPoint0 + radiusVector;
                     Vector2 point1 = segment.ControlPoint3 - radiusVector;
 
                     // If doubled radius is greater than length, then both points collapse into
                     // one point right in the middle of the segment.
+                    // Case #2:
                     if (length <= 2 * radius)
                     {
                         point0 = point1 = (segment.ControlPoint0 + segment.ControlPoint3) * 0.5;
