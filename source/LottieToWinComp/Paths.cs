@@ -436,7 +436,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         }
 
         // The way this function works is it detects if two segments form a corner (if they do not have smooth connection)
-        // Then it duplicates this point (shared by two segments) and moves newlt generated points in different directions
+        // Then it duplicates this point (shared by two segments) and moves newly generated points in different directions
         // for "radius" pixels along the segment.
         // After that we are joining both new points with a bezier curve to make the corner look rounded.
         //
