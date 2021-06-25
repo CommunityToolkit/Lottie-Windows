@@ -64,7 +64,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         // LT0015 has been deprecated.
         // Was: Opacity and color animated at the same time is not supported.
 
-        internal void PathWithRoundCornersIsNotSupported() => Report("LT0016", "Path with round corners is not supported.");
+        internal void PathWithRoundCornersIsNotFullySupported() => Report("LT0016", "Path with round corners is not fully supported.");
 
         internal void PolystarIsNotSupported() => Report("LT0017", "Polystar is not supported.");
 

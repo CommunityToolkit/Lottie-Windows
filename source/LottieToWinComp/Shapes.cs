@@ -183,8 +183,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                                 paths.Add(Optimizer.OptimizePath(context, (Path)stack.Pop()));
                             }
 
-                            CheckForRoundCornersOnPath(context);
-
                             if (paths.Count == 1)
                             {
                                 // There's a single path.
@@ -192,6 +190,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                             }
                             else
                             {
+                                // TODO: add support for round corners for multiple paths. I didn't find a way to generate
+                                // AE animation wth multiple paths on the same shape.
+                                CheckForRoundCornersOnPath(context);
+
                                 // There are multiple paths. They need to be grouped.
                                 container.Shapes.Add(Paths.TranslatePathGroupContent(context, paths));
                             }
@@ -631,8 +633,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         {
             if (!Optimizer.TrimAnimatable(context, context.RoundCorners.Radius).IsAlways(0))
             {
-                // TODO - can round corners be implemented by composing cubic Beziers?
-                context.Issues.PathWithRoundCornersIsNotSupported();
+                context.Issues.PathWithRoundCornersIsNotFullySupported();
             }
         }
 

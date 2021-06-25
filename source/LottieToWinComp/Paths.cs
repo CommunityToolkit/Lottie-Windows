@@ -132,17 +132,57 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         private static TrimmedAnimatable<PathGeometry> TranslateRoundCorners(ShapeContext context, TrimmedAnimatable<PathGeometry> pathGeometry)
         {
-            if (context.RoundCorners.Radius.IsAlways(0) || context.RoundCorners.Radius.IsAnimated)
+            var radius = context.RoundCorners.Radius;
+
+            if (radius.IsAlways(0))
             {
                 return pathGeometry;
             }
 
-            if (!pathGeometry.IsAnimated)
+            bool animated = radius.IsAnimated || pathGeometry.IsAnimated;
+
+            // Unfortunately, it is not 100% perfect when animated and does not produce animation identical to After Effects.
+            // After Effects applies radius to the shape after the interpolation, but we are applying radius to the keyframes and
+            // then Composition layer interpolates paths that are already rounded.
+            if (animated)
             {
-                return new TrimmedAnimatable<PathGeometry>(pathGeometry.Context, MakeRoundCorners(pathGeometry.InitialValue, context.RoundCorners.Radius.InitialValue));
+                context.Issues.PathWithRoundCornersIsNotFullySupported();
             }
 
-            return pathGeometry;
+            if (radius.IsAnimated && pathGeometry.IsAnimated)
+            {
+                // We do not support animating both yet.
+                return pathGeometry;
+            }
+
+            // If there is an animation we do not want to optimize number of points on resulting path because
+            // we want the number of points to be the same for different keyframes.
+            var initialValue = MakeRoundCorners(pathGeometry.InitialValue, radius.InitialValue, optimizeNumberOfPoints: !animated);
+
+            if (pathGeometry.IsAnimated)
+            {
+                List<KeyFrame<PathGeometry>> keyframes = new List<KeyFrame<PathGeometry>>();
+                foreach (var keyframe in pathGeometry.KeyFrames)
+                {
+                    var path = MakeRoundCorners(keyframe.Value, context.RoundCorners.Radius.InitialValue, optimizeNumberOfPoints: false);
+                    keyframes.Add(new KeyFrame<PathGeometry>(keyframe.Frame, path, keyframe.SpatialBezier, keyframe.Easing));
+                }
+
+                return new TrimmedAnimatable<PathGeometry>(pathGeometry.Context, initialValue, keyframes);
+            }
+            else if (radius.IsAnimated)
+            {
+                List<KeyFrame<PathGeometry>> keyframes = new List<KeyFrame<PathGeometry>>();
+                foreach (var keyframe in radius.KeyFrames)
+                {
+                    var path = MakeRoundCorners(pathGeometry.InitialValue, keyframe.Value, optimizeNumberOfPoints: false);
+                    keyframes.Add(new KeyFrame<PathGeometry>(keyframe.Frame, path, keyframe.SpatialBezier, keyframe.Easing));
+                }
+
+                return new TrimmedAnimatable<PathGeometry>(pathGeometry.Context, initialValue, keyframes);
+            }
+
+            return new TrimmedAnimatable<PathGeometry>(pathGeometry.Context, initialValue);
         }
 
         /// <summary>
@@ -449,7 +489,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         // In this algortihm we are processing segments one by one, and passing one point from one segment to another,
         // so that currently processed segment can create rounded corner using this point, and pass new point
         // to the next segment, so that it can create next rounded corner and so on.
-        static PathGeometry MakeRoundCorners(PathGeometry pathGeometry, double radius)
+        //
+        // Use optimizeNumberOfPoints = false if you need to keep the number of points constant, it can bee needed
+        // for animated path.
+        static PathGeometry MakeRoundCorners(PathGeometry pathGeometry, double radius, bool optimizeNumberOfPoints = true)
         {
             // There is no corners if we have less than two segments.
             if (pathGeometry.BezierSegments.Count < 2)
@@ -517,7 +560,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     // Case #2:
                     if (length <= 2 * radius)
                     {
-                        point0 = point1 = (segment.ControlPoint0 + segment.ControlPoint3) * 0.5;
+                        if (optimizeNumberOfPoints)
+                        {
+                            point0 = point1 = (segment.ControlPoint0 + segment.ControlPoint3) * 0.5;
+                        }
+                        else
+                        {
+                            const double epsilon = 1e-6;
+
+                            // Generate two points instead of one, but place them close to each other.
+                            point0 = (segment.ControlPoint0 * (0.5 + epsilon)) + (segment.ControlPoint3 * (0.5 - epsilon));
+                            point1 = (segment.ControlPoint0 * (0.5 - epsilon)) + (segment.ControlPoint3 * (0.5 + epsilon));
+                        }
                     }
 
                     // Rounded corner.
