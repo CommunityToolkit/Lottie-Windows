@@ -67,5 +67,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.Animatables
 
         /// <inheritdoc/>
         public override string ToString() => $"{{{X},{Y}}}";
+
+        public double Length() => Math.Sqrt((X * X) + (Y * Y));
+
+        public Vector2 Normalized() => this / Length();
     }
 }
