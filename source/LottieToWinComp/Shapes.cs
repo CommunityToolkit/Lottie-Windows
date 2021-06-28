@@ -191,7 +191,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                             else
                             {
                                 // TODO: add support for round corners for multiple paths. I didn't find a way to generate
-                                // AE animation wth multiple paths on the same shape.
+                                // AE animation with multiple paths on the same shape.
                                 CheckForRoundCornersOnPath(context);
 
                                 // There are multiple paths. They need to be grouped.
