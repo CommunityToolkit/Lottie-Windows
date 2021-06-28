@@ -490,7 +490,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         // so that currently processed segment can create rounded corner using this point, and pass new point
         // to the next segment, so that it can create next rounded corner and so on.
         //
-        // Use optimizeNumberOfPoints = false if you need to keep the number of points constant, it can bee needed
+        // Use optimizeNumberOfPoints = false if you need to keep the number of points constant, it can be needed
         // for animated path.
         static PathGeometry MakeRoundCorners(PathGeometry pathGeometry, double radius, bool optimizeNumberOfPoints = true)
         {
@@ -566,11 +566,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         }
                         else
                         {
-                            const double epsilon = 1e-6;
+                            float halfPlusEpsilon = Float32.NextLargerThan(0.5f);
+                            float halfMinusEpsilon = 1 - halfPlusEpsilon;
 
                             // Generate two points instead of one, but place them close to each other.
-                            point0 = (segment.ControlPoint0 * (0.5 + epsilon)) + (segment.ControlPoint3 * (0.5 - epsilon));
-                            point1 = (segment.ControlPoint0 * (0.5 - epsilon)) + (segment.ControlPoint3 * (0.5 + epsilon));
+                            point0 = (segment.ControlPoint0 * halfPlusEpsilon) + (segment.ControlPoint3 * halfMinusEpsilon);
+                            point1 = (segment.ControlPoint0 * halfMinusEpsilon) + (segment.ControlPoint3 * halfPlusEpsilon);
                         }
                     }
 
