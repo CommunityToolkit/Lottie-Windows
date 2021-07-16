@@ -46,7 +46,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// <summary>
         /// Gets the index used to uniquely identify a <see cref="Layer"/> within the owning <see cref="LayerCollection"/>.
         /// </summary>
-        internal int Index { get; }
+        internal int Index { get; set; }
 
         /// <summary>
         /// Gets the frame at which this <see cref="Layer"/> becomes visible. <see cref="OutPoint"/>.
@@ -62,7 +62,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// <summary>
         /// Gets the list of masks appplied to the layer.
         /// </summary>
-        public IReadOnlyList<Mask> Masks { get; set; }
+        public IReadOnlyList<Mask> Masks { get; }
 
         /// <summary>
         /// Gets the frame at which this <see cref="Layer"/> becomes invisible. <see cref="OutPoint"/>.
@@ -73,7 +73,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// Gets the index that identifies the index of the <see cref="Layer"/> from which transforms are inherited,
         /// or null if no transforms are inherited.
         /// </summary>
-        public int? Parent { get; }
+        public int? Parent { get; set; }
 
         /// <summary>
         /// Gets the frame at which this <see cref="Layer"/> starts playing. May be negative.

@@ -41,7 +41,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
         public Animatable<Rotation> Rotation { get; }
 
-        public Animatable<Opacity> Opacity { get; }
+        public Animatable<Opacity> Opacity { get; set; }
 
         public bool IsAnimated => Anchor.IsAnimated || Position.IsAnimated || ScalePercent.IsAnimated || Rotation.IsAnimated || Opacity.IsAnimated;
 

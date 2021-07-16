@@ -42,7 +42,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
         //       The method is inherited by the WinCompData.BooleanKeyFrameAnimation but it is not valid to call it.
         public void InsertKeyFrame(float progress, T value, CompositionEasingFunction? easing)
         {
-            if (typeof(T) == typeof(bool))
+            if (typeof(T) == typeof(bool) && easing != null)
             {
                 throw new ArgumentException($"This method cannot be called on {nameof(BooleanKeyFrameAnimation)}.");
             }
@@ -63,6 +63,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
             // It is legal to insert a key frame at a progress value that already has
             // a key frame. Last one wins.
             _keyFrames[progress] = new ValueKeyFrame(progress, easing, value);
+        }
+
+        public void InsertKeyFrame(KeyFrame keyFrame)
+        {
+            if (keyFrame.Progress < 0 || keyFrame.Progress > 1)
+            {
+                throw new ArgumentException($"Progress must be >=0 and <=1. Value: {keyFrame.Progress}");
+            }
+
+            _keyFrames.Add(keyFrame.Progress, keyFrame);
         }
 
         public override IEnumerable<KeyFrame> KeyFrames => _keyFrames.Values;

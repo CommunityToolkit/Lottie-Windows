@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
+using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp;
 using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen;
@@ -128,6 +129,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen
                 _reporter.WriteError($"Failed to parse Lottie file: {_jsonFilePath}");
                 return false;
             }
+
+            lottieComposition = new LottieCompositionOptimizer(lottieComposition!).GetOptimized();
 
             // Validate the Lottie.
             foreach (var issue in LottieCompositionValidator.Validate(lottieComposition))
