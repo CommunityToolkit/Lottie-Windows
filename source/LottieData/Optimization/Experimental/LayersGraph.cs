@@ -64,13 +64,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
             foreach (var group in layerGroups)
             {
                 var node = new GraphNode(group);
-                var range = Range.ForLayer(group.MainLayer);
+                var range = Range.GetForLayer(group.MainLayer);
 
                 var reversedNodes = nodes.Select(v => v).ToList();
                 reversedNodes.Reverse();
                 foreach (var other in reversedNodes)
                 {
-                    if (!node.IsChildOf(other) && Range.ForLayer(other.Group.MainLayer).Intersect(range))
+                    if (!node.IsChildOf(other) && Range.GetForLayer(other.Group.MainLayer).Intersect(range))
                     {
                         node.AddParent(other);
                     }

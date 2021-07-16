@@ -37,6 +37,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)NullLayer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Optimization\Experimental\LayerGroup.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Optimization\Experimental\LayersGraph.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Optimization\Experimental\ShiftUtils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Optimization\GradientStopOptimizer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Optimization\Experimental\LayersIndexMapper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Optimization\Experimental\LottieCompositionOptimizer.cs" />

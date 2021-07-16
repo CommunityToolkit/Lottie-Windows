@@ -123,6 +123,28 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             public MatteType LayerMatteType { get; set; }
         }
 
+        public LayerArgs CopyArgs()
+        {
+            return new LayerArgs
+            {
+                Name = Name,
+                Index = Index,
+                Parent = Parent,
+                IsHidden = IsHidden,
+                Transform = Transform,
+                TimeStretch = TimeStretch,
+                StartFrame = InPoint,
+                InFrame = InPoint,
+                OutFrame = OutPoint,
+                BlendMode = BlendMode,
+                Is3d = Is3d,
+                AutoOrient = AutoOrient,
+                LayerMatteType = LayerMatteType,
+                Effects = Effects,
+                Masks = Masks,
+            };
+        }
+
         public enum LayerType
         {
             PreComp,

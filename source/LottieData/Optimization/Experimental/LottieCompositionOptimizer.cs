@@ -101,140 +101,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                 OriginalComposition.ExtraData);
         }
 
-        Animatable<T> ShiftAnimatable<T>(Animatable<T> a, double shift)
-            where T : IEquatable<T>
-        {
-            if (!a.IsAnimated)
-            {
-                return new Animatable<T>(a.InitialValue);
-            }
-
-            var keyFrames = new List<KeyFrame<T>>();
-
-            foreach (var kf in a.KeyFrames)
-            {
-                keyFrames.Add(new KeyFrame<T>(kf.Frame + shift, kf.Value, kf.SpatialBezier, kf.Easing));
-            }
-
-            return new Animatable<T>(keyFrames);
-        }
-
-        IAnimatableVector3 ShiftIAnimatableVector3(IAnimatableVector3 a, double shift)
-        {
-            if (a is AnimatableVector3)
-            {
-                var v = ShiftAnimatable((AnimatableVector3)a, shift);
-                return v.IsAnimated ? new AnimatableVector3(v.KeyFrames) : new AnimatableVector3(v.InitialValue);
-            }
-
-            Debug.Assert(a is AnimatableXYZ, "There are only AnimatableXYZ and AnimatableVector3 implementations");
-
-            var aXYZ = (AnimatableXYZ)a;
-            var resX = ShiftAnimatable(aXYZ.X, shift);
-            var resY = ShiftAnimatable(aXYZ.Y, shift);
-            var resZ = ShiftAnimatable(aXYZ.Z, shift);
-
-            return new AnimatableXYZ(resX, resY, resZ);
-        }
-
-        Transform ShiftTransform(Transform a, double shift)
-        {
-            return new Transform(
-                new ShapeLayerContentArgs { Name = a.Name, MatchName = a.MatchName, BlendMode = a.BlendMode },
-                ShiftIAnimatableVector3(a.Anchor, shift),
-                ShiftIAnimatableVector3(a.Position, shift),
-                ShiftIAnimatableVector3(a.ScalePercent, shift),
-                ShiftAnimatable(a.Rotation, shift),
-                ShiftAnimatable(a.Opacity, shift)
-                );
-        }
-
-        ShapeLayer ShiftShapeLayer(ShapeLayer a, double shift)
-        {
-            var args = CopyArgs(a);
-
-            args.Transform = ShiftTransform(a.Transform, shift);
-            args.StartFrame += shift;
-            args.InFrame += shift;
-            args.OutFrame += shift;
-
-            // TODO: Offset Contents!
-            return new ShapeLayer(args, a.Contents);
-        }
-
-        NullLayer ShiftNullLayer(NullLayer a, double shift)
-        {
-            var args = CopyArgs(a);
-
-            args.Transform = ShiftTransform(a.Transform, shift);
-            args.StartFrame += shift;
-            args.InFrame += shift;
-            args.OutFrame += shift;
-
-            return new NullLayer(args);
-        }
-
-        Result<Layer> ShiftLayer(Layer a, double shift)
-        {
-            switch (a.Type)
-            {
-                case LayerType.Shape:
-                    return new Result<Layer>(ShiftShapeLayer((ShapeLayer)a, shift));
-                case LayerType.Null:
-                    return new Result<Layer>(ShiftNullLayer((NullLayer)a, shift));
-
-                    // TODO: Implement for other types.
-            }
-
-            return Result<Layer>.Failed;
-        }
-
-        Result<LayerCollection> ShiftLayerCollection(LayerCollection a, double shift)
-        {
-            var layers = a.GetLayersBottomToTop();
-
-            var layersAfterShift = new List<Layer>();
-
-            foreach (var layer in layers)
-            {
-                var layerShiftRes = ShiftLayer(layer, shift);
-
-                if (!layerShiftRes.Success)
-                {
-                    return Result<LayerCollection>.Failed;
-                }
-
-                layersAfterShift.Add(layerShiftRes.Value!);
-            }
-
-            return new Result<LayerCollection>(new LayerCollection(layersAfterShift));
-        }
-
-        Result<LayerCollectionAsset> ShiftLayerCollectionAsset(LayerCollectionAsset a, double shift)
-        {
-            var layerCollectionRes = ShiftLayerCollection(a.Layers, shift);
-
-            if (!layerCollectionRes.Success)
-            {
-                return Result<LayerCollectionAsset>.Failed;
-            }
-
-            return new Result<LayerCollectionAsset>(new LayerCollectionAsset(a.Id, layerCollectionRes.Value!));
-        }
-
-        Result<Asset> ShiftAsset(Asset a, double shift)
-        {
-            switch (a.Type)
-            {
-                case Asset.AssetType.LayerCollection:
-                    return Result<Asset>.From(ShiftLayerCollectionAsset((LayerCollectionAsset)a, shift));
-
-                    // TODO: Implement for other types.
-            }
-
-            return Result<Asset>.Failed;
-        }
-
         Result<Transform> MergeTransform(Transform a, Range aRange, Transform b, Range bRange, bool strict = false)
         {
             if (a.BlendMode != b.BlendMode)
@@ -372,10 +238,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
             }
             else
             {
-                mergedKeyFrames.Add(new KeyFrame<T>(aRange.InPoint, a.InitialValue, HoldEasing.Instance));
+                mergedKeyFrames.Add(new KeyFrame<T>(aRange.Start, a.InitialValue, HoldEasing.Instance));
             }
 
-            mergedKeyFrames.Add(new KeyFrame<T>(bRange.InPoint, b.InitialValue, HoldEasing.Instance));
+            mergedKeyFrames.Add(new KeyFrame<T>(bRange.Start, b.InitialValue, HoldEasing.Instance));
 
             if (b.IsAnimated)
             {
@@ -403,7 +269,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
 
             if (!a.IsAnimated && !b.IsAnimated)
             {
-                if (aRange.OutPoint == bRange.InPoint)
+                if (aRange.End == bRange.Start)
                 {
                     if (a.InitialValue.Equals(b.InitialValue))
                     {
@@ -412,17 +278,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                     else
                     {
                         var keyFrames = new List<KeyFrame<Opacity>>();
-                        keyFrames.Add(new KeyFrame<Opacity>(aRange.InPoint, a.InitialValue, HoldEasing.Instance));
-                        keyFrames.Add(new KeyFrame<Opacity>(bRange.InPoint, b.InitialValue, HoldEasing.Instance));
+                        keyFrames.Add(new KeyFrame<Opacity>(aRange.Start, a.InitialValue, HoldEasing.Instance));
+                        keyFrames.Add(new KeyFrame<Opacity>(bRange.Start, b.InitialValue, HoldEasing.Instance));
                         return new Result<Animatable<Opacity>>(new Animatable<Opacity>(keyFrames));
                     }
                 }
                 else
                 {
                     var keyFrames = new List<KeyFrame<Opacity>>();
-                    keyFrames.Add(new KeyFrame<Opacity>(aRange.InPoint, a.InitialValue, HoldEasing.Instance));
-                    keyFrames.Add(new KeyFrame<Opacity>(aRange.OutPoint, Opacity.Transparent, HoldEasing.Instance));
-                    keyFrames.Add(new KeyFrame<Opacity>(bRange.InPoint, b.InitialValue, HoldEasing.Instance));
+                    keyFrames.Add(new KeyFrame<Opacity>(aRange.Start, a.InitialValue, HoldEasing.Instance));
+                    keyFrames.Add(new KeyFrame<Opacity>(aRange.End, Opacity.Transparent, HoldEasing.Instance));
+                    keyFrames.Add(new KeyFrame<Opacity>(bRange.Start, b.InitialValue, HoldEasing.Instance));
                     return new Result<Animatable<Opacity>>(new Animatable<Opacity>(keyFrames));
                 }
             }
@@ -438,19 +304,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
             }
             else
             {
-                mergedKeyFrames.Add(new KeyFrame<Opacity>(aRange.InPoint, a.InitialValue, HoldEasing.Instance));
+                mergedKeyFrames.Add(new KeyFrame<Opacity>(aRange.Start, a.InitialValue, HoldEasing.Instance));
             }
 
-            if (aRange.OutPoint < bRange.InPoint)
+            if (aRange.End < bRange.Start)
             {
-                mergedKeyFrames.Add(new KeyFrame<Opacity>(aRange.OutPoint, Opacity.Transparent, HoldEasing.Instance));
+                mergedKeyFrames.Add(new KeyFrame<Opacity>(aRange.End, Opacity.Transparent, HoldEasing.Instance));
             }
 
             if (b.IsAnimated)
             {
-                if (b.KeyFrames[0].Frame != bRange.InPoint)
+                if (b.KeyFrames[0].Frame != bRange.Start)
                 {
-                    mergedKeyFrames.Add(new KeyFrame<Opacity>(bRange.InPoint, b.InitialValue, HoldEasing.Instance));
+                    mergedKeyFrames.Add(new KeyFrame<Opacity>(bRange.Start, b.InitialValue, HoldEasing.Instance));
                 }
 
                 foreach (var kf in b.KeyFrames)
@@ -460,7 +326,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
             }
             else
             {
-                mergedKeyFrames.Add(new KeyFrame<Opacity>(bRange.InPoint, b.InitialValue, HoldEasing.Instance));
+                mergedKeyFrames.Add(new KeyFrame<Opacity>(bRange.Start, b.InitialValue, HoldEasing.Instance));
             }
 
             // Ensure that keyframes are in correct order!
@@ -636,7 +502,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
             return Result<ShapeLayerContent>.Failed;
         }
 
-        bool MakeUberOptimizerPass(List<LayerGroup> layers)
+        bool MakeOptimizerPass(List<LayerGroup> layers)
         {
             LayersGraph graph = new LayersGraph(layers);
             graph.MergeStep((Layer a, Layer b, bool ignoreParent) => MergeLayers(a, b, ignoreParent));
@@ -652,34 +518,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
             return false;
         }
 
-        LayerArgs CopyArgs(Layer layer)
-        {
-            return new LayerArgs
-            {
-                Name = layer.Name,
-                Index = layer.Index,
-                Parent = layer.Parent,
-                IsHidden = layer.IsHidden,
-                Transform = layer.Transform,
-                TimeStretch = layer.TimeStretch,
-                StartFrame = layer.InPoint,
-                InFrame = layer.InPoint,
-                OutFrame = layer.OutPoint,
-                BlendMode = layer.BlendMode,
-                Is3d = layer.Is3d,
-                AutoOrient = layer.AutoOrient,
-                LayerMatteType = layer.LayerMatteType,
-                Effects = layer.Effects,
-                Masks = layer.Masks,
-            };
-        }
-
         LayerArgs CopyArgsAndClamp(Layer layer, Range range)
         {
-            var args = CopyArgs(layer);
+            var args = layer.CopyArgs();
 
-            args.InFrame = Math.Clamp(args.InFrame, range.InPoint, range.OutPoint - 1e-6);
-            args.OutFrame = Math.Clamp(args.OutFrame, range.InPoint + 1e-6, range.OutPoint);
+            args.InFrame = Math.Clamp(args.InFrame, range.Start, range.End - 1e-6);
+            args.OutFrame = Math.Clamp(args.OutFrame, range.Start + 1e-6, range.End);
 
             return args;
         }
@@ -761,12 +605,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                 bMapping.RemapLayer(layer);
             }
 
-            var aLayerGroups = LayerGroup.LayersToLayerGroups(aLayers, (Layer mainLayer, Layer? matteLayer) => {
-                return mainLayer.OutPoint < aParentRange.OutPoint;
+            var aLayerGroups = LayerGroup.LayersToLayerGroups(aLayers, (Layer mainLayer, Layer? matteLayer) =>
+            {
+                return mainLayer.OutPoint < aParentRange.End;
             });
 
-            var bLayerGroups = LayerGroup.LayersToLayerGroups(bLayers, (Layer mainLayer, Layer? matteLayer) => {
-                return mainLayer.InPoint > bParentRange.InPoint;
+            var bLayerGroups = LayerGroup.LayersToLayerGroups(bLayers, (Layer mainLayer, Layer? matteLayer) =>
+            {
+                return mainLayer.InPoint > bParentRange.Start;
             });
 
             var layerGroups = new List<LayerGroup>();
@@ -774,7 +620,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
             layerGroups.AddRange(bLayerGroups);
 
             // Optimize while we can.
-            while (MakeUberOptimizerPass(layerGroups))
+            while (MakeOptimizerPass(layerGroups))
             {
                 // Keep optimizing!
             }
@@ -881,14 +727,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                 return Result<ShapeLayer>.Failed;
             }
 
-            var transformMergeRes = MergeTransform(a.Transform, Range.ForLayer(a), b.Transform, Range.ForLayer(b));
+            var transformMergeRes = MergeTransform(a.Transform, Range.GetForLayer(a), b.Transform, Range.GetForLayer(b));
 
             if (!transformMergeRes.Success)
             {
                 return Result<ShapeLayer>.Failed;
             }
 
-            var args = CopyArgs(a);
+            var args = a.CopyArgs();
 
             args.Name = $"{a.Name} {b.Name}";
             args.OutFrame = b.OutPoint;
@@ -900,7 +746,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
 
             for (int i = 0; i < a.Contents.Count; i++)
             {
-                var res = MergeShapeLayerContents(a.Contents[i], Range.ForLayer(a), b.Contents[i], Range.ForLayer(b));
+                var res = MergeShapeLayerContents(a.Contents[i], Range.GetForLayer(a), b.Contents[i], Range.GetForLayer(b));
 
                 if (!res.Success)
                 {
@@ -916,14 +762,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
 
         Result<NullLayer> MergeNullLayers(NullLayer a, NullLayer b)
         {
-            var transformMergeRes = MergeTransform(a.Transform, Range.ForLayer(a), b.Transform, Range.ForLayer(b));
+            var transformMergeRes = MergeTransform(a.Transform, Range.GetForLayer(a), b.Transform, Range.GetForLayer(b));
 
             if (!transformMergeRes.Success)
             {
                 return Result<NullLayer>.Failed;
             }
 
-            var args = CopyArgs(a);
+            var args = a.CopyArgs();
 
             args.Name = $"{a.Name} {b.Name}";
             args.OutFrame = b.OutPoint;
@@ -950,19 +796,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
 
             double shift = b.InPoint - a.InPoint;
 
-            var aAssetShiftRes = ShiftAsset(aAsset, 0.0);
-            var bAssetShiftRes = ShiftAsset(bAsset, shift);
+            var aAssetShiftRes = ShiftUtils.ShiftAsset(aAsset, 0.0);
+            var bAssetShiftRes = ShiftUtils.ShiftAsset(bAsset, shift);
 
-            if (!bAssetShiftRes.Success || !aAssetShiftRes.Success)
+            if (bAssetShiftRes is null || aAssetShiftRes is null)
             {
                 return Result<PreCompLayer>.Failed;
             }
 
             var asset = MergeAssets(
-                aAssetShiftRes.Value!,
-                Range.ForLayer(a).ShiftLeft(a.InPoint),
-                bAssetShiftRes.Value!,
-                Range.ForLayer(b).ShiftLeft(a.InPoint)
+                aAssetShiftRes!,
+                Range.GetForLayer(a).ShiftLeft(a.InPoint),
+                bAssetShiftRes!,
+                Range.GetForLayer(b).ShiftLeft(a.InPoint)
                 );
 
             if (!asset.Success)
@@ -972,14 +818,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
 
             NewAssets.Add(asset.Value!);
 
-            var transformMergeRes = MergeTransform(a.Transform, Range.ForLayer(a), b.Transform, Range.ForLayer(b), true);
+            var transformMergeRes = MergeTransform(a.Transform, Range.GetForLayer(a), b.Transform, Range.GetForLayer(b), true);
 
             if (!transformMergeRes.Success)
             {
                 return Result<PreCompLayer>.Failed;
             }
 
-            var args = CopyArgs(a);
+            var args = a.CopyArgs();
 
             args.Name = $"{a.Name} {b.Name}";
             args.OutFrame = b.OutPoint;

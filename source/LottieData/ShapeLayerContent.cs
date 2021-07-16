@@ -35,5 +35,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
             public BlendMode BlendMode { get; set; }
         }
+
+        public ShapeLayerContentArgs CopyArgs()
+        {
+            return new ShapeLayerContentArgs
+            {
+                Name = Name,
+                MatchName = MatchName,
+                BlendMode = BlendMode,
+            };
+        }
     }
 }
