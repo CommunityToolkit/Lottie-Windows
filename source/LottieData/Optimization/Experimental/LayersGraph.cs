@@ -4,6 +4,10 @@ using System.Linq;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
 {
+#if PUBLIC_LottieData
+    public
+#endif
+
     class LayersGraph
     {
         List<GraphNode> nodes;
@@ -155,7 +159,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                 mapping.SetMapping(node.MergedWithNode!.Group.MainLayer.Index, index);
 
                 // todo: add matte layer
-                layerGroups.Add((LayerGroup)node.MergedGroup!);
+                layerGroups.Add(node.MergedGroup!);
             }
             else
             {
@@ -171,7 +175,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
             }
         }
 
-        public void MergeStep(Func<Layer, Layer, bool, Result<Layer>> mergeFunc)
+        public void MergeAllPossibleLayerGroups(MergeHelper mergeHelper)
         {
             foreach (var pair in GetMergableNodes())
             {
@@ -183,44 +187,21 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                     continue;
                 }
 
-                // todo: merge matte layers
-                var mergeRes = mergeFunc(a.Group.MainLayer, b.Group.MainLayer, false);
+                var mergeRes = mergeHelper.MergeLayerGroups(a.Group, b.Group);
 
                 if (!mergeRes.Success)
                 {
                     continue;
                 }
 
-                if (a.Group.MatteLayer is not null && b.Group.MatteLayer is not null)
-                {
-                    bool canIgnoreParent = a.Group.MainLayer.Index == a.Group.MatteLayer.Parent && b.Group.MainLayer.Index == b.Group.MatteLayer.Parent;
-                    var mergeMatterRes = mergeFunc(a.Group.MatteLayer, b.Group.MatteLayer, canIgnoreParent);
-
-                    if (!mergeMatterRes.Success)
-                    {
-                        continue;
-                    }
-
-                    a.MergedGroup = b.MergedGroup = new LayerGroup(
-                        mergeRes.Value!,
-                        mergeMatterRes.Value!,
-                        true
-                    );
-                }
-                else
-                {
-                    a.MergedGroup = b.MergedGroup = new LayerGroup(
-                        mergeRes.Value!,
-                        true
-                    );
-                }
+                a.MergedGroup = b.MergedGroup = mergeRes.Value!;
 
                 a.MergedWithNode = b;
                 b.MergedWithNode = a;
             }
         }
 
-        public List<LayerGroup> GetListWithMergedLayersInOrder()
+        public List<LayerGroup> GetLayerGroups()
         {
             var visited = new HashSet<GraphNode>();
             var layers = new List<LayerGroup>();

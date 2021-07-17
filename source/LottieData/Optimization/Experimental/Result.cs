@@ -4,6 +4,10 @@ using System.Text;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
 {
+#if PUBLIC_LottieData
+    public
+#endif
+
     struct Result<T>
         where T : class
     {

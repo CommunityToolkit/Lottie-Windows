@@ -10,6 +10,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
     /// (layers with <see cref="Layer.MatteType.Invert"/> or <see cref="Layer.MatteType.Add"/>)
     /// because their order is fixed and matte layer should always go right before the main layer.
     /// </summary>
+#if PUBLIC_LottieData
+    public
+#endif
+
     class LayerGroup
     {
         /// <summary>

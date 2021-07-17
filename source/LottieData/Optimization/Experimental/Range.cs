@@ -6,6 +6,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
     /// <summary>
     /// Represents an arbitrary time range.
     /// </summary>
+#if PUBLIC_LottieData
+    public
+#endif
+
     struct Range
     {
         public double Start { get; }

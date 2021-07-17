@@ -130,7 +130,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen
                 return false;
             }
 
-            lottieComposition = new LottieCompositionOptimizer(lottieComposition!).GetOptimized();
+            lottieComposition = LottieCompositionOptimizer.GetOptimized(lottieComposition);
 
             // Validate the Lottie.
             foreach (var issue in LottieCompositionValidator.Validate(lottieComposition))
