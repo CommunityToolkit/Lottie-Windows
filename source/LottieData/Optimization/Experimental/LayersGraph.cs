@@ -96,14 +96,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
             var res = new List<MergableNodePair>();
             for (int i = 0; i < nodes.Count; i++)
             {
-                if (nodes[i].Group.Frozen)
+                if (!nodes[i].Group.CanBeMerged)
                 {
                     continue;
                 }
 
                 for (int j = i + 1; j < nodes.Count; j++)
                 {
-                    if (nodes[j].Group.Frozen)
+                    if (!nodes[j].Group.CanBeMerged)
                     {
                         continue;
                     }

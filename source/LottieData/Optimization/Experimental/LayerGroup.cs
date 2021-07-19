@@ -28,25 +28,25 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
         public Layer? MatteLayer { get; }
 
         /// <summary>
-        /// Indicates if layer group should not be merged with other layer groups anymore.
+        /// Indicates if layer group can be merged with other layer groups.
         /// </summary>
-        public bool Frozen { get; }
+        public bool CanBeMerged { get; }
 
-        public LayerGroup(Layer mainLayer, bool frozen)
+        public LayerGroup(Layer mainLayer, bool canBeMerged)
         {
             MainLayer = mainLayer;
             MatteLayer = null;
-            Frozen = frozen;
+            CanBeMerged = canBeMerged;
         }
 
-        public LayerGroup(Layer mainLayer, Layer matteLayer, bool frozen)
+        public LayerGroup(Layer mainLayer, Layer matteLayer, bool canBeMerged)
         {
             MainLayer = mainLayer;
             MatteLayer = matteLayer;
-            Frozen = frozen;
+            CanBeMerged = canBeMerged;
         }
 
-        public static List<LayerGroup> LayersToLayerGroups(List<Layer> layers, Func<Layer, Layer?, bool> isFrozenFunc)
+        public static List<LayerGroup> LayersToLayerGroups(List<Layer> layers, Func<Layer, Layer?, bool> canBeMergedFunc)
         {
             var layerGroups = new List<LayerGroup>();
             for (int i = 0; i < layers.Count; i++)
@@ -55,13 +55,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                 {
                     var matteLayer = layers[i];
                     var mainLayer = layers[i + 1];
-                    layerGroups.Add(new LayerGroup(mainLayer, matteLayer, isFrozenFunc(mainLayer, matteLayer)));
+                    layerGroups.Add(new LayerGroup(mainLayer, matteLayer, canBeMergedFunc(mainLayer, matteLayer)));
                     i++;
                 }
                 else
                 {
                     var mainLayer = layers[i];
-                    layerGroups.Add(new LayerGroup(mainLayer, isFrozenFunc(mainLayer, null)));
+                    layerGroups.Add(new LayerGroup(mainLayer, canBeMergedFunc(mainLayer, null)));
                 }
             }
 

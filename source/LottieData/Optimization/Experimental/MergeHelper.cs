@@ -12,6 +12,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
     public
 #endif
 
+    /// <summary>
+    /// This class provides methods to merge some lottie data structures together if they are similar enough.
+    /// While merging some layers it can produce new <see cref="Asset"/>s,
+    /// all generated assets are stored in <see cref="AssetsGenerated"/> field.
+    /// </summary>
     class MergeHelper
     {
         public List<Asset> AssetsGenerated { get; } = new List<Asset>();
@@ -559,14 +564,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                 bMapping.RemapLayer(layer);
             }
 
-            var aLayerGroups = LayerGroup.LayersToLayerGroups(aLayers, (Layer mainLayer, Layer? matteLayer) =>
+            var aLayerGroups = LayerGroup.LayersToLayerGroups(aLayers, canBeMergedFunc: (Layer mainLayer, Layer? matteLayer) =>
             {
-                return mainLayer.OutPoint < aParentRange.End;
+                return mainLayer.OutPoint >= aParentRange.End;
             });
 
-            var bLayerGroups = LayerGroup.LayersToLayerGroups(bLayers, (Layer mainLayer, Layer? matteLayer) =>
+            var bLayerGroups = LayerGroup.LayersToLayerGroups(bLayers, canBeMergedFunc: (Layer mainLayer, Layer? matteLayer) =>
             {
-                return mainLayer.InPoint > bParentRange.Start;
+                return mainLayer.InPoint <= bParentRange.Start;
             });
 
             var layerGroups = new List<LayerGroup>();
@@ -631,7 +636,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
 
         public Result<LayerGroup> MergeLayerGroups(LayerGroup a, LayerGroup b)
         {
-            if (a.Frozen || b.Frozen)
+            if (!a.CanBeMerged || !b.CanBeMerged)
             {
                 return Result<LayerGroup>.Failed;
             }
@@ -645,7 +650,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
 
             if (a.MatteLayer is null && b.MatteLayer is null)
             {
-                return new Result<LayerGroup>(new LayerGroup(mainLayerMergeRes.Value!, frozen: true));
+                return new Result<LayerGroup>(new LayerGroup(mainLayerMergeRes.Value!, canBeMerged: false));
             }
 
             if (a.MatteLayer is null || b.MatteLayer is null)
@@ -662,7 +667,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                 return Result<LayerGroup>.Failed;
             }
 
-            return new Result<LayerGroup>(new LayerGroup(mainLayerMergeRes.Value!, matteLayerMergeRes.Value!, frozen: true));
+            return new Result<LayerGroup>(new LayerGroup(mainLayerMergeRes.Value!, matteLayerMergeRes.Value!, canBeMerged: false));
         }
 
         /// <summary>
