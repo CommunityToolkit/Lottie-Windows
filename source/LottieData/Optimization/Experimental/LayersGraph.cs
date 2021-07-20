@@ -8,6 +8,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
     public
 #endif
 
+    /// <summary>
+    /// Represents directed acyclic graph of layer groups.
+    /// Node1 is child of Node2 iff they have time ranges that intersect and Node1 goes after Node2 in z-order.
+    /// </summary>
     class LayersGraph
     {
         List<GraphNode> nodes;
@@ -18,8 +22,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
 
             public List<GraphNode> Parents { get; }
 
+            /// <summary>
+            /// If not null then this node was merged with another node and wee should consider them as one node now.
+            /// </summary>
             public GraphNode? MergedWithNode { get; set; }
 
+            /// <summary>
+            /// If this node was merged with another node then this field will contain result of merging
+            /// their layer groups together. Note: MergedGroup and MergedWithNode.MergedGroup are always equal.
+            /// </summary>
             public LayerGroup? MergedGroup { get; set; }
 
             public GraphNode(LayerGroup group)
@@ -35,13 +46,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                 Parents.Add(parent);
             }
 
-            public bool IsChildOf(GraphNode node, HashSet<GraphNode>? visited = null)
+            public bool IsChildOf(GraphNode node)
             {
-                if (visited is null)
-                {
-                    visited = new HashSet<GraphNode>();
-                }
+                return IsChildOf(node, new HashSet<GraphNode>());
+            }
 
+            private bool IsChildOf(GraphNode node, HashSet<GraphNode> visited)
+            {
                 if (visited.Contains(node))
                 {
                     return false;
@@ -70,10 +81,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                 var node = new GraphNode(group);
                 var range = Range.GetForLayer(group.MainLayer);
 
-                var reversedNodes = nodes.Select(v => v).ToList();
-                reversedNodes.Reverse();
-                foreach (var other in reversedNodes)
+                // Loop over already existing nodes in reverse. It helps reduce number of
+                // parent links that we generate, otherwise it will produce transitive closure of this graph
+                // (each node will have links to all direct and undirect parents)
+                foreach (var other in nodes.Select(v => v).Reverse().ToList())
                 {
+                    // TODO: Probably we should also check MatteLayer ranges here too.
                     if (!node.IsChildOf(other) && Range.GetForLayer(other.Group.MainLayer).Intersect(range))
                     {
                         node.AddParent(other);
@@ -84,16 +97,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
             }
         }
 
-        struct MergableNodePair
+        List<Tuple<GraphNode, GraphNode>> GetCandidatesForMerging()
         {
-            public GraphNode First { get; set; }
-
-            public GraphNode Second { get; set; }
-        }
-
-        List<MergableNodePair> GetMergableNodes()
-        {
-            var res = new List<MergableNodePair>();
+            var candidates = new List<Tuple<GraphNode, GraphNode>>();
             for (int i = 0; i < nodes.Count; i++)
             {
                 if (!nodes[i].Group.CanBeMerged)
@@ -110,14 +116,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
 
                     if (!nodes[i].IsChildOf(nodes[j]) && !nodes[j].IsChildOf(nodes[i]))
                     {
-                        res.Add(new MergableNodePair { First = nodes[i], Second = nodes[j] });
+                        candidates.Add(new Tuple<GraphNode, GraphNode>(nodes[i], nodes[j]));
                     }
                 }
             }
 
-            return res;
+            return candidates;
         }
 
+        /// <summary>
+        /// Simple depth-first search for topological sorting.
+        /// </summary>
         void WalkGraph(GraphNode node, HashSet<GraphNode> visited, List<LayerGroup> layerGroups, LayersIndexMapper mapping, LayersIndexMapper.IndexGenerator generator)
         {
             if (visited.Contains(node))
@@ -127,9 +136,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
 
             visited.Add(node);
 
+            // If this node is merged with another node then we mark it as visited too.
             if (node.MergedWithNode is not null)
             {
-                visited.Add((GraphNode)node.MergedWithNode!);
+                visited.Add(node.MergedWithNode!);
             }
 
             foreach (var parent in node.Parents)
@@ -147,6 +157,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
 
             if (node.MergedGroup is not null)
             {
+                // Remap indexes for matte layers.
                 if (node.Group.MatteLayer is not null)
                 {
                     int matteIndex = generator.GenerateIndex();
@@ -154,33 +165,39 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                     mapping.SetMapping(node.MergedWithNode!.Group.MatteLayer!.Index, matteIndex);
                 }
 
+                // Remap indexes for main layers.
                 int index = generator.GenerateIndex();
                 mapping.SetMapping(node.Group.MainLayer.Index, index);
                 mapping.SetMapping(node.MergedWithNode!.Group.MainLayer.Index, index);
 
-                // todo: add matte layer
+                // Add merged layer group of current node to the result.
                 layerGroups.Add(node.MergedGroup!);
             }
             else
             {
+                // Remap indexes for matte layers.
                 if (node.Group.MatteLayer is not null)
                 {
                     mapping.SetMapping(node.Group.MatteLayer!.Index, generator.GenerateIndex());
                 }
 
+                // Remap indexes for main layers.
                 mapping.SetMapping(node.Group.MainLayer.Index, generator.GenerateIndex());
 
-                // todo: add matte layer
+                // Add layer group of current node to the result.
                 layerGroups.Add(node.Group);
             }
         }
 
+        /// <summary>
+        /// Merge all layer groups that we can merge while preserving the z-order of layers that overlap in time.
+        /// </summary>
         public void MergeAllPossibleLayerGroups(MergeHelper mergeHelper)
         {
-            foreach (var pair in GetMergableNodes())
+            foreach (var pair in GetCandidatesForMerging())
             {
-                var a = pair.First;
-                var b = pair.Second;
+                var a = pair.Item1;
+                var b = pair.Item2;
 
                 if (a.MergedWithNode is not null || b.MergedWithNode is not null)
                 {
@@ -201,29 +218,25 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
             }
         }
 
+        /// <summary>Returns list of all layer groups in correct z-order (Takes into account the fact that some of them are merged).</summary>
+        /// <returns>List of all layer groups in correct z-order.</returns>
         public List<LayerGroup> GetLayerGroups()
         {
             var visited = new HashSet<GraphNode>();
-            var layers = new List<LayerGroup>();
+            var layerGroups = new List<LayerGroup>();
 
             var mapping = new LayersIndexMapper();
             var generator = new LayersIndexMapper.IndexGenerator();
 
+            // Topological sorting.
             foreach (var node in nodes)
             {
-                WalkGraph(node, visited, layers, mapping, generator);
+                WalkGraph(node, visited, layerGroups, mapping, generator);
             }
 
-            foreach (var layer in layers)
-            {
-                mapping.RemapLayer(layer.MainLayer);
-                if (layer.MatteLayer is not null)
-                {
-                    mapping.RemapLayer(layer.MatteLayer!);
-                }
-            }
+            layerGroups = layerGroups.Select(layerGroup => mapping.RemapLayerGroup(layerGroup)).ToList();
 
-            return layers;
+            return layerGroups;
         }
     }
 }

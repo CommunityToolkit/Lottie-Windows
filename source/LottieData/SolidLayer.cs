@@ -31,5 +31,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
         /// <inheritdoc/>
         public override LayerType Type => LayerType.Solid;
+
+        public override Layer CopyAndChangeIndices(int index, int? parentIndex)
+        {
+            return new SolidLayer(CopyArgsAndChangeIndices(index, parentIndex), Width, Height, Color);
+        }
     }
 }

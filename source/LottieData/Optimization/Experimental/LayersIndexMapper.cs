@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
 {
@@ -23,15 +24,29 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
             return indexMapping[oldIndex];
         }
 
-        public void RemapLayer(Layer layer)
+        public Layer RemapLayer(Layer layer)
         {
-            // TODO: create layer copy instad of assigning new index(!)
-            layer.Index = GetMapping(layer.Index);
-            if (layer.Parent is not null)
+            return layer.CopyAndChangeIndices(GetMapping(layer.Index), layer.Parent is null ? null : GetMapping((int)layer.Parent));
+        }
+
+        public List<Layer> RemapLayers(List<Layer> layers)
+        {
+            return layers.Select(layer => RemapLayer(layer)).ToList();
+        }
+
+        public LayerGroup RemapLayerGroup(LayerGroup layerGroup)
+        {
+            if (layerGroup.MatteLayer is null)
             {
-                // TODO: same as above(!)
-                layer.Parent = GetMapping((int)layer.Parent);
+                return new LayerGroup(RemapLayer(layerGroup.MainLayer), layerGroup.CanBeMerged);
             }
+
+            return new LayerGroup(RemapLayer(layerGroup.MainLayer), RemapLayer(layerGroup.MatteLayer), layerGroup.CanBeMerged);
+        }
+
+        public List<LayerGroup> RemapLayerGroups(List<LayerGroup> layerGroups)
+        {
+            return layerGroups.Select(lyerGroup => RemapLayerGroup(lyerGroup)).ToList();
         }
 
         public class IndexGenerator

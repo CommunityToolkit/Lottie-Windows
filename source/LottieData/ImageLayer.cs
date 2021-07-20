@@ -24,5 +24,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
         /// <inheritdoc/>
         public override LayerType Type => LayerType.Image;
+
+        public override Layer CopyAndChangeIndices(int index, int? parentIndex)
+        {
+            return new ImageLayer(CopyArgsAndChangeIndices(index, parentIndex), RefId);
+        }
     }
 }

@@ -44,7 +44,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Optimization\Experimental\LottieCompositionOptimizer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Optimization\Optimizer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Optimization\Experimental\Range.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Optimization\Experimental\Result.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Optimization\Experimental\MergeResult.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Path.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Polystar.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PreCompLayer.cs" />

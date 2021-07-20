@@ -8,7 +8,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
     public
 #endif
 
-    struct Result<T>
+    struct MergeResult<T>
         where T : class
     {
         /// <summary>
@@ -26,18 +26,18 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
         /// </summary>
         public double Score { get; }
 
-        public Result(T? merged, double score = 0.0)
+        public MergeResult(T? merged, double score = 0.0)
         {
             Value = merged;
             Score = score;
         }
 
-        public static Result<T> Failed => new Result<T>(null);
+        public static MergeResult<T> Failed => new MergeResult<T>(null);
 
-        public static Result<T> From<TOther>(Result<TOther> other)
+        public static MergeResult<T> From<TOther>(MergeResult<TOther> other)
             where TOther : class, T
         {
-            return new Result<T>(other.Value, other.Score);
+            return new MergeResult<T>(other.Value, other.Score);
         }
     }
 }

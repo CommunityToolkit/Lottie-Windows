@@ -46,7 +46,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// <summary>
         /// Gets the index used to uniquely identify a <see cref="Layer"/> within the owning <see cref="LayerCollection"/>.
         /// </summary>
-        internal int Index { get; set; }
+        internal int Index { get; }
 
         /// <summary>
         /// Gets the frame at which this <see cref="Layer"/> becomes visible. <see cref="OutPoint"/>.
@@ -73,7 +73,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// Gets the index that identifies the index of the <see cref="Layer"/> from which transforms are inherited,
         /// or null if no transforms are inherited.
         /// </summary>
-        public int? Parent { get; set; }
+        public int? Parent { get; }
 
         /// <summary>
         /// Gets the frame at which this <see cref="Layer"/> starts playing. May be negative.
@@ -145,6 +145,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             };
         }
 
+        protected LayerArgs CopyArgsAndChangeIndices(int index, int? parentIndex)
+        {
+            var args = CopyArgs();
+            args.Index = index;
+            args.Parent = parentIndex;
+            return args;
+        }
+
         public enum LayerType
         {
             PreComp,
@@ -161,5 +169,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             Add,
             Invert,
         }
+
+        public abstract Layer CopyAndChangeIndices(int index, int? parentIndex);
     }
 }

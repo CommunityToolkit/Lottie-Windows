@@ -27,5 +27,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
         /// <inheritdoc/>
         public override LayerType Type => LayerType.Shape;
+
+        public override Layer CopyAndChangeIndices(int index, int? parentIndex = null)
+        {
+            return new ShapeLayer(CopyArgsAndChangeIndices(index, parentIndex), Contents);
+        }
     }
 }

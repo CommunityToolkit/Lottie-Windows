@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
@@ -82,7 +83,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                 layers.Add(layerGroup.MainLayer);
             }
 
-            // TODO: ensure that indexing is aligned with order of the layers
+            // Ensure correct order of indices.
+            for (int i = 0; i + 1 < layers.Count; i++)
+            {
+                Debug.Assert(layers[i].Index < layers[i + 1].Index, "Indexes must be sorted");
+            }
+
             return layers;
         }
     }

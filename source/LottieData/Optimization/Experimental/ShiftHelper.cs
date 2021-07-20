@@ -42,7 +42,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                 return v.IsAnimated ? new AnimatableVector3(v.KeyFrames) : new AnimatableVector3(v.InitialValue);
             }
 
-            Debug.Assert(a is AnimatableXYZ, "There are only AnimatableXYZ and AnimatableVector3 implementations");
+            Debug.Assert(a is AnimatableXYZ, $"There are only {typeof(AnimatableXYZ)} and {typeof(AnimatableVector3)} implementations");
 
             var aXYZ = (AnimatableXYZ)a;
             var resX = ShiftAnimatable(aXYZ.X, shift);
@@ -60,7 +60,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                 return v.IsAnimated ? new AnimatableVector2(v.KeyFrames) : new AnimatableVector2(v.InitialValue);
             }
 
-            Debug.Assert(a is AnimatableXY, "There are only AnimatableXY and AnimatableVector2 implementations");
+            Debug.Assert(a is AnimatableXY, $"There are only {typeof(AnimatableXY)} and {typeof(AnimatableVector2)} implementations");
 
             var aXY = (AnimatableXY)a;
             var resX = ShiftAnimatable(aXY.X, shift);
@@ -93,6 +93,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                 ellipse.DrawingDirection,
                 ShiftIAnimatableVector3(ellipse.Position, shift),
                 ShiftIAnimatableVector3(ellipse.Diameter, shift)
+                );
+        }
+
+        Rectangle ShiftRectangle(Rectangle rectangle, double shift)
+        {
+            return new Rectangle(
+                rectangle.CopyArgs(),
+                rectangle.DrawingDirection,
+                ShiftIAnimatableVector3(rectangle.Position, shift),
+                ShiftIAnimatableVector3(rectangle.Size, shift),
+                ShiftAnimatable(rectangle.Roundness, shift)
                 );
         }
 
@@ -141,6 +152,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                     return ShiftPath((Path)a, shift);
                 case ShapeContentType.Ellipse:
                     return ShiftEllipse((Ellipse)a, shift);
+                case ShapeContentType.Rectangle:
+                    return ShiftRectangle((Rectangle)a, shift);
                 case ShapeContentType.SolidColorFill:
                     return ShiftSolidColorFill((SolidColorFill)a, shift);
                 case ShapeContentType.LinearGradientFill:
