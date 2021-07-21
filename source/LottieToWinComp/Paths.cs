@@ -475,23 +475,26 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return new BezierSegment(cp0, cp0 + ((cp1 - cp0) * 0.55), cp2 + ((cp1 - cp2) * 0.55), cp2);
         }
 
-        // The way this function works is it detects if two segments form a corner (if they do not have smooth connection)
-        // Then it duplicates this point (shared by two segments) and moves newly generated points in different directions
-        // for "radius" pixels along the segment.
-        // After that we are joining both new points with a bezier curve to make the corner look rounded.
-        //
-        // There are 3 possible cases:
-        // 1. When the segment is curved from both sides, then we can just keep it as it is
-        // 2. When the segment is not curved from both sides, then we can make two rounded corners, from both ends.
-        // 3. When the segment curved from one side (begin or end) we are making only one rounded corner.
-        //
-        // In order to make a rounded corner we also need two points on segments next to the current segment.
-        // In this algortihm we are processing segments one by one, and passing one point from one segment to another,
-        // so that currently processed segment can create rounded corner using this point, and pass new point
-        // to the next segment, so that it can create next rounded corner and so on.
-        //
-        // Use optimizeNumberOfPoints = false if you need to keep the number of points constant, it can be needed
-        // for animated path.
+        /// <summary>
+        /// The way this function works is it detects if two segments form a corner (if they do not have smooth connection)
+        /// Then it duplicates this point (shared by two segments) and moves newly generated points in different directions
+        /// for "radius" pixels along the segment.
+        /// After that we are joining both new points with a bezier curve to make the corner look rounded.
+        ///
+        /// There are 3 possible cases:
+        /// 1. When the segment is curved from both sides, then we can just keep it as it is
+        /// 2. When the segment is not curved from both sides, then we can make two rounded corners, from both ends.
+        /// 3. When the segment curved from one side (begin or end) we are making only one rounded corner.
+        ///
+        /// In order to make a rounded corner we also need two points on segments next to the current segment.
+        /// In this algortihm we are processing segments one by one, and passing one point from one segment to another,
+        /// so that currently processed segment can create rounded corner using this point, and pass new point
+        /// to the next segment, so that it can create next rounded corner and so on.
+        /// </summary>
+        /// <param name="pathGeometry">Path.</param>
+        /// <param name="radius">Radius of corners.</param>
+        /// <param name="optimizeNumberOfPoints">Use optimizeNumberOfPoints = false if you need to keep the number of points constant,
+        /// it can be needed for animated path.</param>
         static PathGeometry MakeRoundCorners(PathGeometry pathGeometry, double radius, bool optimizeNumberOfPoints = true)
         {
             // There is no corners if we have less than two segments.
@@ -562,6 +565,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     {
                         if (optimizeNumberOfPoints)
                         {
+                            // Middle of the segment (ControlPoint0; ControlPoint3)
                             point0 = point1 = (segment.ControlPoint0 + segment.ControlPoint3) * 0.5;
                         }
                         else
@@ -570,6 +574,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                             float halfMinusEpsilon = 1 - halfPlusEpsilon;
 
                             // Generate two points instead of one, but place them close to each other.
+                            // These two points are placed on the segment (ControlPoint0; ControlPoint3)
+                            // Almost in the middle but point0 is a bit closer to the ControlPoint0 and
+                            // point1 is a bit closer po ControlPoint3.
                             point0 = (segment.ControlPoint0 * halfPlusEpsilon) + (segment.ControlPoint3 * halfMinusEpsilon);
                             point1 = (segment.ControlPoint0 * halfMinusEpsilon) + (segment.ControlPoint3 * halfPlusEpsilon);
                         }
