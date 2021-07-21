@@ -46,5 +46,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         public override ShapeContentType ContentType => ShapeContentType.RadialGradientStroke;
 
         public override ShapeStrokeKind StrokeKind => ShapeStrokeKind.RadialGradient;
+
+        public override ShapeLayerContent WithTimeOffset(double offset)
+        {
+            return new RadialGradientStroke(
+                CopyArgs(),
+                Opacity.WithTimeOffset(offset),
+                StrokeWidth.WithTimeOffset(offset),
+                CapType,
+                JoinType,
+                MiterLimit,
+                StartPoint.WithTimeOffset(offset),
+                EndPoint.WithTimeOffset(offset),
+                GradientStops.WithTimeOffset(offset),
+                HighlightLength.WithTimeOffset(offset),
+                HighlightDegrees.WithTimeOffset(offset)
+                );
+        }
     }
 }

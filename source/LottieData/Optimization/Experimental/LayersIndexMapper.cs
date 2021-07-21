@@ -19,14 +19,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
             indexMapping[oldIndex] = newIndex;
         }
 
-        public int GetMapping(int oldIndex)
+        private int GetMapping(int oldIndex)
         {
             return indexMapping[oldIndex];
         }
 
-        public Layer RemapLayer(Layer layer)
+        private Layer RemapLayer(Layer layer)
         {
-            return layer.CopyAndChangeIndices(GetMapping(layer.Index), layer.Parent is null ? null : GetMapping((int)layer.Parent));
+            return layer.WithIndicesChanged(GetMapping(layer.Index), layer.Parent is null ? null : GetMapping((int)layer.Parent));
         }
 
         public List<Layer> RemapLayers(List<Layer> layers)
@@ -34,7 +34,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
             return layers.Select(layer => RemapLayer(layer)).ToList();
         }
 
-        public LayerGroup RemapLayerGroup(LayerGroup layerGroup)
+        private LayerGroup RemapLayerGroup(LayerGroup layerGroup)
         {
             if (layerGroup.MatteLayer is null)
             {

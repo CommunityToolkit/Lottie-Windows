@@ -44,5 +44,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
         /// <inheritdoc/>
         public override ShapeContentType ContentType => ShapeContentType.RadialGradientFill;
+
+        public override ShapeLayerContent WithTimeOffset(double offset)
+        {
+            return new RadialGradientFill(
+                CopyArgs(),
+                FillType,
+                Opacity.WithTimeOffset(offset),
+                StartPoint.WithTimeOffset(offset),
+                EndPoint.WithTimeOffset(offset),
+                GradientStops.WithTimeOffset(offset),
+                HighlightLength.WithTimeOffset(offset),
+                HighlightDegrees.WithTimeOffset(offset)
+                );
+        }
     }
 }

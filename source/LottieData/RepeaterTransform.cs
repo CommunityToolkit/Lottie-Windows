@@ -35,5 +35,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// Gets the opacity of the last copy of the original shape. Only used by <see cref="Repeater"/>.
         /// </summary>
         public Animatable<Opacity> EndOpacity { get; }
+
+        public override ShapeLayerContent WithTimeOffset(double offset)
+        {
+            return new RepeaterTransform(
+                CopyArgs(),
+                Anchor.WithTimeOffset(offset),
+                Position.WithTimeOffset(offset),
+                ScalePercent.WithTimeOffset(offset),
+                Rotation.WithTimeOffset(offset),
+                Opacity.WithTimeOffset(offset),
+                StartOpacity.WithTimeOffset(offset),
+                EndOpacity.WithTimeOffset(offset)
+                );
+        }
     }
 }

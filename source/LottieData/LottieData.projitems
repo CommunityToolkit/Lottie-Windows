@@ -38,12 +38,11 @@
     <Compile Include="$(MSBuildThisFileDirectory)Optimization\Experimental\LayerGroup.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Optimization\Experimental\LayersGraph.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Optimization\Experimental\MergeHelper.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Optimization\Experimental\ShiftHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Optimization\GradientStopOptimizer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Optimization\Experimental\LayersIndexMapper.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Optimization\Experimental\LottieCompositionOptimizer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Optimization\Experimental\LottieMergeOptimizer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Optimization\Optimizer.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Optimization\Experimental\Range.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Optimization\Experimental\TimeRange.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Optimization\Experimental\MergeResult.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Path.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Polystar.cs" />

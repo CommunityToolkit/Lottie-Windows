@@ -28,9 +28,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// <inheritdoc/>
         public override LayerType Type => LayerType.Shape;
 
-        public override Layer CopyAndChangeIndices(int index, int? parentIndex = null)
+        public override Layer WithIndicesChanged(int index, int? parentIndex = null)
         {
-            return new ShapeLayer(CopyArgsAndChangeIndices(index, parentIndex), Contents);
+            return new ShapeLayer(GetArgsWithIndicesChanged(index, parentIndex), Contents);
+        }
+
+        public override Layer WithTimeOffset(double shiftFrames)
+        {
+            return new ShapeLayer(GetArgsWithTimeOffset(shiftFrames), Contents.Select(content => content.WithTimeOffset(shiftFrames)));
         }
     }
 }

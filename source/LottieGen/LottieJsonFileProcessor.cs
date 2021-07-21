@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -130,7 +131,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen
                 return false;
             }
 
-            lottieComposition = LottieCompositionOptimizer.GetOptimized(lottieComposition);
+            if (!_options.DisableLottieMergeOptimizer)
+            {
+                Stopwatch stopWatch = new Stopwatch();
+                stopWatch.Start();
+                lottieComposition = LottieMergeOptimizer.Optimize(lottieComposition);
+                stopWatch.Stop();
+                _reporter.WriteInfo($"LottieMergeOptimizer took {stopWatch.Elapsed.Milliseconds}ms for file:");
+                _reporter.WriteInfo(InfoType.FilePath, $" {_jsonFilePath}");
+            }
 
             // Validate the Lottie.
             foreach (var issue in LottieCompositionValidator.Validate(lottieComposition))

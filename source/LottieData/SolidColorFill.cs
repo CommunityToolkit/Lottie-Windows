@@ -27,5 +27,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
         /// <inheritdoc/>
         public override ShapeContentType ContentType => ShapeContentType.SolidColorFill;
+
+        public override ShapeLayerContent WithTimeOffset(double offset)
+        {
+            return new SolidColorFill(CopyArgs(), FillType, Opacity.WithTimeOffset(offset), Color.WithTimeOffset(offset));
+        }
     }
 }

@@ -64,7 +64,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
         /// <param name="strict">If you use strict=true then it is guaranteed that opacity will be set to 0% for any
         /// time point outside of visible ranges. Otherwise it is not guaranteed which values will resulting transform have.</param>
         /// <returns>Result of merging.</returns>
-        MergeResult<Transform> MergeTransform(Transform a, Range aRange, Transform b, Range bRange, bool strict = false)
+        MergeResult<Transform> MergeTransform(Transform a, TimeRange aRange, Transform b, TimeRange bRange, bool strict = false)
         {
             if (a.BlendMode != b.BlendMode)
             {
@@ -94,7 +94,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
             return new MergeResult<Transform>(new Transform(args, anchor.Value!, position.Value!, scalePercent.Value!, rotation.Value!, opacity.Value!));
         }
 
-        MergeResult<IAnimatableVector3> MergeIAnimatableVector3(IAnimatableVector3 a, Range aRange, IAnimatableVector3 b, Range bRange)
+        MergeResult<IAnimatableVector3> MergeIAnimatableVector3(IAnimatableVector3 a, TimeRange aRange, IAnimatableVector3 b, TimeRange bRange)
         {
             if (a is AnimatableVector3 && b is AnimatableVector3)
             {
@@ -132,7 +132,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
             return MergeResult<IAnimatableVector3>.Failed;
         }
 
-        MergeResult<IAnimatableVector2> MergeIAnimatableVector2(IAnimatableVector2 a, Range aRange, IAnimatableVector2 b, Range bRange)
+        MergeResult<IAnimatableVector2> MergeIAnimatableVector2(IAnimatableVector2 a, TimeRange aRange, IAnimatableVector2 b, TimeRange bRange)
         {
             if (a is AnimatableVector2 && b is AnimatableVector2)
             {
@@ -178,7 +178,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
         /// <param name="b">Second animatable.</param>
         /// <param name="bRange">Visible range for the second animatable.</param>
         /// <returns>Result of merging two animatables.</returns>
-        MergeResult<Animatable<T>> MergeAnimatable<T>(Animatable<T> a, Range aRange, Animatable<T> b, Range bRange)
+        MergeResult<Animatable<T>> MergeAnimatable<T>(Animatable<T> a, TimeRange aRange, Animatable<T> b, TimeRange bRange)
             where T : IEquatable<T>
         {
             if (!a.IsAnimated && !b.IsAnimated)
@@ -238,7 +238,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
         /// <param name="b">Second animatable.</param>
         /// <param name="bRange">Visible range for the second animatable.</param>
         /// <returns>Result of merging two animatable opacities.</returns>
-        MergeResult<Animatable<Opacity>> MergeAnimatableOpacityStrict(Animatable<Opacity> a, Range aRange, Animatable<Opacity> b, Range bRange)
+        MergeResult<Animatable<Opacity>> MergeAnimatableOpacityStrict(Animatable<Opacity> a, TimeRange aRange, Animatable<Opacity> b, TimeRange bRange)
         {
             Debug.Assert(!aRange.Intersect(bRange), "Ranges should not intersect");
 
@@ -316,7 +316,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
             return new MergeResult<Animatable<Opacity>>(new Animatable<Opacity>(mergedKeyFrames));
         }
 
-        MergeResult<ShapeGroup> MergeShapeGroup(ShapeGroup a, Range aRange, ShapeGroup b, Range bRange)
+        MergeResult<ShapeGroup> MergeShapeGroup(ShapeGroup a, TimeRange aRange, ShapeGroup b, TimeRange bRange)
         {
             if (a.BlendMode != b.BlendMode)
             {
@@ -346,7 +346,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
             return new MergeResult<ShapeGroup>(new ShapeGroup(args, contents));
         }
 
-        MergeResult<Path> MergePaths(Path a, Range aRange, Path b, Range bRange)
+        MergeResult<Path> MergePaths(Path a, TimeRange aRange, Path b, TimeRange bRange)
         {
             if (a.BlendMode != b.BlendMode || a.DrawingDirection != b.DrawingDirection)
             {
@@ -370,7 +370,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
             return new MergeResult<Path>(new Path(args, a.DrawingDirection, geometryData.Value!));
         }
 
-        MergeResult<Ellipse> MergeEllipses(Ellipse a, Range aRange, Ellipse b, Range bRange)
+        MergeResult<Ellipse> MergeEllipses(Ellipse a, TimeRange aRange, Ellipse b, TimeRange bRange)
         {
             if (a.BlendMode != b.BlendMode || a.DrawingDirection != b.DrawingDirection)
             {
@@ -395,7 +395,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
             return new MergeResult<Ellipse>(new Ellipse(args, a.DrawingDirection, positionMergeRes.Value!, diameterMergeRes.Value!));
         }
 
-        MergeResult<LinearGradientFill> MergeLinearGradientFills(LinearGradientFill a, Range aRange, LinearGradientFill b, Range bRange)
+        MergeResult<LinearGradientFill> MergeLinearGradientFills(LinearGradientFill a, TimeRange aRange, LinearGradientFill b, TimeRange bRange)
         {
             if (a.BlendMode != b.BlendMode || a.FillType != b.FillType)
             {
@@ -422,7 +422,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
             return new MergeResult<LinearGradientFill>(new LinearGradientFill(args, a.FillType, opacity.Value!, startPoint.Value!, endPoint.Value!, gradientStops.Value!));
         }
 
-        MergeResult<SolidColorFill> MergeSolidColorFills(SolidColorFill a, Range aRange, SolidColorFill b, Range bRange)
+        MergeResult<SolidColorFill> MergeSolidColorFills(SolidColorFill a, TimeRange aRange, SolidColorFill b, TimeRange bRange)
         {
             if (a.BlendMode != b.BlendMode || a.FillType != b.FillType)
             {
@@ -451,7 +451,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
             return new MergeResult<SolidColorFill>(new SolidColorFill(args, a.FillType, opacity.Value!, color.Value!));
         }
 
-        MergeResult<ShapeLayerContent> MergeShapeLayerContents(ShapeLayerContent a, Range aRange, ShapeLayerContent b, Range bRange)
+        MergeResult<ShapeLayerContent> MergeShapeLayerContents(ShapeLayerContent a, TimeRange aRange, ShapeLayerContent b, TimeRange bRange)
         {
             if (a.ContentType != b.ContentType)
             {
@@ -477,7 +477,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
             return MergeResult<ShapeLayerContent>.Failed;
         }
 
-        LayerArgs CopyArgsAndClamp(Layer layer, Range range)
+        LayerArgs CopyArgsAndClamp(Layer layer, TimeRange range)
         {
             var args = layer.CopyArgs();
 
@@ -487,7 +487,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
             return args;
         }
 
-        Layer ClampLayer(Layer layer, Range range)
+        Layer ClampLayer(Layer layer, TimeRange range)
         {
             switch (layer.Type)
             {
@@ -529,7 +529,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
             return layer;
         }
 
-        MergeResult<LayerCollection> MergeLayerCollections(LayerCollection a, Range aParentRange, LayerCollection b, Range bParentRange)
+        MergeResult<LayerCollection> MergeLayerCollections(LayerCollection a, TimeRange aParentRange, LayerCollection b, TimeRange bParentRange)
         {
             // We need layers in Top-To-Bottom order here.
             var aLayers = a.GetLayersBottomToTop().Select(layer => ClampLayer(layer, aParentRange)).Reverse().ToList();
@@ -577,13 +577,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                 // Keep optimizing!
             }
 
+            var layers = LayerGroup.LayerGroupsToLayers(layerGroups);
+
             // Score for merging two layer collections is the number of merged layers
             // divided by number of layers in smaller collection.
-            // todo: compute layers instead of layer groups, there is a bug with search animation (??)
             double intersectionOverMinimumScore =
-                (aLayerGroups.Count + bLayerGroups.Count - layerGroups.Count) * 1.0 / Math.Min(aLayerGroups.Count, bLayerGroups.Count);
-
-            var layers = LayerGroup.LayerGroupsToLayers(layerGroups);
+                (aLayers.Count + bLayers.Count - layers.Count) * 1.0 / Math.Min(aLayers.Count, bLayers.Count);
 
             // Layers are stored in Bottom-To-Top order.
             layers.Reverse();
@@ -591,7 +590,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
             return new MergeResult<LayerCollection>(new LayerCollection(layers), intersectionOverMinimumScore);
         }
 
-        MergeResult<LayerCollectionAsset> MergeLayerCollectionAssets(LayerCollectionAsset a, Range aParentRange, LayerCollectionAsset b, Range bParentRange)
+        MergeResult<LayerCollectionAsset> MergeLayerCollectionAssets(LayerCollectionAsset a, TimeRange aParentRange, LayerCollectionAsset b, TimeRange bParentRange)
         {
             var layerCollection = MergeLayerCollections(a.Layers, aParentRange, b.Layers, bParentRange);
 
@@ -600,7 +599,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                 return MergeResult<LayerCollectionAsset>.Failed;
             }
 
-            return new MergeResult<LayerCollectionAsset>(new LayerCollectionAsset($"{a.Id} {b.Id}", layerCollection.Value!), layerCollection.Score);
+            return new MergeResult<LayerCollectionAsset>(new LayerCollectionAsset($"{a.Id} {b.Id} {AssetsGenerated.Count}", layerCollection.Value!), layerCollection.Score);
         }
 
         /// <summary>
@@ -611,7 +610,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
         /// <param name="b">Second asset.</param>
         /// <param name="bParentRange">Visible time range for the second layer. Everything that is outside of this range will be invisible.</param>
         /// <returns>Result of merging two assets.</returns>
-        MergeResult<Asset> MergeAssets(Asset a, Range aParentRange, Asset b, Range bParentRange)
+        MergeResult<Asset> MergeAssets(Asset a, TimeRange aParentRange, Asset b, TimeRange bParentRange)
         {
             if (a.Type != b.Type)
             {
@@ -725,7 +724,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                 return MergeResult<ShapeLayer>.Failed;
             }
 
-            var transformMergeRes = MergeTransform(a.Transform, Range.GetForLayer(a), b.Transform, Range.GetForLayer(b));
+            var transformMergeRes = MergeTransform(a.Transform, TimeRange.GetForLayer(a), b.Transform, TimeRange.GetForLayer(b));
 
             if (!transformMergeRes.Success)
             {
@@ -744,7 +743,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
 
             for (int i = 0; i < a.Contents.Count; i++)
             {
-                var res = MergeShapeLayerContents(a.Contents[i], Range.GetForLayer(a), b.Contents[i], Range.GetForLayer(b));
+                var res = MergeShapeLayerContents(a.Contents[i], TimeRange.GetForLayer(a), b.Contents[i], TimeRange.GetForLayer(b));
 
                 if (!res.Success)
                 {
@@ -760,7 +759,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
 
         MergeResult<NullLayer> MergeNullLayers(NullLayer a, NullLayer b)
         {
-            var transformMergeRes = MergeTransform(a.Transform, Range.GetForLayer(a), b.Transform, Range.GetForLayer(b));
+            var transformMergeRes = MergeTransform(a.Transform, TimeRange.GetForLayer(a), b.Transform, TimeRange.GetForLayer(b));
 
             if (!transformMergeRes.Success)
             {
@@ -787,28 +786,21 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
 
             var bAsset = GetAssetById(b.RefId);
 
-            if (aAsset == null || bAsset == null || aAsset == bAsset)
+            if (aAsset is not LayerCollectionAsset || bAsset is not LayerCollectionAsset || aAsset == bAsset)
             {
                 return MergeResult<PreCompLayer>.Failed;
             }
 
-            double shift = b.InPoint - a.InPoint;
+            double offset = b.InPoint - a.InPoint;
 
-            var shiftHelper = new ShiftHelper();
-
-            var aAssetShiftRes = shiftHelper.ShiftAsset(aAsset, 0.0);
-            var bAssetShiftRes = shiftHelper.ShiftAsset(bAsset, shift);
-
-            if (bAssetShiftRes is null || aAssetShiftRes is null)
-            {
-                return MergeResult<PreCompLayer>.Failed;
-            }
+            var aAssetOffset = new LayerCollectionAsset(aAsset.Id, ((LayerCollectionAsset)aAsset).Layers.WithTimeOffset(0.0));
+            var bAssetOffset = new LayerCollectionAsset(bAsset.Id, ((LayerCollectionAsset)bAsset).Layers.WithTimeOffset(offset));
 
             var asset = MergeAssets(
-                aAssetShiftRes!,
-                Range.GetForLayer(a).ShiftLeft(a.InPoint),
-                bAssetShiftRes!,
-                Range.GetForLayer(b).ShiftLeft(a.InPoint)
+                aAssetOffset!,
+                TimeRange.GetForLayer(a).ShiftLeft(a.InPoint),
+                bAssetOffset!,
+                TimeRange.GetForLayer(b).ShiftLeft(a.InPoint)
                 );
 
             if (!asset.Success)
@@ -818,7 +810,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
 
             AssetsGenerated.Add(asset.Value!);
 
-            var transformMergeRes = MergeTransform(a.Transform, Range.GetForLayer(a), b.Transform, Range.GetForLayer(b), true);
+            var transformMergeRes = MergeTransform(a.Transform, TimeRange.GetForLayer(a), b.Transform, TimeRange.GetForLayer(b), true);
 
             if (!transformMergeRes.Success)
             {

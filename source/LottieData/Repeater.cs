@@ -43,5 +43,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
         /// <inheritdoc/>
         public override ShapeContentType ContentType => ShapeContentType.Repeater;
+
+        public override ShapeLayerContent WithTimeOffset(double offset)
+        {
+            return new Repeater(
+                CopyArgs(),
+                Count.WithTimeOffset(offset),
+                Offset.WithTimeOffset(offset),
+                (RepeaterTransform)Transform.WithTimeOffset(offset)
+                );
+        }
     }
 }

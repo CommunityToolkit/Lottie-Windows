@@ -4,24 +4,24 @@
 
 #nullable enable
 
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
-using static Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Layer;
-using static Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.ShapeLayerContent;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
 {
+    /// <summary>
+    /// This optimizer is detecting similar parts of Lottie composition and if they are similar enough
+    /// it will merge them together (while preserving the look of the composition).
+    /// This optimizer works best in case of many duplicate or similar PreComp layers on top level.
+    /// For example if you have an animated icon with many states that are represented by separate precomps.
+    /// </summary>
 #if PUBLIC_LottieData
     public
 #endif
 
-    sealed class LottieCompositionOptimizer
+    sealed class LottieMergeOptimizer
     {
-        public static LottieComposition GetOptimized(LottieComposition composition)
+        public static LottieComposition Optimize(LottieComposition composition)
         {
             List<Layer> layers = composition.Layers.GetLayersBottomToTop().ToList();
 

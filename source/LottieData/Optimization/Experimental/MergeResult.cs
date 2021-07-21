@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
+﻿namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
 {
 #if PUBLIC_LottieData
     public

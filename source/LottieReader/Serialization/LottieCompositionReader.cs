@@ -288,7 +288,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                                                     layers: new LayerCollection(layers),
                                                     markers: markers);
 
-                                result = LottieCompositionOptimizer.GetOptimized(result);
+                                result = LottieMergeOptimizer.Optimize(result);
 
                                 return result;
                             }

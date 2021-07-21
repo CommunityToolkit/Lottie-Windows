@@ -41,5 +41,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         public override ShapeContentType ContentType => ShapeContentType.Rectangle;
 
         public override ShapeType ShapeType => ShapeType.Rectangle;
+
+        public override ShapeLayerContent WithTimeOffset(double offset)
+        {
+            return new Rectangle(
+                CopyArgs(),
+                DrawingDirection,
+                Position.WithTimeOffset(offset),
+                Size.WithTimeOffset(offset),
+                Roundness.WithTimeOffset(offset)
+                );
+        }
     }
 }

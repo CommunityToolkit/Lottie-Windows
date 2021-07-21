@@ -30,7 +30,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.Animatables
             => Select(vector2 => vector2 + offset);
 
         public new AnimatableVector2 WithTimeOffset(double timeOffset)
-            => timeOffset != 0 || IsAnimated
+            => timeOffset != 0 && IsAnimated
                 ? new AnimatableVector2(KeyFrames.Select(kf => kf.WithTimeOffset(timeOffset)))
                 : this;
 

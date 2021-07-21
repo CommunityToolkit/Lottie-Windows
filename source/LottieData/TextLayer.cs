@@ -25,9 +25,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// <inheritdoc/>
         public override LayerType Type => LayerType.Text;
 
-        public override Layer CopyAndChangeIndices(int index, int? parentIndex)
+        public override Layer WithIndicesChanged(int index, int? parentIndex)
         {
-            return new TextLayer(CopyArgsAndChangeIndices(index, parentIndex), RefId);
+            return new TextLayer(GetArgsWithIndicesChanged(index, parentIndex), RefId);
+        }
+
+        public override Layer WithTimeOffset(double shiftFrames)
+        {
+            return new TextLayer(GetArgsWithTimeOffset(shiftFrames), RefId);
         }
     }
 }

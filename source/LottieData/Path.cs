@@ -43,5 +43,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
                     },
                     DrawingDirection,
                     geometryData);
+
+        public override ShapeLayerContent WithTimeOffset(double offset)
+        {
+            return new Path(CopyArgs(), DrawingDirection, Data.WithTimeOffset(offset));
+        }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System;
-using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
 {
@@ -10,31 +9,31 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
     public
 #endif
 
-    struct Range
+    struct TimeRange
     {
         public double Start { get; }
 
         public double End { get; }
 
-        public bool Intersect(Range other)
+        public bool Intersect(TimeRange other)
         {
             return Math.Max(Start, other.Start) < Math.Min(End, other.End);
         }
 
-        public Range(double inPoint, double outPoint)
+        public TimeRange(double inPoint, double outPoint)
         {
             Start = inPoint;
             End = outPoint;
         }
 
-        public static Range GetForLayer(Layer layer)
+        public static TimeRange GetForLayer(Layer layer)
         {
-            return new Range(layer.InPoint, layer.OutPoint);
+            return new TimeRange(layer.InPoint, layer.OutPoint);
         }
 
-        public Range ShiftLeft(double value)
+        public TimeRange ShiftLeft(double value)
         {
-            return new Range(Start - value, End - value);
+            return new TimeRange(Start - value, End - value);
         }
     }
 }

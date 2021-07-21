@@ -41,11 +41,23 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
         public Animatable<Rotation> Rotation { get; }
 
-        public Animatable<Opacity> Opacity { get; set; }
+        public Animatable<Opacity> Opacity { get; }
 
         public bool IsAnimated => Anchor.IsAnimated || Position.IsAnimated || ScalePercent.IsAnimated || Rotation.IsAnimated || Opacity.IsAnimated;
 
         /// <inheritdoc/>
         public override ShapeContentType ContentType => ShapeContentType.Transform;
+
+        public override ShapeLayerContent WithTimeOffset(double offset)
+        {
+            return new Transform(
+                CopyArgs(),
+                Anchor.WithTimeOffset(offset),
+                Position.WithTimeOffset(offset),
+                ScalePercent.WithTimeOffset(offset),
+                Rotation.WithTimeOffset(offset),
+                Opacity.WithTimeOffset(offset)
+                );
+        }
     }
 }

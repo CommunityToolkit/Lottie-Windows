@@ -33,9 +33,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// <inheritdoc/>
         public override LayerType Type => LayerType.PreComp;
 
-        public override Layer CopyAndChangeIndices(int index, int? parentIndex = null)
+        public override Layer WithIndicesChanged(int index, int? parentIndex = null)
         {
-            return new PreCompLayer(CopyArgsAndChangeIndices(index, parentIndex), RefId, Width, Height);
+            return new PreCompLayer(GetArgsWithIndicesChanged(index, parentIndex), RefId, Width, Height);
+        }
+
+        public override Layer WithTimeOffset(double offset)
+        {
+            return new PreCompLayer(GetArgsWithTimeOffset(offset), RefId, Width, Height);
         }
     }
 }

@@ -19,6 +19,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen
 
         internal bool DisableCodeGenOptimizer { get; private set; }
 
+        internal bool DisableLottieMergeOptimizer { get; private set; }
+
         internal bool DisableTranslationOptimizer { get; private set; }
 
         // The parse error, or null if the parse succeeded.
@@ -83,6 +85,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen
             if (DisableCodeGenOptimizer)
             {
                 sb.Append($" -{nameof(DisableCodeGenOptimizer)}");
+            }
+
+            if (DisableLottieMergeOptimizer)
+            {
+                sb.Append($" -{nameof(DisableLottieMergeOptimizer)}");
             }
 
             if (DisableTranslationOptimizer)
@@ -183,6 +190,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen
             TargetUapVersion,
             TestMode,
             WinUIVersion,
+            DisableLottieMergeOptimizer,
         }
 
         // Returns the parsed command line. If ErrorDescription is non-null, then the parse failed.
@@ -252,7 +260,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen
                 .AddPrefixedKeyword(Keyword.Strict)
                 .AddPrefixedKeyword(Keyword.TargetUapVersion)
                 .AddPrefixedKeyword(Keyword.TestMode)
-                .AddPrefixedKeyword(Keyword.WinUIVersion);
+                .AddPrefixedKeyword(Keyword.WinUIVersion)
+                .AddPrefixedKeyword(Keyword.DisableLottieMergeOptimizer);
 
             // The last keyword recognized. This defines what the following parameter value is for,
             // or None if not expecting a parameter value.
@@ -291,6 +300,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen
                                 break;
                             case Keyword.DisableCodeGenOptimizer:
                                 DisableCodeGenOptimizer = true;
+                                break;
+                            case Keyword.DisableLottieMergeOptimizer:
+                                DisableLottieMergeOptimizer = true;
                                 break;
                             case Keyword.DisableTranslationOptimizer:
                                 DisableTranslationOptimizer = true;

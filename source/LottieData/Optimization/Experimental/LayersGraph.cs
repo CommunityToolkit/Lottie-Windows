@@ -79,7 +79,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
             foreach (var group in layerGroups)
             {
                 var node = new GraphNode(group);
-                var range = Range.GetForLayer(group.MainLayer);
+                var range = TimeRange.GetForLayer(group.MainLayer);
 
                 // Loop over already existing nodes in reverse. It helps reduce number of
                 // parent links that we generate, otherwise it will produce transitive closure of this graph
@@ -87,7 +87,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                 foreach (var other in nodes.Select(v => v).Reverse().ToList())
                 {
                     // TODO: Probably we should also check MatteLayer ranges here too.
-                    if (!node.IsChildOf(other) && Range.GetForLayer(other.Group.MainLayer).Intersect(range))
+                    if (!node.IsChildOf(other) && TimeRange.GetForLayer(other.Group.MainLayer).Intersect(range))
                     {
                         node.AddParent(other);
                     }
@@ -234,7 +234,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                 WalkGraph(node, visited, layerGroups, mapping, generator);
             }
 
-            layerGroups = layerGroups.Select(layerGroup => mapping.RemapLayerGroup(layerGroup)).ToList();
+            layerGroups = mapping.RemapLayerGroups(layerGroups);
 
             return layerGroups;
         }

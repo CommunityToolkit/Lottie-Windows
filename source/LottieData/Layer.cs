@@ -145,11 +145,21 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             };
         }
 
-        protected LayerArgs CopyArgsAndChangeIndices(int index, int? parentIndex)
+        protected LayerArgs GetArgsWithIndicesChanged(int index, int? parentIndex)
         {
             var args = CopyArgs();
             args.Index = index;
             args.Parent = parentIndex;
+            return args;
+        }
+
+        protected LayerArgs GetArgsWithTimeOffset(double shiftValue)
+        {
+            var args = CopyArgs();
+            args.Transform = (Transform)args.Transform.WithTimeOffset(shiftValue);
+            args.StartFrame += shiftValue;
+            args.InFrame += shiftValue;
+            args.OutFrame += shiftValue;
             return args;
         }
 
@@ -170,6 +180,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             Invert,
         }
 
-        public abstract Layer CopyAndChangeIndices(int index, int? parentIndex);
+        /// <summary>
+        /// Make a copy of the layer and change its index and parent index.
+        /// </summary>
+        /// <param name="index">Index to be set.</param>
+        /// <param name="parentIndex">Parent index to be set.</param>
+        /// <returns>Layer copy with changed indices.</returns>
+        public abstract Layer WithIndicesChanged(int index, int? parentIndex);
+
+        /// <summary>
+        /// Make a copy of the layer and offset all frames by some value.
+        /// </summary>
+        /// <param name="offset">Offset value.</param>
+        /// <returns>Layer copy with offsetted frames.</returns>
+        public abstract Layer WithTimeOffset(double offset);
     }
 }

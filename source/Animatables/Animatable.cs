@@ -102,7 +102,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.Animatables
         public bool IsEverNot(T value) => !IsAlways(value);
 
         public Animatable<T> WithTimeOffset(double timeOffset)
-            => timeOffset != 0 || IsAnimated
+            => timeOffset != 0 && IsAnimated
                 ? new Animatable<T>(KeyFrames.Select(kf => kf.WithTimeOffset(timeOffset)))
                 : this;
 
