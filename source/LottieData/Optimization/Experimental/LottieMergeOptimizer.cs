@@ -48,6 +48,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
             // If we merge [0; 10] and [70; 80] first, we will get [0; 80] as the result, and we will not be able to merge it with [30; 40]
             // because they intersect.
             // TODO: there is surely a better heuristic, we need more experiments to find it.
+            // TODO: Numbers here are chosen almost arbitrarily. Just made a few experiments with different values
+            // and chose numbers that showed the best results while finishing in reasonable time. Need to come up with
+            // a better way of determining those numbers.
             for (double minimalScore = 0.95; minimalScore > 0.1; minimalScore *= 0.8)
             {
                 for (double allowedDistance = 1.0; allowedDistance < maximalAllowedDistance; allowedDistance *= 2.0)
