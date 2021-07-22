@@ -174,6 +174,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen
             // Normal keywords.
             AdditionalInterface,
             DisableCodeGenOptimizer,
+            DisableLottieMergeOptimizer,
             DisableTranslationOptimizer,
             GenerateColorBindings,
             GenerateDependencyObject,
@@ -190,7 +191,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen
             TargetUapVersion,
             TestMode,
             WinUIVersion,
-            DisableLottieMergeOptimizer,
         }
 
         // Returns the parsed command line. If ErrorDescription is non-null, then the parse failed.
@@ -244,6 +244,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen
             var tokenizer = new CommandlineTokenizer<Keyword>(ambiguousValue: Keyword.Ambiguous)
                 .AddPrefixedKeyword(Keyword.AdditionalInterface)
                 .AddPrefixedKeyword(Keyword.DisableCodeGenOptimizer)
+                .AddPrefixedKeyword(Keyword.DisableLottieMergeOptimizer)
                 .AddPrefixedKeyword(Keyword.DisableTranslationOptimizer)
                 .AddPrefixedKeyword(Keyword.GenerateColorBindings)
                 .AddPrefixedKeyword(Keyword.GenerateDependencyObject)
@@ -260,8 +261,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen
                 .AddPrefixedKeyword(Keyword.Strict)
                 .AddPrefixedKeyword(Keyword.TargetUapVersion)
                 .AddPrefixedKeyword(Keyword.TestMode)
-                .AddPrefixedKeyword(Keyword.WinUIVersion)
-                .AddPrefixedKeyword(Keyword.DisableLottieMergeOptimizer);
+                .AddPrefixedKeyword(Keyword.WinUIVersion);
 
             // The last keyword recognized. This defines what the following parameter value is for,
             // or None if not expecting a parameter value.
