@@ -97,5 +97,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             // Not found.
             return null;
         }
+
+        public LayerCollection WithTimeOffset(double offset)
+        {
+            return new LayerCollection(_layers.Select(layer => layer.WithTimeOffset(offset)));
+        }
     }
 }

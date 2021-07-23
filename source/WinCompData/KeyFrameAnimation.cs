@@ -42,7 +42,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
         //       The method is inherited by the WinCompData.BooleanKeyFrameAnimation but it is not valid to call it.
         public void InsertKeyFrame(float progress, T value, CompositionEasingFunction? easing)
         {
-            if (typeof(T) == typeof(bool))
+            if (typeof(T) == typeof(bool) && easing != null)
             {
                 throw new ArgumentException($"This method cannot be called on {nameof(BooleanKeyFrameAnimation)}.");
             }

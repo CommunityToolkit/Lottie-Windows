@@ -26,5 +26,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
         /// <inheritdoc/>
         public override ShapeContentType ContentType => ShapeContentType.Group;
+
+        public override ShapeLayerContent WithTimeOffset(double offset)
+        {
+            return new ShapeGroup(CopyArgs(), Contents.Select(content => content.WithTimeOffset(offset)));
+        }
     }
 }

@@ -30,5 +30,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             Intersect,
             ExcludeIntersections,
         }
+
+        public override ShapeLayerContent WithTimeOffset(double offset)
+        {
+            return new MergePaths(CopyArgs(), Mode);
+        }
     }
 }

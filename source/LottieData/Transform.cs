@@ -47,5 +47,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
         /// <inheritdoc/>
         public override ShapeContentType ContentType => ShapeContentType.Transform;
+
+        public override ShapeLayerContent WithTimeOffset(double offset)
+        {
+            return new Transform(
+                CopyArgs(),
+                Anchor.WithTimeOffset(offset),
+                Position.WithTimeOffset(offset),
+                ScalePercent.WithTimeOffset(offset),
+                Rotation.WithTimeOffset(offset),
+                Opacity.WithTimeOffset(offset)
+                );
+        }
     }
 }

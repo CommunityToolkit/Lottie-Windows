@@ -31,5 +31,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
         /// <inheritdoc/>
         public override LayerType Type => LayerType.Solid;
+
+        public override Layer WithIndicesChanged(int index, int? parentIndex)
+        {
+            return new SolidLayer(GetArgsWithIndicesChanged(index, parentIndex), Width, Height, Color);
+        }
+
+        public override Layer WithTimeOffset(double shiftFrames)
+        {
+            return new SolidLayer(GetArgsWithTimeOffset(shiftFrames), Width, Height, Color);
+        }
     }
 }

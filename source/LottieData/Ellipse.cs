@@ -30,5 +30,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         public override ShapeContentType ContentType => ShapeContentType.Ellipse;
 
         public override ShapeType ShapeType => ShapeType.Ellipse;
+
+        public override ShapeLayerContent WithTimeOffset(double offset)
+        {
+            return new Ellipse(CopyArgs(), DrawingDirection, Position.WithTimeOffset(offset), Diameter.WithTimeOffset(offset));
+        }
     }
 }

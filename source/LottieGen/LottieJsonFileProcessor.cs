@@ -4,10 +4,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
+using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp;
 using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen;
@@ -129,6 +131,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen
                 return false;
             }
 
+            if (!_options.DisableLottieMergeOptimizer)
+            {
+                lottieComposition = LottieMergeOptimizer.Optimize(lottieComposition);
+                _profiler.OnMergeOptimizerFinished();
+            }
+
             // Validate the Lottie.
             foreach (var issue in LottieCompositionValidator.Validate(lottieComposition))
             {
@@ -228,11 +236,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen
                 {
                 ("Path", _jsonFilePath),
                 ("TotalSeconds", (_profiler.ParseTime +
+                                  _profiler.MergeOptimizerTime +
                                   _profiler.TranslateTime +
                                   _profiler.OptimizationTime +
                                   _profiler.CodegenTime +
                                   _profiler.SerializationTime).TotalSeconds.ToString()),
                 ("ParseSeconds", _profiler.ParseTime.TotalSeconds.ToString()),
+                ("MergeOptimizerSeconds", _profiler.MergeOptimizerTime.TotalSeconds.ToString()),
                 ("TranslateSeconds", _profiler.TranslateTime.TotalSeconds.ToString()),
                 ("OptimizationSeconds", _profiler.OptimizationTime.TotalSeconds.ToString()),
                 ("CodegenSeconds", _profiler.CodegenTime.TotalSeconds.ToString()),

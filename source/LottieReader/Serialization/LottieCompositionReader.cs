@@ -16,6 +16,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
 using Microsoft.Toolkit.Uwp.UI.Lottie.GenericData;
+using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
 {
@@ -286,6 +287,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
                                                     fonts: fonts,
                                                     layers: new LayerCollection(layers),
                                                     markers: markers);
+
+                                result = LottieMergeOptimizer.Optimize(result);
+
                                 return result;
                             }
 

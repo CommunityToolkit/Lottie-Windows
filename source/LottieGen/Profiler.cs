@@ -15,12 +15,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen
         // Bucket of time to dump time we don't want to measure. Never reported.
         TimeSpan _unmeasuredTime;
         TimeSpan _parseTime;
+        TimeSpan _mergeOptimizerTime;
         TimeSpan _translateTime;
         TimeSpan _optimizationTime;
         TimeSpan _codegenTime;
         TimeSpan _serializationTime;
 
         internal TimeSpan ParseTime => _parseTime;
+
+        internal TimeSpan MergeOptimizerTime => _mergeOptimizerTime;
 
         internal TimeSpan TranslateTime => _translateTime;
 
@@ -33,6 +36,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen
         internal void OnUnmeasuredFinished() => OnPhaseFinished(ref _unmeasuredTime);
 
         internal void OnParseFinished() => OnPhaseFinished(ref _parseTime);
+
+        internal void OnMergeOptimizerFinished() => OnPhaseFinished(ref _mergeOptimizerTime);
 
         internal void OnTranslateFinished() => OnPhaseFinished(ref _translateTime);
 

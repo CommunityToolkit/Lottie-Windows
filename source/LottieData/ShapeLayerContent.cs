@@ -35,5 +35,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
             public BlendMode BlendMode { get; set; }
         }
+
+        public ShapeLayerContentArgs CopyArgs()
+        {
+            return new ShapeLayerContentArgs
+            {
+                Name = Name,
+                MatchName = MatchName,
+                BlendMode = BlendMode,
+            };
+        }
+
+        /// <summary>
+        /// Make a copy of the shape layer content and offset all frames by some value.
+        /// </summary>
+        /// <param name="offset">Offset value.</param>
+        /// <returns>Copy of shape layer content with offsetted frames.</returns>
+        public abstract ShapeLayerContent WithTimeOffset(double offset);
     }
 }

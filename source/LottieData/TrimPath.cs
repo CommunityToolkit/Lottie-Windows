@@ -68,5 +68,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             Simultaneously,
             Individually,
         }
+
+        public override ShapeLayerContent WithTimeOffset(double offset)
+        {
+            return new TrimPath(
+                CopyArgs(),
+                TrimPathType,
+                Start.WithTimeOffset(offset),
+                End.WithTimeOffset(offset),
+                Offset.WithTimeOffset(offset)
+                );
+        }
     }
 }

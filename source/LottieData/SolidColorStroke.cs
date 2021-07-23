@@ -42,5 +42,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         public override ShapeContentType ContentType => ShapeContentType.SolidColorStroke;
 
         public override ShapeStrokeKind StrokeKind => ShapeStrokeKind.SolidColor;
+
+        public override ShapeLayerContent WithTimeOffset(double offset)
+        {
+            return new SolidColorStroke(
+                CopyArgs(),
+                DashOffset.WithTimeOffset(offset),
+                DashPattern,
+                Color.WithTimeOffset(offset),
+                Opacity.WithTimeOffset(offset),
+                StrokeWidth.WithTimeOffset(offset),
+                CapType,
+                JoinType,
+                MiterLimit
+                );
+        }
     }
 }

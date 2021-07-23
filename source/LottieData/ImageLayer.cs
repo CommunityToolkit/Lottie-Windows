@@ -24,5 +24,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
         /// <inheritdoc/>
         public override LayerType Type => LayerType.Image;
+
+        public override Layer WithIndicesChanged(int index, int? parentIndex)
+        {
+            return new ImageLayer(GetArgsWithIndicesChanged(index, parentIndex), RefId);
+        }
+
+        public override Layer WithTimeOffset(double offset)
+        {
+            return new ImageLayer(GetArgsWithTimeOffset(offset), RefId);
+        }
     }
 }

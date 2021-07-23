@@ -62,7 +62,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
         /// <summary>
         /// Gets the list of masks appplied to the layer.
         /// </summary>
-        public IReadOnlyList<Mask> Masks { get; set; }
+        public IReadOnlyList<Mask> Masks { get; }
 
         /// <summary>
         /// Gets the frame at which this <see cref="Layer"/> becomes invisible. <see cref="OutPoint"/>.
@@ -123,6 +123,46 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             public MatteType LayerMatteType { get; set; }
         }
 
+        public LayerArgs CopyArgs()
+        {
+            return new LayerArgs
+            {
+                Name = Name,
+                Index = Index,
+                Parent = Parent,
+                IsHidden = IsHidden,
+                Transform = Transform,
+                TimeStretch = TimeStretch,
+                StartFrame = InPoint,
+                InFrame = InPoint,
+                OutFrame = OutPoint,
+                BlendMode = BlendMode,
+                Is3d = Is3d,
+                AutoOrient = AutoOrient,
+                LayerMatteType = LayerMatteType,
+                Effects = Effects,
+                Masks = Masks,
+            };
+        }
+
+        protected LayerArgs GetArgsWithIndicesChanged(int index, int? parentIndex)
+        {
+            var args = CopyArgs();
+            args.Index = index;
+            args.Parent = parentIndex;
+            return args;
+        }
+
+        protected LayerArgs GetArgsWithTimeOffset(double shiftValue)
+        {
+            var args = CopyArgs();
+            args.Transform = (Transform)args.Transform.WithTimeOffset(shiftValue);
+            args.StartFrame += shiftValue;
+            args.InFrame += shiftValue;
+            args.OutFrame += shiftValue;
+            return args;
+        }
+
         public enum LayerType
         {
             PreComp,
@@ -139,5 +179,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             Add,
             Invert,
         }
+
+        /// <summary>
+        /// Make a copy of the layer and change its index and parent index.
+        /// </summary>
+        /// <param name="index">Index to be set.</param>
+        /// <param name="parentIndex">Parent index to be set.</param>
+        /// <returns>Layer copy with changed indices.</returns>
+        public abstract Layer WithIndicesChanged(int index, int? parentIndex);
+
+        /// <summary>
+        /// Make a copy of the layer and offset all frames by some value.
+        /// </summary>
+        /// <param name="offset">Offset value.</param>
+        /// <returns>Layer copy with offsetted frames.</returns>
+        public abstract Layer WithTimeOffset(double offset);
     }
 }

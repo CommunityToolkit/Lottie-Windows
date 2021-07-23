@@ -60,5 +60,21 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
             Star,
             Polygon,
         }
+
+        public override ShapeLayerContent WithTimeOffset(double offset)
+        {
+            return new Polystar(
+                CopyArgs(),
+                DrawingDirection,
+                StarType,
+                Points.WithTimeOffset(offset),
+                Position.WithTimeOffset(offset),
+                Rotation.WithTimeOffset(offset),
+                InnerRadius?.WithTimeOffset(offset),
+                OuterRadius.WithTimeOffset(offset),
+                InnerRoundness?.WithTimeOffset(offset),
+                OuterRoundness.WithTimeOffset(offset)
+                );
+        }
     }
 }
