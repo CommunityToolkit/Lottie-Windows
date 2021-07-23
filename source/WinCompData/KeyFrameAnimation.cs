@@ -65,16 +65,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
             _keyFrames[progress] = new ValueKeyFrame(progress, easing, value);
         }
 
-        public void InsertKeyFrame(KeyFrame keyFrame)
-        {
-            if (keyFrame.Progress < 0 || keyFrame.Progress > 1)
-            {
-                throw new ArgumentException($"Progress must be >=0 and <=1. Value: {keyFrame.Progress}");
-            }
-
-            _keyFrames.Add(keyFrame.Progress, keyFrame);
-        }
-
         public override IEnumerable<KeyFrame> KeyFrames => _keyFrames.Values;
 
         /// <inheritdoc/>
