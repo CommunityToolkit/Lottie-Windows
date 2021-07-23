@@ -8,14 +8,14 @@ using System.Linq;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
 {
-#if PUBLIC_LottieData
-    public
-#endif
-
     /// <summary>
     /// Represents directed acyclic graph of layer groups.
     /// Node1 is child of Node2 iff they have time ranges that intersect and Node1 goes after Node2 in z-order.
     /// </summary>
+#if PUBLIC_LottieData
+    public
+#endif
+
     class LayersGraph
     {
         List<GraphNode> nodes;

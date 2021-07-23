@@ -12,15 +12,15 @@ using static Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.ShapeLayerContent;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
 {
-#if PUBLIC_LottieData
-    public
-#endif
-
     /// <summary>
     /// This class provides methods to merge some lottie data structures together if they are similar enough.
     /// While merging some layers it can produce new <see cref="Asset"/>s,
     /// all generated assets are stored in <see cref="AssetsGenerated"/> field.
     /// </summary>
+#if PUBLIC_LottieData
+    public
+#endif
+
     class MergeHelper
     {
         public List<Asset> AssetsGenerated { get; } = new List<Asset>();
