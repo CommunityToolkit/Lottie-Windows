@@ -122,6 +122,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal void UnsupportedLayerEffectParameter(string layerEffectType, string parameterName, string value) => Report("LT0042", $"Layer effects of type {layerEffectType} do not support {parameterName} values of {value}.");
 
+        internal void PathWithRoundCornersIsNotFullySupported() => Report("LT0043", "Using a path with rounded corners can lead to inaccurate results.");
+
         void Report(string code, string description)
         {
             _issues.Add((code, description));
