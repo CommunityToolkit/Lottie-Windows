@@ -68,6 +68,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                     case CompositionObjectType.CompositionLinearGradientBrush:
                         LinearGradientBrushCount++;
                         break;
+                    case CompositionObjectType.CompositionMaskBrush:
+                        MaskBrushCount++;
+                        break;
                     case CompositionObjectType.CompositionPathGeometry:
                         PathGeometryCount++;
                         break;
@@ -183,6 +186,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
         public int GeometricClipCount { get; }
 
         public int LinearGradientBrushCount { get; }
+
+        public int MaskBrushCount { get; }
 
         public int PathGeometryCount { get; }
 

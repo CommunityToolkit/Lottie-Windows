@@ -102,6 +102,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                         }
 
                         break;
+                    case CompositionObjectType.CompositionVisualSurface:
+                        Visual? source = ((CompositionVisualSurface)node.Object).SourceVisual;
+                        if (source is not null)
+                        {
+                            graph[source].IsSource = true;
+                        }
+
+                        break;
                 }
             }
 
@@ -1074,7 +1082,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
                  // The parent may have been removed already.
                  let parent = n.Node.Parent
-                 where parent is not null
+                 where parent is not null && !n.Node.IsSource
                  select ((ContainerVisual)parent, containerVisual)).ToArray();
 
             // Pull the children of the container into the parent of the container. Remove the unnecessary containers.
@@ -1443,6 +1451,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
         sealed class Node : Graph.Node<Node>
         {
             internal CompositionObject? Parent { get; set; }
+
+            internal bool IsSource { get; set; }
         }
     }
 }

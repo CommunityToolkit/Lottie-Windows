@@ -167,6 +167,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return result;
         }
 
+        internal CompositionMaskBrush CreateMaskBrush() => _compositor.CreateMaskBrush();
+
         internal CompositionColorGradientStop CreateColorGradientStop() => _compositor.CreateColorGradientStop();
 
         internal CompositionColorGradientStop CreateColorGradientStop(float offset, Color color) => _compositor.CreateColorGradientStop(offset, Color(color));

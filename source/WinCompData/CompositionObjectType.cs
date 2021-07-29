@@ -20,6 +20,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
         CompositionEllipseGeometry,
         CompositionGeometricClip,
         CompositionLinearGradientBrush,
+        CompositionMaskBrush,
         CompositionPathGeometry,
         CompositionPropertySet,
         CompositionRadialGradientBrush,

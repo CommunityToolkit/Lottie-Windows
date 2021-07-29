@@ -19,6 +19,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CompositionContainerShape.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionDropShadowSourcePolicy.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionEasingFunction.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CompositionMaskBrush.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionEffectBrush.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionEffectFactory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionEffectSourceParameter.cs" />

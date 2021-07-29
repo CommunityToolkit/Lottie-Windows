@@ -1672,6 +1672,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     CompositionObjectType.CompositionEllipseGeometry => GenerateCompositionEllipseGeometryFactory(builder, (CompositionEllipseGeometry)obj, node),
                     CompositionObjectType.CompositionGeometricClip => GenerateCompositionGeometricClipFactory(builder, (CompositionGeometricClip)obj, node),
                     CompositionObjectType.CompositionLinearGradientBrush => GenerateCompositionLinearGradientBrushFactory(builder, (CompositionLinearGradientBrush)obj, node),
+                    CompositionObjectType.CompositionMaskBrush => GenerateCompositionMaskBrushFactory(builder, (CompositionMaskBrush)obj, node),
                     CompositionObjectType.CompositionPathGeometry => GenerateCompositionPathGeometryFactory(builder, (CompositionPathGeometry)obj, node),
 
                     // Do not generate code for property sets. It is done inline in the CompositionObject initialization.
@@ -1749,6 +1750,19 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
                 WriteSetPropertyStatement(builder, "StartPoint", obj.StartPoint);
                 WriteSetPropertyStatement(builder, "EndPoint", obj.EndPoint);
+
+                WriteCompositionObjectFactoryEnd(builder, obj, node);
+                return true;
+            }
+
+            bool GenerateCompositionMaskBrushFactory(CodeBuilder builder, CompositionMaskBrush obj, ObjectData node)
+            {
+                WriteObjectFactoryStart(builder, node);
+                WriteCreateAssignment(builder, node, $"_c{Deref}CreateMaskBrush()");
+                InitializeCompositionBrush(builder, obj, node);
+
+                WriteSetPropertyStatement(builder, "Mask", CallFactoryFromFor(node, obj.Mask));
+                WriteSetPropertyStatement(builder, "Source", CallFactoryFromFor(node, obj.Source));
 
                 WriteCompositionObjectFactoryEnd(builder, obj, node);
                 return true;
