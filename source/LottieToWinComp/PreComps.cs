@@ -92,8 +92,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// <summary>
         /// Applies the given <see cref="DropShadowEffect"/>.
         /// </summary>
-        static ContainerVisual ApplyDropShadow(
-            PreCompLayerContext context,
+        /// <returns>Visual node with shadow.</returns>
+        public static ContainerVisual ApplyDropShadow(
+            LayerContext context,
             ContainerVisual source,
             DropShadowEffect dropShadowEffect)
         {
@@ -133,7 +134,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 forceGpuRendering: true);
 
             var factory = context.ObjectFactory;
-            var size = ConvertTo.Vector2(context.Layer.Width, context.Layer.Height);
+            var size = context.CompositionContext.Size;
+
+            if (context is PreCompLayerContext)
+            {
+                size = ConvertTo.Vector2(((PreCompLayerContext)context).Layer.Width, ((PreCompLayerContext)context).Layer.Height);
+            }
 
             var visualSurface = factory.CreateVisualSurface();
             visualSurface.SourceSize = size;
@@ -218,11 +224,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             result.Size = size;
             result.Children.Add(blurResult);
 
-            // Check if ShadowOnly can be true
-            if (!dropShadowEffect.IsShadowOnly.IsAlways(false))
+            // Check if ShadowOnly can be false
+            if (!dropShadowEffect.IsShadowOnly.IsAlways(true))
             {
-                // Check if ShadowOnly can be false
-                if (!dropShadowEffect.IsShadowOnly.IsAlways(true))
+                // Check if ShadowOnly can be true
+                if (!dropShadowEffect.IsShadowOnly.IsAlways(false))
                 {
                     var isVisible = FlipBoolAnimatable(dropShadowEffect.IsShadowOnly); // isVisible = !isShadowOnly
 
@@ -283,8 +289,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// because the bounds of the <paramref name="source"/> tree must be known.
         /// </summary>
         /// <returns>A new subtree that contains <paramref name="source"/>.</returns>
-        internal static ContainerVisual ApplyGaussianBlur(
-            PreCompLayerContext context,
+        public static ContainerVisual ApplyGaussianBlur(
+            LayerContext context,
             ContainerVisual source,
             GaussianBlurEffect gaussianBlurEffect)
         {
@@ -327,7 +333,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             //  +--------+
             //  | Visual | -- The layer translated to a Visual.
             //  +--------+
-            var size = ConvertTo.Vector2(context.Layer.Width, context.Layer.Height);
+            var size = context.CompositionContext.Size;
+
+            if (context is PreCompLayerContext)
+            {
+                size = ConvertTo.Vector2(((PreCompLayerContext)context).Layer.Width, ((PreCompLayerContext)context).Layer.Height);
+            }
 
             // Build from the bottom up.
             var visualSurface = factory.CreateVisualSurface();
