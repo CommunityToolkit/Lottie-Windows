@@ -2,11 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-// DropShadows are currently disabled because of LayerVisual bugs.
-//#define EnableDropShadow
 #nullable enable
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
@@ -73,16 +72,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 result.Children.Add(rootNode);
             }
 
-#if EnableDropShadow
             var dropShadowEffect = context.Effects.DropShadowEffect;
 
             if (dropShadowEffect is not null)
             {
                 result = ApplyDropShadow(context, result, dropShadowEffect);
             }
-#else
-            context.Effects.EmitIssueIfDropShadow();
-#endif
 
             var gaussianBlurEffect = context.Effects.GaussianBlurEffect;
 
@@ -97,59 +92,84 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// <summary>
         /// Applies the given <see cref="DropShadowEffect"/>.
         /// </summary>
-        static LayerVisual ApplyDropShadow(PreCompLayerContext context, Visual visual, DropShadowEffect dropShadowEffect)
+        static ContainerVisual ApplyDropShadow(
+            PreCompLayerContext context,
+            ContainerVisual source,
+            DropShadowEffect dropShadowEffect)
         {
             Debug.Assert(dropShadowEffect.IsEnabled, "Precondition");
 
-            // Create a LayerVisual so we can add a drop shadow.
-            var result = context.ObjectFactory.CreateLayerVisual();
-            result.Children.Add(visual);
+            // Shadow:
+            // +------------------+
+            // | Container Visual | -- Has the final composited result.
+            // +------------------+ <
+            //     ^ Child #1        \ Child #2 (original layer)
+            //     | (shadow layer)   \
+            //     |                   \
+            // +---------------------+  \
+            // | ApplyGaussianBlur() |   \
+            // +---------------------+   +-----------------+
+            //     ^                     | ContainerVisual | - Original Visual node.
+            //     |                     +-----------------+
+            // +----------------+           .
+            // | SpriteVisual   |           .
+            // +----------------+           .
+            //     ^ Source                 .
+            //     |                        .
+            // +--------------+             .
+            // | MaskBrush    |             .
+            // +--------------+             .
+            //     ^ Source   ^ Mask        . Source
+            //     |           \            V
+            // +----------+   +---------------+
+            // |ColorBrush|   | VisualSurface |
+            // +----------+   +---------------+
+            GaussianBlurEffect gaussianBlurEffect = new GaussianBlurEffect(
+                name: dropShadowEffect.Name + "_blur",
+                isEnabled: true,
+                blurriness: dropShadowEffect.Softness,
+                blurDimensions: new Animatable<Enum<BlurDimension>>(BlurDimension.HorizontalAndVertical),
+                repeatEdgePixels: new Animatable<bool>(true),
+                forceGpuRendering: true);
 
-            // TODO: Due to a Composition bug, LayerVisual currently must be given a size for the drop
-            // shadow to show up correctly. And even then it is not reliable.
-            result.Size = context.CompositionContext.Size;
+            var factory = context.ObjectFactory;
+            var size = ConvertTo.Vector2(context.Layer.Width, context.Layer.Height);
 
-            var shadow = context.ObjectFactory.CreateDropShadow();
+            var visualSurface = factory.CreateVisualSurface();
+            visualSurface.SourceSize = size;
+            visualSurface.SourceVisual = source;
 
-            result.Shadow = shadow;
-            shadow.SourcePolicy = CompositionDropShadowSourcePolicy.InheritFromVisualContent;
+            var maskBrush = factory.CreateMaskBrush();
 
-            var isShadowOnly = Optimizer.TrimAnimatable(context, dropShadowEffect.IsShadowOnly);
-            if (!isShadowOnly.IsAlways(true))
-            {
-                context.Issues.ShadowOnlyShadowEffect();
-            }
-
-            // TODO - it's not clear whether BlurRadius and Softness are equivalent. We may
-            //        need to scale Softness to convert it to BlurRadius.
-            var blurRadius = Optimizer.TrimAnimatable(context, dropShadowEffect.Softness);
-            if (blurRadius.IsAnimated)
-            {
-                Animate.Scalar(context, blurRadius, shadow, nameof(shadow.BlurRadius));
-            }
-            else
-            {
-                shadow.BlurRadius = (float)blurRadius.InitialValue;
-            }
+            var colorBrush = factory.CreateColorBrush(dropShadowEffect.Color.InitialValue);
 
             var color = Optimizer.TrimAnimatable(context, dropShadowEffect.Color);
             if (color.IsAnimated)
             {
-                Animate.Color(context, color, shadow, nameof(shadow.Color));
+                Animate.Color(context, color, colorBrush, nameof(colorBrush.Color));
             }
             else
             {
-                shadow.Color = ConvertTo.Color(color.InitialValue);
+                colorBrush.Color = ConvertTo.Color(color.InitialValue);
             }
+
+            maskBrush.Source = colorBrush;
+            maskBrush.Mask = factory.CreateSurfaceBrush(visualSurface);
+
+            var shadowSpriteVisual = factory.CreateSpriteVisual();
+            shadowSpriteVisual.Size = size;
+            shadowSpriteVisual.Brush = maskBrush;
+
+            var blurResult = ApplyGaussianBlur(context, shadowSpriteVisual, gaussianBlurEffect);
 
             var opacity = Optimizer.TrimAnimatable(context, dropShadowEffect.Opacity);
             if (opacity.IsAnimated)
             {
-                Animate.Opacity(context, opacity, shadow, nameof(shadow.Opacity));
+                Animate.Opacity(context, opacity, blurResult, nameof(blurResult.Opacity));
             }
             else
             {
-                shadow.Opacity = (float)opacity.InitialValue.Value;
+                blurResult.Opacity = (float)opacity.InitialValue.Value;
             }
 
             // Convert direction and distance to a Vector3.
@@ -173,7 +193,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     var keyFrames = direction.KeyFrames.Select(
                         kf => new KeyFrame<Vector3>(kf.Frame, VectorFromRotationAndDistance(kf.Value, distanceValue), kf.Easing)).ToArray();
                     var directionAnimation = new TrimmedAnimatable<Vector3>(context, keyFrames[0].Value, keyFrames);
-                    Animate.Vector3(context, directionAnimation, shadow, nameof(shadow.Offset));
+                    Animate.Vector3(context, directionAnimation, blurResult, nameof(blurResult.Offset));
                 }
             }
             else if (distance.IsAnimated)
@@ -183,7 +203,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 var keyFrames = distance.KeyFrames.Select(
                     kf => new KeyFrame<Vector3>(kf.Frame, VectorFromRotationAndDistance(directionRadians, kf.Value), kf.Easing)).ToArray();
                 var distanceAnimation = new TrimmedAnimatable<Vector3>(context, keyFrames[0].Value, keyFrames);
-                Animate.Vector3(context, distanceAnimation, shadow, nameof(shadow.Offset));
+                Animate.Vector3(context, distanceAnimation, blurResult, nameof(blurResult.Offset));
             }
             else
             {
@@ -191,7 +211,33 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 var directionRadians = direction.InitialValue.Radians;
                 var distanceValue = distance.InitialValue;
 
-                shadow.Offset = ConvertTo.Vector3(VectorFromRotationAndDistance(direction.InitialValue, distance.InitialValue));
+                blurResult.Offset = ConvertTo.Vector3(VectorFromRotationAndDistance(direction.InitialValue, distance.InitialValue));
+            }
+
+            var result = factory.CreateContainerVisual();
+            result.Size = size;
+            result.Children.Add(blurResult);
+
+            // Check if ShadowOnly can be true
+            if (!dropShadowEffect.IsShadowOnly.IsAlways(false))
+            {
+                // Check if ShadowOnly can be false
+                if (!dropShadowEffect.IsShadowOnly.IsAlways(true))
+                {
+                    var isVisible = FlipBoolAnimatable(dropShadowEffect.IsShadowOnly); // isVisible = !isShadowOnly
+
+                    source.IsVisible = isVisible.InitialValue;
+                    if (isVisible.IsAnimated)
+                    {
+                        Animate.Boolean(
+                            context,
+                            Optimizer.TrimAnimatable(context, isVisible),
+                            source,
+                            nameof(blurResult.IsVisible));
+                    }
+                }
+
+                result.Children.Add(source);
             }
 
             return result;
@@ -200,11 +246,36 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         static Vector3 VectorFromRotationAndDistance(Rotation direction, double distance) =>
             VectorFromRotationAndDistance(direction.Radians, distance);
 
+        /// <summary>
+        /// Construct a 2D vector with a given rotation and length.
+        /// Note: In After Effects 0 degrees angle corresponds to UP direction
+        /// and 90 degrees angle corresponds to RIGHT direction.
+        /// </summary>
+        /// <param name="directionRadians">Rotation in radians.</param>
+        /// <param name="distance">Vector length.</param>
+        /// <returns>Vector with given parameters.</returns>
         static Vector3 VectorFromRotationAndDistance(double directionRadians, double distance) =>
             new Vector3(
                 x: Math.Sin(directionRadians) * distance,
-                y: Math.Cos(directionRadians) * distance,
+                y: -Math.Cos(directionRadians) * distance,
                 z: 1);
+
+        static Animatable<bool> FlipBoolAnimatable(Animatable<bool> animatable)
+        {
+            if (!animatable.IsAnimated)
+            {
+                return new Animatable<bool>(!animatable.InitialValue);
+            }
+
+            var keyFrames = new List<KeyFrame<bool>>();
+
+            foreach (var keyFrame in animatable.KeyFrames)
+            {
+                keyFrames.Add(new KeyFrame<bool>(keyFrame.Frame, !keyFrame.Value, keyFrame.Easing));
+            }
+
+            return new Animatable<bool>(!animatable.InitialValue, keyFrames);
+        }
 
         /// <summary>
         /// Applies a Gaussian blur effect to the given <paramref name="source"/> and

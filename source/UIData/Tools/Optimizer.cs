@@ -487,6 +487,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 CompositionObjectType.CompositionEllipseGeometry => GetCompositionEllipseGeometry((CompositionEllipseGeometry)obj),
                 CompositionObjectType.CompositionGeometricClip => GetCompositionGeometricClip((CompositionGeometricClip)obj),
                 CompositionObjectType.CompositionLinearGradientBrush => GetCompositionLinearGradientBrush((CompositionLinearGradientBrush)obj),
+                CompositionObjectType.CompositionMaskBrush => GetCompositionMaskBrush((CompositionMaskBrush)obj),
                 CompositionObjectType.CompositionPathGeometry => GetCompositionPathGeometry((CompositionPathGeometry)obj),
                 CompositionObjectType.CompositionPropertySet => GetCompositionPropertySet((CompositionPropertySet)obj),
                 CompositionObjectType.CompositionRadialGradientBrush => GetCompositionRadialGradientBrush((CompositionRadialGradientBrush)obj),
@@ -1179,6 +1180,29 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             return result;
         }
 
+        CompositionMaskBrush GetCompositionMaskBrush(CompositionMaskBrush obj)
+        {
+            if (GetExisting(obj, out var result))
+            {
+                return result;
+            }
+
+            result = CacheAndInitializeCompositionObject(obj, _c.CreateMaskBrush());
+
+            if (obj.Mask is not null)
+            {
+                result.Mask = GetCompositionBrush(obj.Mask);
+            }
+
+            if (obj.Source is not null)
+            {
+                result.Source = GetCompositionBrush(obj.Source);
+            }
+
+            StartAnimationsAndFreeze(obj, result);
+            return result;
+        }
+
         [return: NotNullIfNotNull("obj")]
         CompositionGeometry? GetCompositionGeometry(CompositionGeometry? obj)
         {
@@ -1386,6 +1410,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                     return GetCompositionGradientBrush((CompositionGradientBrush)obj);
                 case CompositionObjectType.CompositionSurfaceBrush:
                     return GetCompositionSurfaceBrush((CompositionSurfaceBrush)obj);
+                case CompositionObjectType.CompositionMaskBrush:
+                    return GetCompositionMaskBrush((CompositionMaskBrush)obj);
                 default:
                     throw new InvalidOperationException();
             }

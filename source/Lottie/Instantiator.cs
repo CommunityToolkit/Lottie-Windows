@@ -436,6 +436,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 Wd.CompositionObjectType.CompositionEllipseGeometry => GetCompositionEllipseGeometry((Wd.CompositionEllipseGeometry)obj),
                 Wd.CompositionObjectType.CompositionGeometricClip => GetCompositionGeometricClip((Wd.CompositionGeometricClip)obj),
                 Wd.CompositionObjectType.CompositionLinearGradientBrush => GetCompositionLinearGradientBrush((Wd.CompositionLinearGradientBrush)obj),
+                Wd.CompositionObjectType.CompositionMaskBrush => GetCompositionMaskBrush((Wd.CompositionMaskBrush)obj),
                 Wd.CompositionObjectType.CompositionPathGeometry => GetCompositionPathGeometry((Wd.CompositionPathGeometry)obj),
                 Wd.CompositionObjectType.CompositionPropertySet => GetCompositionPropertySet((Wd.CompositionPropertySet)obj),
                 Wd.CompositionObjectType.CompositionRadialGradientBrush => GetCompositionRadialGradientBrush((Wd.CompositionRadialGradientBrush)obj),
@@ -1229,6 +1230,29 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             return result;
         }
 
+        Wc.CompositionMaskBrush GetCompositionMaskBrush(Wd.CompositionMaskBrush obj)
+        {
+            if (GetExisting<Wc.CompositionMaskBrush>(obj, out var result))
+            {
+                return result;
+            }
+
+            result = CacheAndInitializeCompositionObject(obj, _c.CreateMaskBrush());
+
+            if (obj.Mask is not null)
+            {
+                result.Mask = GetCompositionBrush(obj.Mask);
+            }
+
+            if (obj.Source is not null)
+            {
+                result.Source = GetCompositionBrush(obj.Source);
+            }
+
+            StartAnimations(obj, result);
+            return result;
+        }
+
         [return: NotNullIfNotNull("obj")]
         Wc.CompositionGeometry? GetCompositionGeometry(Wd.CompositionGeometry? obj)
         {
@@ -1429,6 +1453,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                     return GetCompositionEffectBrush((Wd.CompositionEffectBrush)obj);
                 case Wd.CompositionObjectType.CompositionSurfaceBrush:
                     return GetCompositionSurfaceBrush((Wd.CompositionSurfaceBrush)obj);
+                case Wd.CompositionObjectType.CompositionMaskBrush:
+                    return GetCompositionMaskBrush((Wd.CompositionMaskBrush)obj);
                 case Wd.CompositionObjectType.CompositionLinearGradientBrush:
                 case Wd.CompositionObjectType.CompositionRadialGradientBrush:
                     return GetCompositionGradientBrush((Wd.CompositionGradientBrush)obj);

@@ -142,6 +142,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                 case CompositionObjectType.CompositionLinearGradientBrush:
                     VisitCompositionLinearGradientBrush((CompositionLinearGradientBrush)obj, node);
                     break;
+                case CompositionObjectType.CompositionMaskBrush:
+                    VisitCompositionMaskBrush((CompositionMaskBrush)obj, node);
+                    break;
                 case CompositionObjectType.CompositionPathGeometry:
                     VisitCompositionPathGeometry((CompositionPathGeometry)obj, node);
                     break;
@@ -598,6 +601,23 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             if (obj.Path is not null)
             {
                 Reference(node, obj.Path);
+            }
+
+            return true;
+        }
+
+        bool VisitCompositionMaskBrush(CompositionMaskBrush obj, T node)
+        {
+            VisitCompositionBrush(obj, node);
+
+            if (obj.Mask is not null)
+            {
+                Reference(node, obj.Mask);
+            }
+
+            if (obj.Source is not null)
+            {
+                Reference(node, obj.Source);
             }
 
             return true;
