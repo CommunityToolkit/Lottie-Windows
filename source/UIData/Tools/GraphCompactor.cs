@@ -106,7 +106,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                         Visual? source = ((CompositionVisualSurface)node.Object).SourceVisual;
                         if (source is not null)
                         {
-                            graph[source].IsSource = true;
+                            graph[source].AllowCoalesing = false;
                         }
 
                         break;
@@ -1082,7 +1082,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
                  // The parent may have been removed already.
                  let parent = n.Node.Parent
-                 where parent is not null && !n.Node.IsSource
+                 where parent is not null && n.Node.AllowCoalesing
                  select ((ContainerVisual)parent, containerVisual)).ToArray();
 
             // Pull the children of the container into the parent of the container. Remove the unnecessary containers.
@@ -1452,7 +1452,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
         {
             internal CompositionObject? Parent { get; set; }
 
-            internal bool IsSource { get; set; }
+            internal bool AllowCoalesing { get; set; } = true;
         }
     }
 }

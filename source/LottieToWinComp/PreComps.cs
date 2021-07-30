@@ -91,30 +91,34 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// <summary>
         /// Applies the given <see cref="DropShadowEffect"/>.
         /// </summary>
-        static ContainerVisual ApplyDropShadow(PreCompLayerContext context, ContainerVisual source, DropShadowEffect dropShadowEffect)
+        static ContainerVisual ApplyDropShadow(
+            PreCompLayerContext context, 
+            ContainerVisual source, 
+            DropShadowEffect dropShadowEffect)
         {
             Debug.Assert(dropShadowEffect.IsEnabled, "Precondition");
 
             // Shadow:
             // +------------------+
             // | Container Visual | -- Has the final composited result.
-            // +------------------+ <------
-            //     ^ Child                | Child
-            //     |                      |
+            // +------------------+ <
+            //     ^ Child #1        \ Child #2 (original layer)
+            //     | (shadow layer)   \
+            //     |                   \
+            // +---------------------+  \
+            // | ApplyGaussianBlur() |   \
             // +---------------------+   +-----------------+
-            // | ApplyGaussianBlur() |   | ContainerVisual |
-            // +---------------------+   +-----------------+
-            //     ^                        |
-            //     |                        |
-            // +----------------+           |
-            // | SpriteVisual   |           |
-            // +----------------+           |
-            //     ^ Source                 |
-            //     |                        |
-            // +--------------+             |
-            // | MaskBrush    |             |
-            // +--------------+             |
-            //     ^ Source   ^ Mask        |
+            //     ^                     | ContainerVisual | - Original Visual node.
+            //     |                     +-----------------+
+            // +----------------+           .
+            // | SpriteVisual   |           .
+            // +----------------+           .
+            //     ^ Source                 .
+            //     |                        .
+            // +--------------+             .
+            // | MaskBrush    |             .
+            // +--------------+             .
+            //     ^ Source   ^ Mask        . Source
             //     |           \            V
             // +----------+   +---------------+
             // |ColorBrush|   | VisualSurface |
@@ -125,8 +129,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 blurriness: dropShadowEffect.Softness,
                 blurDimensions: new Animatable<Enum<BlurDimension>>(BlurDimension.HorizontalAndVertical),
                 repeatEdgePixels: new Animatable<bool>(true),
-                forceGpuRendering: true
-                );
+                forceGpuRendering: true);
 
             var factory = context.ObjectFactory;
             var size = ConvertTo.Vector2(context.Layer.Width, context.Layer.Height);
@@ -215,7 +218,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             result.Children.Add(blurResult);
             if (dropShadowEffect.IsShadowOnly.IsAlways(false))
             {
-                result.Children.Add(source);
+                    result.Children.Add(source);
             }
 
             return result;
@@ -224,6 +227,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         static Vector3 VectorFromRotationAndDistance(Rotation direction, double distance) =>
             VectorFromRotationAndDistance(direction.Radians, distance);
 
+        /// <summary>
+        /// Construct a 2D vector with a given rotation and length.
+        /// Note: In After Effects 0 degrees angle corresponds to UP direction
+        /// and 90 degrees angle corresponds to RIGHT direction.
+        /// </summary>
+        /// <param name="directionRadians">Rotation in radians.</param>
+        /// <param name="distance">Vector length.</param>
+        /// <returns>Vector with given parameters.</returns>
         static Vector3 VectorFromRotationAndDistance(double directionRadians, double distance) =>
             new Vector3(
                 x: Math.Sin(directionRadians) * distance,
