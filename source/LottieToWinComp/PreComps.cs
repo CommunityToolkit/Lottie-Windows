@@ -5,6 +5,7 @@
 #nullable enable
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
@@ -92,8 +93,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// Applies the given <see cref="DropShadowEffect"/>.
         /// </summary>
         static ContainerVisual ApplyDropShadow(
-            PreCompLayerContext context, 
-            ContainerVisual source, 
+            PreCompLayerContext context,
+            ContainerVisual source,
             DropShadowEffect dropShadowEffect)
         {
             Debug.Assert(dropShadowEffect.IsEnabled, "Precondition");
@@ -216,9 +217,27 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var result = factory.CreateContainerVisual();
             result.Size = size;
             result.Children.Add(blurResult);
-            if (dropShadowEffect.IsShadowOnly.IsAlways(false))
+
+            // Check if ShadowOnly can be true
+            if (!dropShadowEffect.IsShadowOnly.IsAlways(false))
             {
-                    result.Children.Add(source);
+                // Check if ShadowOnly can be false
+                if (!dropShadowEffect.IsShadowOnly.IsAlways(true))
+                {
+                    var isVisible = FlipBoolAnimatable(dropShadowEffect.IsShadowOnly); // isVisible = !isShadowOnly
+
+                    source.IsVisible = isVisible.InitialValue;
+                    if (isVisible.IsAnimated)
+                    {
+                        Animate.Boolean(
+                            context,
+                            Optimizer.TrimAnimatable(context, isVisible),
+                            source,
+                            nameof(blurResult.IsVisible));
+                    }
+                }
+
+                result.Children.Add(source);
             }
 
             return result;
@@ -240,6 +259,23 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 x: Math.Sin(directionRadians) * distance,
                 y: -Math.Cos(directionRadians) * distance,
                 z: 1);
+
+        static Animatable<bool> FlipBoolAnimatable(Animatable<bool> animatable)
+        {
+            if (!animatable.IsAnimated)
+            {
+                return new Animatable<bool>(!animatable.InitialValue);
+            }
+
+            var keyFrames = new List<KeyFrame<bool>>();
+
+            foreach (var keyFrame in animatable.KeyFrames)
+            {
+                keyFrames.Add(new KeyFrame<bool>(keyFrame.Frame, !keyFrame.Value, keyFrame.Easing));
+            }
+
+            return new Animatable<bool>(!animatable.InitialValue, keyFrames);
+        }
 
         /// <summary>
         /// Applies a Gaussian blur effect to the given <paramref name="source"/> and

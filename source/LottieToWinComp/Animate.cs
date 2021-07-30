@@ -256,6 +256,30 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         }
 
         /// <summary>
+        /// Animates a boolean value.
+        /// </summary>
+        public static void Boolean(
+            LayerContext context,
+            in TrimmedAnimatable<bool> value,
+            CompositionObject targetObject,
+            string targetPropertyName,
+            string? longDescription = null,
+            string? shortDescription = null)
+        {
+            Debug.Assert(value.IsAnimated, "Precondition");
+            GenericCreateCompositionKeyFrameAnimation(
+                context,
+                value,
+                context.ObjectFactory.CreateBooleanKeyFrameAnimation,
+                (ca, progress, val, easing) => ca.InsertKeyFrame(progress, val),
+                null,
+                targetObject,
+                targetPropertyName,
+                longDescription,
+                shortDescription);
+        }
+
+        /// <summary>
         /// Animates a trim start or trim end value.
         /// </summary>
         static void ScaledTrimStartOrTrimEnd(
