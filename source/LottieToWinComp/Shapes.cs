@@ -695,14 +695,14 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
                 if (dropShadowEffect is not null)
                 {
-                    rootNode = PreComps.ApplyDropShadow(_context, rootNode, dropShadowEffect);
+                    rootNode = Effects.ApplyDropShadow(_context, rootNode, dropShadowEffect);
                 }
 
                 var gaussianBlurEffect = _context.Effects.GaussianBlurEffect;
 
                 if (gaussianBlurEffect is not null)
                 {
-                    rootNode = PreComps.ApplyGaussianBlur(_context, rootNode, gaussianBlurEffect);
+                    rootNode = Effects.ApplyGaussianBlur(_context, rootNode, gaussianBlurEffect);
                 }
 
                 return layerHasMasks
