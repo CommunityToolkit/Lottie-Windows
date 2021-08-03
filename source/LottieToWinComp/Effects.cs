@@ -99,6 +99,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         /// <summary>
         /// Applies the given <see cref="DropShadowEffect"/>.
+        /// This is only designed to work on a <see cref="PreCompLayer"/> and <see cref="ShapeLayer"/>
+        /// because the bounds of the <paramref name="source"/> tree must be known.
+        /// In case of <see cref="ShapeLayer"/> we are using parent context size instead.
         /// </summary>
         /// <returns>Visual node with shadow.</returns>
         public static Visual ApplyDropShadow(
@@ -107,6 +110,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             DropShadowEffect dropShadowEffect)
         {
             Debug.Assert(dropShadowEffect.IsEnabled, "Precondition");
+            Debug.Assert(context is PreCompLayerContext || context is ShapeLayerContext, "Precondition");
 
             // Shadow:
             // +------------------+
@@ -293,8 +297,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         /// <summary>
         /// Applies a Gaussian blur effect to the given <paramref name="source"/> and
-        /// returns a new root. This is only designed to work on a <see cref="PreCompLayer"/>
+        /// returns a new root. This is only designed to work on a <see cref="PreCompLayer"/> and <see cref="ShapeLayer"/>
         /// because the bounds of the <paramref name="source"/> tree must be known.
+        /// In case of <see cref="ShapeLayer"/> we are using parent context size instead.
         /// </summary>
         /// <returns>A new subtree that contains <paramref name="source"/>.</returns>
         public static Visual ApplyGaussianBlur(
@@ -303,6 +308,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             GaussianBlurEffect gaussianBlurEffect)
         {
             Debug.Assert(gaussianBlurEffect.IsEnabled, "Precondition");
+            Debug.Assert(context is PreCompLayerContext || context is ShapeLayerContext, "Precondition");
 
             var factory = context.ObjectFactory;
 
