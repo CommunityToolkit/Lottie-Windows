@@ -72,21 +72,23 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 result.Children.Add(rootNode);
             }
 
+            Visual resultVisual = result;
+
             var dropShadowEffect = context.Effects.DropShadowEffect;
 
             if (dropShadowEffect is not null)
             {
-                result = Effects.ApplyDropShadow(context, result, dropShadowEffect);
+                resultVisual = Effects.ApplyDropShadow(context, resultVisual, dropShadowEffect);
             }
 
             var gaussianBlurEffect = context.Effects.GaussianBlurEffect;
 
             if (gaussianBlurEffect is not null)
             {
-                result = Effects.ApplyGaussianBlur(context, result, gaussianBlurEffect);
+                resultVisual = Effects.ApplyGaussianBlur(context, resultVisual, gaussianBlurEffect);
             }
 
-            return new LayerTranslator.FromVisual(result);
+            return new LayerTranslator.FromVisual(resultVisual);
         }
     }
 }

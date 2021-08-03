@@ -691,23 +691,23 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
                 contentsNode.Shapes.Add(TranslateShapeLayerContents(shapeContext, _context.Layer.Contents));
 
+                Visual result = layerHasMasks ? Masks.TranslateAndApplyMasksForLayer(_context, rootNode) : rootNode;
+
                 var dropShadowEffect = _context.Effects.DropShadowEffect;
 
                 if (dropShadowEffect is not null)
                 {
-                    rootNode = Effects.ApplyDropShadow(_context, rootNode, dropShadowEffect);
+                    result = Effects.ApplyDropShadow(_context, result, dropShadowEffect);
                 }
 
                 var gaussianBlurEffect = _context.Effects.GaussianBlurEffect;
 
                 if (gaussianBlurEffect is not null)
                 {
-                    rootNode = Effects.ApplyGaussianBlur(_context, rootNode, gaussianBlurEffect);
+                    result = Effects.ApplyGaussianBlur(_context, result, gaussianBlurEffect);
                 }
 
-                return layerHasMasks
-                    ? Masks.TranslateAndApplyMasksForLayer(_context, rootNode)
-                    : rootNode;
+                return result;
             }
         }
     }

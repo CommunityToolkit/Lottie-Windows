@@ -101,9 +101,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// Applies the given <see cref="DropShadowEffect"/>.
         /// </summary>
         /// <returns>Visual node with shadow.</returns>
-        public static ContainerVisual ApplyDropShadow(
+        public static Visual ApplyDropShadow(
             LayerContext context,
-            ContainerVisual source,
+            Visual source,
             DropShadowEffect dropShadowEffect)
         {
             Debug.Assert(dropShadowEffect.IsEnabled, "Precondition");
@@ -297,9 +297,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// because the bounds of the <paramref name="source"/> tree must be known.
         /// </summary>
         /// <returns>A new subtree that contains <paramref name="source"/>.</returns>
-        public static ContainerVisual ApplyGaussianBlur(
+        public static Visual ApplyGaussianBlur(
             LayerContext context,
-            ContainerVisual source,
+            Visual source,
             GaussianBlurEffect gaussianBlurEffect)
         {
             Debug.Assert(gaussianBlurEffect.IsEnabled, "Precondition");
