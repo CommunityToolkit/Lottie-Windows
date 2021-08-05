@@ -31,6 +31,8 @@ namespace LottieViewer
         // try to set each others values.
         bool m_isColorPickerChanging = false;
 
+        internal CheckBox ShowSolidBackground => _showSolidBackground;
+
         public PaletteColorPicker()
         {
             this.InitializeComponent();

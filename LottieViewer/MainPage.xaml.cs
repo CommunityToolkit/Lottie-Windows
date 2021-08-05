@@ -51,6 +51,10 @@ namespace LottieViewer
             // Add the background to the color picker so that it can be modified by the user.
             _paletteColorPicker.PaletteEntries.Add(BackgroundColor);
 
+            // Update background visibility after checkbox clicked.
+            _paletteColorPicker.ShowSolidBackground.Click +=
+                (object sender, RoutedEventArgs e) => _stage.ShowSolidBackground = _paletteColorPicker.ShowSolidBackground.IsChecked ?? false;
+
             // Get notified when info about the loaded Lottie changes.
             _stage.DiagnosticsViewModel.PropertyChanged += DiagnosticsViewModel_PropertyChanged;
 

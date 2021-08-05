@@ -43,6 +43,13 @@
                 <ColumnDefinition Width="1*" />
                 <ColumnDefinition Width="0.1*" />
             </Grid.ColumnDefinitions>
+
+            <!--
+                Background canvas. Initialized from code.
+            -->
+            <Canvas x:Name="_canvas" Grid.ColumnSpan="3" Grid.RowSpan="3" Visibility="Collapsed">
+            </Canvas>
+
             <!--
                 Viewbox is necessary for stretching because we want to keep the Lottie unstretched so that
                 the background has the same aspect ratio as the Lottie. This allows the user to see the
@@ -55,7 +62,7 @@
                      x:Name="_playerContainer">
                 <Border>
                     <Border.Background>
-                        <SolidColorBrush Color="{x:Bind ArtboardColor, Mode=OneWay}" />
+                        <SolidColorBrush Color="{x:Bind ArtboardColor, Mode=OneWay}" x:Name="_backgroundColorBrush"/>
                     </Border.Background>
                     <!--  Stretch="None" so that the Border will have the same shape as the Lottie.  -->
                     <muxc:AnimatedVisualPlayer x:Name="_player"
