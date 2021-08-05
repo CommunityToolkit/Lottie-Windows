@@ -184,6 +184,40 @@
                                 <TextBlock Grid.Column="1" Margin="10,0,0,0">x <Run Text="{x:Bind _stage.Player.PlaybackRate, Mode=OneWay, Converter={StaticResource floatFormatter}}"/></TextBlock>
                             </Grid>
                         </StackPanel>
+                        
+                        <StackPanel>
+                            <TextBlock FontWeight="Bold" >Canvas size</TextBlock>
+                            <Grid Margin="20,14,20,20">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition/>
+                                    <ColumnDefinition Width="50"/>
+                                </Grid.ColumnDefinitions>
+                                <Slider 
+                                    Padding="10, 0, 10, 0"
+                                    HorizontalAlignment="Stretch"
+                                    Maximum="1024"
+                                    Minimum="8"
+                                    LargeChange="16"
+                                    SmallChange="1"
+                                    StepFrequency="1"
+                                    TickFrequency="16"
+                                    TickPlacement="TopLeft"
+                                    Value="{x:Bind _stage.PlayerContainer.MaxHeight, Mode=TwoWay}">
+                                    <Slider.Resources>
+                                        <!-- 
+                                            Override the themed slider resources so that control ignores the accent colors.
+                                            This is desirable because the accent colors may make the control hard to see
+                                            on the gray background.
+                                        -->
+                                        <StaticResource x:Key="SliderThumbBackground" ResourceKey="LottieBasicBrush" />
+                                        <StaticResource x:Key="SliderThumbBackgroundPointerOver" ResourceKey="LottieBasicBrush" />
+                                        <StaticResource x:Key="SliderThumbBackgroundPressed" ResourceKey="LottieBasicBrush" />
+                                        <StaticResource x:Key="SliderThumbBackgroundDisabled" ResourceKey="LottieBasicBrush" />
+                                    </Slider.Resources>
+                                </Slider>
+                                <TextBlock Grid.Column="1" Margin="10,0,0,0"><Run Text="{x:Bind _stage.PlayerContainer.MaxHeight, Mode=OneWay, Converter={StaticResource floatFormatter}}"/>px</TextBlock>
+                            </Grid>
+                        </StackPanel>
 
                         <!-- Separator -->
                         <Border Style="{StaticResource SeparatorStyle}"/>

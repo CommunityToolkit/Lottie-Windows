@@ -41,6 +41,8 @@ namespace LottieViewer
 
         internal AnimatedVisualPlayer Player => _player;
 
+        internal Viewbox PlayerContainer => _playerContainer;
+
         public Color ArtboardColor
         {
             get { return (Color)GetValue(ArtboardColorProperty); }

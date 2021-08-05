@@ -50,18 +50,20 @@
             -->
             <Viewbox Grid.Row="1"
                      Grid.Column="1"
-                     Stretch="Uniform">
+                     Stretch="Uniform"
+                     MaxHeight="512"
+                     x:Name="_playerContainer">
                 <Border>
                     <Border.Background>
                         <SolidColorBrush Color="{x:Bind ArtboardColor, Mode=OneWay}" />
                     </Border.Background>
                     <!--  Stretch="None" so that the Border will have the same shape as the Lottie.  -->
                     <muxc:AnimatedVisualPlayer x:Name="_player"
-                                                AutomationProperties.Name="Current animation"
-                                                AutoPlay="False"
-                                                Stretch="None">
+                                            AutomationProperties.Name="Current animation"
+                                            AutoPlay="False"
+                                            Stretch="None">
                         <lottie:LottieVisualSource x:Name="_playerSource"
-                                                   Options="All" />
+                                                Options="All" />
                     </muxc:AnimatedVisualPlayer>
                 </Border>
             </Viewbox>
