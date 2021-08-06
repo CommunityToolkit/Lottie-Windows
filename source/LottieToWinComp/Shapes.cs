@@ -23,10 +23,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
     {
         public static LayerTranslator CreateShapeLayerTranslator(ShapeLayerContext context)
         {
-            // Emit issues for unupported layer effects.
-            context.Effects.EmitIssueIfDropShadow();
-            context.Effects.EmitIssueIfGaussianBlur();
-
             return new ShapeLayerTranslator(context);
         }
 
@@ -646,7 +642,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 _context = context;
             }
 
-            internal override bool IsShape => !_context.Layer.Masks.Any();
+            internal override bool IsShape =>
+                !_context.Layer.Masks.Any() &&
+                _context.Effects.DropShadowEffect is null &&
+                _context.Effects.GaussianBlurEffect is null;
 
             internal override CompositionShape? GetShapeRoot(TranslationContext context)
             {
@@ -692,9 +691,23 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
                 contentsNode.Shapes.Add(TranslateShapeLayerContents(shapeContext, _context.Layer.Contents));
 
-                return layerHasMasks
-                    ? Masks.TranslateAndApplyMasksForLayer(_context, rootNode)
-                    : rootNode;
+                Visual result = layerHasMasks ? Masks.TranslateAndApplyMasksForLayer(_context, rootNode) : rootNode;
+
+                var dropShadowEffect = _context.Effects.DropShadowEffect;
+
+                if (dropShadowEffect is not null)
+                {
+                    result = Effects.ApplyDropShadow(_context, result, dropShadowEffect);
+                }
+
+                var gaussianBlurEffect = _context.Effects.GaussianBlurEffect;
+
+                if (gaussianBlurEffect is not null)
+                {
+                    result = Effects.ApplyGaussianBlur(_context, result, gaussianBlurEffect);
+                }
+
+                return result;
             }
         }
     }
