@@ -26,6 +26,11 @@
                 <ColumnDefinition Width="1*" />
                 <ColumnDefinition Width="0.4*" />
             </Grid.ColumnDefinitions>
+            <!--
+                Background canvas. Initialized from code.
+            -->
+            <Canvas x:Name="_canvas" Grid.ColumnSpan="3" Grid.RowSpan="3" Visibility="Collapsed">
+            </Canvas>
             <local:FeedbackLottie x:Name="_feedbackLottie"
                                   Grid.Row="1"
                                   Grid.Column="1" />
@@ -43,12 +48,6 @@
                 <ColumnDefinition Width="1*" />
                 <ColumnDefinition Width="0.1*" />
             </Grid.ColumnDefinitions>
-
-            <!--
-                Background canvas. Initialized from code.
-            -->
-            <Canvas x:Name="_canvas" Grid.ColumnSpan="3" Grid.RowSpan="3" Visibility="Collapsed">
-            </Canvas>
 
             <!--
                 Viewbox is necessary for stretching because we want to keep the Lottie unstretched so that

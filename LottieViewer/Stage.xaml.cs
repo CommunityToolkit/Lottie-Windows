@@ -40,11 +40,15 @@ namespace LottieViewer
         {
             this.InitializeComponent();
 
-            Reset();
+            // Do not show solid background by default.
+            ShowSolidBackground = false;
+
+            // Do not show checkerboard pattern until lottie file is loaded.
+            _canvas.Visibility = Visibility.Collapsed;
+
+            _feedbackLottie.PlayInitialStateAnimation();
 
             _ = SetupBackgroundPatternAsync();
-
-            ShowSolidBackground = false;
         }
 
         // Draw repeating paatern texture on backgound canvas.
@@ -158,12 +162,6 @@ namespace LottieViewer
         internal void DoDragLeave()
         {
             _feedbackLottie.PlayDragLeaveAnimation();
-        }
-
-        internal void Reset()
-        {
-            _canvas.Visibility = Visibility.Collapsed;
-            _feedbackLottie.PlayInitialStateAnimation();
         }
     }
 }
