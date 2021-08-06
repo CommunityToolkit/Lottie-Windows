@@ -177,6 +177,7 @@
     <Content Include="Assets\BadgeLogo.scale-150.png" />
     <Content Include="Assets\BadgeLogo.scale-200.png" />
     <Content Include="Assets\BadgeLogo.scale-400.png" />
+    <Content Include="Assets\BackgroundPattern.png" />
     <Content Include="Assets\SplashScreen.scale-200.png" />
     <Content Include="Properties\Default.rd.xml" />
   </ItemGroup>

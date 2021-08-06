@@ -29,7 +29,8 @@
                 Background="Transparent"
                 ItemsSource="{x:Bind PaletteEntries}"
                 SelectionMode="Single"
-                SelectionChanged="PaletteListBox_SelectionChanged" DoubleTapped="PaletteListBox_DoubleTapped">
+                SelectionChanged="PaletteListBox_SelectionChanged" DoubleTapped="PaletteListBox_DoubleTapped"
+                Margin="0,-15,0,0">
             <muxc:ListBox.Resources>
                 <Style TargetType="ListBoxItem">
                     <Setter Property="Template">
@@ -234,6 +235,7 @@
                 <Border Style="{StaticResource SeparatorStyle}"/>
 
                 <TextBlock FontWeight="Bold">Colors</TextBlock>
+                <CheckBox x:Name="_showSolidBackground">Show solid background</CheckBox>
             </StackPanel>
         </StackPanel>
     </Grid>
