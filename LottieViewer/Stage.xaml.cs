@@ -36,8 +36,6 @@ namespace LottieViewer
         public static readonly DependencyProperty ArtboardColorProperty =
             DependencyProperty.Register("ArtboardColor", typeof(Color), typeof(Stage), new PropertyMetadata(Colors.Black));
 
-        Task backgroundPatternTask;
-
         public Stage()
         {
             this.InitializeComponent();
@@ -49,8 +47,6 @@ namespace LottieViewer
             _canvas.Visibility = Visibility.Collapsed;
 
             _feedbackLottie.PlayInitialStateAnimation();
-
-            backgroundPatternTask = SetupBackgroundPatternAsync();
         }
 
         // Draw repeating pattern texture on backgound canvas.
@@ -122,7 +118,6 @@ namespace LottieViewer
             set { SetValue(ArtboardColorProperty, value); }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD003:Avoid awaiting foreign Tasks", Justification = "Await until canvas has a background")]
         internal async Task<bool> TryLoadFileAsync(StorageFile file)
         {
             var startDroppedAnimation = _feedbackLottie.PlayDroppedAnimationAsync();
@@ -133,10 +128,7 @@ namespace LottieViewer
                 // Load the Lottie composition.
                 await _playerSource.SetSourceAsync(file);
 
-                if (backgroundPatternTask is not null)
-                {
-                    await backgroundPatternTask;
-                }
+                await SetupBackgroundPatternAsync();
 
                 _canvas.Visibility = Visibility.Visible;
             }
