@@ -455,6 +455,50 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
             return new MergeResult<SolidColorFill>(new SolidColorFill(args, a.FillType, opacity.Value!, color.Value!));
         }
 
+        MergeResult<SolidColorStroke> MergeSolidColorStrokes(SolidColorStroke a, TimeRange aRange, SolidColorStroke b, TimeRange bRange)
+        {
+            if (a.BlendMode != b.BlendMode ||
+                a.CapType != b.CapType ||
+                a.JoinType != b.JoinType ||
+                !a.DashPattern.SequenceEqual(b.DashPattern) ||
+                a.MiterLimit != b.MiterLimit)
+            {
+                return MergeResult<SolidColorStroke>.Failed;
+            }
+
+            var name = $"{a.Name} {b.Name}";
+
+            var matchName = $"{a.MatchName} {b.MatchName}";
+
+            var args = new ShapeLayerContentArgs
+            {
+                Name = name,
+                MatchName = matchName,
+                BlendMode = a.BlendMode,
+            };
+
+            var opacity = MergeAnimatable(a.Opacity, aRange, b.Opacity, bRange);
+            var color = MergeAnimatable(a.Color, aRange, b.Color, bRange);
+            var strokeWidth = MergeAnimatable(a.StrokeWidth, aRange, b.StrokeWidth, bRange);
+            var dashOffset = MergeAnimatable(a.DashOffset, aRange, b.DashOffset, bRange);
+
+            if (!opacity.Success || !color.Success || !strokeWidth.Success || !dashOffset.Success)
+            {
+                return MergeResult<SolidColorStroke>.Failed;
+            }
+
+            return new MergeResult<SolidColorStroke>(new SolidColorStroke(
+                args,
+                dashOffset.Value!,
+                a.DashPattern,
+                color.Value!,
+                opacity.Value!,
+                strokeWidth.Value!,
+                a.CapType,
+                a.JoinType,
+                a.MiterLimit));
+        }
+
         MergeResult<ShapeLayerContent> MergeShapeLayerContents(ShapeLayerContent a, TimeRange aRange, ShapeLayerContent b, TimeRange bRange)
         {
             if (a.ContentType != b.ContentType)
@@ -476,6 +520,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                     return MergeResult<ShapeLayerContent>.From(MergeTransform((Transform)a, aRange, (Transform)b, bRange));
                 case ShapeContentType.SolidColorFill:
                     return MergeResult<ShapeLayerContent>.From(MergeSolidColorFills((SolidColorFill)a, aRange, (SolidColorFill)b, bRange));
+                case ShapeContentType.SolidColorStroke:
+                    return MergeResult<ShapeLayerContent>.From(MergeSolidColorStrokes((SolidColorStroke)a, aRange, (SolidColorStroke)b, bRange));
             }
 
             return MergeResult<ShapeLayerContent>.Failed;
