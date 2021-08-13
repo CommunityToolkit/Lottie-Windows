@@ -374,6 +374,82 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
             return new MergeResult<Path>(new Path(args, a.DrawingDirection, geometryData.Value!));
         }
 
+        MergeResult<Rectangle> MergeRectangles(Rectangle a, TimeRange aRange, Rectangle b, TimeRange bRange)
+        {
+            if (a.BlendMode != b.BlendMode || a.DrawingDirection != b.DrawingDirection)
+            {
+                return MergeResult<Rectangle>.Failed;
+            }
+
+            var args = new ShapeLayerContentArgs
+            {
+                Name = $"{a.Name} {b.Name}",
+                MatchName = $"{a.MatchName}{b.MatchName}",
+                BlendMode = a.BlendMode,
+            };
+
+            var position = MergeIAnimatableVector3(a.Position, aRange, b.Position, bRange);
+            var size = MergeIAnimatableVector3(a.Size, aRange, b.Size, bRange);
+            var roundness = MergeAnimatable(a.Roundness, aRange, b.Roundness, bRange);
+
+            if (!position.Success || !size.Success || !roundness.Success)
+            {
+                return MergeResult<Rectangle>.Failed;
+            }
+
+            return new MergeResult<Rectangle>(new Rectangle(args, a.DrawingDirection, position.Value!, size.Value!, roundness.Value!));
+        }
+
+        MergeResult<TrimPath> MergeTrimPaths(TrimPath a, TimeRange aRange, TrimPath b, TimeRange bRange)
+        {
+            if (a.BlendMode != b.BlendMode || a.TrimPathType != b.TrimPathType)
+            {
+                return MergeResult<TrimPath>.Failed;
+            }
+
+            var args = new ShapeLayerContentArgs
+            {
+                Name = $"{a.Name} {b.Name}",
+                MatchName = $"{a.MatchName}{b.MatchName}",
+                BlendMode = a.BlendMode,
+            };
+
+            var start = MergeAnimatable(a.Start, aRange, b.Start, bRange);
+            var end = MergeAnimatable(a.End, aRange, b.End, bRange);
+            var offset = MergeAnimatable(a.Offset, aRange, b.Offset, bRange);
+
+            if (!start.Success || !end.Success || !offset.Success)
+            {
+                return MergeResult<TrimPath>.Failed;
+            }
+
+            return new MergeResult<TrimPath>(new TrimPath(args, a.TrimPathType, start.Value!, end.Value!, offset.Value!));
+        }
+
+        MergeResult<RoundCorners> MergeRoundCorners(RoundCorners a, TimeRange aRange, RoundCorners b, TimeRange bRange)
+        {
+            if (a.BlendMode != b.BlendMode)
+            {
+                return MergeResult<RoundCorners>.Failed;
+            }
+
+            var args = new ShapeLayerContentArgs
+            {
+                Name = $"{a.Name} {b.Name}",
+                MatchName = $"{a.MatchName}{b.MatchName}",
+                BlendMode = a.BlendMode,
+            };
+
+            var radius = MergeAnimatable(a.Radius, aRange, b.Radius, bRange);
+
+            if (!radius.Success)
+            {
+                return MergeResult<RoundCorners>.Failed;
+            }
+
+            return new MergeResult<RoundCorners>(new RoundCorners(args, radius.Value!));
+        }
+
         MergeResult<Ellipse> MergeEllipses(Ellipse a, TimeRange aRange, Ellipse b, TimeRange bRange)
         {
             if (a.BlendMode != b.BlendMode || a.DrawingDirection != b.DrawingDirection)
@@ -512,6 +588,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                     return MergeResult<ShapeLayerContent>.From(MergeShapeGroup((ShapeGroup)a, aRange, (ShapeGroup)b, bRange));
                 case ShapeContentType.Path:
                     return MergeResult<ShapeLayerContent>.From(MergePaths((Path)a, aRange, (Path)b, bRange));
+                case ShapeContentType.TrimPath:
+                    return MergeResult<ShapeLayerContent>.From(MergeTrimPaths((TrimPath)a, aRange, (TrimPath)b, bRange));
+                case ShapeContentType.Rectangle:
+                    return MergeResult<ShapeLayerContent>.From(MergeRectangles((Rectangle)a, aRange, (Rectangle)b, bRange));
+                case ShapeContentType.RoundCorners:
+                    return MergeResult<ShapeLayerContent>.From(MergeRoundCorners((RoundCorners)a, aRange, (RoundCorners)b, bRange));
                 case ShapeContentType.Ellipse:
                     return MergeResult<ShapeLayerContent>.From(MergeEllipses((Ellipse)a, aRange, (Ellipse)b, bRange));
                 case ShapeContentType.LinearGradientFill:
@@ -678,16 +760,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
 
         public MergeResult<LayerGroup> MergeLayerGroups(LayerGroup a, LayerGroup b)
         {
-            if (a.MainLayer is PreCompLayer || b.MainLayer is PreCompLayer)
-            {
-                return MergeResult<LayerGroup>.Failed;
-            }
-
-            if (a.MatteLayer is PreCompLayer || b.MatteLayer is PreCompLayer)
-            {
-                return MergeResult<LayerGroup>.Failed;
-            }
-
             if (!a.CanBeMerged || !b.CanBeMerged)
             {
                 return MergeResult<LayerGroup>.Failed;
@@ -836,7 +908,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
 
             var bAsset = GetAssetById(b.RefId);
 
-            if (aAsset is not LayerCollectionAsset || bAsset is not LayerCollectionAsset || aAsset == bAsset)
+            if (aAsset is not LayerCollectionAsset || bAsset is not LayerCollectionAsset)
             {
                 return MergeResult<PreCompLayer>.Failed;
             }
