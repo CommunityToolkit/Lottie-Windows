@@ -646,8 +646,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             // Otherwise we should use extra parent Visual (GetVisualRoot).
             //
             // Note: We can apply Masks and effects only to Visual node.
-            // Also we can reduce number of expression animations if we apply opacity dorectly to visual node
-            // instad of pushing it down to color fill that will produce color expression animation.
+            // Also we can reduce number of expression animations if we apply opacity directly to visual node
+            // instead of pushing it down to color fill that will produce color expression animation.
             internal override bool IsShape =>
                 !_context.Layer.Masks.Any() &&
                 _context.Effects.DropShadowEffect is null &&
