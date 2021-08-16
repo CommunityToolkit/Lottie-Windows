@@ -642,10 +642,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 _context = context;
             }
 
+            // Indicates if we can translate shape layer as a single composition shape (GetShapeRoot).
+            // Otherwise we should use extra parent Visual (GetVisualRoot).
+            //
+            // Note: We can apply Masks and effects only to Visual node.
+            // Also we can reduce number of expression animations if we apply opacity directly to visual node
+            // instead of pushing it down to color fill that will produce color expression animation.
             internal override bool IsShape =>
                 !_context.Layer.Masks.Any() &&
                 _context.Effects.DropShadowEffect is null &&
-                _context.Effects.GaussianBlurEffect is null;
+                _context.Effects.GaussianBlurEffect is null &&
+                _context.Layer.Transform.Opacity.IsAlways(Opacity.Opaque);
 
             internal override CompositionShape? GetShapeRoot(TranslationContext context)
             {
@@ -668,6 +675,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
                 // Update the opacity from the transform. This is necessary to push the opacity
                 // to the leaves (because CompositionShape does not support opacity).
+                // Note: this is no longer used because we will not call GetShapeRoot if layer transform has
+                // animated opacity, instead we will call GetVisualRoot. But let's keep it here
+                // just in case we will change the logic of IsShape flag.
                 shapeContext.UpdateOpacityFromTransform(_context, _context.Layer.Transform);
                 contentsNode.Shapes.Add(TranslateShapeLayerContents(shapeContext, _context.Layer.Contents));
 
