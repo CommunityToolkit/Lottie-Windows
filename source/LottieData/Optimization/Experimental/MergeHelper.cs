@@ -584,26 +584,26 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
 
             switch (a.ContentType)
             {
+                case ShapeContentType.Ellipse:
+                    return MergeResult<ShapeLayerContent>.From(MergeEllipses((Ellipse)a, aRange, (Ellipse)b, bRange));
                 case ShapeContentType.Group:
                     return MergeResult<ShapeLayerContent>.From(MergeShapeGroup((ShapeGroup)a, aRange, (ShapeGroup)b, bRange));
+                case ShapeContentType.LinearGradientFill:
+                    return MergeResult<ShapeLayerContent>.From(MergeLinearGradientFills((LinearGradientFill)a, aRange, (LinearGradientFill)b, bRange));
                 case ShapeContentType.Path:
                     return MergeResult<ShapeLayerContent>.From(MergePaths((Path)a, aRange, (Path)b, bRange));
-                case ShapeContentType.TrimPath:
-                    return MergeResult<ShapeLayerContent>.From(MergeTrimPaths((TrimPath)a, aRange, (TrimPath)b, bRange));
                 case ShapeContentType.Rectangle:
                     return MergeResult<ShapeLayerContent>.From(MergeRectangles((Rectangle)a, aRange, (Rectangle)b, bRange));
                 case ShapeContentType.RoundCorners:
                     return MergeResult<ShapeLayerContent>.From(MergeRoundCorners((RoundCorners)a, aRange, (RoundCorners)b, bRange));
-                case ShapeContentType.Ellipse:
-                    return MergeResult<ShapeLayerContent>.From(MergeEllipses((Ellipse)a, aRange, (Ellipse)b, bRange));
-                case ShapeContentType.LinearGradientFill:
-                    return MergeResult<ShapeLayerContent>.From(MergeLinearGradientFills((LinearGradientFill)a, aRange, (LinearGradientFill)b, bRange));
-                case ShapeContentType.Transform:
-                    return MergeResult<ShapeLayerContent>.From(MergeTransform((Transform)a, aRange, (Transform)b, bRange));
                 case ShapeContentType.SolidColorFill:
                     return MergeResult<ShapeLayerContent>.From(MergeSolidColorFills((SolidColorFill)a, aRange, (SolidColorFill)b, bRange));
                 case ShapeContentType.SolidColorStroke:
                     return MergeResult<ShapeLayerContent>.From(MergeSolidColorStrokes((SolidColorStroke)a, aRange, (SolidColorStroke)b, bRange));
+                case ShapeContentType.Transform:
+                    return MergeResult<ShapeLayerContent>.From(MergeTransform((Transform)a, aRange, (Transform)b, bRange));
+                case ShapeContentType.TrimPath:
+                    return MergeResult<ShapeLayerContent>.From(MergeTrimPaths((TrimPath)a, aRange, (TrimPath)b, bRange));
             }
 
             return MergeResult<ShapeLayerContent>.Failed;
