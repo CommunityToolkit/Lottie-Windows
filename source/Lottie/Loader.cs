@@ -12,6 +12,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Toolkit.Uwp.UI.Lottie.CompMetadata;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
+using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp;
 using Windows.Foundation.Metadata;
@@ -83,6 +84,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                             jsonStream,
                             LottieCompositionReader.Options.IgnoreMatchNames,
                             out var readerIssues);
+
+                    if (lottieComposition is not null)
+                    {
+                        lottieComposition = LottieMergeOptimizer.Optimize(lottieComposition);
+                    }
 
                     if (diagnostics is not null)
                     {
