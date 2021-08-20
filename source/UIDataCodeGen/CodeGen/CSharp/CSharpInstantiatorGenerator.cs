@@ -211,7 +211,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
                     builder.WriteLine("set");
                     builder.OpenScope();
                     builder.WriteLine($"_theme{prop.BindingName} = value;");
-                    builder.WriteLine($"if ({SourceInfo.ThemePropertiesFieldName} is not null)");
+                    builder.WriteLine($"if ({SourceInfo.ThemePropertiesFieldName} != null)");
                     builder.OpenScope();
                     WriteThemePropertyInitialization(builder, SourceInfo.ThemePropertiesFieldName, prop);
                     builder.CloseScope();
@@ -408,7 +408,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
                 // EnsureThemeProperties(...) method implementation.
                 builder.WriteLine("CompositionPropertySet EnsureThemeProperties(Compositor compositor)");
                 builder.OpenScope();
-                builder.WriteLine($"if ({SourceInfo.ThemePropertiesFieldName} is null)");
+                builder.WriteLine($"if ({SourceInfo.ThemePropertiesFieldName} == null)");
                 builder.OpenScope();
                 builder.WriteLine($"{SourceInfo.ThemePropertiesFieldName} = compositor.CreatePropertySet();");
 
@@ -714,7 +714,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
                 builder.WriteLine();
 
                 // Update the CompositionPropertySet if it has been created.
-                builder.WriteLine($"if ({SourceInfo.ThemePropertiesFieldName} is not null)");
+                builder.WriteLine($"if ({SourceInfo.ThemePropertiesFieldName} != null)");
                 builder.OpenScope();
 
                 builder.WriteLine($"{SourceInfo.ThemePropertiesFieldName}.Insert{propertySetTypeName}(propertyName, {valueInitializer});");

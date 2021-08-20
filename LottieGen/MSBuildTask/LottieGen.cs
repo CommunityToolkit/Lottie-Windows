@@ -246,7 +246,7 @@ namespace LottieGen.Task
             {
                 if (value)
                 {
-                    AddArg(parameterName, "true");
+                    args.Add($"-{parameterName}");
                 }
             }
 
