@@ -433,11 +433,11 @@ namespace LottieViewer
         }
 
         // Called when the user clicks on a marker-with-duration hyperlink.
-        void MarkerEndClick(Hyperlink sender, HyperlinkClickEventArgs args)
+        void MarkerWithDurationClick(Hyperlink sender, HyperlinkClickEventArgs args)
         {
             var dataContext = ((FrameworkElement)sender.ElementStart.Parent).DataContext;
             var marker = (MarkerWithDuration)dataContext;
-            SeekToProgressValue(marker.ConstrainedOutProgress);
+            _ = _stage.Player?.PlayAsync(marker.ConstrainedInProgress, marker.ConstrainedOutProgress, looped: true);
         }
 
         // Sets the progress to the given value, and sets the focus to the scrubber

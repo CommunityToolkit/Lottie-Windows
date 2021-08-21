@@ -5,6 +5,7 @@
 #nullable enable
 
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
@@ -68,8 +69,59 @@ namespace LottieViewer.ViewModel
                         var totalFrames = framesPerSecond * duration;
 
                         var isFirst = true;
+
+                        var usedMarkers = new List<string>();
+
+                        // XAML AnimatedIcon uses NAME_Start -> NAME_End naming convention for markers.
+                        // It uses two markers to specify animation segment for some state.
+                        // This loop extracts matching pairs of markers of format NAME_Start and NAME_End
+                        // and transforms them to MarkerWithDuration object so that in UI it will be displayed as single segment.
+                        foreach (var startMarker in metadata.FilteredMarkers)
+                        {
+                            if (!startMarker.Name.EndsWith("_Start") || startMarker.Duration.Frames != 0)
+                            {
+                                continue;
+                            }
+
+                            foreach (var endMarker in metadata.FilteredMarkers)
+                            {
+                                if (!endMarker.Name.EndsWith("_End") || endMarker.Duration.Frames != 0)
+                                {
+                                    continue;
+                                }
+
+                                string namePrefix = endMarker.Name.Substring(0, endMarker.Name.Length - "_End".Length);
+
+                                if (startMarker.Name.StartsWith(namePrefix))
+                                {
+                                    usedMarkers.Add(startMarker.Name);
+                                    usedMarkers.Add(endMarker.Name);
+
+                                    var propertyName = isFirst ? $"Marker{(composition.Markers.Count > 1 ? "s" : string.Empty)}" : string.Empty;
+
+                                    var inProgress = startMarker.Frame.GetNudgedProgress(NudgeFrameProportion);
+                                    var outProgress = endMarker.Frame.GetNudgedProgress(NudgeFrameProportion);
+
+                                    Markers.Add(new MarkerWithDuration(
+                                        namePrefix,
+                                        propertyName,
+                                        (int)startMarker.Frame.Number,
+                                        inProgress,
+                                        (int)endMarker.Frame.Number,
+                                        outProgress));
+
+                                    isFirst = false;
+                                }
+                            }
+                        }
+
                         foreach (var m in metadata.FilteredMarkers)
                         {
+                            if (usedMarkers.Contains(m.Name))
+                            {
+                                continue;
+                            }
+
                             var inProgress = m.Frame.GetNudgedProgress(NudgeFrameProportion);
                             Marker marker;
                             var propertyName = isFirst ? $"Marker{(composition.Markers.Count > 1 ? "s" : string.Empty)}" : string.Empty;
