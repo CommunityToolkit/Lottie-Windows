@@ -1143,12 +1143,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
         // affects different sets of properties then they can be combined into one.
         void CoalesceOrthogonalContainerVisuals(ObjectGraph<Node> graph)
         {
-            // If a container is not animated and has no properties set, its children can be inserted into its parent.
+            // If a container is not animated and has no properties set, its children can be inserted into its parent,
+            // except the root node. We should not change the root node since the user can try to change width/height/scale
+            // of the root node and in combination with non-null Clip property (or others)
+            // this can lead to incorrect animation.
             var containersWithASingleContainer = graph.CompositionObjectNodes.Where(n =>
             {
                 // Find the ContainerVisuals that have a single child that is a ContainerVisual.
                 return
                         n.Object is ContainerVisual container &&
+                        n.Object != graph.Root.Object &&
                         container.Children.Count == 1 &&
                         container.Children[0].Type == CompositionObjectType.ContainerVisual;
             }).ToArray();
