@@ -10,6 +10,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using LottieViewer.ViewModel;
 using Windows.ApplicationModel;
@@ -18,6 +19,7 @@ using Windows.Foundation.Metadata;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using Windows.UI;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -34,6 +36,8 @@ namespace LottieViewer
     public sealed partial class MainPage : Page, INotifyPropertyChanged
     {
         readonly ToggleButton[] _controlPanelButtons;
+        readonly Timer timer;
+
         int _playControlToggleVersion;
         int _playVersion;
 
@@ -60,6 +64,16 @@ namespace LottieViewer
 
             // Remove all of the control panel panes. They will be added back as needed.
             ControlPanel.Children.Clear();
+
+            timer = new Timer(TimerCallback, null, 0, (int)TimeSpan.FromMilliseconds(200).TotalMilliseconds);
+        }
+
+        private void TimerCallback(object state)
+        {
+            _ = Dispatcher.RunAsync(CoreDispatcherPriority.High, () =>
+            {
+                _ = _pixelView.UpdatePixelViewAsync(_stage.PlayerContainer);
+            });
         }
 
         public ObservableCollection<object> PropertiesList { get; } = new ObservableCollection<object>();
@@ -303,6 +317,8 @@ namespace LottieViewer
 
         void ProgressSliderChanged(object sender, ScrubberValueChangedEventArgs e)
         {
+            _ = _pixelView.UpdatePixelViewAsync(_stage.PlayerContainer);
+
             if (!_ignoreScrubberValueChanges)
             {
                 UncheckPlayStopButton();

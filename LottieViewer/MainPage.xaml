@@ -88,7 +88,7 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <Grid.Resources>
-                <x:Double x:Key="ControlPanelWidth">355</x:Double>
+                <x:Double x:Key="ControlPanelWidth">400</x:Double>
             </Grid.Resources>
             <!--  The stage. This is where the Lotties are displayed.  -->
             <local:Stage x:Name="_stage" ArtboardColor="{x:Bind ArtboardBrush.Color, Mode=OneWay}" />
@@ -185,6 +185,7 @@
                             </Grid>
                         </StackPanel>
                         
+                        <!-- Canvas size slider. -->
                         <StackPanel>
                             <TextBlock FontWeight="Bold" >Canvas size</TextBlock>
                             <Grid Margin="20,14,20,20">
@@ -217,6 +218,21 @@
                                 </Slider>
                                 <TextBlock Grid.Column="1" Margin="10,0,0,0"><Run Text="{x:Bind _stage.PlayerContainer.MaxHeight, Mode=OneWay, Converter={StaticResource floatFormatter}}"/>px</TextBlock>
                             </Grid>
+                        </StackPanel>
+
+                        <!-- Separator -->
+                        <Border Style="{StaticResource SeparatorStyle}"/>
+                        <TextBlock FontWeight="Bold" Margin="0,0,0,10">Pixel view</TextBlock>
+
+                        <!-- Pixel View. -->
+                        <local:PixelViewElement x:Name="_pixelView">
+                            <Rectangle PointerMoved="{x:Bind _pixelView.OnMouseMove}" Height="auto" Width="auto" Fill="White"></Rectangle>
+                        </local:PixelViewElement>
+
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="10,0,0,0">
+                            <TextBlock Margin="5,0">Position: <Run Text="{x:Bind _pixelView.CurrentPosition, Mode=OneWay}"/></TextBlock>
+                            <TextBlock>Color: <Run Text="{x:Bind _pixelView.CurrentColorString, Mode=OneWay}"/></TextBlock>
+                            <Rectangle Width="10" Height="10" Margin="5" Fill="{x:Bind _pixelView.CurrentColorString, Mode=OneWay}"></Rectangle>
                         </StackPanel>
 
                         <!-- Separator -->
