@@ -195,7 +195,7 @@ namespace LottieViewer
                     _playStopButton.IsChecked = true;
 
                     // Loading succeeded, update pixel view resolution.
-                    _pixelView.UpdateResolution((int)_stage.PlayerContainer.ActualWidth, (int)_stage.PlayerContainer.ActualHeight);
+                    _pixelView.OnResolutionUpdated((int)_stage.PlayerContainer.ActualWidth, (int)_stage.PlayerContainer.ActualHeight);
                 }
             }
             finally
@@ -292,7 +292,7 @@ namespace LottieViewer
                 _playStopButton.IsChecked = true;
 
                 // Loading succeeded, update pixel view resolution.
-                _pixelView.UpdateResolution((int)_stage.PlayerContainer.ActualWidth, (int)_stage.PlayerContainer.ActualHeight);
+                _pixelView.OnResolutionUpdated((int)_stage.PlayerContainer.ActualWidth, (int)_stage.PlayerContainer.ActualHeight);
             }
         }
 
@@ -319,14 +319,6 @@ namespace LottieViewer
             {
                 UncheckPlayStopButton();
                 _stage.Player.SetProgress(e.NewValue);
-            }
-        }
-
-        void CanvasSizeSliderChanged(object sender, RangeBaseValueChangedEventArgs e)
-        {
-            if (_pixelView != null && _stage.PlayerContainer.ActualHeight > 0)
-            {
-                _pixelView.UpdateResolution((int)(_stage.PlayerContainer.ActualWidth / _stage.PlayerContainer.ActualWidth * e.NewValue), (int)e.NewValue);
             }
         }
 

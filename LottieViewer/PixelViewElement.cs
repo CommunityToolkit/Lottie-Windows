@@ -38,6 +38,10 @@ namespace LottieViewer
 
         Color? _currentColor = null;
 
+        Direct3D11CaptureFramePool? _framePool = null;
+        GraphicsCaptureSession? _session = null;
+        CanvasDevice? _canvasDevice = null;
+
         public static readonly DependencyProperty CurrentColorStringProperty =
         DependencyProperty.RegisterAttached(
           "CurrentColorString",
@@ -78,10 +82,13 @@ namespace LottieViewer
 
         public void SetElementToCapture(FrameworkElement element)
         {
+            element.SizeChanged += (object sender, SizeChangedEventArgs e) =>
+                  OnResolutionUpdated((int)element.ActualWidth, (int)element.ActualHeight);
+
             _capturedVisual = ElementCompositionPreview.GetElementVisual(element);
             _capturedVisual.BorderMode = CompositionBorderMode.Soft;
 
-            UpdateResolution((int)element.ActualWidth, (int)element.ActualHeight);
+            OnResolutionUpdated((int)element.ActualWidth, (int)element.ActualHeight);
         }
 
         public void OnMouseMove(object sender, PointerRoutedEventArgs e)
@@ -158,10 +165,6 @@ namespace LottieViewer
             _spriteVisual.Brush = surfaceBrush;
         }
 
-        Direct3D11CaptureFramePool? _framePool = null;
-        GraphicsCaptureSession? _session = null;
-        CanvasDevice? _canvasDevice = null;
-
         void OnFrameArrived(Direct3D11CaptureFramePool sender, object args)
         {
             using (var frame = sender.TryGetNextFrame())
@@ -171,12 +174,12 @@ namespace LottieViewer
             }
         }
 
-        public void UpdateResolution(int width, int height)
+        public void OnResolutionUpdated(int width, int height)
             => UpdateResolution(new SizeInt32 { Width = width, Height = height });
 
         public void UpdateResolution(SizeInt32 size)
         {
-            if (size.Height == 0 || size.Width == 0)
+            if (size.Height <= 0 || size.Width <= 0)
             {
                 return;
             }
