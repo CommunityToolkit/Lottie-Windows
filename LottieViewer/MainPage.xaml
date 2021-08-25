@@ -203,6 +203,7 @@
                                     StepFrequency="1"
                                     TickFrequency="16"
                                     TickPlacement="TopLeft"
+                                    ValueChanged="CanvasSizeSliderChanged"
                                     Value="{x:Bind _stage.PlayerContainer.MaxHeight, Mode=TwoWay}">
                                     <Slider.Resources>
                                         <!-- 

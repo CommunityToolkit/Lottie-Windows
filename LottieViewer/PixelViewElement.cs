@@ -19,11 +19,15 @@ using Windows.UI.Xaml.Input;
 
 namespace LottieViewer
 {
+    /// <summary>
+    /// PixelView element can draw any provided visual and scale it up so that
+    /// pixels are easily visible.
+    /// This element also provides information about pixel under cursor: position, color.
+    /// </summary>
     public sealed class PixelViewElement : UserControl
     {
-        readonly SpriteVisual _visual;
-        bool _comparisonIsUnderway = false;
-        bool _comparisonIsQueued = false;
+        readonly SpriteVisual _spriteVisual;
+        Visual? _capturedVisual = null;
 
         // Checkerboard pattern bitmap.
         static CanvasBitmap? _patternBitmap = null;
@@ -31,7 +35,6 @@ namespace LottieViewer
         // Previously rendered bitmap info.
         CanvasBitmap? _previousBitmap = null;
         Color[]? _previousColors = null;
-        int _previousScale = 1;
 
         Color? _currentColor = null;
 
@@ -51,12 +54,14 @@ namespace LottieViewer
           new PropertyMetadata(new Vector2(0, 0))
         );
 
+        // Contains hex representation of last color under cursor #AARRGGBB
         public string CurrentColorString
         {
             get { return (string)GetValue(CurrentColorStringProperty); }
             set { SetValue(CurrentColorStringProperty, value); }
         }
 
+        // 2d position of last pixel under cursor <x, y>
         public Vector2 CurrentPosition
         {
             get { return (Vector2)GetValue(CurrentPositionProperty); }
@@ -65,22 +70,32 @@ namespace LottieViewer
 
         public PixelViewElement()
         {
-            var c = ElementCompositionPreview.GetElementVisual(this).Compositor;
-            _visual = c.CreateSpriteVisual();
-            _visual.RelativeSizeAdjustment = Vector2.One;
-            ElementCompositionPreview.SetElementChildVisual(this, _visual);
+            var compositor = ElementCompositionPreview.GetElementVisual(this).Compositor;
+            _spriteVisual = compositor.CreateSpriteVisual();
+            _spriteVisual.RelativeSizeAdjustment = Vector2.One;
+            ElementCompositionPreview.SetElementChildVisual(this, _spriteVisual);
+        }
+
+        public void SetElementToCapture(FrameworkElement element)
+        {
+            _capturedVisual = ElementCompositionPreview.GetElementVisual(element);
+            _capturedVisual.BorderMode = CompositionBorderMode.Soft;
+
+            UpdateResolution((int)element.ActualWidth, (int)element.ActualHeight);
         }
 
         public void OnMouseMove(object sender, PointerRoutedEventArgs e)
         {
             var position = e.GetCurrentPoint(this).Position;
-            if (_previousScale < 0 || _previousBitmap == null || ActualHeight <= 0)
+
+            if (_previousBitmap == null || ActualHeight <= 0)
             {
                 return;
             }
 
             int pixelX = (int)Math.Floor(position.X * (_previousBitmap.Size.Height / ActualHeight));
             int pixelY = (int)Math.Floor(position.Y * (_previousBitmap.Size.Width / ActualWidth));
+
             if (pixelX < 0 || pixelX >= _previousBitmap.SizeInPixels.Width || pixelY < 0 || pixelY >= _previousBitmap.SizeInPixels.Height)
             {
                 return;
@@ -96,28 +111,6 @@ namespace LottieViewer
             SetValue(CurrentPositionProperty, new Vector2(pixelX, pixelY));
         }
 
-        public async Task UpdatePixelViewAsync(FrameworkElement element)
-        {
-            _comparisonIsQueued = true;
-
-            if (!_comparisonIsUnderway)
-            {
-                _comparisonIsUnderway = true;
-                while (_comparisonIsQueued)
-                {
-                    _comparisonIsQueued = false;
-                    try
-                    {
-                        var bitmap = await RenderElementToBitmapAsync(element);
-                        await ShowBitmapOnTargetAsync(bitmap);
-                    }
-                    catch { }
-                }
-
-                _comparisonIsUnderway = false;
-            }
-        }
-
         async Task ShowBitmapOnTargetAsync(CanvasBitmap bitmap)
         {
             int scale = (int)Math.Ceiling(ActualSize.Y / bitmap.Size.Height);
@@ -125,7 +118,6 @@ namespace LottieViewer
             Height = bitmap.Size.Height / bitmap.Size.Width * ActualSize.X;
 
             _previousBitmap = bitmap;
-            _previousScale = scale;
             _previousColors = null;
 
             var compositor = ElementCompositionPreview.GetElementVisual(this).Compositor;
@@ -163,71 +155,53 @@ namespace LottieViewer
             }
 
             var surfaceBrush = compositor.CreateSurfaceBrush(surface);
-            _visual.Brush = surfaceBrush;
+            _spriteVisual.Brush = surfaceBrush;
         }
 
-        /// <summary>
-        /// Renders a bitmap of the given <see cref="FrameworkElement"/>.
-        /// </summary>
-        static Task<CanvasBitmap> RenderElementToBitmapAsync(FrameworkElement element)
-            => RenderVisualToBitmapAsync(
-                ElementCompositionPreview.GetElementVisual(element),
-                new SizeInt32 { Width = (int)element.ActualWidth, Height = (int)element.ActualHeight });
+        Direct3D11CaptureFramePool? _framePool = null;
+        GraphicsCaptureSession? _session = null;
+        CanvasDevice? _canvasDevice = null;
 
-        /// <summary>
-        /// Renders a the given <see cref="Visual"/> to a <see cref="CanvasBitmap"/>. If <paramref name="size"/> is not
-        /// specified, uses the size of <paramref name="visual"/>.
-        /// </summary>
-        static async Task<CanvasBitmap> RenderVisualToBitmapAsync(Visual visual, SizeInt32? size = null)
+        void OnFrameArrived(Direct3D11CaptureFramePool sender, object args)
         {
-            visual.BorderMode = CompositionBorderMode.Soft;
-
-            // Get an object that enables capture from a visual.
-            var graphicsItem = GraphicsCaptureItem.CreateFromVisual(visual);
-
-            var canvasDevice = CanvasDevice.GetSharedDevice();
-
-            var tcs = new TaskCompletionSource<CanvasBitmap>();
-
-            // Create a frame pool with room for only 1 frame because we're getting a single frame, not a video.
-            const int numberOfBuffers = 1;
-            using (var framePool = Direct3D11CaptureFramePool.Create(
-                                canvasDevice,
-                                DirectXPixelFormat.B8G8R8A8UIntNormalized,
-                                numberOfBuffers,
-                                size ?? graphicsItem.Size))
+            using (var frame = sender.TryGetNextFrame())
             {
-                void OnFrameArrived(Direct3D11CaptureFramePool sender, object args)
-                {
-                    using (var frame = sender.TryGetNextFrame())
-                    {
-                        tcs.SetResult(CanvasBitmap.CreateFromDirect3D11Surface(canvasDevice, frame.Surface));
-                    }
-                }
+                CanvasBitmap bitmap = CanvasBitmap.CreateFromDirect3D11Surface(_canvasDevice!, frame.Surface);
+                _ = ShowBitmapOnTargetAsync(bitmap);
+            }
+        }
 
-                using (var session = framePool.CreateCaptureSession(graphicsItem))
-                {
-                    framePool.FrameArrived += OnFrameArrived;
+        public void UpdateResolution(int width, int height)
+            => UpdateResolution(new SizeInt32 { Width = width, Height = height });
 
-                    // Start capturing. The FrameArrived event will occur shortly.
-                    session.StartCapture();
-
-                    // Wait for the frame to arrive.
-                    var result = await tcs.Task;
-
-                    // !!!!!!!! NOTE !!!!!!!!
-                    // This thread is now running inside the OnFrameArrived callback method.
-
-                    // Unsubscribe now that we have captured the frame.
-                    framePool.FrameArrived -= OnFrameArrived;
-
-                    // Yield to allow the OnFrameArrived callback to unwind so that it is safe to
-                    // Dispose the session and framepool.
-                    await Task.Yield();
-                }
+        public void UpdateResolution(SizeInt32 size)
+        {
+            if (size.Height == 0 || size.Width == 0)
+            {
+                return;
             }
 
-            return await tcs.Task;
+            if (_framePool is not null && _session is not null)
+            {
+                // Unsubscribe from old framePool
+                _framePool.FrameArrived -= OnFrameArrived;
+
+                // Dispose old session and framePool
+                _session.Dispose();
+                _framePool.Dispose();
+            }
+
+            _canvasDevice = CanvasDevice.GetSharedDevice();
+
+            // Create a frame pool with room for only 1 frame because we're getting a single frame, not a video.
+            _framePool =
+                Direct3D11CaptureFramePool.Create(_canvasDevice, DirectXPixelFormat.B8G8R8A8UIntNormalized, 1, size);
+
+            _session = _framePool.CreateCaptureSession(GraphicsCaptureItem.CreateFromVisual(_capturedVisual));
+
+            _framePool.FrameArrived += OnFrameArrived;
+
+            _session.StartCapture();
         }
     }
 }

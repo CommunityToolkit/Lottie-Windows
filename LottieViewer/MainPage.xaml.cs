@@ -36,7 +36,6 @@ namespace LottieViewer
     public sealed partial class MainPage : Page, INotifyPropertyChanged
     {
         readonly ToggleButton[] _controlPanelButtons;
-        readonly Timer timer;
 
         int _playControlToggleVersion;
         int _playVersion;
@@ -65,15 +64,8 @@ namespace LottieViewer
             // Remove all of the control panel panes. They will be added back as needed.
             ControlPanel.Children.Clear();
 
-            timer = new Timer(TimerCallback, null, 0, (int)TimeSpan.FromMilliseconds(200).TotalMilliseconds);
-        }
-
-        private void TimerCallback(object state)
-        {
-            _ = Dispatcher.RunAsync(CoreDispatcherPriority.High, () =>
-            {
-                _ = _pixelView.UpdatePixelViewAsync(_stage.PlayerContainer);
-            });
+            // Capture player by PixelView
+            _pixelView.SetElementToCapture(_stage.PlayerContainer);
         }
 
         public ObservableCollection<object> PropertiesList { get; } = new ObservableCollection<object>();
@@ -201,6 +193,9 @@ namespace LottieViewer
                 {
                     // Loading succeeded, start playing.
                     _playStopButton.IsChecked = true;
+
+                    // Loading succeeded, update pixel view resolution.
+                    _pixelView.UpdateResolution((int)_stage.PlayerContainer.ActualWidth, (int)_stage.PlayerContainer.ActualHeight);
                 }
             }
             finally
@@ -295,6 +290,9 @@ namespace LottieViewer
             {
                 // Loading succeeded, start playing.
                 _playStopButton.IsChecked = true;
+
+                // Loading succeeded, update pixel view resolution.
+                _pixelView.UpdateResolution((int)_stage.PlayerContainer.ActualWidth, (int)_stage.PlayerContainer.ActualHeight);
             }
         }
 
@@ -317,12 +315,18 @@ namespace LottieViewer
 
         void ProgressSliderChanged(object sender, ScrubberValueChangedEventArgs e)
         {
-            _ = _pixelView.UpdatePixelViewAsync(_stage.PlayerContainer);
-
             if (!_ignoreScrubberValueChanges)
             {
                 UncheckPlayStopButton();
                 _stage.Player.SetProgress(e.NewValue);
+            }
+        }
+
+        void CanvasSizeSliderChanged(object sender, RangeBaseValueChangedEventArgs e)
+        {
+            if (_pixelView != null && _stage.PlayerContainer.ActualHeight > 0)
+            {
+                _pixelView.UpdateResolution((int)(_stage.PlayerContainer.ActualWidth / _stage.PlayerContainer.ActualWidth * e.NewValue), (int)e.NewValue);
             }
         }
 
