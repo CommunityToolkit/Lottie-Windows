@@ -10,6 +10,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using LottieViewer.ViewModel;
 using Windows.ApplicationModel;
@@ -18,6 +19,7 @@ using Windows.Foundation.Metadata;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using Windows.UI;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -34,6 +36,7 @@ namespace LottieViewer
     public sealed partial class MainPage : Page, INotifyPropertyChanged
     {
         readonly ToggleButton[] _controlPanelButtons;
+
         int _playControlToggleVersion;
         int _playVersion;
 
@@ -60,6 +63,9 @@ namespace LottieViewer
 
             // Remove all of the control panel panes. They will be added back as needed.
             ControlPanel.Children.Clear();
+
+            // Capture player by PixelView
+            _pixelView.SetElementToCapture(_stage.PlayerContainer);
         }
 
         public ObservableCollection<object> PropertiesList { get; } = new ObservableCollection<object>();
@@ -187,6 +193,9 @@ namespace LottieViewer
                 {
                     // Loading succeeded, start playing.
                     _playStopButton.IsChecked = true;
+
+                    // Loading succeeded, update pixel view resolution.
+                    _pixelView.OnResolutionUpdated((int)_stage.PlayerContainer.ActualWidth, (int)_stage.PlayerContainer.ActualHeight);
                 }
             }
             finally
@@ -281,6 +290,9 @@ namespace LottieViewer
             {
                 // Loading succeeded, start playing.
                 _playStopButton.IsChecked = true;
+
+                // Loading succeeded, update pixel view resolution.
+                _pixelView.OnResolutionUpdated((int)_stage.PlayerContainer.ActualWidth, (int)_stage.PlayerContainer.ActualHeight);
             }
         }
 
