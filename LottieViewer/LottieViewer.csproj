@@ -92,6 +92,7 @@
     <Compile Include="AnimatedVisuals\UiFeedbackAnimations.cs" />
     <Compile Include="AnimatedVisuals\LottieLogo.cs" />
     <Compile Include="ColorPaletteEntry.cs" />
+    <Compile Include="PixelViewElement.cs" />
     <Compile Include="FeedbackLottie.xaml.cs">
       <DependentUpon>FeedbackLottie.xaml</DependentUpon>
     </Compile>
