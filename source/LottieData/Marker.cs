@@ -31,5 +31,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
 
         /// <inheritdoc/>
         public override LottieObjectType ObjectType => LottieObjectType.Marker;
+
+        public Marker WithTimeOffset(double offset)
+        {
+            return new Marker(Name, Frame + offset, DurationInFrames);
+        }
     }
 }

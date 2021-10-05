@@ -131,6 +131,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen
                 return false;
             }
 
+            if (_options.EnableAnimatedIconOptimizer)
+            {
+                lottieComposition = CollapsePreCompsOptimizer.Optimize(lottieComposition);
+            }
+
             if (!_options.DisableLottieMergeOptimizer)
             {
                 lottieComposition = LottieMergeOptimizer.Optimize(lottieComposition);

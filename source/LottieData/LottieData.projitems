@@ -35,6 +35,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Mask.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MergePaths.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NullLayer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Optimization\CollapsePreCompsOptimizer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Optimization\LayerGroup.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Optimization\LayersGraph.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Optimization\MergeHelper.cs" />
