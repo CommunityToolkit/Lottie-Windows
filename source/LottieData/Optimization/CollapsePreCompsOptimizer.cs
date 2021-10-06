@@ -27,6 +27,39 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
     {
         public static LottieComposition Optimize(LottieComposition composition)
         {
+            // Example of how this optimization works:
+            //
+            // m - markers
+            //
+            // Before optimization:
+            //
+            // |__ RefId: comp_0 __| |________ RefId: comp_1 ________| |__ RefId : comp_0 __| |__ RefId : comp_2 __|
+            // ^                   ^ ^                               ^ ^                    ^ ^                    ^
+            // m0                 m1 m2                             m3 m4                  m5 m6                  m7
+            //
+            //
+            // Step 1 (delete duplicates)
+            //
+            // |__ RefId: comp_0 __| |________ RefId: comp_1 ________|                        |__ RefId : comp_2 __|
+            // ^                   ^ ^                               ^ ^                    ^ ^                    ^
+            // m0                 m1 m2                             m3 m4                  m5 m6                  m7
+            //
+            //
+            // Step 2 (shift all layers to form one contiguous section)
+            //
+            // |__ RefId: comp_0 __| |________ RefId: comp_1 ________| |__ RefId : comp_2 __|
+            // ^                   ^ ^                               ^ ^                    ^ ^                    ^
+            // m0                 m1 m2                             m3 m4                  m5 m6                  m7
+            //
+            //
+            // Step 3 (final, move all markers to corresponding layers):
+            //
+            // |__ RefId: comp_0 __| |________ RefId: comp_1 ________| |__ RefId : comp_2 __|
+            // ^                   ^ ^                               ^ ^                    ^
+            // m0                 m1 m2                             m3 m6                  m7
+            // m4                 m5
+            //
+            // We deleted second entry of comp_0, shifted comp_2 to the left and moved markers m4 and m5 to the same spots where m0 and m1 are.
             List<Layer> layers = composition.Layers.GetLayersBottomToTop().ToList();
 
             // All layers should be pre-comp layers.
@@ -65,7 +98,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
                 }
                 else
                 {
-                    // All markers have %s_Start or %s_End format.
+                    // All markers should have %s_Start or %s_End format.
                     return composition;
                 }
             }
