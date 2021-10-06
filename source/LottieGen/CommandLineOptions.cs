@@ -23,6 +23,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen
 
         internal bool DisableTranslationOptimizer { get; private set; }
 
+        internal bool EnableAnimatedIconOptimizer { get; private set; }
+
         // The parse error, or null if the parse succeeded.
         // The error should be a sentence (starts with a capital letter, and ends with a period).
         internal string? ErrorDescription { get; private set; }
@@ -95,6 +97,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen
             if (DisableTranslationOptimizer)
             {
                 sb.Append($" -{nameof(DisableTranslationOptimizer)}");
+            }
+
+            if (EnableAnimatedIconOptimizer)
+            {
+                sb.Append($" -{nameof(EnableAnimatedIconOptimizer)}");
             }
 
             if (GenerateColorBindings)
@@ -176,6 +183,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen
             DisableCodeGenOptimizer,
             DisableLottieMergeOptimizer,
             DisableTranslationOptimizer,
+            EnableAnimatedIconOptimizer,
             GenerateColorBindings,
             GenerateDependencyObject,
             Help,
@@ -246,6 +254,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen
                 .AddPrefixedKeyword(Keyword.DisableCodeGenOptimizer)
                 .AddPrefixedKeyword(Keyword.DisableLottieMergeOptimizer)
                 .AddPrefixedKeyword(Keyword.DisableTranslationOptimizer)
+                .AddPrefixedKeyword(Keyword.EnableAnimatedIconOptimizer)
                 .AddPrefixedKeyword(Keyword.GenerateColorBindings)
                 .AddPrefixedKeyword(Keyword.GenerateDependencyObject)
                 .AddPrefixedKeyword(Keyword.Help, "?")
@@ -306,6 +315,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen
                                 break;
                             case Keyword.DisableTranslationOptimizer:
                                 DisableTranslationOptimizer = true;
+                                break;
+                            case Keyword.EnableAnimatedIconOptimizer:
+                                EnableAnimatedIconOptimizer = true;
                                 break;
                             case Keyword.Public:
                                 Public = true;
