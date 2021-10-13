@@ -421,6 +421,11 @@ namespace LottieViewer
                 ControlPanel.Children.Add(ColorPanel);
             }
 
+            // PixelView should be active only when Info page is open.
+            // Otherwise changing surface that is not yet on the screen
+            // will throw an exception.
+            _pixelView.Active = sender == InfoButton;
+
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsControlPanelVisible)));
         }
 
@@ -432,6 +437,11 @@ namespace LottieViewer
             // Remove all the children from the control pane Grid. This is done to
             // trigger the PaneThemeTransition so that the pane slides in and out.
             ControlPanel.Children.Clear();
+
+            // PixelView should be active only when Info page is open.
+            // Otherwise changing surface that is not yet on the screen
+            // will throw an exception.
+            _pixelView.Active = false;
 
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsControlPanelVisible)));
         }

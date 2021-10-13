@@ -33,6 +33,9 @@ namespace LottieViewer
         readonly SpriteVisual _spriteVisual;
         Visual? _capturedVisual = null;
 
+        // Indicates if PixelView should update the image.
+        public bool Active { get; set; } = false;
+
         // Checkerboard pattern bitmap.
         static CanvasBitmap? _patternBitmap = null;
 
@@ -171,10 +174,13 @@ namespace LottieViewer
 
         void OnFrameArrived(Direct3D11CaptureFramePool sender, object args)
         {
-            using (var frame = sender.TryGetNextFrame())
+            if (Active)
             {
-                CanvasBitmap bitmap = CanvasBitmap.CreateFromDirect3D11Surface(_canvasDevice!, frame.Surface);
-                _ = ShowBitmapOnTargetAsync(bitmap);
+                using (var frame = sender.TryGetNextFrame())
+                {
+                    CanvasBitmap bitmap = CanvasBitmap.CreateFromDirect3D11Surface(_canvasDevice!, frame.Surface);
+                    _ = ShowBitmapOnTargetAsync(bitmap);
+                }
             }
         }
 
