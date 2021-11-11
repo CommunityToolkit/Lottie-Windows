@@ -727,7 +727,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
         protected override void WriteAnimatedVisualStart(CodeBuilder builder, IAnimatedVisualInfo info)
         {
             // Start the instantiator class.
-            builder.WriteLine($"sealed class {info.ClassName} : {Interface_IAnimatedVisual.GetQualifiedName(_s)}");
+            if (_implementIAnimatedVisual2)
+            {
+                builder.WriteLine($"sealed class {info.ClassName} : {Interface_IAnimatedVisual2.GetQualifiedName(_s)}");
+            }
+            else
+            {
+                builder.WriteLine($"sealed class {info.ClassName} : {Interface_IAnimatedVisual.GetQualifiedName(_s)}");
+            }
+
             builder.OpenScope();
         }
 
@@ -1042,13 +1050,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
 
         void WriteInstantiateAndReturnAnimatedVisual(CodeBuilder builder, IAnimatedVisualInfo info)
         {
-            builder.WriteLine("return");
+            builder.WriteLine("var res = ");
             builder.Indent();
             builder.WriteLine($"new {info.ClassName}(");
             builder.Indent();
             builder.WriteCommaSeparatedLines(GetConstructorArguments(info));
             builder.WriteLine(");");
             builder.UnIndent();
+
+            if (_implementIAnimatedVisual2)
+            {
+                builder.WriteLine($"res.{InstantiateAnimationsMethod}(0.0f);");
+            }
+
+            builder.WriteLine("return res;");
             builder.UnIndent();
         }
     }

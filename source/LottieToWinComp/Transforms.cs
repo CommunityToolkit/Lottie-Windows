@@ -225,8 +225,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 {
                     // Set initial value to be non-visible (default is visible).
                     visibilityNode.Scale = Sn.Vector2.Zero;
-                    visibilityAnimation.InsertKeyFrame(inProgress, Sn.Vector2.One, context.ObjectFactory.CreateHoldThenStepEasingFunction());
+                    visibilityAnimation.InsertKeyFrame(0.0f, Sn.Vector2.Zero, context.ObjectFactory.CreateHoldThenStepEasingFunction());
                 }
+
+                visibilityAnimation.InsertKeyFrame(inProgress, Sn.Vector2.One, context.ObjectFactory.CreateHoldThenStepEasingFunction());
 
                 if (outProgress < 1)
                 {
@@ -336,8 +338,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 {
                     // Set initial value to be non-visible.
                     visibilityNode.IsVisible = false;
-                    visibilityAnimation.InsertKeyFrame(inProgress, true);
+                    visibilityAnimation.InsertKeyFrame(0.0f, false);
                 }
+
+                visibilityAnimation.InsertKeyFrame(inProgress, true);
 
                 if (outProgress < 1)
                 {
@@ -345,7 +349,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 }
 
                 visibilityAnimation.Duration = context.LottieComposition.Duration;
-                Animate.WithKeyFrame(context, visibilityNode, "IsVisible", visibilityAnimation);
+                Animate.WithKeyFrame(context, visibilityNode, nameof(visibilityNode.IsVisible), visibilityAnimation);
             }
         }
 

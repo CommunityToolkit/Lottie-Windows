@@ -39,6 +39,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
         // from the TryCreateAnimatedVisual method.
         readonly string _animatedVisualTypeName;
 
+        readonly string _animatedVisualTypeName2;
+
         // True iff the generated code implements IDynamicAnimatedVisualSource.
         readonly bool _isIDynamic;
 
@@ -99,6 +101,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
             _sourceClassName = SourceInfo.ClassName;
 
             _animatedVisualTypeName = Interface_IAnimatedVisual.GetQualifiedName(_s);
+            _animatedVisualTypeName2 = Interface_IAnimatedVisual2.GetQualifiedName(_s);
         }
 
         static string FieldAssignment(string fieldName) => fieldName is not null ? $"{fieldName} = " : string.Empty;
@@ -497,7 +500,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
             builder.WriteLine($"class {info.ClassName} : public winrt::implements<{info.ClassName},");
             builder.Indent();
             builder.Indent();
-            builder.WriteLine($"winrt::{_animatedVisualTypeName},");
+
+            if (_implementIAnimatedVisual2)
+            {
+                builder.WriteLine($"winrt::{_animatedVisualTypeName2},");
+            }
+            else
+            {
+                builder.WriteLine($"winrt::{_animatedVisualTypeName},");
+            }
+
             builder.WriteLine($"IClosable>");
             builder.UnIndent();
             builder.UnIndent();
@@ -1069,16 +1081,27 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
             if (SourceInfo.WinUIVersion.Major >= 3)
             {
                 var info = animatedVisualInfos.First();
-                builder.WriteBreakableLine($"return winrt::make<{info.ClassName}>(", CommaSeparate(GetConstructorArguments(info)), ");");
+                builder.WriteBreakableLine($"auto result = winrt::make<{info.ClassName}>(", CommaSeparate(GetConstructorArguments(info)), ");");
+                if (_implementIAnimatedVisual2)
+                {
+                    builder.WriteLine($"result.{InstantiateAnimationsMethod}(0.0f);");
+                }
+
+                builder.WriteLine("return result;");
             }
             else
             {
                 foreach (var info in animatedVisualInfos.OrderByDescending(avi => avi.RequiredUapVersion))
                 {
-                    builder.WriteLine();
                     builder.WriteLine($"if ({info.ClassName}::IsRuntimeCompatible())");
                     builder.OpenScope();
-                    builder.WriteBreakableLine($"return winrt::make<{info.ClassName}>(", CommaSeparate(GetConstructorArguments(info)), ");");
+                    builder.WriteBreakableLine($"auto result = winrt::make<{info.ClassName}>(", CommaSeparate(GetConstructorArguments(info)), ");");
+                    if (_implementIAnimatedVisual2)
+                    {
+                        builder.WriteLine($"result.{InstantiateAnimationsMethod}(0.0f);");
+                    }
+
+                    builder.WriteLine("return result;");
                     builder.CloseScope();
                 }
 

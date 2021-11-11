@@ -826,15 +826,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
 
                 foreach (var (isVisible, progress) in compositeVisibility.Sequence)
                 {
-                    if (progress == 0)
-                    {
-                        // The 0 progress value is already handled.
-                        continue;
-                    }
-                    else
-                    {
-                        animation.InsertKeyFrame(progress, isVisible);
-                    }
+                    animation.InsertKeyFrame(progress, isVisible);
                 }
 
                 to.StartAnimation("IsVisible", animation);

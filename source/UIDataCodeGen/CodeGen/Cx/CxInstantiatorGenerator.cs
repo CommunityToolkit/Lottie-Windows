@@ -36,6 +36,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
         // from the TryCreateAnimatedVisual method.
         readonly string _animatedVisualTypeName;
 
+        readonly string _animatedVisualTypeName2;
+
         /// <summary>
         /// Returns the Cx code for a factory that will instantiate the given <see cref="Visual"/> as a
         /// Windows.UI.Composition Visual.
@@ -68,6 +70,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
             _wuc = $"{_winUINamespace}::Composition";
             _sourceClassName = SourceInfo.ClassName;
             _animatedVisualTypeName = Interface_IAnimatedVisual.GetQualifiedName(_s);
+            _animatedVisualTypeName2 = Interface_IAnimatedVisual2.GetQualifiedName(_s);
 
             // Temporary until IAnimatedVisualSource2 makes it into WinUI3.
             _isAnimatedIcon = SourceInfo.WinUIVersion >= new Version(2, 6) && SourceInfo.WinUIVersion.Major < 3;
@@ -449,7 +452,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
             // Start writing the instantiator.
             builder.WriteLine($"ref class {info.ClassName} sealed");
             builder.Indent();
-            builder.WriteLine($": public {_animatedVisualTypeName}");
+
+            if (_implementIAnimatedVisual2)
+            {
+                builder.WriteLine($": public {_animatedVisualTypeName2}");
+            }
+            else
+            {
+                builder.WriteLine($": public {_animatedVisualTypeName}");
+            }
+
             builder.UnIndent();
             builder.OpenScope();
 
@@ -994,7 +1006,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
             if (SourceInfo.WinUIVersion.Major >= 3)
             {
                 var info = animatedVisualInfos.First();
-                builder.WriteBreakableLine($"return {_s.New(info.ClassName)}(", CommaSeparate(GetConstructorArguments(info)), ");");
+                builder.WriteBreakableLine($"auto result = {_s.New(info.ClassName)}(", CommaSeparate(GetConstructorArguments(info)), ");");
+                if (_implementIAnimatedVisual2)
+                {
+                    builder.WriteLine($"result.{InstantiateAnimationsMethod}(0.0f);");
+                }
+
+                builder.WriteLine("return result;");
             }
             else
             {
@@ -1003,7 +1021,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
                     builder.WriteLine();
                     builder.WriteLine($"if ({info.ClassName}::IsRuntimeCompatible())");
                     builder.OpenScope();
-                    builder.WriteBreakableLine($"return {_s.New(info.ClassName)}(", CommaSeparate(GetConstructorArguments(info)), ");");
+                    builder.WriteBreakableLine($"auto result = {_s.New(info.ClassName)}(", CommaSeparate(GetConstructorArguments(info)), ");");
+                    if (_implementIAnimatedVisual2)
+                    {
+                        builder.WriteLine($"result.{InstantiateAnimationsMethod}(0.0f);");
+                    }
+
+                    builder.WriteLine("return result;");
                     builder.CloseScope();
                 }
 
