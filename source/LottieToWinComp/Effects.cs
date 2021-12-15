@@ -109,6 +109,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             Visual source,
             DropShadowEffect dropShadowEffect)
         {
+            if (!context.ObjectFactory.IsUapApiAvailable(nameof(CompositionVisualSurface), versionDependentFeatureDescription: "Drop Shadow"))
+            {
+                // The effect can't be displayed on the targeted version.
+                return source;
+            }
+
             Debug.Assert(dropShadowEffect.IsEnabled, "Precondition");
             Debug.Assert(context is PreCompLayerContext || context is ShapeLayerContext, "Precondition");
 
