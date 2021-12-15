@@ -170,15 +170,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                             var compositedMatteVisual = TranslateMatteLayer(context, matte, mattedVisual, layer.LayerMatteType == Layer.MatteType.Invert);
                             yield return compositedMatteVisual;
                         }
-                        else if (mattedVisual is not null && matte is null && layer.LayerMatteType == Layer.MatteType.Invert)
-                        {
-                            // Matte layer is null, which means that it is never visible and LayerMatteType is equal to Invert.
-                            // In this case we should just return mattedVisual because matte layer is effectively a no-op.
-                            yield return new LayerTranslator.FromVisual(mattedVisual);
-                        }
                         else
                         {
                             context.Issues.MatteLayerIsNeverVisible();
+
+                            if (mattedVisual is not null && matte is null && layer.LayerMatteType == Layer.MatteType.Invert)
+                            {
+                                // Matte layer is null, which means that it is never visible and LayerMatteType is equal to Invert.
+                                // In this case we should just return mattedVisual because matte layer is effectively a no-op.
+                                // This is how it works in After Effects.
+                                yield return new LayerTranslator.FromVisual(mattedVisual);
+                            }
                         }
                     }
 
