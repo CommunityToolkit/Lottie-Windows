@@ -167,7 +167,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         if (mattedVisual is not null && matte is not null)
                         {
                             // Both matte and mattedLayer are not null -> both are visible, compose them into one visual.
-                            var compositedMatteVisual = Masks.TranslateMatteLayer(context, matte, mattedVisual, layer.LayerMatteType == Layer.MatteType.Invert);
+                            var compositedMatteVisual = TranslateMatteLayer(context, matte, mattedVisual, layer.LayerMatteType == Layer.MatteType.Invert);
                             yield return compositedMatteVisual;
                         }
                         else if (mattedVisual is not null && matte is null && layer.LayerMatteType == Layer.MatteType.Invert)
@@ -175,6 +175,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                             // Matte layer is null, which means that it is never visible and LayerMatteType is equal to Invert.
                             // In this case we should just return mattedVisual because matte layer is effectively a no-op.
                             yield return new LayerTranslator.FromVisual(mattedVisual);
+                        }
+                        else
+                        {
+                            context.Issues.MatteLayerIsNeverVisible();
                         }
                     }
 
