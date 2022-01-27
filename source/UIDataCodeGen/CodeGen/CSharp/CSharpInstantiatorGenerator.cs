@@ -1060,7 +1060,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
 
             if (_implementIAnimatedVisual2)
             {
-                builder.WriteLine($"res.{InstantiateAnimationsMethod}(0.0f);");
+                builder.WriteLine($"res.{CreateAnimationsMethod}();");
             }
 
             builder.WriteLine("return res;");

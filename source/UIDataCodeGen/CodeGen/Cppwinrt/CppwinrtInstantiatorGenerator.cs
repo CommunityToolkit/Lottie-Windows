@@ -1084,7 +1084,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
                 builder.WriteBreakableLine($"auto result = winrt::make<{info.ClassName}>(", CommaSeparate(GetConstructorArguments(info)), ");");
                 if (_implementIAnimatedVisual2)
                 {
-                    builder.WriteLine($"result.{InstantiateAnimationsMethod}(0.0f);");
+                    builder.WriteLine($"result.{CreateAnimationsMethod}();");
                 }
 
                 builder.WriteLine("return result;");
@@ -1098,7 +1098,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
                     builder.WriteBreakableLine($"auto result = winrt::make<{info.ClassName}>(", CommaSeparate(GetConstructorArguments(info)), ");");
                     if (_implementIAnimatedVisual2)
                     {
-                        builder.WriteLine($"result.{InstantiateAnimationsMethod}(0.0f);");
+                        builder.WriteLine($"result.{CreateAnimationsMethod}();");
                     }
 
                     builder.WriteLine("return result;");

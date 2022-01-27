@@ -4,6 +4,7 @@
 
 #nullable enable
 
+using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
@@ -228,7 +229,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     visibilityAnimation.InsertKeyFrame(0.0f, Sn.Vector2.Zero, context.ObjectFactory.CreateHoldThenStepEasingFunction());
                 }
 
-                visibilityAnimation.InsertKeyFrame(inProgress, Sn.Vector2.One, context.ObjectFactory.CreateHoldThenStepEasingFunction());
+                visibilityAnimation.InsertKeyFrame(Math.Max(0.0f, inProgress), Sn.Vector2.One, context.ObjectFactory.CreateHoldThenStepEasingFunction());
 
                 if (outProgress < 1)
                 {
@@ -341,7 +342,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                     visibilityAnimation.InsertKeyFrame(0.0f, false);
                 }
 
-                visibilityAnimation.InsertKeyFrame(inProgress, true);
+                visibilityAnimation.InsertKeyFrame(Math.Max(0.0f, inProgress), true);
 
                 if (outProgress < 1)
                 {
