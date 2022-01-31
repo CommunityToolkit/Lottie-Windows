@@ -113,5 +113,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// The version of WinUI to target.
         /// </summary>
         public Version WinUIVersion { get; set; }
+
+        public bool ImplementCreateAndDestroyMethods => WinUIVersion >= Version.Parse("2.7");
     }
 }

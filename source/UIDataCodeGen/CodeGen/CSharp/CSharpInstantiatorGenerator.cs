@@ -727,7 +727,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
         protected override void WriteAnimatedVisualStart(CodeBuilder builder, IAnimatedVisualInfo info)
         {
             // Start the instantiator class.
-            if (_implementIAnimatedVisual2)
+            if (info.ImplementCreateAndDestroyMethods)
             {
                 builder.WriteLine($"sealed class {info.ClassName} : {Interface_IAnimatedVisual2.GetQualifiedName(_s)}");
             }
@@ -758,7 +758,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
         // Called by the base class to write the end of the AnimatedVisual class.
         protected override void WriteAnimatedVisualEnd(
             CodeBuilder builder,
-            IAnimatedVisualInfo info)
+            IAnimatedVisualInfo info,
+            CodeBuilder createAnimations,
+            CodeBuilder destroyAnimations)
         {
             // Write the constructor for the AnimatedVisual class.
             builder.WriteLine($"internal {info.ClassName}(");
@@ -794,6 +796,21 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
             builder.WriteLine($"public Vector2 Size => {_s.Vector2(SourceInfo.CompositionDeclaredSize)};");
             builder.WriteLine("void IDisposable.Dispose() => _root?.Dispose();");
             builder.WriteLine();
+
+            if (info.ImplementCreateAndDestroyMethods)
+            {
+                builder.WriteLine($"public void {CreateAnimationsMethod}()");
+                builder.OpenScope();
+                builder.WriteCodeBuilder(createAnimations);
+                builder.CloseScope();
+                builder.WriteLine();
+
+                builder.WriteLine($"public void {DestroyAnimationsMethod}()");
+                builder.OpenScope();
+                builder.WriteCodeBuilder(destroyAnimations);
+                builder.CloseScope();
+                builder.WriteLine();
+            }
 
             // WinUI3 doesn't ever do a version check. It's up to the user to make sure
             // the version they're using is compatible.
@@ -1058,7 +1075,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
             builder.WriteLine(");");
             builder.UnIndent();
 
-            if (_implementIAnimatedVisual2)
+            if (info.ImplementCreateAndDestroyMethods)
             {
                 builder.WriteLine($"res.{CreateAnimationsMethod}();");
             }

@@ -453,7 +453,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
             builder.WriteLine($"ref class {info.ClassName} sealed");
             builder.Indent();
 
-            if (_implementIAnimatedVisual2)
+            if (info.ImplementCreateAndDestroyMethods)
             {
                 builder.WriteLine($": public {_animatedVisualTypeName2}");
             }
@@ -1007,7 +1007,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
             {
                 var info = animatedVisualInfos.First();
                 builder.WriteBreakableLine($"auto result = {_s.New(info.ClassName)}(", CommaSeparate(GetConstructorArguments(info)), ");");
-                if (_implementIAnimatedVisual2)
+                if (info.ImplementCreateAndDestroyMethods)
                 {
                     builder.WriteLine($"result.{CreateAnimationsMethod}();");
                 }
@@ -1022,7 +1022,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
                     builder.WriteLine($"if ({info.ClassName}::IsRuntimeCompatible())");
                     builder.OpenScope();
                     builder.WriteBreakableLine($"auto result = {_s.New(info.ClassName)}(", CommaSeparate(GetConstructorArguments(info)), ");");
-                    if (_implementIAnimatedVisual2)
+                    if (info.ImplementCreateAndDestroyMethods)
                     {
                         builder.WriteLine($"result.{CreateAnimationsMethod}();");
                     }
@@ -1181,7 +1181,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
         // Called by the base class to write the end of the AnimatedVisual class.
         protected override void WriteAnimatedVisualEnd(
             CodeBuilder builder,
-            IAnimatedVisualInfo info)
+            IAnimatedVisualInfo info,
+            CodeBuilder createAnimations,
+            CodeBuilder destroyAnimations)
         {
             if (SourceInfo.UsesCanvasEffects ||
                 SourceInfo.UsesCanvasGeometry)
@@ -1268,6 +1270,21 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
                 var propertyImplBuilder = new CodeBuilder();
                 propertyImplBuilder.WriteLine($"return {_s.Vector2(SourceInfo.CompositionDeclaredSize)};");
                 WritePropertyImpl(builder, isVirtual: true, "float2", "Size", propertyImplBuilder);
+            }
+
+            if (info.ImplementCreateAndDestroyMethods)
+            {
+                builder.WriteLine($"public void {CreateAnimationsMethod}()");
+                builder.OpenScope();
+                builder.WriteCodeBuilder(createAnimations);
+                builder.CloseScope();
+                builder.WriteLine();
+
+                builder.WriteLine($"public void {DestroyAnimationsMethod}()");
+                builder.OpenScope();
+                builder.WriteCodeBuilder(destroyAnimations);
+                builder.CloseScope();
+                builder.WriteLine();
             }
 
             WriteIsRuntimeCompatibleMethod(builder, info);
