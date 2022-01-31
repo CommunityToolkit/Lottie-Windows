@@ -87,11 +87,11 @@
             <RichTextBlock Style="{StaticResource OutroTextBlock}">
                 <Paragraph>
                     To learn more, check out the
-                    <Hyperlink NavigateUri="https://github.com/windows-toolkit/Lottie-Windows/blob/master/samples/LottieSamples/Scenarios/PlaybackPage.xaml">
+                    <Hyperlink NavigateUri="https://github.com/windows-toolkit/Lottie-Windows/blob/main/samples/LottieSamples/Scenarios/PlaybackPage.xaml">
                         XAML
                     </Hyperlink>
                     +
-                    <Hyperlink NavigateUri="https://github.com/windows-toolkit/Lottie-Windows/blob/master/samples/LottieSamples/Scenarios/PlaybackPage.xaml.cs">
+                    <Hyperlink NavigateUri="https://github.com/windows-toolkit/Lottie-Windows/blob/main/samples/LottieSamples/Scenarios/PlaybackPage.xaml.cs">
                         code-behind
                     </Hyperlink>
                     ,
