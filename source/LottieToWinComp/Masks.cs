@@ -138,61 +138,57 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         // Walk the collection of layer data and for each pair of matte layer and matted layer, compose them and return a visual
         // with the composed result. All other items are not touched.
-        public static IEnumerable<LayerTranslator> ComposeMattedLayers(CompositionContext context, IEnumerable<(LayerTranslator translatedLayer, Layer layer)> items)
+        public static IEnumerable<LayerTranslator> ComposeMattedLayers(CompositionContext context, IList<(LayerTranslator translatedLayer, Layer layer)> items)
         {
-            // Save off the visual for the layer to be matted when we encounter it. The very next
-            // layer is the matte layer.
-            Visual? mattedVisual = null;
-            Layer.MatteType matteType = Layer.MatteType.None;
-
+            // After Effects has a concept named "matte layers" which is very similar to masks.
+            // If there are two adjacent layers in After Effects and first of them has LayerMatteType not equal to MatteType.None
+            // then we should use the second layer as a "matte" for the first one "mattedLayer". "Matte" layer will not be visible but
+            // it will define visible region for the "mattedLayer".
+            //
             // NOTE: The items appear in reverse order from how they appear in the original Lottie file.
             // This means that the layer to be matted appears right before the layer that is the matte.
-            foreach (var (translatedLayer, layer) in items)
+            for (int i = 0; i < items.Count; i++)
             {
-                var layerIsMattedLayer = false;
-                layerIsMattedLayer = layer.LayerMatteType != Layer.MatteType.None;
+                var (translatedLayer, layer) = items[i];
+                var layerIsMattedLayer = layer.LayerMatteType != Layer.MatteType.None;
 
-                Visual? visual = null;
-
-                if (translatedLayer.IsShape)
+                if (layerIsMattedLayer)
                 {
-                    // If the layer is a shape then we need to wrap it
-                    // in a shape visual so that it can be used for matte
-                    // composition.
-                    if (layerIsMattedLayer || mattedVisual is not null)
+                    if (i + 1 < items.Count)
                     {
-                        visual = translatedLayer.GetVisualRoot(context);
+                        // Move index to the next layer.
+                        i++;
+
+                        var (translatedLayerNext, _) = items[i];
+
+                        Visual? mattedVisual = translatedLayer.GetVisualRoot(context);
+                        Visual? matte = translatedLayerNext.GetVisualRoot(context);
+
+                        if (mattedVisual is not null && matte is not null)
+                        {
+                            // Both matte and mattedLayer are not null -> both are visible, compose them into one visual.
+                            var compositedMatteVisual = TranslateMatteLayer(context, matte, mattedVisual, layer.LayerMatteType == Layer.MatteType.Invert);
+                            yield return compositedMatteVisual;
+                        }
+                        else
+                        {
+                            context.Issues.MatteLayerIsNeverVisible();
+
+                            if (mattedVisual is not null && matte is null && layer.LayerMatteType == Layer.MatteType.Invert)
+                            {
+                                // Matte layer is null, which means that it is never visible and LayerMatteType is equal to Invert.
+                                // In this case we should just return mattedVisual because matte layer is effectively a no-op.
+                                // This is how it works in After Effects.
+                                yield return new LayerTranslator.FromVisual(mattedVisual);
+                            }
+                        }
                     }
+
+                    // We do not have matte layer or both mattedLayer and matte were null so we can just skip them.
                 }
                 else
                 {
-                    visual = translatedLayer.GetVisualRoot(context);
-                }
-
-                if (visual is not null)
-                {
-                    // The layer to be matted comes first. The matte layer is the very next layer.
-                    if (layerIsMattedLayer)
-                    {
-                        mattedVisual = visual;
-                        matteType = layer.LayerMatteType;
-                    }
-                    else if (mattedVisual is not null)
-                    {
-                        var compositedMatteVisual = Masks.TranslateMatteLayer(context, visual, mattedVisual, matteType == Layer.MatteType.Invert);
-                        mattedVisual = null;
-                        matteType = Layer.MatteType.None;
-                        yield return compositedMatteVisual;
-                    }
-                    else
-                    {
-                        // Return the visual that was not a matte layer or a layer to be matted.
-                        yield return new LayerTranslator.FromVisual(visual);
-                    }
-                }
-                else
-                {
-                    // Return the shape which does not participate in mattes.
+                    // Just a regular layer, no mattes applied.
                     yield return translatedLayer;
                 }
             }

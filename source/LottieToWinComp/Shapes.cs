@@ -313,9 +313,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return CanvasGeometryCombiner.CombineGeometries(geometries, combineMode);
 #else
                 var accumulator = geometries[0];
-                for (var i = 1; i < geometries.Length; i++)
+                if (combineMode == CanvasGeometryCombine.Exclude)
                 {
-                    accumulator = accumulator.CombineWith(geometries[i], Sn.Matrix3x2.Identity, combineMode);
+                    // TODO: investiagte how it works for 3+ layers with Exclude mode
+                    for (var i = 1; i < geometries.Length; i++)
+                    {
+                        accumulator = geometries[i].CombineWith(accumulator, Sn.Matrix3x2.Identity, combineMode);
+                    }
+                }
+                else
+                {
+                    for (var i = 1; i < geometries.Length; i++)
+                    {
+                        accumulator = accumulator.CombineWith(geometries[i], Sn.Matrix3x2.Identity, combineMode);
+                    }
                 }
 
                 return accumulator;

@@ -30,7 +30,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         /// <summary>
         /// Gets a URL that may give more information about the issue.
         /// </summary>
-        public string Url => $"https://github.com/windows-toolkit/Lottie-Windows/blob/master/source/Issues/{Code}.md";
+        public string Url => $"https://github.com/windows-toolkit/Lottie-Windows/blob/main/source/Issues/{Code}.md";
 
         /// <summary>
         /// Returns a string representation of the issue.
