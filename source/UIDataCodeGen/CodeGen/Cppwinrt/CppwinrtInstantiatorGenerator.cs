@@ -501,13 +501,10 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Cppwinrt
             builder.Indent();
             builder.Indent();
 
+            builder.WriteLine($"winrt::{_animatedVisualTypeName},");
             if (info.ImplementCreateAndDestroyMethods)
             {
                 builder.WriteLine($"winrt::{_animatedVisualTypeName2},");
-            }
-            else
-            {
-                builder.WriteLine($"winrt::{_animatedVisualTypeName},");
             }
 
             builder.WriteLine($"IClosable>");
@@ -1098,7 +1095,10 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Cppwinrt
                     builder.WriteBreakableLine($"auto result = winrt::make<{info.ClassName}>(", CommaSeparate(GetConstructorArguments(info)), ");");
                     if (info.ImplementCreateAndDestroyMethods)
                     {
-                        builder.WriteLine($"result.{CreateAnimationsMethod}();");
+                        builder.WriteLine($"if (auto result2 = result.try_as<{_animatedVisualTypeName2}>())");
+                        builder.OpenScope();
+                        builder.WriteLine($"result2.{CreateAnimationsMethod}();");
+                        builder.CloseScope();
                     }
 
                     builder.WriteLine("return result;");

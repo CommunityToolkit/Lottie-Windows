@@ -402,15 +402,22 @@ namespace CommunityToolkit.WinUI.Lottie
             foreach (var animator in source.Animators)
             {
                 var animation = GetCompositionAnimation(animator.Animation);
-                target.StartAnimation(animator.AnimatedProperty, animation);
-                var controller = animator.Controller;
-                if (controller is not null)
+                if (animator.Controller is null || !animator.Controller.IsCustom)
                 {
-                    var animationController = GetAnimationController(controller);
-                    if (controller.IsPaused)
+                    target.StartAnimation(animator.AnimatedProperty, animation);
+                    var controller = animator.Controller;
+                    if (controller is not null)
                     {
-                        animationController.Pause();
+                        var animationController = GetAnimationController(controller);
+                        if (controller.IsPaused)
+                        {
+                            animationController.Pause();
+                        }
                     }
+                }
+                else
+                {
+                    target.StartAnimation(animator.AnimatedProperty, animation, GetAnimationController(animator.Controller));
                 }
             }
         }
@@ -422,9 +429,21 @@ namespace CommunityToolkit.WinUI.Lottie
                 return result;
             }
 
-            var targetObject = GetCompositionObject(obj.TargetObject);
+            if (obj.IsCustom)
+            {
+                result = CacheAndInitializeCompositionObject(obj, _c.CreateAnimationController());
 
-            result = CacheAndInitializeCompositionObject(obj, targetObject.TryGetAnimationController(obj.TargetProperty));
+                if (obj.IsPaused)
+                {
+                    result.Pause();
+                }
+            }
+            else
+            {
+                var targetObject = GetCompositionObject(obj.TargetObject!);
+                result = CacheAndInitializeCompositionObject(obj, targetObject.TryGetAnimationController(obj.TargetProperty));
+            }
+
             StartAnimations(obj, result);
             return result;
         }

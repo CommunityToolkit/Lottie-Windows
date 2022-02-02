@@ -1133,7 +1133,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                             node.RequiresStorage = true;
                         }
                     }
-                    else if (configuration.ImplementCreateAndDestroyMethods && node.Object is CompositionObject obj && obj.Animators.Count > 0)
+                    else if ((configuration.ImplementCreateAndDestroyMethods && node.Object is CompositionObject obj && obj.Animators.Count > 0) || (node.Object is AnimationController c && c.IsCustom))
                     {
                         // If we are implementing IAnimatedVisual2 interface we need to store all the composition objects that have animators.
                         node.RequiresStorage = true;
@@ -1717,7 +1717,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                 return obj.Type switch
                 {
                     // Do not generate code for animation controllers. It is done inline in the CompositionObject initialization.
-                    CompositionObjectType.AnimationController => throw new InvalidOperationException(),
+                    CompositionObjectType.AnimationController => GenerateCustomAnimationController(builder, (AnimationController)obj, node),
                     CompositionObjectType.BooleanKeyFrameAnimation => GenerateBooleanKeyFrameAnimationFactory(builder, (BooleanKeyFrameAnimation)obj, node),
                     CompositionObjectType.ColorKeyFrameAnimation => GenerateColorKeyFrameAnimationFactory(builder, (ColorKeyFrameAnimation)obj, node),
                     CompositionObjectType.CompositionColorBrush => GenerateCompositionColorBrushFactory(builder, (CompositionColorBrush)obj, node),
@@ -1922,7 +1922,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                 if (obj.Type != CompositionObjectType.CompositionPropertySet)
                 {
                     // Start the animations for properties on the property set.
-                    StartAnimations(builder, obj.Properties, NodeFor(obj.Properties), $"{localName}{Deref}Properties", ref controllerVariableAdded);
+                    StartAnimations(builder, obj.Properties, NodeFor(obj.Properties), $"{_s.PropertyGet(localName, "Properties")}", ref controllerVariableAdded);
                 }
             }
 
@@ -2000,10 +2000,17 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
 
                     if (_configuration.ImplementCreateAndDestroyMethods)
                     {
-                        _createAnimationsCodeBuilder
-                                               .WriteLine($"{localName}{Deref}StartAnimation({String(animator.AnimatedProperty)}, {animationFactoryCall});");
-
-                        ConfigureAnimationController(_createAnimationsCodeBuilder, localName, ref controllerVariableAdded, animator);
+                        if (animator.Controller is not null && animator.Controller.IsCustom)
+                        {
+                            _createAnimationsCodeBuilder
+                                .WriteLine($"{localName}{Deref}StartAnimation({String(animator.AnimatedProperty)}, {animationFactoryCall}, {CallFactoryFromFor(node, NodeFor(animator.Controller))});");
+                        }
+                        else
+                        {
+                            _createAnimationsCodeBuilder
+                                .WriteLine($"{localName}{Deref}StartAnimation({String(animator.AnimatedProperty)}, {animationFactoryCall});");
+                            ConfigureAnimationController(_createAnimationsCodeBuilder, localName, ref controllerVariableAdded, animator);
+                        }
 
                         // If we are implementing IAnimatedVisual2 we should also write a destruction call.
                         _destroyAnimationsCodeBuilder
@@ -2011,8 +2018,15 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                     }
                     else
                     {
-                        builder.WriteLine($"{localName}{Deref}StartAnimation({String(animator.AnimatedProperty)}, {animationFactoryCall});");
-                        ConfigureAnimationController(builder, localName, ref controllerVariableAdded, animator);
+                        if (animator.Controller is not null && animator.Controller.IsCustom)
+                        {
+                            builder.WriteLine($"{localName}{Deref}StartAnimation({String(animator.AnimatedProperty)}, {animationFactoryCall}, {CallFactoryFromFor(node, NodeFor(animator.Controller))});");
+                        }
+                        else
+                        {
+                            builder.WriteLine($"{localName}{Deref}StartAnimation({String(animator.AnimatedProperty)}, {animationFactoryCall});");
+                            ConfigureAnimationController(builder, localName, ref controllerVariableAdded, animator);
+                        }
                     }
                 }
             }
@@ -2524,6 +2538,27 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                 WriteSetPropertyStatement(builder, nameof(animation.Duration), TimeSpan(animation.Duration));
 
                 InitializeCompositionAnimation(builder, animation, node);
+            }
+
+            bool GenerateCustomAnimationController(CodeBuilder builder, AnimationController obj, ObjectData node)
+            {
+                if (!obj.IsCustom)
+                {
+                    throw new InvalidOperationException();
+                }
+
+                WriteObjectFactoryStart(builder, node);
+
+                WriteCreateAssignment(builder, node, $"_c{Deref}Create{obj.Type}()");
+
+                if (obj.IsPaused)
+                {
+                    builder.WriteLine($"result{Deref}Pause();");
+                }
+
+                WriteCompositionObjectFactoryEnd(builder, obj, node);
+
+                return true;
             }
 
             bool GenerateBooleanKeyFrameAnimationFactory(CodeBuilder builder, BooleanKeyFrameAnimation obj, ObjectData node)
@@ -3437,7 +3472,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                         {
                             // AnimationController is never created explicitly - they result from
                             // calling TryGetAnimationController(...).
-                            CompositionObjectType.AnimationController => false,
+                            CompositionObjectType.AnimationController => ((AnimationController)obj).IsCustom,
 
                             // CompositionPropertySet is never created explicitly - they just exist
                             // on the Properties property of every CompositionObject.

@@ -20,8 +20,8 @@
     <IsWpfProject Condition="'$(IsDesignProject)' != 'true'">$(MSBuildProjectName.Contains('Wpf'))</IsWpfProject>
     <IsFormsProject Condition="'$(IsDesignProject)' != 'true'">$(MSBuildProjectName.Contains('Forms'))</IsFormsProject>
     <IsSampleProject>$(MSBuildProjectName.Contains('Sample'))</IsSampleProject>
-    <DefaultTargetPlatformVersion>18362</DefaultTargetPlatformVersion>
-    <DefaultTargetPlatformMinVersion>16299</DefaultTargetPlatformMinVersion>
+    <DefaultTargetPlatformVersion>22558</DefaultTargetPlatformVersion>
+    <DefaultTargetPlatformMinVersion>22558</DefaultTargetPlatformMinVersion>
     <PackageOutputPath>$(MSBuildThisFileDirectory)bin\nupkg</PackageOutputPath>
     <OutputPath>bin\$(Platform)\$(Configuration)</OutputPath>
     <Nullable>enable</Nullable>
@@ -60,8 +60,8 @@
         This also needs to be installed on your local machine. Can do this with PowerShell:
           ./build/Install-WindowsSDKISO.ps1 18362
         -->
-        <TargetPlatformVersion>10.0.18362.0</TargetPlatformVersion>
-        <TargetPlatformMinVersion>10.0.17134.0</TargetPlatformMinVersion>
+        <TargetPlatformVersion>10.0.22558.0</TargetPlatformVersion>
+        <TargetPlatformMinVersion>10.0.22558.0</TargetPlatformMinVersion>
 
         <!-- Compiler -->
         <FileAlignment>512</FileAlignment>

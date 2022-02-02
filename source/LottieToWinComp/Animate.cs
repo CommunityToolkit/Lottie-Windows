@@ -43,6 +43,13 @@ namespace CommunityToolkit.WinUI.Lottie.LottieToWinComp
             Debug.Assert(scale <= 1, "Precondition");
             Debug.Assert(animation.KeyFrameCount > 0, "Precondition");
 
+            if (scale == 1.0 && offset == 0.0 && context.ObjectFactory.IsUapApiAvailable(nameof(AnimationController)))
+            {
+                // Special case when we can use root AnimationController (no time stretch, no time offset)
+                compObject.StartAnimation(target, animation, context.RootProgressController!);
+                return;
+            }
+
             var state = context.GetStateCache<StateCache>();
 
             // Start the animation ...
