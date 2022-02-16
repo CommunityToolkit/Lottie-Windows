@@ -40,6 +40,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         // The name of the constant holding the duration of the animation in ticks.
         const string DurationTicksFieldName = "c_durationTicks";
 
+        // The name of the method that creates all the animations.
+        protected const string CreateAnimationsMethod = "CreateAnimations";
+
+        // The name of the method that destroys all the animations.
+        protected const string DestroyAnimationsMethod = "DestroyAnimations";
+
         // The proportion of a frame by which markers will be nudged. This compensates
         // for loss of precision in floating point math that can cause the progress
         // value that corresponds to the start of a Lottie frame to refer to the end
@@ -83,7 +89,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             _sourceMetadata = new SourceMetadata(configuration.SourceMetadata);
             _compositionDuration = configuration.Duration;
             _setCommentProperties = setCommentProperties;
-            _disableFieldOptimization = configuration.DisableOptimization;
+
+            // We should disableFieldOptimization if configuration.ImplementCreateAndDestroyMethods is true.
+            _disableFieldOptimization = configuration.DisableOptimization || configuration.ImplementCreateAndDestroyMethods;
             _generateDependencyObject = configuration.GenerateDependencyObject;
             _generatePublicClass = configuration.Public;
             _winUIVersion = configuration.WinUIVersion;
@@ -97,7 +105,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
             var graphs = configuration.ObjectGraphs;
 
-            _animatedVisualGenerators = graphs.Select(g => new AnimatedVisualGenerator(this, g.graphRoot, g.requiredUapVersion, graphs.Count > 1)).ToArray();
+            _animatedVisualGenerators = graphs.Select(g => new AnimatedVisualGenerator(this, g.graphRoot, g.requiredUapVersion, graphs.Count > 1, configuration)).ToArray();
 
             // Determine whether theming is enabled.
             _isThemed = _animatedVisualGenerators.Any(avg => avg.IsThemed);
@@ -170,6 +178,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
         /// <summary>
         /// Well-known interface type.
+        /// Extension of IAnimatedVisual that adds CreateAnimations and DestroyAnimations methods.
+        /// </summary>
+        protected TypeName Interface_IAnimatedVisual2 { get; } = new TypeName("Microsoft.UI.Xaml.Controls.IAnimatedVisual2");
+
+        /// <summary>
+        /// Well-known interface type.
         /// </summary>
         protected TypeName Interface_IAnimatedVisualSource { get; } = new TypeName("Microsoft.UI.Xaml.Controls.IAnimatedVisualSource");
 
@@ -182,6 +196,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// Well-known interface type.
         /// </summary>
         protected TypeName Interface_IAnimatedVisualSource2 { get; } = new TypeName("Microsoft.UI.Xaml.Controls.IAnimatedVisualSource2");
+
+        /// <summary>
+        /// Well-known interface type.
+        /// Extension of IAnimatedVisualSource2 that allows to create IAnimatedVisual2 without animations instantiated at first.
+        /// </summary>
+        protected TypeName Interface_IAnimatedVisualSource3 { get; } = new TypeName("Microsoft.UI.Xaml.Controls.IAnimatedVisualSource3");
 
         /// <summary>
         /// Information about the IAnimatedVisualSourceInfo implementation.
@@ -236,7 +256,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         /// </summary>
         protected abstract void WriteAnimatedVisualEnd(
             CodeBuilder builder,
-            IAnimatedVisualInfo info);
+            IAnimatedVisualInfo info,
+            CodeBuilder createAnimations,
+            CodeBuilder destroyAnimations);
 
         /// <summary>
         /// Write a byte array field.
@@ -999,21 +1021,32 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             // The subset of the object graph for which factories will be generated.
             readonly ObjectData[] _nodes;
 
+            private CodeBuilder? _rootCodeBuilder = null;
+
+            bool controllerCreatedInCreateAnimationsMethod = false;
+
             IReadOnlyList<LoadedImageSurfaceInfo>? _loadedImageSurfaceInfos;
 
             // Holds the node for which a factory is currently being written.
             ObjectData? _currentObjectFactoryNode;
 
+            private CodeBuilder _createAnimationsCodeBuilder = new CodeBuilder();
+            private CodeBuilder _destroyAnimationsCodeBuilder = new CodeBuilder();
+
+            private CodegenConfiguration _configuration;
+
             internal AnimatedVisualGenerator(
                 InstantiatorGeneratorBase owner,
                 CompositionObject graphRoot,
                 uint requiredUapVersion,
-                bool isPartOfMultiVersionSource)
+                bool isPartOfMultiVersionSource,
+                CodegenConfiguration configuration)
             {
                 _owner = owner;
                 _s = _owner._s;
                 _requiredUapVersion = requiredUapVersion;
                 _isPartOfMultiVersionSource = isPartOfMultiVersionSource;
+                _configuration = configuration;
 
                 // Build the object graph.
                 _objectGraph = ObjectGraph<ObjectData>.FromCompositionObject(graphRoot, includeVertices: true);
@@ -1099,6 +1132,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                         {
                             node.RequiresStorage = true;
                         }
+                    }
+                    else if (configuration.ImplementCreateAndDestroyMethods && node.Object is CompositionObject obj && obj.Animators.Count > 0)
+                    {
+                        // If we are implementing IAnimatedVisual2 interface we need to store all the composition objects that have animators.
+                        node.RequiresStorage = true;
                     }
                 }
 
@@ -1361,12 +1399,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             }
 
             /// <summary>
-            /// Combines the calls to <see cref="StartAnimationsOnResult(CodeBuilder, CompositionObject, ObjectData)"/>
+            /// Combines the calls to <see cref="StartAnimations(CodeBuilder, CompositionObject, ObjectData, string)"/>
             /// with <see cref="WriteObjectFactoryEnd(CodeBuilder)"/>.
             /// </summary>
             void WriteCompositionObjectFactoryEnd(CodeBuilder builder, CompositionObject obj, ObjectData node)
             {
-                StartAnimationsOnResult(builder, obj, node);
+                if (_configuration.ImplementCreateAndDestroyMethods)
+                {
+                    // Use FieldName as the reference name in case if we are implementing IAnimatedVisual2.
+                    // We can't use local name "result" since animations will be started from different place.
+                    StartAnimations(builder, obj, node, node.FieldName ?? string.Empty, ref controllerCreatedInCreateAnimationsMethod);
+                }
+                else
+                {
+                    StartAnimationsOnResult(builder, obj, node);
+                }
+
                 WriteObjectFactoryEnd(builder);
             }
 
@@ -1534,6 +1582,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 // Write the body of the AnimatedVisual class.
                 _owner.WriteAnimatedVisualStart(builder, this);
 
+                _rootCodeBuilder = builder;
+
                 // Write fields for constant values.
                 builder.WriteLine(ConstExprField(_s.TypeInt64, DurationTicksFieldName, $"{_s.Int64(_owner._compositionDuration.Ticks)}"));
 
@@ -1551,7 +1601,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
                 builder.WriteLine();
 
-                // Create room for helper methods.
                 builder.WriteSubBuilder("StartProgressBoundAnimation");
                 builder.WriteSubBuilder("BindProperty");
                 builder.WriteSubBuilder("BindProperty2");
@@ -1565,6 +1614,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 builder.WriteSubBuilder("CreateSpriteShape");
                 builder.WriteSubBuilder("CreateSpriteShapeWithFillBrush");
 
+                if (_configuration.ImplementCreateAndDestroyMethods)
+                {
+                    _createAnimationsCodeBuilder = new CodeBuilder();
+                    _destroyAnimationsCodeBuilder = new CodeBuilder();
+                }
+
                 // Write factory methods for each node.
                 foreach (var node in _nodes)
                 {
@@ -1576,7 +1631,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 }
 
                 // Write the end of the AnimatedVisual class.
-                _owner.WriteAnimatedVisualEnd(builder, this);
+                _owner.WriteAnimatedVisualEnd(builder, this, _createAnimationsCodeBuilder, _destroyAnimationsCodeBuilder);
 
                 _owner._currentAnimatedVisualGenerator = null;
             }
@@ -1867,7 +1922,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 if (obj.Type != CompositionObjectType.CompositionPropertySet)
                 {
                     // Start the animations for properties on the property set.
-                    StartAnimations(builder, obj.Properties, NodeFor(obj.Properties), "propertySet", ref controllerVariableAdded);
+                    StartAnimations(builder, obj.Properties, NodeFor(obj.Properties), $"{localName}{Deref}Properties", ref controllerVariableAdded);
                 }
             }
 
@@ -1908,24 +1963,57 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
                                 if (controllerExpressionAnimationNode.NeedsAFactory)
                                 {
-                                    EnsureStartProgressBoundAnimationWritten(builder);
+                                    EnsureStartProgressBoundAnimationWritten(_rootCodeBuilder ?? builder);
 
                                     // Special-case for a paused controller that has only its Progress property animated by
                                     // an ExpressionAnimation that has a factory. Generate a call to a helper that will do the work.
                                     // Note that this is the common case for Lottie.
-                                    builder.WriteLine(
-                                        $"StartProgressBoundAnimation({localName}, " +
-                                        $"{String(animator.AnimatedProperty)}, " +
-                                        $"{animationFactoryCall}, " +
-                                        $"{CallFactoryFromFor(NodeFor(animator.Controller), controllerExpressionAnimationNode)});");
+                                    if (_configuration.ImplementCreateAndDestroyMethods)
+                                    {
+                                        // If we are implementing IAnimatedVisual2 we should create these animation not in the tree initialization code,
+                                        // but inside CreateAnimations method.
+                                        _createAnimationsCodeBuilder
+                                            .WriteLine(
+                                            $"StartProgressBoundAnimation({localName}, " +
+                                            $"{String(animator.AnimatedProperty)}, " +
+                                            $"{animationFactoryCall}, " +
+                                            $"{CallFactoryFromFor(NodeFor(animator.Controller), controllerExpressionAnimationNode)});");
+
+                                        // If we are implementing IAnimatedVisual2 we should also write a destruction call.
+                                        _destroyAnimationsCodeBuilder
+                                            .WriteLine($"{localName}{Deref}StopAnimation({String(animator.AnimatedProperty)});");
+                                    }
+                                    else
+                                    {
+                                        builder.WriteLine(
+                                            $"StartProgressBoundAnimation({localName}, " +
+                                            $"{String(animator.AnimatedProperty)}, " +
+                                            $"{animationFactoryCall}, " +
+                                            $"{CallFactoryFromFor(NodeFor(animator.Controller), controllerExpressionAnimationNode)});");
+                                    }
+
                                     return;
                                 }
                             }
                         }
                     }
 
-                    builder.WriteLine($"{localName}{Deref}StartAnimation({String(animator.AnimatedProperty)}, {animationFactoryCall});");
-                    ConfigureAnimationController(builder, localName, ref controllerVariableAdded, animator);
+                    if (_configuration.ImplementCreateAndDestroyMethods)
+                    {
+                        _createAnimationsCodeBuilder
+                                               .WriteLine($"{localName}{Deref}StartAnimation({String(animator.AnimatedProperty)}, {animationFactoryCall});");
+
+                        ConfigureAnimationController(_createAnimationsCodeBuilder, localName, ref controllerVariableAdded, animator);
+
+                        // If we are implementing IAnimatedVisual2 we should also write a destruction call.
+                        _destroyAnimationsCodeBuilder
+                            .WriteLine($"{localName}{Deref}StopAnimation({String(animator.AnimatedProperty)});");
+                    }
+                    else
+                    {
+                        builder.WriteLine($"{localName}{Deref}StartAnimation({String(animator.AnimatedProperty)}, {animationFactoryCall});");
+                        ConfigureAnimationController(builder, localName, ref controllerVariableAdded, animator);
+                    }
                 }
             }
 
@@ -2102,7 +2190,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 {
                     b.WriteLine($"{ReferenceTypeName("CompositionSpriteShape")} CreateSpriteShape({ReferenceTypeName("CompositionGeometry")} geometry, {_s.TypeMatrix3x2} transformMatrix)");
                     b.OpenScope();
-                    b.WriteLine($"{ConstVar} result = _c{Deref}CreateSpriteShape(geometry);");
+                    WriteCreateAssignment(b, node, $"_c{Deref}CreateSpriteShape(geometry)");
                     WriteSetPropertyStatement(b, "TransformMatrix", "transformMatrix");
                     b.WriteLine("return result;");
                     b.CloseScope();
@@ -2111,7 +2199,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
 
                 // Call the helper and initialize the remaining CompositionShape properties.
                 WriteMatrixComment(builder, transformMatrix);
-                builder.WriteLine($"{ConstVar} result = CreateSpriteShape({CallFactoryFromFor(node, obj.Geometry)}, {Matrix3x2(transformMatrix)});");
+                WriteCreateAssignment(builder, node, $"CreateSpriteShape({CallFactoryFromFor(node, obj.Geometry)}, {Matrix3x2(transformMatrix)});");
                 InitializeCompositionObject(builder, obj, node);
                 WriteSetPropertyStatement(builder, nameof(obj.CenterPoint), obj.CenterPoint);
                 WriteSetPropertyStatement(builder, nameof(obj.Offset), obj.Offset);
@@ -2134,7 +2222,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 {
                     b.WriteLine($"{ReferenceTypeName("CompositionSpriteShape")} CreateSpriteShape({ReferenceTypeName("CompositionGeometry")} geometry, {_s.TypeMatrix3x2} transformMatrix, {ReferenceTypeName("CompositionBrush")} fillBrush)");
                     b.OpenScope();
-                    b.WriteLine($"{ConstVar} result = _c{Deref}CreateSpriteShape(geometry);");
+                    WriteCreateAssignment(b, node, $"_c{Deref}CreateSpriteShape(geometry)");
                     WriteSetPropertyStatement(b, "TransformMatrix", "transformMatrix");
                     WriteSetPropertyStatement(b, "FillBrush", "fillBrush");
                     b.WriteLine("return result;");
@@ -2149,8 +2237,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 // that are used in FillBrush, but CreateSpriteShape(GetGeometry(), ..., GetFillBrush()) code
                 // will result in evaluating GetFillBrush() first which may cause null dereferencing
                 builder.WriteLine($"{ConstVar} geometry = {CallFactoryFromFor(node, obj.Geometry)};");
-
-                builder.WriteLine($"{ConstVar} result = CreateSpriteShape(geometry, {Matrix3x2(transformMatrix)}, {CallFactoryFromFor(node, obj.FillBrush)});");
+                WriteCreateAssignment(builder, node, $"CreateSpriteShape(geometry, {Matrix3x2(transformMatrix)}, {CallFactoryFromFor(node, obj.FillBrush)});");
                 InitializeCompositionObject(builder, obj, node);
                 WriteSetPropertyStatement(builder, nameof(obj.CenterPoint), obj.CenterPoint);
                 WriteSetPropertyStatement(builder, nameof(obj.Offset), obj.Offset);
@@ -2176,7 +2263,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 if (referenceParameters.Length == 1 &&
                     string.IsNullOrWhiteSpace(animation.Target))
                 {
-                    EnsureBindPropertyWritten(builder);
+                    EnsureBindPropertyWritten(_rootCodeBuilder ?? builder);
 
                     var rp0 = referenceParameters[0];
                     var rp0Name = GetReferenceParameterName(obj, localName, animationNode, rp0);
@@ -2192,7 +2279,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 else if (referenceParameters.Length == 2 &&
                     string.IsNullOrWhiteSpace(animation.Target))
                 {
-                    EnsureBindProperty2Written(builder);
+                    EnsureBindProperty2Written(_rootCodeBuilder ?? builder);
 
                     var rp0 = referenceParameters[0];
                     var rp0Name = GetReferenceParameterName(obj, localName, animationNode, rp0);
@@ -3112,6 +3199,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             }
 
             uint IAnimatedVisualInfo.RequiredUapVersion => _requiredUapVersion;
+
+            public bool ImplementCreateAndDestroyMethods => _configuration.ImplementCreateAndDestroyMethods;
 
             static void WriteMatrixComment(CodeBuilder builder, Matrix3x2? matrix)
             {

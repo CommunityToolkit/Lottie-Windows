@@ -36,6 +36,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
         // from the TryCreateAnimatedVisual method.
         readonly string _animatedVisualTypeName;
 
+        readonly string _animatedVisualTypeName2;
+
         /// <summary>
         /// Returns the Cx code for a factory that will instantiate the given <see cref="Visual"/> as a
         /// Windows.UI.Composition Visual.
@@ -68,6 +70,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
             _wuc = $"{_winUINamespace}::Composition";
             _sourceClassName = SourceInfo.ClassName;
             _animatedVisualTypeName = Interface_IAnimatedVisual.GetQualifiedName(_s);
+            _animatedVisualTypeName2 = Interface_IAnimatedVisual2.GetQualifiedName(_s);
 
             // Temporary until IAnimatedVisualSource2 makes it into WinUI3.
             _isAnimatedIcon = SourceInfo.WinUIVersion >= new Version(2, 6) && SourceInfo.WinUIVersion.Major < 3;
@@ -449,7 +452,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
             // Start writing the instantiator.
             builder.WriteLine($"ref class {info.ClassName} sealed");
             builder.Indent();
-            builder.WriteLine($": public {_animatedVisualTypeName}");
+
+            if (info.ImplementCreateAndDestroyMethods)
+            {
+                builder.WriteLine($": public {_animatedVisualTypeName2}");
+            }
+            else
+            {
+                builder.WriteLine($": public {_animatedVisualTypeName}");
+            }
+
             builder.UnIndent();
             builder.OpenScope();
 
@@ -994,7 +1006,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
             if (SourceInfo.WinUIVersion.Major >= 3)
             {
                 var info = animatedVisualInfos.First();
-                builder.WriteBreakableLine($"return {_s.New(info.ClassName)}(", CommaSeparate(GetConstructorArguments(info)), ");");
+                builder.WriteBreakableLine($"auto result = {_s.New(info.ClassName)}(", CommaSeparate(GetConstructorArguments(info)), ");");
+                if (info.ImplementCreateAndDestroyMethods)
+                {
+                    builder.WriteLine($"result.{CreateAnimationsMethod}();");
+                }
+
+                builder.WriteLine("return result;");
             }
             else
             {
@@ -1003,7 +1021,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
                     builder.WriteLine();
                     builder.WriteLine($"if ({info.ClassName}::IsRuntimeCompatible())");
                     builder.OpenScope();
-                    builder.WriteBreakableLine($"return {_s.New(info.ClassName)}(", CommaSeparate(GetConstructorArguments(info)), ");");
+                    builder.WriteBreakableLine($"auto result = {_s.New(info.ClassName)}(", CommaSeparate(GetConstructorArguments(info)), ");");
+                    if (info.ImplementCreateAndDestroyMethods)
+                    {
+                        builder.WriteLine($"result.{CreateAnimationsMethod}();");
+                    }
+
+                    builder.WriteLine("return result;");
                     builder.CloseScope();
                 }
 
@@ -1157,7 +1181,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
         // Called by the base class to write the end of the AnimatedVisual class.
         protected override void WriteAnimatedVisualEnd(
             CodeBuilder builder,
-            IAnimatedVisualInfo info)
+            IAnimatedVisualInfo info,
+            CodeBuilder createAnimations,
+            CodeBuilder destroyAnimations)
         {
             if (SourceInfo.UsesCanvasEffects ||
                 SourceInfo.UsesCanvasGeometry)
@@ -1244,6 +1270,21 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
                 var propertyImplBuilder = new CodeBuilder();
                 propertyImplBuilder.WriteLine($"return {_s.Vector2(SourceInfo.CompositionDeclaredSize)};");
                 WritePropertyImpl(builder, isVirtual: true, "float2", "Size", propertyImplBuilder);
+            }
+
+            if (info.ImplementCreateAndDestroyMethods)
+            {
+                builder.WriteLine($"public void {CreateAnimationsMethod}()");
+                builder.OpenScope();
+                builder.WriteCodeBuilder(createAnimations);
+                builder.CloseScope();
+                builder.WriteLine();
+
+                builder.WriteLine($"public void {DestroyAnimationsMethod}()");
+                builder.OpenScope();
+                builder.WriteCodeBuilder(destroyAnimations);
+                builder.CloseScope();
+                builder.WriteLine();
             }
 
             WriteIsRuntimeCompatibleMethod(builder, info);

@@ -25,6 +25,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
         uint RequiredUapVersion { get; }
 
         /// <summary>
+        /// Do we need to implement CreateAnimations and DestroyAnimations method.
+        /// Available after WinUI 2.7 with new interface IAnimatedVisual2.
+        /// </summary>
+        bool ImplementCreateAndDestroyMethods { get; }
+
+        /// <summary>
         /// Gets the XAML LoadedImageSurface nodes of the AnimatedVisual.
         /// </summary>
         IReadOnlyList<LoadedImageSurfaceInfo> LoadedImageSurfaceNodes { get; }
