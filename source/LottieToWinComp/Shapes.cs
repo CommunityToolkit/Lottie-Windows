@@ -662,8 +662,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             internal override bool IsShape =>
                 !_context.Layer.Masks.Any() &&
                 _context.Effects.DropShadowEffect is null &&
-                _context.Effects.GaussianBlurEffect is null &&
-                _context.Layer.Transform.Opacity.IsAlways(Opacity.Opaque);
+                _context.Effects.GaussianBlurEffect is null;
 
             internal override CompositionShape? GetShapeRoot(TranslationContext context)
             {
