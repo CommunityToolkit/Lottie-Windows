@@ -245,7 +245,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             // We need to transfer "IsVisible" property from source to result
             // because result is now the root visual for both shadow and source.
             // Otherwise "IsVisible" property will be applied only to source.
-            MoveIsVisibleProperty(context, source, result);
+            TransferIsVisibleProperty(context, source, result);
 
             // Check if ShadowOnly can be false
             if (!dropShadowEffect.IsShadowOnly.IsAlways(true))
@@ -272,13 +272,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return result;
         }
 
-        static void MoveIsVisibleProperty(TranslationContext context, Visual source, Visual target)
+        static void TransferIsVisibleProperty(TranslationContext context, Visual source, Visual target)
         {
-            // Here we are moving default value of "IsVisible" to target
+            // Here we are transfering default value of "IsVisible" to target
             target.IsVisible = source.IsVisible;
             source.IsVisible = null;
 
-            // Here we are moving "isVisible" animation to target
+            // Here we are transfering "isVisible" animation to target
             foreach (var animator in source.Animators.ToList())
             {
                 if (animator.AnimatedProperty != nameof(source.IsVisible))
