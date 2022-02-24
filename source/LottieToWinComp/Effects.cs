@@ -274,6 +274,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         static void MoveIsVisibleProperty(TranslationContext context, Visual source, Visual target)
         {
+            // Here we are moving default value of "IsVisible" to target
+            target.IsVisible = source.IsVisible;
+            source.IsVisible = null;
+
             // Here we are moving "isVisible" animation to target
             foreach (var animator in source.Animators.ToList())
             {
@@ -297,10 +301,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
                 source.StopAnimation(animator.AnimatedProperty);
             }
-
-            // Here we are moving default value of "IsVisible" to target
-            target.IsVisible = source.IsVisible;
-            source.IsVisible = null;
         }
 
         static Vector3 VectorFromRotationAndDistance(Rotation direction, double distance) =>
