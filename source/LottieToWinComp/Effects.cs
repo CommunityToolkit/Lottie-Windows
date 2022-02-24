@@ -292,7 +292,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 }
                 else
                 {
-                    throw new ArgumentException("IsVisible animation should be keyframe of expression");
+                    throw new ArgumentException("IsVisible animation should be KeyFrameAnimation_ or ExpressionAnimation");
                 }
 
                 source.StopAnimation(animator.AnimatedProperty);
