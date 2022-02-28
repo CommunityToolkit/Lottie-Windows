@@ -242,6 +242,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             result.Size = size;
             result.Children.Add(blurResult);
 
+            // We need to transfer "IsVisible" property from source to result
+            // because result is now the root visual for both shadow and source.
+            // Otherwise "IsVisible" property will be applied only to source.
+            TransferIsVisibleProperty(context, source, result);
+
             // Check if ShadowOnly can be false
             if (!dropShadowEffect.IsShadowOnly.IsAlways(true))
             {
@@ -265,6 +270,37 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
 
             return result;
+        }
+
+        static void TransferIsVisibleProperty(TranslationContext context, Visual source, Visual target)
+        {
+            // Here we are transfering default value of "IsVisible" to target
+            target.IsVisible = source.IsVisible;
+            source.IsVisible = null;
+
+            // Here we are transfering "isVisible" animation to target
+            foreach (var animator in source.Animators.ToList())
+            {
+                if (animator.AnimatedProperty != nameof(source.IsVisible))
+                {
+                    continue;
+                }
+
+                if (animator.Animation is KeyFrameAnimation_)
+                {
+                    Animate.WithKeyFrame(context, target, animator.AnimatedProperty, (KeyFrameAnimation_)animator.Animation);
+                }
+                else if (animator.Animation is ExpressionAnimation)
+                {
+                    Animate.WithExpression(target, (ExpressionAnimation)animator.Animation, animator.AnimatedProperty);
+                }
+                else
+                {
+                    throw new ArgumentException("IsVisible animation should be KeyFrameAnimation_ or ExpressionAnimation");
+                }
+
+                source.StopAnimation(animator.AnimatedProperty);
+            }
         }
 
         static Vector3 VectorFromRotationAndDistance(Rotation direction, double distance) =>
