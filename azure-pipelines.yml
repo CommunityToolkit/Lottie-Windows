@@ -53,9 +53,9 @@ steps:
 - script: nbgv cloud
   displayName: Set Version
 
-# Install the Windows SDK. Version 18362 (Windows 1909 release).
+# Install the Windows SDK. Version 22558 (SV2 release).
 # This is needed to build the UWP code.
-- powershell: .\build\Install-WindowsSdkISO.ps1 18362
+- powershell: .\build\Install-WindowsSdkISO.ps1 22558
   displayName: Insider SDK
 
 # Run the build.

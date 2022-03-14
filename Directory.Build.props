@@ -21,7 +21,7 @@
     <IsFormsProject Condition="'$(IsDesignProject)' != 'true'">$(MSBuildProjectName.Contains('Forms'))</IsFormsProject>
     <IsSampleProject>$(MSBuildProjectName.Contains('Sample'))</IsSampleProject>
     <DefaultTargetPlatformVersion>22558</DefaultTargetPlatformVersion>
-    <DefaultTargetPlatformMinVersion>22558</DefaultTargetPlatformMinVersion>
+    <DefaultTargetPlatformMinVersion>16299</DefaultTargetPlatformMinVersion>
     <PackageOutputPath>$(MSBuildThisFileDirectory)bin\nupkg</PackageOutputPath>
     <OutputPath>bin\$(Platform)\$(Configuration)</OutputPath>
     <Nullable>enable</Nullable>
@@ -51,17 +51,17 @@
         <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">15.0</VisualStudioVersion>
         <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
 
-        <!-- Need 19H1 or later.
+        <!-- Need SV2 or later.
         
         When changing this value, ensure the SDK is installed with the build process.
         Need to check several files:
           - /azure-pipelines.yml
 
         This also needs to be installed on your local machine. Can do this with PowerShell:
-          ./build/Install-WindowsSDKISO.ps1 18362
+          ./build/Install-WindowsSDKISO.ps1 22558
         -->
         <TargetPlatformVersion>10.0.22558.0</TargetPlatformVersion>
-        <TargetPlatformMinVersion>10.0.22558.0</TargetPlatformMinVersion>
+        <TargetPlatformMinVersion>10.0.17134.0</TargetPlatformMinVersion>
 
         <!-- Compiler -->
         <FileAlignment>512</FileAlignment>

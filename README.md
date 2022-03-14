@@ -14,7 +14,7 @@ Lottie-Windows consists of 3 related products:
 This repo also contains source code for **[samples](/LottieViewer)**.
 
 ## <a name="supported"></a> Supported SDKs
-* May 2019 Update (18362) and later
+* SV2 Update (22558) and later
 
 ## <a name="documentation"></a> Getting Started
 * [Documentation and Tutorials](https://aka.ms/lottiedocs)
