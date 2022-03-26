@@ -682,7 +682,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         {
                             // Ensure the previous expression doesn't continue being evaluated during the current keyframe.
                             // This is necessary because the expression is only defined from the previous progress to the current progress.
-                            InsertKeyFrame(compositionAnimation, currentProgress, previousValue, context.ObjectFactory.CreateStepThenHoldEasingFunction());
+                            var nextLargerThanPrevious = Float32.NextLargerThan(previousProgress);
+                            InsertKeyFrame(compositionAnimation, nextLargerThanPrevious, previousValue, context.ObjectFactory.CreateStepThenHoldEasingFunction());
                         }
 
                         // The easing for a keyframe at 0 is unimportant, so always use Hold.
