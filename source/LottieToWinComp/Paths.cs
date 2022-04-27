@@ -74,6 +74,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 return original;
             }
 
+            original.Context.Issues.PathAnimationHasDifferentNumberOfSegments();
+
             var populatePathGeometry = (PathGeometry pathGeometry) => {
                 List<BezierSegment> segments = pathGeometry.BezierSegments.ToList();
 
