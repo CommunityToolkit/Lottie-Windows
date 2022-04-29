@@ -76,7 +76,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             original.Context.Issues.PathAnimationHasDifferentNumberOfSegments();
 
-            var populatePathGeometry = (PathGeometry pathGeometry) => {
+            Func<PathGeometry, PathGeometry> populatePathGeometry = (PathGeometry pathGeometry) => {
                 List<BezierSegment> segments = pathGeometry.BezierSegments.ToList();
 
                 while (segments.Count < maxSegments)
