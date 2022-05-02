@@ -126,6 +126,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal void MatteLayerIsNeverVisible() => Report("LT0044", "One of the matte layers is never visible. It may be unintentional.");
 
+        internal void PathAnimationHasDifferentNumberOfSegments() => Report("LT0045", "Path animation has different number of segments for different keyframes.");
+
         void Report(string code, string description)
         {
             _issues.Add((code, description));

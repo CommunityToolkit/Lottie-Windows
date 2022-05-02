@@ -88,6 +88,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Issues", "Issues", "{BDB88D
 		..\source\Issues\LT0042.md = ..\source\Issues\LT0042.md
 		..\source\Issues\LT0043.md = ..\source\Issues\LT0043.md
 		..\source\Issues\LT0044.md = ..\source\Issues\LT0044.md
+		..\source\Issues\LT0045.md = ..\source\Issues\LT0045.md
 		..\source\Issues\LV0001.md = ..\source\Issues\LV0001.md
 		..\source\Issues\LV0002.md = ..\source\Issues\LV0002.md
 		..\source\Issues\LV0003.md = ..\source\Issues\LV0003.md
