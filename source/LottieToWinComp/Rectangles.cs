@@ -428,6 +428,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             in TrimmedAnimatable<Vector3> size,
             in TrimmedAnimatable<Vector3> position)
         {
+            // Note: Current implementation of Windows Composition API behaves differently for Rounded Rectangle and regular Rectangle geometry.
+            // In first case we need to offset the inner content (e.g. gradient) by position only, and in second case by position and half the size (total offset).
             return size.IsAnimated || position.IsAnimated ?
                 new OriginOffsetContainer(geometry, -(geometry.IsRoundedRectangle ? ExpressionFactory.GeometryPosition : ExpressionFactory.GeometryOffset)) :
                 new OriginOffsetContainer(geometry, -(geometry.IsRoundedRectangle ? ConvertTo.Vector2(position.InitialValue) : InitialOffset(size, position)));
@@ -439,6 +441,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             in TrimmedAnimatable<double> height,
             in TrimmedAnimatable<Vector3> position)
         {
+            // Note: Current implementation of Windows Composition API behaves differently for Rounded Rectangle and regular Rectangle geometry.
+            // In first case we need to offset the inner content (e.g. gradient) by position only, and in second case by position and half the size (total offset).
             return width.IsAnimated || height.IsAnimated || position.IsAnimated ?
                 new OriginOffsetContainer(geometry, -(geometry.IsRoundedRectangle ? ExpressionFactory.GeometryPosition : ExpressionFactory.GeometryOffset)) :
                 new OriginOffsetContainer(geometry, -(geometry.IsRoundedRectangle ? ConvertTo.Vector2(position.InitialValue) : InitialOffset(width, height, position)));
