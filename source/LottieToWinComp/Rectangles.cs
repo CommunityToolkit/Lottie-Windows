@@ -319,10 +319,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var height = size.InitialValue.Y;
             var trimOffsetDegrees = (width / (2 * (width + height))) * 360;
 
-            // If offset is not animated then other computations for fill brush can be optimized.
-            context.LayerContext.OriginOffset = size.IsAnimated ?
-                new OriginOffsetContainer(geometry, ExpressionFactory.GeometryHalfSize) :
-                new OriginOffsetContainer(geometry, ConvertTo.Vector2(size.InitialValue / 2));
+            context.LayerContext.OriginOffset = GetOriginOffsetContainer(geometry, size, position);
 
             Shapes.TranslateAndApplyShapeContextWithTrimOffset(
                 context,
@@ -414,10 +411,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var initialHeight = height.InitialValue;
             var trimOffsetDegrees = (initialWidth / (2 * (initialWidth + initialHeight))) * 360;
 
-            // If offset is not animated then other computations for fill brush can be optimized.
-            context.LayerContext.OriginOffset = width.IsAnimated || height.IsAnimated ?
-                new OriginOffsetContainer(geometry, ExpressionFactory.GeometryHalfSize) :
-                new OriginOffsetContainer(geometry, ConvertTo.Vector2(width.InitialValue / 2, height.InitialValue / 2));
+            context.LayerContext.OriginOffset = GetOriginOffsetContainerXY(geometry, width, height, position);
 
             Shapes.TranslateAndApplyShapeContextWithTrimOffset(
                 context,
@@ -427,6 +421,27 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             compositionRectangle.SetDescription(context, () => rectangle.Name);
             compositionRectangle.Geometry.SetDescription(context, () => $"{rectangle.Name}.RectangleGeometry");
+        }
+
+        static OriginOffsetContainer GetOriginOffsetContainer(
+            RectangleOrRoundedRectangleGeometry geometry,
+            in TrimmedAnimatable<Vector3> size,
+            in TrimmedAnimatable<Vector3> position)
+        {
+            return size.IsAnimated || position.IsAnimated ?
+                new OriginOffsetContainer(geometry, -(geometry.IsRoundedRectangle ? ExpressionFactory.GeometryPosition : ExpressionFactory.GeometryOffset)) :
+                new OriginOffsetContainer(geometry, -(geometry.IsRoundedRectangle ? ConvertTo.Vector2(position.InitialValue) : InitialOffset(size, position)));
+        }
+
+        static OriginOffsetContainer GetOriginOffsetContainerXY(
+            RectangleOrRoundedRectangleGeometry geometry,
+            in TrimmedAnimatable<double> width,
+            in TrimmedAnimatable<double> height,
+            in TrimmedAnimatable<Vector3> position)
+        {
+            return width.IsAnimated || height.IsAnimated || position.IsAnimated ?
+                new OriginOffsetContainer(geometry, -(geometry.IsRoundedRectangle ? ExpressionFactory.GeometryPosition : ExpressionFactory.GeometryOffset)) :
+                new OriginOffsetContainer(geometry, -(geometry.IsRoundedRectangle ? ConvertTo.Vector2(position.InitialValue) : InitialOffset(width, height, position)));
         }
 
         public static CanvasGeometry CreateWin2dRectangleGeometry(
