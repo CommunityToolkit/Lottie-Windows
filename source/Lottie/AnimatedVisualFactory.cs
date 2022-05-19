@@ -11,7 +11,12 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools;
 using Microsoft.UI.Xaml.Controls;
+
+#if Lottie_Windows_WinUI3
+using Microsoft.UI.Composition;
+#else
 using Windows.UI.Composition;
+#endif
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie
 {

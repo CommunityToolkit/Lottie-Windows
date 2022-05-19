@@ -8,7 +8,13 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Toolkit.Uwp.UI.Lottie.CompMetadata;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
+
+#if Lottie_Windows_WinUI3
+using Microsoft.UI.Composition;
+using MicrosoftToolkit.WinUI.Lottie;
+#else
 using Windows.UI.Composition;
+#endif
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie
 {

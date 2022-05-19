@@ -14,6 +14,7 @@
 #pragma warning disable SA1402 // File should only contain one type
 #pragma warning disable SA1649 // File name should match first type name
 
+#if !Lottie_Windows_WinUI3
 namespace System.Diagnostics.CodeAnalysis
 {
     [AttributeUsage(
@@ -73,3 +74,4 @@ namespace System.Diagnostics.CodeAnalysis
         }
     }
 }
+#endif

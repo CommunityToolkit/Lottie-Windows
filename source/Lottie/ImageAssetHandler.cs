@@ -5,9 +5,18 @@
 #nullable enable
 
 using System;
-using Windows.UI.Composition;
 
+#if Lottie_Windows_WinUI3
+using Microsoft.UI.Composition;
+#else
+using Windows.UI.Composition;
+#endif
+
+#if Lottie_Windows_WinUI3
+namespace MicrosoftToolkit.WinUI.Lottie
+#else
 namespace Microsoft.Toolkit.Uwp.UI.Lottie
+#endif
 {
     /// <summary>
     /// A delegate that returns an <see cref="ICompositionSurface"/> for the given image uri.
@@ -15,7 +24,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
     /// <returns>A surface for the image referenced by <paramref name="imageUri"/>
     /// or null.</returns>
     /// <remarks>Users can provide an <see cref="ImageAssetHandler"/> in order to
-    /// provide a bitmap for an image referenced in a Lottie file.
-    /// <seealso cref="LottieVisualSource.SetImageAssetHandler(ImageAssetHandler?)"/></remarks>
+    /// provide a bitmap for an image referenced in a Lottie file. </remarks>
     public delegate ICompositionSurface? ImageAssetHandler(Uri imageUri);
 }

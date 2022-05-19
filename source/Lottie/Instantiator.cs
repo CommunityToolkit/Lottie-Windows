@@ -18,15 +18,21 @@ using Windows.Graphics.Effects;
 using Expr = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions;
 using Mgc = Microsoft.Graphics.Canvas;
 using Mgce = Microsoft.Graphics.Canvas.Effects;
+#if Lottie_Windows_WinUI3
+using Wc = Microsoft.UI.Composition;
+using Wm = Microsoft.UI.Xaml.Media;
+#else
 using Wc = Windows.UI.Composition;
-using Wd = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Wm = Windows.UI.Xaml.Media;
+#endif
+using Wd = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Wmd = Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData;
+using Wui = Windows.UI;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie
 {
     /// <summary>
-    /// Creates instances of a <see cref="Windows.UI.Composition.Visual"/> tree from a description
+    /// Creates instances of a <see cref="Wc.Visual"/> tree from a description
     /// of the tree.
     /// </summary>
     sealed class Instantiator
@@ -53,7 +59,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         bool GetExisting<T>(object key, [MaybeNullWhen(false)] out T result)
             where T : class
         {
-            if (_cache.TryGetValue(key, out object cached))
+            if (_cache.TryGetValue(key, out object? cached))
             {
                 result = (T)cached;
                 return true;
@@ -1607,8 +1613,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 _ => throw new InvalidOperationException(),
             };
 
-        static Windows.UI.Color Color(Wd.Wui.Color color) =>
-            Windows.UI.Color.FromArgb(color.A, color.R, color.G, color.B);
+        static Wui.Color Color(Wd.Wui.Color color) =>
+            Wui.Color.FromArgb(color.A, color.R, color.G, color.B);
 
         static Wc.CompositionDropShadowSourcePolicy DropShadowSourcePolicy(Wd.CompositionDropShadowSourcePolicy value) =>
             value switch
@@ -1694,7 +1700,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
 
         sealed class ReferenceEqualsComparer : IEqualityComparer<object>
         {
-            bool IEqualityComparer<object>.Equals(object x, object y) => ReferenceEquals(x, y);
+            bool IEqualityComparer<object>.Equals(object? x, object? y) => ReferenceEquals(x, y);
 
             int IEqualityComparer<object>.GetHashCode(object obj) => obj.GetHashCode();
         }

@@ -16,7 +16,13 @@ using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp;
 using Windows.Foundation.Metadata;
+
+#if Lottie_Windows_WinUI3
+using Microsoft.UI.Composition;
+using MicrosoftToolkit.WinUI.Lottie;
+#else
 using Windows.UI.Composition;
+#endif
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie
 {

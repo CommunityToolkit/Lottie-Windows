@@ -17,7 +17,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return lottieOptimizer.GetOptimized(value);
         }
 
-        public static Path OptimizePath(LayerContext context, Path path)
+        public static LottieData.Path OptimizePath(LayerContext context, LottieData.Path path)
         {
             // Optimize the path data. This may result in a previously animated path
             // becoming non-animated.
