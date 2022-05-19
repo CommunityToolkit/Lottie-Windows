@@ -7,7 +7,15 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+
+#if Lottie_Windows_WinUI3
+using Microsoft.UI.Composition;
+using MicrosoftToolkit.WinUI.Lottie;
+#else
 using Windows.UI.Composition;
+#endif
+
+using Wwh = Windows.Web.Http;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie
 {
@@ -56,7 +64,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             var absoluteUri = Uris.GetAbsoluteUri(uri);
             if (absoluteUri is not null)
             {
-                var winrtClient = new Windows.Web.Http.HttpClient();
+                var winrtClient = new Wwh.HttpClient();
                 var response = await winrtClient.GetAsync(absoluteUri);
 
                 var result = await response.Content.ReadAsInputStreamAsync();

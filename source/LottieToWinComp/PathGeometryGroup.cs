@@ -39,7 +39,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// <returns>The paths, grouped.</returns>
         internal static Animatable<PathGeometryGroup> GroupPaths(
             ShapeLayerContext context,
-            IReadOnlyList<Path> paths,
+            IReadOnlyList<LottieData.Path> paths,
             out bool groupingIsPerfect)
         {
             // Ideally each of the paths would have identical key frames with identical frame numbers.

@@ -11,8 +11,15 @@ using System.IO.Compression;
 using System.Threading.Tasks;
 using Microsoft.Toolkit.Uwp.UI.Lottie.DotLottie;
 using Windows.Storage;
+
+#if Lottie_Windows_WinUI3
+using Microsoft.UI.Composition;
+using Microsoft.UI.Xaml.Media;
+using MicrosoftToolkit.WinUI.Lottie;
+#else
 using Windows.UI.Composition;
 using Windows.UI.Xaml.Media;
+#endif
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie
 {

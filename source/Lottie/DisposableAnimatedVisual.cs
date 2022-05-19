@@ -7,18 +7,23 @@
 using System;
 using System.Numerics;
 using Microsoft.UI.Xaml.Controls;
+
+#if Lottie_Windows_WinUI3
+using Microsoft.UI.Composition;
+#else
 using Windows.UI.Composition;
+#endif
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie
 {
     sealed class DisposableAnimatedVisual : IAnimatedVisual, IDisposable
     {
-        internal DisposableAnimatedVisual(Visual? rootVisual)
+        internal DisposableAnimatedVisual(Visual rootVisual)
         {
             RootVisual = rootVisual;
         }
 
-        public Visual? RootVisual { get; }
+        public Visual RootVisual { get; }
 
         public TimeSpan Duration { get; set; }
 

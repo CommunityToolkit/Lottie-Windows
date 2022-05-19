@@ -146,7 +146,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return true;
         }
 
-        public static CompositionShape TranslatePathContent(ShapeContext context, Path path)
+        public static CompositionShape TranslatePathContent(ShapeContext context, LottieData.Path path)
         {
             // A path is represented as a SpriteShape with a CompositionPathGeometry.
             var geometry = context.ObjectFactory.CreatePathGeometry();
@@ -225,7 +225,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// Groups multiple Shapes into a D2D geometry group.
         /// </summary>
         /// <returns>The shape.</returns>
-        public static CompositionShape TranslatePathGroupContent(ShapeContext context, IReadOnlyList<Path> paths)
+        public static CompositionShape TranslatePathGroupContent(ShapeContext context, IReadOnlyList<LottieData.Path> paths)
         {
             var grouped = PathGeometryGroup.GroupPaths(context, paths, out var groupingSucceeded);
 
@@ -286,7 +286,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         public static CanvasGeometry CreateWin2dPathGeometryFromShape(
             ShapeContext context,
-            Path path,
+            LottieData.Path path,
             ShapeFill.PathFillType fillType,
             bool optimizeLines)
         {
