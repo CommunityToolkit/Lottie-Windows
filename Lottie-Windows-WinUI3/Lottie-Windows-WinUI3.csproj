@@ -3,8 +3,8 @@
 	<PropertyGroup>
 		<OutputType>Library</OutputType>
 		<RootNamespace>MicrosoftToolkit.WinUI.Lottie</RootNamespace>
-		<TargetFramework>net6.0-windows10.0.18362.0</TargetFramework>
-		<ImplicitUsings>enable</ImplicitUsings>
+		<TargetFramework>net5.0-windows10.0.18362.0</TargetFramework>
+
 		<Nullable>enable</Nullable>
 		<CsWinRTIncludes>Microsoft</CsWinRTIncludes>
 		<Platforms>x64;x86</Platforms>
