@@ -13,7 +13,7 @@ using Windows.UI.Composition;
 #endif
 
 #if Lottie_Windows_WinUI3
-namespace MicrosoftToolkit.WinUI.Lottie
+namespace CommunityToolkit.WinUI.Lottie
 #else
 namespace Microsoft.Toolkit.Uwp.UI.Lottie
 #endif

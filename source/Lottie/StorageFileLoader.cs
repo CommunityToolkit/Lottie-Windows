@@ -13,7 +13,7 @@ using Windows.Storage;
 
 #if Lottie_Windows_WinUI3
 using Microsoft.UI.Composition;
-using MicrosoftToolkit.WinUI.Lottie;
+using CommunityToolkit.WinUI.Lottie;
 #else
 using Windows.UI.Composition;
 #endif
