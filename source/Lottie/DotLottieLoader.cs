@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.Toolkit.Uwp.UI.Lottie.DotLottie;
 using Windows.Storage;
 
-#if Lottie_Windows_WinUI3
+#if WINAPPSDK 
 using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml.Media;
 using CommunityToolkit.WinUI.Lottie;

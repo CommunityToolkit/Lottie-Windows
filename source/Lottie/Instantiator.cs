@@ -18,7 +18,7 @@ using Windows.Graphics.Effects;
 using Expr = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions;
 using Mgc = Microsoft.Graphics.Canvas;
 using Mgce = Microsoft.Graphics.Canvas.Effects;
-#if Lottie_Windows_WinUI3
+#if WINAPPSDK 
 using Wc = Microsoft.UI.Composition;
 using Wm = Microsoft.UI.Xaml.Media;
 #else

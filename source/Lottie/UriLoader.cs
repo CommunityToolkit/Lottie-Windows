@@ -8,7 +8,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 
-#if Lottie_Windows_WinUI3
+#if WINAPPSDK 
 using Microsoft.UI.Composition;
 using CommunityToolkit.WinUI.Lottie;
 #else

@@ -4,7 +4,7 @@
 
 using System;
 
-#if Lottie_Windows_WinUI3
+#if WINAPPSDK 
 namespace CommunityToolkit.WinUI.Lottie
 #else
 namespace Microsoft.Toolkit.Uwp.UI.Lottie

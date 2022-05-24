@@ -15,7 +15,7 @@ using Windows.Foundation.Metadata;
 using Windows.Storage;
 using Windows.Storage.Streams;
 
-#if Lottie_Windows_WinUI3
+#if WINAPPSDK 
 using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;
 #else
@@ -23,7 +23,7 @@ using Windows.UI.Composition;
 using Windows.UI.Xaml;
 #endif
 
-#if Lottie_Windows_WinUI3
+#if WINAPPSDK 
 namespace CommunityToolkit.WinUI.Lottie
 #else
 namespace Microsoft.Toolkit.Uwp.UI.Lottie
@@ -35,7 +35,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
     /// </summary>
     public sealed class LottieVisualSource : DependencyObject, IDynamicAnimatedVisualSource
     {
-#if Lottie_Windows_WinUI3
+#if WINAPPSDK 
         HashSet<TypedEventHandler<IDynamicAnimatedVisualSource?, object?>> _compositionInvalidatedEventTokenTable = new HashSet<TypedEventHandler<IDynamicAnimatedVisualSource?, object?>>();
 #else
         EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource?, object?>>? _compositionInvalidatedEventTokenTable;
@@ -163,7 +163,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         {
             add
             {
-#if Lottie_Windows_WinUI3
+#if WINAPPSDK 
                 _compositionInvalidatedEventTokenTable.Add(value);
 #else
                 return EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource?, object?>>
@@ -174,7 +174,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
 
             remove
             {
-#if Lottie_Windows_WinUI3
+#if WINAPPSDK 
                 _compositionInvalidatedEventTokenTable.Remove(value);
 #else
                 EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource?, object?>>
@@ -228,7 +228,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
 
         void NotifyListenersThatCompositionChanged()
         {
-#if Lottie_Windows_WinUI3
+#if WINAPPSDK 
             foreach (var v in _compositionInvalidatedEventTokenTable)
             {
                 v.Invoke(this, null);
@@ -318,7 +318,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             }
         }
 
-#if !Lottie_Windows_WinUI3
+#if !WINAPPSDK 
         /// <summary>
         /// Returns a string representation of the <see cref="LottieVisualSource"/> for debugging purposes.
         /// </summary>

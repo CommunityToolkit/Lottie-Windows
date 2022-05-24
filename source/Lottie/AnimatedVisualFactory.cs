@@ -12,7 +12,7 @@ using System.Linq;
 using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools;
 using Microsoft.UI.Xaml.Controls;
 
-#if Lottie_Windows_WinUI3
+#if WINAPPSDK 
 using Microsoft.UI.Composition;
 #else
 using Windows.UI.Composition;

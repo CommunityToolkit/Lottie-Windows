@@ -17,7 +17,7 @@ using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp;
 using Windows.Foundation.Metadata;
 
-#if Lottie_Windows_WinUI3
+#if WINAPPSDK 
 using Microsoft.UI.Composition;
 using CommunityToolkit.WinUI.Lottie;
 #else

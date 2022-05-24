@@ -6,13 +6,13 @@
 
 using System;
 
-#if Lottie_Windows_WinUI3
+#if WINAPPSDK 
 using Microsoft.UI.Composition;
 #else
 using Windows.UI.Composition;
 #endif
 
-#if Lottie_Windows_WinUI3
+#if WINAPPSDK 
 namespace CommunityToolkit.WinUI.Lottie
 #else
 namespace Microsoft.Toolkit.Uwp.UI.Lottie

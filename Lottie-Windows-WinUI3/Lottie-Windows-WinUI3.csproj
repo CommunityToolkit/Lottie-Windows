@@ -9,7 +9,7 @@
 		<CsWinRTIncludes>Microsoft</CsWinRTIncludes>
 		<Platforms>x64;x86</Platforms>
 
-		<DefineConstants>Lottie_Windows_WinUI3</DefineConstants>
+		<DefineConstants>WINAPPSDK </DefineConstants>
 
 		<SignAssembly>False</SignAssembly>
 	</PropertyGroup>

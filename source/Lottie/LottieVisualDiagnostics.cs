@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using Microsoft.Toolkit.Uwp.UI.Lottie.CompMetadata;
 using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
 
-#if Lottie_Windows_WinUI3
+#if WINAPPSDK 
 using Microsoft.UI.Composition;
 using CommunityToolkit.WinUI.Lottie;
 #else
