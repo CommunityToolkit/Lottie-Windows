@@ -21,6 +21,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
 
         public static Vector2 operator -(Vector2 left, Vector2 right) => new Subtract(left, right);
 
+        public static Vector2 operator -(Vector2 value) => new Subtract(Vector2(0, 0), value);
+
         public static Vector2 operator +(Vector2 left, Vector2 right) => new Add(left, right);
 
         public static Vector2 operator *(Scalar left, Vector2 right) => new ScalarMultiply(left, right);

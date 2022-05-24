@@ -439,7 +439,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             // so that its value can be used in expression animation of property itself.
             string sourcePropertyName = propertyName + "Source";
             obj.Properties.InsertVector2(sourcePropertyName, ConvertTo.Vector2(value.InitialValue));
-            Animate.Vector2(context, value, obj, sourcePropertyName);
+
+            if (value.IsAnimated)
+            {
+                Animate.Vector2(context, value, obj, sourcePropertyName);
+            }
 
             // Create expression that offsets source property by origin offset.
             WinCompData.Expressions.Vector2 expression = offset.IsAnimated ?
@@ -518,10 +522,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var startPoint = Optimizer.TrimAnimatable(context, gradient.StartPoint);
             var endPoint = Optimizer.TrimAnimatable(context, gradient.EndPoint);
 
-            var startPointValue = AnimateVector2WithOriginOffsetOrGetValue(context, result, nameof(result.EllipseCenter), startPoint);
-            if (startPointValue is not null)
+            if (startPoint.IsAnimated)
             {
-                result.EllipseCenter = startPointValue!;
+                Animate.Vector2(context, startPoint, result, nameof(result.EllipseCenter));
+            }
+            else
+            {
+                result.EllipseCenter = ConvertTo.Vector2(startPoint.InitialValue);
             }
 
             if (endPoint.IsAnimated)
