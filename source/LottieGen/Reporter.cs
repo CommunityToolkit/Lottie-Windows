@@ -8,7 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen
+namespace CommunityToolkit.WinUI.Lottie.LottieGen
 {
     sealed class Reporter
     {

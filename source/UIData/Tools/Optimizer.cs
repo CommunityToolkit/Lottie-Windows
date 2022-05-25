@@ -10,15 +10,15 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Numerics;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData;
-using Expr = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions;
-using Wg = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wg;
-using Wui = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui;
+using CommunityToolkit.WinUI.Lottie.WinCompData;
+using CommunityToolkit.WinUI.Lottie.WinCompData.Mgce;
+using CommunityToolkit.WinUI.Lottie.WinCompData.Mgcg;
+using CommunityToolkit.WinUI.Lottie.WinUIXamlMediaData;
+using Expr = CommunityToolkit.WinUI.Lottie.WinCompData.Expressions;
+using Wg = CommunityToolkit.WinUI.Lottie.WinCompData.Wg;
+using Wui = CommunityToolkit.WinUI.Lottie.WinCompData.Wui;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
+namespace CommunityToolkit.WinUI.Lottie.UIData.Tools
 {
     /// <summary>
     /// Transforms a WinCompData tree to an equivalent tree, optimizing the tree

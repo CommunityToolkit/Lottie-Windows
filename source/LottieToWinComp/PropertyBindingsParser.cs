@@ -6,7 +6,7 @@ using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
+namespace CommunityToolkit.WinUI.Lottie.LottieToWinComp
 {
     static class PropertyBindingsParser
     {

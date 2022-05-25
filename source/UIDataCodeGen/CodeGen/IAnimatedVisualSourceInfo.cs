@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
+namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
 {
     /// <summary>
     /// Holds information about code being generated for an IAnimatedVisualSource.

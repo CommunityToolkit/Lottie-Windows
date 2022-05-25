@@ -24,7 +24,7 @@ This repo also contains source code for **[samples](/LottieViewer)**.
 ## Build Status
 | Target | Branch | Status | Recommended NuGet package |
 | ------ | ------ | ------ | ------ |
-| 7.1.0 release | main | [![Build Status](https://dev.azure.com/dotnet/WindowsCommunityToolkit/_apis/build/status/Microsoft.Toolkit.Uwp.UI.Lottie?branchName=main)](https://dev.azure.com/dotnet/WindowsCommunityToolkit/_build/latest?definitionId=61&branchName=main) | [![NuGet](https://img.shields.io/nuget/v/Microsoft.Toolkit.Uwp.UI.Lottie.svg)](https://www.nuget.org/packages/Microsoft.Toolkit.Uwp.UI.Lottie/) |
+| 7.1.0 release | main | [![Build Status](https://dev.azure.com/dotnet/WindowsCommunityToolkit/_apis/build/status/CommunityToolkit.WinUI.Lottie?branchName=main)](https://dev.azure.com/dotnet/WindowsCommunityToolkit/_build/latest?definitionId=61&branchName=main) | [![NuGet](https://img.shields.io/nuget/v/CommunityToolkit.WinUI.Lottie.svg)](https://www.nuget.org/packages/CommunityToolkit.WinUI.Lottie/) |
 
 ## Feedback and Requests
 Please use [GitHub Issues](https://github.com/windows-toolkit/Lottie-Windows/issues) for bug reports and feature requests.

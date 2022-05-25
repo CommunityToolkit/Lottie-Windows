@@ -34,7 +34,7 @@ CI builds can be installed from Azure DevOps. From the [main branch](https://dev
 
     dotnet tool install -g LottieGen --add-source https://pkgs.dev.azure.com/dotnet/WindowsCommunityToolkit/_packaging/WindowsCommunityToolkit-MainLatest/nuget/v3/index.json --version 7.0.0-build.2
 
-From [PRs](https://dev.azure.com/dotnet/WindowsCommunityToolkit/_packaging?_a=package&feed=WindowsCommunityToolkit-PullRequests&protocolType=NuGet&package=Microsoft.Toolkit.Uwp.UI.LottieGen):
+From [PRs](https://dev.azure.com/dotnet/WindowsCommunityToolkit/_packaging?_a=package&feed=WindowsCommunityToolkit-PullRequests&protocolType=NuGet&package=CommunityToolkit.WinUI.LottieGen):
 
     dotnet tool install -g LottieGen --add-source https://pkgs.dev.azure.com/dotnet/WindowsCommunityToolkit/_packaging/WindowsCommunityToolkit-PullRequests/nuget/v3/index.json --version 7.0.0-build.2
 

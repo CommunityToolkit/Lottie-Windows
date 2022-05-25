@@ -5,7 +5,7 @@
 using System;
 using System.IO;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGenExe
+namespace CommunityToolkit.WinUI.Lottie.LottieGenExe
 {
     sealed class Usage
     {

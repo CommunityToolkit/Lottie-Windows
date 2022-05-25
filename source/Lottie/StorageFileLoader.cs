@@ -11,14 +11,13 @@ using System.IO;
 using System.Threading.Tasks;
 using Windows.Storage;
 
-#if WINAPPSDK 
+#if WINAPPSDK
 using Microsoft.UI.Composition;
-using CommunityToolkit.WinUI.Lottie;
 #else
 using Windows.UI.Composition;
 #endif
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie
+namespace CommunityToolkit.WinUI.Lottie
 {
     /// <summary>
     /// Loads files from a <see cref="StorageFile"/>. Supports raw

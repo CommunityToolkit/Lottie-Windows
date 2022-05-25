@@ -7,7 +7,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie
+namespace CommunityToolkit.WinUI.Lottie
 {
     static class Uris
     {

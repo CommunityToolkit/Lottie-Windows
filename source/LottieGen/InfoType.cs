@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen
+namespace CommunityToolkit.WinUI.Lottie.LottieGen
 {
     /// <summary>
     /// Categories of information that are displayed to the user on the console. These

@@ -5,10 +5,10 @@
 using System;
 using System.Globalization;
 using System.Numerics;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui;
-using Mgcg = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
+using CommunityToolkit.WinUI.Lottie.WinCompData.Wui;
+using Mgcg = CommunityToolkit.WinUI.Lottie.WinCompData.Mgcg;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
+namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Cx
 {
     /// <summary>
     /// Stringifiers for C++/CX syntax.

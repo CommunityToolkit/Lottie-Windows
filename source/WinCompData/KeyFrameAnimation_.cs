@@ -4,9 +4,9 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions;
+using CommunityToolkit.WinUI.Lottie.WinCompData.Expressions;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
+namespace CommunityToolkit.WinUI.Lottie.WinCompData
 {
 #if PUBLIC_WinCompData
     public

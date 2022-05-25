@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce
+namespace CommunityToolkit.WinUI.Lottie.WinCompData.Mgce
 {
     /// <summary>
     /// This class is the base type for effects. It is used to ensure

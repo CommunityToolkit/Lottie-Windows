@@ -6,7 +6,7 @@
 
 using System;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.YamlData
+namespace CommunityToolkit.WinUI.Lottie.YamlData
 {
     /// <summary>
     /// A scalar value.

@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.Animatables
+namespace CommunityToolkit.WinUI.Lottie.Animatables
 {
 #if PUBLIC_Animatables
     public

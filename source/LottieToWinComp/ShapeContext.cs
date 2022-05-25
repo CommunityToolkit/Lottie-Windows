@@ -7,10 +7,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
-using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
+using CommunityToolkit.WinUI.Lottie.Animatables;
+using CommunityToolkit.WinUI.Lottie.LottieData;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
+namespace CommunityToolkit.WinUI.Lottie.LottieToWinComp
 {
     /// <summary>
     /// Describes the environment in which a Lottie shape should be interpreted.

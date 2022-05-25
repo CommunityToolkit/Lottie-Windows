@@ -15,7 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
+namespace CommunityToolkit.WinUI.Lottie.LottieData.Serialization
 {
     /// <summary>
     /// Issues.

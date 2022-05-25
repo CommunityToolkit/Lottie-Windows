@@ -7,7 +7,7 @@
 using System;
 using SnVector2 = System.Numerics.Vector2;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.Animatables
+namespace CommunityToolkit.WinUI.Lottie.Animatables
 {
 #if PUBLIC_Animatables
     public

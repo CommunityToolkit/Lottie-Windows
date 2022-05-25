@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
+namespace CommunityToolkit.WinUI.Lottie.LottieData.Serialization
 {
 #pragma warning disable SA1205 // Partial elements should declare access
 #pragma warning disable SA1601 // Partial elements should be documented

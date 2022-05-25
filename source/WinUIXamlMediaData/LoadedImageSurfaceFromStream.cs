@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData
+namespace CommunityToolkit.WinUI.Lottie.WinUIXamlMediaData
 {
 #if PUBLIC_WinUIXamlMediaData
     public

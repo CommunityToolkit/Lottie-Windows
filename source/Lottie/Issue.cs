@@ -4,7 +4,7 @@
 
 #nullable enable
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie
+namespace CommunityToolkit.WinUI.Lottie
 {
     /// <summary>
     /// An issue that was discovered while reading or translating a Lottie JSON file.

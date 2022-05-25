@@ -8,11 +8,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce;
-using static Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp.ConvertTo;
-using Expr = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions.Expression;
+using CommunityToolkit.WinUI.Lottie.Animatables;
+using CommunityToolkit.WinUI.Lottie.WinCompData;
+using CommunityToolkit.WinUI.Lottie.WinCompData.Mgce;
+using static CommunityToolkit.WinUI.Lottie.LottieToWinComp.ConvertTo;
+using Expr = CommunityToolkit.WinUI.Lottie.WinCompData.Expressions.Expression;
 using Sn = System.Numerics;
 
 #if DEBUG
@@ -20,7 +20,7 @@ using Sn = System.Numerics;
 //#define NoClipping
 #endif
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
+namespace CommunityToolkit.WinUI.Lottie.LottieToWinComp
 {
     sealed class CompositionObjectFactory
     {

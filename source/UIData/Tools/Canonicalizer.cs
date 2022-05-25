@@ -7,16 +7,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData;
-using Expr = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions;
+using CommunityToolkit.WinUI.Lottie.WinCompData;
+using CommunityToolkit.WinUI.Lottie.WinCompData.Expressions;
+using CommunityToolkit.WinUI.Lottie.WinCompData.Mgcg;
+using CommunityToolkit.WinUI.Lottie.WinUIXamlMediaData;
+using Expr = CommunityToolkit.WinUI.Lottie.WinCompData.Expressions;
 using Sn = System.Numerics;
-using Wg = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wg;
-using Wui = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui;
+using Wg = CommunityToolkit.WinUI.Lottie.WinCompData.Wg;
+using Wui = CommunityToolkit.WinUI.Lottie.WinCompData.Wui;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
+namespace CommunityToolkit.WinUI.Lottie.UIData.Tools
 {
     /// <summary>
     /// Discovers objects that are shareable and updates a graph so that references to

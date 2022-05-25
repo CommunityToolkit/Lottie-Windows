@@ -14,11 +14,11 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
-using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
-using Microsoft.Toolkit.Uwp.UI.Lottie.GenericData;
-using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization;
+using CommunityToolkit.WinUI.Lottie.Animatables;
+using CommunityToolkit.WinUI.Lottie.GenericData;
+using CommunityToolkit.WinUI.Lottie.LottieData.Optimization;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
+namespace CommunityToolkit.WinUI.Lottie.LottieData.Serialization
 {
     // See: https://github.com/airbnb/lottie-web/tree/master/docs/json for the (usually out-of-date) schema.
     // See: https://helpx.adobe.com/pdf/after_effects_reference.pdf for the After Effects semantics.

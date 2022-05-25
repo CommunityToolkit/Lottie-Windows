@@ -6,13 +6,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.MetaData;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData;
+using CommunityToolkit.WinUI.Lottie.WinCompData;
+using CommunityToolkit.WinUI.Lottie.WinCompData.MetaData;
+using CommunityToolkit.WinUI.Lottie.WinCompData.Mgce;
+using CommunityToolkit.WinUI.Lottie.WinCompData.Mgcg;
+using CommunityToolkit.WinUI.Lottie.WinUIXamlMediaData;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt
+namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Cppwinrt
 {
     /// <summary>
     /// Generates code for use by CppWinrt.

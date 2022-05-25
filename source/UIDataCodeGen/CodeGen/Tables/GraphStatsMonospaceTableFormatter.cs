@@ -5,9 +5,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
+using CommunityToolkit.WinUI.Lottie.WinCompData;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Tables
+namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Tables
 {
     sealed class GraphStatsMonospaceTableFormatter : MonospaceTableFormatter
     {

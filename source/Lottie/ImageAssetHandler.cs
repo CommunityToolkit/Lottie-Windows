@@ -6,17 +6,13 @@
 
 using System;
 
-#if WINAPPSDK 
+#if WINAPPSDK
 using Microsoft.UI.Composition;
 #else
 using Windows.UI.Composition;
 #endif
 
-#if WINAPPSDK 
 namespace CommunityToolkit.WinUI.Lottie
-#else
-namespace Microsoft.Toolkit.Uwp.UI.Lottie
-#endif
 {
     /// <summary>
     /// A delegate that returns an <see cref="ICompositionSurface"/> for the given image uri.

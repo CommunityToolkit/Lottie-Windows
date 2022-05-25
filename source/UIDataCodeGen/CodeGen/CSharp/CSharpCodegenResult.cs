@@ -5,7 +5,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
+namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
 {
     /// <summary>
     /// The result produced by the <see cref="CSharpCodegenResult"/>.

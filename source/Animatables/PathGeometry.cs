@@ -8,7 +8,7 @@ using System;
 using System.Diagnostics.Contracts;
 using System.Linq;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.Animatables
+namespace CommunityToolkit.WinUI.Lottie.Animatables
 {
     /// <summary>
     /// A sequence of <see cref="BezierSegment"/>s that describes the shape of a path.

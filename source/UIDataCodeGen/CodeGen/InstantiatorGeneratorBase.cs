@@ -10,21 +10,21 @@ using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Text;
-using Microsoft.Toolkit.Uwp.UI.Lottie.CompMetadata;
-using Microsoft.Toolkit.Uwp.UI.Lottie.GenericData;
-using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Tables;
-using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.MetaData;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
-using Expr = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions;
-using Mgce = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce;
+using CommunityToolkit.WinUI.Lottie.CompMetadata;
+using CommunityToolkit.WinUI.Lottie.GenericData;
+using CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Tables;
+using CommunityToolkit.WinUI.Lottie.UIData.Tools;
+using CommunityToolkit.WinUI.Lottie.WinCompData;
+using CommunityToolkit.WinUI.Lottie.WinCompData.MetaData;
+using CommunityToolkit.WinUI.Lottie.WinCompData.Mgcg;
+using Expr = CommunityToolkit.WinUI.Lottie.WinCompData.Expressions;
+using Mgce = CommunityToolkit.WinUI.Lottie.WinCompData.Mgce;
 using Sn = System.Numerics;
-using Wg = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wg;
-using Wmd = Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData;
-using Wui = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui;
+using Wg = CommunityToolkit.WinUI.Lottie.WinCompData.Wg;
+using Wmd = CommunityToolkit.WinUI.Lottie.WinUIXamlMediaData;
+using Wui = CommunityToolkit.WinUI.Lottie.WinCompData.Wui;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
+namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
 {
 #if PUBLIC_UIDataCodeGen
     public

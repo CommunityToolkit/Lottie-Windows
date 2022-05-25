@@ -6,7 +6,7 @@
 
 using System;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.DotLottie
+namespace CommunityToolkit.WinUI.Lottie.DotLottie
 {
     sealed class InvalidLottieFileException : Exception
     {

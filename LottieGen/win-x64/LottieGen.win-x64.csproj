@@ -30,7 +30,7 @@
 
   <PropertyGroup>
     <_SourceDir>..\..\source\</_SourceDir>
-    <StartupObject>Microsoft.Toolkit.Uwp.UI.Lottie.LottieGenExe.Program</StartupObject>
+    <StartupObject>CommunityToolkit.WinUI.Lottie.LottieGenExe.Program</StartupObject>
   </PropertyGroup>
 
   <Import Project="..\Common.proj" />

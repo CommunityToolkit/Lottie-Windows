@@ -8,7 +8,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
+namespace CommunityToolkit.WinUI.Lottie.LottieData
 {
     /// <summary>
     /// Extension methods for <see cref="IReadOnlyList{T}"/>.

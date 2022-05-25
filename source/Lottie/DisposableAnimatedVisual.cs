@@ -8,13 +8,13 @@ using System;
 using System.Numerics;
 using Microsoft.UI.Xaml.Controls;
 
-#if WINAPPSDK 
+#if WINAPPSDK
 using Microsoft.UI.Composition;
 #else
 using Windows.UI.Composition;
 #endif
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie
+namespace CommunityToolkit.WinUI.Lottie
 {
     sealed class DisposableAnimatedVisual : IAnimatedVisual, IDisposable
     {

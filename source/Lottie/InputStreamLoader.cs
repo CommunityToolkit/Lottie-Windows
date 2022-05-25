@@ -10,14 +10,13 @@ using System.IO;
 using System.Threading.Tasks;
 using Windows.Storage.Streams;
 
-#if WINAPPSDK 
+#if WINAPPSDK
 using Microsoft.UI.Composition;
-using CommunityToolkit.WinUI.Lottie;
 #else
 using Windows.UI.Composition;
 #endif
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie
+namespace CommunityToolkit.WinUI.Lottie
 {
     /// <summary>
     /// A loader that loads from an <see cref="IInputStream"/>.

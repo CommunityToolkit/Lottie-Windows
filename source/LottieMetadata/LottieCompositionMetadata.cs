@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieMetadata
+namespace CommunityToolkit.WinUI.Lottie.LottieMetadata
 {
     /// <summary>
     /// Data about the contents of a Lottie file.

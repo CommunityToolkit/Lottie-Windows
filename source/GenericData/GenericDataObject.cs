@@ -6,7 +6,7 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.GenericData
+namespace CommunityToolkit.WinUI.Lottie.GenericData
 {
 #if PUBLIC_LottieData
     public

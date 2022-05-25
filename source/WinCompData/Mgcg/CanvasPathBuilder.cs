@@ -7,9 +7,9 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgc;
+using CommunityToolkit.WinUI.Lottie.WinCompData.Mgc;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg
+namespace CommunityToolkit.WinUI.Lottie.WinCompData.Mgcg
 {
 #if PUBLIC_WinCompData
     public

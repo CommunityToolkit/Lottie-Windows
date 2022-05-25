@@ -5,9 +5,9 @@
 #nullable enable
 
 using System.Collections.Generic;
-using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
+using CommunityToolkit.WinUI.Lottie.LottieData;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
+namespace CommunityToolkit.WinUI.Lottie.LottieToWinComp
 {
     /// <summary>
     /// The context in which to translate a layer. This is used to ensure that

@@ -8,16 +8,15 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 
-#if WINAPPSDK 
+#if WINAPPSDK
 using Microsoft.UI.Composition;
-using CommunityToolkit.WinUI.Lottie;
 #else
 using Windows.UI.Composition;
 #endif
 
 using Wwh = Windows.Web.Http;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie
+namespace CommunityToolkit.WinUI.Lottie
 {
     /// <summary>
     /// Loads files from a Uri.

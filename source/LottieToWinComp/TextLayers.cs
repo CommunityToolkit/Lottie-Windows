@@ -4,7 +4,7 @@
 
 #nullable enable
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
+namespace CommunityToolkit.WinUI.Lottie.LottieToWinComp
 {
     static class TextLayers
     {

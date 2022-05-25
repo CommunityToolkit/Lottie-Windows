@@ -5,7 +5,7 @@
 using System;
 using System.Numerics;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
+namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
 {
     // Methods for decomposing Matrix3x2 and Matrix4x4 into offset,
     // rotation, scale, etc. Used for creating helpful comments that

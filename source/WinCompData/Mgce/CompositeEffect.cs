@@ -3,9 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgc;
+using CommunityToolkit.WinUI.Lottie.WinCompData.Mgc;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce
+namespace CommunityToolkit.WinUI.Lottie.WinCompData.Mgce
 {
 #if PUBLIC_WinCompData
     public

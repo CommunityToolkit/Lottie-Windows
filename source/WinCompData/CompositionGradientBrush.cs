@@ -5,7 +5,7 @@
 using System.Collections.Generic;
 using System.Numerics;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
+namespace CommunityToolkit.WinUI.Lottie.WinCompData
 {
     [MetaData.UapVersion(5)]
 #if PUBLIC_WinCompData

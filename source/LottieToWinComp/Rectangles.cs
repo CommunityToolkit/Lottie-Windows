@@ -4,15 +4,15 @@
 
 using System;
 using System.Diagnostics;
-using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
-using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
-using static Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp.ShapeLayerContext;
-using Expressions = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions;
+using CommunityToolkit.WinUI.Lottie.Animatables;
+using CommunityToolkit.WinUI.Lottie.LottieData;
+using CommunityToolkit.WinUI.Lottie.WinCompData;
+using CommunityToolkit.WinUI.Lottie.WinCompData.Mgcg;
+using static CommunityToolkit.WinUI.Lottie.LottieToWinComp.ShapeLayerContext;
+using Expressions = CommunityToolkit.WinUI.Lottie.WinCompData.Expressions;
 using Sn = System.Numerics;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
+namespace CommunityToolkit.WinUI.Lottie.LottieToWinComp
 {
     /// <summary>
     /// Translation for Lottie rectangles.

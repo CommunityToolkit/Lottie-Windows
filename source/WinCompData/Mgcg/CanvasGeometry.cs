@@ -8,10 +8,10 @@ using System;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgc;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wg;
+using CommunityToolkit.WinUI.Lottie.WinCompData.Mgc;
+using CommunityToolkit.WinUI.Lottie.WinCompData.Wg;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg
+namespace CommunityToolkit.WinUI.Lottie.WinCompData.Mgcg
 {
 #if PUBLIC_WinCompData
     public

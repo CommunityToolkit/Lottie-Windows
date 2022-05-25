@@ -8,14 +8,14 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
-using Microsoft.Toolkit.Uwp.UI.Lottie;
+using CommunityToolkit.WinUI.Lottie;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Foundation;
 using Windows.Foundation.Metadata;
 using Windows.Storage;
 using Windows.Storage.Streams;
 
-#if WINAPPSDK 
+#if WINAPPSDK
 using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;
 #else
@@ -23,11 +23,7 @@ using Windows.UI.Composition;
 using Windows.UI.Xaml;
 #endif
 
-#if WINAPPSDK 
 namespace CommunityToolkit.WinUI.Lottie
-#else
-namespace Microsoft.Toolkit.Uwp.UI.Lottie
-#endif
 {
     /// <summary>
     /// An <see cref="IAnimatedVisualSource"/> for a Lottie composition. This allows
@@ -35,7 +31,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
     /// </summary>
     public sealed class LottieVisualSource : DependencyObject, IDynamicAnimatedVisualSource
     {
-#if WINAPPSDK 
+#if WINAPPSDK
         HashSet<TypedEventHandler<IDynamicAnimatedVisualSource?, object?>> _compositionInvalidatedEventTokenTable = new HashSet<TypedEventHandler<IDynamicAnimatedVisualSource?, object?>>();
 #else
         EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource?, object?>>? _compositionInvalidatedEventTokenTable;
@@ -163,7 +159,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         {
             add
             {
-#if WINAPPSDK 
+#if WINAPPSDK
                 _compositionInvalidatedEventTokenTable.Add(value);
 #else
                 return EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource?, object?>>
@@ -174,7 +170,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
 
             remove
             {
-#if WINAPPSDK 
+#if WINAPPSDK
                 _compositionInvalidatedEventTokenTable.Remove(value);
 #else
                 EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource?, object?>>
@@ -228,7 +224,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
 
         void NotifyListenersThatCompositionChanged()
         {
-#if WINAPPSDK 
+#if WINAPPSDK
             foreach (var v in _compositionInvalidatedEventTokenTable)
             {
                 v.Invoke(this, null);
@@ -318,7 +314,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             }
         }
 
-#if !WINAPPSDK 
+#if !WINAPPSDK
         /// <summary>
         /// Returns a string representation of the <see cref="LottieVisualSource"/> for debugging purposes.
         /// </summary>

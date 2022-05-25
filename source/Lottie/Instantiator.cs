@@ -15,21 +15,21 @@ using System.Numerics;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Microsoft.Graphics.Canvas.Geometry;
 using Windows.Graphics.Effects;
-using Expr = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions;
+using Expr = CommunityToolkit.WinUI.Lottie.WinCompData.Expressions;
 using Mgc = Microsoft.Graphics.Canvas;
 using Mgce = Microsoft.Graphics.Canvas.Effects;
-#if WINAPPSDK 
+#if WINAPPSDK
 using Wc = Microsoft.UI.Composition;
 using Wm = Microsoft.UI.Xaml.Media;
 #else
 using Wc = Windows.UI.Composition;
 using Wm = Windows.UI.Xaml.Media;
 #endif
-using Wd = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
-using Wmd = Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData;
+using Wd = CommunityToolkit.WinUI.Lottie.WinCompData;
+using Wmd = CommunityToolkit.WinUI.Lottie.WinUIXamlMediaData;
 using Wui = Windows.UI;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie
+namespace CommunityToolkit.WinUI.Lottie
 {
     /// <summary>
     /// Creates instances of a <see cref="Wc.Visual"/> tree from a description

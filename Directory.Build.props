@@ -1,7 +1,7 @@
 <Project>
 
   <PropertyGroup>
-    <Authors>Microsoft.Toolkit</Authors>
+    <Authors>CommunityToolkit</Authors>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <GitHubOrganizationUrl>https://github.com/windows-toolkit</GitHubOrganizationUrl>

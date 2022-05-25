@@ -8,18 +8,18 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
-using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization;
-using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization;
-using Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp;
-using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen;
-using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cppwinrt;
-using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp;
-using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx;
-using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
+using CommunityToolkit.WinUI.Lottie.LottieData;
+using CommunityToolkit.WinUI.Lottie.LottieData.Optimization;
+using CommunityToolkit.WinUI.Lottie.LottieData.Serialization;
+using CommunityToolkit.WinUI.Lottie.LottieToWinComp;
+using CommunityToolkit.WinUI.Lottie.UIData.CodeGen;
+using CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Cppwinrt;
+using CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp;
+using CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Cx;
+using CommunityToolkit.WinUI.Lottie.UIData.Tools;
+using CommunityToolkit.WinUI.Lottie.WinCompData;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen
+namespace CommunityToolkit.WinUI.Lottie.LottieGen
 {
     /// <summary>
     /// Processes a single Lottie .json file to produce various generated outputs.
@@ -37,7 +37,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen
         readonly string _className;
         bool _reportedErrors;
         bool? _isTranslatedSuccessfully;
-        Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Tools.Stats? _lottieStats;
+        CommunityToolkit.WinUI.Lottie.LottieData.Tools.Stats? _lottieStats;
         Stats? _beforeOptimizationStats;
         Stats? _afterOptimizationStats;
         IReadOnlyList<TranslationResult> _translationResults
@@ -148,7 +148,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen
                 _reporter.WriteInfo(InfoType.Issue, IssueToString(_jsonFilePath, issue));
             }
 
-            _lottieStats = new Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Tools.Stats(lottieComposition);
+            _lottieStats = new CommunityToolkit.WinUI.Lottie.LottieData.Tools.Stats(lottieComposition);
 
             var codeGenResult = TryGenerateCode(lottieComposition);
 
@@ -828,7 +828,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen
                 // Optimize the code unless told not to.
                 if (!_options.DisableTranslationOptimizer)
                 {
-                    _translationResults = _translationResults.Select(tr => tr.WithDifferentRoot(Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools.Optimizer.Optimize(tr.RootVisual!, ignoreCommentProperties: true))).ToArray();
+                    _translationResults = _translationResults.Select(tr => tr.WithDifferentRoot(CommunityToolkit.WinUI.Lottie.UIData.Tools.Optimizer.Optimize(tr.RootVisual!, ignoreCommentProperties: true))).ToArray();
                     _profiler.OnOptimizationFinished();
 
                     // NOTE: this is only reporting on the latest version in a multi-version translation.
