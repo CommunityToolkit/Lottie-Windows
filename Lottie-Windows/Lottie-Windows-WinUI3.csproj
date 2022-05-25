@@ -12,7 +12,6 @@
     <Platforms>x64;x86</Platforms>
     <DefineConstants>WINAPPSDK</DefineConstants>
     <SignAssembly>False</SignAssembly>
-  <PackageTags>UWP Toolkit Windows Animations Lottie XAML</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
