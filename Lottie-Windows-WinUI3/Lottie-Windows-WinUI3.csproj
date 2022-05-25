@@ -2,6 +2,7 @@
 
 	<PropertyGroup>
 		<OutputType>Library</OutputType>
+		<IsPackable>True</IsPackable>
 		<RootNamespace>CommunityToolkit.WinUI.Lottie</RootNamespace>
 		<AssemblyName>CommunityToolkit.WinUI.Lottie</AssemblyName>
 		<PackageId>CommunityToolkit.WinUI.Lottie</PackageId>
