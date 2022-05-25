@@ -8,10 +8,10 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
+using CommunityToolkit.WinUI.Lottie.Animatables;
 using Sn = System.Numerics;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
+namespace CommunityToolkit.WinUI.Lottie.LottieData.Optimization
 {
     /// <summary>
     /// Takes a list of <see cref="GradientStop"/>s and produces an equivalent list of <see cref="ColorGradientStop"/>s

@@ -8,7 +8,7 @@ using System.Data;
 using System.Linq;
 using System.Text;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Tables
+namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Tables
 {
     // Formats table data for display with a monospaced font.
     // Normal usage is to subclass this formatter to create a formatter

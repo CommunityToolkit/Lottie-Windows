@@ -3,10 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions;
+using CommunityToolkit.WinUI.Lottie.WinCompData.Expressions;
 using SnVector2 = System.Numerics.Vector2;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
+namespace CommunityToolkit.WinUI.Lottie.LottieToWinComp
 {
     /// <summary>
     /// A cubic Bezier function with type Vector2.

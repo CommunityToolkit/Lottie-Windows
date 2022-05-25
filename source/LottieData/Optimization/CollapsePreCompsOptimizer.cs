@@ -7,7 +7,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
+namespace CommunityToolkit.WinUI.Lottie.LottieData.Optimization
 {
     /// <summary>
     /// This optimizer is trying to optimize the most common Lottie scenario - usage for AnimatedIcon.

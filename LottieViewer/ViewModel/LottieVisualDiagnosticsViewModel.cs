@@ -8,9 +8,9 @@ using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
-using Microsoft.Toolkit.Uwp.UI.Lottie;
-using Microsoft.Toolkit.Uwp.UI.Lottie.CompMetadata;
-using Microsoft.Toolkit.Uwp.UI.Lottie.LottieMetadata;
+using CommunityToolkit.WinUI.Lottie;
+using CommunityToolkit.WinUI.Lottie.CompMetadata;
+using CommunityToolkit.WinUI.Lottie.LottieMetadata;
 using Windows.Media.Audio;
 
 namespace LottieViewer.ViewModel

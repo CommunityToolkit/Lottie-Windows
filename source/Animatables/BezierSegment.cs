@@ -6,9 +6,9 @@
 
 using System;
 using System.Collections.Generic;
-using static Microsoft.Toolkit.Uwp.UI.Lottie.Animatables.Exceptions;
+using static CommunityToolkit.WinUI.Lottie.Animatables.Exceptions;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.Animatables
+namespace CommunityToolkit.WinUI.Lottie.Animatables
 {
     /// <summary>
     /// A segment defined as a cubic Bezier curve from <see cref="ControlPoint0"/> to <see cref="ControlPoint3"/>.

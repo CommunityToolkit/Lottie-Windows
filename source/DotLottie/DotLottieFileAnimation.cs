@@ -6,7 +6,7 @@
 
 using System.IO;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.DotLottie
+namespace CommunityToolkit.WinUI.Lottie.DotLottie
 {
     /// <summary>
     /// Describes an animation in a .lottie file. Animations

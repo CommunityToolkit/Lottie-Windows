@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
+namespace CommunityToolkit.WinUI.Lottie.LottieData.Optimization
 {
     /// <summary>
     /// Wrapper for Lottie <see cref="LottieData.Layer"/> class.

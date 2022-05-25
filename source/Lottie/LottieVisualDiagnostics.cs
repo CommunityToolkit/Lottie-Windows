@@ -6,11 +6,16 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.Toolkit.Uwp.UI.Lottie.CompMetadata;
-using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
-using Windows.UI.Composition;
+using CommunityToolkit.WinUI.Lottie.CompMetadata;
+using CommunityToolkit.WinUI.Lottie.LottieData;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie
+#if WINAPPSDK
+using Microsoft.UI.Composition;
+#else
+using Windows.UI.Composition;
+#endif
+
+namespace CommunityToolkit.WinUI.Lottie
 {
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 

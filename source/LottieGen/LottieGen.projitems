@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <PropertyGroup Label="Configuration">
-    <Import_RootNamespace>Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen</Import_RootNamespace>
+    <Import_RootNamespace>CommunityToolkit.WinUI.Lottie.LottieGen</Import_RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

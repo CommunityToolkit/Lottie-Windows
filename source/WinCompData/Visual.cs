@@ -6,7 +6,7 @@
 
 using System.Numerics;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
+namespace CommunityToolkit.WinUI.Lottie.WinCompData
 {
     [MetaData.UapVersion(2)]
 #if PUBLIC_WinCompData

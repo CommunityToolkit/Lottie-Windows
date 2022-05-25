@@ -9,7 +9,7 @@ using System.Linq;
 using Wcd = WinCompData;
 using Win2D = Microsoft.Graphics.Canvas.Geometry;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
+namespace CommunityToolkit.WinUI.Lottie.LottieToWinComp
 {
     /// <summary>
     /// Combines <see cref="CanvasGeometry"/>s into a single path.

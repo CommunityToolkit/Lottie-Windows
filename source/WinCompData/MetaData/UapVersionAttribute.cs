@@ -5,7 +5,7 @@
 using System;
 using System.Diagnostics;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.MetaData
+namespace CommunityToolkit.WinUI.Lottie.WinCompData.MetaData
 {
     /// <summary>
     /// Indicates that a class or member was introduced at a particular version of

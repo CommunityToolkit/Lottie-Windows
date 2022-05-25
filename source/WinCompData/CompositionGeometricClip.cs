@@ -4,7 +4,7 @@
 
 #nullable enable
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
+namespace CommunityToolkit.WinUI.Lottie.WinCompData
 {
     [MetaData.UapVersion(7)]
 #if PUBLIC_WinCompData

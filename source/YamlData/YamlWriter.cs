@@ -11,7 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.YamlData
+namespace CommunityToolkit.WinUI.Lottie.YamlData
 {
     /// <summary>
     /// Serializes a Yaml object into a <see cref="TextWriter"/>.

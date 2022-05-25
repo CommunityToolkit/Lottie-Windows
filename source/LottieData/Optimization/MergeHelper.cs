@@ -6,11 +6,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
-using static Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Layer;
-using static Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.ShapeLayerContent;
+using CommunityToolkit.WinUI.Lottie.Animatables;
+using static CommunityToolkit.WinUI.Lottie.LottieData.Layer;
+using static CommunityToolkit.WinUI.Lottie.LottieData.ShapeLayerContent;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
+namespace CommunityToolkit.WinUI.Lottie.LottieData.Optimization
 {
     /// <summary>
     /// This class provides methods to merge some lottie data structures together if they are similar enough.

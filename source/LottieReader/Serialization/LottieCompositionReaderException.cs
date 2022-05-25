@@ -4,7 +4,7 @@
 
 using System;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
+namespace CommunityToolkit.WinUI.Lottie.LottieData.Serialization
 {
     /// <summary>
     /// Exception thrown to indicate a problem reading a Lottie composition.

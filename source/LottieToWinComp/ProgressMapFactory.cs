@@ -7,9 +7,9 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
+using CommunityToolkit.WinUI.Lottie.Animatables;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
+namespace CommunityToolkit.WinUI.Lottie.LottieToWinComp
 {
     // Creates progress mapping variables and animations. This is used by spatial Bezier
     // animations to remap the Progress value of the animation to a smaller range so

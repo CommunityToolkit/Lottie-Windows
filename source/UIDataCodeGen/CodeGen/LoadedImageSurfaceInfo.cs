@@ -4,9 +4,9 @@
 
 using System;
 using System.Collections.Generic;
-using Wmd = Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData;
+using Wmd = CommunityToolkit.WinUI.Lottie.WinUIXamlMediaData;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
+namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
 {
     /// <summary>
     /// Describes LoadedImageSurface objects in the composition.

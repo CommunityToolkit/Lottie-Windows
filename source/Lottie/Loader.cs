@@ -10,15 +10,20 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Toolkit.Uwp.UI.Lottie.CompMetadata;
-using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
-using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization;
-using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization;
-using Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp;
+using CommunityToolkit.WinUI.Lottie.CompMetadata;
+using CommunityToolkit.WinUI.Lottie.LottieData;
+using CommunityToolkit.WinUI.Lottie.LottieData.Optimization;
+using CommunityToolkit.WinUI.Lottie.LottieData.Serialization;
+using CommunityToolkit.WinUI.Lottie.LottieToWinComp;
 using Windows.Foundation.Metadata;
-using Windows.UI.Composition;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie
+#if WINAPPSDK
+using Microsoft.UI.Composition;
+#else
+using Windows.UI.Composition;
+#endif
+
+namespace CommunityToolkit.WinUI.Lottie
 {
     /// <summary>
     /// Handles loading a composition from a Lottie file. The result of the load

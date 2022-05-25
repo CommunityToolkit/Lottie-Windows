@@ -4,7 +4,7 @@
 
 using System;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization
+namespace CommunityToolkit.WinUI.Lottie.LottieData.Optimization
 {
     /// <summary>
     /// Represents an arbitrary time range.

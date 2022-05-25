@@ -7,7 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen
+namespace CommunityToolkit.WinUI.Lottie.LottieGen
 {
     static class Glob
     {

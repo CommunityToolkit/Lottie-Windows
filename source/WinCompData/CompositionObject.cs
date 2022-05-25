@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
+namespace CommunityToolkit.WinUI.Lottie.WinCompData
 {
     [MetaData.UapVersion(2)]
 #if PUBLIC_WinCompData

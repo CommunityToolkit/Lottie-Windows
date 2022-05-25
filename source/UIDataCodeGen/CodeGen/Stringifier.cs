@@ -5,12 +5,12 @@
 using System;
 using System.Data;
 using System.Numerics;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgc;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui;
+using CommunityToolkit.WinUI.Lottie.WinCompData;
+using CommunityToolkit.WinUI.Lottie.WinCompData.Mgc;
+using CommunityToolkit.WinUI.Lottie.WinCompData.Mgcg;
+using CommunityToolkit.WinUI.Lottie.WinCompData.Wui;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
+namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
 {
     /// <summary>
     /// Converts various language keywords and values to strings.

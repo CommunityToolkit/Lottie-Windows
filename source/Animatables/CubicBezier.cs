@@ -6,7 +6,7 @@
 
 using System;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.Animatables
+namespace CommunityToolkit.WinUI.Lottie.Animatables
 {
     /// <summary>
     /// Describes a cubic Bezier function as the 2nd and 3rd control points where

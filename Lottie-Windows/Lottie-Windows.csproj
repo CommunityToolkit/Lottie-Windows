@@ -9,8 +9,9 @@
     <Description>This library provides the LottieVisualSource which is consumed by the Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer to render Lottie JSON files.</Description>
     <PackageTags>UWP Toolkit Windows Animations Lottie XAML</PackageTags>
 
-    <RootNamespace>Microsoft.Toolkit.Uwp.UI.Lottie</RootNamespace>
-    <AssemblyName>Microsoft.Toolkit.Uwp.UI.Lottie</AssemblyName>
+    <RootNamespace>CommunityToolkit.WinUI.Lottie</RootNamespace>
+    <AssemblyName>CommunityToolkit.WinUI.Lottie</AssemblyName>
+		<PackageId>CommunityToolkit.Uwp.Lottie</PackageId>
     
 
     <!-- Enable the latest C# language features -->
@@ -18,12 +19,12 @@
 
     <!-- 
          Turn off debugging information for now. It is causing errors with winmd generation because
-         the build system is creating Microsoft.Toolkit.Uwp.UI.Lottie.compile.pdb but the winmdexp
+         the build system is creating CommunityToolkit.WinUI.Lottie.compile.pdb but the winmdexp
          task expects the name without the "compile." in it.
      -->
     <DebugType>none</DebugType>
 
-    <DocumentationFile>bin\AnyCPU\Release\Microsoft.Toolkit.Uwp.UI.Lottie.xml</DocumentationFile>
+    <DocumentationFile>bin\AnyCPU\Release\CommunityToolkit.WinUI.Lottie.xml</DocumentationFile>
 
   </PropertyGroup>
 

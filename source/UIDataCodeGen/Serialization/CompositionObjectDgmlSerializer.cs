@@ -6,11 +6,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
-using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui;
+using CommunityToolkit.WinUI.Lottie.UIData.Tools;
+using CommunityToolkit.WinUI.Lottie.WinCompData;
+using CommunityToolkit.WinUI.Lottie.WinCompData.Wui;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
+namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
 {
     /// <summary>
     /// Serializes a <see cref="CompositionObject"/> graph into DGML format.

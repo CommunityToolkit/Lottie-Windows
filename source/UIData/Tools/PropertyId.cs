@@ -4,7 +4,7 @@
 
 using System;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
+namespace CommunityToolkit.WinUI.Lottie.UIData.Tools
 {
     /// <summary>
     /// Identifies a property of a CompositionObject.

@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
+namespace CommunityToolkit.WinUI.Lottie.LottieData
 {
     /// <summary>
     /// A <see cref="LayerCollection"/> stored in the assets section of a <see cref="LottieComposition"/>.

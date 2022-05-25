@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen
+namespace CommunityToolkit.WinUI.Lottie.LottieGen
 {
     sealed class CommandLineOptions
     {

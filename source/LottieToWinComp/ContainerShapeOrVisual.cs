@@ -3,9 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Numerics;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
+using CommunityToolkit.WinUI.Lottie.WinCompData;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
+namespace CommunityToolkit.WinUI.Lottie.LottieToWinComp
 {
     /// <summary>
     /// Helper for abstracting <see cref="CompositionContainerShape"/> and

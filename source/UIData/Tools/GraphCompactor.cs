@@ -9,11 +9,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
-using static Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools.Properties;
-using Expr = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions;
+using CommunityToolkit.WinUI.Lottie.WinCompData;
+using static CommunityToolkit.WinUI.Lottie.UIData.Tools.Properties;
+using Expr = CommunityToolkit.WinUI.Lottie.WinCompData.Expressions;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
+namespace CommunityToolkit.WinUI.Lottie.UIData.Tools
 {
     /// <summary>
     /// Optimizes a <see cref="Visual"/> tree by combining and removing containers.
@@ -55,7 +55,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
         // For debugging purposes, dump the current graph.
         void DumpToDgml(string qualifier)
         {
-            var dgml = Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CompositionObjectDgmlSerializer.ToXml(_root).ToString();
+            var dgml = CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CompositionObjectDgmlSerializer.ToXml(_root).ToString();
             var fileNameBase = $"Graph_{qualifier}";
             var counter = 0;
             while (System.IO.File.Exists($"{fileNameBase}_{counter}.dgml"))

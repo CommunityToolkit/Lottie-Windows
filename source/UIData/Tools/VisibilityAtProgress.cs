@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
+namespace CommunityToolkit.WinUI.Lottie.UIData.Tools
 {
     readonly struct VisibilityAtProgress
     {

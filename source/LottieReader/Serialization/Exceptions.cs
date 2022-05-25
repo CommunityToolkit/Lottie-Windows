@@ -4,7 +4,7 @@
 
 using System;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
+namespace CommunityToolkit.WinUI.Lottie.LottieData.Serialization
 {
     static class Exceptions
     {

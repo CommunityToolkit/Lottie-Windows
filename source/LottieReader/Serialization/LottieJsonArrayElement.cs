@@ -5,9 +5,9 @@
 using System;
 using System.Diagnostics;
 using System.Text.Json;
-using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
+using CommunityToolkit.WinUI.Lottie.Animatables;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
+namespace CommunityToolkit.WinUI.Lottie.LottieData.Serialization
 {
 #pragma warning disable SA1205 // Partial elements should declare access
 #pragma warning disable SA1601 // Partial elements should be documented

@@ -15,7 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
+namespace CommunityToolkit.WinUI.Lottie.LottieToWinComp
 {
     /// <summary>
     /// Issues.

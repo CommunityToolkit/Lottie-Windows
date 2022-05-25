@@ -5,9 +5,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Toolkit.Uwp.UI.Lottie.GenericData;
+using CommunityToolkit.WinUI.Lottie.GenericData;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData
+namespace CommunityToolkit.WinUI.Lottie.LottieData
 {
 #if PUBLIC_LottieData
     public

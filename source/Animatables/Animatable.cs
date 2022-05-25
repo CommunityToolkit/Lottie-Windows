@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.Animatables
+namespace CommunityToolkit.WinUI.Lottie.Animatables
 {
     /// <summary>
     /// A value that may be animated.

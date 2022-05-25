@@ -8,16 +8,16 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
-using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
+using CommunityToolkit.WinUI.Lottie.Animatables;
+using CommunityToolkit.WinUI.Lottie.LottieData;
+using CommunityToolkit.WinUI.Lottie.WinCompData;
 
 #if DEBUG
 // For diagnosing issues, give nothing a clip.
 //#define NoClipping
 #endif
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
+namespace CommunityToolkit.WinUI.Lottie.LottieToWinComp
 {
     /// <summary>
     /// Translates Lottie PreComp layers.

@@ -6,9 +6,9 @@ using System;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using Microsoft.Toolkit.Uwp.UI.Lottie.DotLottie;
+using CommunityToolkit.WinUI.Lottie.DotLottie;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen
+namespace CommunityToolkit.WinUI.Lottie.LottieGen
 {
     /// <summary>
     /// Processes a file containing Lottie animations and produces various generated outputs.

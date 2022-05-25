@@ -5,9 +5,9 @@
 #nullable enable
 
 using System.Numerics;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui;
+using CommunityToolkit.WinUI.Lottie.WinCompData.Wui;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData
+namespace CommunityToolkit.WinUI.Lottie.WinCompData
 {
     /// <summary>
     /// Data representation of Windows.UI.Composition.CompositionShadow.

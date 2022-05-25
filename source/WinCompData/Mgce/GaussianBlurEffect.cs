@@ -4,7 +4,7 @@
 
 #nullable enable
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce
+namespace CommunityToolkit.WinUI.Lottie.WinCompData.Mgce
 {
 #if PUBLIC_WinCompData
     public

@@ -4,7 +4,7 @@
 
 using System;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieMetadata
+namespace CommunityToolkit.WinUI.Lottie.LottieMetadata
 {
     /// <summary>
     /// A frame location in a Lottie composition.

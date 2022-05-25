@@ -6,15 +6,15 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
-using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
+using CommunityToolkit.WinUI.Lottie.Animatables;
+using CommunityToolkit.WinUI.Lottie.LottieData;
+using CommunityToolkit.WinUI.Lottie.WinCompData;
+using CommunityToolkit.WinUI.Lottie.WinCompData.Mgcg;
 using Sn = System.Numerics;
 
 #nullable enable
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
+namespace CommunityToolkit.WinUI.Lottie.LottieToWinComp
 {
     /// <summary>
     /// Translates paths.
@@ -146,7 +146,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return true;
         }
 
-        public static CompositionShape TranslatePathContent(ShapeContext context, Path path)
+        public static CompositionShape TranslatePathContent(ShapeContext context, LottieData.Path path)
         {
             // A path is represented as a SpriteShape with a CompositionPathGeometry.
             var geometry = context.ObjectFactory.CreatePathGeometry();
@@ -225,7 +225,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// Groups multiple Shapes into a D2D geometry group.
         /// </summary>
         /// <returns>The shape.</returns>
-        public static CompositionShape TranslatePathGroupContent(ShapeContext context, IReadOnlyList<Path> paths)
+        public static CompositionShape TranslatePathGroupContent(ShapeContext context, IReadOnlyList<LottieData.Path> paths)
         {
             var grouped = PathGeometryGroup.GroupPaths(context, paths, out var groupingSucceeded);
 
@@ -286,7 +286,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         public static CanvasGeometry CreateWin2dPathGeometryFromShape(
             ShapeContext context,
-            Path path,
+            LottieData.Path path,
             ShapeFill.PathFillType fillType,
             bool optimizeLines)
         {

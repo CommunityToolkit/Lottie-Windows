@@ -2,9 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.MetaData;
+using CommunityToolkit.WinUI.Lottie.WinCompData.MetaData;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.CompMetadata
+namespace CommunityToolkit.WinUI.Lottie.CompMetadata
 {
     /// <summary>
     /// Describes a name bound to a value in a CompositionPropertySet.

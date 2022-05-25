@@ -5,7 +5,7 @@
 #nullable enable
 
 using System.Linq;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
+using CommunityToolkit.WinUI.Lottie.WinCompData;
 using Sn = System.Numerics;
 
 #if DEBUG
@@ -13,7 +13,7 @@ using Sn = System.Numerics;
 //#define NoClipping
 #endif
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
+namespace CommunityToolkit.WinUI.Lottie.LottieToWinComp
 {
     static class SolidLayers
     {

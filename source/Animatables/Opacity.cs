@@ -6,7 +6,7 @@
 
 using System;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.Animatables
+namespace CommunityToolkit.WinUI.Lottie.Animatables
 {
     /// <summary>
     /// An opacity value. 0 is transparent, 1 is opaque.

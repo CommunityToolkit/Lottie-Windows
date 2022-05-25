@@ -7,9 +7,16 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using Windows.UI.Composition;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie
+#if WINAPPSDK
+using Microsoft.UI.Composition;
+#else
+using Windows.UI.Composition;
+#endif
+
+using Wwh = Windows.Web.Http;
+
+namespace CommunityToolkit.WinUI.Lottie
 {
     /// <summary>
     /// Loads files from a Uri.
@@ -56,7 +63,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             var absoluteUri = Uris.GetAbsoluteUri(uri);
             if (absoluteUri is not null)
             {
-                var winrtClient = new Windows.Web.Http.HttpClient();
+                var winrtClient = new Wwh.HttpClient();
                 var response = await winrtClient.GetAsync(absoluteUri);
 
                 var result = await response.Content.ReadAsInputStreamAsync();

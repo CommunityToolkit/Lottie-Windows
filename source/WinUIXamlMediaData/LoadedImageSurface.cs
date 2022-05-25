@@ -5,10 +5,10 @@
 #nullable enable
 
 using System;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinStorageStreamsData;
+using CommunityToolkit.WinUI.Lottie.WinCompData;
+using CommunityToolkit.WinUI.Lottie.WinStorageStreamsData;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData
+namespace CommunityToolkit.WinUI.Lottie.WinUIXamlMediaData
 {
 #if PUBLIC_WinUIXamlMediaData
     public

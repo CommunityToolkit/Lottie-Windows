@@ -5,5 +5,5 @@
 static class Program
 {
     static int Main(string[] args)
-        => Microsoft.Toolkit.Uwp.UI.Lottie.LottieGenExe.Main.Run(args);
+        => CommunityToolkit.WinUI.Lottie.LottieGenExe.Main.Run(args);
 }

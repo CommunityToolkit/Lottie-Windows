@@ -6,7 +6,7 @@
 
 using System;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieMetadata
+namespace CommunityToolkit.WinUI.Lottie.LottieMetadata
 {
     /// <summary>
     /// A duration expressed as a frame count and time.

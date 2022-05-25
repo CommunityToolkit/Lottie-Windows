@@ -4,9 +4,9 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
+using CommunityToolkit.WinUI.Lottie.Animatables;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
+namespace CommunityToolkit.WinUI.Lottie.LottieToWinComp
 {
     /// <summary>
     /// Takes an <see cref="AnimatableVector3"/> and if the easings on the X, Y, or Z channels

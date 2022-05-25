@@ -7,9 +7,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
+using CommunityToolkit.WinUI.Lottie.WinCompData;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
+namespace CommunityToolkit.WinUI.Lottie.LottieToWinComp
 {
     /// <summary>
     /// The result of translating a Lottie animation into an equivalent WinCompData form.

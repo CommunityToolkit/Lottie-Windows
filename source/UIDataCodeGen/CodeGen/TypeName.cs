@@ -5,7 +5,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
+namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
 {
     /// <summary>
     /// The name of a type.

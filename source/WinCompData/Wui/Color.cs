@@ -8,7 +8,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui
+namespace CommunityToolkit.WinUI.Lottie.WinCompData.Wui
 {
 #if PUBLIC_WinCompData
     public
@@ -444,9 +444,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui
     }
 }
 #if GenerateColorInfo
-namespace Microsoft.Toolkit.Uwp.UI.Lottie
+namespace CommunityToolkit.WinUI.Lottie
 {
-    using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui;
+    using CommunityToolkit.WinUI.Lottie.WinCompData.Wui;
 
     // In case it's ever needed again, this code helps classify colors in various ways.
     public sealed class Color

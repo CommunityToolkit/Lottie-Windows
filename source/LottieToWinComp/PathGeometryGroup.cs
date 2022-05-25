@@ -8,10 +8,10 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
-using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
+using CommunityToolkit.WinUI.Lottie.Animatables;
+using CommunityToolkit.WinUI.Lottie.LottieData;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
+namespace CommunityToolkit.WinUI.Lottie.LottieToWinComp
 {
     /// <summary>
     /// A group of <see cref="PathGeometry"/>.
@@ -39,7 +39,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// <returns>The paths, grouped.</returns>
         internal static Animatable<PathGeometryGroup> GroupPaths(
             ShapeLayerContext context,
-            IReadOnlyList<Path> paths,
+            IReadOnlyList<LottieData.Path> paths,
             out bool groupingIsPerfect)
         {
             // Ideally each of the paths would have identical key frames with identical frame numbers.

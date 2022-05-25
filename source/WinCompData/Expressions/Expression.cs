@@ -5,7 +5,7 @@
 using System;
 using Sn = System.Numerics;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
+namespace CommunityToolkit.WinUI.Lottie.WinCompData.Expressions
 {
 #if PUBLIC_WinCompData
     public

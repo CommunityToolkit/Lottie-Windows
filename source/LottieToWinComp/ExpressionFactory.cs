@@ -4,12 +4,12 @@
 
 using System;
 using System.Linq;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions;
-using static Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions.Expression;
+using CommunityToolkit.WinUI.Lottie.WinCompData.Expressions;
+using static CommunityToolkit.WinUI.Lottie.WinCompData.Expressions.Expression;
 using Sn = System.Numerics;
-using Wui = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui;
+using Wui = CommunityToolkit.WinUI.Lottie.WinCompData.Wui;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
+namespace CommunityToolkit.WinUI.Lottie.LottieToWinComp
 {
     static class ExpressionFactory
     {
