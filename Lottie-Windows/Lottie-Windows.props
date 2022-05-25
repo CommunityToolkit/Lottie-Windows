@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Configuration">
+
+    <RootNamespace>CommunityToolkit.WinUI.Lottie</RootNamespace>
+    <AssemblyName>CommunityToolkit.WinUI.Lottie</AssemblyName>
+    
+    <!-- Nuget props-->
+    <Description>This library provides the LottieVisualSource which is consumed by the Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer to render Lottie JSON files.</Description>
+    <IsPackable>True</IsPackable>
+
+    <LangVersion>latest</LangVersion>
+    <DocumentationFile>bin\AnyCPU\Release\CommunityToolkit.WinUI.Lottie.xml</DocumentationFile>
+
+  </PropertyGroup>
+</Project>

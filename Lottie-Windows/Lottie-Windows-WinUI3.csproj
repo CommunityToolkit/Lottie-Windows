@@ -1,0 +1,42 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0-windows10.0.18362.0</TargetFramework>
+    <OutputType>Library</OutputType>
+
+    <PackageId>CommunityToolkit.WinUI.Lottie</PackageId>
+    <PackageTags>WinUI3 Toolkit Windows Animations Lottie XAML</PackageTags>
+
+    <Nullable>enable</Nullable>
+    <CsWinRTIncludes>Microsoft</CsWinRTIncludes>
+    <Platforms>x64;x86</Platforms>
+    <DefineConstants>WINAPPSDK</DefineConstants>
+    <SignAssembly>False</SignAssembly>
+  <PackageTags>UWP Toolkit Windows Animations Lottie XAML</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Graphics.Win2D" Version="1.0.3.1" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.0.3" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22000.194" />
+    <PackageReference Include="System.Runtime.InteropServices.WindowsRuntime" Version="4.3.0" />
+  </ItemGroup>
+
+  <Import Project="Lottie-Windows.props" />
+  <Import Project="..\source\Animatables\Animatables.projitems" Label="Shared" />
+  <Import Project="..\source\DotLottie\DotLottie.projitems" Label="Shared" />
+  <Import Project="..\source\CompMetadata\CompMetadata.projitems" Label="Shared" />
+  <Import Project="..\source\GenericData\GenericData.projitems" Label="Shared" />
+  <Import Project="..\source\Lottie\Lottie.projitems" Label="Shared" />
+  <Import Project="..\source\LottieData\LottieData.projitems" Label="Shared" />
+  <Import Project="..\source\LottieMetadata\LottieMetadata.projitems" Label="Shared" />
+  <Import Project="..\source\LottieReader\LottieReader.projitems" Label="Shared" />
+  <Import Project="..\source\LottieToWinComp\LottieToWinComp.projitems" Label="Shared" />
+  <Import Project="..\source\NullablesAttributes\NullablesAttributes.projitems" Label="Shared" />
+  <Import Project="..\source\UIData\UIData.projitems" Label="Shared" />
+  <Import Project="..\source\WinCompData\WinCompData.projitems" Label="Shared" />
+  <Import Project="..\source\WinStorageStreamsData\WinStorageStreamsData.projitems" Label="Shared" />
+  <Import Project="..\source\WinUIXamlMediaData\WinUIXamlMediaData.projitems" Label="Shared" />
+  <Import Project="..\source\YamlData\YamlData.projitems" Label="Shared" />
+  
+</Project>
