@@ -3,14 +3,13 @@
 	<PropertyGroup>
 		<OutputType>Library</OutputType>
 		<RootNamespace>CommunityToolkit.WinUI.Lottie</RootNamespace>
+		<AssemblyName>CommunityToolkit.WinUI.Lottie</AssemblyName>
+		<PackageId>CommunityToolkit.WinUI.Lottie</PackageId>
 		<TargetFramework>net5.0-windows10.0.18362.0</TargetFramework>
-
 		<Nullable>enable</Nullable>
 		<CsWinRTIncludes>Microsoft</CsWinRTIncludes>
 		<Platforms>x64;x86</Platforms>
-
 		<DefineConstants>WINAPPSDK</DefineConstants>
-
 		<SignAssembly>False</SignAssembly>
 	</PropertyGroup>
 

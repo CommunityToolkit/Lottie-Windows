@@ -11,6 +11,7 @@
 
     <RootNamespace>CommunityToolkit.WinUI.Lottie</RootNamespace>
     <AssemblyName>CommunityToolkit.WinUI.Lottie</AssemblyName>
+		<PackageId>CommunityToolkit.Uwp.Lottie</PackageId>
     
 
     <!-- Enable the latest C# language features -->
