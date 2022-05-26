@@ -14,6 +14,16 @@
          task expects the name without the "compile." in it.
      -->
     <DebugType>none</DebugType>
+
+    <RootNamespace>CommunityToolkit.WinUI.Lottie</RootNamespace>
+    <AssemblyName>CommunityToolkit.WinUI.Lottie</AssemblyName>
+
+    <!-- Nuget props-->
+    <Description>This library provides the LottieVisualSource which is consumed by the Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer to render Lottie JSON files.</Description>
+    <IsPackable>True</IsPackable>
+
+    <LangVersion>latest</LangVersion>
+    <DocumentationFile>bin\AnyCPU\Release\CommunityToolkit.WinUI.Lottie.xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -37,7 +47,6 @@
     </PackageReference>
   </ItemGroup>
 
-  <Import Project="Lottie-Windows.props" />
   <Import Project="..\source\Animatables\Animatables.projitems" Label="Shared" />
   <Import Project="..\source\DotLottie\DotLottie.projitems" Label="Shared" />
   <Import Project="..\source\CompMetadata\CompMetadata.projitems" Label="Shared" />
