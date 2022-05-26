@@ -38,20 +38,20 @@
   </ItemGroup>
 
   <Import Project="..\Lottie-Windows.props" />
-  <Import Project="..\source\Animatables\Animatables.projitems" Label="Shared" />
-  <Import Project="..\source\DotLottie\DotLottie.projitems" Label="Shared" />
-  <Import Project="..\source\CompMetadata\CompMetadata.projitems" Label="Shared" />
-  <Import Project="..\source\GenericData\GenericData.projitems" Label="Shared" />
-  <Import Project="..\source\Lottie\Lottie.projitems" Label="Shared" />
-  <Import Project="..\source\LottieData\LottieData.projitems" Label="Shared" />
-  <Import Project="..\source\LottieMetadata\LottieMetadata.projitems" Label="Shared" />
-  <Import Project="..\source\LottieReader\LottieReader.projitems" Label="Shared" />
-  <Import Project="..\source\LottieToWinComp\LottieToWinComp.projitems" Label="Shared" />
-  <Import Project="..\source\NullablesAttributes\NullablesAttributes.projitems" Label="Shared" />
-  <Import Project="..\source\UIData\UIData.projitems" Label="Shared" />
-  <Import Project="..\source\WinCompData\WinCompData.projitems" Label="Shared" />
-  <Import Project="..\source\WinStorageStreamsData\WinStorageStreamsData.projitems" Label="Shared" />
-  <Import Project="..\source\WinUIXamlMediaData\WinUIXamlMediaData.projitems" Label="Shared" />
-  <Import Project="..\source\YamlData\YamlData.projitems" Label="Shared" />
+  <Import Project="..\..\source\Animatables\Animatables.projitems" Label="Shared" />
+  <Import Project="..\..\source\DotLottie\DotLottie.projitems" Label="Shared" />
+  <Import Project="..\..\source\CompMetadata\CompMetadata.projitems" Label="Shared" />
+  <Import Project="..\..\source\GenericData\GenericData.projitems" Label="Shared" />
+  <Import Project="..\..\source\Lottie\Lottie.projitems" Label="Shared" />
+  <Import Project="..\..\source\LottieData\LottieData.projitems" Label="Shared" />
+  <Import Project="..\..\source\LottieMetadata\LottieMetadata.projitems" Label="Shared" />
+  <Import Project="..\..\source\LottieReader\LottieReader.projitems" Label="Shared" />
+  <Import Project="..\..\source\LottieToWinComp\LottieToWinComp.projitems" Label="Shared" />
+  <Import Project="..\..\source\NullablesAttributes\NullablesAttributes.projitems" Label="Shared" />
+  <Import Project="..\..\source\UIData\UIData.projitems" Label="Shared" />
+  <Import Project="..\..\source\WinCompData\WinCompData.projitems" Label="Shared" />
+  <Import Project="..\..\source\WinStorageStreamsData\WinStorageStreamsData.projitems" Label="Shared" />
+  <Import Project="..\..\source\WinUIXamlMediaData\WinUIXamlMediaData.projitems" Label="Shared" />
+  <Import Project="..\..\source\YamlData\YamlData.projitems" Label="Shared" />
 
 </Project>
