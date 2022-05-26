@@ -1,19 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<OutputType>Library</OutputType>
-		<IsPackable>True</IsPackable>
-		<RootNamespace>CommunityToolkit.WinUI.Lottie</RootNamespace>
-		<AssemblyName>CommunityToolkit.WinUI.Lottie</AssemblyName>
-		<PackageId>CommunityToolkit.WinUI.Lottie</PackageId>
 		<TargetFramework>net5.0-windows10.0.18362.0</TargetFramework>
+		<OutputType>Library</OutputType>
+    
+
+		<PackageId>CommunityToolkit.WinUI.Lottie</PackageId>
+    <PackageTags>WinUI3 Toolkit Windows Animations Lottie XAML</PackageTags>
+
 		<Nullable>enable</Nullable>
 		<CsWinRTIncludes>Microsoft</CsWinRTIncludes>
 		<Platforms>x64;x86</Platforms>
 		<DefineConstants>WINAPPSDK</DefineConstants>
 		<SignAssembly>False</SignAssembly>
-    <Description>This library provides the LottieVisualSource which is consumed by the Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer to render Lottie JSON files.</Description>
-    <PackageTags>WinUI3 Toolkit Windows Animations Lottie XAML</PackageTags>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -23,6 +22,7 @@
 		<PackageReference Include="System.Runtime.InteropServices.WindowsRuntime" Version="4.3.0" />
 	</ItemGroup>
 
+  <Import Project="Lottie-Windows.props" />
 	<Import Project="..\source\Animatables\Animatables.projitems" Label="Shared" />
 	<Import Project="..\source\DotLottie\DotLottie.projitems" Label="Shared" />
 	<Import Project="..\source\CompMetadata\CompMetadata.projitems" Label="Shared" />

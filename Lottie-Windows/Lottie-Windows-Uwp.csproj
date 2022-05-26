@@ -2,30 +2,18 @@
 
   <PropertyGroup>
     <TargetFramework>uap10.0.16299</TargetFramework>
-
     <OutputType>winmdobj</OutputType>
-    <IsPackable>True</IsPackable>
     
-    <Description>This library provides the LottieVisualSource which is consumed by the Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer to render Lottie JSON files.</Description>
-    <PackageTags>UWP Toolkit Windows Animations Lottie XAML</PackageTags>
 
-    <RootNamespace>CommunityToolkit.WinUI.Lottie</RootNamespace>
-    <AssemblyName>CommunityToolkit.WinUI.Lottie</AssemblyName>
 		<PackageId>CommunityToolkit.Uwp.Lottie</PackageId>
+    <PackageTags>UWP Toolkit Windows Animations Lottie XAML</PackageTags>
     
-
-    <!-- Enable the latest C# language features -->
-    <LangVersion>latest</LangVersion>
-
     <!-- 
          Turn off debugging information for now. It is causing errors with winmd generation because
          the build system is creating CommunityToolkit.WinUI.Lottie.compile.pdb but the winmdexp
          task expects the name without the "compile." in it.
      -->
     <DebugType>none</DebugType>
-
-    <DocumentationFile>bin\AnyCPU\Release\CommunityToolkit.WinUI.Lottie.xml</DocumentationFile>
-
   </PropertyGroup>
 
   <ItemGroup>
@@ -49,6 +37,7 @@
     </PackageReference>
   </ItemGroup>
 
+  <Import Project="Lottie-Windows.props" />
   <Import Project="..\source\Animatables\Animatables.projitems" Label="Shared" />
   <Import Project="..\source\DotLottie\DotLottie.projitems" Label="Shared" />
   <Import Project="..\source\CompMetadata\CompMetadata.projitems" Label="Shared" />
