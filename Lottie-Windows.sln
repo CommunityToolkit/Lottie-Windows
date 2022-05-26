@@ -179,7 +179,7 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "LottieGenExe", "source\Lott
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LottieGen.MsBuild", "LottieGen\MSBuildTask\LottieGen.MsBuild.csproj", "{192FBD28-8531-4607-A17C-44A1A51A1565}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lottie-Windows-WinUI3", "Lottie-Windows-WinUI3\Lottie-Windows-WinUI3.csproj", "{C505CD2D-5D26-42EE-8FAA-41BB784821EF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lottie-Windows-WinUI3", "Lottie-Windows\Lottie-Windows-WinUI3.csproj", "{C505CD2D-5D26-42EE-8FAA-41BB784821EF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
