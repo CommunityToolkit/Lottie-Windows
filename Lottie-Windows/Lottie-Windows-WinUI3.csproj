@@ -3,6 +3,8 @@
 	<PropertyGroup>
 		<OutputType>Library</OutputType>
 		<IsPackable>True</IsPackable>
+    <Description>This library provides the LottieVisualSource which is consumed by the Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer to render Lottie JSON files.</Description>
+    <PackageTags>WinUI Toolkit Windows Animations Lottie XAML</PackageTags>
 		<RootNamespace>CommunityToolkit.WinUI.Lottie</RootNamespace>
 		<AssemblyName>CommunityToolkit.WinUI.Lottie</AssemblyName>
 		<PackageId>CommunityToolkit.WinUI.Lottie</PackageId>
