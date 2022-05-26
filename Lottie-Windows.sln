@@ -23,7 +23,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LottieViewer", "LottieViewe
 		{6AB50ED0-6273-4919-9ADE-50195664EF15} = {6AB50ED0-6273-4919-9ADE-50195664EF15}
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lottie-Windows", "Lottie-Windows\Lottie-Windows.csproj", "{E392BAD0-F936-4B64-A445-552597795CC7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lottie-Windows-Uwp", "Lottie-Windows\Lottie-Windows-Uwp\Lottie-Windows-Uwp.csproj", "{E392BAD0-F936-4B64-A445-552597795CC7}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dlls", "dlls", "{C75BD686-21A6-4EB3-8D4B-D5A01C019C52}"
 	ProjectSection(SolutionItems) = preProject
@@ -179,7 +179,7 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "LottieGenExe", "source\Lott
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LottieGen.MsBuild", "LottieGen\MSBuildTask\LottieGen.MsBuild.csproj", "{192FBD28-8531-4607-A17C-44A1A51A1565}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lottie-Windows-WinUI3", "Lottie-Windows-WinUI3\Lottie-Windows-WinUI3.csproj", "{C505CD2D-5D26-42EE-8FAA-41BB784821EF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lottie-Windows-WinUI3", "Lottie-Windows\Lottie-Windows-WinUI3\Lottie-Windows-WinUI3.csproj", "{C505CD2D-5D26-42EE-8FAA-41BB784821EF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
