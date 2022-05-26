@@ -7,6 +7,7 @@
     <PackageId>CommunityToolkit.Uwp.Lottie</PackageId>
     <PackageTags>UWP Toolkit Windows Animations Lottie XAML</PackageTags>
 
+
     <!-- 
          Turn off debugging information for now. It is causing errors with winmd generation because
          the build system is creating CommunityToolkit.WinUI.Lottie.compile.pdb but the winmdexp
