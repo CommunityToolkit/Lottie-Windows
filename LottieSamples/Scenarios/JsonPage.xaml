@@ -55,7 +55,7 @@
             <RichTextBlock Style="{StaticResource OutroTextBlock}">
                 <Paragraph>
                     To learn more, check out the
-                    <Hyperlink NavigateUri="https://github.com/windows-toolkit/Lottie-Windows/blob/main/samples/LottieSamples/Scenarios/JsonPage.xaml">
+                    <Hyperlink NavigateUri="https://github.com/windows-toolkit/Lottie-Windows/blob/main/LottieSamples/Scenarios/JsonPage.xaml">
                         XAML
                     </Hyperlink>
                     and read

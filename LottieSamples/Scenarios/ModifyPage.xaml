@@ -49,19 +49,19 @@
             <RichTextBlock Style="{StaticResource OutroTextBlock}">
                 <Paragraph>
                     Check out the
-                    <Hyperlink NavigateUri="https://github.com/windows-toolkit/Lottie-Windows/blob/main/samples/LottieSamples/Assets/LottieLogo1_Modified.json">
+                    <Hyperlink NavigateUri="https://github.com/windows-toolkit/Lottie-Windows/blob/main/LottieSamples/Assets/LottieLogo1_Modified.json">
                         modified Lottie file
                     </Hyperlink>
                     +
-                    <Hyperlink NavigateUri="https://github.com/windows-toolkit/Lottie-Windows/blob/main/samples/LottieSamples/AnimatedVisuals/LottieLogo1_Modified.cs">
+                    <Hyperlink NavigateUri="https://github.com/windows-toolkit/Lottie-Windows/blob/main/LottieSamples/AnimatedVisuals/LottieLogo1_Modified.cs">
                         codegen'd class
                     </Hyperlink>
                     +
-                    <Hyperlink NavigateUri="https://github.com/windows-toolkit/Lottie-Windows/blob/main/samples/LottieSamples/Scenarios/ModifyPage.xaml">
+                    <Hyperlink NavigateUri="https://github.com/windows-toolkit/Lottie-Windows/blob/main/LottieSamples/Scenarios/ModifyPage.xaml">
                         XAML
                     </Hyperlink>
                     +
-                    <Hyperlink NavigateUri="https://github.com/windows-toolkit/Lottie-Windows/blob/main/samples/LottieSamples/Scenarios/ModifyPage.xaml.cs">
+                    <Hyperlink NavigateUri="https://github.com/windows-toolkit/Lottie-Windows/blob/main/LottieSamples/Scenarios/ModifyPage.xaml.cs">
                         code-behind
                     </Hyperlink>
                     to get a sense of how property annotations may be used to dynamically update Lottie animations.
