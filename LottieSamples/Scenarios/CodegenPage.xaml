@@ -62,7 +62,7 @@
             <RichTextBlock Style="{StaticResource OutroTextBlock}">
                 <Paragraph>
                     To learn more, check out the
-                    <Hyperlink NavigateUri="https://github.com/windows-toolkit/Lottie-Windows/blob/main/samples/LottieSamples/Scenarios/CodegenPage.xaml">
+                    <Hyperlink NavigateUri="https://github.com/windows-toolkit/Lottie-Windows/blob/main/LottieSamples/Scenarios/CodegenPage.xaml">
                         XAML
                     </Hyperlink>
                     and read
