@@ -5,7 +5,7 @@
     <OutputType>winmdobj</OutputType>
     
 
-		<PackageId>CommunityToolkit.Uwp.Lottie</PackageId>
+    <PackageId>CommunityToolkit.Uwp.Lottie</PackageId>
     <PackageTags>UWP Toolkit Windows Animations Lottie XAML</PackageTags>
     
     <!-- 
