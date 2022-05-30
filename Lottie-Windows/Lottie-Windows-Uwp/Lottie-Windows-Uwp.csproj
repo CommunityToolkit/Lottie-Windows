@@ -4,6 +4,8 @@
     <TargetFramework>uap10.0.16299</TargetFramework>
     <OutputType>winmdobj</OutputType>
     
+    <TargetPlatformVersion>10.0.22621.0</TargetPlatformVersion>
+    <TargetPlatformMinVersion>10.0.17134.0</TargetPlatformMinVersion>
 
 
     <PackageId>CommunityToolkit.Uwp.Lottie</PackageId>
