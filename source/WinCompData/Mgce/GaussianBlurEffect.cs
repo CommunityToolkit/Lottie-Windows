@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 #nullable enable
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce
 {
@@ -15,6 +17,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce
         public float? BlurAmount { get; set; }
 
         public CompositionEffectSourceParameter? Source { get; set; }
+
+        public override IList<CompositionEffectSourceParameter> Sources => Source is null ? new List<CompositionEffectSourceParameter>() : new List<CompositionEffectSourceParameter>() { Source! };
 
         public override GraphicsEffectType Type => GraphicsEffectType.GaussianBlurEffect;
     }

@@ -16,6 +16,7 @@ using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Tables;
 using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.MetaData;
+using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce;
 using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
 using Expr = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions;
 using Mgce = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce;
@@ -1754,6 +1755,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     CompositionObjectType.Vector2KeyFrameAnimation => GenerateVector2KeyFrameAnimationFactory(builder, (Vector2KeyFrameAnimation)obj, node),
                     CompositionObjectType.Vector3KeyFrameAnimation => GenerateVector3KeyFrameAnimationFactory(builder, (Vector3KeyFrameAnimation)obj, node),
                     CompositionObjectType.Vector4KeyFrameAnimation => GenerateVector4KeyFrameAnimationFactory(builder, (Vector4KeyFrameAnimation)obj, node),
+                    CompositionObjectType.CompositionEffectFactory => GenerateCompositionEffectFactory(builder, (CompositionEffectFactory)obj, node),
                     _ => throw new InvalidOperationException(),
                 };
             }
@@ -2776,6 +2778,24 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 return true;
             }
 
+            bool GenerateCompositionEffectFactory(CodeBuilder builder, CompositionEffectFactory obj, ObjectData node)
+            {
+                WriteObjectFactoryStart(builder, node);
+
+                var effectCreationString = obj.GetEffect().Type switch
+                {
+                    GraphicsEffectType.CompositeEffect => _owner.WriteCompositeEffectFactory(builder, (CompositeEffect)obj.GetEffect()),
+                    GraphicsEffectType.GaussianBlurEffect => _owner.WriteGaussianBlurEffectFactory(builder, (GaussianBlurEffect)obj.GetEffect()),
+                    _ => throw new InvalidOperationException()
+                };
+
+                WriteCreateAssignment(builder, node, $"_c{Deref}CreateEffectFactory({effectCreationString})");
+
+                WriteCompositionObjectFactoryEnd(builder, obj, node);
+
+                return true;
+            }
+
             bool GeneratePathKeyFrameAnimationFactory(CodeBuilder builder, PathKeyFrameAnimation obj, ObjectData node)
             {
                 WriteObjectFactoryStart(builder, node);
@@ -3006,28 +3026,26 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             {
                 WriteObjectFactoryStart(builder, node);
 
-                var effect = obj.GetEffect();
-                var effectCreationString = effect.Type switch
+                var effectFactory = obj.GetEffectFactory();
+
+                /* FACTORY HERE START */
+                /*var effectCreationString = effect.EffectType switch
                 {
                     Mgce.GraphicsEffectType.CompositeEffect => _owner.WriteCompositeEffectFactory(builder, (Mgce.CompositeEffect)effect),
                     Mgce.GraphicsEffectType.GaussianBlurEffect => _owner.WriteGaussianBlurEffectFactory(builder, (Mgce.GaussianBlurEffect)effect),
                     _ => throw new InvalidOperationException(),
                 };
 
-                builder.WriteLine($"{ConstVar} effectFactory = _c{Deref}CreateEffectFactory({effectCreationString});");
+                builder.WriteLine($"{ConstVar} effectFactory = _c{Deref}CreateEffectFactory({effectCreationString});");*/
+                /* FACTORY HERE END */
+
+                builder.WriteLine($"{ConstVar} effectFactory = {CallFactoryFromFor(node, effectFactory)};");
+
                 WriteCreateAssignment(builder, node, $"effectFactory{Deref}CreateBrush()");
                 InitializeCompositionBrush(builder, obj, node);
 
-                IEnumerable<CompositionEffectSourceParameter> sources = effect.Type switch
-                {
-                    Mgce.GraphicsEffectType.CompositeEffect => ((Mgce.CompositeEffect)effect).Sources,
-                    Mgce.GraphicsEffectType.GaussianBlurEffect => ((Mgce.GaussianBlurEffect)effect).Source is not null ?
-                        new[] { ((Mgce.GaussianBlurEffect)effect).Source! } : Enumerable.Empty<CompositionEffectSourceParameter>(),
-                    _ => throw new InvalidOperationException(),
-                };
-
                 // Perform brush initialization.
-                foreach (var source in sources)
+                foreach (var source in effectFactory.GetEffect().Sources)
                 {
                     builder.WriteLine($"result{Deref}SetSourceParameter({String(source.Name)}, {CallFactoryFromFor(node, obj.GetSourceParameter(source.Name))});");
                 }
@@ -3388,7 +3406,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             internal bool UsesAssetFile => Object is Wmd.LoadedImageSurface lis && lis.Type == Wmd.LoadedImageSurface.LoadedImageSurfaceType.FromUri;
 
             // Set to indicate that the composition depends on the given effect type.
-            internal bool UsesEffect(Mgce.GraphicsEffectType effectType) => Object is CompositionEffectBrush compositeEffectBrush && compositeEffectBrush.GetEffect().Type == effectType;
+            internal bool UsesEffect(Mgce.GraphicsEffectType effectType) => Object is CompositionEffectBrush compositeEffectBrush && compositeEffectBrush.GetEffectFactory().GetEffect().Type == effectType;
 
             // Identifies the byte array of a LoadedImageSurface.
             internal string? LoadedImageSurfaceBytesFieldName => IsLoadedImageSurface ? $"s_{Name}_Bytes" : null;

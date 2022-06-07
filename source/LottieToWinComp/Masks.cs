@@ -434,11 +434,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             destinationVisualSurface.SourceOffset = ConvertTo.Vector2(offset);
             var destinationVisualSurfaceBrush = objectFactory.CreateSurfaceBrush(destinationVisualSurface);
 
-            var compositeEffect = new CompositeEffect();
-            compositeEffect.Mode = compositeMode;
-
-            compositeEffect.Sources.Add(new CompositionEffectSourceParameter("destination"));
-            compositeEffect.Sources.Add(new CompositionEffectSourceParameter("source"));
+            var compositeEffect = new CompositeEffect(compositeMode, new List<CompositionEffectSourceParameter>(new CompositionEffectSourceParameter[] { new CompositionEffectSourceParameter("destination"), new CompositionEffectSourceParameter("source") }));
 
             var compositionEffectFactory = objectFactory.CreateEffectFactory(compositeEffect);
             var effectBrush = compositionEffectFactory.CreateBrush();

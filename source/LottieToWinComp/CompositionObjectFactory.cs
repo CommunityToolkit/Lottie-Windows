@@ -288,7 +288,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         internal CompositionSurfaceBrush CreateSurfaceBrush(ICompositionSurface surface) => _compositor.CreateSurfaceBrush(surface);
 
-        internal CompositionEffectFactory CreateEffectFactory(GraphicsEffectBase effect) => _compositor.CreateEffectFactory(effect);
+        internal CompositionEffectFactory CreateEffectFactory(GraphicsEffectBase effect) => CompositionEffectFactory.GetFactoryCached(effect);
 
         // Call this when consuming a feature that is only available in UAP versions > 7.
         void ConsumeVersionFeature(uint uapVersion)

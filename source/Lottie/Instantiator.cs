@@ -1059,22 +1059,20 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             return result;
         }
 
-        Wc.CompositionEffectBrush GetCompositionEffectBrush(Wd.CompositionEffectBrush obj)
+        Wc.CompositionEffectFactory GetCompositionEffectFactory(Wd.Mgce.GraphicsEffectBase obj)
         {
-            if (GetExisting<Wc.CompositionEffectBrush>(obj, out var result))
+            if (GetExisting<Wc.CompositionEffectFactory>(obj, out var result))
             {
                 return result;
             }
 
-            IEnumerable<Wd.CompositionEffectSourceParameter> sources;
             IGraphicsEffect graphicsEffect;
 
-            var wdEffect = obj.GetEffect();
-            switch (wdEffect.Type)
+            switch (obj.Type)
             {
                 case Wd.Mgce.GraphicsEffectType.CompositeEffect:
                     {
-                        var effect = (Wd.Mgce.CompositeEffect)wdEffect;
+                        var effect = (Wd.Mgce.CompositeEffect)obj;
 
                         // Create the effect.
                         var resultEffect = new Mgce.CompositeEffect
@@ -1088,13 +1086,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                         }
 
                         graphicsEffect = resultEffect;
-                        sources = effect.Sources;
                     }
 
                     break;
                 case Wd.Mgce.GraphicsEffectType.GaussianBlurEffect:
                     {
-                        var effect = (Wd.Mgce.GaussianBlurEffect)wdEffect;
+                        var effect = (Wd.Mgce.GaussianBlurEffect)obj;
 
                         // Create the effect.
                         var resultEffect = new Mgce.GaussianBlurEffect();
@@ -1105,13 +1102,52 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                         }
 
                         graphicsEffect = resultEffect;
+                        if (effect.Source is not null)
+                        {
+                            resultEffect.Source = new Wc.CompositionEffectSourceParameter(effect.Source.Name);
+                        }
+                    }
+
+                    break;
+                default:
+                    throw new InvalidOperationException();
+            }
+
+            var factory = _c.CreateEffectFactory(graphicsEffect);
+
+            Cache(obj, factory);
+
+            return factory;
+        }
+
+        Wc.CompositionEffectBrush GetCompositionEffectBrush(Wd.CompositionEffectBrush obj)
+        {
+            if (GetExisting<Wc.CompositionEffectBrush>(obj, out var result))
+            {
+                return result;
+            }
+
+            IEnumerable<Wd.CompositionEffectSourceParameter> sources;
+
+            var wdEffect = obj.GetEffect();
+            switch (wdEffect.Type)
+            {
+                case Wd.Mgce.GraphicsEffectType.CompositeEffect:
+                    {
+                        var effect = (Wd.Mgce.CompositeEffect)wdEffect;
+                        sources = effect.Sources;
+                    }
+
+                    break;
+                case Wd.Mgce.GraphicsEffectType.GaussianBlurEffect:
+                    {
+                        var effect = (Wd.Mgce.GaussianBlurEffect)wdEffect;
                         if (effect.Source is null)
                         {
                             sources = Array.Empty<Wd.CompositionEffectSourceParameter>();
                         }
                         else
                         {
-                            resultEffect.Source = new Wc.CompositionEffectSourceParameter(effect.Source.Name);
                             sources = new[] { effect.Source };
                         }
                     }
@@ -1122,7 +1158,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             }
 
             // Create and initialize the effect brush.
-            var effectBrush = _c.CreateEffectFactory(graphicsEffect).CreateBrush();
+            var effectBrush = GetCompositionEffectFactory(obj.GetEffect()).CreateBrush();
             result = CacheAndInitializeCompositionObject(obj, effectBrush);
 
             // Set the sources.

@@ -151,6 +151,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                     case CompositionObjectType.Vector4KeyFrameAnimation:
                         Vector4KeyFrameAnimationCount++;
                         break;
+                    case CompositionObjectType.CompositionEffectFactory:
+                        break;
                     default:
                         throw new InvalidOperationException();
                 }
