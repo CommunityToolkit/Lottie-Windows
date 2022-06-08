@@ -1924,7 +1924,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                 if (obj.Type != CompositionObjectType.CompositionPropertySet)
                 {
                     // Start the animations for properties on the property set.
-                    StartAnimations(builder, obj.Properties, NodeFor(obj.Properties), $"{localName}{Deref}Properties", ref controllerVariableAdded);
+                    StartAnimations(builder, obj.Properties, NodeFor(obj.Properties), _s.PropertyGet(localName, "Properties"), ref controllerVariableAdded);
                 }
             }
 
