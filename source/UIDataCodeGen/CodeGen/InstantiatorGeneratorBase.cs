@@ -16,6 +16,7 @@ using CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Tables;
 using CommunityToolkit.WinUI.Lottie.UIData.Tools;
 using CommunityToolkit.WinUI.Lottie.WinCompData;
 using CommunityToolkit.WinUI.Lottie.WinCompData.MetaData;
+using CommunityToolkit.WinUI.Lottie.WinCompData.Mgce;
 using CommunityToolkit.WinUI.Lottie.WinCompData.Mgcg;
 using Expr = CommunityToolkit.WinUI.Lottie.WinCompData.Expressions;
 using Mgce = CommunityToolkit.WinUI.Lottie.WinCompData.Mgce;

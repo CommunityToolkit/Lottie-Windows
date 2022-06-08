@@ -27,7 +27,7 @@ namespace CommunityToolkit.WinUI.Lottie.WinCompData.Mgce
 
         public override GraphicsEffectType Type => GraphicsEffectType.GaussianBlurEffect;
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (!(obj is GaussianBlurEffect))
             {
