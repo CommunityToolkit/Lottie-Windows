@@ -1066,15 +1066,34 @@ namespace CommunityToolkit.WinUI.Lottie
                 return result;
             }
 
-            IEnumerable<Wd.CompositionEffectSourceParameter> sources;
+            // Create and initialize the effect brush.
+            var effectBrush = GetCompositionEffectFactory(obj.GetEffectFactory()).CreateBrush();
+            result = CacheAndInitializeCompositionObject(obj, effectBrush);
+
+            // Set the sources.
+            foreach (var source in obj.GetEffectFactory().Effect.Sources)
+            {
+                result.SetSourceParameter(source.Name, GetCompositionBrush(obj.GetSourceParameter(source.Name)));
+            }
+
+            StartAnimations(obj, result);
+            return result;
+        }
+
+        Wc.CompositionEffectFactory GetCompositionEffectFactory(Wd.CompositionEffectFactory obj)
+        {
+            if (GetExisting<Wc.CompositionEffectFactory>(obj, out var result))
+            {
+                return result;
+            }
+
             IGraphicsEffect graphicsEffect;
 
-            var wdEffect = obj.GetEffect();
-            switch (wdEffect.Type)
+            switch (obj.Effect.Type)
             {
                 case Wd.Mgce.GraphicsEffectType.CompositeEffect:
                     {
-                        var effect = (Wd.Mgce.CompositeEffect)wdEffect;
+                        var effect = (Wd.Mgce.CompositeEffect)obj.Effect;
 
                         // Create the effect.
                         var resultEffect = new Mgce.CompositeEffect
@@ -1088,32 +1107,21 @@ namespace CommunityToolkit.WinUI.Lottie
                         }
 
                         graphicsEffect = resultEffect;
-                        sources = effect.Sources;
                     }
 
                     break;
                 case Wd.Mgce.GraphicsEffectType.GaussianBlurEffect:
                     {
-                        var effect = (Wd.Mgce.GaussianBlurEffect)wdEffect;
+                        var effect = (Wd.Mgce.GaussianBlurEffect)obj.Effect;
 
                         // Create the effect.
                         var resultEffect = new Mgce.GaussianBlurEffect();
 
-                        if (effect.BlurAmount.HasValue)
-                        {
-                            resultEffect.BlurAmount = effect.BlurAmount.Value;
-                        }
+                        resultEffect.BlurAmount = effect.BlurAmount;
+
+                        resultEffect.Source = new Wc.CompositionEffectSourceParameter(effect.Sources.First().Name);
 
                         graphicsEffect = resultEffect;
-                        if (effect.Source is null)
-                        {
-                            sources = Array.Empty<Wd.CompositionEffectSourceParameter>();
-                        }
-                        else
-                        {
-                            resultEffect.Source = new Wc.CompositionEffectSourceParameter(effect.Source.Name);
-                            sources = new[] { effect.Source };
-                        }
                     }
 
                     break;
@@ -1121,18 +1129,11 @@ namespace CommunityToolkit.WinUI.Lottie
                     throw new InvalidOperationException();
             }
 
-            // Create and initialize the effect brush.
-            var effectBrush = _c.CreateEffectFactory(graphicsEffect).CreateBrush();
-            result = CacheAndInitializeCompositionObject(obj, effectBrush);
+            var factory = _c.CreateEffectFactory(graphicsEffect);
 
-            // Set the sources.
-            foreach (var source in sources)
-            {
-                result.SetSourceParameter(source.Name, GetCompositionBrush(obj.GetSourceParameter(source.Name)));
-            }
+            Cache(obj, factory);
 
-            StartAnimations(obj, result);
-            return result;
+            return factory;
         }
 
         Wc.CompositionSpriteShape GetCompositionSpriteShape(Wd.CompositionSpriteShape obj)
