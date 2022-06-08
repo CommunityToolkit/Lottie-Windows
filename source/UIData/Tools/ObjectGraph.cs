@@ -217,6 +217,9 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.Tools
                 case CompositionObjectType.Vector4KeyFrameAnimation:
                     VisitVector4KeyFrameAnimation((Vector4KeyFrameAnimation)obj, node);
                     break;
+                case CompositionObjectType.CompositionEffectFactory:
+                    VisitCompositionEffectFactory((CompositionEffectFactory)obj, node);
+                    break;
                 default:
                     throw new InvalidOperationException();
             }
@@ -664,33 +667,22 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.Tools
             return true;
         }
 
+        bool VisitCompositionEffectFactory(CompositionEffectFactory obj, T node)
+        {
+            return VisitCompositionObject(obj, node);
+        }
+
         bool VisitCompositionEffectBrush(CompositionEffectBrush obj, T node)
         {
             VisitCompositionBrush(obj, node);
 
-            var effect = obj.GetEffect();
+            var effectFactory = obj.GetEffectFactory();
 
-            switch (effect.Type)
+            Reference(node, effectFactory);
+
+            foreach (var source in effectFactory.Effect.Sources)
             {
-                case GraphicsEffectType.CompositeEffect:
-                    foreach (var source in ((CompositeEffect)effect).Sources)
-                    {
-                        Reference(node, obj.GetSourceParameter(source.Name));
-                    }
-
-                    break;
-                case GraphicsEffectType.GaussianBlurEffect:
-                    {
-                        var source = ((GaussianBlurEffect)effect).Source;
-                        if (source is not null)
-                        {
-                            Reference(node, obj.GetSourceParameter(source.Name));
-                        }
-                    }
-
-                    break;
-                default:
-                    throw new InvalidOperationException();
+                Reference(node, obj.GetSourceParameter(source.Name));
             }
 
             return true;
