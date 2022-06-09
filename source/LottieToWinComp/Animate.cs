@@ -684,7 +684,7 @@ namespace CommunityToolkit.WinUI.Lottie.LottieToWinComp
                             // This is necessary because the expression is only defined from the previous progress to the current progress.
                             var nextLargerThanPrevious = Float32.NextLargerThan(previousProgress);
                             InsertKeyFrame(compositionAnimation, nextLargerThanPrevious, previousValue, context.ObjectFactory.CreateStepThenHoldEasingFunction());
-                            
+
                             if (currentProgress <= nextLargerThanPrevious)
                             {
                                 // Prevent the next key frame from being inserted at the same progress value
