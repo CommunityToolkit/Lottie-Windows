@@ -8,9 +8,9 @@ using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Numerics;
+using CommunityToolkit.WinUI.Lottie.CompMetadata;
+using CommunityToolkit.WinUI.Lottie.WinCompData.MetaData;
 using LottieViewer.ViewModel;
-using Microsoft.Toolkit.Uwp.UI.Lottie.CompMetadata;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.MetaData;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -102,7 +102,7 @@ namespace LottieViewer
                     {
                         if (item.ExposedType == PropertySetValueType.Color)
                         {
-                            var color = (Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui.Color)item.DefaultValue;
+                            var color = (CommunityToolkit.WinUI.Lottie.WinCompData.Wui.Color)item.DefaultValue;
                             var entry = new ColorPaletteEntry(Color.FromArgb(color.A, color.R, color.G, color.B), item.DisplayName);
                             PaletteEntries.Add(entry);
                             entry.PropertyChanged += (_, args) =>

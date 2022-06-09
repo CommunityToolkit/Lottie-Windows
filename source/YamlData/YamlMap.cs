@@ -8,7 +8,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.YamlData
+namespace CommunityToolkit.WinUI.Lottie.YamlData
 {
     /// <summary>
     /// A list of named properties.

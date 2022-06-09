@@ -7,10 +7,10 @@ using System.IO;
 using System.Linq;
 using System.Runtime;
 using System.Threading.Tasks;
-using Microsoft.Toolkit.Uwp.UI.Lottie.LottieGen;
-using Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp;
+using CommunityToolkit.WinUI.Lottie.LottieGen;
+using CommunityToolkit.WinUI.Lottie.LottieToWinComp;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieGenExe
+namespace CommunityToolkit.WinUI.Lottie.LottieGenExe
 {
     sealed class Main
     {

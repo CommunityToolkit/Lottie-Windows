@@ -5,7 +5,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
+namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Cx
 {
     /// <summary>
     /// The result produced by the <see cref="CxInstantiatorGenerator"/>.

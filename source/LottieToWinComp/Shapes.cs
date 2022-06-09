@@ -8,13 +8,13 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
-using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
+using CommunityToolkit.WinUI.Lottie.Animatables;
+using CommunityToolkit.WinUI.Lottie.LottieData;
+using CommunityToolkit.WinUI.Lottie.WinCompData;
+using CommunityToolkit.WinUI.Lottie.WinCompData.Mgcg;
 using Sn = System.Numerics;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
+namespace CommunityToolkit.WinUI.Lottie.LottieToWinComp
 {
     /// <summary>
     /// Translation for Lottie shapes.
@@ -167,8 +167,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         break;
                     case ShapeContentType.Path:
                         {
-                            var paths = new List<Path>();
-                            paths.Add(Optimizer.OptimizePath(context, (Path)shapeContent));
+                            var paths = new List<LottieData.Path>();
+                            paths.Add(Optimizer.OptimizePath(context, (LottieData.Path)shapeContent));
 
                             // Get all the paths that are part of the same group.
                             while (stack.TryPeek(out var item) && item.ContentType == ShapeContentType.Path)
@@ -176,7 +176,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                                 // Optimize the paths as they are added. Optimized paths have redundant keyframes
                                 // removed. Optimizing here increases the chances that an animated path will be
                                 // turned into a non-animated path which will allow us to group the paths.
-                                paths.Add(Optimizer.OptimizePath(context, (Path)stack.Pop()));
+                                paths.Add(Optimizer.OptimizePath(context, (LottieData.Path)stack.Pop()));
                             }
 
                             if (paths.Count == 1)
@@ -385,7 +385,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                         break;
 
                     case ShapeContentType.Path:
-                        yield return Paths.CreateWin2dPathGeometryFromShape(context, (Path)shapeContent, pathFillType, optimizeLines: true);
+                        yield return Paths.CreateWin2dPathGeometryFromShape(context, (LottieData.Path)shapeContent, pathFillType, optimizeLines: true);
                         break;
                     case ShapeContentType.Ellipse:
                         yield return Ellipses.CreateWin2dEllipseGeometry(context, (Ellipse)shapeContent);

@@ -4,7 +4,7 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
+namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Cx
 {
     sealed class CppNamespaceListBuilder
     {

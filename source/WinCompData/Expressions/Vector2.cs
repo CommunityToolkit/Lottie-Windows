@@ -4,7 +4,7 @@
 
 using System;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
+namespace CommunityToolkit.WinUI.Lottie.WinCompData.Expressions
 {
 #if PUBLIC_WinCompData
     public
@@ -20,6 +20,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
         public virtual Scalar Y => Channel("Y");
 
         public static Vector2 operator -(Vector2 left, Vector2 right) => new Subtract(left, right);
+
+        public static Vector2 operator -(Vector2 value) => new Subtract(Vector2(0, 0), value);
 
         public static Vector2 operator +(Vector2 left, Vector2 right) => new Add(left, right);
 

@@ -33,21 +33,20 @@ namespace LottieViewer
         readonly SpriteVisual _spriteVisual;
         Visual? _capturedVisual = null;
 
-        // Indicates if PixelView should update the image.
-        public bool Active { get; set; } = false;
-
         // Checkerboard pattern bitmap.
         static CanvasBitmap? _patternBitmap = null;
 
         // Previously rendered bitmap info.
-        CanvasBitmap? _previousBitmap = null;
-        Color[]? _previousColors = null;
+        CanvasBitmap? _currentBitmap = null;
+        Color[]? _currentColors = null;
 
         Color? _currentColor = null;
 
-        Direct3D11CaptureFramePool? _framePool = null;
         GraphicsCaptureSession? _session = null;
-        CanvasDevice? _canvasDevice = null;
+        Direct3D11CaptureFramePool _framePool;
+        ICompositionSurface _surface;
+        CanvasSwapChain _swapchain;
+        CanvasDevice _canvasDevice;
 
         public static readonly DependencyProperty CurrentColorStringProperty =
         DependencyProperty.RegisterAttached(
@@ -85,6 +84,19 @@ namespace LottieViewer
             _spriteVisual = compositor.CreateSpriteVisual();
             _spriteVisual.RelativeSizeAdjustment = Vector2.One;
             ElementCompositionPreview.SetElementChildVisual(this, _spriteVisual);
+
+            _canvasDevice = CanvasDevice.GetSharedDevice();
+
+            // Swapchain will be resized later
+            _swapchain = new CanvasSwapChain(_canvasDevice, 512, 512, 96);
+            _surface = CanvasComposition.CreateCompositionSurfaceForSwapChain(compositor, _swapchain);
+            _spriteVisual.Brush = compositor.CreateSurfaceBrush(_surface);
+
+            // Create a frame pool with room for only 1 frame because we're getting a single frame, not a video.
+            _framePool =
+                Direct3D11CaptureFramePool.Create(_canvasDevice, DirectXPixelFormat.B8G8R8A8UIntNormalized, 3, new SizeInt32 { Width = 512, Height = 512 });
+
+            _framePool.FrameArrived += OnFrameArrived;
         }
 
         public void SetElementToCapture(FrameworkElement element)
@@ -96,58 +108,63 @@ namespace LottieViewer
             _capturedVisual.BorderMode = CompositionBorderMode.Soft;
 
             OnResolutionUpdated((int)element.ActualWidth, (int)element.ActualHeight);
+
+            _session = _framePool.CreateCaptureSession(GraphicsCaptureItem.CreateFromVisual(_capturedVisual));
+            _session.StartCapture();
         }
 
         public void OnMouseMove(object sender, PointerRoutedEventArgs e)
         {
             var position = e.GetCurrentPoint(this).Position;
 
-            if (_previousBitmap == null || ActualHeight <= 0)
+            if (_currentBitmap == null || ActualHeight <= 0)
             {
                 return;
             }
 
-            int pixelX = (int)Math.Floor(position.X * (_previousBitmap.Size.Height / ActualHeight));
-            int pixelY = (int)Math.Floor(position.Y * (_previousBitmap.Size.Width / ActualWidth));
+            int pixelX = (int)Math.Floor(position.X * (_currentBitmap.Size.Height / ActualHeight));
+            int pixelY = (int)Math.Floor(position.Y * (_currentBitmap.Size.Width / ActualWidth));
 
-            if (pixelX < 0 || pixelX >= _previousBitmap.SizeInPixels.Width || pixelY < 0 || pixelY >= _previousBitmap.SizeInPixels.Height)
+            if (pixelX < 0 || pixelX >= _currentBitmap.SizeInPixels.Width || pixelY < 0 || pixelY >= _currentBitmap.SizeInPixels.Height)
             {
                 return;
             }
 
-            if (_previousColors == null)
+            if (_currentColors == null)
             {
-                _previousColors = _previousBitmap.GetPixelColors();
+                _currentColors = _currentBitmap.GetPixelColors();
             }
 
-            _currentColor = _previousColors[(pixelY * _previousBitmap.SizeInPixels.Width) + pixelX];
+            _currentColor = _currentColors[(pixelY * _currentBitmap.SizeInPixels.Width) + pixelX];
             SetValue(CurrentColorStringProperty, _currentColor.ToString());
             SetValue(CurrentPositionProperty, new Vector2(pixelX, pixelY));
         }
 
         async Task ShowBitmapOnTargetAsync(CanvasBitmap bitmap)
         {
-            int scale = (int)Math.Ceiling(ActualSize.Y / bitmap.Size.Height);
+            int scale = Math.Max((int)Math.Ceiling(ActualSize.Y / bitmap.Size.Height), 1);
 
             Height = bitmap.Size.Height / bitmap.Size.Width * ActualSize.X;
 
-            _previousBitmap = bitmap;
-            _previousColors = null;
+            _currentBitmap?.Dispose();
+            _currentBitmap = bitmap;
+            _currentColors = null;
 
             var compositor = ElementCompositionPreview.GetElementVisual(this).Compositor;
-            var compositionGraphicsDevice = CanvasComposition.CreateCompositionGraphicsDevice(compositor, CanvasDevice.GetSharedDevice());
 
             if (_patternBitmap is null)
             {
                 _patternBitmap = await CanvasBitmap.LoadAsync(CanvasDevice.GetSharedDevice(), @"Assets\BackgroundPattern.png");
             }
 
-            var surface = compositionGraphicsDevice.CreateDrawingSurface(
-                new Size(bitmap.Size.Width * scale, bitmap.Size.Height * scale),
-                DirectXPixelFormat.B8G8R8A8UIntNormalized,
-                DirectXAlphaMode.Premultiplied);
+            var size = new Size(bitmap.Size.Width * scale, bitmap.Size.Height * scale);
 
-            using (var drawingSession = CanvasComposition.CreateDrawingSession(surface))
+            if (_swapchain.Size.Width != size.Width || _swapchain.Size.Height != size.Height)
+            {
+                _swapchain.ResizeBuffers(size);
+            }
+
+            using (var drawingSession = _swapchain!.CreateDrawingSession(Colors.Transparent))
             {
                 var border = new BorderEffect
                 {
@@ -168,19 +185,15 @@ namespace LottieViewer
                 drawingSession.DrawImage(scaleEffect);
             }
 
-            var surfaceBrush = compositor.CreateSurfaceBrush(surface);
-            _spriteVisual.Brush = surfaceBrush;
+            _swapchain.Present();
         }
 
         void OnFrameArrived(Direct3D11CaptureFramePool sender, object args)
         {
-            if (Active)
+            using (var frame = sender.TryGetNextFrame())
             {
-                using (var frame = sender.TryGetNextFrame())
-                {
-                    CanvasBitmap bitmap = CanvasBitmap.CreateFromDirect3D11Surface(_canvasDevice!, frame.Surface);
-                    _ = ShowBitmapOnTargetAsync(bitmap);
-                }
+                CanvasBitmap bitmap = CanvasBitmap.CreateFromDirect3D11Surface(_canvasDevice!, frame.Surface);
+                _ = ShowBitmapOnTargetAsync(bitmap);
             }
         }
 
@@ -189,32 +202,12 @@ namespace LottieViewer
 
         public void UpdateResolution(SizeInt32 size)
         {
-            if (size.Height <= 0 || size.Width <= 0)
+            if (size.Width == 0 || size.Height == 0)
             {
                 return;
             }
 
-            if (_framePool is not null && _session is not null)
-            {
-                // Unsubscribe from old framePool
-                _framePool.FrameArrived -= OnFrameArrived;
-
-                // Dispose old session and framePool
-                _session.Dispose();
-                _framePool.Dispose();
-            }
-
-            _canvasDevice = CanvasDevice.GetSharedDevice();
-
-            // Create a frame pool with room for only 1 frame because we're getting a single frame, not a video.
-            _framePool =
-                Direct3D11CaptureFramePool.Create(_canvasDevice, DirectXPixelFormat.B8G8R8A8UIntNormalized, 1, size);
-
-            _session = _framePool.CreateCaptureSession(GraphicsCaptureItem.CreateFromVisual(_capturedVisual));
-
-            _framePool.FrameArrived += OnFrameArrived;
-
-            _session.StartCapture();
+            _framePool.Recreate(_canvasDevice, DirectXPixelFormat.B8G8R8A8UIntNormalized, 3, new SizeInt32 { Width = size.Width, Height = size.Height });
         }
     }
 }

@@ -4,7 +4,7 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Tables
+namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Tables
 {
     abstract class Row
     {

@@ -4,7 +4,7 @@
 
 #nullable enable
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.YamlData
+namespace CommunityToolkit.WinUI.Lottie.YamlData
 {
     /// <summary>
     /// Common base class for <see cref="YamlScalar"/>, <see cref="YamlMap"/>, and <see cref="YamlSequence"/>.

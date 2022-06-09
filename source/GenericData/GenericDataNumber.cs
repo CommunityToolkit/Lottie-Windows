@@ -5,7 +5,7 @@
 using System;
 using System.Globalization;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.GenericData
+namespace CommunityToolkit.WinUI.Lottie.GenericData
 {
 #if PUBLIC_LottieData
     public

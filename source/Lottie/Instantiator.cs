@@ -15,18 +15,24 @@ using System.Numerics;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Microsoft.Graphics.Canvas.Geometry;
 using Windows.Graphics.Effects;
-using Expr = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions;
+using Expr = CommunityToolkit.WinUI.Lottie.WinCompData.Expressions;
 using Mgc = Microsoft.Graphics.Canvas;
 using Mgce = Microsoft.Graphics.Canvas.Effects;
+#if WINAPPSDK
+using Wc = Microsoft.UI.Composition;
+using Wm = Microsoft.UI.Xaml.Media;
+#else
 using Wc = Windows.UI.Composition;
-using Wd = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
 using Wm = Windows.UI.Xaml.Media;
-using Wmd = Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData;
+#endif
+using Wd = CommunityToolkit.WinUI.Lottie.WinCompData;
+using Wmd = CommunityToolkit.WinUI.Lottie.WinUIXamlMediaData;
+using Wui = Windows.UI;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie
+namespace CommunityToolkit.WinUI.Lottie
 {
     /// <summary>
-    /// Creates instances of a <see cref="Windows.UI.Composition.Visual"/> tree from a description
+    /// Creates instances of a <see cref="Wc.Visual"/> tree from a description
     /// of the tree.
     /// </summary>
     sealed class Instantiator
@@ -53,7 +59,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         bool GetExisting<T>(object key, [MaybeNullWhen(false)] out T result)
             where T : class
         {
-            if (_cache.TryGetValue(key, out object cached))
+            if (_cache.TryGetValue(key, out object? cached))
             {
                 result = (T)cached;
                 return true;
@@ -1060,15 +1066,34 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 return result;
             }
 
-            IEnumerable<Wd.CompositionEffectSourceParameter> sources;
+            // Create and initialize the effect brush.
+            var effectBrush = GetCompositionEffectFactory(obj.GetEffectFactory()).CreateBrush();
+            result = CacheAndInitializeCompositionObject(obj, effectBrush);
+
+            // Set the sources.
+            foreach (var source in obj.GetEffectFactory().Effect.Sources)
+            {
+                result.SetSourceParameter(source.Name, GetCompositionBrush(obj.GetSourceParameter(source.Name)));
+            }
+
+            StartAnimations(obj, result);
+            return result;
+        }
+
+        Wc.CompositionEffectFactory GetCompositionEffectFactory(Wd.CompositionEffectFactory obj)
+        {
+            if (GetExisting<Wc.CompositionEffectFactory>(obj, out var result))
+            {
+                return result;
+            }
+
             IGraphicsEffect graphicsEffect;
 
-            var wdEffect = obj.GetEffect();
-            switch (wdEffect.Type)
+            switch (obj.Effect.Type)
             {
                 case Wd.Mgce.GraphicsEffectType.CompositeEffect:
                     {
-                        var effect = (Wd.Mgce.CompositeEffect)wdEffect;
+                        var effect = (Wd.Mgce.CompositeEffect)obj.Effect;
 
                         // Create the effect.
                         var resultEffect = new Mgce.CompositeEffect
@@ -1082,32 +1107,21 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                         }
 
                         graphicsEffect = resultEffect;
-                        sources = effect.Sources;
                     }
 
                     break;
                 case Wd.Mgce.GraphicsEffectType.GaussianBlurEffect:
                     {
-                        var effect = (Wd.Mgce.GaussianBlurEffect)wdEffect;
+                        var effect = (Wd.Mgce.GaussianBlurEffect)obj.Effect;
 
                         // Create the effect.
                         var resultEffect = new Mgce.GaussianBlurEffect();
 
-                        if (effect.BlurAmount.HasValue)
-                        {
-                            resultEffect.BlurAmount = effect.BlurAmount.Value;
-                        }
+                        resultEffect.BlurAmount = effect.BlurAmount;
+
+                        resultEffect.Source = new Wc.CompositionEffectSourceParameter(effect.Sources.First().Name);
 
                         graphicsEffect = resultEffect;
-                        if (effect.Source is null)
-                        {
-                            sources = Array.Empty<Wd.CompositionEffectSourceParameter>();
-                        }
-                        else
-                        {
-                            resultEffect.Source = new Wc.CompositionEffectSourceParameter(effect.Source.Name);
-                            sources = new[] { effect.Source };
-                        }
                     }
 
                     break;
@@ -1115,18 +1129,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                     throw new InvalidOperationException();
             }
 
-            // Create and initialize the effect brush.
-            var effectBrush = _c.CreateEffectFactory(graphicsEffect).CreateBrush();
-            result = CacheAndInitializeCompositionObject(obj, effectBrush);
+            var factory = _c.CreateEffectFactory(graphicsEffect);
 
-            // Set the sources.
-            foreach (var source in sources)
-            {
-                result.SetSourceParameter(source.Name, GetCompositionBrush(obj.GetSourceParameter(source.Name)));
-            }
+            Cache(obj, factory);
 
-            StartAnimations(obj, result);
-            return result;
+            return factory;
         }
 
         Wc.CompositionSpriteShape GetCompositionSpriteShape(Wd.CompositionSpriteShape obj)
@@ -1607,8 +1614,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 _ => throw new InvalidOperationException(),
             };
 
-        static Windows.UI.Color Color(Wd.Wui.Color color) =>
-            Windows.UI.Color.FromArgb(color.A, color.R, color.G, color.B);
+        static Wui.Color Color(Wd.Wui.Color color) =>
+            Wui.Color.FromArgb(color.A, color.R, color.G, color.B);
 
         static Wc.CompositionDropShadowSourcePolicy DropShadowSourcePolicy(Wd.CompositionDropShadowSourcePolicy value) =>
             value switch
@@ -1694,7 +1701,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
 
         sealed class ReferenceEqualsComparer : IEqualityComparer<object>
         {
-            bool IEqualityComparer<object>.Equals(object x, object y) => ReferenceEquals(x, y);
+            bool IEqualityComparer<object>.Equals(object? x, object? y) => ReferenceEquals(x, y);
 
             int IEqualityComparer<object>.GetHashCode(object obj) => obj.GetHashCode();
         }

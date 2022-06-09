@@ -12,7 +12,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.DotLottie
+namespace CommunityToolkit.WinUI.Lottie.DotLottie
 {
     /// <summary>
     /// Provides access to the contents of a .lottie file.

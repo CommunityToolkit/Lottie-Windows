@@ -7,7 +7,7 @@
 using System;
 using System.Diagnostics;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
+namespace CommunityToolkit.WinUI.Lottie.LottieData.Serialization
 {
     /// <summary>
     /// Builds an array of non-null items. Designed for use on the stack,

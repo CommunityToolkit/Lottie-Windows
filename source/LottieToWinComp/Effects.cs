@@ -8,11 +8,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
-using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
+using CommunityToolkit.WinUI.Lottie.Animatables;
+using CommunityToolkit.WinUI.Lottie.LottieData;
+using CommunityToolkit.WinUI.Lottie.WinCompData;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
+namespace CommunityToolkit.WinUI.Lottie.LottieToWinComp
 {
     /// <summary>
     /// Provides access to the effects for a <see cref="Layer"/>.
@@ -114,6 +114,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 // The effect can't be displayed on the targeted version.
                 return source;
             }
+
+            source.BorderMode = CompositionBorderMode.Soft;
 
             Debug.Assert(dropShadowEffect.IsEnabled, "Precondition");
             Debug.Assert(context is PreCompLayerContext || context is ShapeLayerContext, "Precondition");
@@ -403,15 +405,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
             var surfaceBrush = factory.CreateSurfaceBrush(visualSurface);
 
-            var effect = new WinCompData.Mgce.GaussianBlurEffect();
-
             var blurriness = Optimizer.TrimAnimatable(context, gaussianBlurEffect.Blurriness);
             if (blurriness.IsAnimated)
             {
                 context.Issues.AnimatedLayerEffectParameters("Gaussian blur");
             }
 
-            effect.BlurAmount = ConvertTo.Float(blurriness.InitialValue / 10.0);
+            var effect = new WinCompData.Mgce.GaussianBlurEffect(ConvertTo.Float(blurriness.InitialValue / 3.33), new CompositionEffectSourceParameter("source"));
 
             // We only support HorizontalAndVertical blur dimension.
             var blurDimensions = Optimizer.TrimAnimatable(context, gaussianBlurEffect.BlurDimensions);
@@ -425,8 +425,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             {
                 context.Issues.UnsupportedLayerEffectParameter("gaussian blur", "blur dimension", value.Value.ToString());
             }
-
-            effect.Source = new CompositionEffectSourceParameter("source");
 
             var effectBrush = factory.CreateEffectFactory(effect).CreateBrush();
             effectBrush.SetSourceParameter("source", surfaceBrush);

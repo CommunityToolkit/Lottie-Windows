@@ -5,7 +5,7 @@
 #nullable enable
 using System;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.Animatables
+namespace CommunityToolkit.WinUI.Lottie.Animatables
 {
     /// <summary>
     /// A trimming amount. Used to describe how much of a path should be trimmed.

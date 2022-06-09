@@ -8,14 +8,14 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData;
-using Expr = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions;
-using Wg = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wg;
+using CommunityToolkit.WinUI.Lottie.WinCompData;
+using CommunityToolkit.WinUI.Lottie.WinCompData.Mgce;
+using CommunityToolkit.WinUI.Lottie.WinCompData.Mgcg;
+using CommunityToolkit.WinUI.Lottie.WinUIXamlMediaData;
+using Expr = CommunityToolkit.WinUI.Lottie.WinCompData.Expressions;
+using Wg = CommunityToolkit.WinUI.Lottie.WinCompData.Wg;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
+namespace CommunityToolkit.WinUI.Lottie.UIData.Tools
 {
     /// <summary>
     /// The graph of creatable objects reachable from a <see cref="CompositionObject"/>.
@@ -216,6 +216,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                     break;
                 case CompositionObjectType.Vector4KeyFrameAnimation:
                     VisitVector4KeyFrameAnimation((Vector4KeyFrameAnimation)obj, node);
+                    break;
+                case CompositionObjectType.CompositionEffectFactory:
+                    VisitCompositionEffectFactory((CompositionEffectFactory)obj, node);
                     break;
                 default:
                     throw new InvalidOperationException();
@@ -664,33 +667,22 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
             return true;
         }
 
+        bool VisitCompositionEffectFactory(CompositionEffectFactory obj, T node)
+        {
+            return VisitCompositionObject(obj, node);
+        }
+
         bool VisitCompositionEffectBrush(CompositionEffectBrush obj, T node)
         {
             VisitCompositionBrush(obj, node);
 
-            var effect = obj.GetEffect();
+            var effectFactory = obj.GetEffectFactory();
 
-            switch (effect.Type)
+            Reference(node, effectFactory);
+
+            foreach (var source in effectFactory.Effect.Sources)
             {
-                case GraphicsEffectType.CompositeEffect:
-                    foreach (var source in ((CompositeEffect)effect).Sources)
-                    {
-                        Reference(node, obj.GetSourceParameter(source.Name));
-                    }
-
-                    break;
-                case GraphicsEffectType.GaussianBlurEffect:
-                    {
-                        var source = ((GaussianBlurEffect)effect).Source;
-                        if (source is not null)
-                        {
-                            Reference(node, obj.GetSourceParameter(source.Name));
-                        }
-                    }
-
-                    break;
-                default:
-                    throw new InvalidOperationException();
+                Reference(node, obj.GetSourceParameter(source.Name));
             }
 
             return true;

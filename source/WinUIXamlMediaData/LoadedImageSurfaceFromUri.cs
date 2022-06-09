@@ -4,7 +4,7 @@
 
 using System;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData
+namespace CommunityToolkit.WinUI.Lottie.WinUIXamlMediaData
 {
 #if PUBLIC_WinUIXamlMediaData
     public

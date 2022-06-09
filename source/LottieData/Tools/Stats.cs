@@ -5,7 +5,7 @@
 using System;
 using System.Linq;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Tools
+namespace CommunityToolkit.WinUI.Lottie.LottieData.Tools
 {
     /// <summary>
     /// Calculates stats for a <see cref="LottieComposition"/>.

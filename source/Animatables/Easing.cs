@@ -5,9 +5,9 @@
 #nullable enable
 
 using System;
-using static Microsoft.Toolkit.Uwp.UI.Lottie.Animatables.Exceptions;
+using static CommunityToolkit.WinUI.Lottie.Animatables.Exceptions;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.Animatables
+namespace CommunityToolkit.WinUI.Lottie.Animatables
 {
 #if PUBLIC_Animatables
     public

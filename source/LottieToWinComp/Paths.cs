@@ -6,15 +6,15 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
-using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
+using CommunityToolkit.WinUI.Lottie.Animatables;
+using CommunityToolkit.WinUI.Lottie.LottieData;
+using CommunityToolkit.WinUI.Lottie.WinCompData;
+using CommunityToolkit.WinUI.Lottie.WinCompData.Mgcg;
 using Sn = System.Numerics;
 
 #nullable enable
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
+namespace CommunityToolkit.WinUI.Lottie.LottieToWinComp
 {
     /// <summary>
     /// Translates paths.
@@ -45,7 +45,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
                 else if (context.ObjectFactory.IsUapApiAvailable(nameof(PathKeyFrameAnimation), versionDependentFeatureDescription: "Path animation"))
                 {
                     // PathKeyFrameAnimation was introduced in 6 but was unreliable until 11.
-                    Animate.Path(context, path, fillType, geometry, nameof(geometry.Path), nameof(geometry.Path));
+                    Animate.Path(context, PopulatePathGeometriesToTheSameSize(path), fillType, geometry, nameof(geometry.Path), nameof(geometry.Path));
                     isPathApplied = true;
                 }
             }
@@ -61,6 +61,42 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             }
 
             return result;
+        }
+
+        static TrimmedAnimatable<PathGeometry> PopulatePathGeometriesToTheSameSize(TrimmedAnimatable<PathGeometry> original)
+        {
+            int maxSegments = Math.Max(original.KeyFrames.Select(x => x.Value.BezierSegments.Count).Max(), original.InitialValue.BezierSegments.Count);
+            int minSegments = Math.Min(original.KeyFrames.Select(x => x.Value.BezierSegments.Count).Min(), original.InitialValue.BezierSegments.Count);
+
+            // If all PathGeometry objects have the same number of segments -> Composition API can animate this.
+            if (minSegments == maxSegments)
+            {
+                return original;
+            }
+
+            original.Context.Issues.PathAnimationHasDifferentNumberOfSegments();
+
+            Func<PathGeometry, PathGeometry> populatePathGeometry = (PathGeometry pathGeometry) => {
+                List<BezierSegment> segments = pathGeometry.BezierSegments.ToList();
+
+                while (segments.Count < maxSegments)
+                {
+                    var p = segments.Last().ControlPoint1;
+                    segments.Add(new BezierSegment(p, p, p, p));
+                }
+
+                return new PathGeometry(new Sequence<BezierSegment>(segments.AsEnumerable()), pathGeometry.IsClosed);
+            };
+
+            // If some PathGeometry ogjects have different number of segments -> Composition API can't animate this,
+            // we are using a workaround: populate path geometries to the same size, with the 0-length segments at the end.
+            var newKeyFrames = new List<KeyFrame<PathGeometry>>();
+            foreach (var keyframe in original.KeyFrames)
+            {
+                newKeyFrames.Add(new KeyFrame<PathGeometry>(keyframe.Frame, populatePathGeometry(keyframe.Value), keyframe.SpatialBezier, keyframe.Easing));
+            }
+
+            return new TrimmedAnimatable<PathGeometry>(original.Context, populatePathGeometry(original.InitialValue), newKeyFrames);
         }
 
         // If the given path is equivalent to a static path with an animated offset, convert
@@ -110,7 +146,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return true;
         }
 
-        public static CompositionShape TranslatePathContent(ShapeContext context, Path path)
+        public static CompositionShape TranslatePathContent(ShapeContext context, LottieData.Path path)
         {
             // A path is represented as a SpriteShape with a CompositionPathGeometry.
             var geometry = context.ObjectFactory.CreatePathGeometry();
@@ -189,7 +225,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// Groups multiple Shapes into a D2D geometry group.
         /// </summary>
         /// <returns>The shape.</returns>
-        public static CompositionShape TranslatePathGroupContent(ShapeContext context, IReadOnlyList<Path> paths)
+        public static CompositionShape TranslatePathGroupContent(ShapeContext context, IReadOnlyList<LottieData.Path> paths)
         {
             var grouped = PathGeometryGroup.GroupPaths(context, paths, out var groupingSucceeded);
 
@@ -250,7 +286,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
 
         public static CanvasGeometry CreateWin2dPathGeometryFromShape(
             ShapeContext context,
-            Path path,
+            LottieData.Path path,
             ShapeFill.PathFillType fillType,
             bool optimizeLines)
         {

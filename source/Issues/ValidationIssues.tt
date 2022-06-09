@@ -1,6 +1,6 @@
 ﻿<#@ include file="IssuesClassGenerator.t4" #>
 <#+
     const string className = "ValidationIssues";
-	const string namespaceName = "Microsoft.Toolkit.Uwp.UI.Lottie.LottieData";
+	const string namespaceName = "CommunityToolkit.WinUI.Lottie.LottieData";
 	const string prefixFilter = "LV";
 #>

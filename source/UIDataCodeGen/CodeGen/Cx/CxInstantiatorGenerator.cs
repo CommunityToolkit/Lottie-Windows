@@ -5,14 +5,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.MetaData;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData;
-using Mgce = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce;
+using CommunityToolkit.WinUI.Lottie.WinCompData;
+using CommunityToolkit.WinUI.Lottie.WinCompData.MetaData;
+using CommunityToolkit.WinUI.Lottie.WinCompData.Mgce;
+using CommunityToolkit.WinUI.Lottie.WinCompData.Mgcg;
+using CommunityToolkit.WinUI.Lottie.WinUIXamlMediaData;
+using Mgce = CommunityToolkit.WinUI.Lottie.WinCompData.Mgce;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
+namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Cx
 {
 #if PUBLIC_UIDataCodeGen
     public
@@ -646,16 +646,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Cx
         {
             var effectVariable = "gaussianBlurEffect";
             builder.WriteLine($"ComPtr<GaussianBlurEffect> {effectVariable}(new GaussianBlurEffect());");
-            if (effect.BlurAmount.HasValue)
-            {
-                builder.WriteLine($"{effectVariable}->put_BlurAmount({_s.Float(effect.BlurAmount.Value)});");
-            }
+            builder.WriteLine($"{effectVariable}->put_BlurAmount({_s.Float(effect.BlurAmount)});");
 
-            if (effect.Source is not null)
-            {
-                builder.WriteLine($"auto sourceParameter = ref new CompositionEffectSourceParameter({_s.String(effect.Source.Name)});");
-                builder.WriteLine($"{effectVariable}->put_Source(reinterpret_cast<ABI::Windows::Graphics::Effects::IGraphicsEffectSource*>(sourceParameter));");
-            }
+            builder.WriteLine($"auto sourceParameter = ref new CompositionEffectSourceParameter({_s.String(effect.Sources.First().Name)});");
+            builder.WriteLine($"{effectVariable}->put_Source(reinterpret_cast<ABI::Windows::Graphics::Effects::IGraphicsEffectSource*>(sourceParameter));");
 
             return $"reinterpret_cast<Windows::Graphics::Effects::IGraphicsEffect^>({effectVariable}.Get())";
         }

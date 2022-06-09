@@ -6,13 +6,13 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgc;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce;
+using CommunityToolkit.WinUI.Lottie.LottieData;
+using CommunityToolkit.WinUI.Lottie.WinCompData;
+using CommunityToolkit.WinUI.Lottie.WinCompData.Mgc;
+using CommunityToolkit.WinUI.Lottie.WinCompData.Mgce;
 using Sn = System.Numerics;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
+namespace CommunityToolkit.WinUI.Lottie.LottieToWinComp
 {
     /// <summary>
     /// Translation for Lottie masks and mattes.
@@ -434,11 +434,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             destinationVisualSurface.SourceOffset = ConvertTo.Vector2(offset);
             var destinationVisualSurfaceBrush = objectFactory.CreateSurfaceBrush(destinationVisualSurface);
 
-            var compositeEffect = new CompositeEffect();
-            compositeEffect.Mode = compositeMode;
-
-            compositeEffect.Sources.Add(new CompositionEffectSourceParameter("destination"));
-            compositeEffect.Sources.Add(new CompositionEffectSourceParameter("source"));
+            var compositeEffect = new CompositeEffect(compositeMode, new List<CompositionEffectSourceParameter>(new CompositionEffectSourceParameter[] { new CompositionEffectSourceParameter("destination"), new CompositionEffectSourceParameter("source") }));
 
             var compositionEffectFactory = objectFactory.CreateEffectFactory(compositeEffect);
             var effectBrush = compositionEffectFactory.CreateBrush();

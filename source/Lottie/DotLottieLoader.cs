@@ -9,12 +9,18 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.IO.Compression;
 using System.Threading.Tasks;
-using Microsoft.Toolkit.Uwp.UI.Lottie.DotLottie;
+using CommunityToolkit.WinUI.Lottie.DotLottie;
 using Windows.Storage;
+
+#if WINAPPSDK
+using Microsoft.UI.Composition;
+using Microsoft.UI.Xaml.Media;
+#else
 using Windows.UI.Composition;
 using Windows.UI.Xaml.Media;
+#endif
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie
+namespace CommunityToolkit.WinUI.Lottie
 {
     /// <summary>
     /// Loads files that conform to the .lottie spec. See: https://dotlottie.io/.

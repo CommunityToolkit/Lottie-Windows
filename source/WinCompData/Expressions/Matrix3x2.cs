@@ -4,7 +4,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions
+namespace CommunityToolkit.WinUI.Lottie.WinCompData.Expressions
 {
 #if PUBLIC_WinCompData
     public

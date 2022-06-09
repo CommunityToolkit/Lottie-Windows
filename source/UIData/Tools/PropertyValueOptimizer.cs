@@ -5,10 +5,10 @@
 using System;
 using System.Numerics;
 using System.Text;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
-using static Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools.Properties;
+using CommunityToolkit.WinUI.Lottie.WinCompData;
+using static CommunityToolkit.WinUI.Lottie.UIData.Tools.Properties;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
+namespace CommunityToolkit.WinUI.Lottie.UIData.Tools
 {
     /// <summary>
     /// Un-sets properties that have been initialized with their default value. Initializing

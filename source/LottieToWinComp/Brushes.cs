@@ -7,14 +7,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
-using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
-using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
-using Expr = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions.Expression;
+using CommunityToolkit.WinUI.Lottie.Animatables;
+using CommunityToolkit.WinUI.Lottie.LottieData;
+using CommunityToolkit.WinUI.Lottie.LottieData.Optimization;
+using CommunityToolkit.WinUI.Lottie.WinCompData;
+using Expr = CommunityToolkit.WinUI.Lottie.WinCompData.Expressions.Expression;
 using Sn = System.Numerics;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
+namespace CommunityToolkit.WinUI.Lottie.LottieToWinComp
 {
     /// <summary>
     /// Translates strokes and fills to Windows Composition brushes.
@@ -439,7 +439,11 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             // so that its value can be used in expression animation of property itself.
             string sourcePropertyName = propertyName + "Source";
             obj.Properties.InsertVector2(sourcePropertyName, ConvertTo.Vector2(value.InitialValue));
-            Animate.Vector2(context, value, obj, sourcePropertyName);
+
+            if (value.IsAnimated)
+            {
+                Animate.Vector2(context, value, obj, sourcePropertyName);
+            }
 
             // Create expression that offsets source property by origin offset.
             WinCompData.Expressions.Vector2 expression = offset.IsAnimated ?
@@ -518,10 +522,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             var startPoint = Optimizer.TrimAnimatable(context, gradient.StartPoint);
             var endPoint = Optimizer.TrimAnimatable(context, gradient.EndPoint);
 
-            var startPointValue = AnimateVector2WithOriginOffsetOrGetValue(context, result, nameof(result.EllipseCenter), startPoint);
-            if (startPointValue is not null)
+            if (startPoint.IsAnimated)
             {
-                result.EllipseCenter = startPointValue!;
+                Animate.Vector2(context, startPoint, result, nameof(result.EllipseCenter));
+            }
+            else
+            {
+                result.EllipseCenter = ConvertTo.Vector2(startPoint.InitialValue);
             }
 
             if (endPoint.IsAnimated)

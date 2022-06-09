@@ -6,9 +6,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using Microsoft.Toolkit.Uwp.UI.Lottie.CompMetadata;
+using CommunityToolkit.WinUI.Lottie.CompMetadata;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Tables
+namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Tables
 {
     sealed class ThemePropertiesMonospaceTableFormatter : MonospaceTableFormatter
     {

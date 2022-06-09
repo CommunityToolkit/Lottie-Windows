@@ -5,17 +5,25 @@
 #nullable enable
 
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
+using CommunityToolkit.WinUI.Lottie;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Foundation;
 using Windows.Foundation.Metadata;
 using Windows.Storage;
 using Windows.Storage.Streams;
+
+#if WINAPPSDK
+using Microsoft.UI.Composition;
+using Microsoft.UI.Xaml;
+#else
 using Windows.UI.Composition;
 using Windows.UI.Xaml;
+#endif
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie
+namespace CommunityToolkit.WinUI.Lottie
 {
     /// <summary>
     /// An <see cref="IAnimatedVisualSource"/> for a Lottie composition. This allows
@@ -23,7 +31,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
     /// </summary>
     public sealed class LottieVisualSource : DependencyObject, IDynamicAnimatedVisualSource
     {
+#if WINAPPSDK
+        HashSet<TypedEventHandler<IDynamicAnimatedVisualSource?, object?>> _compositionInvalidatedEventTokenTable = new HashSet<TypedEventHandler<IDynamicAnimatedVisualSource?, object?>>();
+#else
         EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource?, object?>>? _compositionInvalidatedEventTokenTable;
+#endif
+
         int _loadVersion;
         Uri? _uriSource;
         AnimatedVisualFactory? _animatedVisualFactory;
@@ -146,16 +159,24 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
         {
             add
             {
+#if WINAPPSDK
+                _compositionInvalidatedEventTokenTable.Add(value);
+#else
                 return EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource?, object?>>
                    .GetOrCreateEventRegistrationTokenTable(ref _compositionInvalidatedEventTokenTable)
                    .AddEventHandler(value);
+#endif
             }
 
             remove
             {
+#if WINAPPSDK
+                _compositionInvalidatedEventTokenTable.Remove(value);
+#else
                 EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource?, object?>>
                    .GetOrCreateEventRegistrationTokenTable(ref _compositionInvalidatedEventTokenTable)
                     .RemoveEventHandler(value);
+#endif
             }
         }
 
@@ -190,7 +211,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
                 // No content has been loaded yet.
                 // Return an IAnimatedVisual that produces nothing.
                 diagnostics = null;
-                return new DisposableAnimatedVisual(null);
+                return null;
             }
             else
             {
@@ -203,9 +224,16 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
 
         void NotifyListenersThatCompositionChanged()
         {
+#if WINAPPSDK
+            foreach (var v in _compositionInvalidatedEventTokenTable)
+            {
+                v.Invoke(this, null);
+            }
+#else
             EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource?, object?>>
                 .GetOrCreateEventRegistrationTokenTable(ref _compositionInvalidatedEventTokenTable)
                 .InvocationList?.Invoke(this, null);
+#endif
         }
 
         // Called when the UriSource property is updated.
@@ -286,6 +314,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             }
         }
 
+#if !WINAPPSDK
         /// <summary>
         /// Returns a string representation of the <see cref="LottieVisualSource"/> for debugging purposes.
         /// </summary>
@@ -295,5 +324,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
             var identity = _uriSource?.ToString() ?? string.Empty;
             return $"LottieVisualSource({identity})";
         }
+#endif
     }
 }

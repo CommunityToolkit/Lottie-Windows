@@ -9,11 +9,16 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools;
+using CommunityToolkit.WinUI.Lottie.UIData.Tools;
 using Microsoft.UI.Xaml.Controls;
-using Windows.UI.Composition;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie
+#if WINAPPSDK
+using Microsoft.UI.Composition;
+#else
+using Windows.UI.Composition;
+#endif
+
+namespace CommunityToolkit.WinUI.Lottie
 {
     /// <summary>
     /// Information from which a composition's content can be instantiated. Contains the WinCompData

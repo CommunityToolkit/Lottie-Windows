@@ -10,21 +10,22 @@ using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Text;
-using Microsoft.Toolkit.Uwp.UI.Lottie.CompMetadata;
-using Microsoft.Toolkit.Uwp.UI.Lottie.GenericData;
-using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.Tables;
-using Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.MetaData;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
-using Expr = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions;
-using Mgce = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce;
+using CommunityToolkit.WinUI.Lottie.CompMetadata;
+using CommunityToolkit.WinUI.Lottie.GenericData;
+using CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Tables;
+using CommunityToolkit.WinUI.Lottie.UIData.Tools;
+using CommunityToolkit.WinUI.Lottie.WinCompData;
+using CommunityToolkit.WinUI.Lottie.WinCompData.MetaData;
+using CommunityToolkit.WinUI.Lottie.WinCompData.Mgce;
+using CommunityToolkit.WinUI.Lottie.WinCompData.Mgcg;
+using Expr = CommunityToolkit.WinUI.Lottie.WinCompData.Expressions;
+using Mgce = CommunityToolkit.WinUI.Lottie.WinCompData.Mgce;
 using Sn = System.Numerics;
-using Wg = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wg;
-using Wmd = Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData;
-using Wui = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui;
+using Wg = CommunityToolkit.WinUI.Lottie.WinCompData.Wg;
+using Wmd = CommunityToolkit.WinUI.Lottie.WinUIXamlMediaData;
+using Wui = CommunityToolkit.WinUI.Lottie.WinCompData.Wui;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
+namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
 {
 #if PUBLIC_UIDataCodeGen
     public
@@ -1754,6 +1755,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                     CompositionObjectType.Vector2KeyFrameAnimation => GenerateVector2KeyFrameAnimationFactory(builder, (Vector2KeyFrameAnimation)obj, node),
                     CompositionObjectType.Vector3KeyFrameAnimation => GenerateVector3KeyFrameAnimationFactory(builder, (Vector3KeyFrameAnimation)obj, node),
                     CompositionObjectType.Vector4KeyFrameAnimation => GenerateVector4KeyFrameAnimationFactory(builder, (Vector4KeyFrameAnimation)obj, node),
+                    CompositionObjectType.CompositionEffectFactory => GenerateCompositionEffectFactory(builder, (CompositionEffectFactory)obj, node),
                     _ => throw new InvalidOperationException(),
                 };
             }
@@ -1922,7 +1924,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 if (obj.Type != CompositionObjectType.CompositionPropertySet)
                 {
                     // Start the animations for properties on the property set.
-                    StartAnimations(builder, obj.Properties, NodeFor(obj.Properties), $"{localName}{Deref}Properties", ref controllerVariableAdded);
+                    StartAnimations(builder, obj.Properties, NodeFor(obj.Properties), _s.PropertyGet(localName, "Properties"), ref controllerVariableAdded);
                 }
             }
 
@@ -2776,6 +2778,24 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 return true;
             }
 
+            bool GenerateCompositionEffectFactory(CodeBuilder builder, CompositionEffectFactory obj, ObjectData node)
+            {
+                WriteObjectFactoryStart(builder, node);
+
+                var effectCreationString = obj.Effect.Type switch
+                {
+                    GraphicsEffectType.CompositeEffect => _owner.WriteCompositeEffectFactory(builder, (CompositeEffect)obj.Effect),
+                    GraphicsEffectType.GaussianBlurEffect => _owner.WriteGaussianBlurEffectFactory(builder, (GaussianBlurEffect)obj.Effect),
+                    _ => throw new InvalidOperationException()
+                };
+
+                WriteCreateAssignment(builder, node, $"_c{Deref}CreateEffectFactory({effectCreationString})");
+
+                WriteCompositionObjectFactoryEnd(builder, obj, node);
+
+                return true;
+            }
+
             bool GeneratePathKeyFrameAnimationFactory(CodeBuilder builder, PathKeyFrameAnimation obj, ObjectData node)
             {
                 WriteObjectFactoryStart(builder, node);
@@ -3002,32 +3022,17 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
                 return true;
             }
 
-            bool GenerateCompositionEffectBrushFactory(CodeBuilder builder, CompositionEffectBrush obj, ObjectData node)
+            bool GenerateCompositionEffectBrushFactory( CodeBuilder builder, CompositionEffectBrush obj, ObjectData node)
             {
                 WriteObjectFactoryStart(builder, node);
 
-                var effect = obj.GetEffect();
-                var effectCreationString = effect.Type switch
-                {
-                    Mgce.GraphicsEffectType.CompositeEffect => _owner.WriteCompositeEffectFactory(builder, (Mgce.CompositeEffect)effect),
-                    Mgce.GraphicsEffectType.GaussianBlurEffect => _owner.WriteGaussianBlurEffectFactory(builder, (Mgce.GaussianBlurEffect)effect),
-                    _ => throw new InvalidOperationException(),
-                };
+                builder.WriteLine($"{ConstVar} effectFactory = {CallFactoryFromFor(node, obj.GetEffectFactory())};");
 
-                builder.WriteLine($"{ConstVar} effectFactory = _c{Deref}CreateEffectFactory({effectCreationString});");
                 WriteCreateAssignment(builder, node, $"effectFactory{Deref}CreateBrush()");
                 InitializeCompositionBrush(builder, obj, node);
 
-                IEnumerable<CompositionEffectSourceParameter> sources = effect.Type switch
-                {
-                    Mgce.GraphicsEffectType.CompositeEffect => ((Mgce.CompositeEffect)effect).Sources,
-                    Mgce.GraphicsEffectType.GaussianBlurEffect => ((Mgce.GaussianBlurEffect)effect).Source is not null ?
-                        new[] { ((Mgce.GaussianBlurEffect)effect).Source! } : Enumerable.Empty<CompositionEffectSourceParameter>(),
-                    _ => throw new InvalidOperationException(),
-                };
-
                 // Perform brush initialization.
-                foreach (var source in sources)
+                foreach (var source in obj.GetEffectFactory().Effect.Sources)
                 {
                     builder.WriteLine($"result{Deref}SetSourceParameter({String(source.Name)}, {CallFactoryFromFor(node, obj.GetSourceParameter(source.Name))});");
                 }
@@ -3388,7 +3393,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen
             internal bool UsesAssetFile => Object is Wmd.LoadedImageSurface lis && lis.Type == Wmd.LoadedImageSurface.LoadedImageSurfaceType.FromUri;
 
             // Set to indicate that the composition depends on the given effect type.
-            internal bool UsesEffect(Mgce.GraphicsEffectType effectType) => Object is CompositionEffectBrush compositeEffectBrush && compositeEffectBrush.GetEffect().Type == effectType;
+            internal bool UsesEffect(Mgce.GraphicsEffectType effectType) => Object is CompositionEffectBrush compositeEffectBrush && compositeEffectBrush.GetEffectFactory().Effect.Type == effectType;
 
             // Identifies the byte array of a LoadedImageSurface.
             internal string? LoadedImageSurfaceBytesFieldName => IsLoadedImageSurface ? $"s_{Name}_Bytes" : null;

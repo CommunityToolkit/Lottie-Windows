@@ -4,12 +4,12 @@
 
 using System;
 using System.Linq;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions;
-using static Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Expressions.Expression;
+using CommunityToolkit.WinUI.Lottie.WinCompData.Expressions;
+using static CommunityToolkit.WinUI.Lottie.WinCompData.Expressions.Expression;
 using Sn = System.Numerics;
-using Wui = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Wui;
+using Wui = CommunityToolkit.WinUI.Lottie.WinCompData.Wui;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
+namespace CommunityToolkit.WinUI.Lottie.LottieToWinComp
 {
     static class ExpressionFactory
     {
@@ -34,7 +34,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         internal static readonly Scalar MaxTStartTEnd = Max(MyTStart, MyTEnd);
         internal static readonly Scalar MinTStartTEnd = Min(MyTStart, MyTEnd);
         internal static readonly Vector2 HalfMySize = MySize / Vector2(2, 2);
-        internal static readonly Vector2 GeometryHalfSize = NamedVector2("geometry", "Size") / Vector2(2, 2);
+        internal static readonly Vector2 GeometryOffset = NamedVector2("geometry", "Offset");
+        internal static readonly Vector2 GeometryPosition = NamedVector2("geometry", "Position");
         internal static readonly Color AnimatedColorWithAnimatedOpacity =
             ColorAsVector4MultipliedByOpacities(MyColor, new[] { MyOpacity });
 

@@ -6,9 +6,9 @@
 
 using System;
 using System.Linq;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
+using CommunityToolkit.WinUI.Lottie.WinCompData;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
+namespace CommunityToolkit.WinUI.Lottie.UIData.Tools
 {
     /// <summary>
     /// Calculates stats for a WinCompData tree. Used to report the size of data
@@ -151,6 +151,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
                     case CompositionObjectType.Vector4KeyFrameAnimation:
                         Vector4KeyFrameAnimationCount++;
                         break;
+                    case CompositionObjectType.CompositionEffectFactory:
+                        EffectFactoryCount++;
+                        break;
                     default:
                         throw new InvalidOperationException();
                 }
@@ -180,6 +183,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.Tools
         public int DropShadowCount { get; }
 
         public int EffectBrushCount { get; }
+
+        public int EffectFactoryCount { get; }
 
         public int EllipseGeometryCount { get; }
 

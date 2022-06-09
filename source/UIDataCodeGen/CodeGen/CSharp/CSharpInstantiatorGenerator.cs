@@ -6,15 +6,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using Microsoft.Toolkit.Uwp.UI.Lottie.CompMetadata;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.MetaData;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgcg;
-using Microsoft.Toolkit.Uwp.UI.Lottie.WinUIXamlMediaData;
-using Mgce = Microsoft.Toolkit.Uwp.UI.Lottie.WinCompData.Mgce;
+using CommunityToolkit.WinUI.Lottie.CompMetadata;
+using CommunityToolkit.WinUI.Lottie.WinCompData;
+using CommunityToolkit.WinUI.Lottie.WinCompData.MetaData;
+using CommunityToolkit.WinUI.Lottie.WinCompData.Mgce;
+using CommunityToolkit.WinUI.Lottie.WinCompData.Mgcg;
+using CommunityToolkit.WinUI.Lottie.WinUIXamlMediaData;
+using Mgce = CommunityToolkit.WinUI.Lottie.WinCompData.Mgce;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
+namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
 {
     /// <summary>
     /// Generates C# code that instantiates a Composition graph.
@@ -956,15 +956,9 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.UIData.CodeGen.CSharp
             var effectVariable = "gaussianBlurEffect";
             builder.WriteLine($"var {effectVariable} = new GaussianBlurEffect();");
 
-            if (effect.BlurAmount.HasValue)
-            {
-                builder.WriteLine($"{effectVariable}.BlurAmount = {_s.Float(effect.BlurAmount.Value)};");
-            }
+            builder.WriteLine($"{effectVariable}.BlurAmount = {_s.Float(effect.BlurAmount)};");
 
-            if (effect.Source is not null)
-            {
-                builder.WriteLine($"{effectVariable}.Source = new CompositionEffectSourceParameter({_s.String(effect.Source.Name)});");
-            }
+            builder.WriteLine($"{effectVariable}.Source = new CompositionEffectSourceParameter({_s.String(effect.Sources.First().Name)});");
 
             return effectVariable;
         }

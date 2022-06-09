@@ -4,10 +4,10 @@
 
 #nullable enable
 using System.Collections.Generic;
-using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
-using static Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization.Exceptions;
+using CommunityToolkit.WinUI.Lottie.Animatables;
+using static CommunityToolkit.WinUI.Lottie.LottieData.Serialization.Exceptions;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Serialization
+namespace CommunityToolkit.WinUI.Lottie.LottieData.Serialization
 {
 #pragma warning disable SA1205 // Partial elements should declare access
 #pragma warning disable SA1601 // Partial elements should be documented

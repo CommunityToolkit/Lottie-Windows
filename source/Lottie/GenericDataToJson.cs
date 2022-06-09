@@ -5,10 +5,10 @@
 #nullable enable
 
 using System;
-using Microsoft.Toolkit.Uwp.UI.Lottie.GenericData;
+using CommunityToolkit.WinUI.Lottie.GenericData;
 using Windows.Data.Json;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie
+namespace CommunityToolkit.WinUI.Lottie
 {
     static class GenericDataToJson
     {

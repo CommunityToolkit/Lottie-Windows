@@ -3,11 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using Microsoft.Toolkit.Uwp.UI.Lottie.Animatables;
-using Microsoft.Toolkit.Uwp.UI.Lottie.LottieData;
-using LottieOptimizer = Microsoft.Toolkit.Uwp.UI.Lottie.LottieData.Optimization.Optimizer;
+using CommunityToolkit.WinUI.Lottie.Animatables;
+using CommunityToolkit.WinUI.Lottie.LottieData;
+using LottieOptimizer = CommunityToolkit.WinUI.Lottie.LottieData.Optimization.Optimizer;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
+namespace CommunityToolkit.WinUI.Lottie.LottieToWinComp
 {
     static class Optimizer
     {
@@ -17,7 +17,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
             return lottieOptimizer.GetOptimized(value);
         }
 
-        public static Path OptimizePath(LayerContext context, Path path)
+        public static LottieData.Path OptimizePath(LayerContext context, LottieData.Path path)
         {
             // Optimize the path data. This may result in a previously animated path
             // becoming non-animated.

@@ -2,13 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
+namespace CommunityToolkit.WinUI.Lottie.LottieToWinComp
 {
     /// <summary>
     /// Describes a configuration of the <see cref="LottieToWinCompTranslator"/>.
     /// </summary>
-    public struct TranslatorConfiguration
+    struct TranslatorConfiguration
     {
+#pragma warning disable 0649
         /// <summary>
         /// Add descriptions that can be used by code generators to make code more readable.
         /// </summary>
@@ -36,5 +37,6 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         /// names and create bindings to <see cref="WinCompData.CompositionPropertySet"/> values.
         /// </summary>
         public bool TranslatePropertyBindings;
+#pragma warning restore 0649
     }
 }

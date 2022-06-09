@@ -15,7 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
+namespace CommunityToolkit.WinUI.Lottie.LottieToWinComp
 {
     /// <summary>
     /// Issues.
@@ -125,6 +125,8 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie.LottieToWinComp
         internal void PathWithRoundCornersIsNotFullySupported() => Report("LT0043", "Using a path with rounded corners can lead to inaccurate results.");
 
         internal void MatteLayerIsNeverVisible() => Report("LT0044", "One of the matte layers is never visible. It may be unintentional.");
+
+        internal void PathAnimationHasDifferentNumberOfSegments() => Report("LT0045", "Path animation has different number of segments for different keyframes.");
 
         void Report(string code, string description)
         {
