@@ -96,6 +96,20 @@ namespace CommunityToolkit.WinUI.Lottie.LottieToWinComp
             return true;
         }
 
+        static float CrossProduct(SnVector2 v1, SnVector2 v2)
+        {
+            return (v1.X * v2.Y) - (v1.Y * v2.X);
+        }
+
+        // Checks if two vectors are colinear.
+        static bool AlmostColinear(SnVector2 v1, SnVector2 v2)
+        {
+            // Epsilon is chosen so that vectors that are very close to being
+            // colinear are also considered as colinear, since sometimes After Effects
+            // outputs bezier curves with small precision, which may result in slight deviation.
+            return Math.Abs(CrossProduct(v1, v2) / (1 + v1.Length() + v2.Length())) < 1e-2;
+        }
+
         /// <summary>
         /// Gets a value indicating whether all of the control points are on the same line.
         /// </summary>
@@ -103,40 +117,19 @@ namespace CommunityToolkit.WinUI.Lottie.LottieToWinComp
         {
             get
             {
-                var p01X = _p0.X - _p1.X;
-                var p01Y = _p0.Y - _p1.Y;
-
-                var p02X = _p0.X - _p2.X;
-                var p02Y = _p0.Y - _p2.Y;
-
-                var p03X = _p0.X - _p3.X;
-                var p03Y = _p0.Y - _p3.Y;
-
-                if (p01Y == 0 || p02Y == 0 || p03Y == 0)
-                {
-                    // Can't divide by Y because it's 0 in at least one case. (i.e. horizontal line)
-                    if (p01X == 0 || p02X == 0 || p03X == 0)
-                    {
-                        // Can't divide by X because it's 0 in at least one case (i.e. vertical line)
-                        // The points can only be colinear if they're all equal.
-                        return p01X == p02X && p02X == p03X && p03X == p01X;
-                    }
-                    else
-                    {
-                        return (p01Y / p01X) == (p02Y / p02X) &&
-                               (p01Y / p01X) == (p03Y / p03X);
-                    }
-                }
-                else
-                {
-                    return (p01X / p01Y) == (p02X / p02Y) &&
-                           (p01X / p01Y) == (p03X / p03Y);
-                }
+                // In order for 4 points to be colinear, any two pairs of directions
+                // between them should be colinear.
+                return AlmostColinear(_p1 - _p0, _p3 - _p0) && AlmostColinear(_p2 - _p3, _p0 - _p3);
             }
         }
 
         /// <inheritdoc/>
         // (1-t)^3P0 + 3(1-t)^2tP1 + 3(1-t)t^2P2 + t^3P3
+        //
+        // TODO: This also needs some kind of "arc-length parametrization" (https://pomax.github.io/bezierinfo/#tracing)
+        // because currently point does not move along the curve with a uniform speed.
+        // This is probably impossible to achieve because translation approach limits us to Windown Composition API
+        // which does not support this feature, and probably won't, because it is very expensive to compute.
         protected override Vector2 Simplify()
         {
             var oneMinusT = 1 - _t;
