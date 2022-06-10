@@ -956,15 +956,9 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
             var effectVariable = "gaussianBlurEffect";
             builder.WriteLine($"var {effectVariable} = new GaussianBlurEffect();");
 
-            if (effect.BlurAmount.HasValue)
-            {
-                builder.WriteLine($"{effectVariable}.BlurAmount = {_s.Float(effect.BlurAmount.Value)};");
-            }
+            builder.WriteLine($"{effectVariable}.BlurAmount = {_s.Float(effect.BlurAmount)};");
 
-            if (effect.Source is not null)
-            {
-                builder.WriteLine($"{effectVariable}.Source = new CompositionEffectSourceParameter({_s.String(effect.Source.Name)});");
-            }
+            builder.WriteLine($"{effectVariable}.Source = new CompositionEffectSourceParameter({_s.String(effect.Sources.First().Name)});");
 
             return effectVariable;
         }

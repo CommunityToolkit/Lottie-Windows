@@ -778,15 +778,9 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Cppwinrt
         {
             var effectVariable = "gaussianBlurEffect";
             builder.WriteLine($"auto {effectVariable} = winrt::make_self<GaussianBlurEffect>();");
-            if (effect.BlurAmount.HasValue)
-            {
-                builder.WriteLine($"{effectVariable}->BlurAmount({_s.Float(effect.BlurAmount.Value)});");
-            }
+            builder.WriteLine($"{effectVariable}->BlurAmount({_s.Float(effect.BlurAmount)});");
 
-            if (effect.Source is not null)
-            {
-                builder.WriteLine($"{effectVariable}->Source(CompositionEffectSourceParameter(L\"{effect.Source.Name}\"));");
-            }
+            builder.WriteLine($"{effectVariable}->Source(CompositionEffectSourceParameter(L\"{effect.Sources.First().Name}\"));");
 
             return $"*{effectVariable}";
         }

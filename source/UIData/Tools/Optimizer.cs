@@ -512,6 +512,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.Tools
                 CompositionObjectType.Vector2KeyFrameAnimation => GetVector2KeyFrameAnimation((Vector2KeyFrameAnimation)obj),
                 CompositionObjectType.Vector3KeyFrameAnimation => GetVector3KeyFrameAnimation((Vector3KeyFrameAnimation)obj),
                 CompositionObjectType.Vector4KeyFrameAnimation => GetVector4KeyFrameAnimation((Vector4KeyFrameAnimation)obj),
+                CompositionObjectType.CompositionEffectFactory => GetCompositionEffectFactory((CompositionEffectFactory)obj),
                 _ => throw new InvalidOperationException(),
             };
 
@@ -984,6 +985,18 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.Tools
             return result;
         }
 
+        CompositionEffectFactory GetCompositionEffectFactory(CompositionEffectFactory obj)
+        {
+            if (GetExisting(obj, out var result))
+            {
+                return result;
+            }
+
+            result = CacheAndInitializeCompositionObject(obj, _c.CreateEffectFactory(obj.Effect));
+
+            return result;
+        }
+
         CompositionEffectBrush GetCompositionEffectBrush(CompositionEffectBrush obj)
         {
             if (GetExisting(obj, out var result))
@@ -991,56 +1004,13 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.Tools
                 return result;
             }
 
-            IEnumerable<CompositionEffectSourceParameter> sources;
-            GraphicsEffectBase newEffect;
+            var effectFactory = GetCompositionEffectFactory(obj.GetEffectFactory());
+            var effectBrush = effectFactory.CreateBrush();
 
-            var effectBase = obj.GetEffect();
-            switch (effectBase.Type)
-            {
-                case GraphicsEffectType.CompositeEffect:
-                    {
-                        var effect = (CompositeEffect)effectBase;
-
-                        var newCompositeEffect = new CompositeEffect
-                        {
-                            Mode = effect.Mode,
-                        };
-
-                        foreach (var source in effect.Sources)
-                        {
-                            newCompositeEffect.Sources.Add(source);
-                        }
-
-                        newEffect = newCompositeEffect;
-                        sources = effect.Sources;
-                    }
-
-                    break;
-                case GraphicsEffectType.GaussianBlurEffect:
-                    {
-                        var effect = (GaussianBlurEffect)effectBase;
-
-                        newEffect = new GaussianBlurEffect
-                        {
-                            BlurAmount = effect.BlurAmount,
-                            Source = effect.Source,
-                        };
-
-                        sources = effect.Source is null
-                                        ? Array.Empty<CompositionEffectSourceParameter>()
-                                        : new[] { effect.Source };
-                    }
-
-                    break;
-                default:
-                    throw new InvalidOperationException();
-            }
-
-            var effectBrush = _c.CreateEffectFactory(newEffect).CreateBrush();
             result = CacheAndInitializeCompositionObject(obj, effectBrush);
 
             // Set the sources.
-            foreach (var source in sources)
+            foreach (var source in effectFactory.Effect.Sources)
             {
                 result.SetSourceParameter(source.Name, GetCompositionBrush(obj.GetSourceParameter(source.Name)));
             }
