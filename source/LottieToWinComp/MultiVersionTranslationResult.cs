@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace CommunityToolkit.WinUI.Lottie.LottieToWinComp
 {
-#if PUBLIC
+#if PUBLIC_LottieToWinComp
     public
 #endif
     sealed class MultiVersionTranslationResult

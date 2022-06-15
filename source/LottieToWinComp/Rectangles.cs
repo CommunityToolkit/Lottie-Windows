@@ -428,11 +428,16 @@ namespace CommunityToolkit.WinUI.Lottie.LottieToWinComp
             in TrimmedAnimatable<Vector3> size,
             in TrimmedAnimatable<Vector3> position)
         {
+            if (geometry.IsRoundedRectangle)
+            {
+                return new OriginOffsetContainer(geometry, Sn.Vector2.Zero);
+            }
+
             // Note: Current implementation of Windows Composition API behaves differently for Rounded Rectangle and regular Rectangle geometry.
             // In first case we need to offset the inner content (e.g. gradient) by position only, and in second case by position and half the size (total offset).
             return size.IsAnimated || position.IsAnimated ?
-                new OriginOffsetContainer(geometry, -(geometry.IsRoundedRectangle ? ExpressionFactory.GeometryPosition : ExpressionFactory.GeometryOffset)) :
-                new OriginOffsetContainer(geometry, -(geometry.IsRoundedRectangle ? ConvertTo.Vector2(position.InitialValue) : InitialOffset(size, position)));
+                new OriginOffsetContainer(geometry, -ExpressionFactory.GeometryOffset) :
+                new OriginOffsetContainer(geometry, -InitialOffset(size, position));
         }
 
         static OriginOffsetContainer GetOriginOffsetContainerXY(
@@ -441,11 +446,16 @@ namespace CommunityToolkit.WinUI.Lottie.LottieToWinComp
             in TrimmedAnimatable<double> height,
             in TrimmedAnimatable<Vector3> position)
         {
+            if (geometry.IsRoundedRectangle)
+            {
+                return new OriginOffsetContainer(geometry, Sn.Vector2.Zero);
+            }
+
             // Note: Current implementation of Windows Composition API behaves differently for Rounded Rectangle and regular Rectangle geometry.
             // In first case we need to offset the inner content (e.g. gradient) by position only, and in second case by position and half the size (total offset).
             return width.IsAnimated || height.IsAnimated || position.IsAnimated ?
-                new OriginOffsetContainer(geometry, -(geometry.IsRoundedRectangle ? ExpressionFactory.GeometryPosition : ExpressionFactory.GeometryOffset)) :
-                new OriginOffsetContainer(geometry, -(geometry.IsRoundedRectangle ? ConvertTo.Vector2(position.InitialValue) : InitialOffset(width, height, position)));
+                new OriginOffsetContainer(geometry, -ExpressionFactory.GeometryOffset) :
+                new OriginOffsetContainer(geometry, -InitialOffset(width, height, position));
         }
 
         public static CanvasGeometry CreateWin2dRectangleGeometry(
