@@ -10,6 +10,9 @@ using System.Threading;
 
 namespace CommunityToolkit.WinUI.Lottie.LottieGen
 {
+#if PUBLIC_LottieGen
+    public
+#endif
     sealed class Reporter
     {
         // Lock to protect method and object that do not support multi-threaded access. Note that the
@@ -19,7 +22,7 @@ namespace CommunityToolkit.WinUI.Lottie.LottieGen
         readonly Dictionary<string, DataTable> _dataTables =
             new Dictionary<string, DataTable>(StringComparer.OrdinalIgnoreCase);
 
-        internal Reporter(TextWriter infoStream, TextWriter errorStream)
+        public Reporter(TextWriter infoStream, TextWriter errorStream)
         {
             InfoStream = new Writer(infoStream);
             ErrorStream = new Writer(errorStream);
