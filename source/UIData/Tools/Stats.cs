@@ -151,6 +151,9 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.Tools
                     case CompositionObjectType.Vector4KeyFrameAnimation:
                         Vector4KeyFrameAnimationCount++;
                         break;
+                    case CompositionObjectType.CompositionEffectFactory:
+                        EffectFactoryCount++;
+                        break;
                     default:
                         throw new InvalidOperationException();
                 }
@@ -182,6 +185,8 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.Tools
         public int DropShadowCount { get; }
 
         public int EffectBrushCount { get; }
+
+        public int EffectFactoryCount { get; }
 
         public int EllipseGeometryCount { get; }
 

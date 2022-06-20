@@ -2,6 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime;
+
 using CommunityToolkit.WinUI.Lottie.WinCompData.Mgce;
 
 namespace CommunityToolkit.WinUI.Lottie.WinCompData
@@ -19,12 +24,28 @@ namespace CommunityToolkit.WinUI.Lottie.WinCompData
             _effect = effect;
         }
 
-        public CompositionEffectBrush CreateBrush()
+        private static IList<CompositionEffectFactory> _effectFactoryCache = new List<CompositionEffectFactory>();
+
+        public static CompositionEffectFactory GetFactoryCached(GraphicsEffectBase effect)
         {
-            return new CompositionEffectBrush(_effect);
+            var found = _effectFactoryCache.Where(f => f.Effect.Equals(effect)).ToList();
+            var cached = found.Count == 0 ? null : found.First();
+
+            if (cached is null)
+            {
+                cached = new CompositionEffectFactory(effect);
+                _effectFactoryCache.Add(cached);
+            }
+
+            return cached!;
         }
 
-        public GraphicsEffectBase GetEffect() => _effect;
+        public CompositionEffectBrush CreateBrush()
+        {
+            return new CompositionEffectBrush(this);
+        }
+
+        public GraphicsEffectBase Effect => _effect;
 
         /// <inheritdoc/>
         public override CompositionObjectType Type => CompositionObjectType.CompositionEffectFactory;
