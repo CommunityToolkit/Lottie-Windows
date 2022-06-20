@@ -219,17 +219,20 @@ namespace CommunityToolkit.WinUI.Lottie
         {
             // Start testing on version 2. We know that at least version 1 is supported because
             // we are running in UAP code.
-            var versionToTest = 2u;
+            var versionToTest = 1u;
 
             // Keep querying until IsApiContractPresent fails to find the version.
-            while (ApiInformation.IsApiContractPresent("Windows.Foundation.UniversalApiContract", (ushort)versionToTest))
+            while (ApiInformation.IsApiContractPresent("Windows.Foundation.UniversalApiContract", (ushort)(versionToTest + 1)))
             {
                 // Keep looking ...
                 versionToTest++;
             }
 
+            // TODO: we do not support UAP above 14 in Lottie-Windows yet, only in LottieGen.
+            versionToTest = Math.Min(versionToTest, 14);
+
             // Query failed on versionToTest. Return the previous version.
-            return versionToTest - 1;
+            return versionToTest;
         }
 
         // Specializes the Stopwatch to do just the one thing we need of it - get the time

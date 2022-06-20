@@ -51,7 +51,7 @@
         <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">15.0</VisualStudioVersion>
         <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
 
-        <!-- Need SV2 or later.
+        <!-- Need 19H1 or later.
         
         When changing this value, ensure the SDK is installed with the build process.
         Need to check several files:

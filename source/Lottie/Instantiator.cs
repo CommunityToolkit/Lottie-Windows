@@ -417,7 +417,8 @@ namespace CommunityToolkit.WinUI.Lottie
                 }
                 else
                 {
-                    target.StartAnimation(animator.AnimatedProperty, animation, GetAnimationController(animator.Controller));
+                    throw new InvalidOperationException("LottieViewer and Instantiator does not support custom AnimationControllers yet");
+                    /* target.StartAnimation(animator.AnimatedProperty, animation, GetAnimationController(animator.Controller)); */
                 }
             }
         }
@@ -431,12 +432,13 @@ namespace CommunityToolkit.WinUI.Lottie
 
             if (obj.IsCustom)
             {
-                result = CacheAndInitializeCompositionObject(obj, _c.CreateAnimationController());
+                throw new InvalidOperationException("LottieViewer and Instantiator does not support custom AnimationControllers yet");
+                /* result = CacheAndInitializeCompositionObject(obj, _c.CreateAnimationController());
 
                 if (obj.IsPaused)
                 {
                     result.Pause();
-                }
+                } */
             }
             else
             {

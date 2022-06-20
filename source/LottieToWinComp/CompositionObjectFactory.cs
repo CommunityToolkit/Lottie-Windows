@@ -87,10 +87,10 @@ namespace CommunityToolkit.WinUI.Lottie.LottieToWinComp
                     return 11;
 
                 // AnimationController class was introduced in version 6, but
-                // it became possible to create it explicitly only after verstion 14
+                // it became possible to create it explicitly only after verstion 15
                 // with compositor.CreateAnimationController() method
                 case nameof(AnimationController):
-                    return 14;
+                    return 15;
 
                 default:
                     throw new InvalidOperationException();
