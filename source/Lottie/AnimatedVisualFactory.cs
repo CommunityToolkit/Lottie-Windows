@@ -87,7 +87,8 @@ namespace CommunityToolkit.WinUI.Lottie
 
                 // _wincompDataRootVisual is not null is implied by CanInstantiate.
                 Visual rootVisual = (Visual)instantiator.GetInstance(_wincompDataRootVisual!);
-                IEnumerable<AnimationController> animationControllers = _wincompDataAnimationControllers.Select(o => (AnimationController)instantiator.GetInstance(o));
+                IEnumerable<AnimationController> animationControllers = _wincompDataAnimationControllers!.Select(o => (AnimationController)instantiator.GetInstance(o));
+
                 var result = new DisposableAnimatedVisual(rootVisual, animationControllers)
                 {
                     Size = new System.Numerics.Vector2((float)_width, (float)_height),
