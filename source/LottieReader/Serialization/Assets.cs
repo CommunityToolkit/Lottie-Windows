@@ -65,9 +65,15 @@ namespace CommunityToolkit.WinUI.Lottie.LottieData.Serialization
                                     width = reader.ParseDouble();
                                     break;
 
+                                case "nm": // Name - rare property, ignore
+                                    reader.Skip();
+                                    break;
+                                case "fr": // Framerate - rare property. Report it with details anyway.
+                                    _issues.UnexpectedFieldValueInfo(currentProperty, reader.ParseDouble().ToString(), "framerate");
+                                    break;
+
                                 // Report but ignore unexpected properties.
                                 case "xt":
-                                case "nm":
                                 default:
                                     _issues.UnexpectedField(currentProperty);
                                     reader.Skip();
