@@ -85,6 +85,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Anim.cs" />
     <Compile Include="AnimatedVisuals\LottieViewer_04_Playback.cs" />
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>

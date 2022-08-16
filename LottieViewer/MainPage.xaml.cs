@@ -46,7 +46,7 @@ namespace LottieViewer
 
             // The control panel buttons. We hold onto these in order to ensure that no more
             // than one is checked at the same time.
-            _controlPanelButtons = new[] { PaletteButton, InfoButton };
+            _controlPanelButtons = new[] { PaletteButton, InfoButton, PerfButton };
 
             // Connect the player's progress to the scrubber's progress.
             _scrubber.SetAnimatedCompositionObject(_stage.Player.ProgressObject);
@@ -413,6 +413,10 @@ namespace LottieViewer
             else if (sender == PaletteButton)
             {
                 ControlPanel.Children.Add(ColorPanel);
+            }
+            else if (sender == PerfButton)
+            {
+                ControlPanel.Children.Add(PerfPanel);
             }
 
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsControlPanelVisible)));

@@ -3,9 +3,12 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:LottieViewer"
+    xmlns:av="using:AnimatedVisuals"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:muxc="using:Windows.UI.Xaml.Controls" xmlns:primitives="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:muxc="using:Windows.UI.Xaml.Controls" 
+    xmlns:muxc2="using:Microsoft.UI.Xaml.Controls" 
+    xmlns:primitives="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     mc:Ignorable="d"
     d:DesignHeight="900"
     d:DesignWidth="400">
@@ -236,6 +239,11 @@
 
                 <TextBlock FontWeight="Bold">Colors</TextBlock>
                 <CheckBox x:Name="_showSolidBackground">Show solid background</CheckBox>
+
+                <muxc2:AnimatedVisualPlayer  AutoPlay="True"
+                                            Stretch="None">
+                    <av:Anim/>
+                </muxc2:AnimatedVisualPlayer>
             </StackPanel>
         </StackPanel>
     </Grid>

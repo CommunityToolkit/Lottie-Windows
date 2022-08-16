@@ -75,6 +75,21 @@
                         <TextBlock Text="&#xE946;" Visibility="{x:Bind _stage.DiagnosticsViewModel.HasIssues, Converter={StaticResource VisibilityConverter}, Mode=OneWay}" Foreground="Orange" AutomationProperties.AccessibilityView="Raw"/>
                     </Grid>
                 </ToggleButton>
+                <!--  Perf  -->
+                <ToggleButton 
+                    x:Name="PerfButton"
+                    Checked="ControlPanelButtonChecked"
+                    Unchecked="ControlPanelButtonUnchecked"
+                    AutomationProperties.Name="View perf stats"
+                    ToolTipService.ToolTip="Animation perf stats"
+                    Style="{StaticResource ControlsToggleButtonStyle}">
+                    <Grid>
+                        <!-- Switch icon based on whether or not the Lottie file has any issues. -->
+                        <TextBlock Text="&#xEC4A;" Visibility="{x:Bind _stage.DiagnosticsViewModel.HasIssues, Converter={StaticResource VisibilityConverter}, ConverterParameter=not, Mode=OneWay}" AutomationProperties.AccessibilityView="Raw"/>
+                        <!-- Different color if there are issues. -->
+                        <TextBlock Text="&#xEC4A;" Visibility="{x:Bind _stage.DiagnosticsViewModel.HasIssues, Converter={StaticResource VisibilityConverter}, Mode=OneWay}" Foreground="Orange" AutomationProperties.AccessibilityView="Raw"/>
+                    </Grid>
+                </ToggleButton>
             </StackPanel>
         </Grid>
 
@@ -324,6 +339,15 @@
                                 <TextBlock Foreground="White" Text="{x:Bind UapVersion}" MaxWidth="250" />
                             </StackPanel>
                         </Grid>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- Info panel -->
+                <ScrollViewer
+                    x:Name="PerfPanel"
+                    Width="{StaticResource ControlPanelWidth}">
+
+                    <StackPanel Padding="20,10,20,0">
                     </StackPanel>
                 </ScrollViewer>
 
