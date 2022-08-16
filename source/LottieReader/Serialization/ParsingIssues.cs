@@ -64,7 +64,20 @@ namespace CommunityToolkit.WinUI.Lottie.LottieData.Serialization
         // LP0016 has been deprecated.
         // Was: Ignored field: {field}.
 
-        internal void UnexpectedField(string field) => Report("LP0017", $"Unexpected field: {field}.");
+        internal void UnexpectedFieldValue(string field, string value)
+        {
+            Report("LP0017", $"Unexpected field: \"{field}\" with value \"{value}\".");
+        }
+
+        internal void UnexpectedFieldValueInfo(string field, string value, string info)
+        {
+            Report("LP0017", $"Unexpected field: \"{field}\" with value \"{value}\" ({info}).");
+        }
+
+        internal void UnexpectedField(string field)
+        {
+            Report("LP0017", $"Unexpected field: \"{field}\".");
+        }
 
         internal void UnexpectedValueForType(string type, string value) => Report("LP0018", $"Unexpected {type} type value: {value}.");
 
