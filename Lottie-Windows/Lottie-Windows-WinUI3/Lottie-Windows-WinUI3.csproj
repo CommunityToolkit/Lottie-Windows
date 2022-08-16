@@ -11,7 +11,7 @@
     <CsWinRTIncludes>Microsoft</CsWinRTIncludes>
     <Platforms>x64;x86</Platforms>
     <DefineConstants>WINAPPSDK</DefineConstants>
-    <SignAssembly>False</SignAssembly>
+    <SignAssembly>True</SignAssembly>
   </PropertyGroup>
 
   <ItemGroup>
