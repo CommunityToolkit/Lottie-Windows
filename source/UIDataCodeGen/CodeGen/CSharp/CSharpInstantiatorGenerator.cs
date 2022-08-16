@@ -966,11 +966,10 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
         /// <inheritdoc/>
         protected override void WriteByteArrayField(CodeBuilder builder, string fieldName, IReadOnlyList<byte> bytes)
         {
-            builder.WriteLine($"static readonly byte[] {fieldName} = new byte[]");
-            builder.OpenScope();
-            builder.WriteByteArrayLiteral(bytes, maximumColumns: 115);
-            builder.UnIndent();
-            builder.WriteLine("};");
+            string base64 = Convert.ToBase64String(bytes.ToArray());
+            builder.WriteLine($"static readonly string {fieldName}_base64 = ");
+            builder.WriteLongStringLiteral(base64, 115);
+            builder.WriteLine(";");
         }
 
         void WriteAnimatedVisualInvalidatedEvent(CodeBuilder builder)
@@ -1002,7 +1001,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
                 switch (n.LoadedImageSurfaceType)
                 {
                     case LoadedImageSurface.LoadedImageSurfaceType.FromStream:
-                        builder.WriteLine($"{n.FieldName} = LoadedImageSurface.StartLoadFromStream({n.BytesFieldName}.AsBuffer().AsStream().AsRandomAccessStream());");
+                        builder.WriteLine($"{n.FieldName} = LoadedImageSurface.StartLoadFromStream(Convert.FromBase64String({n.BytesFieldName}_base64).AsBuffer().AsStream().AsRandomAccessStream());");
                         break;
                     case LoadedImageSurface.LoadedImageSurfaceType.FromUri:
                         builder.WriteComment(n.Comment);

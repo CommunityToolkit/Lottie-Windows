@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -383,6 +384,31 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
             }
 
             WriteLine(bytesLines[i]);
+        }
+
+        /// <summary>
+        /// Write long string literal on separate lines.
+        /// </summary>
+        /// <param name="value">String to write.</param>
+        /// <param name="maximumColumns">Width limit of the output line.</param>
+        internal void WriteLongStringLiteral(string value, int maximumColumns)
+        {
+            int start = 0;
+            int len = maximumColumns - 1 - (_indentCount * IndentSize);
+            while (start < value.Length)
+            {
+                int end = Math.Min(start + len, value.Length);
+                if (end == value.Length)
+                {
+                    WriteLine($"\"{value.Substring(start, end - start)}\"");
+                }
+                else
+                {
+                    WriteLine($"\"{value.Substring(start, end - start)}\" +");
+                }
+
+                start += len;
+            }
         }
 
         static IEnumerable<string> BytesToBytesList(IEnumerable<byte> bytes, int maximumWidth)
