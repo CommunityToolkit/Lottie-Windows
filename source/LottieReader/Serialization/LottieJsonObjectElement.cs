@@ -206,7 +206,16 @@ namespace CommunityToolkit.WinUI.Lottie.LottieData.Serialization
                 {
                     if (pair.unread)
                     {
-                        _owner._issues.UnexpectedField($"{memberName}.{pair.property.Name}");
+                        // Ignore property "l" with value "2" to reduce warnings noise.
+                        // TODO: This property is not yet specified in lottie repo.
+                        if (pair.property.Name == "l" &&
+                            pair.property.Value.ValueKind == JsonValueKind.Number &&
+                            pair.property.Value.GetInt32() == 2)
+                        {
+                            continue;
+                        }
+
+                        _owner._issues.UnexpectedFieldValue($"{memberName}.{pair.property.Name}", pair.property.Value.ToString());
                     }
                 }
             }
