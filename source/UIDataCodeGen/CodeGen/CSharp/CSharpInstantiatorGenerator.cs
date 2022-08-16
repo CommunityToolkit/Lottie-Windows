@@ -617,7 +617,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
         void WriteDurationPropertyImpl(CodeBuilder builder)
         {
             builder.WriteSummaryComment("Gets the duration of the animation.");
-            builder.WriteLine($"public TimeSpan Duration => TimeSpan.FromTicks({SourceInfo.DurationTicksFieldName});");
+            builder.WriteLine($"public TimeSpan Duration => TimeSpan.FromTicks({SourceInfo.SourceMetadata.LottieMetadata.Duration.Time.Ticks});");
         }
 
         /// <summary>
