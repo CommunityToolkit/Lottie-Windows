@@ -1,0 +1,122 @@
+﻿<UserControl
+    x:Class="LottieViewer.PerfStats"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:LottieViewer"
+    xmlns:viewmodel="using:LottieViewer.ViewModel"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    d:DesignHeight="900"
+    d:DesignWidth="400">
+
+    <StackPanel Grid.Row="2" Orientation="Vertical" Padding="20,10,20,0">
+
+        <TextBlock Text="Total animation complexity score" Grid.Column="1" TextWrapping="Wrap" Foreground="White" HorizontalAlignment="Center" FontSize="18"/>
+        <TextBlock Text="0.0" x:Name="ScoreValue" Grid.Column="1" TextWrapping="Wrap" Foreground="White" HorizontalAlignment="Center" FontSize="40"/>
+        <!--
+        <TextBlock FontWeight="Bold">Input (lottie objects):</TextBlock>
+         
+        <Border Style="{StaticResource StatsBorder}">
+            <StackPanel>
+                <ItemsControl ItemsSource="{x:Bind InputLayers, Mode=OneWay}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="viewmodel:StatsEntry">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"></ColumnDefinition>
+                                    <ColumnDefinition Width="*"></ColumnDefinition>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="{x:Bind Name}" Grid.Column="0" TextWrapping="Wrap" Foreground="LightGray"/>
+                                <TextBlock Text="{x:Bind Count}" Grid.Column="1" TextWrapping="Wrap" Foreground="White" HorizontalAlignment="Right"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+
+                <Border Style="{StaticResource StatsSeparator}" Padding="0"/>
+
+                <ItemsControl ItemsSource="{x:Bind InputMasks, Mode=OneWay}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="viewmodel:StatsEntry">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"></ColumnDefinition>
+                                    <ColumnDefinition Width="*"></ColumnDefinition>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="{x:Bind Name}" Grid.Column="0" TextWrapping="Wrap" Foreground="LightGray"/>
+                                <TextBlock Text="{x:Bind Count}" Grid.Column="1" TextWrapping="Wrap" Foreground="White" HorizontalAlignment="Right"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <Border Style="{StaticResource StatsSeparator}" Padding="0"/>
+
+                <ItemsControl ItemsSource="{x:Bind InputEffects, Mode=OneWay}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="viewmodel:StatsEntry">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"></ColumnDefinition>
+                                    <ColumnDefinition Width="*"></ColumnDefinition>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="{x:Bind Name}" Grid.Column="0" TextWrapping="Wrap" Foreground="LightGray"/>
+                                <TextBlock Text="{x:Bind Count}" Grid.Column="1" TextWrapping="Wrap" Foreground="White" HorizontalAlignment="Right"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </Border>-->
+
+        <TextBlock FontWeight="Bold">Details:</TextBlock>
+
+        <Border Style="{StaticResource StatsBorder}">
+
+            <StackPanel>
+                <ItemsControl ItemsSource="{x:Bind OutputTotal, Mode=OneWay}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="viewmodel:StatsEntry">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"></ColumnDefinition>
+                                    <ColumnDefinition Width="*"></ColumnDefinition>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="{x:Bind Name}" Grid.Column="0" TextWrapping="Wrap" Foreground="LightGray"/>
+                                <TextBlock Text="{x:Bind Count}" Grid.Column="1" TextWrapping="Wrap" Foreground="White" HorizontalAlignment="Right"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <!-- Separator -->
+                <Border Style="{StaticResource StatsSeparator}" Padding="0"/>
+
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition></RowDefinition>
+                        <RowDefinition></RowDefinition>
+                        <RowDefinition></RowDefinition>
+                        <RowDefinition></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"></ColumnDefinition>
+                        <ColumnDefinition Width="*"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Row="0" Grid.Column="0" TextWrapping="Wrap" Foreground="LightGray" Text="Animations complexity"/>
+                    <TextBlock Grid.Row="0" Grid.Column="1" TextWrapping="Wrap" Foreground="White" HorizontalAlignment="Right" Text="0.0" x:Name="AnimationsComplexity"/>
+                    <TextBlock Grid.Row="1" Grid.Column="0" TextWrapping="Wrap" Foreground="LightGray" Text="Geometry complexity"/>
+                    <TextBlock Grid.Row="1" Grid.Column="1" TextWrapping="Wrap" Foreground="White" HorizontalAlignment="Right" Text="0.0" x:Name="GeometryComplexity"/>
+                    <TextBlock Grid.Row="2" Grid.Column="0" TextWrapping="Wrap" Foreground="LightGray" Text="Effects complexity"/>
+                    <TextBlock Grid.Row="2" Grid.Column="1" TextWrapping="Wrap" Foreground="White" HorizontalAlignment="Right" Text="0.0" x:Name="EffectsComplexity"/>
+                    <TextBlock Grid.Row="3" Grid.Column="0" TextWrapping="Wrap" Foreground="LightGray" Text="Visual tree complexity"/>
+                    <TextBlock Grid.Row="3" Grid.Column="1" TextWrapping="Wrap" Foreground="White" HorizontalAlignment="Right" Text="0.0" x:Name="TreeComplexity"/>
+                </Grid>
+
+            </StackPanel>
+        </Border>
+
+    </StackPanel>
+</UserControl>

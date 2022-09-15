@@ -8,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using CommunityToolkit.WinUI.Lottie.WinCompData;
-using CommunityToolkit.WinUI.Lottie.WinCompData.Mgcg;
 
 namespace CommunityToolkit.WinUI.Lottie.UIData.Tools
 {
@@ -21,63 +20,6 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.Tools
 #endif
     sealed class Stats
     {
-        private int CountNumberOfPathCommands(CanvasGeometry geometry)
-        {
-            if (geometry is CanvasGeometry.Path path)
-            {
-                return path.Commands.Length;
-            }
-
-            if (geometry is CanvasGeometry.Combination combination)
-            {
-                return CountNumberOfPathCommands(combination.A) + CountNumberOfPathCommands(combination.B);
-            }
-
-            if (geometry is CanvasGeometry.TransformedGeometry transformed)
-            {
-                return CountNumberOfPathCommands(transformed.SourceGeometry);
-            }
-
-            if (geometry is CanvasGeometry.Group group)
-            {
-                int res = 0;
-                foreach (var g in group.Geometries)
-                {
-                    res += CountNumberOfPathCommands(g);
-                }
-
-                return res;
-            }
-
-            return 0;
-        }
-
-        private int CountNumberOfGeometries(CanvasGeometry geometry)
-        {
-            if (geometry is CanvasGeometry.Combination combination)
-            {
-                return CountNumberOfGeometries(combination.A) + CountNumberOfGeometries(combination.B);
-            }
-
-            if (geometry is CanvasGeometry.TransformedGeometry transformed)
-            {
-                return CountNumberOfGeometries(transformed.SourceGeometry);
-            }
-
-            if (geometry is CanvasGeometry.Group group)
-            {
-                int res = 0;
-                foreach (var g in group.Geometries)
-                {
-                    res += CountNumberOfGeometries(g);
-                }
-
-                return res;
-            }
-
-            return 1;
-        }
-
         public Stats(CompositionObject? root)
         {
             if (root is null)
@@ -103,45 +45,11 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.Tools
 
                 foreach (var animator in obj.Animators)
                 {
-                    // AnimatorCountByPropertyName[animator.AnimatedProperty] = AnimatorCountByPropertyName.GetValueOrDefault(animator.AnimatedProperty) + 1;
-                    if (animator.Animation is KeyFrameAnimation_ animation)
-                    {
-                        KeyframeCount += animation.KeyFrameCount;
-                    }
+                    AnimatorCountByPropertyName[animator.AnimatedProperty] = AnimatorCountByPropertyName.GetValueOrDefault(animator.AnimatedProperty) + 1;
                 }
 
-                if (obj is CompositionSpriteShape spriteShape)
-                {
-                    if (spriteShape.Geometry is CompositionPathGeometry geometry)
-                    {
-                        if (geometry.Path?.Source is CanvasGeometry canvasGeometry)
-                        {
-                            PathCommandsCount += CountNumberOfPathCommands(canvasGeometry);
-                            GeometriesCount += CountNumberOfGeometries(canvasGeometry);
-                        }
-                    }
-                    else
-                    {
-                        GeometriesCount += 1;
-                    }
-                }
+                AnimatorCountByPropertyName[obj.Type.ToString()] = AnimatorCountByPropertyName.GetValueOrDefault(obj.Type.ToString()) + 1;
 
-                if (obj is PathKeyFrameAnimation pathAnimation)
-                {
-                    foreach (var keyframe in pathAnimation.KeyFrames)
-                    {
-                        if (keyframe is PathKeyFrameAnimation.ValueKeyFrame valueKeyframe)
-                        {
-                            if (valueKeyframe.Value.Source is CanvasGeometry geometry)
-                            {
-                                PathCommandsCount += CountNumberOfPathCommands(geometry);
-                                GeometriesCount += CountNumberOfGeometries(geometry);
-                            }
-                        }
-                    }
-                }
-
-                // AnimatorCountByPropertyName[obj.Type.ToString()] = AnimatorCountByPropertyName.GetValueOrDefault(obj.Type.ToString()) + 1;
                 CompositionObjectCount++;
                 switch (obj.Type)
                 {
@@ -267,76 +175,6 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.Tools
             }
         }
 
-        public float CalculateApproximateAnimationsComplexity()
-        {
-            var complexity = 0.0f;
-
-            var otherKeyframeAnimators = KeyframeAnimatorCount;
-
-            complexity += ExpressionAnimatorCount * 15;
-
-            otherKeyframeAnimators -= AnimatorCountByPropertyName.GetValueOrDefault("IsVisible");
-            complexity += AnimatorCountByPropertyName.GetValueOrDefault("IsVisible") * 5;
-
-            otherKeyframeAnimators -= AnimatorCountByPropertyName.GetValueOrDefault("Opacity");
-            complexity += AnimatorCountByPropertyName.GetValueOrDefault("Opacity") * 30;
-
-            otherKeyframeAnimators -= AnimatorCountByPropertyName.GetValueOrDefault("Color");
-            complexity += AnimatorCountByPropertyName.GetValueOrDefault("Color") * 30;
-
-            complexity += otherKeyframeAnimators * 10;
-
-            complexity += KeyframeCount * 5;
-
-            return complexity / 1000.0f;
-        }
-
-        public float CalculateApproximateGeometryComplexity()
-        {
-            var complexity = 0.0f;
-
-            complexity += PathCommandsCount * 4;
-            complexity += GeometriesCount * 20;
-
-            return complexity / 1000.0f;
-        }
-
-        public float CalculateApproximateEffectsComplexity()
-        {
-            var complexity = 0.0f;
-
-            complexity += EffectBrushCount * 500;
-            complexity += EffectFactoryCount * 1000;
-
-            return complexity / 1000.0f;
-        }
-
-        public float CalculateApproximateTreeComplexity()
-        {
-            var complexity = 0.0f;
-
-            complexity += ContainerVisualCount * 5;
-            complexity += LayerVisualCount * 5;
-            complexity += ShapeVisualCount * 5;
-            complexity += SpriteVisualCount * 20;
-            complexity += ContainerShapeCount * 5;
-            complexity += CompositionObjectCount;
-
-            return complexity / 1000.0f;
-        }
-
-        public float CalculateApproximateComplexity()
-        {
-            var complexity = 0.0f;
-
-            complexity += CalculateApproximateAnimationsComplexity();
-            complexity += CalculateApproximateGeometryComplexity();
-            complexity += CalculateApproximateEffectsComplexity();
-            complexity += CalculateApproximateTreeComplexity();
-
-            return complexity;
-        }
-
         public int AnimationControllerCount { get; }
 
         public int AnimatorCount { get; }
@@ -344,12 +182,6 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.Tools
         public int ExpressionAnimatorCount { get; }
 
         public int KeyframeAnimatorCount { get; }
-
-        public int KeyframeCount { get; }
-
-        public int PathCommandsCount { get; }
-
-        public int GeometriesCount { get; }
 
         public Dictionary<string, int> AnimatorCountByPropertyName { get; } = new Dictionary<string, int>();
 

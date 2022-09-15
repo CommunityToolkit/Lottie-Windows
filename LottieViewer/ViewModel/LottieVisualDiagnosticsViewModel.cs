@@ -37,6 +37,7 @@ namespace LottieViewer.ViewModel
                 LottieVisualDiagnostics = (LottieVisualDiagnostics?)value;
                 Issues.Clear();
                 Markers.Clear();
+                Stats.Clear();
                 ThemePropertyBindings.Clear();
                 ThemingPropertySet = null;
 
@@ -50,6 +51,37 @@ namespace LottieViewer.ViewModel
                                             ThenBy(a => a.Description))
                     {
                         Issues.Add(issue);
+                    }
+
+                    if (LottieVisualDiagnostics.LottieCompositionStats is not null)
+                    {
+                        uint tags = StatsEntry.LOTTIE_COMPOSITION_TAG | StatsEntry.LAYER_TAG;
+                        Stats.Add(new StatsEntry("Solid layers", LottieVisualDiagnostics.LottieCompositionStats.SolidLayerCount, tags));
+                        Stats.Add(new StatsEntry("Shape layers", LottieVisualDiagnostics.LottieCompositionStats.ShapeLayerCount, tags));
+                        Stats.Add(new StatsEntry("PreComp layers", LottieVisualDiagnostics.LottieCompositionStats.PreCompLayerCount, tags));
+                        Stats.Add(new StatsEntry("Image layers", LottieVisualDiagnostics.LottieCompositionStats.ImageLayerCount, tags));
+
+                        tags = StatsEntry.LOTTIE_COMPOSITION_TAG | StatsEntry.MASK_TAG;
+                        Stats.Add(new StatsEntry("Masks", LottieVisualDiagnostics.LottieCompositionStats.MaskCount, tags));
+                        Stats.Add(new StatsEntry("Matte layers", LottieVisualDiagnostics.LottieCompositionStats.MatteLayerCount, tags));
+
+                        tags = StatsEntry.LOTTIE_COMPOSITION_TAG | StatsEntry.EFFECT_TAG;
+                        Stats.Add(new StatsEntry("Drop shadow", LottieVisualDiagnostics.LottieCompositionStats.DropShadowEffectCount, tags));
+                        Stats.Add(new StatsEntry("Gaussian blur", LottieVisualDiagnostics.LottieCompositionStats.GaussianBlurEffectCount, tags));
+                    }
+
+                    if (LottieVisualDiagnostics.WinCompStats is not null)
+                    {
+                        uint tags = StatsEntry.WINDOWS_COMPOSITION_TAG;
+
+                        Stats.Add(new StatsEntry("Keyframe animators", LottieVisualDiagnostics.WinCompStats.KeyframeAnimatorCount, tags));
+                        Stats.Add(new StatsEntry("Expression animators", LottieVisualDiagnostics.WinCompStats.ExpressionAnimatorCount, tags));
+                        Stats.Add(new StatsEntry("Keyframe count", LottieVisualDiagnostics.WinCompStats.KeyframeCount, tags));
+                        Stats.Add(new StatsEntry("Geometries count", LottieVisualDiagnostics.WinCompStats.GeometriesCount, tags));
+                        Stats.Add(new StatsEntry("Path commands count", LottieVisualDiagnostics.WinCompStats.PathCommandsCount, tags));
+                        Stats.Add(new StatsEntry("Effect brush", LottieVisualDiagnostics.WinCompStats.EffectBrushCount, tags));
+                        Stats.Add(new StatsEntry("Effect factory", LottieVisualDiagnostics.WinCompStats.EffectFactoryCount, tags));
+                        Stats.Add(new StatsEntry("Composition objects", LottieVisualDiagnostics.WinCompStats.CompositionObjectCount, tags));
                     }
 
                     // Populate the marker info.
@@ -159,6 +191,8 @@ namespace LottieViewer.ViewModel
         public bool HasIssues => Issues.Count > 0;
 
         public ObservableCollection<Issue> Issues { get; } = new ObservableCollection<Issue>();
+
+        public ObservableCollection<StatsEntry> Stats { get; } = new ObservableCollection<StatsEntry>();
 
         public string SizeText
         {

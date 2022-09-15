@@ -239,11 +239,6 @@
 
                 <TextBlock FontWeight="Bold">Colors</TextBlock>
                 <CheckBox x:Name="_showSolidBackground">Show solid background</CheckBox>
-
-                <muxc2:AnimatedVisualPlayer  AutoPlay="True"
-                                            Stretch="None">
-                    <av:Anim/>
-                </muxc2:AnimatedVisualPlayer>
             </StackPanel>
         </StackPanel>
     </Grid>

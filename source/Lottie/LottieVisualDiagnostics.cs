@@ -72,6 +72,10 @@ namespace CommunityToolkit.WinUI.Lottie
         // Describes the property bindings in the ThemingPropertySet.
         internal IReadOnlyList<PropertyBinding>? ThemePropertyBindings { get; set; }
 
+        internal LottieData.Tools.Stats? LottieCompositionStats { get; set; }
+
+        internal UIData.Tools.Stats? WinCompStats { get; set; }
+
         internal LottieVisualDiagnostics Clone() =>
             new LottieVisualDiagnostics
             {
@@ -90,6 +94,8 @@ namespace CommunityToolkit.WinUI.Lottie
                 TranslationIssues = TranslationIssues,
                 TranslationTime = TranslationTime,
                 ValidationTime = ValidationTime,
+                LottieCompositionStats = LottieCompositionStats,
+                WinCompStats = WinCompStats,
             };
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     }

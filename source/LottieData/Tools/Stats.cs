@@ -85,7 +85,23 @@ namespace CommunityToolkit.WinUI.Lottie.LottieData.Tools
                     }
                 }
 
-                MaskCount += layer.Masks.Count;
+                foreach (var effect in layer.Effects)
+                {
+                    switch (effect.Type)
+                    {
+                        case Effect.EffectType.DropShadow:
+                            DropShadowEffectCount++;
+                            break;
+                        case Effect.EffectType.GaussianBlur:
+                            GaussianBlurEffectCount++;
+                            break;
+                    }
+                }
+
+                if (layer.LayerMatteType != Layer.MatteType.None)
+                {
+                    MatteLayerCount++;
+                }
             }
         }
 
@@ -100,6 +116,8 @@ namespace CommunityToolkit.WinUI.Lottie.LottieData.Tools
         public int LinearGradientStrokeCount { get; private set; }
 
         public int MaskCount { get; }
+
+        public int MatteLayerCount { get; }
 
         public int MaskAddCount { get; }
 
@@ -122,6 +140,10 @@ namespace CommunityToolkit.WinUI.Lottie.LottieData.Tools
         public int ShapeLayerCount { get; }
 
         public int TextLayerCount { get; }
+
+        public int GaussianBlurEffectCount { get; }
+
+        public int DropShadowEffectCount { get; }
 
         public double Width { get; }
 

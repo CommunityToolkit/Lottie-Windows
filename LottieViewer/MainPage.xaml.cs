@@ -104,21 +104,18 @@ namespace LottieViewer
 
         void DiagnosticsViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            var list = PropertiesList;
             var viewModel = _stage.DiagnosticsViewModel;
 
-            if (viewModel is null)
+            _perfStats.Update(viewModel);
+
+            PropertiesList.Clear();
+            MarkersList.Clear();
+
+            if (viewModel is not null)
             {
-                list.Clear();
-                MarkersList.Clear();
-            }
-            else if (e.PropertyName == nameof(viewModel.FileName))
-            {
-                list.Clear();
-                MarkersList.Clear();
                 if (!string.IsNullOrWhiteSpace(viewModel.FileName))
                 {
-                    list.Add(new PairOfStrings("File", viewModel.FileName));
+                    PropertiesList.Add(new PairOfStrings("File", viewModel.FileName));
                 }
 
                 // If the Lottie has 0 duration then it isn't valid, so don't show properties
@@ -128,12 +125,12 @@ namespace LottieViewer
                     // Not all Lotties have a name, so only add the name if it exists.
                     if (!string.IsNullOrWhiteSpace(viewModel.Name))
                     {
-                        list.Add(new PairOfStrings("Name", viewModel.Name));
+                        PropertiesList.Add(new PairOfStrings("Name", viewModel.Name));
                     }
 
-                    list.Add(new PairOfStrings("Size", viewModel.SizeText));
-                    list.Add(new PairOfStrings("Duration", viewModel.DurationText));
-                    list.Add(new PairOfStrings("Frames", $"{viewModel.FrameCountText} @ {viewModel.FramesPerSecond:0.#}fps"));
+                    PropertiesList.Add(new PairOfStrings("Size", viewModel.SizeText));
+                    PropertiesList.Add(new PairOfStrings("Duration", viewModel.DurationText));
+                    PropertiesList.Add(new PairOfStrings("Frames", $"{viewModel.FrameCountText} @ {viewModel.FramesPerSecond:0.#}fps"));
 
                     if (viewModel.Markers.Count > 0)
                     {

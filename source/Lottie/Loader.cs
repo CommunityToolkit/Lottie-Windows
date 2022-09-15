@@ -92,7 +92,15 @@ namespace CommunityToolkit.WinUI.Lottie
 
                     if (lottieComposition is not null)
                     {
-                        lottieComposition = LottieMergeOptimizer.Optimize(lottieComposition);
+                        if (diagnostics is not null)
+                        {
+                            diagnostics.LottieCompositionStats = new LottieData.Tools.Stats(lottieComposition);
+                        }
+
+                        if (options.HasFlag(LottieVisualOptions.Optimize))
+                        {
+                            lottieComposition = LottieMergeOptimizer.Optimize(lottieComposition);
+                        }
                     }
 
                     if (diagnostics is not null)
@@ -176,6 +184,11 @@ namespace CommunityToolkit.WinUI.Lottie
                         {
                             diagnostics.OptimizationTime = timeMeasurer.GetElapsedAndRestart();
                         }
+                    }
+
+                    if (diagnostics is not null)
+                    {
+                        diagnostics.WinCompStats = new UIData.Tools.Stats(wincompDataRootVisual);
                     }
                 });
 

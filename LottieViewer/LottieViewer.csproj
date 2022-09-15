@@ -85,7 +85,6 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Anim.cs" />
     <Compile Include="AnimatedVisuals\LottieViewer_04_Playback.cs" />
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
@@ -93,6 +92,9 @@
     <Compile Include="AnimatedVisuals\UiFeedbackAnimations.cs" />
     <Compile Include="AnimatedVisuals\LottieLogo.cs" />
     <Compile Include="ColorPaletteEntry.cs" />
+    <Compile Include="PerfStats.xaml.cs">
+      <DependentUpon>PerfStats.xaml</DependentUpon>
+    </Compile>
     <Compile Include="PixelViewElement.cs" />
     <Compile Include="FeedbackLottie.xaml.cs">
       <DependentUpon>FeedbackLottie.xaml</DependentUpon>
@@ -119,6 +121,7 @@
     <Compile Include="ViewModel\Marker.cs" />
     <Compile Include="ViewModel\MarkerWithDuration.cs" />
     <Compile Include="ViewModel\PairOfStrings.cs" />
+    <Compile Include="ViewModel\StatsEntry.cs" />
     <Compile Include="VisibilityConverter.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -197,6 +200,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="PaletteColorPicker.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="PerfStats.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
