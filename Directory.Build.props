@@ -137,7 +137,7 @@
     </When>
   </Choose>
 
-  <PropertyGroup Condition="'$(IsUwpProject)' == 'true'">
+  <PropertyGroup>
 
     <!-- 8002 is a strong named -> non-strong-named reference -->
     <!-- This is valid for platforms other than .NET Framework (and is needed for the UWP targets -->
