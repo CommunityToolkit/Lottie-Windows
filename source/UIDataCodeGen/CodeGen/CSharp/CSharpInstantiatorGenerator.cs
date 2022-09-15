@@ -26,7 +26,6 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
     {
         readonly Stringifier _s;
         readonly string _winUiNamespace;
-        readonly string _winUi3CastHack;
 
         CSharpInstantiatorGenerator(
             CodegenConfiguration configuration,
@@ -41,15 +40,10 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
             if (AnimatedVisualSourceInfo.WinUIVersion.Major >= 3)
             {
                 _winUiNamespace = "Microsoft.UI";
-
-                // This is a hack that is required to use Win2D with WinUI3 as of August 2020. It
-                // will not be necessary when an official Win2D for WinUI3 is released.
-                _winUi3CastHack = "(IGeometrySource2D)(object)";
             }
             else
             {
                 _winUiNamespace = "Windows.UI";
-                _winUi3CastHack = string.Empty;
             }
         }
 
@@ -95,7 +89,15 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
             if (SourceInfo.UsesCanvasGeometry)
             {
                 // Windows.Graphics is needed for IGeometrySource2D.
-                namespaces.Add("Windows.Graphics");
+                if (SourceInfo.WinUIVersion.Major < 3)
+                {
+                    namespaces.Add("Windows.Graphics");
+                }
+                else
+                {
+                    namespaces.Add("Microsoft.Graphics");
+                }
+
                 namespaces.Add("Microsoft.Graphics.Canvas.Geometry");
             }
 
@@ -472,7 +474,15 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
             builder.WriteLine("bool _isImageLoadingAsynchronous;");
             builder.WriteLine("bool _isTryCreateAnimatedVisualCalled;");
             builder.WriteLine("bool _isImageLoadingStarted;");
-            builder.WriteLine("EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource, object>> _animatedVisualInvalidatedEventTokenTable;");
+
+            if (AnimatedVisualSourceInfo.WinUIVersion.Major >= 3)
+            {
+                builder.WriteLine("HashSet<TypedEventHandler<IDynamicAnimatedVisualSource, object>> _animatedVisualInvalidatedEventTokenTable = new HashSet<TypedEventHandler<IDynamicAnimatedVisualSource, object>>();");
+            }
+            else
+            {
+                builder.WriteLine("EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource, object>> _animatedVisualInvalidatedEventTokenTable;");
+            }
 
             // Declare the variables to hold the LoadedImageSurfaces.
             foreach (var n in SourceInfo.LoadedImageSurfaces)
@@ -587,10 +597,13 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
             builder.WriteLine();
 
             // Generate the method that get or create the EventRegistrationTokenTable.
-            builder.WriteLine("EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource, object>> GetAnimatedVisualInvalidatedEventRegistrationTokenTable()");
-            builder.OpenScope();
-            builder.WriteLine("return EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource, object>>.GetOrCreateEventRegistrationTokenTable(ref _animatedVisualInvalidatedEventTokenTable);");
-            builder.CloseScope();
+            if (AnimatedVisualSourceInfo.WinUIVersion.Major < 3)
+            {
+                builder.WriteLine("EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource, object>> GetAnimatedVisualInvalidatedEventRegistrationTokenTable()");
+                builder.OpenScope();
+                builder.WriteLine("return EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource, object>>.GetOrCreateEventRegistrationTokenTable(ref _animatedVisualInvalidatedEventTokenTable);");
+                builder.CloseScope();
+            }
         }
 
         /// <summary>
@@ -617,7 +630,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
         void WriteDurationPropertyImpl(CodeBuilder builder)
         {
             builder.WriteSummaryComment("Gets the duration of the animation.");
-            builder.WriteLine($"public TimeSpan Duration => TimeSpan.FromTicks({SourceInfo.DurationTicksFieldName});");
+            builder.WriteLine($"public TimeSpan Duration => TimeSpan.FromTicks({SourceInfo.SourceMetadata.LottieMetadata.Duration.Time.Ticks});");
         }
 
         /// <summary>
@@ -860,7 +873,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
         /// <inheritdoc/>
         protected override void WriteCanvasGeometryEllipseFactory(CodeBuilder builder, CanvasGeometry.Ellipse obj, string typeName, string fieldName)
         {
-            builder.WriteLine($"var result = {FieldAssignment(fieldName)}{_winUi3CastHack}CanvasGeometry.CreateEllipse(");
+            builder.WriteLine($"var result = {FieldAssignment(fieldName)}CanvasGeometry.CreateEllipse(");
             builder.Indent();
             builder.WriteLine($"null,");
             builder.WriteLine($"{_s.Float(obj.X)}, {_s.Float(obj.Y)}, {_s.Float(obj.RadiusX)}, {_s.Float(obj.RadiusY)});");
@@ -870,7 +883,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
         /// <inheritdoc/>
         protected override void WriteCanvasGeometryGroupFactory(CodeBuilder builder, CanvasGeometry.Group obj, string typeName, string fieldName)
         {
-            builder.WriteLine($"var result = {FieldAssignment(fieldName)}{_winUi3CastHack}CanvasGeometry.CreateGroup(");
+            builder.WriteLine($"var result = {FieldAssignment(fieldName)}CanvasGeometry.CreateGroup(");
             builder.Indent();
             builder.WriteLine($"null,");
             builder.WriteLine($"new CanvasGeometry[] {{ {string.Join(", ", obj.Geometries.Select(g => CallFactoryFor(g))) } }},");
@@ -911,14 +924,14 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
                 }
             }
 
-            builder.WriteLine($"result = {FieldAssignment(fieldName)}{_winUi3CastHack}CanvasGeometry.CreatePath(builder);");
+            builder.WriteLine($"result = {FieldAssignment(fieldName)}CanvasGeometry.CreatePath(builder);");
             builder.CloseScope();
         }
 
         /// <inheritdoc/>
         protected override void WriteCanvasGeometryRoundedRectangleFactory(CodeBuilder builder, CanvasGeometry.RoundedRectangle obj, string typeName, string fieldName)
         {
-            builder.WriteLine($"var result = {FieldAssignment(fieldName)}{_winUi3CastHack}CanvasGeometry.CreateRoundedRectangle(");
+            builder.WriteLine($"var result = {FieldAssignment(fieldName)}CanvasGeometry.CreateRoundedRectangle(");
             builder.Indent();
             builder.WriteLine("null,");
             builder.WriteLine($"{_s.Float(obj.X)},");
@@ -966,11 +979,10 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
         /// <inheritdoc/>
         protected override void WriteByteArrayField(CodeBuilder builder, string fieldName, IReadOnlyList<byte> bytes)
         {
-            builder.WriteLine($"static readonly byte[] {fieldName} = new byte[]");
-            builder.OpenScope();
-            builder.WriteByteArrayLiteral(bytes, maximumColumns: 115);
-            builder.UnIndent();
-            builder.WriteLine("};");
+            string base64 = Convert.ToBase64String(bytes.ToArray());
+            builder.WriteLine($"static readonly string {fieldName}_base64 = ");
+            builder.WriteLongStringLiteral(base64, 115);
+            builder.WriteLine(";");
         }
 
         void WriteAnimatedVisualInvalidatedEvent(CodeBuilder builder)
@@ -979,11 +991,28 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
             builder.OpenScope();
             builder.WriteLine("add");
             builder.OpenScope();
-            builder.WriteLine("return GetAnimatedVisualInvalidatedEventRegistrationTokenTable().AddEventHandler(value);");
+            if (AnimatedVisualSourceInfo.WinUIVersion.Major >= 3)
+            {
+                builder.WriteLine("_animatedVisualInvalidatedEventTokenTable.Add(value);");
+            }
+            else
+            {
+                builder.WriteLine("return GetAnimatedVisualInvalidatedEventRegistrationTokenTable().AddEventHandler(value);");
+            }
+
             builder.CloseScope();
             builder.WriteLine("remove");
             builder.OpenScope();
-            builder.WriteLine("GetAnimatedVisualInvalidatedEventRegistrationTokenTable().RemoveEventHandler(value);");
+
+            if (AnimatedVisualSourceInfo.WinUIVersion.Major >= 3)
+            {
+                builder.WriteLine("_animatedVisualInvalidatedEventTokenTable.Remove(value);");
+            }
+            else
+            {
+                builder.WriteLine("GetAnimatedVisualInvalidatedEventRegistrationTokenTable().RemoveEventHandler(value);");
+            }
+
             builder.CloseScope();
             builder.CloseScope();
             builder.WriteLine();
@@ -1002,7 +1031,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
                 switch (n.LoadedImageSurfaceType)
                 {
                     case LoadedImageSurface.LoadedImageSurfaceType.FromStream:
-                        builder.WriteLine($"{n.FieldName} = LoadedImageSurface.StartLoadFromStream({n.BytesFieldName}.AsBuffer().AsStream().AsRandomAccessStream());");
+                        builder.WriteLine($"{n.FieldName} = LoadedImageSurface.StartLoadFromStream(Convert.FromBase64String({n.BytesFieldName}_base64).AsBuffer().AsStream().AsRandomAccessStream());");
                         break;
                     case LoadedImageSurface.LoadedImageSurfaceType.FromUri:
                         builder.WriteComment(n.Comment);
@@ -1037,7 +1066,15 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
             // the previous result is now invalidated.
             builder.WriteLine("if (_isImageLoadingAsynchronous)");
             builder.OpenScope();
-            builder.WriteLine("_animatedVisualInvalidatedEventTokenTable?.InvocationList?.Invoke(this, null);");
+            if (AnimatedVisualSourceInfo.WinUIVersion.Major >= 3)
+            {
+                builder.WriteLine("foreach (var v in _animatedVisualInvalidatedEventTokenTable) v.Invoke(this, null);");
+            }
+            else
+            {
+                builder.WriteLine("_animatedVisualInvalidatedEventTokenTable?.InvocationList?.Invoke(this, null);");
+            }
+
             builder.CloseScope();
             builder.CloseScope();
             builder.CloseScope();

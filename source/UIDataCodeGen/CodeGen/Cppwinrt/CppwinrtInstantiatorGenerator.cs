@@ -33,6 +33,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Cppwinrt
         // that contains the TryCreateAnimatedVisual method.
         readonly string _sourceClassName;
         readonly string _wuc;
+        readonly string _winNamespace;
         readonly string _winUINamespace;
 
         // The fully qualified name of the AnimatedVisual type that is returned
@@ -97,6 +98,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Cppwinrt
             _isIDynamic = SourceInfo.LoadedImageSurfaces.Any();
 
             _winUINamespace = SourceInfo.WinUIVersion.Major >= 3 ? "Microsoft::UI" : "Windows::UI";
+            _winNamespace = SourceInfo.WinUIVersion.Major >= 3 ? "Microsoft" : "Windows";
             _wuc = $"{_winUINamespace}::Composition";
             _sourceClassName = SourceInfo.ClassName;
 
@@ -152,7 +154,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Cppwinrt
 
             if (_isIDynamic)
             {
-                builder.WriteLine(", Windows.UI.Xaml.Data.INotifyPropertyChanged");
+                builder.WriteLine($", {_winNamespace}.UI.Xaml.Data.INotifyPropertyChanged");
             }
 
             foreach (var additionalInterface in SourceInfo.AdditionalInterfaces.Select(n => n.NormalizedQualifiedName))
@@ -450,22 +452,22 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Cppwinrt
             priv.WriteLine("Microsoft::UI::Xaml::Controls::IDynamicAnimatedVisualSource,");
             priv.WriteLine("Windows::Foundation::IInspectable>> m_IDynamicAnimatedVisualSourceEvent{};");
             priv.UnIndent();
-            priv.WriteLine("winrt::event<Windows::UI::Xaml::Data::PropertyChangedEventHandler> m_PropertyChanged{};");
+            priv.WriteLine($"winrt::event<{_winUINamespace}::Xaml::Data::PropertyChangedEventHandler> m_PropertyChanged{{}};");
 
             foreach (var n in SourceInfo.LoadedImageSurfaces)
             {
-                priv.WriteLine($"winrt::Windows::UI::Xaml::Media::{n.TypeName} {n.FieldName}{{ nullptr }};");
+                priv.WriteLine($"winrt::{_winUINamespace}::Xaml::Media::{n.TypeName} {n.FieldName}{{ nullptr }};");
             }
 
             priv.WriteLine("void EnsureImageLoadingStarted();");
             priv.WriteLine("void HandleLoadCompleted(");
             priv.Indent();
-            priv.WriteLine("winrt::Windows::UI::Xaml::Media::LoadedImageSurface sender,");
-            priv.WriteLine("winrt::Windows::UI::Xaml::Media::LoadedImageSourceLoadCompletedEventArgs e);");
+            priv.WriteLine($"winrt::{_winUINamespace}::Xaml::Media::LoadedImageSurface sender,");
+            priv.WriteLine($"winrt::{_winUINamespace}::Xaml::Media::LoadedImageSourceLoadCompletedEventArgs e);");
             priv.UnIndent();
 
             // INotifyPropertyChanged implementation.
-            pub.WriteLine("winrt::event_token PropertyChanged(winrt::Windows::UI::Xaml::Data::PropertyChangedEventHandler const& handler);");
+            pub.WriteLine($"winrt::event_token PropertyChanged(winrt::{_winUINamespace}::Xaml::Data::PropertyChangedEventHandler const& handler);");
             pub.WriteLine("void PropertyChanged(winrt::event_token const& token) noexcept;");
 
             // IDynamicAnimatedVisualSource implementation.
@@ -1147,7 +1149,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Cppwinrt
             builder.WriteLine("if (!m_isTryCreateAnimatedVisualCalled && m_isImageLoadingAsynchronous != value)");
             builder.OpenScope();
             builder.WriteLine("m_isImageLoadingAsynchronous = value;");
-            builder.WriteLine($"m_PropertyChanged(*this, Windows::UI::Xaml::Data::PropertyChangedEventArgs(L\"IsImageLoadingAsynchronous\"));");
+            builder.WriteLine($"m_PropertyChanged(*this, {_winUINamespace}::Xaml::Data::PropertyChangedEventArgs(L\"IsImageLoadingAsynchronous\"));");
             builder.CloseScope();
             builder.CloseScope();
             builder.WriteLine();
@@ -1165,7 +1167,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Cppwinrt
             WriteEventImpl(
                 builder,
                 "PropertyChanged",
-                "Windows::UI::Xaml::Data::PropertyChangedEventHandler",
+                $"{_winUINamespace}::Xaml::Data::PropertyChangedEventHandler",
                 "m_PropertyChanged");
 
             // Generate the AnimatedVisualInvalidated event implementation.
@@ -1251,7 +1253,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Cppwinrt
             builder.WriteLine("if (m_loadCompletedEventCount == c_loadedImageSurfaceCount)");
             builder.OpenScope();
             builder.WriteLine("m_isImageLoadingCompleted = true;");
-            builder.WriteLine("m_PropertyChanged(*this, Windows::UI::Xaml::Data::PropertyChangedEventArgs(L\"IsImageLoadingCompleted\"));");
+            builder.WriteLine($"m_PropertyChanged(*this, {_winUINamespace}::Xaml::Data::PropertyChangedEventArgs(L\"IsImageLoadingCompleted\"));");
 
             // If asynchronouse image loading is enabled notify via IDynamicAnimatedVisualSource that
             // the previous result is now invalidated.
