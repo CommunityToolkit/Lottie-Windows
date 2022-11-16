@@ -26,7 +26,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
 
         /// <summary>
         /// Do we need to implement CreateAnimations and DestroyAnimations method.
-        /// Available after WinUI 2.7 with new interface IAnimatedVisual2.
+        /// Available after WinUI 2.8 with new interface IAnimatedVisual2.
         /// </summary>
         bool ImplementCreateAndDestroyMethods { get; }
 
