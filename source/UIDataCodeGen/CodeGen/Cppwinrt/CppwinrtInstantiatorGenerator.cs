@@ -508,6 +508,8 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Cppwinrt
             {
                 builder.WriteLine($"winrt::{_animatedVisualTypeName2},");
             }
+            
+            builder.WriteLine($"winrt::{_animatedVisualTypeName},");
 
             builder.WriteLine($"IClosable>");
             builder.UnIndent();
