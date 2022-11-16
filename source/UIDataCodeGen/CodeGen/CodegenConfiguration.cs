@@ -114,6 +114,6 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
         /// </summary>
         public Version WinUIVersion { get; set; }
 
-        public bool ImplementCreateAndDestroyMethods => WinUIVersion >= Version.Parse("2.7") && WinUIVersion < Version.Parse("3.0");
+        public bool ImplementCreateAndDestroyMethods => WinUIVersion >= Version.Parse("2.8") && WinUIVersion < Version.Parse("3.0");
     }
 }
