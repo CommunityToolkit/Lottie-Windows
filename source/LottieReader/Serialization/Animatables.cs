@@ -542,8 +542,17 @@ namespace CommunityToolkit.WinUI.Lottie.LottieData.Serialization
                         case "x":
                             reader._issues.Expressions();
                             break;
+                        case "l":
+                            // Ignore field "l" with value of "2" to produce less warnings noise.
+                            // TODO: This value is not yet specified in lottie repository.
+                            if (property.Value.Kind != JsonValueKind.Number || property.Value.AsInt32() != 2)
+                            {
+                                reader._issues.UnexpectedFieldValue(property.Key, property.Value.ToString());
+                            }
+
+                            break;
                         default:
-                            reader._issues.UnexpectedField(property.Key);
+                            reader._issues.UnexpectedFieldValue(property.Key, property.Value.ToString());
                             break;
                     }
                 }
