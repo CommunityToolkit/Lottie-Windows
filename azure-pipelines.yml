@@ -1,10 +1,12 @@
 
 trigger:
 - main
+- dev/*
 - rel/*
 
 pr:
 - main
+- dev/*
 - rel/*
 
 pool:
