@@ -418,7 +418,10 @@ namespace CommunityToolkit.WinUI.Lottie
                 else
                 {
                     throw new InvalidOperationException("LottieViewer and Instantiator does not support custom AnimationControllers yet");
-                    /* target.StartAnimation(animator.AnimatedProperty, animation, GetAnimationController(animator.Controller)); */
+                    /*
+                    We should retarget to SDK 22621 to support this
+                    target.StartAnimation(animator.AnimatedProperty, animation, GetAnimationController(animator.Controller));
+                    */
                 }
             }
         }
@@ -433,12 +436,15 @@ namespace CommunityToolkit.WinUI.Lottie
             if (obj.IsCustom)
             {
                 throw new InvalidOperationException("LottieViewer and Instantiator does not support custom AnimationControllers yet");
-                /* result = CacheAndInitializeCompositionObject(obj, _c.CreateAnimationController());
+                /*
+                We should retarget to SDK 22621 to support this
+                result = CacheAndInitializeCompositionObject(obj, _c.CreateAnimationController());
 
                 if (obj.IsPaused)
                 {
                     result.Pause();
-                } */
+                }
+                */
             }
             else
             {
