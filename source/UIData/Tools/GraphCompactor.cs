@@ -700,15 +700,19 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.Tools
                 if (visibilityController is not null)
                 {
                     var animator = TryGetAnimatorByPropertyName(visibilityController, "Progress");
-                    if (animator is null)
+
+                    if (visibilityController.IsCustom)
+                    {
+                        ApplyVisibility(parent, GetVisiblityAnimationDescription(visual), null, visibilityController);
+                    }
+                    else if (animator is not null)
+                    {
+                        ApplyVisibility(parent, GetVisiblityAnimationDescription(visual), animator.Animation, null);
+                    }
+                    else
                     {
                         throw new InvalidOperationException();
                     }
-
-                    ApplyVisibility(
-                        parent,
-                        GetVisiblityAnimationDescription(visual),
-                        animator.Animation);
 
                     // Clear out the visibility property and animation from the visual.
                     visual.IsVisible = null;
@@ -790,12 +794,19 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.Tools
                 if (visibilityController is not null)
                 {
                     var animator = TryGetAnimatorByPropertyName(visibilityController, "Progress");
-                    if (animator is null)
+
+                    if (visibilityController.IsCustom)
+                    {
+                        ApplyVisibility(visual, GetVisiblityAnimationDescription(shape), null, visibilityController);
+                    }
+                    else if (animator is not null)
+                    {
+                        ApplyVisibility(visual, GetVisiblityAnimationDescription(shape), animator.Animation, null);
+                    }
+                    else
                     {
                         throw new InvalidOperationException();
                     }
-
-                    ApplyVisibility(visual, GetVisiblityAnimationDescription(shape), animator.Animation);
 
                     // Clear out the Scale properties and animations from the shape.
                     shape.Scale = null;
@@ -806,8 +817,10 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.Tools
 
         // Applies the given visibility to the given Visual, combining it with the
         // visibility it already has.
-        void ApplyVisibility(Visual to, VisibilityDescription fromVisibility, CompositionAnimation progressAnimation)
+        void ApplyVisibility(Visual to, VisibilityDescription fromVisibility, CompositionAnimation? progressAnimation, AnimationController? customController)
         {
+            Debug.Assert(progressAnimation is not null || customController is not null, "Precondition");
+
             var toVisibility = GetVisiblityAnimationDescription(to);
 
             var compositeVisibility = VisibilityDescription.Compose(fromVisibility, toVisibility);
@@ -829,11 +842,17 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.Tools
                     animation.InsertKeyFrame(progress, isVisible);
                 }
 
-                to.StartAnimation("IsVisible", animation);
-
-                var controller = to.TryGetAnimationController("IsVisible")!;
-                controller.Pause();
-                controller.StartAnimation("Progress", progressAnimation);
+                if (progressAnimation is not null)
+                {
+                    to.StartAnimation("IsVisible", animation);
+                    var controller = to.TryGetAnimationController("IsVisible")!;
+                    controller.Pause();
+                    controller.StartAnimation("Progress", progressAnimation);
+                }
+                else
+                {
+                    to.StartAnimation("IsVisible", animation, customController);
+                }
             }
         }
 
@@ -1326,8 +1345,15 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.Tools
             // Start the from's animations on the to.
             foreach (var anim in from.Animators)
             {
-                to.StartAnimation(anim.AnimatedProperty, anim.Animation);
-                if (anim.Controller is not null && (anim.Controller.IsPaused || anim.Controller.Animators.Count > 0))
+                if (anim.Controller is null || !anim.Controller.IsCustom)
+                {
+                    to.StartAnimation(anim.AnimatedProperty, anim.Animation);
+                } else
+                {
+                    to.StartAnimation(anim.AnimatedProperty, anim.Animation, anim.Controller);
+                }
+
+                if (anim.Controller is not null && !anim.Controller.IsCustom && (anim.Controller.IsPaused || anim.Controller.Animators.Count > 0))
                 {
                     var controller = to.TryGetAnimationController(anim.AnimatedProperty)!;
                     if (anim.Controller.IsPaused)
@@ -1337,7 +1363,14 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.Tools
 
                     foreach (var controllerAnim in anim.Controller.Animators)
                     {
-                        controller.StartAnimation(controllerAnim.AnimatedProperty, controllerAnim.Animation);
+                        if (controllerAnim.Controller is null || !controllerAnim.Controller.IsCustom)
+                        {
+                            controller.StartAnimation(controllerAnim.AnimatedProperty, controllerAnim.Animation);
+                        }
+                        else
+                        {
+                            controller.StartAnimation(controllerAnim.AnimatedProperty, controllerAnim.Animation, controllerAnim.Controller);
+                        }
                     }
                 }
             }
@@ -1383,8 +1416,16 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.Tools
             // Start the from's animations on the to.
             foreach (var anim in from.Animators)
             {
-                to.StartAnimation(anim.AnimatedProperty, anim.Animation);
-                if (anim.Controller is not null && (anim.Controller.IsPaused || anim.Controller.Animators.Count > 0))
+                if (anim.Controller is null || !anim.Controller.IsCustom)
+                {
+                    to.StartAnimation(anim.AnimatedProperty, anim.Animation);
+                }
+                else
+                {
+                    to.StartAnimation(anim.AnimatedProperty, anim.Animation, anim.Controller);
+                }
+
+                if (anim.Controller is not null && !anim.Controller.IsCustom && (anim.Controller.IsPaused || anim.Controller.Animators.Count > 0))
                 {
                     var controller = to.TryGetAnimationController(anim.AnimatedProperty)!;
                     if (anim.Controller.IsPaused)
@@ -1394,7 +1435,14 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.Tools
 
                     foreach (var controllerAnim in anim.Controller.Animators)
                     {
-                        controller.StartAnimation(controllerAnim.AnimatedProperty, controllerAnim.Animation);
+                        if (controllerAnim.Controller is null || !controllerAnim.Controller.IsCustom)
+                        {
+                            controller.StartAnimation(controllerAnim.AnimatedProperty, controllerAnim.Animation);
+                        }
+                        else
+                        {
+                            controller.StartAnimation(controllerAnim.AnimatedProperty, controllerAnim.Animation, controllerAnim.Controller);
+                        }
                     }
                 }
             }

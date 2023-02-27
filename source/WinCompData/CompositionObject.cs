@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace CommunityToolkit.WinUI.Lottie.WinCompData
@@ -116,11 +117,13 @@ namespace CommunityToolkit.WinUI.Lottie.WinCompData
         public CompositionPropertySet Properties { get; }
 
         /// <summary>
-        /// Binds an animation to a property.
+        /// Binds an animation to a property with a given custom controller.
         /// </summary>
         /// <param name="target">The name of the property.</param>
         /// <param name="animation">The animation.</param>
-        public void StartAnimation(string target, CompositionAnimation animation)
+        /// <param name="customController">Custom controller.</param>
+        /// <returns>New animator.</returns>
+        public Animator StartAnimation(string target, CompositionAnimation animation, AnimationController? customController)
         {
             // Remove any existing animation.
             StopAnimation(target);
@@ -133,6 +136,13 @@ namespace CommunityToolkit.WinUI.Lottie.WinCompData
                 ? null
                 : new AnimationController(this, target);
 
+            if (customController is not null)
+            {
+                Debug.Assert(customController.IsCustom, "Should be custom!");
+                Debug.Assert(animation is not ExpressionAnimation, "Should not be ExpressionAnimation!");
+                controller = customController;
+            }
+
             var animator = new Animator(
                                 animatedProperty: target,
                                 animatedObject: this,
@@ -140,7 +150,16 @@ namespace CommunityToolkit.WinUI.Lottie.WinCompData
                                 controller: controller);
 
             _animators.Add(animator);
+            return animator;
         }
+
+        /// <summary>
+        /// Binds an animation to a property.
+        /// </summary>
+        /// <param name="target">The name of the property.</param>
+        /// <param name="animation">The animation.</param>
+        /// <returns>New animator.</returns>
+        public Animator StartAnimation(string target, CompositionAnimation animation) => StartAnimation(target, animation, null);
 
         /// <summary>
         /// Stops an animation that was previously started.
@@ -230,7 +249,7 @@ namespace CommunityToolkit.WinUI.Lottie.WinCompData
             /// The controller for this <see cref="Animator"/> or null
             /// if the animation is an <see cref="ExpressionAnimation"/>.
             /// </summary>
-            public AnimationController? Controller { get; }
+            public AnimationController? Controller { get; private set; }
 
             /// <inheritdoc/>
             public override string ToString() => AnimatedProperty;

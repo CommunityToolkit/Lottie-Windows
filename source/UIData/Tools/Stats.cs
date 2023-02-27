@@ -160,6 +160,8 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.Tools
             }
         }
 
+        public int AnimationControllerListCount { get; }
+
         public int AnimationControllerCount { get; }
 
         public int AnimatorCount { get; }

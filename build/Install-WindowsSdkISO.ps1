@@ -242,6 +242,11 @@ if ($InstallWindowsSDK)
     # Note: there is a delay from Windows SDK announcements to availability via the static link
     $uri = "https://go.microsoft.com/fwlink/?prd=11966&pver=1.0&plcid=0x409&clcid=0x409&ar=Flight&sar=Sdsurl&o1=$buildNumber"
 
+    if ($buildNumber -eq "22621")
+    {
+        $uri = "https://go.microsoft.com/fwlink/p/?linkid=2196240"
+    }
+
     if ($env:TEMP -eq $null)
     {
         $env:TEMP = Join-Path $env:SystemDrive 'temp'

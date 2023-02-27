@@ -151,6 +151,11 @@ namespace CommunityToolkit.WinUI.Lottie.LottieToWinComp
         public ContainerVisual? RootVisual { get; private set; }
 
         /// <summary>
+        /// AnimationController that has Progress property bound to RootVisual.Progress property.
+        /// </summary>
+        public AnimationController? RootProgressController { get; private set; }
+
+        /// <summary>
         /// True iff theme property bindings are enabled.
         /// </summary>
         public bool TranslatePropertyBindings { get; }
@@ -222,6 +227,16 @@ namespace CommunityToolkit.WinUI.Lottie.LottieToWinComp
 
             // Add the master progress property to the visual.
             RootVisual.Properties.InsertScalar(ProgressPropertyName, 0);
+
+            // AnimationController that has Progress value bound to RootVisual.Progress
+            if (ObjectFactory.IsUapApiAvailable(nameof(AnimationController)))
+            {
+                RootProgressController = ObjectFactory.CreateAnimationControllerList();
+                var rootProgressAnimation = context.ObjectFactory.CreateExpressionAnimation(ExpressionFactory.RootProgress);
+                rootProgressAnimation.SetReferenceParameter(ExpressionFactory.RootName, RootVisual);
+                RootProgressController.Pause();
+                RootProgressController.StartAnimation("Progress", rootProgressAnimation);
+            }
 
             // Add the translations of each layer to the root visual. This will recursively
             // add the tranlation of the layers in precomps.

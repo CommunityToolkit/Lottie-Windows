@@ -33,6 +33,7 @@ namespace CommunityToolkit.WinUI.Lottie
         Loader? _loader;
         WinCompData.Visual? _wincompDataRootVisual;
         WinCompData.CompositionPropertySet? _wincompDataThemingPropertySet;
+        IEnumerable<WinCompData.AnimationController>? _wincompDataAnimationControllers;
         CompositionPropertySet? _themingPropertySet;
         double _width;
         double _height;
@@ -62,6 +63,7 @@ namespace CommunityToolkit.WinUI.Lottie
                                                 CompositionObjectNodes.
                                                 Where(n => n.Object is WinCompData.CompositionPropertySet cps && cps.Owner is null).
                                                 Select(n => (WinCompData.CompositionPropertySet)n.Object).FirstOrDefault();
+            _wincompDataAnimationControllers = graph.CompositionObjectNodes.Where(n => (n.Object is WinCompData.AnimationController) && ((WinCompData.AnimationController)n.Object).IsCustom).Select(n => (WinCompData.AnimationController)n.Object);
         }
 
         internal bool CanInstantiate => _wincompDataRootVisual is not null;
@@ -84,7 +86,10 @@ namespace CommunityToolkit.WinUI.Lottie
                 var instantiator = new Instantiator(compositor, surfaceResolver: LoadImageFromUri);
 
                 // _wincompDataRootVisual is not null is implied by CanInstantiate.
-                var result = new DisposableAnimatedVisual((Visual)instantiator.GetInstance(_wincompDataRootVisual!))
+                Visual rootVisual = (Visual)instantiator.GetInstance(_wincompDataRootVisual!);
+                IEnumerable<AnimationController> animationControllers = _wincompDataAnimationControllers!.Select(o => (AnimationController)instantiator.GetInstance(o));
+
+                var result = new DisposableAnimatedVisual(rootVisual, animationControllers)
                 {
                     Size = new System.Numerics.Vector2((float)_width, (float)_height),
                     Duration = _duration,
