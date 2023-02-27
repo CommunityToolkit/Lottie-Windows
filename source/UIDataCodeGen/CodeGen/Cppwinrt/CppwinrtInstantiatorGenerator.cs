@@ -503,7 +503,6 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Cppwinrt
             builder.Indent();
             builder.Indent();
 
-            builder.WriteLine($"winrt::{_animatedVisualTypeName},");
             if (info.ImplementCreateAndDestroyMethods)
             {
                 builder.WriteLine($"winrt::{_animatedVisualTypeName2},");
