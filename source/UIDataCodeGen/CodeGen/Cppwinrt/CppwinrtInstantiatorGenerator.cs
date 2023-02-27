@@ -1575,14 +1575,14 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Cppwinrt
         winrt::com_ptr<ID2D1Geometry> Geometry() { return _geometry; }
 
         // IGeometrySource2DInterop.
-        IFACEMETHODIMP GetGeometry(ID2D1Geometry** value) override
+        IFACEMETHODIMP GetGeometry(ID2D1Geometry** value) noexcept(true) override
         {
             _geometry.copy_to(value);
             return S_OK;
         }
 
         // IGeometrySource2DInterop.
-        IFACEMETHODIMP TryGetGeometryUsingFactory(ID2D1Factory*, ID2D1Geometry**) override
+        IFACEMETHODIMP TryGetGeometryUsingFactory(ID2D1Factory*, ID2D1Geometry**) noexcept(true) override
         {
             return E_NOTIMPL;
         }
@@ -1633,7 +1633,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Cppwinrt
         winrt::hstring Name() { return m_name; }
 
         // IGraphicsEffectD2D1Interop.
-        IFACEMETHODIMP GetEffectId(GUID* id) override
+        IFACEMETHODIMP GetEffectId(GUID* id) noexcept(true) override
         {
             if (id != nullptr)
             {
@@ -1645,7 +1645,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Cppwinrt
         }
 
         // IGraphicsEffectD2D1Interop.
-        IFACEMETHODIMP GetSourceCount(UINT* count) override
+        IFACEMETHODIMP GetSourceCount(UINT* count) noexcept(true) override
         {
             if (count != nullptr)
             {
@@ -1658,7 +1658,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Cppwinrt
         // IGraphicsEffectD2D1Interop.
         IFACEMETHODIMP GetSource(
             UINT index,
-            ::ABI::Windows::Graphics::Effects::IGraphicsEffectSource** source) override
+            ::ABI::Windows::Graphics::Effects::IGraphicsEffectSource** source) noexcept(true) override
         {
             if (index >= m_sources.size() ||
                 source == nullptr)
@@ -1672,12 +1672,12 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Cppwinrt
         }
 
         // IGraphicsEffectD2D1Interop.
-        IFACEMETHODIMP GetPropertyCount(UINT* count) override { *count = 1; return S_OK; }
+        IFACEMETHODIMP GetPropertyCount(UINT* count) noexcept(true) override { *count = 1; return S_OK; }
 
         // IGraphicsEffectD2D1Interop.
         IFACEMETHODIMP GetProperty(
             UINT index,
-            ::ABI::Windows::Foundation::IPropertyValue** value) override
+            ::ABI::Windows::Foundation::IPropertyValue** value) noexcept(true) override
         {
             switch (index)
             {
@@ -1726,7 +1726,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Cppwinrt
         winrt::hstring Name() { return m_name; }
 
         // IGraphicsEffectD2D1Interop.
-        IFACEMETHODIMP GetEffectId(GUID* id) override
+        IFACEMETHODIMP GetEffectId(GUID* id) noexcept(true) override
         {
             if (id != nullptr)
             {
@@ -1738,7 +1738,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Cppwinrt
         }
 
         // IGraphicsEffectD2D1Interop.
-        IFACEMETHODIMP GetSourceCount(UINT* count) override
+        IFACEMETHODIMP GetSourceCount(UINT* count) noexcept(true) override
         {
             if (count != nullptr)
             {
@@ -1751,7 +1751,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Cppwinrt
         // IGraphicsEffectD2D1Interop.
         IFACEMETHODIMP GetSource(
             UINT index,
-            ::ABI::Windows::Graphics::Effects::IGraphicsEffectSource** source) override
+            ::ABI::Windows::Graphics::Effects::IGraphicsEffectSource** source) noexcept(true) override
         {
             if (index != 0 ||
                 source == nullptr)
@@ -1765,12 +1765,12 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Cppwinrt
         }
 
         // IGraphicsEffectD2D1Interop.
-        IFACEMETHODIMP GetPropertyCount(UINT* count) override { *count = 3; return S_OK; }
+        IFACEMETHODIMP GetPropertyCount(UINT* count) noexcept(true) override { *count = 3; return S_OK; }
 
         // IGraphicsEffectD2D1Interop.
         IFACEMETHODIMP GetProperty(
             UINT index,
-            ::ABI::Windows::Foundation::IPropertyValue** value) override
+            ::ABI::Windows::Foundation::IPropertyValue** value) noexcept(true) override
         {
             switch (index)
             {
@@ -1799,7 +1799,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Cppwinrt
         IFACEMETHODIMP GetNamedPropertyMapping(
             LPCWSTR,
             UINT*,
-            ::ABI::Windows::Graphics::Effects::GRAPHICS_EFFECT_PROPERTY_MAPPING*) override
+            ::ABI::Windows::Graphics::Effects::GRAPHICS_EFFECT_PROPERTY_MAPPING*) noexcept(true) override
         {
             return E_INVALIDARG;
         }
