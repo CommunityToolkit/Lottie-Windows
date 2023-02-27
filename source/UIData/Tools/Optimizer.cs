@@ -440,13 +440,21 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.Tools
             foreach (var animator in source.Animators)
             {
                 var animation = GetCompositionAnimation(animator.Animation);
+                var controller = animator.Controller;
 
                 // Freeze the animation to indicate that it will not be mutated further. This
                 // will ensure that it does not need to be copied when target.StartAnimation is called.
                 animation.Freeze();
-                target.StartAnimation(animator.AnimatedProperty, animation);
-                var controller = animator.Controller;
-                if (controller is not null)
+                if (controller is null || !controller.IsCustom)
+                {
+                    target.StartAnimation(animator.AnimatedProperty, animation);
+                }
+                else
+                {
+                   target.StartAnimation(animator.AnimatedProperty, animation, GetAnimationController(controller));
+                }
+
+                if (controller is not null && !controller.IsCustom)
                 {
                     var animationController = GetAnimationController(controller);
                     if (controller.IsPaused)
@@ -464,9 +472,22 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.Tools
                 return result;
             }
 
-            var targetObject = GetCompositionObject(obj.TargetObject);
+            if (obj.IsCustom)
+            {
+                result = CacheAndInitializeCompositionObject(obj, _c.CreateAnimationController());
 
-            result = CacheAndInitializeCompositionObject(obj, targetObject.TryGetAnimationController(obj.TargetProperty)!);
+                if (obj.IsPaused)
+                {
+                    result.Pause();
+                }
+            }
+            else
+            {
+                var targetObject = GetCompositionObject(obj.TargetObject!);
+
+                result = CacheAndInitializeCompositionObject(obj, targetObject.TryGetAnimationController(obj.TargetProperty!)!);
+            }
+
             StartAnimationsAndFreeze(obj, result);
             return result;
         }

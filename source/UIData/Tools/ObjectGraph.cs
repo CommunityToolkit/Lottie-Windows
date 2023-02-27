@@ -363,6 +363,12 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.Tools
             return true;
         }
 
+        bool VisitAnimationControllerList(AnimationController obj, T node)
+        {
+            VisitCompositionObject(obj, node);
+            return true;
+        }
+
         bool VisitCanvasGeometry(CanvasGeometry obj, T node)
         {
             return true;

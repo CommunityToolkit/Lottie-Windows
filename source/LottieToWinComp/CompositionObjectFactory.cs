@@ -86,6 +86,12 @@ namespace CommunityToolkit.WinUI.Lottie.LottieToWinComp
                 case nameof(PathKeyFrameAnimation):
                     return 11;
 
+                // AnimationController class was introduced in version 6, but
+                // it became possible to create it explicitly only after verstion 15
+                // with compositor.CreateAnimationController() method
+                case nameof(AnimationController):
+                    return 15;
+
                 default:
                     throw new InvalidOperationException();
             }
@@ -303,6 +309,12 @@ namespace CommunityToolkit.WinUI.Lottie.LottieToWinComp
                 $"UAP version {uapVersion} features are not available.");
 
             HighestUapVersionUsed = Math.Max(HighestUapVersionUsed, uapVersion);
+        }
+
+        internal AnimationController CreateAnimationControllerList()
+        {
+            ConsumeVersionFeature(GetUapVersionForApi(nameof(AnimationController)));
+            return _compositor.CreateAnimationController();
         }
     }
 }
