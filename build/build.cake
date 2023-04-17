@@ -183,7 +183,7 @@ Task("Version")
     .Does(() =>
 {
     Information("\r\nRetrieving version...");
-    Version = GitVersioningGetVersion().SemVer2;
+    Version = GitVersioningGetVersion().NuGetPackageVersion;
     Information($"\r\nBuild Version: {Version}");
 });
 
