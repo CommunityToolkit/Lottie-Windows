@@ -4,7 +4,7 @@
   <PropertyGroup Label="Configuration">
     <Import_RootNamespace>LottieGen</Import_RootNamespace>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <RootNamespace>LottieGen</RootNamespace>
     <Configurations>Debug;Release</Configurations>
     <LangVersion>latest</LangVersion>

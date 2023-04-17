@@ -21,7 +21,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.9.0" />
+        <PackageReference Include="Microsoft.Build.Utilities.Core" Version="17.5.0" />
     </ItemGroup>
 
     <!--
@@ -58,7 +58,7 @@
     </packageTypes>
   </metadata>
   <files>
-    <file src="]]>$([MsBuild]::NormalizePath('$(MsBuildThisFileDirectory)..\win-x64\bin\AnyCPU\$(Configuration)\net5.0\win-x64\publish\LottieGen.exe'))<![CDATA[" target="bin" />
+    <file src="]]>$([MsBuild]::NormalizePath('$(MsBuildThisFileDirectory)..\win-x64\bin\AnyCPU\$(Configuration)\net7.0\win-x64\publish\LottieGen.exe'))<![CDATA[" target="bin" />
     <file src="]]>$(MsBuildThisFileDirectory)$(_LottieGenNuspecPropsFile)<![CDATA[" target="build/native/" />
     <file src="]]>$(MsBuildThisFileDirectory)$(_LottieGenNuspecPropsFile)<![CDATA[" target="build/win/" />
     <file src="]]>$([MsBuild]::NormalizePath('$(MsBuildThisFileDirectory)..\MSBuildTask\bin\AnyCPU\$(Configuration)\net472\$(AssemblyName).dll'))<![CDATA[" target="bin/" />

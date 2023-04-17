@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0-windows10.0.18362.0</TargetFramework>
+    <TargetFramework>net7.0-windows10.0.18362.0</TargetFramework>
     <OutputType>Library</OutputType>
     
     <PackageId>CommunityToolkit.WinUI.Lottie</PackageId>
@@ -9,14 +9,13 @@
 
     <Nullable>enable</Nullable>
     <CsWinRTIncludes>Microsoft</CsWinRTIncludes>
-    <Platforms>x64;x86</Platforms>
     <DefineConstants>WINAPPSDK</DefineConstants>
     <SignAssembly>True</SignAssembly>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Graphics.Win2D" Version="1.0.0.30" />
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.0.3" />
+    <PackageReference Include="Microsoft.Graphics.Win2D" Version="1.0.4" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.3.230331000" />
   </ItemGroup>
 
   <Import Project="..\Lottie-Windows.props" />
