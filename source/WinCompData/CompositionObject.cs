@@ -83,6 +83,8 @@ namespace CommunityToolkit.WinUI.Lottie.WinCompData
 
         public string? Comment { get; set; }
 
+#pragma warning disable CA1033 // Interface methods should be callable by child types
+
         /// <summary>
         /// Gets or sets a description of the object. This may be used to add comments to generated code.
         /// Cf. the <see cref="Comment"/> property which is a property on real composition
@@ -113,6 +115,7 @@ namespace CommunityToolkit.WinUI.Lottie.WinCompData
             get => (string?)TryGetMetadata(in s_nameMetadataKey);
             set => SetMetadata(in s_nameMetadataKey, value);
         }
+#pragma warning restore CA1033 // Interface methods should be callable by child types
 
         public CompositionPropertySet Properties { get; }
 
@@ -207,6 +210,12 @@ namespace CommunityToolkit.WinUI.Lottie.WinCompData
 
         /// <inheritdoc/>
         public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
         {
         }
 

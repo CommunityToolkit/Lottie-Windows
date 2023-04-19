@@ -1,7 +1,5 @@
-#module "Cake.Longpath.Module"
-
-#addin nuget:?package=Cake.FileHelpers&version=3.2.1
-#addin nuget:?package=Cake.Powershell&version=0.4.8
+#addin nuget:?package=Cake.FileHelpers&version=6.1.3
+#addin nuget:?package=Cake.GitVersioning&version=3.5.119
 
 using System;
 using System.Linq;
@@ -18,7 +16,6 @@ var configuration = Argument("configuration", "Release");
 // VERSIONS OF TOOLS TO USE
 //////////////////////////////////////////////////////////////////////
 
-var gitVersioningVersion = "3.0.28";
 var inheritDocVersion = "2.3.0";
 
 //////////////////////////////////////////////////////////////////////
@@ -178,9 +175,6 @@ Task("Verify")
 {
     // Source code needs to have appropriate licensing headers.
     VerifyHeaders(false);
-
-    // SDK needs to be installed.
-    StartPowershellFile("./Find-WindowsSDKVersions.ps1");
 });
 
 Task("Version")
@@ -188,18 +182,8 @@ Task("Version")
     .IsDependentOn("Verify")
     .Does(() =>
 {
-    Information("\r\nDownloading NerdBank GitVersioning...");
-    var installSettings = new NuGetInstallSettings {
-        ExcludeVersion  = true,
-        Version = gitVersioningVersion,
-        OutputDirectory = toolsDir
-    };
-
-    NuGetInstall(new []{"nerdbank.gitversioning"}, installSettings);
-
     Information("\r\nRetrieving version...");
-    var results = StartPowershellFile(versionClient);
-    Version = results[1].Properties["NuGetPackageVersion"].Value.ToString();
+    Version = GitVersioningGetVersion().NuGetPackageVersion;
     Information($"\r\nBuild Version: {Version}");
 });
 

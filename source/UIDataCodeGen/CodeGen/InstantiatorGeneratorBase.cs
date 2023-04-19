@@ -732,6 +732,8 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
 
         string New(string typeName) => _s.New(typeName);
 
+#pragma warning disable CA1033 // Interface methods should be callable by child types
+
         string IAnimatedVisualSourceInfo.ClassName => _className;
 
         string IAnimatedVisualSourceInfo.Namespace => _namespace;
@@ -777,6 +779,8 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
         IReadOnlyList<LoadedImageSurfaceInfo> IAnimatedVisualSourceInfo.LoadedImageSurfaces => _loadedImageSurfaceInfos;
 
         SourceMetadata IAnimatedVisualSourceInfo.SourceMetadata => _sourceMetadata;
+
+#pragma warning restore CA1033 // Interface methods should be callable by child types
 
         // Return true if any of the AnimatedVisualGenerators match the given predicate.
         bool Any(Func<AnimatedVisualGenerator, bool> predicate) => _animatedVisualGenerators.Any(predicate);

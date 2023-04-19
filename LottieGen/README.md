@@ -2,17 +2,17 @@
 
 LottieGen is a tool for generating C#, C++, and other outputs from Lottie / Bodymovin JSON files. LottieGen is built as a [.NET global tool](https://docs.microsoft.com/en-us/dotnet/core/tools/global-tools), which means it will run anywhere .NET Core is available, including Linux and Mac.
 
-LottieGen requires [.NET Core 5.0 SDK](https://dotnet.microsoft.com/download/dotnet-core/5.0) or later.
+LottieGen requires [.NET Core 7.0 SDK](https://dotnet.microsoft.com/download/dotnet-core/7.0) or later.
 
 # Run without installation
 
-Local builds can be run directly. Just install [.NET Core 5.0](https://dotnet.microsoft.com/download/dotnet-core/5.0), build the LottieGen.sln solution and run the output.
+Local builds can be run directly. Just install [.NET Core 7.0](https://dotnet.microsoft.com/download/dotnet-core/7.0), build the LottieGen.sln solution and run the output.
 
-    f:\GitHub\Lottie-Windows\LottieGen\DotnetTool\bin\AnyCpu\Debug\net5.0\lottiegen.exe
+    f:\GitHub\Lottie-Windows\LottieGen\DotnetTool\bin\AnyCpu\Debug\net7.0\lottiegen.exe
 
 And of course you can copy LottieGen to a directory and run directly without installing it, for example:
 
-    copy f:\GitHub\Lottie-Windows\LottieGen\DotnetTool\bin\AnyCpu\Debug\net5.0\* d:\mybuildtools
+    copy f:\GitHub\Lottie-Windows\LottieGen\DotnetTool\bin\AnyCpu\Debug\net7.0\* d:\mybuildtools
 
 
 # Install as a .NET Core global tool

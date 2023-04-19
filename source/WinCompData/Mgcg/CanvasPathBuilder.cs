@@ -93,7 +93,9 @@ namespace CommunityToolkit.WinUI.Lottie.WinCompData.Mgcg
                     CommandType.EndFigure => ((EndFigure)this).Equals((EndFigure)other),
                     CommandType.AddCubicBezier => ((AddCubicBezier)this).Equals((AddCubicBezier)other),
                     CommandType.AddLine => ((AddLine)this).Equals((AddLine)other),
+#pragma warning disable CA1065 // Do not raise exceptions in unexpected locations
                     _ => throw new InvalidOperationException(),
+#pragma warning restore CA1065 // Do not raise exceptions in unexpected locations
                 };
             }
 

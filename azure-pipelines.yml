@@ -10,7 +10,7 @@ pr:
 - rel/*
 
 pool:
-  vmImage: windows-2019
+  vmImage: windows-2022
 
 variables: 
   BuildConfiguration: Lottie-Windows
@@ -20,15 +20,15 @@ steps:
 - task: BatchScript@1
   displayName: Setup Environment Variables
   inputs:
-    filename: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\Common7\\Tools\\VsDevCmd.bat"
+    filename: "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\Tools\\VsDevCmd.bat"
     arguments: -no_logo
     modifyEnvironment: true
 
 # Install NuGet tools.  
 - task: NuGetToolInstaller@1
-  displayName: Use NuGet 5.8.1
+  displayName: Use NuGet 6.5.0
   inputs:
-    versionSpec: 5.8.1
+    versionSpec: 6.5.0
 
 # Install Nerbank.GitVersioning.
 - task: DotNetCoreCLI@2  
@@ -39,17 +39,10 @@ steps:
     arguments: install --tool-path . nbgv
 
 # .NET Core SDK Installer.
-# 2.2.x is needed to build the UWP code.
-# 5.0.x is used for everything else that the UWP apps don't depend on.
 - task: UseDotNet@2
   inputs:
     packageType: 'sdk' # Options: runtime, sdk
-    version: '2.2.x' 
-
-- task: UseDotNet@2
-  inputs:
-    packageType: 'sdk' # Options: runtime, sdk
-    version: '5.0.x'
+    version: '7.0.x'
 
 # Nerdbank.GitVersioning
 - script: nbgv cloud
@@ -61,7 +54,7 @@ steps:
   displayName: Insider SDK
 
 # Run the build.
-- powershell: .\build.ps1 -target=Package
+- powershell: .\build.ps1 --target=Package
   displayName: Build
   workingDirectory: .\build
 

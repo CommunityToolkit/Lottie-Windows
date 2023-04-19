@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <Configurations>Debug;Release</Configurations>
     <LangVersion>latest</LangVersion>
     <DefineConstants>PUBLIC_LottieMetadata</DefineConstants>
@@ -11,7 +11,7 @@
 
   <ItemGroup>
     <PackageReference Include="System.Memory" Version="4.5.4" />
-    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="5.0.0" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
   </ItemGroup>
 
 </Project>

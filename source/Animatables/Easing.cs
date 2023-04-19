@@ -49,7 +49,9 @@ namespace CommunityToolkit.WinUI.Lottie.Animatables
                     var yCb = (CubicBezierEasing)other;
                     return xCb.Equals(yCb);
                 default:
+#pragma warning disable CA1065 // Do not raise exceptions in unexpected locations
                     throw Unreachable;
+#pragma warning restore CA1065 // Do not raise exceptions in unexpected locations
             }
         }
 
