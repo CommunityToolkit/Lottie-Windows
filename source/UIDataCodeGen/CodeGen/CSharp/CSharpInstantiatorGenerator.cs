@@ -714,7 +714,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
                     builder.WriteLine($"{(firstSeen ? "else " : string.Empty)}if (propertyName == {_s.String(prop.BindingName)})");
                     firstSeen = true;
                     builder.OpenScope();
-                    builder.WriteLine($"_theme{prop.BindingName} = value;");
+                    builder.WriteLine($"{(SourceInfo.GenerateDependencyObject ? string.Empty : "_theme")}{prop.BindingName} = value;");
                     builder.CloseScope();
                 }
 
