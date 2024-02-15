@@ -1206,6 +1206,8 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
 
             string ConstVar => _s.ConstVar;
 
+            string Var => _s.Var;
+
             string Bool(bool value) => value ? "true" : "false";
 
             string Color(Wui.Color value) => _s.Color(value);
@@ -2048,7 +2050,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                     if (!controllerVariableAdded)
                     {
                         // Declare and initialize the controller variable.
-                        builder.WriteLine($"{ConstVar} controller = {localName}{Deref}TryGetAnimationController({String(animator.AnimatedProperty)});");
+                        builder.WriteLine($"{Var} controller = {localName}{Deref}TryGetAnimationController({String(animator.AnimatedProperty)});");
                         controllerVariableAdded = true;
                     }
                     else
