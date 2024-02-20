@@ -1210,7 +1210,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Cppwinrt
             builder.WriteLine("if (!m_isImageLoadingStarted)");
             builder.OpenScope();
             builder.WriteLine("m_isImageLoadingStarted = true;");
-            builder.WriteLine($"TypedEventHandler<LoadedImageSurface, LoadedImageSourceLoadCompletedEventArgs> eventHandler{{ this, &{_sourceClassName}::HandleLoadCompleted }};");
+            builder.WriteLine($"TypedEventHandler<LoadedImageSurface, LoadedImageSourceLoadCompletedEventArgs> eventHandler{{ get_weak(), &{_sourceClassName}::HandleLoadCompleted }};");
 
             foreach (var n in SourceInfo.LoadedImageSurfaces)
             {
