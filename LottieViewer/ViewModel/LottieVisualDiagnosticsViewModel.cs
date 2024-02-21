@@ -35,6 +35,7 @@ namespace LottieViewer.ViewModel
             set
             {
                 LottieVisualDiagnostics = (LottieVisualDiagnostics?)value;
+
                 Issues.Clear();
                 Markers.Clear();
                 Stats.Clear();
@@ -78,7 +79,7 @@ namespace LottieViewer.ViewModel
                         Stats.Add(new StatsEntry("Expression animators", LottieVisualDiagnostics.WinCompStats.ExpressionAnimatorCount, tags));
                         Stats.Add(new StatsEntry("Keyframe count", LottieVisualDiagnostics.WinCompStats.KeyframeCount, tags));
                         Stats.Add(new StatsEntry("Geometries count", LottieVisualDiagnostics.WinCompStats.GeometriesCount, tags));
-                        Stats.Add(new StatsEntry("Path commands count", LottieVisualDiagnostics.WinCompStats.PathCommandsCount, tags));
+                        Stats.Add(new StatsEntry("Path segments count", LottieVisualDiagnostics.WinCompStats.PathCommandsCount, tags));
                         Stats.Add(new StatsEntry("Effect brush", LottieVisualDiagnostics.WinCompStats.EffectBrushCount, tags));
                         Stats.Add(new StatsEntry("Effect factory", LottieVisualDiagnostics.WinCompStats.EffectFactoryCount, tags));
                         Stats.Add(new StatsEntry("Composition objects", LottieVisualDiagnostics.WinCompStats.CompositionObjectCount, tags));
