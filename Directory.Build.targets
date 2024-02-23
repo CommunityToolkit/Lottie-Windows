@@ -36,6 +36,10 @@
   </Choose>
   <Target Name="AddCommitHashToAssemblyAttributes" BeforeTargets="GetAssemblyAttributes">
     <ItemGroup>
+     <AssemblyAttributes Include="AssemblyVersion">
+        <!-- This should remain as Major.Minor as Assembly Version shouldn't change across small revisions -->
+        <_Parameter1>$(MajorVersion).$(MinorVersion).0.0</_Parameter1>
+      </AssemblyAttributes>
       <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition=" '$(SourceRevisionId)' != '' ">
         <_Parameter1>CommitHash</_Parameter1>
         <_Parameter2>$(SourceRevisionId)</_Parameter2>
