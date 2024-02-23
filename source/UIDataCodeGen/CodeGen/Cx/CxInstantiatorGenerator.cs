@@ -19,7 +19,6 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Cx
 #endif
     sealed class CxInstantiatorGenerator : InstantiatorGeneratorBase
     {
-        const string Muxc = "Microsoft::UI::Xaml::Controls";
         readonly CxStringifier _s;
         readonly string _fileBaseName;
         readonly string _headerFileName;
@@ -354,7 +353,6 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Cx
         {
             var namespaces = new CppNamespaceListBuilder();
             namespaces.Add("Platform");
-            namespaces.Add(Muxc);
             namespaces.Add($"{_winUINamespace}::Xaml");
             namespaces.Add($"{_winUINamespace}::Xaml::Data");
             namespaces.Add($"{_winUINamespace}::Xaml::Media");
@@ -372,7 +370,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Cx
                 inherits.Add($"{_winUINamespace}::Xaml::DependencyObject");
             }
 
-            inherits.Add("IDynamicAnimatedVisualSourceSource");
+            inherits.Add("Microsoft::UI::Xaml::Controls::IDynamicAnimatedVisualSource");
 
             if (SourceInfo.WinUIVersion >= new Version(2, 6) && SourceInfo.WinUIVersion.Major < 3)
             {
@@ -393,7 +391,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Cx
 
             var pub = builder.Public;
 
-            pub.WriteLine("virtual event Windows::Foundation::TypedEventHandler<IDynamicAnimatedVisualSource^, Object^>^ AnimatedVisualInvalidated;");
+            pub.WriteLine("virtual event Windows::Foundation::TypedEventHandler<Microsoft::UI::Xaml::Controls::IDynamicAnimatedVisualSource^, Object^>^ AnimatedVisualInvalidated;");
             pub.WriteLine();
 
             WriteTryCreateAnimatedVisualDecl(pub);
@@ -403,6 +401,21 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Cx
             pub.WriteLine();
 
             WriteMarkersPropertyDecl(pub);
+            pub.WriteLine();
+
+            WriteFrameCountDecl(pub);
+            pub.WriteLine();
+
+            WriteFramerateDecl(pub);
+            pub.WriteLine();
+
+            WriteDurationDecl(pub);
+            pub.WriteLine();
+
+            WriteSetColorPropertyDecl(pub);
+            pub.WriteLine();
+
+            WriteSetScalarPropertyDecl(pub);
             pub.WriteLine();
 
             pub.WriteLine($"virtual event PropertyChangedEventHandler^ PropertyChanged;");
@@ -564,7 +577,6 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Cx
             namespaces.Add($"{_winUINamespace}");
             namespaces.Add(_wuc);
             namespaces.Add("Windows::Graphics");
-            namespaces.Add(Muxc);
 
             if (SourceInfo.UsesCanvas ||
                 SourceInfo.UsesCanvasEffects ||
@@ -827,7 +839,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Cx
         void WriteTryCreateAnimatedVisualDecl(CodeBuilder builder)
         {
             builder.WriteLine("[Windows::Foundation::Metadata::DefaultOverload]");
-            builder.WriteLine($"{(_isAnimatedIcon ? "virtual " : string.Empty)}{_animatedVisualTypeName}^ TryCreateAnimatedVisual({_wuc}::Compositor^ compositor);");
+            builder.WriteLine($"{_animatedVisualTypeName}^ TryCreateAnimatedVisual({_wuc}::Compositor^ compositor);");
             builder.WriteLine();
 
             builder.WriteLine($"virtual {_animatedVisualTypeName}^ TryCreateAnimatedVisual(");
@@ -1003,7 +1015,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Cx
                 builder.WriteBreakableLine($"auto result = {_s.New(info.ClassName)}(", CommaSeparate(GetConstructorArguments(info)), ");");
                 if (info.ImplementCreateAndDestroyMethods)
                 {
-                    builder.WriteLine($"result.{CreateAnimationsMethod}();");
+                    builder.WriteLine($"result->{CreateAnimationsMethod}();");
                 }
 
                 builder.WriteLine("return result;");
@@ -1018,7 +1030,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Cx
                     builder.WriteBreakableLine($"auto result = {_s.New(info.ClassName)}(", CommaSeparate(GetConstructorArguments(info)), ");");
                     if (info.ImplementCreateAndDestroyMethods)
                     {
-                        builder.WriteLine($"result.{CreateAnimationsMethod}();");
+                        builder.WriteLine($"result->{CreateAnimationsMethod}();");
                     }
 
                     builder.WriteLine("return result;");
@@ -1268,13 +1280,13 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Cx
 
             if (info.ImplementCreateAndDestroyMethods)
             {
-                builder.WriteLine($"public void {CreateAnimationsMethod}()");
+                builder.WriteLine($"virtual void {CreateAnimationsMethod}()");
                 builder.OpenScope();
                 builder.WriteCodeBuilder(createAnimations);
                 builder.CloseScope();
                 builder.WriteLine();
 
-                builder.WriteLine($"public void {DestroyAnimationsMethod}()");
+                builder.WriteLine($"virtual void {DestroyAnimationsMethod}()");
                 builder.OpenScope();
                 builder.WriteCodeBuilder(destroyAnimations);
                 builder.CloseScope();
