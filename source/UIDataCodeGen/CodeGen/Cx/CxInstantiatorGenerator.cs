@@ -285,7 +285,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Cx
                     // Write the dependency property change handler.
                     builder.WriteLine($"void {sourceClassQualifier}On{prop.BindingName}Changed(DependencyObject^ d, DependencyPropertyChangedEventArgs^ e)");
                     builder.OpenScope();
-                    builder.WriteLine($"auto self = ({sourceClassQualifier}^)d;");
+                    builder.WriteLine($"auto self = ({sourceClassQualifier.Substring(0, sourceClassQualifier.Length - 2)}^)d;");
                     builder.WriteLine();
                     builder.WriteLine($"if (self->{SourceInfo.ThemePropertiesFieldName} != nullptr)");
                     builder.OpenScope();
@@ -927,7 +927,16 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Cx
                     builder.WriteLine($"{(firstSeen ? "else " : string.Empty)}if (propertyName == {_s.String(prop.BindingName)})");
                     firstSeen = true;
                     builder.OpenScope();
-                    builder.WriteLine($"_theme{prop.BindingName} = value;");
+
+                    if (SourceInfo.GenerateDependencyObject)
+                    {
+                        builder.WriteLine($"SetValue(_{_s.CamelCase(prop.BindingName)}Property, value);");
+                    }
+                    else
+                    {
+                        builder.WriteLine($"_theme{prop.BindingName} = value;");
+                    }
+
                     builder.CloseScope();
                 }
 
