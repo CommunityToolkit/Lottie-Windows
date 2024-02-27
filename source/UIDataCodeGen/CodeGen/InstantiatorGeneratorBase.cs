@@ -1296,14 +1296,6 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                     return calleeNode.FieldName!;
                 }
 
-                if (_owner._disableFieldOptimization)
-                {
-                    // When field optimization is disabled, always return a call to the factory.
-                    // If the factory has been called already, it will return the value from
-                    // its storage.
-                    return calleeNode.FactoryCall();
-                }
-
                 if (calleeNode.Object is CompositionPropertySet propertySet)
                 {
                     // CompositionPropertySets do not have factories unless they are
@@ -1313,6 +1305,14 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                     {
                         return _s.PropertyGet(CallFactoryFromFor(callerNode, NodeFor(propertySet.Owner)), "Properties");
                     }
+                }
+
+                if (_owner._disableFieldOptimization)
+                {
+                    // When field optimization is disabled, always return a call to the factory.
+                    // If the factory has been called already, it will return the value from
+                    // its storage.
+                    return calleeNode.FactoryCall();
                 }
 
                 // Find the vertex from caller to callee.
