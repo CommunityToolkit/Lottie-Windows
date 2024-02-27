@@ -148,16 +148,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
             // Write a description of the source as comments.
             builder.WritePreformattedCommentLines(GetSourceDescriptionLines());
 
-            // If the composition has LoadedImageSurface, write a class that implements the IDynamicAnimatedVisualSource interface.
-            // Otherwise, implement the IAnimatedVisualSource interface.
-            if (SourceInfo.LoadedImageSurfaces.Count > 0)
-            {
-                WriteIDynamicAnimatedVisualSource(builder);
-            }
-            else
-            {
-                WriteIAnimatedVisualSource(builder);
-            }
+            WriteIAnimatedVisualSource(builder, SourceInfo.LoadedImageSurfaces.Count > 0);
 
             builder.WriteLine();
 
@@ -263,9 +254,9 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
         }
 
         /// <summary>
-        /// Writes a class that implements the IAnimatedVisualSource interface.
+        /// Writes a class that implements IAnimatedVisualSourceX interfaces or optional IDynamicAnimatedVisualSource.
         /// </summary>
-        void WriteIAnimatedVisualSource(CodeBuilder builder)
+        void WriteIAnimatedVisualSource(CodeBuilder builder, bool implementDynamicAVS)
         {
             var visibility = SourceInfo.Public ? "public " : string.Empty;
 
@@ -287,6 +278,12 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
                 builder.WriteLine($", {Interface_IAnimatedVisualSource2.GetQualifiedName(_s)}");
             }
 
+            if (implementDynamicAVS)
+            {
+                builder.WriteLine($", {Interface_IDynamicAnimatedVisualSource.GetQualifiedName(_s)}");
+                builder.WriteLine(", INotifyPropertyChanged");
+            }
+
             foreach (var additionalInterface in SourceInfo.AdditionalInterfaces)
             {
                 builder.WriteLine($", {additionalInterface.GetQualifiedName(_s)}");
@@ -295,6 +292,33 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
             builder.UnIndent();
 
             builder.OpenScope();
+
+            if (implementDynamicAVS)
+            {
+                // Declare variables.
+                builder.WriteLine($"const int c_loadedImageSurfaceCount = {SourceInfo.LoadedImageSurfaces.Count};");
+                builder.WriteLine($"int _loadCompleteEventCount;");
+                builder.WriteLine("bool _isImageLoadingAsynchronous;");
+                builder.WriteLine("bool _isTryCreateAnimatedVisualCalled;");
+                builder.WriteLine("bool _isImageLoadingStarted;");
+
+                if (AnimatedVisualSourceInfo.WinUIVersion.Major >= 3)
+                {
+                    builder.WriteLine("HashSet<TypedEventHandler<IDynamicAnimatedVisualSource, object>> _animatedVisualInvalidatedEventTokenTable = new HashSet<TypedEventHandler<IDynamicAnimatedVisualSource, object>>();");
+                }
+                else
+                {
+                    builder.WriteLine("EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource, object>> _animatedVisualInvalidatedEventTokenTable;");
+                }
+
+                // Declare the variables to hold the LoadedImageSurfaces.
+                foreach (var n in SourceInfo.LoadedImageSurfaces)
+                {
+                    builder.WriteLine($"{_s.ReferenceTypeName(n.TypeName)} {n.FieldName};");
+                }
+
+                builder.WriteLine();
+            }
 
             // Add any internal constants.
             foreach (var c in SourceInfo.InternalConstants)
@@ -322,6 +346,39 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
             // Add the methods and fields needed for theming.
             WriteThemeMethodsAndFields(builder);
 
+            if (implementDynamicAVS)
+            {
+                // Implement the INotifyPropertyChanged.PropertyChanged event.
+                builder.WriteSummaryComment("This implementation of the INotifyPropertyChanged.PropertyChanged event is specific to C# and does not work on WinRT.");
+                builder.WriteLine("public event PropertyChangedEventHandler PropertyChanged;");
+                builder.WriteLine();
+
+                // Implement the AnimatedVisualInvalidated event.
+                WriteAnimatedVisualInvalidatedEvent(builder);
+
+                // Define properties.
+                builder.WriteSummaryComment("If this property is set to true, <see cref=\"TryCreateAnimatedVisual\"/> will return null" +
+                    " until all images have loaded. When all images have loaded, <see cref=\"TryCreateAnimatedVisual\"/> will return" +
+                    " the AnimatedVisual. To use, set it when instantiating the AnimatedVisualSource. Once <see cref=\"TryCreateAnimatedVisual\"/>" +
+                    " is called, changes made to this property will be ignored. Default value is false.");
+                builder.WriteLine("public bool IsImageLoadingAsynchronous");
+                builder.OpenScope();
+                builder.WriteLine("get { return _isImageLoadingAsynchronous; }");
+                builder.WriteLine("set");
+                builder.OpenScope();
+                builder.WriteLine("if (!_isTryCreateAnimatedVisualCalled && _isImageLoadingAsynchronous != value)");
+                builder.OpenScope();
+                builder.WriteLine("_isImageLoadingAsynchronous = value;");
+                builder.WriteLine("NotifyPropertyChanged(nameof(IsImageLoadingAsynchronous));");
+                builder.CloseScope();
+                builder.CloseScope();
+                builder.CloseScope();
+                builder.WriteLine();
+                builder.WriteSummaryComment("Returns true if all images have finished loading.");
+                builder.WriteLine("public bool IsImageLoadingCompleted { get; private set; }");
+                builder.WriteLine();
+            }
+
             // Generate the overload of TryCreateAnimatedVisual that doesn't return diagnostics.
             builder.WriteLine($"public {Interface_IAnimatedVisual.GetQualifiedName(_s)} TryCreateAnimatedVisual(Compositor compositor)");
             builder.OpenScope();
@@ -333,6 +390,11 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
             // Generate the method that creates an instance of the animated visual.
             builder.WriteLine($"public {Interface_IAnimatedVisual.GetQualifiedName(_s)} TryCreateAnimatedVisual(Compositor compositor, out object diagnostics)");
             builder.OpenScope();
+            if (implementDynamicAVS)
+            {
+                builder.WriteLine("_isTryCreateAnimatedVisualCalled = true;");
+            }
+
             builder.WriteLine("diagnostics = null;");
             if (SourceInfo.IsThemed)
             {
@@ -340,6 +402,31 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
             }
 
             builder.WriteLine();
+
+            var animatedVisualInfos = SourceInfo.AnimatedVisualInfos.OrderByDescending(avi => avi.RequiredUapVersion).ToArray();
+
+            if (implementDynamicAVS)
+            {
+                // WinUI3 doesn't ever do a version check. It's up to the user to make sure
+                // the version they're using is compatible.
+                if (SourceInfo.WinUIVersion.Major < 3)
+                {
+                    // Check whether the runtime will support the lowest UAP version required.
+                    builder.WriteLine($"if (!{animatedVisualInfos[^1].ClassName}.IsRuntimeCompatible())");
+                    builder.OpenScope();
+                    builder.WriteLine("return null;");
+                    builder.CloseScope();
+                    builder.WriteLine();
+                }
+
+                builder.WriteLine("EnsureImageLoadingStarted();");
+                builder.WriteLine();
+                builder.WriteLine("if (_isImageLoadingAsynchronous && _loadCompleteEventCount != c_loadedImageSurfaceCount)");
+                builder.OpenScope();
+                builder.WriteLine("return null;");
+                builder.CloseScope();
+                builder.WriteLine();
+            }
 
             // WinUI3 doesn't ever do a version check. It's up to the user to make sure
             // the version they're using is compatible.
@@ -350,7 +437,6 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
             else
             {
                 // Check the runtime version and instantiate the highest compatible IAnimatedVisual class.
-                var animatedVisualInfos = SourceInfo.AnimatedVisualInfos.OrderByDescending(avi => avi.RequiredUapVersion).ToArray();
                 for (var i = 0; i < animatedVisualInfos.Length; i++)
                 {
                     var current = animatedVisualInfos[i];
@@ -365,6 +451,31 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
             }
 
             builder.CloseScope();
+
+            if (implementDynamicAVS)
+            {
+                // Generate the method that load all the LoadedImageSurfaces.
+                WriteEnsureImageLoadingStarted(builder);
+
+                // Generate the method that handle the LoadCompleted event of the LoadedImageSurface objects.
+                WriteHandleLoadCompleted(builder);
+
+                // Generate the method that raise the PropertyChanged event.
+                builder.WriteLine("void NotifyPropertyChanged(string name)");
+                builder.OpenScope();
+                builder.WriteLine("PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));");
+                builder.CloseScope();
+                builder.WriteLine();
+
+                // Generate the method that get or create the EventRegistrationTokenTable.
+                if (AnimatedVisualSourceInfo.WinUIVersion.Major < 3)
+                {
+                    builder.WriteLine("EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource, object>> GetAnimatedVisualInvalidatedEventRegistrationTokenTable()");
+                    builder.OpenScope();
+                    builder.WriteLine("return EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource, object>>.GetOrCreateEventRegistrationTokenTable(ref _animatedVisualInvalidatedEventTokenTable);");
+                    builder.CloseScope();
+                }
+            }
         }
 
         void WriteThemeMethodsAndFields(CodeBuilder builder)
@@ -439,172 +550,6 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
                  PropertySetValueType.Vector4 => _s.Vector4((Vector4)prop.DefaultValue),
                  _ => throw new InvalidOperationException(),
              };
-
-        /// <summary>
-        /// Write a class that implements the IDynamicAnimatedVisualSource interface.
-        /// </summary>
-        void WriteIDynamicAnimatedVisualSource(CodeBuilder builder)
-        {
-            var visibility = SourceInfo.Public ? "public " : string.Empty;
-
-            builder.WriteLine($"{visibility}sealed class {SourceInfo.ClassName}");
-
-            if (SourceInfo.GenerateDependencyObject)
-            {
-                builder.WriteLine($"        : DependencyObject");
-                builder.WriteLine("        , IDynamicAnimatedVisualSource");
-            }
-            else
-            {
-                builder.WriteLine("        : IDynamicAnimatedVisualSource");
-            }
-
-            foreach (var additionalInterface in SourceInfo.AdditionalInterfaces)
-            {
-                builder.WriteLine($"        , {additionalInterface.GetQualifiedName(_s)}");
-            }
-
-            builder.WriteLine("        , INotifyPropertyChanged");
-
-            builder.OpenScope();
-
-            // Declare variables.
-            builder.WriteLine($"const int c_loadedImageSurfaceCount = {SourceInfo.LoadedImageSurfaces.Count};");
-            builder.WriteLine($"int _loadCompleteEventCount;");
-            builder.WriteLine("bool _isImageLoadingAsynchronous;");
-            builder.WriteLine("bool _isTryCreateAnimatedVisualCalled;");
-            builder.WriteLine("bool _isImageLoadingStarted;");
-
-            if (AnimatedVisualSourceInfo.WinUIVersion.Major >= 3)
-            {
-                builder.WriteLine("HashSet<TypedEventHandler<IDynamicAnimatedVisualSource, object>> _animatedVisualInvalidatedEventTokenTable = new HashSet<TypedEventHandler<IDynamicAnimatedVisualSource, object>>();");
-            }
-            else
-            {
-                builder.WriteLine("EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource, object>> _animatedVisualInvalidatedEventTokenTable;");
-            }
-
-            // Declare the variables to hold the LoadedImageSurfaces.
-            foreach (var n in SourceInfo.LoadedImageSurfaces)
-            {
-                builder.WriteLine($"{_s.ReferenceTypeName(n.TypeName)} {n.FieldName};");
-            }
-
-            builder.WriteLine();
-
-            // Add the methods and fields needed for theming.
-            WriteThemeMethodsAndFields(builder);
-
-            // Implement the INotifyPropertyChanged.PropertyChanged event.
-            builder.WriteSummaryComment("This implementation of the INotifyPropertyChanged.PropertyChanged event is specific to C# and does not work on WinRT.");
-            builder.WriteLine("public event PropertyChangedEventHandler PropertyChanged;");
-            builder.WriteLine();
-
-            // Implement the AnimatedVisualInvalidated event.
-            WriteAnimatedVisualInvalidatedEvent(builder);
-
-            // Define properties.
-            builder.WriteSummaryComment("If this property is set to true, <see cref=\"TryCreateAnimatedVisual\"/> will return null" +
-                " until all images have loaded. When all images have loaded, <see cref=\"TryCreateAnimatedVisual\"/> will return" +
-                " the AnimatedVisual. To use, set it when instantiating the AnimatedVisualSource. Once <see cref=\"TryCreateAnimatedVisual\"/>" +
-                " is called, changes made to this property will be ignored. Default value is false.");
-            builder.WriteLine("public bool IsImageLoadingAsynchronous");
-            builder.OpenScope();
-            builder.WriteLine("get { return _isImageLoadingAsynchronous; }");
-            builder.WriteLine("set");
-            builder.OpenScope();
-            builder.WriteLine("if (!_isTryCreateAnimatedVisualCalled && _isImageLoadingAsynchronous != value)");
-            builder.OpenScope();
-            builder.WriteLine("_isImageLoadingAsynchronous = value;");
-            builder.WriteLine("NotifyPropertyChanged(nameof(IsImageLoadingAsynchronous));");
-            builder.CloseScope();
-            builder.CloseScope();
-            builder.CloseScope();
-            builder.WriteLine();
-
-            builder.WriteSummaryComment("Returns true if all images have finished loading.");
-            builder.WriteLine("public bool IsImageLoadingCompleted { get; private set; }");
-            builder.WriteLine();
-
-            // Generate the method that creates an instance of the animated visual.
-            builder.WriteLine($"public {Interface_IAnimatedVisual.GetQualifiedName(_s)} TryCreateAnimatedVisual(Compositor compositor, out object diagnostics)");
-            builder.OpenScope();
-            builder.WriteLine("_isTryCreateAnimatedVisualCalled = true;");
-            builder.WriteLine("diagnostics = null;");
-            builder.WriteLine();
-
-            var animatedVisualInfos = SourceInfo.AnimatedVisualInfos.OrderByDescending(avi => avi.RequiredUapVersion).ToArray();
-
-            // WinUI3 doesn't ever do a version check. It's up to the user to make sure
-            // the version they're using is compatible.
-            if (SourceInfo.WinUIVersion.Major < 3)
-            {
-                // Check whether the runtime will support the lowest UAP version required.
-                builder.WriteLine($"if (!{animatedVisualInfos[^1].ClassName}.IsRuntimeCompatible())");
-                builder.OpenScope();
-                builder.WriteLine("return null;");
-                builder.CloseScope();
-                builder.WriteLine();
-            }
-
-            builder.WriteLine("EnsureImageLoadingStarted();");
-            builder.WriteLine();
-            builder.WriteLine("if (_isImageLoadingAsynchronous && _loadCompleteEventCount != c_loadedImageSurfaceCount)");
-            builder.OpenScope();
-            builder.WriteLine("return null;");
-            builder.CloseScope();
-            builder.WriteLine();
-
-            // Check the runtime version and instantiate the highest compatible IAnimatedVisual class.
-            for (var i = 0; i < animatedVisualInfos.Length; i++)
-            {
-                var current = animatedVisualInfos[i];
-                var versionTestRequired = i < animatedVisualInfos.Length - 1;
-
-                if (i > 0)
-                {
-                    builder.WriteLine();
-                }
-
-                if (versionTestRequired)
-                {
-                    builder.WriteLine($"if ({current.ClassName}.IsRuntimeCompatible())");
-                    builder.OpenScope();
-                }
-
-                WriteInstantiateAndReturnAnimatedVisual(builder, current);
-
-                if (versionTestRequired)
-                {
-                    builder.CloseScope();
-                }
-            }
-
-            builder.CloseScope();
-            builder.WriteLine();
-
-            // Generate the method that load all the LoadedImageSurfaces.
-            WriteEnsureImageLoadingStarted(builder);
-
-            // Generate the method that handle the LoadCompleted event of the LoadedImageSurface objects.
-            WriteHandleLoadCompleted(builder);
-
-            // Generate the method that raise the PropertyChanged event.
-            builder.WriteLine("void NotifyPropertyChanged(string name)");
-            builder.OpenScope();
-            builder.WriteLine("PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));");
-            builder.CloseScope();
-            builder.WriteLine();
-
-            // Generate the method that get or create the EventRegistrationTokenTable.
-            if (AnimatedVisualSourceInfo.WinUIVersion.Major < 3)
-            {
-                builder.WriteLine("EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource, object>> GetAnimatedVisualInvalidatedEventRegistrationTokenTable()");
-                builder.OpenScope();
-                builder.WriteLine("return EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource, object>>.GetOrCreateEventRegistrationTokenTable(ref _animatedVisualInvalidatedEventTokenTable);");
-                builder.CloseScope();
-            }
-        }
 
         /// <summary>
         /// Generates the FrameCount property implementation.
