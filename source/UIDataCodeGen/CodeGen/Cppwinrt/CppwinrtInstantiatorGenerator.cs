@@ -145,11 +145,11 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Cppwinrt
             else
             {
                 builder.WriteLine($": [default] {Interface_IAnimatedVisualSource.NormalizedQualifiedName}");
+            }
 
-                if (SourceInfo.WinUIVersion >= new Version(2, 6) && SourceInfo.WinUIVersion.Major < 3)
-                {
-                    builder.WriteLine($", {Interface_IAnimatedVisualSource2.NormalizedQualifiedName}");
-                }
+            if (SourceInfo.WinUIVersion >= new Version(2, 6))
+            {
+                builder.WriteLine($", {Interface_IAnimatedVisualSource2.NormalizedQualifiedName}");
             }
 
             if (_isIDynamic)

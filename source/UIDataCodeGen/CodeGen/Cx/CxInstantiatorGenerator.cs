@@ -71,8 +71,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Cx
             _animatedVisualTypeName = Interface_IAnimatedVisual.GetQualifiedName(_s);
             _animatedVisualTypeName2 = Interface_IAnimatedVisual2.GetQualifiedName(_s);
 
-            // Temporary until IAnimatedVisualSource2 makes it into WinUI3.
-            _isAnimatedIcon = SourceInfo.WinUIVersion >= new Version(2, 6) && SourceInfo.WinUIVersion.Major < 3;
+            _isAnimatedIcon = SourceInfo.WinUIVersion >= new Version(2, 6);
         }
 
         static string FieldAssignment(string fieldName) => fieldName is not null ? $"{fieldName} = " : string.Empty;
@@ -134,7 +133,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Cx
 
             inherits.Add(Interface_IAnimatedVisualSource.GetQualifiedName(_s));
 
-            if (SourceInfo.WinUIVersion >= new Version(2, 6) && SourceInfo.WinUIVersion.Major < 3)
+            if (SourceInfo.WinUIVersion >= new Version(2, 6))
             {
                 inherits.Add(Interface_IAnimatedVisualSource2.GetQualifiedName(_s));
             }
@@ -372,7 +371,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Cx
 
             inherits.Add("Microsoft::UI::Xaml::Controls::IDynamicAnimatedVisualSource");
 
-            if (SourceInfo.WinUIVersion >= new Version(2, 6) && SourceInfo.WinUIVersion.Major < 3)
+            if (SourceInfo.WinUIVersion >= new Version(2, 6))
             {
                 inherits.Add(Interface_IAnimatedVisualSource2.GetQualifiedName(_s));
             }
