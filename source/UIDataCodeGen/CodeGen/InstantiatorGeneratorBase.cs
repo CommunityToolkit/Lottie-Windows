@@ -2212,7 +2212,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                 {
                     b.WriteLine($"{ReferenceTypeName("CompositionSpriteShape")} CreateSpriteShape({ReferenceTypeName("CompositionGeometry")} geometry, {_s.TypeMatrix3x2} transformMatrix)");
                     b.OpenScope();
-                    WriteCreateAssignment(b, node, $"_c{Deref}CreateSpriteShape(geometry)");
+                    b.WriteLine($"{ConstVar} result = _c{Deref}CreateSpriteShape(geometry);");
                     WriteSetPropertyStatement(b, "TransformMatrix", "transformMatrix");
                     b.WriteLine("return result;");
                     b.CloseScope();
@@ -2244,7 +2244,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                 {
                     b.WriteLine($"{ReferenceTypeName("CompositionSpriteShape")} CreateSpriteShape({ReferenceTypeName("CompositionGeometry")} geometry, {_s.TypeMatrix3x2} transformMatrix, {ReferenceTypeName("CompositionBrush")} fillBrush)");
                     b.OpenScope();
-                    WriteCreateAssignment(b, node, $"_c{Deref}CreateSpriteShape(geometry)");
+                    b.WriteLine($"{ConstVar} result = _c{Deref}CreateSpriteShape(geometry);");
                     WriteSetPropertyStatement(b, "TransformMatrix", "transformMatrix");
                     WriteSetPropertyStatement(b, "FillBrush", "fillBrush");
                     b.WriteLine("return result;");
