@@ -273,7 +273,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
                 builder.WriteLine($": {Interface_IAnimatedVisualSource.GetQualifiedName(_s)}");
             }
 
-            if (SourceInfo.WinUIVersion >= new Version(2, 6) && SourceInfo.WinUIVersion.Major < 3)
+            if (SourceInfo.WinUIVersion >= new Version(2, 6))
             {
                 builder.WriteLine($", {Interface_IAnimatedVisualSource2.GetQualifiedName(_s)}");
             }
@@ -685,14 +685,16 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
         protected override void WriteAnimatedVisualStart(CodeBuilder builder, IAnimatedVisualInfo info)
         {
             // Start the instantiator class.
+            builder.WriteLine($"sealed class {info.ClassName}");
+            builder.Indent();
+            builder.WriteLine($": {Interface_IAnimatedVisual.GetQualifiedName(_s)}");
+
             if (info.ImplementCreateAndDestroyMethods)
             {
-                builder.WriteLine($"sealed class {info.ClassName} : {Interface_IAnimatedVisual2.GetQualifiedName(_s)}");
+                builder.WriteLine($", {Interface_IAnimatedVisual2.GetQualifiedName(_s)}");
             }
-            else
-            {
-                builder.WriteLine($"sealed class {info.ClassName} : {Interface_IAnimatedVisual.GetQualifiedName(_s)}");
-            }
+
+            builder.UnIndent();
 
             builder.OpenScope();
         }
