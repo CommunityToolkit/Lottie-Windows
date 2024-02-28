@@ -11,7 +11,7 @@ namespace CommunityToolkit.WinUI.Lottie.LottieToWinComp
     /// than or equal to the <see cref="Start"/> value. Both values being <c>null</c>
     /// indicates all versions.
     /// </summary>
-#if PUBLIC
+#if PUBLIC_LottieToWinComp
     public
 #endif
     struct UapVersionRange
@@ -61,7 +61,7 @@ namespace CommunityToolkit.WinUI.Lottie.LottieToWinComp
         // that we support up to End". If we didn't do that, then (minimumVersion, n) and (null, n)
         // would effectively mean the same thing but it would be confusing to express
         // it in 2 different ways.
-        internal void NormalizeForMinimumVersion(uint minimumVersion)
+        public void NormalizeForMinimumVersion(uint minimumVersion)
         {
             // A Start of minimumVersion is the same as all versions up to End.
             if (Start == minimumVersion && (End is null || End > minimumVersion))

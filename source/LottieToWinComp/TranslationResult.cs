@@ -14,7 +14,7 @@ namespace CommunityToolkit.WinUI.Lottie.LottieToWinComp
     /// <summary>
     /// The result of translating a Lottie animation into an equivalent WinCompData form.
     /// </summary>
-#if PUBLIC
+#if PUBLIC_LottieToWinComp
     public
 #endif
     sealed class TranslationResult
@@ -52,7 +52,7 @@ namespace CommunityToolkit.WinUI.Lottie.LottieToWinComp
         public uint MinimumRequiredUapVersion { get; }
 
         // Returns a TranslationResult with the same contents as this but a different root visual.
-        internal TranslationResult WithDifferentRoot(Visual rootVisual)
+        public TranslationResult WithDifferentRoot(Visual rootVisual)
             => new TranslationResult(rootVisual, TranslationIssues, MinimumRequiredUapVersion, SourceMetadata);
     }
 }

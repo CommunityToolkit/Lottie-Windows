@@ -15,6 +15,9 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
     /// <summary>
     /// Serializes a <see cref="CompositionObject"/> graph into DGML format.
     /// </summary>
+#if PUBLIC_UIDataCodeGen
+    public
+#endif
     sealed class CompositionObjectDgmlSerializer
     {
         // The categories of each node in the DGML graph. The category determines the appearance in the graph.
