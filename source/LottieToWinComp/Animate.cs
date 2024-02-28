@@ -43,14 +43,26 @@ namespace CommunityToolkit.WinUI.Lottie.LottieToWinComp
             Debug.Assert(scale <= 1, "Precondition");
             Debug.Assert(animation.KeyFrameCount > 0, "Precondition");
 
-            if (scale == 1.0 && offset == 0.0 && context.ObjectFactory.IsUapApiAvailable(nameof(AnimationController)) && context.RootProgressController is not null)
+            var key = new ScaleAndOffset(scale, offset);
+            var state = context.GetStateCache<StateCache>();
+
+            if (context.ObjectFactory.IsUapApiAvailable(nameof(AnimationController)))
             {
-                // Special case when we can use root AnimationController (no time stretch, no time offset)
-                compObject.StartAnimation(target, animation, context.RootProgressController!);
+                if (!state.ProgressControllers.TryGetValue(key, out var controllerCached))
+                {
+                    controllerCached = context.ObjectFactory.CreateAnimationControllerList();
+                    controllerCached.Pause();
+
+                    var rootProgressAnimation = context.ObjectFactory.CreateExpressionAnimation(scale == 1.0 && offset == 0.0 ? ExpressionFactory.RootProgress : ExpressionFactory.ScaledAndOffsetRootProgress(scale, offset));
+                    rootProgressAnimation.SetReferenceParameter(ExpressionFactory.RootName, context.RootVisual!);
+                    controllerCached.StartAnimation("Progress", rootProgressAnimation);
+
+                    state.ProgressControllers.Add(key, controllerCached);
+                }
+
+                compObject.StartAnimation(target, animation, controllerCached);
                 return;
             }
-
-            var state = context.GetStateCache<StateCache>();
 
             // Start the animation ...
             compObject.StartAnimation(target, animation);
@@ -61,7 +73,6 @@ namespace CommunityToolkit.WinUI.Lottie.LottieToWinComp
             controller!.Pause();
 
             // Bind it to the root visual's Progress property, scaling and offsetting if necessary.
-            var key = new ScaleAndOffset(scale, offset);
             if (!state.ProgressBindingAnimations.TryGetValue(key, out var bindingAnimation))
             {
                 bindingAnimation = context.ObjectFactory.CreateExpressionAnimation(ExpressionFactory.ScaledAndOffsetRootProgress(scale, offset));
@@ -853,7 +864,7 @@ namespace CommunityToolkit.WinUI.Lottie.LottieToWinComp
         }
 
         // A pair of doubles used as a key in a dictionary.
-        sealed class ScaleAndOffset
+        public sealed class ScaleAndOffset
         {
             internal ScaleAndOffset(double scale, double offset)
             {
@@ -877,6 +888,9 @@ namespace CommunityToolkit.WinUI.Lottie.LottieToWinComp
         {
             public Dictionary<ScaleAndOffset, ExpressionAnimation> ProgressBindingAnimations { get; }
                 = new Dictionary<ScaleAndOffset, ExpressionAnimation>();
+
+            public Dictionary<ScaleAndOffset, AnimationController> ProgressControllers { get; }
+                = new Dictionary<ScaleAndOffset, AnimationController>();
         }
     }
 }
