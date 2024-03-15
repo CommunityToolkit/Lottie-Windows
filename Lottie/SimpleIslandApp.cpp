@@ -8,9 +8,8 @@
 
 #include <Microsoft.UI.Dispatching.Interop.h> // For ContentPreTranslateMessage
 #include <winrt/LottieIsland.h>
-//#include <winrt/LottieIsland2.h>
 #include <winrt/AnimatedVisuals.h>
-#include <winrt/LottieVisualWinRT.h>
+#include <winrt/LottieWinRT.h>
 
 namespace winrt
 {
@@ -232,18 +231,24 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 windowInfo->Compositor,
                 winrt::GetWindowIdFromWindow(hWnd));
 
-            //windowInfo->LottieIsland = winrt::LottieIsland::LottieContentIsland{ windowInfo->Compositor };
             windowInfo->LottieIsland = winrt::LottieIsland::LottieContentIsland{ windowInfo->Compositor };
 
             windowInfo->Bridge.Connect(windowInfo->LottieIsland.Island());
             windowInfo->Bridge.Show();
 
             // C++/WinRT precompiled animation!
-            windowInfo->LottieIsland.AnimatedVisualSource(winrt::AnimatedVisuals::LottieLogo1());
+            //windowInfo->LottieIsland.AnimatedVisualSource(winrt::AnimatedVisuals::LottieLogo1());
 
-            // Live JSON loaded animation!
-            winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisualSource animatedVisualSource = winrt::LottieVisualWinRT::Class1::LoadLottie(L"ms-appx:///LottieLogo1.json", windowInfo->Compositor);
-            windowInfo->LottieIsland.AnimatedVisualSource(animatedVisualSource);
+            // Live JSON loaded animation! (this fails beause lottie creates a dependency object)
+            /*winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisualSource animatedVisualSource = winrt::LottieVisualWinRT::LottieAnimatedVisualWinRT::LoadLottie(L"ms-appx:///LottieLogo1.json");
+            windowInfo->LottieIsland.AnimatedVisualSource(animatedVisualSource);*/
+
+            winrt::LottieWinRT::LottieVisualSourceWinRT lottieVisualSource;
+            auto token = lottieVisualSource.AnimatedVisualInvalidated([windowInfo, lottieVisualSource](const winrt::Windows::Foundation::IInspectable sender, auto&&)
+                {
+                    windowInfo->LottieIsland.AnimatedVisualSource(lottieVisualSource.AnimatedVisual());
+                });
+            lottieVisualSource.LoadLottie(L"ms-appx:///LottieLogo1.json");
 
             //// Create our DesktopWindowXamlSource and attach it to our hwnd.  This is our "island".
             //windowInfo->DesktopWindowXamlSource = winrt::DesktopWindowXamlSource{};

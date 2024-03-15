@@ -65,13 +65,13 @@
     <AppxManifest Include="package.appxmanifest" />
   </ItemGroup>
   <ItemGroup>
-    <AppxManifest Include="package.appxmanifest" />
-  </ItemGroup>
-  <ItemGroup>
     <CopyFileToFolders Include="Assets\LottieLogo1.json" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="AnimatedVisuals.LottieLogo1.idl">
+      <Filter>Source Files</Filter>
+    </Midl>
+    <Midl Include="Project.idl">
       <Filter>Source Files</Filter>
     </Midl>
   </ItemGroup>

@@ -46,8 +46,6 @@ namespace winrt::LottieIsland::implementation
         winrt::ContainerVisual m_rootVisual{ nullptr };
         winrt::ContentIsland m_island{ nullptr };
         winrt::IAnimatedVisualSource m_animatedVisualSource{ nullptr };
-        winrt::hstring m_uri;
-        winrt::LottieVisualWinRT::Class1 m_class1{ nullptr };
     };
 }
 
