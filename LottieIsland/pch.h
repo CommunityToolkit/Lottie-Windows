@@ -15,8 +15,6 @@
 #include <winrt/Microsoft.UI.Composition.h>
 #include <winrt/Microsoft.UI.Xaml.Controls.h>
 
-#include <winrt/LottieVisualWinRT.h>
-
 namespace winrt
 {
     using namespace ::winrt::Microsoft::UI::Composition;

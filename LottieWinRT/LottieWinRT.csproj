@@ -8,11 +8,11 @@
     <CsWinRTComponent>true</CsWinRTComponent>
     <AssemblyName>LottieWinRT</AssemblyName>
     <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
-    <PublishReadyToRun>false</PublishReadyToRun>
+    <CsWinRTWindowsMetadata>10.0.19041.0</CsWinRTWindowsMetadata>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CommunityToolkit.WinUI.Lottie" Version="8.0.280224" />
+    <PackageReference Include="CommunityToolkit.WinUI.Lottie" Version="8.0.230813-rc.8" />
     <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.0.7" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.5.240227000" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.756" />

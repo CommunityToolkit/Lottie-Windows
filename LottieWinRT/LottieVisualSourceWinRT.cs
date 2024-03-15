@@ -8,33 +8,36 @@ namespace LottieWinRT
     public sealed class LottieVisualSourceWinRT
     {
         // C# Events exported to WinRT... don't work??? I get a Win32Exception when generating the code???
-        //public event EventHandler? AnimatedVisualInvalidated;
+        public event EventHandler<object>? AnimatedVisualInvalidated;
 
-        //public IAnimatedVisualSource? LoadLottie(string uri)
-        //{
-        //    LottieVisualSource? source = LottieVisualSource.CreateFromString(uri);
-        //    if (source != null)
-        //    {
-        //        source.AnimatedVisualInvalidated += Source_AnimatedVisualInvalidated;
-        //    }
+        public void LoadLottie(string uri)
+        {
+            LottieVisualSource2? source = LottieVisualSource2.CreateFromString(uri);
+            if (source != null)
+            {
+                source.AnimatedVisualInvalidated += Source_AnimatedVisualInvalidated;
+            }
 
-        //    return source;
-        //}
+            _lottieVisualSource = source;
+        }
 
-        //private void Source_AnimatedVisualInvalidated(IDynamicAnimatedVisualSource? sender, object? args)
-        //{
-        //    AnimatedVisualInvalidated?.Invoke(this, EventArgs.Empty);
-        //}
+        private void Source_AnimatedVisualInvalidated(IDynamicAnimatedVisualSource? sender, object? args)
+        {
+            this.AnimatedVisualInvalidated?.Invoke(this, EventArgs.Empty);
+        }
+
+        public IAnimatedVisualSource? AnimatedVisual { get => _lottieVisualSource; }
+
         Compositor? _compositor;
         ContainerVisual? _rootVisual;
-        LottieVisualSource? _lottieVisualSource;
+        LottieVisualSource2? _lottieVisualSource;
 
         public void SetUpLottie(Compositor compositor, ContainerVisual parent, string uri)
         {
             _compositor = compositor;
             _rootVisual = parent;
 
-            _lottieVisualSource = LottieVisualSource.CreateFromString(uri);
+            _lottieVisualSource = LottieVisualSource2.CreateFromString(uri);
             if (_lottieVisualSource != null)
             {
                 _lottieVisualSource.AnimatedVisualInvalidated += LottieVisualSource_AnimatedVisualInvalidated;
