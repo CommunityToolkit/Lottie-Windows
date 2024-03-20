@@ -21,7 +21,10 @@ namespace winrt
     using namespace ::winrt::Microsoft::UI::Content;
 
     using IAnimatedVisualSource = ::winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisualSource;
+    using IAnimatedVisual = ::winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual;
 }
 
 // Opt into time literals (i.e. 200ms, 1min, 15s)
 using namespace std::chrono_literals;
+
+using float2 = winrt::Windows::Foundation::Numerics::float2;

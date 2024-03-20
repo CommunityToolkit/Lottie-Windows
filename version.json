@@ -1,5 +1,5 @@
 {
-  "version": "8.0.230813-rc.{height}",
+  "version": "8.0.230813-rc-FHL.{height}",
   "publicReleaseRefSpec": [
     "^refs/heads/main$", // we release out of main
     "^refs/heads/dev$", // we release out of dev

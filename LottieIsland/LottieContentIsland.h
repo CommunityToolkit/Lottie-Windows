@@ -13,9 +13,6 @@ namespace winrt::LottieIsland::implementation
     {
         LottieContentIsland(const winrt::Compositor& compositor);
 
-        int32_t MyProperty();
-        void MyProperty(int32_t value);
-
         winrt::ContentIsland Island() const
         {
             return m_island;
@@ -30,6 +27,9 @@ namespace winrt::LottieIsland::implementation
 
         bool IsPlaying() const;
 
+        double PlaybackRate() const;
+        void PlaybackRate(double rate);
+
         void Pause();
 
         winrt::Windows::Foundation::IAsyncAction PlayAsync(double fromProgress, double toProgress, bool looped);
@@ -39,13 +39,22 @@ namespace winrt::LottieIsland::implementation
         void Stop();
 
     private:
-        void InitializeTree();
+        void StartAnimation(double fromProgress, double toProgress, bool loop);
+        void StopAnimation();
 
-        int32_t m_myProperty = 42;
+        void OnIslandStateChanged(const winrt::ContentIsland& island, const winrt::ContentIslandStateChangedEventArgs& args);
+
+        void Resize(const float2& size);
+
         winrt::Compositor m_compositor{ nullptr };
         winrt::ContainerVisual m_rootVisual{ nullptr };
         winrt::ContentIsland m_island{ nullptr };
         winrt::IAnimatedVisualSource m_animatedVisualSource{ nullptr };
+        winrt::IAnimatedVisual m_animatedVisual{ nullptr };
+        winrt::CompositionPropertySet m_progressPropertySet{ nullptr };
+        winrt::AnimationController m_animationController{ nullptr };
+        double m_previousFromProgress = 0.0;
+        double m_playbackRate = 1.0f;
     };
 }
 

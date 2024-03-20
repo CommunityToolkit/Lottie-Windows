@@ -5,11 +5,8 @@
     {
         LottieContentIsland(Microsoft.UI.Composition.Compositor compositor);
 
-        Int32 MyProperty;
-
         Microsoft.UI.Content.ContentIsland Island{ get; };
 
-        // TODO: actually give this the right type
         Microsoft.UI.Xaml.Controls.IAnimatedVisualSource AnimatedVisualSource;
 
         Windows.Foundation.TimeSpan Duration{ get; };
@@ -18,6 +15,8 @@
 
         Boolean IsPlaying{ get; };
 
+        Double PlaybackRate;
+
         void Pause();
 
         Windows.Foundation.IAsyncAction PlayAsync(Double fromProgress, Double toProgress, Boolean looped);
@@ -25,5 +24,7 @@
         void Resume();
 
         void Stop();
+
+
     }
 }

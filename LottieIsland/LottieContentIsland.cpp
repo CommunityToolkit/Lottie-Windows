@@ -11,17 +11,7 @@ namespace winrt::LottieIsland::implementation
         m_rootVisual = m_compositor.CreateContainerVisual();
         m_island = winrt::ContentIsland::Create(m_rootVisual);
 
-        InitializeTree();
-    }
-
-    int32_t LottieContentIsland::MyProperty()
-    {
-        return m_myProperty;
-    }
-
-    void LottieContentIsland::MyProperty(int32_t value)
-    {
-        m_myProperty = value;
+        m_island.StateChanged({ get_weak(), &LottieContentIsland::OnIslandStateChanged });
     }
 
     winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisualSource LottieContentIsland::AnimatedVisualSource() const
@@ -32,105 +22,188 @@ namespace winrt::LottieIsland::implementation
 
     void LottieContentIsland::AnimatedVisualSource(winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisualSource const& value)
     {
-        // Set the AnimatedVisualSource
-        m_animatedVisualSource = value;
-        winrt::Windows::Foundation::IInspectable diagnostics;
-        winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual animatedVisual = m_animatedVisualSource.TryCreateAnimatedVisual(m_compositor, diagnostics);
+        if (m_animatedVisualSource == value)
+        {
+            return;
+        }
 
-        // Set up lottie
-        m_rootVisual.Children().InsertAtTop(animatedVisual.RootVisual());
-        auto animation = m_compositor.CreateScalarKeyFrameAnimation();
-        animation.Duration(animatedVisual.Duration());
-        auto linearEasing = m_compositor.CreateLinearEasingFunction();
-        animation.InsertKeyFrame(0, 0);
-        animation.InsertKeyFrame(1, 1, linearEasing);
-        animation.IterationBehavior(winrt::Microsoft::UI::Composition::AnimationIterationBehavior::Forever);
-        animatedVisual.RootVisual().Properties().StartAnimation(L"Progress", animation);
+        if (m_animatedVisualSource != nullptr)
+        {
+            StopAnimation();
+            m_rootVisual.Children().RemoveAll();
+            m_animatedVisual = nullptr;
+            m_animatedVisualSource = nullptr;
+        }
+
+        if (value != nullptr)
+        {
+            // Set the AnimatedVisualSource
+            m_animatedVisualSource = value;
+            winrt::Windows::Foundation::IInspectable diagnostics;
+            m_animatedVisual = m_animatedVisualSource.TryCreateAnimatedVisual(m_compositor, diagnostics);
+
+            // Set up lottie
+            m_rootVisual.Children().InsertAtTop(m_animatedVisual.RootVisual());
+
+            // Tell our hosting environment that our size changed, and ask for confirmation of our ActualSize.
+            // Any changes will come back through a StateChanged notification
+            m_island.RequestSize(m_animatedVisual.Size());
+
+            // While that request is propagating, resize ourselves to fill the island's current size
+            Resize(m_island.ActualSize());
+
+            StartAnimation(0.0, 1.0, true /*loop*/);
+        }
     }
 
     winrt::Windows::Foundation::TimeSpan LottieContentIsland::Duration() const
     {
-        if (m_animatedVisualSource == nullptr)
+        if (m_animatedVisual == nullptr)
         {
             return 0ms;
         }
 
-        throw winrt::hresult_not_implemented{};
+        return m_animatedVisual.Duration();
     }
 
     bool LottieContentIsland::IsAnimationLoaded() const
     {
-        if (m_animatedVisualSource == nullptr)
-        {
-            return false;
-        }
-
-        throw winrt::hresult_not_implemented{};
+        // Revisit this when we get JSON loading to work.
+        return m_animatedVisual != nullptr;
     }
 
     bool LottieContentIsland::IsPlaying() const
     {
-        if (m_animatedVisualSource == nullptr)
-        {
-            return false;
-        }
+        return m_progressPropertySet != nullptr;
+    }
 
-        throw winrt::hresult_not_implemented{};
+    double LottieContentIsland::PlaybackRate() const
+    {
+        return m_playbackRate;
+    }
+
+    void LottieContentIsland::PlaybackRate(double rate)
+    {
+        m_playbackRate = rate;
+        if (m_animationController != nullptr)
+        {
+            m_animationController.PlaybackRate(m_playbackRate);
+        }
     }
 
     void LottieContentIsland::Pause()
     {
-        throw winrt::hresult_not_implemented{};
+        if (m_animationController != nullptr)
+        {
+            m_animationController.Pause();
+        }
     }
 
     winrt::Windows::Foundation::IAsyncAction LottieContentIsland::PlayAsync(double fromProgress, double toProgress, bool looped)
     {
-        throw winrt::hresult_not_implemented{};
+        // Stop any existing animation
+        StopAnimation();
+
+        // TODO: actually implement the async portion of this properly using composition batches.
+
+        StartAnimation(fromProgress, toProgress, looped);
+        co_return;
     }
 
     void LottieContentIsland::Resume()
     {
-        throw winrt::hresult_not_implemented{};
+        if (m_animationController != nullptr)
+        {
+            m_animationController.Resume();
+        }
     }
 
     void LottieContentIsland::Stop()
     {
-        throw winrt::hresult_not_implemented{};
+        StopAnimation();
     }
 
-    void LottieContentIsland::InitializeTree()
+    void LottieContentIsland::StartAnimation(double fromProgress, double toProgress, bool loop)
     {
-        // Make a blue square with a red square inside of it.
-        // Add some animations to the red square
+        if (m_animatedVisual == nullptr)
+        {
+            throw winrt::hresult_illegal_method_call{ L"Cannot start an animation before the animation is loaded." };
+        }
 
-        // 300 x 300 blue background
-        auto blueVisual = m_compositor.CreateSpriteVisual();
-        auto blueBrush = m_compositor.CreateColorBrush(winrt::Windows::UI::Colors::Blue());
-        blueVisual.Brush(blueBrush);
-        blueVisual.Size({ 300, 300 });
+        auto animation = m_compositor.CreateScalarKeyFrameAnimation();
+        animation.Duration(m_animatedVisual.Duration());
+        auto linearEasing = m_compositor.CreateLinearEasingFunction();
+        animation.InsertKeyFrame(0, fromProgress);
+        animation.InsertKeyFrame(1, toProgress, linearEasing);
+        if (loop)
+        {
+            animation.IterationBehavior(winrt::AnimationIterationBehavior::Forever);
+        }
+        else
+        {
+            animation.IterationBehavior(winrt::AnimationIterationBehavior::Count);
+            animation.IterationCount(1);
+        }
 
-        m_rootVisual.Children().InsertAtTop(blueVisual);
+        m_progressPropertySet = m_animatedVisual.RootVisual().Properties();
+        m_progressPropertySet.StartAnimation(L"Progress", animation);
+        m_animationController = m_progressPropertySet.TryGetAnimationController(L"Progress");
+        m_animationController.PlaybackRate(m_playbackRate);
+        m_previousFromProgress = fromProgress;
+    }
 
-        // 50 x 50 red square
-        auto redVisual = m_compositor.CreateSpriteVisual();
-        auto redBrush = m_compositor.CreateColorBrush(winrt::Windows::UI::Colors::Red());
-        redVisual.Brush(redBrush);
-        redVisual.Size({ 50, 50 });
+    void LottieContentIsland::StopAnimation()
+    {
+        if (!IsPlaying())
+        {
+            // No-op
+            return;
+        }
 
-        m_rootVisual.Children().InsertAtTop(redVisual);
+        // Stop and snap to the beginning of the animation
+        m_progressPropertySet.StopAnimation(L"Progress");
+        m_progressPropertySet.InsertScalar(L"Progress", m_previousFromProgress);
 
-        // Setup an animation
+        // Cleanup
+        m_previousFromProgress = 0.0;
+        m_animationController = nullptr;
+        m_progressPropertySet = nullptr;
+    }
 
-        auto keyFrameAnimation = m_compositor.CreateVector3KeyFrameAnimation();
-        keyFrameAnimation.InsertKeyFrame(0.0f, { 0, 0, 0 });
-        keyFrameAnimation.InsertKeyFrame(1.0f, { 250.f, 250.f, 0 });
+    void LottieContentIsland::OnIslandStateChanged(const winrt::ContentIsland& /*island*/, const winrt::ContentIslandStateChangedEventArgs& args)
+    {
+        if (args.DidActualSizeChange() && IsAnimationLoaded())
+        {
+            Resize(m_island.ActualSize());
+        }
+    }
 
-        // Bounce back and forth forever
-        keyFrameAnimation.Duration(2000ms);
-        keyFrameAnimation.Direction(winrt::AnimationDirection::Alternate);
-        keyFrameAnimation.IterationBehavior(winrt::AnimationIterationBehavior::Forever);
+    void LottieContentIsland::Resize(const float2& newSize)
+    {
+        float2 desiredSize = m_animatedVisual.Size();
+        if (newSize.x == 0 || newSize.y == 0 || desiredSize.x == 0 || desiredSize.y == 0)
+        {
+            // Don't try to scale (and hit fun divide by 0) if we have no effective size
+            m_rootVisual.Size({ 0, 0 });
+        }
+        else
+        {
+            // We implement Uniform stretching here, where we don't overflow bounds,
+            // but keep aspect ratio.
+            float2 scale = newSize / m_animatedVisual.Size();
 
-        // Start animation
-        redVisual.StartAnimation(L"Offset", keyFrameAnimation);
+            // Take the smaller scale and set both axes to that.
+            if (scale.x < scale.y)
+            {
+                scale.y = scale.x;
+            }
+            else
+            {
+                scale.x = scale.y;
+            }
+
+            m_rootVisual.Size(desiredSize);
+            m_rootVisual.Scale({ scale.x, scale.y, 1.f });
+        }
     }
 }
