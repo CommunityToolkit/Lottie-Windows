@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net7.0-windows10.0.18362.0</TargetFramework>
+    <IsAotCompatible>true</IsAotCompatible>
     <OutputType>Library</OutputType>
     
     <PackageId>CommunityToolkit.WinUI.Lottie</PackageId>
