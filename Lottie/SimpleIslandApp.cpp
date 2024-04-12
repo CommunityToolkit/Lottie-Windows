@@ -16,6 +16,9 @@ namespace winrt
     using namespace winrt::Microsoft::UI;
     using namespace winrt::Microsoft::UI::Content;
     using namespace winrt::Microsoft::UI::Dispatching;
+    using namespace winrt::LottieIsland;
+    using namespace winrt::LottieWinRT;
+    using namespace winrt::Windows::Foundation;
     using float2 = winrt::Windows::Foundation::Numerics::float2;
 }
 
@@ -195,19 +198,18 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             winrt::GetWindowIdFromWindow(hWnd));
 
         // Create the LottieIsland, which is a WinRT wrapper for hosting a Lottie animation in a ContentIsland
-        windowInfo->LottieIsland = winrt::LottieIsland::LottieContentIsland{ windowInfo->Compositor };
+        windowInfo->LottieIsland = winrt::LottieContentIsland{ windowInfo->Compositor };
 
         // Connect the ContentIsland to the DesktopChildSiteBridge
         windowInfo->Bridge.Connect(windowInfo->LottieIsland.Island());
         windowInfo->Bridge.Show();
 
         // Live JSON loaded animation!
-        winrt::LottieWinRT::LottieVisualSourceWinRT lottieVisualSource;
-        auto token = lottieVisualSource.AnimatedVisualInvalidated([windowInfo, lottieVisualSource](const winrt::Windows::Foundation::IInspectable sender, auto&&)
+        winrt::LottieVisualSourceWinRT lottieVisualSource = winrt::LottieVisualSourceWinRT::CreateFromString(L"ms-appx:///LottieLogo1.json");
+        lottieVisualSource.AnimatedVisualInvalidated([windowInfo, lottieVisualSource](const winrt::IInspectable sender, auto&&)
             {
-                windowInfo->LottieIsland.AnimatedVisualSource(lottieVisualSource.AnimatedVisual());
+                windowInfo->LottieIsland.AnimatedVisualSource(lottieVisualSource);
             });
-        lottieVisualSource.LoadLottie(L"ms-appx:///LottieLogo1.json");
 
         // Add some Win32 controls to allow the app to play with the animation
         CreateWin32Button(ButtonType::PlayButton, L"Play", hWnd);

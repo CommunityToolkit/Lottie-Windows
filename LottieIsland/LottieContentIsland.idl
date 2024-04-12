@@ -7,7 +7,7 @@
 
         Microsoft.UI.Content.ContentIsland Island{ get; };
 
-        Microsoft.UI.Xaml.Controls.IAnimatedVisualSource AnimatedVisualSource;
+        LottieWinRT.LottieVisualSourceWinRT AnimatedVisualSource;
 
         Windows.Foundation.TimeSpan Duration{ get; };
 

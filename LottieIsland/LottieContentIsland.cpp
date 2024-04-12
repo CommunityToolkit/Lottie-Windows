@@ -14,13 +14,13 @@ namespace winrt::LottieIsland::implementation
         m_island.StateChanged({ get_weak(), &LottieContentIsland::OnIslandStateChanged });
     }
 
-    winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisualSource LottieContentIsland::AnimatedVisualSource() const
+    winrt::LottieVisualSourceWinRT LottieContentIsland::AnimatedVisualSource() const
     {
         // Return the AnimatedVisualSource
         return m_animatedVisualSource;
     }
 
-    void LottieContentIsland::AnimatedVisualSource(winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisualSource const& value)
+    void LottieContentIsland::AnimatedVisualSource(winrt::LottieVisualSourceWinRT const& value)
     {
         if (m_animatedVisualSource == value)
         {

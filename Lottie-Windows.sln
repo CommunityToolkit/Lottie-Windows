@@ -171,13 +171,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lottie-Windows-WinUI3", "Lo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LottieSamples", "LottieSamples\LottieSamples.csproj", "{6AB50ED0-6273-4919-9ADE-50195664EF15}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CppApp", "CppApp\CppApp.vcxproj", "{34A4AD19-A703-47F3-B279-E505C6A2A935}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LottieWinRT", "LottieWinRT\LottieWinRT.csproj", "{DDA0D223-4B59-455D-A8B1-CFAE59523FFB}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SimpleIslandApp", "Lottie\SimpleIslandApp.vcxproj", "{350A5EC2-B156-4AAF-9D80-A864C76BA0C5}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LottieIsland", "LottieIsland\LottieIsland.vcxproj", "{9BA7A2F2-B723-458B-A575-3F726D271465}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LottieIslandProjection", "LottieIslandProjection\LottieIslandProjection.csproj", "{D2DDC0A0-FD88-4053-9EA2-4233477D8477}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -621,51 +621,6 @@ Global
 		{6AB50ED0-6273-4919-9ADE-50195664EF15}.Release|x86.ActiveCfg = Release|x86
 		{6AB50ED0-6273-4919-9ADE-50195664EF15}.Release|x86.Build.0 = Release|x86
 		{6AB50ED0-6273-4919-9ADE-50195664EF15}.Release|x86.Deploy.0 = Release|x86
-		{34A4AD19-A703-47F3-B279-E505C6A2A935}.BETA|Any CPU.ActiveCfg = Debug|x64
-		{34A4AD19-A703-47F3-B279-E505C6A2A935}.BETA|Any CPU.Build.0 = Debug|x64
-		{34A4AD19-A703-47F3-B279-E505C6A2A935}.BETA|Any CPU.Deploy.0 = Debug|x64
-		{34A4AD19-A703-47F3-B279-E505C6A2A935}.BETA|ARM.ActiveCfg = Debug|x64
-		{34A4AD19-A703-47F3-B279-E505C6A2A935}.BETA|ARM.Build.0 = Debug|x64
-		{34A4AD19-A703-47F3-B279-E505C6A2A935}.BETA|ARM.Deploy.0 = Debug|x64
-		{34A4AD19-A703-47F3-B279-E505C6A2A935}.BETA|ARM64.ActiveCfg = Debug|ARM64
-		{34A4AD19-A703-47F3-B279-E505C6A2A935}.BETA|ARM64.Build.0 = Debug|ARM64
-		{34A4AD19-A703-47F3-B279-E505C6A2A935}.BETA|ARM64.Deploy.0 = Debug|ARM64
-		{34A4AD19-A703-47F3-B279-E505C6A2A935}.BETA|x64.ActiveCfg = Debug|x64
-		{34A4AD19-A703-47F3-B279-E505C6A2A935}.BETA|x64.Build.0 = Debug|x64
-		{34A4AD19-A703-47F3-B279-E505C6A2A935}.BETA|x64.Deploy.0 = Debug|x64
-		{34A4AD19-A703-47F3-B279-E505C6A2A935}.BETA|x86.ActiveCfg = Debug|Win32
-		{34A4AD19-A703-47F3-B279-E505C6A2A935}.BETA|x86.Build.0 = Debug|Win32
-		{34A4AD19-A703-47F3-B279-E505C6A2A935}.BETA|x86.Deploy.0 = Debug|Win32
-		{34A4AD19-A703-47F3-B279-E505C6A2A935}.Debug|Any CPU.ActiveCfg = Debug|x64
-		{34A4AD19-A703-47F3-B279-E505C6A2A935}.Debug|Any CPU.Build.0 = Debug|x64
-		{34A4AD19-A703-47F3-B279-E505C6A2A935}.Debug|Any CPU.Deploy.0 = Debug|x64
-		{34A4AD19-A703-47F3-B279-E505C6A2A935}.Debug|ARM.ActiveCfg = Debug|x64
-		{34A4AD19-A703-47F3-B279-E505C6A2A935}.Debug|ARM.Build.0 = Debug|x64
-		{34A4AD19-A703-47F3-B279-E505C6A2A935}.Debug|ARM.Deploy.0 = Debug|x64
-		{34A4AD19-A703-47F3-B279-E505C6A2A935}.Debug|ARM64.ActiveCfg = Debug|ARM64
-		{34A4AD19-A703-47F3-B279-E505C6A2A935}.Debug|ARM64.Build.0 = Debug|ARM64
-		{34A4AD19-A703-47F3-B279-E505C6A2A935}.Debug|ARM64.Deploy.0 = Debug|ARM64
-		{34A4AD19-A703-47F3-B279-E505C6A2A935}.Debug|x64.ActiveCfg = Debug|x64
-		{34A4AD19-A703-47F3-B279-E505C6A2A935}.Debug|x64.Build.0 = Debug|x64
-		{34A4AD19-A703-47F3-B279-E505C6A2A935}.Debug|x64.Deploy.0 = Debug|x64
-		{34A4AD19-A703-47F3-B279-E505C6A2A935}.Debug|x86.ActiveCfg = Debug|Win32
-		{34A4AD19-A703-47F3-B279-E505C6A2A935}.Debug|x86.Build.0 = Debug|Win32
-		{34A4AD19-A703-47F3-B279-E505C6A2A935}.Debug|x86.Deploy.0 = Debug|Win32
-		{34A4AD19-A703-47F3-B279-E505C6A2A935}.Release|Any CPU.ActiveCfg = Release|x64
-		{34A4AD19-A703-47F3-B279-E505C6A2A935}.Release|Any CPU.Build.0 = Release|x64
-		{34A4AD19-A703-47F3-B279-E505C6A2A935}.Release|Any CPU.Deploy.0 = Release|x64
-		{34A4AD19-A703-47F3-B279-E505C6A2A935}.Release|ARM.ActiveCfg = Release|x64
-		{34A4AD19-A703-47F3-B279-E505C6A2A935}.Release|ARM.Build.0 = Release|x64
-		{34A4AD19-A703-47F3-B279-E505C6A2A935}.Release|ARM.Deploy.0 = Release|x64
-		{34A4AD19-A703-47F3-B279-E505C6A2A935}.Release|ARM64.ActiveCfg = Release|ARM64
-		{34A4AD19-A703-47F3-B279-E505C6A2A935}.Release|ARM64.Build.0 = Release|ARM64
-		{34A4AD19-A703-47F3-B279-E505C6A2A935}.Release|ARM64.Deploy.0 = Release|ARM64
-		{34A4AD19-A703-47F3-B279-E505C6A2A935}.Release|x64.ActiveCfg = Release|x64
-		{34A4AD19-A703-47F3-B279-E505C6A2A935}.Release|x64.Build.0 = Release|x64
-		{34A4AD19-A703-47F3-B279-E505C6A2A935}.Release|x64.Deploy.0 = Release|x64
-		{34A4AD19-A703-47F3-B279-E505C6A2A935}.Release|x86.ActiveCfg = Release|Win32
-		{34A4AD19-A703-47F3-B279-E505C6A2A935}.Release|x86.Build.0 = Release|Win32
-		{34A4AD19-A703-47F3-B279-E505C6A2A935}.Release|x86.Deploy.0 = Release|Win32
 		{DDA0D223-4B59-455D-A8B1-CFAE59523FFB}.BETA|Any CPU.ActiveCfg = Debug|Any CPU
 		{DDA0D223-4B59-455D-A8B1-CFAE59523FFB}.BETA|Any CPU.Build.0 = Debug|Any CPU
 		{DDA0D223-4B59-455D-A8B1-CFAE59523FFB}.BETA|ARM.ActiveCfg = Debug|Any CPU
@@ -758,6 +713,36 @@ Global
 		{9BA7A2F2-B723-458B-A575-3F726D271465}.Release|x64.Build.0 = Release|x64
 		{9BA7A2F2-B723-458B-A575-3F726D271465}.Release|x86.ActiveCfg = Release|Win32
 		{9BA7A2F2-B723-458B-A575-3F726D271465}.Release|x86.Build.0 = Release|Win32
+		{D2DDC0A0-FD88-4053-9EA2-4233477D8477}.BETA|Any CPU.ActiveCfg = Debug|Any CPU
+		{D2DDC0A0-FD88-4053-9EA2-4233477D8477}.BETA|Any CPU.Build.0 = Debug|Any CPU
+		{D2DDC0A0-FD88-4053-9EA2-4233477D8477}.BETA|ARM.ActiveCfg = Debug|Any CPU
+		{D2DDC0A0-FD88-4053-9EA2-4233477D8477}.BETA|ARM.Build.0 = Debug|Any CPU
+		{D2DDC0A0-FD88-4053-9EA2-4233477D8477}.BETA|ARM64.ActiveCfg = Debug|Any CPU
+		{D2DDC0A0-FD88-4053-9EA2-4233477D8477}.BETA|ARM64.Build.0 = Debug|Any CPU
+		{D2DDC0A0-FD88-4053-9EA2-4233477D8477}.BETA|x64.ActiveCfg = Debug|Any CPU
+		{D2DDC0A0-FD88-4053-9EA2-4233477D8477}.BETA|x64.Build.0 = Debug|Any CPU
+		{D2DDC0A0-FD88-4053-9EA2-4233477D8477}.BETA|x86.ActiveCfg = Debug|Any CPU
+		{D2DDC0A0-FD88-4053-9EA2-4233477D8477}.BETA|x86.Build.0 = Debug|Any CPU
+		{D2DDC0A0-FD88-4053-9EA2-4233477D8477}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D2DDC0A0-FD88-4053-9EA2-4233477D8477}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D2DDC0A0-FD88-4053-9EA2-4233477D8477}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{D2DDC0A0-FD88-4053-9EA2-4233477D8477}.Debug|ARM.Build.0 = Debug|Any CPU
+		{D2DDC0A0-FD88-4053-9EA2-4233477D8477}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{D2DDC0A0-FD88-4053-9EA2-4233477D8477}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{D2DDC0A0-FD88-4053-9EA2-4233477D8477}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D2DDC0A0-FD88-4053-9EA2-4233477D8477}.Debug|x64.Build.0 = Debug|Any CPU
+		{D2DDC0A0-FD88-4053-9EA2-4233477D8477}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D2DDC0A0-FD88-4053-9EA2-4233477D8477}.Debug|x86.Build.0 = Debug|Any CPU
+		{D2DDC0A0-FD88-4053-9EA2-4233477D8477}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D2DDC0A0-FD88-4053-9EA2-4233477D8477}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D2DDC0A0-FD88-4053-9EA2-4233477D8477}.Release|ARM.ActiveCfg = Release|Any CPU
+		{D2DDC0A0-FD88-4053-9EA2-4233477D8477}.Release|ARM.Build.0 = Release|Any CPU
+		{D2DDC0A0-FD88-4053-9EA2-4233477D8477}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{D2DDC0A0-FD88-4053-9EA2-4233477D8477}.Release|ARM64.Build.0 = Release|Any CPU
+		{D2DDC0A0-FD88-4053-9EA2-4233477D8477}.Release|x64.ActiveCfg = Release|Any CPU
+		{D2DDC0A0-FD88-4053-9EA2-4233477D8477}.Release|x64.Build.0 = Release|Any CPU
+		{D2DDC0A0-FD88-4053-9EA2-4233477D8477}.Release|x86.ActiveCfg = Release|Any CPU
+		{D2DDC0A0-FD88-4053-9EA2-4233477D8477}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -843,7 +828,6 @@ Global
 		source\WinStorageStreamsData\WinStorageStreamsData.projitems*{6984af37-d580-4087-806b-480a04f2df77}*SharedItemsImports = 5
 		source\WinUIXamlMediaData\WinUIXamlMediaData.projitems*{6984af37-d580-4087-806b-480a04f2df77}*SharedItemsImports = 5
 		source\YamlData\YamlData.projitems*{6984af37-d580-4087-806b-480a04f2df77}*SharedItemsImports = 5
-		source\NullablesAttributes\NullablesAttributes.projitems*{6ab50ed0-6273-4919-9ade-50195664ef15}*SharedItemsImports = 4
 		source\DotLottie\DotLottie.projitems*{7012420d-624c-4bd4-a1d2-1c6c1655ed3a}*SharedItemsImports = 13
 		source\UIData\UIData.projitems*{74601e6c-2dfe-4842-b170-047941abff2c}*SharedItemsImports = 13
 		source\LottieGen\LottieGen.projitems*{7654a857-9a99-4185-9f8e-dd0ce662af23}*SharedItemsImports = 13
@@ -879,21 +863,6 @@ Global
 		source\UIDataCodeGen\UIDataCodeGen.projitems*{d02be6c8-14db-4b4f-8600-f3c9b69c104d}*SharedItemsImports = 13
 		source\LottieGenExe\LottieGenExe.projitems*{dc7f7a39-b7a7-40b4-937a-601460cae38c}*SharedItemsImports = 13
 		source\NullablesAttributes\NullablesAttributes.projitems*{e32587a8-94e8-4b68-91ad-f3612a48a62b}*SharedItemsImports = 13
-		source\Animatables\Animatables.projitems*{e392bad0-f936-4b64-a445-552597795cc7}*SharedItemsImports = 5
-		source\CompMetadata\CompMetadata.projitems*{e392bad0-f936-4b64-a445-552597795cc7}*SharedItemsImports = 5
-		source\DotLottie\DotLottie.projitems*{e392bad0-f936-4b64-a445-552597795cc7}*SharedItemsImports = 5
-		source\GenericData\GenericData.projitems*{e392bad0-f936-4b64-a445-552597795cc7}*SharedItemsImports = 5
-		source\LottieData\LottieData.projitems*{e392bad0-f936-4b64-a445-552597795cc7}*SharedItemsImports = 5
-		source\LottieMetadata\LottieMetadata.projitems*{e392bad0-f936-4b64-a445-552597795cc7}*SharedItemsImports = 5
-		source\LottieReader\LottieReader.projitems*{e392bad0-f936-4b64-a445-552597795cc7}*SharedItemsImports = 5
-		source\LottieToWinComp\LottieToWinComp.projitems*{e392bad0-f936-4b64-a445-552597795cc7}*SharedItemsImports = 5
-		source\Lottie\Lottie.projitems*{e392bad0-f936-4b64-a445-552597795cc7}*SharedItemsImports = 5
-		source\NullablesAttributes\NullablesAttributes.projitems*{e392bad0-f936-4b64-a445-552597795cc7}*SharedItemsImports = 5
-		source\UIData\UIData.projitems*{e392bad0-f936-4b64-a445-552597795cc7}*SharedItemsImports = 5
-		source\WinCompData\WinCompData.projitems*{e392bad0-f936-4b64-a445-552597795cc7}*SharedItemsImports = 5
-		source\WinStorageStreamsData\WinStorageStreamsData.projitems*{e392bad0-f936-4b64-a445-552597795cc7}*SharedItemsImports = 5
-		source\WinUIXamlMediaData\WinUIXamlMediaData.projitems*{e392bad0-f936-4b64-a445-552597795cc7}*SharedItemsImports = 5
-		source\YamlData\YamlData.projitems*{e392bad0-f936-4b64-a445-552597795cc7}*SharedItemsImports = 5
 		source\Animatables\Animatables.projitems*{e91e3cde-3088-4b12-8472-d2c1c05b7229}*SharedItemsImports = 5
 		source\CompMetadata\CompMetadata.projitems*{e91e3cde-3088-4b12-8472-d2c1c05b7229}*SharedItemsImports = 5
 		source\DotLottie\DotLottie.projitems*{e91e3cde-3088-4b12-8472-d2c1c05b7229}*SharedItemsImports = 5

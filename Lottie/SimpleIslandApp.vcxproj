@@ -307,6 +307,7 @@
     <Import Project="packages\Microsoft.Windows.SDK.BuildTools.10.0.22621.756\build\Microsoft.Windows.SDK.BuildTools.targets" Condition="Exists('packages\Microsoft.Windows.SDK.BuildTools.10.0.22621.756\build\Microsoft.Windows.SDK.BuildTools.targets')" />
     <Import Project="..\packages\Microsoft.Windows.SDK.BuildTools.10.0.22621.756\build\Microsoft.Windows.SDK.BuildTools.targets" Condition="Exists('..\packages\Microsoft.Windows.SDK.BuildTools.10.0.22621.756\build\Microsoft.Windows.SDK.BuildTools.targets')" />
     <Import Project="..\packages\Microsoft.Graphics.Win2D.1.2.0\build\native\Microsoft.Graphics.Win2D.targets" Condition="Exists('..\packages\Microsoft.Graphics.Win2D.1.2.0\build\native\Microsoft.Graphics.Win2D.targets')" />
+    <Import Project="..\packages\CommunityToolkit.WinAppSDK.Frameworkless.Lottie.8.0.230816-rc-FHL.0.g7d583f3127\build\CommunityToolkit.WinAppSDK.Frameworkless.Lottie.targets" Condition="Exists('..\packages\CommunityToolkit.WinAppSDK.Frameworkless.Lottie.8.0.230816-rc-FHL.0.g7d583f3127\build\CommunityToolkit.WinAppSDK.Frameworkless.Lottie.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
@@ -321,5 +322,6 @@
     <Error Condition="!Exists('..\packages\Microsoft.Windows.SDK.BuildTools.10.0.22621.756\build\Microsoft.Windows.SDK.BuildTools.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.SDK.BuildTools.10.0.22621.756\build\Microsoft.Windows.SDK.BuildTools.props'))" />
     <Error Condition="!Exists('..\packages\Microsoft.Windows.SDK.BuildTools.10.0.22621.756\build\Microsoft.Windows.SDK.BuildTools.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.SDK.BuildTools.10.0.22621.756\build\Microsoft.Windows.SDK.BuildTools.targets'))" />
     <Error Condition="!Exists('..\packages\Microsoft.Graphics.Win2D.1.2.0\build\native\Microsoft.Graphics.Win2D.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Graphics.Win2D.1.2.0\build\native\Microsoft.Graphics.Win2D.targets'))" />
+    <Error Condition="!Exists('..\packages\CommunityToolkit.WinAppSDK.Frameworkless.Lottie.8.0.230816-rc-FHL.0.g7d583f3127\build\CommunityToolkit.WinAppSDK.Frameworkless.Lottie.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\CommunityToolkit.WinAppSDK.Frameworkless.Lottie.8.0.230816-rc-FHL.0.g7d583f3127\build\CommunityToolkit.WinAppSDK.Frameworkless.Lottie.targets'))" />
   </Target>
 </Project>

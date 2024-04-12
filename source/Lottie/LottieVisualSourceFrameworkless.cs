@@ -4,6 +4,8 @@
 
 #nullable enable
 
+#if WINAPPSDK
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,6 +17,7 @@ using Windows.Foundation;
 using Windows.Foundation.Metadata;
 using Windows.Storage;
 using Windows.Storage.Streams;
+using WinRT;
 
 #if WINAPPSDK
 using Microsoft.UI.Composition;
@@ -28,12 +31,12 @@ namespace CommunityToolkit.WinUI.Lottie
 {
     /// <summary>
     /// An <see cref="IAnimatedVisualSource"/> for a Lottie composition. This allows
-    /// a Lottie to be specified as the source for a <see cref="AnimatedVisualPlayer"/>.
+    /// a Lottie to be specified as the source for a <see cref="Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer"/>.
     /// </summary>
-    public sealed class LottieVisualSource2 : IDynamicAnimatedVisualSource
+    public sealed class LottieVisualSourceFrameworkless : IAnimatedVisualSource
     {
 #if WINAPPSDK
-        HashSet<TypedEventHandler<IDynamicAnimatedVisualSource?, object?>> _compositionInvalidatedEventTokenTable = new HashSet<TypedEventHandler<IDynamicAnimatedVisualSource?, object?>>();
+        HashSet<TypedEventHandler<IAnimatedVisualSource?, object?>> _compositionInvalidatedEventTokenTable = new HashSet<TypedEventHandler<IAnimatedVisualSource?, object?>>();
 #else
         EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource?, object?>>? _compositionInvalidatedEventTokenTable;
 #endif
@@ -45,7 +48,7 @@ namespace CommunityToolkit.WinUI.Lottie
         LottieVisualOptions _options;
 
         ///// <summary>
-        ///// Gets the options for the <see cref="LottieVisualSource2"/>.
+        ///// Gets the options for the <see cref="LottieVisualSourceFrameworkless"/>.
         ///// </summary>
         //// Optimize Lotties by default. Optimization takes a little longer but usually produces much
         //// more efficient translations. The only reason someone would turn optimization off is if
@@ -71,9 +74,9 @@ namespace CommunityToolkit.WinUI.Lottie
         //        new PropertyMetadata(defaultValue, (d, e) => callback((LottieVisualSource)d, (T)e.OldValue, (T)e.NewValue)));
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="LottieVisualSource2"/> class.
+        /// Initializes a new instance of the <see cref="LottieVisualSourceFrameworkless"/> class.
         /// </summary>
-        public LottieVisualSource2()
+        public LottieVisualSourceFrameworkless()
         {
         }
 
@@ -99,7 +102,7 @@ namespace CommunityToolkit.WinUI.Lottie
         /// Called by XAML to convert a string to an <see cref="IAnimatedVisualSource"/>.
         /// </summary>
         /// <returns>The <see cref="LottieVisualSource"/> for the given url.</returns>
-        public static LottieVisualSource2? CreateFromString(string uri)
+        public static LottieVisualSourceFrameworkless? CreateFromString(string uri)
         {
             var uriUri = Uris.StringToUri(uri);
             if (uriUri is null)
@@ -107,11 +110,11 @@ namespace CommunityToolkit.WinUI.Lottie
                 return null;
             }
 
-            return new LottieVisualSource2 { UriSource = uriUri };
+            return new LottieVisualSourceFrameworkless { UriSource = uriUri };
         }
 
         /// <summary>
-        /// Sets the source for the <see cref="LottieVisualSource2"/>.
+        /// Sets the source for the <see cref="LottieVisualSourceFrameworkless"/>.
         /// </summary>
         /// <param name="stream">A stream containing the text of a JSON Lottie file encoded as UTF-8.</param>
         /// <returns>An <see cref="IAsyncAction"/> that completes when the load completes or fails.</returns>
@@ -123,7 +126,7 @@ namespace CommunityToolkit.WinUI.Lottie
         }
 
         /// <summary>
-        /// Sets the source for the <see cref="LottieVisualSource2"/>.
+        /// Sets the source for the <see cref="LottieVisualSourceFrameworkless"/>.
         /// </summary>
         /// <param name="file">A file that is a JSON Lottie file.</param>
         /// <returns>An <see cref="IAsyncAction"/> that completes when the load completes or fails.</returns>
@@ -135,7 +138,7 @@ namespace CommunityToolkit.WinUI.Lottie
         }
 
         /// <summary>
-        /// Sets the source for the <see cref="LottieVisualSource2"/>.
+        /// Sets the source for the <see cref="LottieVisualSourceFrameworkless"/>.
         /// </summary>
         /// <param name="sourceUri">A URI that refers to a JSON Lottie file.</param>
         /// <returns>An <see cref="IAsyncAction"/> that completes when the load completes or fails.</returns>
@@ -154,10 +157,10 @@ namespace CommunityToolkit.WinUI.Lottie
         }
 
         /// <summary>
-        /// Implements <see cref="IDynamicAnimatedVisualSource"/>.
+        /// Implements <see cref="IAnimatedVisualSource"/>.
         /// </summary>
         // TODO: currently explicitly implemented interfaces are causing a problem with .NET Native. Make them implicit for now.
-        public event TypedEventHandler<IDynamicAnimatedVisualSource?, object?> AnimatedVisualInvalidated
+        public event TypedEventHandler<IAnimatedVisualSource?, object?> AnimatedVisualInvalidated
         {
             add
             {
@@ -187,7 +190,7 @@ namespace CommunityToolkit.WinUI.Lottie
         /// If this is null, no images will be loaded from references to external images.
         /// </summary>
         /// <remarks>Most Lottie files do not reference external images, but those that do
-        /// will refer to the files via a uri. It is up to the user of <see cref="LottieVisualSource2"/>
+        /// will refer to the files via a uri. It is up to the user of <see cref="LottieVisualSourceFrameworkless"/>
         /// to manage the loading of the image, and return an <see cref="ICompositionSurface"/> for
         /// that image. Alternatively the delegate may return null, and the image will not be
         /// displayed.</remarks>
@@ -204,7 +207,7 @@ namespace CommunityToolkit.WinUI.Lottie
         /// <returns>An <see cref="IAnimatedVisual"/>.</returns>
         // TODO: currently explicitly implemented interfaces are causing a problem with .NET Native. Make them implicit for now.
         //bool IAnimatedVisualSource.TryCreateAnimatedVisual(
-        public IAnimatedVisual? TryCreateAnimatedVisual(
+        public Microsoft.UI.Xaml.Controls.IAnimatedVisual? TryCreateAnimatedVisual(
             Compositor compositor,
             out object? diagnostics)
         {
@@ -323,14 +326,16 @@ namespace CommunityToolkit.WinUI.Lottie
 
 #if !WINAPPSDK
         /// <summary>
-        /// Returns a string representation of the <see cref="LottieVisualSource2"/> for debugging purposes.
+        /// Returns a string representation of the <see cref="LottieVisualSourceFrameworkless"/> for debugging purposes.
         /// </summary>
-        /// <returns>A string representation of the <see cref="LottieVisualSource2"/> for debugging purposes.</returns>
+        /// <returns>A string representation of the <see cref="LottieVisualSourceFrameworkless"/> for debugging purposes.</returns>
         public override string ToString()
         {
             var identity = _uriSource?.ToString() ?? string.Empty;
-            return $"LottieVisualSource2({identity})";
+            return $"LottieVisualSourceFrameworkless({identity})";
         }
 #endif
     }
 }
+
+#endif

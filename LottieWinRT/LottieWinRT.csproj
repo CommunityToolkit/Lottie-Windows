@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
     <Platforms>x64;x86;ARM64</Platforms>
-    <ImplicitUsings>enable</ImplicitUsings>
+	<ImplicitUsings>true</ImplicitUsings>
     <Nullable>enable</Nullable>
     <CsWinRTComponent>true</CsWinRTComponent>
     <AssemblyName>LottieWinRT</AssemblyName>
@@ -12,10 +12,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CommunityToolkit.WinUI.Lottie" Version="8.0.230813-rc.8" />
+    <PackageReference Include="CommunityToolkit.WinUI.Lottie" Version="8.0.230817-rc-FHL.0.g7d583f3127" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.0.7" />
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.5.240227000" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.3.230331000" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.756" />
   </ItemGroup>
+
+  <!--<ItemGroup>
+    <ProjectReference Include="..\LottieFrameworkless\LottieFrameworkless.csproj" />
+  </ItemGroup>-->
 
 </Project>

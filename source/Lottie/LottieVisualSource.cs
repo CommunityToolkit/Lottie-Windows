@@ -15,6 +15,7 @@ using Windows.Foundation;
 using Windows.Foundation.Metadata;
 using Windows.Storage;
 using Windows.Storage.Streams;
+using static CommunityToolkit.WinUI.Lottie.LottieData.Serialization.LottieCompositionReader;
 
 #if WINAPPSDK
 using Microsoft.UI.Composition;
@@ -30,7 +31,11 @@ namespace CommunityToolkit.WinUI.Lottie
     /// An <see cref="IAnimatedVisualSource"/> for a Lottie composition. This allows
     /// a Lottie to be specified as the source for a <see cref="AnimatedVisualPlayer"/>.
     /// </summary>
+#if FRAMEWORKLESS
+    public sealed class LottieVisualSource : IDynamicAnimatedVisualSource
+#else
     public sealed class LottieVisualSource : DependencyObject, IDynamicAnimatedVisualSource
+#endif
     {
 #if WINAPPSDK
         HashSet<TypedEventHandler<IDynamicAnimatedVisualSource?, object?>> _compositionInvalidatedEventTokenTable = new HashSet<TypedEventHandler<IDynamicAnimatedVisualSource?, object?>>();
@@ -42,6 +47,9 @@ namespace CommunityToolkit.WinUI.Lottie
         Uri? _uriSource;
         AnimatedVisualFactory? _animatedVisualFactory;
         ImageAssetHandler? _imageAssetHandler;
+#if FRAMEWORKLESS
+        LottieVisualOptions _options;
+#else
 
         /// <summary>
         /// Gets the options for the <see cref="LottieVisualSource"/>.
@@ -68,6 +76,7 @@ namespace CommunityToolkit.WinUI.Lottie
             =>
             DependencyProperty.Register(propertyName, typeof(T), typeof(LottieVisualSource),
                 new PropertyMetadata(defaultValue, (d, e) => callback((LottieVisualSource)d, (T)e.OldValue, (T)e.NewValue)));
+#endif
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LottieVisualSource"/> class.
@@ -76,6 +85,25 @@ namespace CommunityToolkit.WinUI.Lottie
         {
         }
 
+#if FRAMEWORKLESS
+        /// <summary>
+        /// Gets or sets options for how the Lottie is loaded.
+        /// </summary>
+        public LottieVisualOptions Options
+        {
+            get => _options;
+            set => _options = value;
+        }
+
+        /// <summary>
+        /// Gets or sets the Uniform Resource Identifier (URI) of the JSON source file for this <see cref="LottieVisualSource"/>.
+        /// </summary>
+        public Uri? UriSource
+        {
+            get => _uriSource;
+            set => HandleUriSourcePropertyChanged(_uriSource, value);
+        }
+#else
         /// <summary>
         /// Gets or sets options for how the Lottie is loaded.
         /// </summary>
@@ -93,11 +121,12 @@ namespace CommunityToolkit.WinUI.Lottie
             get => (Uri)GetValue(UriSourceProperty);
             set => SetValue(UriSourceProperty, value);
         }
+#endif
 
-        /// <summary>
-        /// Called by XAML to convert a string to an <see cref="IAnimatedVisualSource"/>.
-        /// </summary>
-        /// <returns>The <see cref="LottieVisualSource"/> for the given url.</returns>
+            /// <summary>
+            /// Called by XAML to convert a string to an <see cref="IAnimatedVisualSource"/>.
+            /// </summary>
+            /// <returns>The <see cref="LottieVisualSource"/> for the given url.</returns>
         public static LottieVisualSource? CreateFromString(string uri)
         {
             var uriUri = Uris.StringToUri(uri);
@@ -238,7 +267,7 @@ namespace CommunityToolkit.WinUI.Lottie
         }
 
         // Called when the UriSource property is updated.
-        void HandleUriSourcePropertyChanged(Uri oldValue, Uri newValue)
+        void HandleUriSourcePropertyChanged(Uri? oldValue, Uri? newValue)
         {
             if (newValue == _uriSource)
             {
@@ -250,6 +279,11 @@ namespace CommunityToolkit.WinUI.Lottie
             }
 
             _uriSource = newValue;
+
+            if (UriSource == null)
+            {
+                return;
+            }
 
             var ignoredTask = StartLoadingAndIgnoreErrorsAsync();
 

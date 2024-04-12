@@ -2,11 +2,6 @@
 
 #include "LottieContentIsland.g.h"
 
-namespace winrt::Microsoft::UI::Xaml::Controls
-{
-    interface IAnimatedVisualSource;
-}
-
 namespace winrt::LottieIsland::implementation
 {
     struct LottieContentIsland : LottieContentIslandT<LottieContentIsland>
@@ -18,8 +13,8 @@ namespace winrt::LottieIsland::implementation
             return m_island;
         }
 
-        winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisualSource AnimatedVisualSource() const;
-        void AnimatedVisualSource(const winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisualSource& source);
+        winrt::LottieVisualSourceWinRT AnimatedVisualSource() const;
+        void AnimatedVisualSource(const winrt::LottieVisualSourceWinRT& source);
 
         winrt::Windows::Foundation::TimeSpan Duration() const;
 
@@ -49,8 +44,8 @@ namespace winrt::LottieIsland::implementation
         winrt::Compositor m_compositor{ nullptr };
         winrt::ContainerVisual m_rootVisual{ nullptr };
         winrt::ContentIsland m_island{ nullptr };
-        winrt::IAnimatedVisualSource m_animatedVisualSource{ nullptr };
-        winrt::IAnimatedVisual m_animatedVisual{ nullptr };
+        winrt::LottieVisualSourceWinRT m_animatedVisualSource{ nullptr };
+        winrt::AnimatedVisualWinRT m_animatedVisual{ nullptr };
         winrt::CompositionPropertySet m_progressPropertySet{ nullptr };
         winrt::AnimationController m_animationController{ nullptr };
         double m_previousFromProgress = 0.0;
