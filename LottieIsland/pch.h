@@ -13,17 +13,16 @@
 #include <winrt/Windows.UI.h>
 #include <winrt/Microsoft.UI.Content.h>
 #include <winrt/Microsoft.UI.Composition.h>
+#include <winrt/Microsoft.UI.Input.h>
 #include <winrt/Microsoft.UI.Xaml.Controls.h>
 #include <winrt/LottieWinRT.h>
-//#include <winrt/CommunityToolkit.WinAppSDK.Frameworkless.Lottie.h>
 
 namespace winrt
 {
     using namespace ::winrt::Microsoft::UI::Composition;
     using namespace ::winrt::Microsoft::UI::Content;
+    using namespace ::winrt::Microsoft::UI::Input;
     using namespace ::winrt::LottieWinRT;
-    /*using IAnimatedVisual = ::winrt::CommunityToolkit::WinAppSDK::Frameworkless::Lottie::IAnimatedVisual;
-    using IAnimatedVisualSource = ::winrt::CommunityToolkit::WinAppSDK::Frameworkless::Lottie::IAnimatedVisualSource;*/
 }
 
 // Opt into time literals (i.e. 200ms, 1min, 15s)

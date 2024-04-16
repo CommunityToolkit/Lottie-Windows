@@ -4,11 +4,12 @@
 // SimpleLottieIslandApp.cpp : Defines the entry point for the application.
 
 #include "pch.h"
-#include "SimpleIslandApp.h"
+#include "SimpleLottieIslandApp.h"
 
 #include <Microsoft.UI.Dispatching.Interop.h> // For ContentPreTranslateMessage
 #include <winrt/LottieIsland.h>
 #include <winrt/AnimatedVisuals.h>
+#include <winrt/LottieWinRT.h>
 
 namespace winrt
 {
@@ -79,14 +80,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
         // The main window class name
         WCHAR szWindowClass[100];
-        winrt::check_bool(LoadStringW(hInstance, IDC_SIMPLEISLANDAPP, szWindowClass, ARRAYSIZE(szWindowClass)) != 0);
+        winrt::check_bool(LoadStringW(hInstance, IDC_SIMPLELOTTIEISLANDAPP, szWindowClass, ARRAYSIZE(szWindowClass)) != 0);
 
         MyRegisterClass(hInstance, szWindowClass);
 
         // Perform application initialization:
         InitInstance(hInstance, nCmdShow, szTitle, szWindowClass);
 
-        HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_SIMPLEISLANDAPP));
+        HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_SIMPLELOTTIEISLANDAPP));
 
         MSG msg{};
 
@@ -133,17 +134,17 @@ void MyRegisterClass(HINSTANCE hInstance, const wchar_t* szWindowClass)
 
     wcex.cbSize = sizeof(WNDCLASSEX);
 
-    wcex.style = CS_HREDRAW | CS_VREDRAW;
-    wcex.lpfnWndProc = WndProc;
-    wcex.cbClsExtra = 0;
-    wcex.cbWndExtra = 0;
-    wcex.hInstance = hInstance;
-    wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_SIMPLEISLANDAPP));
-    wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
-    wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-    wcex.lpszMenuName = MAKEINTRESOURCEW(IDC_SIMPLEISLANDAPP);
-    wcex.lpszClassName = szWindowClass;
-    wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
+    wcex.style          = CS_HREDRAW | CS_VREDRAW;
+    wcex.lpfnWndProc    = WndProc;
+    wcex.cbClsExtra     = 0;
+    wcex.cbWndExtra     = 0;
+    wcex.hInstance      = hInstance;
+    wcex.hIcon          = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_SIMPLELOTTIEISLANDAPP));
+    wcex.hCursor        = LoadCursor(nullptr, IDC_ARROW);
+    wcex.hbrBackground  = (HBRUSH)(COLOR_WINDOW+1);
+    wcex.lpszMenuName   = MAKEINTRESOURCEW(IDC_SIMPLELOTTIEISLANDAPP);
+    wcex.lpszClassName  = szWindowClass;
+    wcex.hIconSm        = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
 
     winrt::check_bool(RegisterClassExW(&wcex) != 0);
 }
@@ -160,13 +161,13 @@ void MyRegisterClass(HINSTANCE hInstance, const wchar_t* szWindowClass)
 //
 HWND InitInstance(HINSTANCE /*hInstance*/, int nCmdShow, const wchar_t* szTitle, const wchar_t* szWindowClass)
 {
-    HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, ::GetModuleHandle(NULL), nullptr);
-    winrt::check_bool(hWnd != NULL);
+   HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
+      CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, ::GetModuleHandle(NULL), nullptr);
+   winrt::check_bool(hWnd != NULL);
 
-    ShowWindow(hWnd, nCmdShow);
-    UpdateWindow(hWnd);
-    return hWnd;
+   ShowWindow(hWnd, nCmdShow);
+   UpdateWindow(hWnd);
+   return hWnd;
 }
 
 //
@@ -186,127 +187,134 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     switch (message)
     {
     case WM_CREATE:
-    {
-        windowInfo = new WindowInfo();
-        ::SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(windowInfo));
+        {
+            windowInfo = new WindowInfo();
+            ::SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(windowInfo));
 
-        // Create the DesktopChildSiteBridge
-        windowInfo->Bridge = winrt::DesktopChildSiteBridge::Create(
-            windowInfo->Compositor,
-            winrt::GetWindowIdFromWindow(hWnd));
+            // Create the DesktopChildSiteBridge
+            windowInfo->Bridge = winrt::DesktopChildSiteBridge::Create(
+                windowInfo->Compositor,
+                winrt::GetWindowIdFromWindow(hWnd));
 
-        // Create the LottieIsland, which is a WinRT wrapper for hosting a Lottie animation in a ContentIsland
-        windowInfo->LottieIsland = winrt::LottieIsland::LottieContentIsland::Create(windowInfo->Compositor);
+            // Create the LottieIsland, which is a WinRT wrapper for hosting a Lottie animation in a ContentIsland
+            windowInfo->LottieIsland = winrt::LottieIsland::LottieContentIsland::Create(windowInfo->Compositor);
 
-        // Connect the ContentIsland to the DesktopChildSiteBridge
-        windowInfo->Bridge.Connect(windowInfo->LottieIsland.Island());
-        windowInfo->Bridge.Show();
+            // Connect the ContentIsland to the DesktopChildSiteBridge
+            windowInfo->Bridge.Connect(windowInfo->LottieIsland.Island());
+            windowInfo->Bridge.Show();
 
-        
+            //// Set the C++/WinRT precompiled Lottie animation!
+            //windowInfo->LottieIsland.AnimatedVisualSource(winrt::AnimatedVisuals::LottieLogo1());
 
+            // Live JSON loaded animation!
+            winrt::LottieVisualSourceWinRT lottieVisualSource = winrt::LottieVisualSourceWinRT::CreateFromString(L"ms-appx:///LottieLogo1.json");
+            lottieVisualSource.AnimatedVisualInvalidated([windowInfo, lottieVisualSource](const winrt::IInspectable sender, auto&&)
+                {
+                    windowInfo->LottieIsland.AnimatedVisualSource(lottieVisualSource);
+                });
 
-        windowInfo->LottieIsland.PointerPressed([=](auto&...) {
-            // Clicking on the Lottie animation acts like clicking "Pause/Resume"
-            OnButtonClicked(ButtonType::PauseButton, windowInfo, hWnd);
+            windowInfo->LottieIsland.PointerPressed([=](auto&...) {
+                // Clicking on the Lottie animation acts like clicking "Pause/Resume"
+                OnButtonClicked(ButtonType::PauseButton, windowInfo, hWnd);
             });
 
-        // Add some Win32 controls to allow the app to play with the animation
-        CreateWin32Button(ButtonType::PlayButton, L"Play", hWnd);
-        CreateWin32Button(ButtonType::PauseButton, L"Pause", hWnd);
-        CreateWin32Button(ButtonType::StopButton, L"Stop", hWnd);
-        CreateWin32Button(ButtonType::ReverseButton, L"Reverse", hWnd);
-    }
-    break;
+            // Add some Win32 controls to allow the app to play with the animation
+            CreateWin32Button(ButtonType::PlayButton, L"Play", hWnd);
+            CreateWin32Button(ButtonType::PauseButton, L"Pause", hWnd);
+            CreateWin32Button(ButtonType::StopButton, L"Stop", hWnd);
+            CreateWin32Button(ButtonType::ReverseButton, L"Reverse", hWnd);
+        }
+        break;
     case WM_SIZE:
-    {
-        const int width = LOWORD(lParam);
-        const int height = HIWORD(lParam);
-
-        if (windowInfo->Bridge)
         {
-            // Layout our bridge: we want to use all available height (minus a button and some padding),
-            // but respect the ratio that the LottieIsland wants to display at. This can be accessed through
-            // the "RequestedSize" property on the ContentSiteView.
+            const int width = LOWORD(lParam);
+            const int height = HIWORD(lParam);
 
-            int availableHeight = height - (k_padding * 3) - k_buttonHeight;
-            int availableWidth = width - (k_padding * 2);
-
-            // Check what size the lottie wants to be
-            winrt::float2 requestedSize = windowInfo->Bridge.SiteView().RequestedSize();
-
-            // Scale the width to be the ratio the lottie wants
-            int bridgeWidth = 0;
-            if (requestedSize.y > 0) // Guard against divide-by-zero
+            if (windowInfo->Bridge)
             {
-                bridgeWidth = static_cast<int>((requestedSize.x / requestedSize.y) * availableHeight);
+                // Layout our bridge: we want to use all available height (minus a button and some padding),
+                // but respect the ratio that the LottieIsland wants to display at. This can be accessed through
+                // the "RequestedSize" property on the ContentSiteView.
+
+                int availableHeight = height - (k_padding * 3) - k_buttonHeight;
+                int availableWidth = width - (k_padding * 2);
+
+                // Check what size the lottie wants to be
+                winrt::float2 requestedSize = windowInfo->Bridge.SiteView().RequestedSize();
+
+                // Scale the width to be the ratio the lottie wants
+                int bridgeWidth = 0;
+                if (requestedSize.y > 0) // Guard against divide-by-zero
+                {
+                    bridgeWidth = static_cast<int>((requestedSize.x / requestedSize.y) * availableHeight);
+                }
+
+                // ... but don't overflow the width we have available
+                bridgeWidth = std::min(availableWidth, bridgeWidth);
+
+                windowInfo->Bridge.MoveAndResize({ k_padding, k_padding, bridgeWidth, availableHeight });
             }
 
-            // ... but don't overflow the width we have available
-            bridgeWidth = std::min(availableWidth, bridgeWidth);
-
-            windowInfo->Bridge.MoveAndResize({ k_padding, k_padding, bridgeWidth, availableHeight });
+            LayoutButton(ButtonType::PlayButton, width, height, hWnd);
+            LayoutButton(ButtonType::PauseButton, width, height, hWnd);
+            LayoutButton(ButtonType::StopButton, width, height, hWnd);
+            LayoutButton(ButtonType::ReverseButton, width, height, hWnd);
         }
-
-        LayoutButton(ButtonType::PlayButton, width, height, hWnd);
-        LayoutButton(ButtonType::PauseButton, width, height, hWnd);
-        LayoutButton(ButtonType::StopButton, width, height, hWnd);
-        LayoutButton(ButtonType::ReverseButton, width, height, hWnd);
-    }
-    break;
+        break;
     case WM_ACTIVATE:
-    {
-        // Make focus work nicely when the user presses alt+tab to activate a different window, and then alt+tab
-        // again to come back to this window.  We want the focus to go back to the same child HWND that was focused
-        // before.
-        const bool isGettingDeactivated = (LOWORD(wParam) == WA_INACTIVE);
-        if (isGettingDeactivated)
         {
-            // Remember the HWND that had focus.
-            windowInfo->LastFocusedWindow = ::GetFocus();
-        }
-        else if (windowInfo->LastFocusedWindow != NULL)
-        {
-            ::SetFocus(windowInfo->LastFocusedWindow);
-        }
-    }
-    break;
-    case WM_COMMAND:
-    {
-        int wmId = LOWORD(wParam);
-        int wmCode = HIWORD(wParam);
-        // Parse the menu selections:
-        switch (wmId)
-        {
-        case IDM_ABOUT:
-            DialogBox(::GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
-            break;
-        case IDM_EXIT:
-            DestroyWindow(hWnd);
-            break;
-        case 501: // Buttons
-        case 502:
-        case 503:
-        case 504:
-            if (wmCode == BN_CLICKED)
+            // Make focus work nicely when the user presses alt+tab to activate a different window, and then alt+tab
+            // again to come back to this window.  We want the focus to go back to the same child HWND that was focused
+            // before.
+            const bool isGettingDeactivated = (LOWORD(wParam) == WA_INACTIVE);
+            if (isGettingDeactivated)
             {
-                ButtonType type = static_cast<ButtonType>(wmId - 500);
-                OnButtonClicked(type, windowInfo, hWnd);
+                // Remember the HWND that had focus.
+                windowInfo->LastFocusedWindow = ::GetFocus();
             }
-            break;
-        default:
-            return DefWindowProc(hWnd, message, wParam, lParam);
+            else if (windowInfo->LastFocusedWindow != NULL)
+            {
+                ::SetFocus(windowInfo->LastFocusedWindow);
+            }
         }
-    }
-    break;
+        break;
+    case WM_COMMAND:
+        {
+            int wmId = LOWORD(wParam);
+            int wmCode = HIWORD(wParam);
+            // Parse the menu selections:
+            switch (wmId)
+            {
+            case IDM_ABOUT:
+                DialogBox(::GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
+                break;
+            case IDM_EXIT:
+                DestroyWindow(hWnd);
+                break;
+            case 501: // Buttons
+            case 502:
+            case 503:
+            case 504:
+                if (wmCode == BN_CLICKED)
+                {
+                    ButtonType type = static_cast<ButtonType>(wmId - 500);
+                    OnButtonClicked(type, windowInfo, hWnd);
+                }
+                break;
+            default:
+                return DefWindowProc(hWnd, message, wParam, lParam);
+            }
+        }
+        break;
     case WM_PAINT:
-    {
-        PAINTSTRUCT ps;
-        HDC hdc = BeginPaint(hWnd, &ps);
-        // TODO: Add any drawing code that uses hdc here...
-        UNREFERENCED_PARAMETER(hdc);
-        EndPaint(hWnd, &ps);
-    }
-    break;
+        {
+            PAINTSTRUCT ps;
+            HDC hdc = BeginPaint(hWnd, &ps);
+            // TODO: Add any drawing code that uses hdc here...
+            UNREFERENCED_PARAMETER(hdc);
+            EndPaint(hWnd, &ps);
+        }
+        break;
     case WM_DESTROY:
         PostQuitMessage(0);
         break;

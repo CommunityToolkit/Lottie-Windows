@@ -4,6 +4,11 @@
 
 namespace winrt::LottieIsland::implementation
 {
+    winrt::LottieContentIsland LottieContentIsland::Create(const winrt::Compositor& compositor)
+    {
+        return winrt::make<LottieContentIsland>(compositor);
+    }
+
     LottieContentIsland::LottieContentIsland(
         const winrt::Compositor& compositor)
         : m_compositor(compositor)
@@ -12,15 +17,29 @@ namespace winrt::LottieIsland::implementation
         m_island = winrt::ContentIsland::Create(m_rootVisual);
 
         m_island.StateChanged({ get_weak(), &LottieContentIsland::OnIslandStateChanged });
+
+        // Once it's not experimental, we should use InputPointerSource::GetForVisual on our root visual.
+        // This will give us automatic hittesting for whatever content and shape the Lottie animation has.
+        // Currently hittesting will just be a rectangle the size of the island, regardless of content.
+        m_inputPointerSource = winrt::Microsoft::UI::Input::InputPointerSource::GetForIsland(m_island);
+
+        InitializeInputHandlers();
     }
 
-    winrt::LottieVisualSourceWinRT LottieContentIsland::AnimatedVisualSource() const
+    LottieContentIsland::~LottieContentIsland()
+    {
+        // Dispose (Close) our island. This will revoke any event handlers from it or sub-objects, which
+        // is why the LottieContentIsland doesn't need to manually revoke event handlers.
+        m_island.Close();
+    }
+
+    winrt::IAnimatedVisualSource LottieContentIsland::AnimatedVisualSource() const
     {
         // Return the AnimatedVisualSource
         return m_animatedVisualSource;
     }
 
-    void LottieContentIsland::AnimatedVisualSource(winrt::LottieVisualSourceWinRT const& value)
+    void LottieContentIsland::AnimatedVisualSource(winrt::IAnimatedVisualSource const& value)
     {
         if (m_animatedVisualSource == value)
         {
@@ -77,12 +96,12 @@ namespace winrt::LottieIsland::implementation
         return m_progressPropertySet != nullptr;
     }
 
-    double LottieContentIsland::PlaybackRate() const
+    float LottieContentIsland::PlaybackRate() const
     {
         return m_playbackRate;
     }
 
-    void LottieContentIsland::PlaybackRate(double rate)
+    void LottieContentIsland::PlaybackRate(float rate)
     {
         m_playbackRate = rate;
         if (m_animationController != nullptr)
@@ -99,15 +118,40 @@ namespace winrt::LottieIsland::implementation
         }
     }
 
-    winrt::Windows::Foundation::IAsyncAction LottieContentIsland::PlayAsync(double fromProgress, double toProgress, bool looped)
+    winrt::Windows::Foundation::IAsyncAction LottieContentIsland::PlayAsync(float fromProgress, float toProgress, bool looped)
     {
+        if (m_animationCompletionEvent.get() == nullptr)
+        {
+            m_animationCompletionEvent = winrt::handle(CreateEvent(nullptr, false, false, nullptr));
+        }
+
         // Stop any existing animation
         StopAnimation();
 
-        // TODO: actually implement the async portion of this properly using composition batches.
+        auto batch = m_compositor.CreateScopedBatch(CompositionBatchTypes::Animation);
 
         StartAnimation(fromProgress, toProgress, looped);
-        co_return;
+
+        // Keep track of whether the animation is looped, since we will have to
+        // manually fire the event if Stop() is called in the non-looped case.
+        // We don't hook up the event here in the looped case, because ScopedBatches
+        // complete immediately if their animation is looped.
+        m_looped = looped;
+        if (!looped)
+        {
+            // Hook up an event handler to the Completed event of the batch
+            batch.Completed([&](auto&&, auto&&)
+                {
+                    // Set the completion event when the batch completes
+                    SetEvent(m_animationCompletionEvent.get());
+                });
+        }
+
+        // Commit the batch
+        batch.End();
+
+        // Wait for the completion event asynchronously
+        co_await winrt::resume_on_signal(m_animationCompletionEvent.get()); // Wait for the event to be signaled
     }
 
     void LottieContentIsland::Resume()
@@ -123,7 +167,7 @@ namespace winrt::LottieIsland::implementation
         StopAnimation();
     }
 
-    void LottieContentIsland::StartAnimation(double fromProgress, double toProgress, bool loop)
+    void LottieContentIsland::StartAnimation(float fromProgress, float toProgress, bool loop)
     {
         if (m_animatedVisual == nullptr)
         {
@@ -163,6 +207,11 @@ namespace winrt::LottieIsland::implementation
         // Stop and snap to the beginning of the animation
         m_progressPropertySet.StopAnimation(L"Progress");
         m_progressPropertySet.InsertScalar(L"Progress", m_previousFromProgress);
+
+        if (m_looped)
+        {
+            SetEvent(m_animationCompletionEvent.get());
+        }
 
         // Cleanup
         m_previousFromProgress = 0.0;
@@ -205,5 +254,28 @@ namespace winrt::LottieIsland::implementation
             m_rootVisual.Size(desiredSize);
             m_rootVisual.Scale({ scale.x, scale.y, 1.f });
         }
+    }
+
+    void LottieContentIsland::InitializeInputHandlers()
+    {
+        m_inputPointerSource.PointerEntered([this](auto& /*sender*/, auto& args) {
+            m_pointerEnteredEvent(*this, args);
+        });
+
+        m_inputPointerSource.PointerExited([this](auto& /*sender*/, auto& args) {
+            m_pointerExitedEvent(*this, args);
+        });
+
+        m_inputPointerSource.PointerMoved([this](auto& /*sender*/, auto& args) {
+            m_pointerMovedEvent(*this, args);
+        });
+
+        m_inputPointerSource.PointerPressed([this](auto& /*sender*/, auto& args) {
+            m_pointerPressedEvent(*this, args);
+        });
+
+        m_inputPointerSource.PointerReleased([this](auto& /*sender*/, auto& args) {
+            m_pointerReleasedEvent(*this, args);
+        });
     }
 }

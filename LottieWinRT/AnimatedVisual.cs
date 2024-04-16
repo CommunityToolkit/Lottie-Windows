@@ -1,18 +1,18 @@
 ﻿using System.Numerics;
 using Microsoft.UI.Composition;
-using Microsoft.UI.Xaml.Controls;
+using MUXC = Microsoft.UI.Xaml.Controls;
 
 namespace LottieWinRT
 {
-    public sealed class AnimatedVisualWinRT
+    public sealed class AnimatedVisual : IAnimatedVisual
     {
-        private IAnimatedVisual? _animatedVisual;
+        private MUXC.IAnimatedVisual? _animatedVisual;
 
-        public AnimatedVisualWinRT()
+        public AnimatedVisual()
         {
         }
 
-        internal AnimatedVisualWinRT(IAnimatedVisual visual)
+        internal AnimatedVisual(MUXC.IAnimatedVisual visual)
         {
             _animatedVisual = visual;
         }

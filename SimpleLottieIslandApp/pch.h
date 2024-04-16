@@ -4,6 +4,7 @@
 
 #include "targetver.h"
 #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
+#define NOMINMAX
 // Windows Header Files
 #include <windows.h>
 
@@ -20,4 +21,3 @@
 #include <winrt/Microsoft.UI.Dispatching.h>
 #include <winrt/Microsoft.UI.Interop.h>
 #include <winrt/Windows.Foundation.h>
-#include <winrt/LottieWinRT.h>

@@ -1,13 +1,12 @@
 ﻿namespace LottieIsland
 {
-    [default_interface]
     runtimeclass LottieContentIsland
     {
-        LottieContentIsland(Microsoft.UI.Composition.Compositor compositor);
+        static LottieContentIsland Create(Microsoft.UI.Composition.Compositor compositor);
 
         Microsoft.UI.Content.ContentIsland Island{ get; };
 
-        LottieWinRT.LottieVisualSourceWinRT AnimatedVisualSource;
+        LottieWinRT.IAnimatedVisualSource AnimatedVisualSource;
 
         Windows.Foundation.TimeSpan Duration{ get; };
 
@@ -15,11 +14,21 @@
 
         Boolean IsPlaying{ get; };
 
-        Double PlaybackRate;
+        Single PlaybackRate;
+
+        event Windows.Foundation.TypedEventHandler<LottieContentIsland, Microsoft.UI.Input.PointerEventArgs> PointerEntered;
+
+        event Windows.Foundation.TypedEventHandler<LottieContentIsland, Microsoft.UI.Input.PointerEventArgs> PointerExited;
+
+        event Windows.Foundation.TypedEventHandler<LottieContentIsland, Microsoft.UI.Input.PointerEventArgs> PointerMoved;
+
+        event Windows.Foundation.TypedEventHandler<LottieContentIsland, Microsoft.UI.Input.PointerEventArgs> PointerPressed;
+
+        event Windows.Foundation.TypedEventHandler<LottieContentIsland, Microsoft.UI.Input.PointerEventArgs> PointerReleased;
 
         void Pause();
 
-        Windows.Foundation.IAsyncAction PlayAsync(Double fromProgress, Double toProgress, Boolean looped);
+        Windows.Foundation.IAsyncAction PlayAsync(Single fromProgress, Single toProgress, Boolean looped);
 
         void Resume();
 
