@@ -1,4 +1,8 @@
-﻿using System.Diagnostics;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System.Diagnostics;
 using CommunityToolkit.WinUI.Lottie;
 using Microsoft.UI.Composition;
 using LottieIsland = CommunityToolkit.WinAppSDK.LottieIsland;
@@ -6,7 +10,7 @@ using MUXC = Microsoft.UI.Xaml.Controls;
 
 namespace LottieWinRT
 {
-    public sealed class LottieVisualSourceWinRT : LottieIsland.IAnimatedVisualSource
+    public sealed class LottieVisualSourceWinRT : MUXC.IAnimatedVisualSource
     {
         public event EventHandler<object?>? AnimatedVisualInvalidated;
 
@@ -19,6 +23,7 @@ namespace LottieWinRT
 
         private LottieVisualSourceWinRT(LottieVisualSourceFrameworkless lottieVisualSource)
         {
+            Debug.WriteLine("Hello from C#!!!");
             _lottieVisualSource = lottieVisualSource;
             _lottieVisualSource.AnimatedVisualInvalidated += (MUXC.IAnimatedVisualSource? sender, object? o) =>
             {
@@ -60,7 +65,7 @@ namespace LottieWinRT
         ///// <param name="compositor">The <see cref="Compositor"/> that can be used as a factory for the resulting <see cref="MUXC.IAnimatedVisual"/>.</param>
         ///// <param name="diagnostics">An optional object that may provide extra information about the result.</param>
         ///// <returns>An <see cref="MUXC.IAnimatedVisual"/>.</returns>
-        public LottieIsland.IAnimatedVisual? TryCreateAnimatedVisual(
+        public MUXC.IAnimatedVisual? TryCreateAnimatedVisual(
             Compositor compositor,
             out object? diagnostics)
         {
@@ -71,8 +76,8 @@ namespace LottieWinRT
                 return null;
             }
 
-            //return visual;
-            return new AnimatedVisual(visual);
+            return visual;
+            //return new AnimatedVisual(visual);
         }
     }
 }

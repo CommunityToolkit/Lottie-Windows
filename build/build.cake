@@ -75,6 +75,21 @@ void MSBuildSolution(
         msBuildSettings.PlatformTarget = platformTarget;
         MSBuild($"{baseDir}/Lottie-Windows.sln", msBuildSettings);
     }
+
+    // Build all platforms for native projects.
+    foreach (var platformTarget in new []
+    {
+        PlatformTarget.x86,
+        PlatformTarget.x64,
+        PlatformTarget.ARM64
+    })
+    {
+        var msBuildSettings = SetProperties(SettingsWithTarget(platformTarget).SetConfiguration(configuration));
+        msBuildSettings.PlatformTarget = platformTarget;
+        MSBuild($"{baseDir}/LottieIsland/LottieIsland.vcxproj", msBuildSettings);
+        MSBuild($"{baseDir}/LottieWinRT/LottieWinRT.csproj", msBuildSettings);
+        MSBuild($"{baseDir}/SimpleLottieIslandApp/SimpleLottieIslandApp.vcxproj", msBuildSettings);
+    }
 }
 
 // Returns true if the given file has a name that indicates it is

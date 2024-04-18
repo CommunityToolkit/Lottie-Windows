@@ -1,11 +1,15 @@
-﻿using System.Numerics;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System.Numerics;
 using Microsoft.UI.Composition;
 using LottieIsland = CommunityToolkit.WinAppSDK.LottieIsland;
 using MUXC = Microsoft.UI.Xaml.Controls;
 
 namespace LottieWinRT
 {
-    public sealed class AnimatedVisual : LottieIsland.IAnimatedVisual
+    public sealed class AnimatedVisual// : LottieIsland.IAnimatedVisual
     {
         private MUXC.IAnimatedVisual? _animatedVisual;
 
