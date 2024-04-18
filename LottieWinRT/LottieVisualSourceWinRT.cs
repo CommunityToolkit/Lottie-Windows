@@ -14,18 +14,18 @@ namespace LottieWinRT
     {
         public event EventHandler<object?>? AnimatedVisualInvalidated;
 
-        private LottieVisualSourceFrameworkless _lottieVisualSource;
+        private LottieVisualSource _lottieVisualSource;
 
         public LottieVisualSourceWinRT()
         {
-            _lottieVisualSource = new LottieVisualSourceFrameworkless();
+            _lottieVisualSource = new LottieVisualSource();
         }
 
-        private LottieVisualSourceWinRT(LottieVisualSourceFrameworkless lottieVisualSource)
+        private LottieVisualSourceWinRT(LottieVisualSource lottieVisualSource)
         {
             Debug.WriteLine("Hello from C#!!!");
             _lottieVisualSource = lottieVisualSource;
-            _lottieVisualSource.AnimatedVisualInvalidated += (MUXC.IAnimatedVisualSource? sender, object? o) =>
+            _lottieVisualSource.AnimatedVisualInvalidated += (MUXC.IDynamicAnimatedVisualSource? sender, object? o) =>
             {
                 AnimatedVisualInvalidated?.Invoke(this, o);
             };
@@ -33,7 +33,7 @@ namespace LottieWinRT
 
         public static LottieVisualSourceWinRT? CreateFromString(string uri)
         {
-            LottieVisualSourceFrameworkless? lottieSource = LottieVisualSourceFrameworkless.CreateFromString(uri);
+            LottieVisualSource? lottieSource = LottieVisualSource.CreateFromString(uri);
             if (lottieSource == null)
             {
                 return null;
