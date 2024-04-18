@@ -216,7 +216,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             winrt::LottieVisualSourceWinRT lottieVisualSource = winrt::LottieVisualSourceWinRT::CreateFromString(L"ms-appx:///LottieLogo1.json");
             lottieVisualSource.AnimatedVisualInvalidated([windowInfo, lottieVisualSource](const winrt::IInspectable&, auto&&)
                 {
-                    windowInfo->LottieIsland.AnimatedVisualSource(lottieVisualSource.as<winrt::IAnimatedVisualSource>());
+                    windowInfo->LottieIsland.AnimatedVisualSource(lottieVisualSource.as<winrt::IAnimatedVisualSourceFrameworkless>());
                 });
 
             windowInfo->LottieIsland.PointerPressed([=](auto&...) {

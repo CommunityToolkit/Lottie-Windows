@@ -33,13 +33,13 @@ namespace winrt::CommunityToolkit::WinAppSDK::LottieIsland::implementation
         m_island.Close();
     }
 
-    winrt::IAnimatedVisualSource LottieContentIsland::AnimatedVisualSource() const
+    winrt::IAnimatedVisualSourceFrameworkless LottieContentIsland::AnimatedVisualSource() const
     {
         // Return the AnimatedVisualSource
         return m_animatedVisualSource;
     }
 
-    void LottieContentIsland::AnimatedVisualSource(winrt::IAnimatedVisualSource const& value)
+    void LottieContentIsland::AnimatedVisualSource(winrt::IAnimatedVisualSourceFrameworkless const& value)
     {
         if (m_animatedVisualSource == value)
         {

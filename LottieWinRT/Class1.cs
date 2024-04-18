@@ -7,7 +7,7 @@ using System.Numerics;
 
 namespace LottieWinRT
 {
-    public sealed class Class1 : CommunityToolkit.WinAppSDK.LottieIsland.IAnimatedVisual
+    public sealed class Class1 : CommunityToolkit.WinAppSDK.LottieIsland.IAnimatedVisualFrameworkless
     {
         public Class1()
         {
