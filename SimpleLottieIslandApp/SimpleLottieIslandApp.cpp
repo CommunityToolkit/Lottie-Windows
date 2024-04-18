@@ -7,8 +7,7 @@
 #include "SimpleLottieIslandApp.h"
 
 #include <Microsoft.UI.Dispatching.Interop.h> // For ContentPreTranslateMessage
-#include <winrt/LottieIsland.h>
-#include <winrt/AnimatedVisuals.h>
+#include <winrt/CommunityToolkit.WinAppSDK.LottieIsland.h>
 #include <winrt/LottieWinRT.h>
 
 namespace winrt
@@ -18,6 +17,7 @@ namespace winrt
     using namespace winrt::Microsoft::UI::Content;
     using namespace winrt::Microsoft::UI::Dispatching;
     using namespace winrt::LottieWinRT;
+    using namespace winrt::CommunityToolkit::WinAppSDK::LottieIsland;
     using float2 = winrt::Windows::Foundation::Numerics::float2;
 }
 
@@ -36,7 +36,7 @@ struct WindowInfo
     winrt::DesktopChildSiteBridge Bridge{ nullptr };
     winrt::event_token TakeFocusRequestedToken{};
     HWND LastFocusedWindow{ NULL };
-    winrt::LottieIsland::LottieContentIsland LottieIsland{ nullptr };
+    winrt::LottieContentIsland LottieIsland{ nullptr };
     bool isPaused = false;
 };
 
@@ -66,8 +66,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
 
-    try
-    {
+    /*try
+    {*/
         // Island-support: Call init_apartment to initialize COM and WinRT for the thread.
         winrt::init_apartment(winrt::apartment_type::single_threaded);
 
@@ -113,12 +113,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
         // Island-support: To properly shut down after using a DispatcherQueue, call ShutdownQueue[Aysnc]().
         dispatcherQueueController.ShutdownQueue();
-    }
-    catch (const winrt::hresult_error& exception)
-    {
-        // An exception was thrown, let's make the exit code the HR value of the exception.
-        return exception.code().value;
-    }
+    //}
+    //catch (const winrt::hresult_error& exception)
+    //{
+    //    // An exception was thrown, let's make the exit code the HR value of the exception.
+    //    return exception.code().value;
+    //}
 
     return 0;
 }
@@ -197,7 +197,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 winrt::GetWindowIdFromWindow(hWnd));
 
             // Create the LottieIsland, which is a WinRT wrapper for hosting a Lottie animation in a ContentIsland
-            windowInfo->LottieIsland = winrt::LottieIsland::LottieContentIsland::Create(windowInfo->Compositor);
+            windowInfo->LottieIsland = winrt::LottieContentIsland::Create(windowInfo->Compositor);;
 
             // Connect the ContentIsland to the DesktopChildSiteBridge
             windowInfo->Bridge.Connect(windowInfo->LottieIsland.Island());
@@ -206,17 +206,23 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             //// Set the C++/WinRT precompiled Lottie animation!
             //windowInfo->LottieIsland.AnimatedVisualSource(winrt::AnimatedVisuals::LottieLogo1());
 
-            // Live JSON loaded animation!
+            //// Live JSON loaded animation!
+            //winrt::LottieVisualSourceWinRT v = winrt::LottieVisualSourceWinRT();
+            //if (v == nullptr)
+            //{
+            //    OutputDebugString(L"Meep");
+            //}
+
             winrt::LottieVisualSourceWinRT lottieVisualSource = winrt::LottieVisualSourceWinRT::CreateFromString(L"ms-appx:///LottieLogo1.json");
-            lottieVisualSource.AnimatedVisualInvalidated([windowInfo, lottieVisualSource](const winrt::IInspectable sender, auto&&)
+            lottieVisualSource.AnimatedVisualInvalidated([windowInfo, lottieVisualSource](const winrt::IInspectable&, auto&&)
                 {
-                    windowInfo->LottieIsland.AnimatedVisualSource(lottieVisualSource);
+                    windowInfo->LottieIsland.AnimatedVisualSource(lottieVisualSource.as<winrt::IAnimatedVisualSource>());
                 });
 
             windowInfo->LottieIsland.PointerPressed([=](auto&...) {
                 // Clicking on the Lottie animation acts like clicking "Pause/Resume"
                 OnButtonClicked(ButtonType::PauseButton, windowInfo, hWnd);
-            });
+                });
 
             // Add some Win32 controls to allow the app to play with the animation
             CreateWin32Button(ButtonType::PlayButton, L"Play", hWnd);

@@ -40,6 +40,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LottieToWinComp.dll", "dlls
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{00D8BD2B-70A1-48EC-AC5E-CC40561F8972}"
 	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
 		LICENSE.md = LICENSE.md
 		README.md = README.md
 	EndProjectSection

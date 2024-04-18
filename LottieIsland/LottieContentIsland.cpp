@@ -2,7 +2,7 @@
 #include "LottieContentIsland.h"
 #include "LottieContentIsland.g.cpp"
 
-namespace winrt::LottieIsland::implementation
+namespace winrt::CommunityToolkit::WinAppSDK::LottieIsland::implementation
 {
     winrt::LottieContentIsland LottieContentIsland::Create(const winrt::Compositor& compositor)
     {

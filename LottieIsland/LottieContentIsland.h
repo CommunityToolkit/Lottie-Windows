@@ -1,22 +1,18 @@
 ﻿#pragma once
 
 #include "LottieContentIsland.g.h"
-
-namespace winrt::Microsoft::UI::Xaml::Controls
-{
-    interface IAnimatedVisualSource;
-}
+#include "winrt/CommunityToolkit.WinAppSDK.LottieIsland.h"
 
 namespace winrt
 {
-    using namespace ::winrt::LottieIsland;
+    using namespace ::winrt::CommunityToolkit::WinAppSDK::LottieIsland;
 }
 
-namespace winrt::LottieIsland::implementation
+namespace winrt::CommunityToolkit::WinAppSDK::LottieIsland::implementation
 {
     struct LottieContentIsland : LottieContentIslandT<LottieContentIsland>
     {
-        using PointerEventHandler = Windows::Foundation::TypedEventHandler<winrt::LottieIsland::LottieContentIsland, winrt::PointerEventArgs>;
+        using PointerEventHandler = Windows::Foundation::TypedEventHandler<winrt::LottieContentIsland, winrt::PointerEventArgs>;
 
         static winrt::LottieContentIsland Create(const winrt::Compositor& compositor);
 
@@ -94,7 +90,7 @@ namespace winrt::LottieIsland::implementation
     };
 }
 
-namespace winrt::LottieIsland::factory_implementation
+namespace winrt::CommunityToolkit::WinAppSDK::LottieIsland::factory_implementation
 {
     struct LottieContentIsland : LottieContentIslandT<LottieContentIsland, implementation::LottieContentIsland>
     {

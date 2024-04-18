@@ -1,12 +1,24 @@
-﻿namespace LottieIsland
+﻿namespace CommunityToolkit.WinAppSDK.LottieIsland
 {
+    interface IAnimatedVisual
+    {
+        Windows.Foundation.TimeSpan Duration{ get; };
+        Microsoft.UI.Composition.Visual RootVisual{ get; };
+        Windows.Foundation.Numerics.Vector2 Size{ get; };
+    };
+
+    interface IAnimatedVisualSource
+    {
+        IAnimatedVisual TryCreateAnimatedVisual(Microsoft.UI.Composition.Compositor compositor, out IInspectable diagnostics);
+    };
+
     runtimeclass LottieContentIsland
     {
         static LottieContentIsland Create(Microsoft.UI.Composition.Compositor compositor);
 
         Microsoft.UI.Content.ContentIsland Island{ get; };
 
-        LottieWinRT.IAnimatedVisualSource AnimatedVisualSource;
+        IAnimatedVisualSource AnimatedVisualSource;
 
         Windows.Foundation.TimeSpan Duration{ get; };
 
@@ -33,7 +45,5 @@
         void Resume();
 
         void Stop();
-
-
     }
 }

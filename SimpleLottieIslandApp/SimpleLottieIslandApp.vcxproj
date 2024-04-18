@@ -130,23 +130,13 @@
     <ClInclude Include="Resource.h" />
     <ClInclude Include="SimpleLottieIslandApp.h" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="AnimatedVisuals.LottieLogo1.h">
-      <DependentUpon>AnimatedVisuals.LottieLogo1.idl</DependentUpon>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="AnimatedVisuals.LottieLogo1.cpp">
-      <DependentUpon>AnimatedVisuals.LottieLogo1.idl</DependentUpon>
-    </ClCompile>
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
     <!-- Island-support: This generated file implements some activation factories -->
     <ClCompile Include="SimpleLottieIslandApp.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <Midl Include="AnimatedVisuals.LottieLogo1.idl" />
-    <Midl Include="Project.idl" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="SimpleLottieIslandApp.rc" />
@@ -168,11 +158,11 @@
     </AppxManifest>
   </ItemGroup>
   <ItemGroup>
+    <Midl Include="Project.idl" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\LottieIsland\LottieIsland.vcxproj">
       <Project>{9ba7a2f2-b723-458b-a575-3f726d271465}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\LottieWinRT\LottieWinRT.csproj">
-      <Project>{dda0d223-4b59-455d-a8b1-cfae59523ffb}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
@@ -181,6 +171,7 @@
     <Import Project="..\packages\Microsoft.WindowsAppSDK.1.5.240227000\build\native\Microsoft.WindowsAppSDK.targets" Condition="Exists('..\packages\Microsoft.WindowsAppSDK.1.5.240227000\build\native\Microsoft.WindowsAppSDK.targets')" />
     <Import Project="..\packages\Microsoft.Windows.SDK.BuildTools.10.0.22621.756\build\Microsoft.Windows.SDK.BuildTools.targets" Condition="Exists('..\packages\Microsoft.Windows.SDK.BuildTools.10.0.22621.756\build\Microsoft.Windows.SDK.BuildTools.targets')" />
     <Import Project="..\packages\Microsoft.Graphics.Win2D.1.2.0\build\native\Microsoft.Graphics.Win2D.targets" Condition="Exists('..\packages\Microsoft.Graphics.Win2D.1.2.0\build\native\Microsoft.Graphics.Win2D.targets')" />
+    <Import Project="..\packages\LottieWinRT.0.1.1-prerelease\build\LottieWinRT.targets" Condition="Exists('..\packages\LottieWinRT.0.1.1-prerelease\build\LottieWinRT.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
@@ -193,5 +184,6 @@
     <Error Condition="!Exists('..\packages\Microsoft.Windows.SDK.BuildTools.10.0.22621.756\build\Microsoft.Windows.SDK.BuildTools.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.SDK.BuildTools.10.0.22621.756\build\Microsoft.Windows.SDK.BuildTools.props'))" />
     <Error Condition="!Exists('..\packages\Microsoft.Windows.SDK.BuildTools.10.0.22621.756\build\Microsoft.Windows.SDK.BuildTools.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.SDK.BuildTools.10.0.22621.756\build\Microsoft.Windows.SDK.BuildTools.targets'))" />
     <Error Condition="!Exists('..\packages\Microsoft.Graphics.Win2D.1.2.0\build\native\Microsoft.Graphics.Win2D.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Graphics.Win2D.1.2.0\build\native\Microsoft.Graphics.Win2D.targets'))" />
+    <Error Condition="!Exists('..\packages\LottieWinRT.0.1.1-prerelease\build\LottieWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\LottieWinRT.0.1.1-prerelease\build\LottieWinRT.targets'))" />
   </Target>
 </Project>

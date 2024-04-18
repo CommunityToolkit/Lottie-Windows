@@ -40,12 +40,18 @@
 
 	<!--In order to host the C# component from C++, you must add the following Extension group and list the activatable classes-->
 	<Extensions>
-        <Extension Category="windows.activatableClass.inProcessServer">
+		<!--<Extension Category="windows.activatableClass.inProcessServer">
             <InProcessServer>
-                <Path>LottieIsland.dll</Path>
-                <ActivatableClass ActivatableClassId="LottieIsland.LottieContentIsland" ThreadingModel="both" />
+                <Path>CommunityToolkit.WinAppSDK.LottieIsland.dll</Path>
+                <ActivatableClass ActivatableClassId="CommunityToolkit.WinAppSDK.LottieContentIsland" ThreadingModel="both" />
             </InProcessServer>
-        </Extension>
+		</Extension>-->
+		<!--<Extension Category="windows.activatableClass.inProcessServer">
+            <InProcessServer>
+                <Path>WinRT.Host.dll</Path>
+				<ActivatableClass ActivatableClassId="LottieWinRT.LottieVisualSourceWinRT" ThreadingModel="both" />
+            </InProcessServer>
+		</Extension>-->
     </Extensions>
 
 	<Capabilities>

@@ -1,0 +1,202 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v7.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v7.0": {
+      "LottieIslandProjection/8.0.230817-rc-FHL.2.g3e107ef073": {
+        "dependencies": {
+          "LottieIsland": "1.0.0",
+          "Microsoft.VisualStudio.Threading.Analyzers": "17.5.22",
+          "Microsoft.Windows.CsWinRT": "2.0.7",
+          "Microsoft.WindowsAppSDK": "1.5.240404000",
+          "Nerdbank.GitVersioning": "3.5.119",
+          "StyleCop.Analyzers": "1.1.118",
+          "runtimepack.Microsoft.Windows.SDK.NET.Ref": "10.0.19041.31"
+        },
+        "runtime": {
+          "LottieIslandProjection.dll": {}
+        }
+      },
+      "runtimepack.Microsoft.Windows.SDK.NET.Ref/10.0.19041.31": {
+        "runtime": {
+          "Microsoft.Windows.SDK.NET.dll": {
+            "assemblyVersion": "10.0.19041.24",
+            "fileVersion": "10.0.19041.31"
+          },
+          "WinRT.Runtime.dll": {
+            "assemblyVersion": "2.0.0.0",
+            "fileVersion": "2.0.4.44211"
+          }
+        }
+      },
+      "Microsoft.VisualStudio.Threading.Analyzers/17.5.22": {},
+      "Microsoft.Windows.CsWinRT/2.0.7": {
+        "runtime": {
+          "lib/net6.0/WinRT.Runtime.dll": {
+            "assemblyVersion": "2.0.0.0",
+            "fileVersion": "2.0.7.45331"
+          }
+        }
+      },
+      "Microsoft.Windows.SDK.BuildTools/10.0.22621.756": {},
+      "Microsoft.WindowsAppSDK/1.5.240404000": {
+        "dependencies": {
+          "Microsoft.Windows.SDK.BuildTools": "10.0.22621.756"
+        },
+        "runtime": {
+          "lib/net6.0-windows10.0.18362.0/Microsoft.InteractiveExperiences.Projection.dll": {
+            "assemblyVersion": "10.0.0.0",
+            "fileVersion": "10.0.26100.1000"
+          },
+          "lib/net6.0-windows10.0.18362.0/Microsoft.WinUI.dll": {
+            "assemblyVersion": "3.0.0.0",
+            "fileVersion": "3.0.0.2404"
+          },
+          "lib/net6.0-windows10.0.18362.0/Microsoft.Windows.AppLifecycle.Projection.dll": {
+            "assemblyVersion": "1.5.0.0",
+            "fileVersion": "1.5.0.0"
+          },
+          "lib/net6.0-windows10.0.18362.0/Microsoft.Windows.AppNotifications.Builder.Projection.dll": {
+            "assemblyVersion": "1.5.0.0",
+            "fileVersion": "1.5.0.0"
+          },
+          "lib/net6.0-windows10.0.18362.0/Microsoft.Windows.AppNotifications.Projection.dll": {
+            "assemblyVersion": "1.5.0.0",
+            "fileVersion": "1.5.0.0"
+          },
+          "lib/net6.0-windows10.0.18362.0/Microsoft.Windows.ApplicationModel.DynamicDependency.Projection.dll": {
+            "assemblyVersion": "1.5.0.0",
+            "fileVersion": "1.5.0.0"
+          },
+          "lib/net6.0-windows10.0.18362.0/Microsoft.Windows.ApplicationModel.Resources.Projection.dll": {
+            "assemblyVersion": "1.5.0.0",
+            "fileVersion": "1.5.0.0"
+          },
+          "lib/net6.0-windows10.0.18362.0/Microsoft.Windows.ApplicationModel.WindowsAppRuntime.Projection.dll": {
+            "assemblyVersion": "1.5.0.0",
+            "fileVersion": "1.5.0.0"
+          },
+          "lib/net6.0-windows10.0.18362.0/Microsoft.Windows.Management.Deployment.Projection.dll": {
+            "assemblyVersion": "1.5.0.0",
+            "fileVersion": "1.5.0.0"
+          },
+          "lib/net6.0-windows10.0.18362.0/Microsoft.Windows.PushNotifications.Projection.dll": {
+            "assemblyVersion": "1.5.0.0",
+            "fileVersion": "1.5.0.0"
+          },
+          "lib/net6.0-windows10.0.18362.0/Microsoft.Windows.Security.AccessControl.Projection.dll": {
+            "assemblyVersion": "1.5.0.0",
+            "fileVersion": "1.5.0.0"
+          },
+          "lib/net6.0-windows10.0.18362.0/Microsoft.Windows.System.Power.Projection.dll": {
+            "assemblyVersion": "1.5.0.0",
+            "fileVersion": "1.5.0.0"
+          },
+          "lib/net6.0-windows10.0.18362.0/Microsoft.Windows.System.Projection.dll": {
+            "assemblyVersion": "1.5.0.0",
+            "fileVersion": "1.5.0.0"
+          },
+          "lib/net6.0-windows10.0.18362.0/Microsoft.Windows.Widgets.Projection.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          },
+          "lib/net6.0-windows10.0.18362.0/Microsoft.WindowsAppRuntime.Bootstrap.Net.dll": {
+            "assemblyVersion": "1.5.0.0",
+            "fileVersion": "1.5.0.0"
+          }
+        },
+        "runtimeTargets": {
+          "runtimes/win-arm64/native/Microsoft.WindowsAppRuntime.Bootstrap.dll": {
+            "rid": "win-arm64",
+            "assetType": "native",
+            "fileVersion": "1.5.0.0"
+          },
+          "runtimes/win-x64/native/Microsoft.WindowsAppRuntime.Bootstrap.dll": {
+            "rid": "win-x64",
+            "assetType": "native",
+            "fileVersion": "1.5.0.0"
+          },
+          "runtimes/win-x86/native/Microsoft.WindowsAppRuntime.Bootstrap.dll": {
+            "rid": "win-x86",
+            "assetType": "native",
+            "fileVersion": "1.5.0.0"
+          },
+          "runtimes/win10-arm64/native/Microsoft.WindowsAppRuntime.Bootstrap.dll": {
+            "rid": "win10-arm64",
+            "assetType": "native",
+            "fileVersion": "1.5.0.0"
+          },
+          "runtimes/win10-x64/native/Microsoft.WindowsAppRuntime.Bootstrap.dll": {
+            "rid": "win10-x64",
+            "assetType": "native",
+            "fileVersion": "1.5.0.0"
+          },
+          "runtimes/win10-x86/native/Microsoft.WindowsAppRuntime.Bootstrap.dll": {
+            "rid": "win10-x86",
+            "assetType": "native",
+            "fileVersion": "1.5.0.0"
+          }
+        }
+      },
+      "Nerdbank.GitVersioning/3.5.119": {},
+      "StyleCop.Analyzers/1.1.118": {}
+    }
+  },
+  "libraries": {
+    "LottieIslandProjection/8.0.230817-rc-FHL.2.g3e107ef073": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "runtimepack.Microsoft.Windows.SDK.NET.Ref/10.0.19041.31": {
+      "type": "runtimepack",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Microsoft.VisualStudio.Threading.Analyzers/17.5.22": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-WzCsniKpC6S9yAerB+Od8pK8RytxW+fFSZ+GjL0y0XdIb7H/os71bWFbKMXxB1omDLZHNm1IdBlcLQm4KmS/AQ==",
+      "path": "microsoft.visualstudio.threading.analyzers/17.5.22",
+      "hashPath": "microsoft.visualstudio.threading.analyzers.17.5.22.nupkg.sha512"
+    },
+    "Microsoft.Windows.CsWinRT/2.0.7": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-l2PNM7ZpWh+0oGmESofqKcUz1PkkzOU4hmqM4DYi4gIjp36dJlQR6vuU9bAjZYX1SHYj360NqEireFVRntYhSQ==",
+      "path": "microsoft.windows.cswinrt/2.0.7",
+      "hashPath": "microsoft.windows.cswinrt.2.0.7.nupkg.sha512"
+    },
+    "Microsoft.Windows.SDK.BuildTools/10.0.22621.756": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-7ZL2sFSioYm1Ry067Kw1hg0SCcW5kuVezC2SwjGbcPE61Nn+gTbH86T73G3LcEOVj0S3IZzNuE/29gZvOLS7VA==",
+      "path": "microsoft.windows.sdk.buildtools/10.0.22621.756",
+      "hashPath": "microsoft.windows.sdk.buildtools.10.0.22621.756.nupkg.sha512"
+    },
+    "Microsoft.WindowsAppSDK/1.5.240404000": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-B06pJv0nH31vf4Df72Qoa8A+i12LBUQ/3LhpyWVEQ83opd2a5U49XnqqYrK/T8J6Zf4JTxfLvKBSM5fgXb1YXg==",
+      "path": "microsoft.windowsappsdk/1.5.240404000",
+      "hashPath": "microsoft.windowsappsdk.1.5.240404000.nupkg.sha512"
+    },
+    "Nerdbank.GitVersioning/3.5.119": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-x8k4zV6YKZA5Rr810439lG9NngdbyPtFv0QpIYz32m1Im59kvSbEHO8gKGZoNvsfZSquayjEDUCa8acbut372g==",
+      "path": "nerdbank.gitversioning/3.5.119",
+      "hashPath": "nerdbank.gitversioning.3.5.119.nupkg.sha512"
+    },
+    "StyleCop.Analyzers/1.1.118": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Onx6ovGSqXSK07n/0eM3ZusiNdB6cIlJdabQhWGgJp3Vooy9AaLS/tigeybOJAobqbtggTamoWndz72JscZBvw==",
+      "path": "stylecop.analyzers/1.1.118",
+      "hashPath": "stylecop.analyzers.1.1.118.nupkg.sha512"
+    }
+  }
+}

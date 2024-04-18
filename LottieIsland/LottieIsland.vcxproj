@@ -9,7 +9,8 @@
     <CppWinRTGenerateWindowsMetadata>true</CppWinRTGenerateWindowsMetadata>
     <ProjectGuid>{9ba7a2f2-b723-458b-a575-3f726d271465}</ProjectGuid>
     <ProjectName>LottieIsland</ProjectName>
-    <RootNamespace>LottieIsland</RootNamespace>
+    <RootNamespace>CommunityToolkit.WinAppSDK.LottieIsland</RootNamespace>
+    <AssemblyName>CommunityToolkit.WinAppSDK.LottieIsland</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
     <ApplicationType>Windows Store</ApplicationType>
@@ -84,12 +85,6 @@
     <Import Project="PropertySheet.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
-  </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -103,7 +98,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
-      <ModuleDefinitionFile>LottieIsland.def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>CommunityToolkit.WinAppSDK.LottieIsland.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
@@ -123,7 +118,7 @@
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="LottieContentIsland.h">
-      <DependentUpon>LottieContentIsland.idl</DependentUpon>
+      <DependentUpon>CommunityToolkit.WinAppSDK.LottieIsland.idl</DependentUpon>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -131,27 +126,23 @@
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="LottieContentIsland.cpp">
-      <DependentUpon>LottieContentIsland.idl</DependentUpon>
+      <DependentUpon>CommunityToolkit.WinAppSDK.LottieIsland.idl</DependentUpon>
     </ClCompile>
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="LottieContentIsland.idl" />
+    <Midl Include="CommunityToolkit.WinAppSDK.LottieIsland.idl" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="LottieIsland.def" />
+    <None Include="CommunityToolkit.WinAppSDK.LottieIsland.def" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Directory.Build.props" />
     <None Include="packages.config" />
     <None Include="PropertySheet.props" />
     <Text Include="readme.txt">
       <DeploymentContent>false</DeploymentContent>
     </Text>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\LottieWinRT\LottieWinRT.csproj">
-      <Project>{dda0d223-4b59-455d-a8b1-cfae59523ffb}</Project>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

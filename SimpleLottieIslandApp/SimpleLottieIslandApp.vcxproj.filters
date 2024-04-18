@@ -24,18 +24,12 @@
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="AnimatedVisuals.LottieLogo1.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="SimpleLottieIslandApp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AnimatedVisuals.LottieLogo1.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SimpleLottieIslandApp.cpp">
@@ -57,9 +51,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="Assets\LottieLogo1.json">
-      <Filter>Resource Files</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="package.appxmanifest" />
@@ -68,9 +59,9 @@
     <AppxManifest Include="package.appxmanifest" />
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="AnimatedVisuals.LottieLogo1.idl">
-      <Filter>Source Files</Filter>
-    </Midl>
+    <CopyFileToFolders Include="Assets\LottieLogo1.json" />
+  </ItemGroup>
+  <ItemGroup>
     <Midl Include="Project.idl">
       <Filter>Source Files</Filter>
     </Midl>

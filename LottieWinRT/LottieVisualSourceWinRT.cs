@@ -1,11 +1,12 @@
 ﻿using System.Diagnostics;
 using CommunityToolkit.WinUI.Lottie;
 using Microsoft.UI.Composition;
+using LottieIsland = CommunityToolkit.WinAppSDK.LottieIsland;
 using MUXC = Microsoft.UI.Xaml.Controls;
 
 namespace LottieWinRT
 {
-    public sealed class LottieVisualSourceWinRT : LottieWinRT.IAnimatedVisualSource
+    public sealed class LottieVisualSourceWinRT : LottieIsland.IAnimatedVisualSource
     {
         public event EventHandler<object?>? AnimatedVisualInvalidated;
 
@@ -53,13 +54,13 @@ namespace LottieWinRT
             }
         }
 
-        /// <summary>
-        /// Implements <see cref="IAnimatedVisualSource"/>.
-        /// </summary>
-        /// <param name="compositor">The <see cref="Compositor"/> that can be used as a factory for the resulting <see cref="MUXC.IAnimatedVisual"/>.</param>
-        /// <param name="diagnostics">An optional object that may provide extra information about the result.</param>
-        /// <returns>An <see cref="MUXC.IAnimatedVisual"/>.</returns>
-        public IAnimatedVisual? TryCreateAnimatedVisual(
+        ///// <summary>
+        ///// Implements <see cref="MUXC.IAnimatedVisualSource"/>.
+        ///// </summary>
+        ///// <param name="compositor">The <see cref="Compositor"/> that can be used as a factory for the resulting <see cref="MUXC.IAnimatedVisual"/>.</param>
+        ///// <param name="diagnostics">An optional object that may provide extra information about the result.</param>
+        ///// <returns>An <see cref="MUXC.IAnimatedVisual"/>.</returns>
+        public LottieIsland.IAnimatedVisual? TryCreateAnimatedVisual(
             Compositor compositor,
             out object? diagnostics)
         {
@@ -70,6 +71,7 @@ namespace LottieWinRT
                 return null;
             }
 
+            //return visual;
             return new AnimatedVisual(visual);
         }
     }

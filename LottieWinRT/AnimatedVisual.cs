@@ -1,10 +1,11 @@
 ﻿using System.Numerics;
 using Microsoft.UI.Composition;
+using LottieIsland = CommunityToolkit.WinAppSDK.LottieIsland;
 using MUXC = Microsoft.UI.Xaml.Controls;
 
 namespace LottieWinRT
 {
-    public sealed class AnimatedVisual : IAnimatedVisual
+    public sealed class AnimatedVisual : LottieIsland.IAnimatedVisual
     {
         private MUXC.IAnimatedVisual? _animatedVisual;
 

@@ -2,24 +2,52 @@
 
   <PropertyGroup>
     <TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
-    <Platforms>x64;x86;ARM64</Platforms>
-	<ImplicitUsings>true</ImplicitUsings>
+	  <ImplicitUsings>true</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <Platforms>x86;x64;ARM64</Platforms>
     <CsWinRTComponent>true</CsWinRTComponent>
+    <!-- <RootNamespace>LottieWinRT</RootNamespace> -->
     <AssemblyName>LottieWinRT</AssemblyName>
+    <Version>0.1.1-prerelease</Version>
     <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
     <CsWinRTWindowsMetadata>10.0.19041.0</CsWinRTWindowsMetadata>
+    <!-- Uncomment the line below to generate a log.txt in the obj folder -->
+    <CsWinRTEnableLogging>true</CsWinRTEnableLogging>
+    <!-- <CSWinRTIncludes>
+        CommunityToolkit.WinAppSDK.LottieIsland;
+    </CSWinRTIncludes> -->
+    
+    <!-- Needed to get around CsWinRT error for consuming a WinRT component -->
+    <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
+    <!-- <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute> -->
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CommunityToolkit.WinUI.Lottie" Version="8.0.230817-rc-FHL.0.g7d583f3127" PrivateAssets="All" />
+    <PackageReference Include="CommunityToolkit.WinUI.Lottie" Version="8.0.230817-rc-FHL.0.g7d583f3127" />
     <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.0.7" />
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.3.230331000" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.5.240404000" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.756" />
   </ItemGroup>
 
-  <!--<ItemGroup>
-    <ProjectReference Include="..\LottieFrameworkless\LottieFrameworkless.csproj" />
-  </ItemGroup>-->
+  <ItemGroup>
+    <ProjectReference Include="..\LottieIslandProjection\LottieIslandProjection.csproj" />
+  </ItemGroup>
+
+  <!-- <PropertyGroup>
+    <LottieIsland-Platform>$(Platform)</LottieIsland-Platform>
+    <LottieIsland-Platform Condition="$(RuntimeIdentifier.EndsWith('-x64'))">x64</LottieIsland-Platform>
+    <LottieIsland-Platform Condition="$(RuntimeIdentifier.EndsWith('-x86'))">x86</LottieIsland-Platform>
+    <LottieIsland-Platform Condition="$(RuntimeIdentifier.EndsWith('-ARM64'))">ARM64</LottieIsland-Platform> 
+  </PropertyGroup> -->
+
+  <PropertyGroup>
+    <LottieIsland-Platform Condition="'$(Platform)' == 'x86'">Win32</LottieIsland-Platform>
+    <LottieIsland-Platform Condition="'$(Platform)' != 'x86'">$(Platform)</LottieIsland-Platform>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <CsWinRTAuthoringWinMDs Include="..\_build\$(LottieIsland-Platform)\$(Configuration)\LottieIsland\bin\CommunityToolkit.WinAppSDK.LottieIsland.winmd" />
+  </ItemGroup>
 
 </Project>
