@@ -168,6 +168,17 @@
       <Project>{dda0d223-4b59-455d-a8b1-cfae59523ffb}</Project>
     </ProjectReference>
   </ItemGroup>
+  <!-- Copy DLLs from referenced projects -->
+  <Target Name="CopyReferencedDlls" AfterTargets="Build">
+    <ItemGroup>
+      <!-- Include DLLs from referenced projects -->
+      <ReferenceDlls Include="..\LottieWinRT\$(Platform)\$(Configuration)\net7.0-windows10.0.19041.0\CommunityToolkit.WinUI.Lottie.*" />
+      <ReferenceDlls Include="..\LottieWinRT\$(Platform)\$(Configuration)\net7.0-windows10.0.19041.0\CommunityToolkit.WinAppSDK.LottieIsland.Projection.*" />
+    </ItemGroup>
+    <!-- Copy DLLs to the output directory of SampleApp -->
+    <Copy SourceFiles="@(ReferenceDlls)" DestinationFolder="$(OutDir)" />
+    <Copy SourceFiles="@(ReferenceDlls)" DestinationFolder="$(OutDir)\AppX" />
+  </Target>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.230706.1\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.230706.1\build\native\Microsoft.Windows.CppWinRT.targets')" />

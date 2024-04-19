@@ -4,7 +4,7 @@
     <TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
 	  <ImplicitUsings>true</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <Platforms>x86;x64;ARM64</Platforms>
+    <Platforms>AnyCPU;x64;x86;ARM64</Platforms>
     <CsWinRTComponent>true</CsWinRTComponent>
     <!-- <RootNamespace>LottieWinRT</RootNamespace> -->
     <AssemblyName>LottieWinRT</AssemblyName>
@@ -24,13 +24,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CommunityToolkit.WinUI.Lottie" Version="8.0.230818-rc-FHL.0.gaef4a7cab2" />
     <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.0.7" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.5.240404000" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.756" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Lottie-Windows\Lottie-Windows-WinUI3\Lottie-Windows-WinUI3.csproj" />
     <ProjectReference Include="..\LottieIslandProjection\LottieIslandProjection.csproj" />
   </ItemGroup>
 
@@ -41,13 +41,8 @@
     <LottieIsland-Platform Condition="$(RuntimeIdentifier.EndsWith('-ARM64'))">ARM64</LottieIsland-Platform> 
   </PropertyGroup> -->
 
-  <PropertyGroup>
-    <LottieIsland-Platform Condition="'$(Platform)' == 'x86'">Win32</LottieIsland-Platform>
-    <LottieIsland-Platform Condition="'$(Platform)' != 'x86'">$(Platform)</LottieIsland-Platform>
-  </PropertyGroup>
-
   <ItemGroup>
-    <CsWinRTAuthoringWinMDs Include="..\_build\$(LottieIsland-Platform)\$(Configuration)\LottieIsland\bin\CommunityToolkit.WinAppSDK.LottieIsland.winmd" />
+    <CsWinRTAuthoringWinMDs Include="..\_build\x64\$(Configuration)\LottieIsland\bin\CommunityToolkit.WinAppSDK.LottieIsland.winmd" />
   </ItemGroup>
 
 </Project>

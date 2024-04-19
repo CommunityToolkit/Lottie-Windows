@@ -8,6 +8,7 @@
     <PackageTags>WinUI3 Toolkit Windows Animations Lottie XAML</PackageTags>
 
     <Nullable>enable</Nullable>
+    <Platforms>AnyCPU</Platforms>
     <CsWinRTIncludes>Microsoft</CsWinRTIncludes>
     <DefineConstants>WINAPPSDK</DefineConstants>
     <SignAssembly>True</SignAssembly>
