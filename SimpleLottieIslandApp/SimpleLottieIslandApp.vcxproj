@@ -168,15 +168,24 @@
       <Project>{dda0d223-4b59-455d-a8b1-cfae59523ffb}</Project>
     </ProjectReference>
   </ItemGroup>
+  <!-- Get the platform of LottieWinRT -->
+  <PropertyGroup>
+    <LottieWinRT-Platform>$(Platform)</LottieWinRT-Platform>
+    <LottieWinRT-Platform Condition="'$(Platform)'=='Win32'">x86</LottieWinRT-Platform>
+    <LottieWinRT-Platform Condition="'$(Platform)'=='Any CPU'">x64</LottieWinRT-Platform>
+  </PropertyGroup>
   <!-- Copy DLLs from referenced projects -->
-  <Target Name="CopyReferencedDlls" AfterTargets="Build">
+  <Target Name="CopyReferencedDlls" BeforeTargets="Build">
     <ItemGroup>
       <!-- Include DLLs from referenced projects -->
-      <ReferenceDlls Include="..\LottieWinRT\$(Platform)\$(Configuration)\net7.0-windows10.0.19041.0\CommunityToolkit.WinUI.Lottie.*" />
-      <ReferenceDlls Include="..\LottieWinRT\$(Platform)\$(Configuration)\net7.0-windows10.0.19041.0\CommunityToolkit.WinAppSDK.LottieIsland.Projection.*" />
+      <ReferenceDlls Include="..\LottieWinRT\bin\$(LottieWinRT-Platform)\$(Configuration)\net7.0-windows10.0.19041.0\CommunityToolkit.WinUI.Lottie.*" />
+      <ReferenceDlls Include="..\LottieWinRT\bin\$(LottieWinRT-Platform)\$(Configuration)\net7.0-windows10.0.19041.0\CommunityToolkit.WinAppSDK.LottieIsland.Projection.*" />
+      <Message Text="Copying files to AppX directory..." Importance="high" />
     </ItemGroup>
     <!-- Copy DLLs to the output directory of SampleApp -->
     <Copy SourceFiles="@(ReferenceDlls)" DestinationFolder="$(OutDir)" />
+    <!-- Create the AppX directory if it doesn't exist -->
+    <MakeDir Directories="$(OutDir)\AppX" />
     <Copy SourceFiles="@(ReferenceDlls)" DestinationFolder="$(OutDir)\AppX" />
   </Target>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
