@@ -3,13 +3,14 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Numerics;
+using Microsoft.UI;
 using Microsoft.UI.Composition;
 using LottieIsland = CommunityToolkit.WinAppSDK.LottieIsland;
 using MUXC = Microsoft.UI.Xaml.Controls;
 
 namespace LottieWinRT
 {
-    public sealed class AnimatedVisual// : LottieIsland.IAnimatedVisual
+    public sealed class AnimatedVisual : LottieIsland.IAnimatedVisualFrameworkless
     {
         private MUXC.IAnimatedVisual? _animatedVisual;
 
@@ -37,7 +38,21 @@ namespace LottieWinRT
             }
         }
 
-        public Visual? RootVisual { get => _animatedVisual?.RootVisual; }
+        public Visual? RootVisual
+        {
+            get
+            {
+                //Compositor? compositor = _animatedVisual?.RootVisual.Compositor;
+                //SpriteVisual? v = compositor?.CreateSpriteVisual();
+                //if (v != null)
+                //{
+                //    v.Size = new Vector2(200, 200);
+                //    v.Brush = compositor?.CreateColorBrush(Colors.Blue);
+                //}
+                //return v;
+                return _animatedVisual?.RootVisual;
+            }
+        }
 
         public Vector2 Size
         {

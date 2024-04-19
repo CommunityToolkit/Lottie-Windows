@@ -10,18 +10,18 @@ using MUXC = Microsoft.UI.Xaml.Controls;
 
 namespace LottieWinRT
 {
-    public sealed class LottieVisualSourceWinRT : MUXC.IAnimatedVisualSource
+    public sealed class LottieVisualSourceWinRT : LottieIsland.IAnimatedVisualSourceFrameworkless
     {
         public event EventHandler<object?>? AnimatedVisualInvalidated;
 
-        private LottieVisualSource _lottieVisualSource;
+        private LottieVisualSourceFrameworkless _lottieVisualSource;
 
         public LottieVisualSourceWinRT()
         {
-            _lottieVisualSource = new LottieVisualSource();
+            _lottieVisualSource = new LottieVisualSourceFrameworkless();
         }
 
-        private LottieVisualSourceWinRT(LottieVisualSource lottieVisualSource)
+        private LottieVisualSourceWinRT(LottieVisualSourceFrameworkless lottieVisualSource)
         {
             Debug.WriteLine("Hello from C#!!!");
             _lottieVisualSource = lottieVisualSource;
@@ -33,7 +33,7 @@ namespace LottieWinRT
 
         public static LottieVisualSourceWinRT? CreateFromString(string uri)
         {
-            LottieVisualSource? lottieSource = LottieVisualSource.CreateFromString(uri);
+            LottieVisualSourceFrameworkless? lottieSource = LottieVisualSourceFrameworkless.CreateFromString(uri);
             if (lottieSource == null)
             {
                 return null;
@@ -65,7 +65,7 @@ namespace LottieWinRT
         ///// <param name="compositor">The <see cref="Compositor"/> that can be used as a factory for the resulting <see cref="MUXC.IAnimatedVisual"/>.</param>
         ///// <param name="diagnostics">An optional object that may provide extra information about the result.</param>
         ///// <returns>An <see cref="MUXC.IAnimatedVisual"/>.</returns>
-        public MUXC.IAnimatedVisual? TryCreateAnimatedVisual(
+        public LottieIsland.IAnimatedVisualFrameworkless? TryCreateAnimatedVisual(
             Compositor compositor,
             out object? diagnostics)
         {
@@ -76,8 +76,8 @@ namespace LottieWinRT
                 return null;
             }
 
-            return visual;
-            //return new AnimatedVisual(visual);
+            //return visual;
+            return new AnimatedVisual(visual);
         }
     }
 }

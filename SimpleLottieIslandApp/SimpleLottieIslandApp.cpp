@@ -66,8 +66,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
 
-    /*try
-    {*/
+    try
+    {
         // Island-support: Call init_apartment to initialize COM and WinRT for the thread.
         winrt::init_apartment(winrt::apartment_type::single_threaded);
 
@@ -113,12 +113,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
         // Island-support: To properly shut down after using a DispatcherQueue, call ShutdownQueue[Aysnc]().
         dispatcherQueueController.ShutdownQueue();
-    //}
-    //catch (const winrt::hresult_error& exception)
-    //{
-    //    // An exception was thrown, let's make the exit code the HR value of the exception.
-    //    return exception.code().value;
-    //}
+    }
+    catch (const winrt::hresult_error& exception)
+    {
+        // An exception was thrown, let's make the exit code the HR value of the exception.
+        return exception.code().value;
+    }
 
     return 0;
 }
@@ -197,7 +197,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 winrt::GetWindowIdFromWindow(hWnd));
 
             // Create the LottieIsland, which is a WinRT wrapper for hosting a Lottie animation in a ContentIsland
-            windowInfo->LottieIsland = winrt::LottieContentIsland::Create(windowInfo->Compositor);;
+            windowInfo->LottieIsland = winrt::LottieContentIsland::Create(windowInfo->Compositor);
 
             // Connect the ContentIsland to the DesktopChildSiteBridge
             windowInfo->Bridge.Connect(windowInfo->LottieIsland.Island());
@@ -216,7 +216,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             winrt::LottieVisualSourceWinRT lottieVisualSource = winrt::LottieVisualSourceWinRT::CreateFromString(L"ms-appx:///LottieLogo1.json");
             lottieVisualSource.AnimatedVisualInvalidated([windowInfo, lottieVisualSource](const winrt::IInspectable&, auto&&)
                 {
-                    windowInfo->LottieIsland.AnimatedVisualSource(lottieVisualSource.as<winrt::IAnimatedVisualSourceFrameworkless>());
+                    windowInfo->Compositor.DispatcherQueue().TryEnqueue([windowInfo, lottieVisualSource]()
+                        {
+                            OutputDebugString(L"Animated Visual invalidated!!\n");
+                            windowInfo->LottieIsland.AnimatedVisualSource(lottieVisualSource.as<winrt::IAnimatedVisualSourceFrameworkless>());
+                        });
+                    
                 });
 
             windowInfo->LottieIsland.PointerPressed([=](auto&...) {

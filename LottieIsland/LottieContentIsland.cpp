@@ -16,6 +16,11 @@ namespace winrt::CommunityToolkit::WinAppSDK::LottieIsland::implementation
         m_rootVisual = m_compositor.CreateContainerVisual();
         m_island = winrt::ContentIsland::Create(m_rootVisual);
 
+        //SpriteVisual v = m_compositor.CreateSpriteVisual();
+        //v.Size(float2(200, 200));
+        //v.Brush(compositor.CreateColorBrush(winrt::Microsoft::UI::Colors::Blue()));
+        //m_island = winrt::ContentIsland::Create(v);
+
         m_island.StateChanged({ get_weak(), &LottieContentIsland::OnIslandStateChanged });
 
         // Once it's not experimental, we should use InputPointerSource::GetForVisual on our root visual.
@@ -62,7 +67,8 @@ namespace winrt::CommunityToolkit::WinAppSDK::LottieIsland::implementation
             m_animatedVisual = m_animatedVisualSource.TryCreateAnimatedVisual(m_compositor, diagnostics);
 
             // Set up lottie
-            m_rootVisual.Children().InsertAtTop(m_animatedVisual.RootVisual());
+            winrt::Visual lottieVisual = m_animatedVisual.RootVisual();
+            m_rootVisual.Children().InsertAtTop(lottieVisual);
 
             // Tell our hosting environment that our size changed, and ask for confirmation of our ActualSize.
             // Any changes will come back through a StateChanged notification

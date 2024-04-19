@@ -33,10 +33,10 @@ namespace CommunityToolkit.WinUI.Lottie
     /// An <see cref="IAnimatedVisualSource"/> for a Lottie composition. This allows
     /// a Lottie to be specified as the source for a <see cref="Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer"/>.
     /// </summary>
-    public sealed class LottieVisualSourceFrameworkless : IAnimatedVisualSource
+    public sealed class LottieVisualSourceFrameworkless : IDynamicAnimatedVisualSource
     {
 #if WINAPPSDK
-        HashSet<TypedEventHandler<IAnimatedVisualSource?, object?>> _compositionInvalidatedEventTokenTable = new HashSet<TypedEventHandler<IAnimatedVisualSource?, object?>>();
+        HashSet<TypedEventHandler<IDynamicAnimatedVisualSource?, object?>> _compositionInvalidatedEventTokenTable = new HashSet<TypedEventHandler<IDynamicAnimatedVisualSource?, object?>>();
 #else
         EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource?, object?>>? _compositionInvalidatedEventTokenTable;
 #endif
@@ -160,7 +160,7 @@ namespace CommunityToolkit.WinUI.Lottie
         /// Implements <see cref="IAnimatedVisualSource"/>.
         /// </summary>
         // TODO: currently explicitly implemented interfaces are causing a problem with .NET Native. Make them implicit for now.
-        public event TypedEventHandler<IAnimatedVisualSource?, object?> AnimatedVisualInvalidated
+        public event TypedEventHandler<IDynamicAnimatedVisualSource?, object?> AnimatedVisualInvalidated
         {
             add
             {
