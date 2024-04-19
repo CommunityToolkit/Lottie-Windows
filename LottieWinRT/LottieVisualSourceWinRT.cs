@@ -45,7 +45,7 @@ namespace LottieWinRT
         }
 
         /// <summary>
-        /// Gets or sets the Uniform Resource Identifier (URI) of the JSON source file for this <see cref="LottieVisualSource"/>.
+        /// Gets or sets the Uniform Resource Identifier (URI) of the JSON source file for this <see cref="LottieVisualSourceWinRT"/>.
         /// </summary>
         public Uri? UriSource
         {
@@ -59,12 +59,13 @@ namespace LottieWinRT
             }
         }
 
-        ///// <summary>
-        ///// Implements <see cref="MUXC.IAnimatedVisualSource"/>.
-        ///// </summary>
-        ///// <param name="compositor">The <see cref="Compositor"/> that can be used as a factory for the resulting <see cref="MUXC.IAnimatedVisual"/>.</param>
-        ///// <param name="diagnostics">An optional object that may provide extra information about the result.</param>
-        ///// <returns>An <see cref="MUXC.IAnimatedVisual"/>.</returns>
+        /// <summary>
+        /// Implements <see cref="LottieIsland.IAnimatedVisualSource"/>.
+        /// WinRT Wrapper around <see cref="MUXC.IAnimatedVisualSource"/> for use by C++ or non-WinUI applications.
+        /// </summary>
+        /// <param name="compositor">The <see cref="Compositor"/> that can be used as a factory for the resulting <see cref="LottieIsland.IAnimatedVisual"/>.</param>
+        /// <param name="diagnostics">An optional object that may provide extra information about the result.</param>
+        /// <returns>An <see cref="LottieIsland.IAnimatedVisual"/>.</returns>
         public LottieIsland.IAnimatedVisualFrameworkless? TryCreateAnimatedVisual(
             Compositor compositor,
             out object? diagnostics)
@@ -76,7 +77,6 @@ namespace LottieWinRT
                 return null;
             }
 
-            //return visual;
             return new AnimatedVisual(visual);
         }
     }

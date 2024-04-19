@@ -40,18 +40,7 @@ namespace LottieWinRT
 
         public Visual? RootVisual
         {
-            get
-            {
-                //Compositor? compositor = _animatedVisual?.RootVisual.Compositor;
-                //SpriteVisual? v = compositor?.CreateSpriteVisual();
-                //if (v != null)
-                //{
-                //    v.Size = new Vector2(200, 200);
-                //    v.Brush = compositor?.CreateColorBrush(Colors.Blue);
-                //}
-                //return v;
-                return _animatedVisual?.RootVisual;
-            }
+            get => _animatedVisual?.RootVisual;
         }
 
         public Vector2 Size

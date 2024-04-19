@@ -203,22 +203,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             windowInfo->Bridge.Connect(windowInfo->LottieIsland.Island());
             windowInfo->Bridge.Show();
 
-            //// Set the C++/WinRT precompiled Lottie animation!
-            //windowInfo->LottieIsland.AnimatedVisualSource(winrt::AnimatedVisuals::LottieLogo1());
-
-            //// Live JSON loaded animation!
-            //winrt::LottieVisualSourceWinRT v = winrt::LottieVisualSourceWinRT();
-            //if (v == nullptr)
-            //{
-            //    OutputDebugString(L"Meep");
-            //}
-
             winrt::LottieVisualSourceWinRT lottieVisualSource = winrt::LottieVisualSourceWinRT::CreateFromString(L"ms-appx:///LottieLogo1.json");
             lottieVisualSource.AnimatedVisualInvalidated([windowInfo, lottieVisualSource](const winrt::IInspectable&, auto&&)
                 {
                     windowInfo->Compositor.DispatcherQueue().TryEnqueue([windowInfo, lottieVisualSource]()
                         {
-                            OutputDebugString(L"Animated Visual invalidated!!\n");
                             windowInfo->LottieIsland.AnimatedVisualSource(lottieVisualSource.as<winrt::IAnimatedVisualSourceFrameworkless>());
                         });
                     

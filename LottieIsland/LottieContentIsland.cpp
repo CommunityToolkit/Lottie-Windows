@@ -16,11 +16,6 @@ namespace winrt::CommunityToolkit::WinAppSDK::LottieIsland::implementation
         m_rootVisual = m_compositor.CreateContainerVisual();
         m_island = winrt::ContentIsland::Create(m_rootVisual);
 
-        //SpriteVisual v = m_compositor.CreateSpriteVisual();
-        //v.Size(float2(200, 200));
-        //v.Brush(compositor.CreateColorBrush(winrt::Microsoft::UI::Colors::Blue()));
-        //m_island = winrt::ContentIsland::Create(v);
-
         m_island.StateChanged({ get_weak(), &LottieContentIsland::OnIslandStateChanged });
 
         // Once it's not experimental, we should use InputPointerSource::GetForVisual on our root visual.
