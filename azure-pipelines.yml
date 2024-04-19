@@ -54,7 +54,9 @@ steps:
   displayName: Insider SDK
 
 # TODO - figure out why this is not getting restored as part of the solution restore
-- script: nuget restore LottieIsland\LottieIsland.vcxproj -SolutionDirectory .
+- script: |
+    nuget restore LottieIsland\LottieIsland.vcxproj -SolutionDirectory .
+    nuget restore SimpleLottieIslandApp\SimpleLottieIslandApp.vcxproj -SolutionDirectory .
   displayName: Nuget Restore LottieIsland
 
 # Run the build.
