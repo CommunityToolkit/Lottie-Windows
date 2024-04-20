@@ -4,11 +4,15 @@
     <TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
 	  <ImplicitUsings>true</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <Platforms>x64;x86;ARM64</Platforms>
+    <!-- AnyCPU is used for packing the nuget package.
+         However, AnyCPU is not supported for C++ projects consuming
+         a C# WinRT component via project references. So we build for 
+         individual platforms as well. -->
+    <Platforms>AnyCPU;x64;x86;ARM64</Platforms>
     <CsWinRTComponent>true</CsWinRTComponent>
-    <!-- <RootNamespace>LottieWinRT</RootNamespace> -->
+    <!-- <RootNamespace>CommunityToolkit.WinAppSDK.LottieWinRT</RootNamespace> -->
     <AssemblyName>LottieWinRT</AssemblyName>
-    <Version>0.1.1-prerelease</Version>
+    <Version>0.1.1-prerelease.1</Version>
     <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
     <CsWinRTWindowsMetadata>10.0.19041.0</CsWinRTWindowsMetadata>
     <!-- Uncomment the line below to generate a log.txt in the obj folder -->
@@ -33,13 +37,6 @@
     <ProjectReference Include="..\Lottie-Windows\Lottie-Windows-WinUI3\Lottie-Windows-WinUI3.csproj" />
     <ProjectReference Include="..\LottieIslandProjection\LottieIslandProjection.csproj" />
   </ItemGroup>
-
-  <!-- <PropertyGroup>
-    <LottieIsland-Platform>$(Platform)</LottieIsland-Platform>
-    <LottieIsland-Platform Condition="$(RuntimeIdentifier.EndsWith('-x64'))">x64</LottieIsland-Platform>
-    <LottieIsland-Platform Condition="$(RuntimeIdentifier.EndsWith('-x86'))">x86</LottieIsland-Platform>
-    <LottieIsland-Platform Condition="$(RuntimeIdentifier.EndsWith('-ARM64'))">ARM64</LottieIsland-Platform> 
-  </PropertyGroup> -->
 
   <ItemGroup>
     <CsWinRTAuthoringWinMDs Include="..\_build\x64\$(Configuration)\LottieIsland\bin\CommunityToolkit.WinAppSDK.LottieIsland.winmd" />

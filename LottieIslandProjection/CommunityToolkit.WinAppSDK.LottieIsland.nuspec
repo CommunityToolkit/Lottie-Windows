@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>CommunityToolkit.WinAppSDK.LottieIsland</id>
+    <authors>Microsoft</authors>
+    <!-- Don't forget to update the version in the projection project and the native project as well -->
+    <version>0.1.1-prerelease.2</version>
+    <description>A ContentIsland to host Lottie Animations</description>
+    <icon>images\icon.png</icon>
+    <readme>docs\readme.md</readme>
+    <dependencies>
+      <group>
+        <dependency id="Microsoft.WindowsAppSDK" version="1.5.240227000" />
+      </group>
+      <group targetFramework="net7.0-windows10.0.19041.0" />
+      <group targetFramework=".NETCoreApp3.0" />
+      <group targetFramework="UAP10.0" />
+      <group targetFramework=".NETFramework4.6" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="icon.png" target="images\icon.png"/>
+    <file src="readme.md" target="docs\readme.md"/>
+
+    <!--Support .NET 6, .NET Core 3, UAP, .NET Framework 4.6, C++ -->
+    <!--Architecture-neutral assemblies-->
+    <file src="..\_build\AnyCPU\Release\LottieIslandProjection\bin\CommunityToolkit.WinAppSDK.LottieIsland.Projection.dll" target="lib\net6.0-windows10.0.19041.0\CommunityToolkit.WinAppSDK.LottieIsland.Projection.dll" />
+    <file src="..\_build\x64\Release\LottieIsland\bin\CommunityToolkit.WinAppSDK.LottieIsland.winmd" target="lib\netcoreapp3.0\CommunityToolkit.WinAppSDK.LottieIsland.winmd" />
+    <file src="..\_build\x64\Release\LottieIsland\bin\CommunityToolkit.WinAppSDK.LottieIsland.winmd" target="lib\uap10.0\CommunityToolkit.WinAppSDK.LottieIsland.winmd" />
+    <file src="..\_build\x64\Release\LottieIsland\bin\CommunityToolkit.WinAppSDK.LottieIsland.winmd" target="lib\net46\CommunityToolkit.WinAppSDK.LottieIsland.winmd" />
+    
+    <!--Architecture-specific implementation DLLs should be copied into RID-relative folders-->
+    <file src="..\_build\x64\Release\LottieIsland\bin\CommunityToolkit.WinAppSDK.LottieIsland.dll" target="runtimes\win10-x64\native\CommunityToolkit.WinAppSDK.LottieIsland.dll" />
+    <file src="..\_build\Win32\Release\LottieIsland\bin\CommunityToolkit.WinAppSDK.LottieIsland.dll" target="runtimes\win10-x86\native\CommunityToolkit.WinAppSDK.LottieIsland.dll" />
+    <file src="..\_build\arm64\Release\LottieIsland\bin\CommunityToolkit.WinAppSDK.LottieIsland.dll" target="runtimes\win10-arm64\native\CommunityToolkit.WinAppSDK.LottieIsland.dll" />
+    <file src="..\_build\x64\Release\LottieIsland\bin\CommunityToolkit.WinAppSDK.LottieIsland.dll" target="runtimes\win-x64\native\CommunityToolkit.WinAppSDK.LottieIsland.dll" />
+    <file src="..\_build\Win32\Release\LottieIsland\bin\CommunityToolkit.WinAppSDK.LottieIsland.dll" target="runtimes\win-x86\native\CommunityToolkit.WinAppSDK.LottieIsland.dll" />
+    <file src="..\_build\arm64\Release\LottieIsland\bin\CommunityToolkit.WinAppSDK.LottieIsland.dll" target="runtimes\win-arm64\native\CommunityToolkit.WinAppSDK.LottieIsland.dll" />
+  </files>
+</package>
