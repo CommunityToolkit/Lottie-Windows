@@ -30,16 +30,8 @@ namespace SimpleCSharpApp
         private void MyButton_Click(object sender, RoutedEventArgs e)
         {
             myButton.Content = "Clicked";
-            _lottieVisualSource = LottieWinRT.LottieVisualSourceWinRT.CreateFromString("ms-appx:///Assets/LottieLogo1.json");
-            if (_lottieVisualSource != null)
-            {
-                _lottieVisualSource.AnimatedVisualInvalidated += LottieVisualSource_AnimatedVisualInvalidated;
-            }
-            else
-            {
-                Debug.WriteLine("Failed to load LottieVisualSourceWinRT from file");
-            }
 
+            // Create the LottieIsland
             _lottieContentIsland = LottieContentIsland.Create(this.Compositor);
             if (_lottieContentIsland != null)
             {
@@ -48,6 +40,17 @@ namespace SimpleCSharpApp
             else
             {
                 Debug.WriteLine("LottieContentIsland creation failed :(");
+            }
+
+            // Load the Lottie from JSON
+            _lottieVisualSource = LottieWinRT.LottieVisualSourceWinRT.CreateFromString("ms-appx:///Assets/LottieLogo1.json");
+            if (_lottieVisualSource != null)
+            {
+                _lottieVisualSource.AnimatedVisualInvalidated += LottieVisualSource_AnimatedVisualInvalidated;
+            }
+            else
+            {
+                Debug.WriteLine("Failed to load LottieVisualSourceWinRT from file");
             }
         }
 
@@ -59,6 +62,12 @@ namespace SimpleCSharpApp
                 IAnimatedVisualFrameworkless? animatedVisual = _lottieVisualSource.TryCreateAnimatedVisual(this.Compositor, out diagnostics);
                 if (animatedVisual != null)
                 {
+                    // Set Lottie as the content of the ContentIsland
+                    if (_lottieContentIsland != null)
+                    {
+                        _lottieContentIsland.AnimatedVisualSource = _lottieVisualSource;
+                    }
+                    // Testing accessing a property through the WinRT component
                     Debug.WriteLine("Lottie duration: " + animatedVisual.Duration);
                 }
                 else

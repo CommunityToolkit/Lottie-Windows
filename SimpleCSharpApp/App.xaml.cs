@@ -33,6 +33,7 @@ namespace SimpleCSharpApp
         public App()
         {
             this.InitializeComponent();
+            // TODO - updating to WinAppSDK 1.5 made weird nullable errors in the template, m_window should be null
             m_window = new Window();
         }
 
