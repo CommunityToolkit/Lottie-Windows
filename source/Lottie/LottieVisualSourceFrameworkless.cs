@@ -4,8 +4,6 @@
 
 #nullable enable
 
-#define WINAPPSDK
-
 #if WINAPPSDK
 
 using System;
@@ -19,7 +17,7 @@ using Windows.Foundation;
 using Windows.Foundation.Metadata;
 using Windows.Storage;
 using Windows.Storage.Streams;
-using WinRT;
+using static CommunityToolkit.WinUI.Lottie.LottieData.Serialization.LottieCompositionReader;
 
 #if WINAPPSDK
 using Microsoft.UI.Composition;
