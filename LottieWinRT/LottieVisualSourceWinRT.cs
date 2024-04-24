@@ -10,7 +10,7 @@ using MUXC = Microsoft.UI.Xaml.Controls;
 
 namespace LottieWinRT
 {
-    public sealed class LottieVisualSourceWinRT : LottieIsland.IAnimatedVisualSourceFrameworkless
+    public sealed class LottieVisualSourceWinRT
     {
         public event EventHandler<object?>? AnimatedVisualInvalidated;
 

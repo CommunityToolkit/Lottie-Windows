@@ -7,18 +7,13 @@
         Windows.Foundation.Numerics.Vector2 Size{ get; };
     };
 
-    interface IAnimatedVisualSourceFrameworkless
-    {
-        IAnimatedVisualFrameworkless TryCreateAnimatedVisual(Microsoft.UI.Composition.Compositor compositor, out IInspectable diagnostics);
-    };
-
     runtimeclass LottieContentIsland
     {
         static LottieContentIsland Create(Microsoft.UI.Composition.Compositor compositor);
 
         Microsoft.UI.Content.ContentIsland Island{ get; };
 
-        IAnimatedVisualSourceFrameworkless AnimatedVisualSource;
+        IAnimatedVisualFrameworkless AnimatedVisual;
 
         Windows.Foundation.TimeSpan Duration{ get; };
 

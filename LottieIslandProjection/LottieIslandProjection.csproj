@@ -2,6 +2,9 @@
 
   <PropertyGroup>
     <TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
+    <PackageId>CommunityToolkit.WinAppSDK.LottieIsland</PackageId>
+    <!-- Don't forget to update the version in the native project and the nuspec as well -->
+    <Version>0.1.1-prerelease.2</Version>
     <!-- Set Platform to AnyCPU to allow consumption of the projection assembly from any architecture. -->
     <Platform>AnyCPU</Platform>
   </PropertyGroup>
@@ -10,7 +13,7 @@
     <GeneratedNugetDir>.\nuget\</GeneratedNugetDir>
     <OutputPath>$(GeneratedNugetDir)</OutputPath>
     <IsPackable>True</IsPackable>
-    <NuspecFile>build\CommunityToolkit.WinAppSDK.LottieIsland.nuspec</NuspecFile>
+    <NuspecFile>CommunityToolkit.WinAppSDK.LottieIsland.nuspec</NuspecFile>
   </PropertyGroup>
   <PropertyGroup>
     <CsWinRTIncludes>CommunityToolkit.WinAppSDK.LottieIsland</CsWinRTIncludes>

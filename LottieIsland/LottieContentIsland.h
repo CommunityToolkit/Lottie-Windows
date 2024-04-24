@@ -24,8 +24,8 @@ namespace winrt::CommunityToolkit::WinAppSDK::LottieIsland::implementation
             return m_island;
         }
 
-        winrt::IAnimatedVisualSourceFrameworkless AnimatedVisualSource() const;
-        void AnimatedVisualSource(const winrt::IAnimatedVisualSourceFrameworkless& source);
+        winrt::IAnimatedVisualFrameworkless AnimatedVisual() const;
+        void AnimatedVisual(const winrt::IAnimatedVisualFrameworkless& source);
 
         winrt::Windows::Foundation::TimeSpan Duration() const;
 
@@ -79,7 +79,6 @@ namespace winrt::CommunityToolkit::WinAppSDK::LottieIsland::implementation
         winrt::ContainerVisual m_rootVisual{ nullptr };
         winrt::ContentIsland m_island{ nullptr };
         winrt::InputPointerSource m_inputPointerSource{ nullptr };
-        winrt::IAnimatedVisualSourceFrameworkless m_animatedVisualSource{ nullptr };
         winrt::IAnimatedVisualFrameworkless m_animatedVisual{ nullptr };
         winrt::CompositionPropertySet m_progressPropertySet{ nullptr };
         winrt::AnimationController m_animationController{ nullptr };

@@ -33,33 +33,30 @@ namespace winrt::CommunityToolkit::WinAppSDK::LottieIsland::implementation
         m_island.Close();
     }
 
-    winrt::IAnimatedVisualSourceFrameworkless LottieContentIsland::AnimatedVisualSource() const
+    winrt::IAnimatedVisualFrameworkless LottieContentIsland::AnimatedVisual() const
     {
         // Return the AnimatedVisualSource
-        return m_animatedVisualSource;
+        return m_animatedVisual;
     }
 
-    void LottieContentIsland::AnimatedVisualSource(winrt::IAnimatedVisualSourceFrameworkless const& value)
+    void LottieContentIsland::AnimatedVisual(winrt::IAnimatedVisualFrameworkless const& value)
     {
-        if (m_animatedVisualSource == value)
+        if (m_animatedVisual == value)
         {
             return;
         }
 
-        if (m_animatedVisualSource != nullptr)
+        if (m_animatedVisual != nullptr)
         {
             StopAnimation();
             m_rootVisual.Children().RemoveAll();
             m_animatedVisual = nullptr;
-            m_animatedVisualSource = nullptr;
         }
 
         if (value != nullptr)
         {
             // Set the AnimatedVisualSource
-            m_animatedVisualSource = value;
-            winrt::Windows::Foundation::IInspectable diagnostics;
-            m_animatedVisual = m_animatedVisualSource.TryCreateAnimatedVisual(m_compositor, diagnostics);
+            m_animatedVisual = value;
 
             // Set up lottie
             winrt::Visual lottieVisual = m_animatedVisual.RootVisual();

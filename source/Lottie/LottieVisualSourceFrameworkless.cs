@@ -4,6 +4,8 @@
 
 #nullable enable
 
+#define WINAPPSDK
+
 #if WINAPPSDK
 
 using System;
