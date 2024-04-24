@@ -208,9 +208,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 {
                     windowInfo->Compositor.DispatcherQueue().TryEnqueue([windowInfo, lottieVisualSource]()
                         {
-                            windowInfo->LottieIsland.AnimatedVisualSource(lottieVisualSource.as<winrt::IAnimatedVisualSourceFrameworkless>());
+                            winrt::Windows::Foundation::IInspectable diagnostics;
+                            winrt::IAnimatedVisualFrameworkless animatedVisual = lottieVisualSource.TryCreateAnimatedVisual(windowInfo->Compositor, diagnostics);
+                            windowInfo->LottieIsland.AnimatedVisual(animatedVisual.as<winrt::IAnimatedVisualFrameworkless>());
                         });
-                    
                 });
 
             windowInfo->LottieIsland.PointerPressed([=](auto&...) {
