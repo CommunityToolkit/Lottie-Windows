@@ -13,11 +13,8 @@
     <!-- Uncomment the line below to generate a log.txt in the obj folder -->
     <CsWinRTEnableLogging>true</CsWinRTEnableLogging>
     <IsPackable>true</IsPackable>
-    
     <!-- Needed to get around CsWinRT error for consuming a WinRT component -->
     <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
-    <!-- <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute> -->
   </PropertyGroup>
 
   <ItemGroup>
@@ -49,12 +46,5 @@
   <ItemGroup Condition="'$(Platform)' == 'Any CPU' or '$(Platform)' == 'AnyCPU'">
     <CsWinRTAuthoringWinMDs Include="..\_build\x64\$(Configuration)\LottieIsland\bin\CommunityToolkit.WinAppSDK.LottieIsland.winmd" />
   </ItemGroup>
-
-  <!-- <ItemGroup Condition="'$(Platform)' != 'x86'">
-    <CsWinRTAuthoringWinMDs Include="..\LottieIsland\bin\$(Platform)\$(Configuration)\CommunityToolkit.WinAppSDK.LottieIsland.winmd" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(Platform)' == 'x86'">
-    <CsWinRTAuthoringWinMDs Include="..\LottieIsland\bin\Win32\$(Configuration)\CommunityToolkit.WinAppSDK.LottieIsland.winmd" />
-  </ItemGroup> -->
 
 </Project>

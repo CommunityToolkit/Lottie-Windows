@@ -53,7 +53,7 @@ steps:
 - powershell: .\build\Install-WindowsSdkISO.ps1 18362
   displayName: Insider SDK
 
-# TODO - figure out why this is not getting restored as part of the solution restore
+# Restore the solution
 - script: |
     nuget restore Lottie-Windows.sln
   displayName: Nuget Restore LottieIsland
