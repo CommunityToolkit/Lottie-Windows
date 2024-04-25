@@ -31,9 +31,18 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Lottie-Windows\Lottie-Windows-WinUI3\Lottie-Windows-WinUI3.csproj" />
-    <ProjectReference Include="..\LottieIslandProjection\LottieIslandProjection.csproj"/>
+    <ProjectReference Include="..\Lottie-Windows\Lottie-Windows-WinUI3\Lottie-Windows-WinUI3.csproj" PrivateAssets="All" />
+    <ProjectReference Include="..\LottieIslandProjection\LottieIslandProjection.csproj" PrivateAssets="All"/>
   </ItemGroup>
+
+  <PropertyGroup>
+    <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
+  </PropertyGroup>
+  <Target Name="CopyProjectReferencesToPackage" DependsOnTargets="ResolveReferences">
+    <ItemGroup>
+      <BuildOutputInPackage Include="@(ReferenceCopyLocalPaths->WithMetadataValue('ReferenceSourceTarget', 'ProjectReference'))" />
+    </ItemGroup>
+  </Target>
 
   <ItemGroup Condition="'$(Platform)' != 'x86' and '$(Platform)' != 'Any CPU' and '$(Platform)' != 'AnyCPU'">
     <CsWinRTAuthoringWinMDs Include="..\_build\$(Platform)\$(Configuration)\LottieIsland\bin\CommunityToolkit.WinAppSDK.LottieIsland.winmd" />

@@ -11,7 +11,6 @@
       <Implementation>CommunityToolkit.WinAppSDK.LottieIsland.dll</Implementation>
     </Reference>
     <ReferenceCopyLocalPaths Include="$(MSBuildThisFileDirectory)..\..\runtimes\win-$(lottieisland-Platform)\native\CommunityToolkit.WinAppSDK.LottieIsland.dll" />
-    <ReferenceCopyLocalPaths Include="$(MSBuildThisFileDirectory)..\..\lib\net7.0-windows10.0.19041.0\CommunityToolkit.WinAppSDK.LottieIsland.Projection.dll" />
   </ItemGroup>
 
   <ItemDefinitionGroup>

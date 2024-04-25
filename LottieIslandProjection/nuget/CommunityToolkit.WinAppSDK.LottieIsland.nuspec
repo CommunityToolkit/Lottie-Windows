@@ -4,7 +4,7 @@
     <id>CommunityToolkit.WinAppSDK.LottieIsland</id>
     <authors>Microsoft</authors>
     <!-- Don't forget to update the version in the projection project and the native project as well -->
-    <version>0.2.5-prerelease</version>
+    <version>0.2.6-prerelease</version>
     <description>A ContentIsland to host Lottie Animations</description>
     <icon>images\icon.png</icon>
     <readme>docs\readme.md</readme>
