@@ -8,7 +8,7 @@
          However, AnyCPU is not supported for C++ projects consuming
          a C# WinRT component via project references. So we build for 
          individual platforms as well. -->
-    <Platforms>Any CPU;x64;x86;ARM64</Platforms>
+    <Platforms>x64;x86;ARM64</Platforms>
     <CsWinRTComponent>true</CsWinRTComponent>
     <!-- <RootNamespace>CommunityToolkit.WinAppSDK.LottieWinRT</RootNamespace> -->
     <AssemblyName>LottieWinRT</AssemblyName>
@@ -38,11 +38,14 @@
     <ProjectReference Include="..\LottieIslandProjection\LottieIslandProjection.csproj"/>
   </ItemGroup>
 
-  <ItemGroup Condition="'$(Platform)' != 'x86'">
+  <ItemGroup Condition="'$(Platform)' != 'x86' and '$(Platform)' != 'Any CPU' and '$(Platform)' != 'AnyCPU'">
     <CsWinRTAuthoringWinMDs Include="..\_build\$(Platform)\$(Configuration)\LottieIsland\bin\CommunityToolkit.WinAppSDK.LottieIsland.winmd" />
   </ItemGroup>
   <ItemGroup Condition="'$(Platform)' == 'x86'">
     <CsWinRTAuthoringWinMDs Include="..\_build\Win32\$(Configuration)\LottieIsland\bin\CommunityToolkit.WinAppSDK.LottieIsland.winmd" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(Platform)' == 'Any CPU' or '$(Platform)' == 'AnyCPU'">
+    <CsWinRTAuthoringWinMDs Include="..\_build\x64\$(Configuration)\LottieIsland\bin\CommunityToolkit.WinAppSDK.LottieIsland.winmd" />
   </ItemGroup>
 
   <!-- <ItemGroup Condition="'$(Platform)' != 'x86'">

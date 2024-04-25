@@ -69,7 +69,7 @@ void MSBuildSolution(
     {
         PlatformTarget.x64,
         PlatformTarget.x86,
-        PlatformTarget.ARM64
+        PlatformTarget.ARM64,
         PlatformTarget.MSIL,
     })
     {
