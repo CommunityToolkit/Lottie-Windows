@@ -7,7 +7,7 @@
     <!-- Don't forget to update the version in the native project and the nuspec as well -->
     <Version>0.1.1-prerelease.2</Version>
     <!-- Set Platform to AnyCPU to allow consumption of the projection assembly from any architecture. -->
-    <Platform>AnyCPU</Platform>
+    <Platform>Any CPU</Platform>
   </PropertyGroup>
   <PropertyGroup>
     <AssemblyName>CommunityToolkit.WinAppSDK.LottieIsland.Projection</AssemblyName>
