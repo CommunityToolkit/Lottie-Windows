@@ -10,7 +10,7 @@ using System.Text.RegularExpressions;
 //////////////////////////////////////////////////////////////////////
 
 var target = Argument("target", "Default");
-var configuration = Argument("configuration", "Release");
+var configuration = Argument("configuration", "Debug");
 
 //////////////////////////////////////////////////////////////////////
 // VERSIONS OF TOOLS TO USE

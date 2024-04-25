@@ -60,12 +60,12 @@ namespace LottieWinRT
         }
 
         /// <summary>
-        /// Implements <see cref="LottieIsland.IAnimatedVisualSource"/>.
-        /// WinRT Wrapper around <see cref="MUXC.IAnimatedVisualSource"/> for use by C++ or non-WinUI applications.
+        /// Implements <see cref="LottieIsland.IAnimatedVisualFrameworkless"/>.
+        /// WinRT Wrapper around <see cref="MUXC.IAnimatedVisual"/> for use by C++ or non-WinUI applications.
         /// </summary>
-        /// <param name="compositor">The <see cref="Compositor"/> that can be used as a factory for the resulting <see cref="LottieIsland.IAnimatedVisual"/>.</param>
+        /// <param name="compositor">The <see cref="Compositor"/> that can be used as a factory for the resulting <see cref="LottieIsland.IAnimatedVisualFrameworkless"/>.</param>
         /// <param name="diagnostics">An optional object that may provide extra information about the result.</param>
-        /// <returns>An <see cref="LottieIsland.IAnimatedVisual"/>.</returns>
+        /// <returns>An <see cref="LottieIsland.IAnimatedVisualFrameworkless"/>.</returns>
         public LottieIsland.IAnimatedVisualFrameworkless? TryCreateAnimatedVisual(
             Compositor compositor,
             out object? diagnostics)
