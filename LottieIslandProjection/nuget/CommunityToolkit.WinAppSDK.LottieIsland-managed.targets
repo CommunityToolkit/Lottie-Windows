@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <lottieisland-Platform Condition="$(RuntimeIdentifier.EndsWith('-x64'))">x64</lottieisland-Platform>
+    <lottieisland-Platform Condition="$(RuntimeIdentifier.EndsWith('-x86'))">x86</lottieisland-Platform>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(lottieisland-Platform)' == ''">
+    <lottieisland-Platform Condition="'$(Platform)' == 'Win32'">x86</lottieisland-Platform>
+    <lottieisland-Platform Condition="'$(Platform)' != 'Win32'">$(Platform)</lottieisland-Platform>
+    <lottieisland-Platform Condition="'$(Platform)' == 'AnyCPU'"></lottieisland-Platform>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <LottieIslandWarnNoPlatform Condition="'$(LottieIslandWarnNoPlatform)' == ''">true</LottieIslandWarnNoPlatform>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="CommunityToolkit.WinAppSDK.LottieIsland">
+      <HintPath>$(MSBuildThisFileDirectory)..\..\lib\uap10.0\CommunityToolkit.WinAppSDK.LottieIsland.winmd</HintPath>
+      <Implementation>CommunityToolkit.WinAppSDK.LottieIsland.dll</Implementation>
+    </Reference>
+    <ReferenceCopyLocalPaths Include="$(MSBuildThisFileDirectory)..\..\runtimes\win-$(lottieisland-Platform)\native\CommunityToolkit.WinAppSDK.LottieIsland.dll" Condition="'$(lottieisland-Platform)' != ''" />
+  </ItemGroup>
+
+  <Target Name="LottieIslandWarnNoPlatform" BeforeTargets="BeforeBuild" Condition="'$(lottieisland-Platform)' == '' and '$(LottieIslandWarnNoPlatform)' == 'true'">
+    <Warning Text="CommunityToolkit.WinAppSDK.LottieIsland.dll could not be copied because the AnyCPU platform is being used. Please specify a specific platform to copy this file." />
+  </Target>
+
+</Project>

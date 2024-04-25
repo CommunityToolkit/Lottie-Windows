@@ -8,7 +8,7 @@
 
 #include <Microsoft.UI.Dispatching.Interop.h> // For ContentPreTranslateMessage
 #include <winrt/CommunityToolkit.WinAppSDK.LottieIsland.h>
-#include <winrt/LottieWinRT.h>
+#include <winrt/CommunityToolkit.WinAppSDK.LottieWinRT.h>
 
 namespace winrt
 {
@@ -16,7 +16,7 @@ namespace winrt
     using namespace winrt::Microsoft::UI;
     using namespace winrt::Microsoft::UI::Content;
     using namespace winrt::Microsoft::UI::Dispatching;
-    using namespace winrt::LottieWinRT;
+    using namespace winrt::CommunityToolkit::WinAppSDK::LottieWinRT;
     using namespace winrt::CommunityToolkit::WinAppSDK::LottieIsland;
     using float2 = winrt::Windows::Foundation::Numerics::float2;
 }
@@ -52,6 +52,7 @@ constexpr int k_padding = 10;
 constexpr int k_buttonWidth = 150;
 constexpr int k_buttonHeight = 40;
 
+void LayoutBridge(WindowInfo* windowInfo, int tlwWidth, int tlwHeight);
 void LayoutButton(ButtonType type, int tlwWidth, int tlwHeight, HWND topLevelWindow);
 void CreateWin32Button(ButtonType type, const std::wstring_view& text, HWND parentHwnd);
 void OnButtonClicked(ButtonType type, WindowInfo* windowInfo, HWND topLevelWindow);
@@ -204,13 +205,18 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             windowInfo->Bridge.Show();
 
             winrt::LottieVisualSourceWinRT lottieVisualSource = winrt::LottieVisualSourceWinRT::CreateFromString(L"ms-appx:///LottieLogo1.json");
-            lottieVisualSource.AnimatedVisualInvalidated([windowInfo, lottieVisualSource](const winrt::IInspectable&, auto&&)
+            lottieVisualSource.AnimatedVisualInvalidated([hWnd, windowInfo, lottieVisualSource](const winrt::IInspectable&, auto&&)
                 {
-                    windowInfo->Compositor.DispatcherQueue().TryEnqueue([windowInfo, lottieVisualSource]()
+                    windowInfo->Compositor.DispatcherQueue().TryEnqueue([hWnd, windowInfo, lottieVisualSource]()
                         {
                             winrt::Windows::Foundation::IInspectable diagnostics;
                             winrt::IAnimatedVisualFrameworkless animatedVisual = lottieVisualSource.TryCreateAnimatedVisual(windowInfo->Compositor, diagnostics);
                             windowInfo->LottieIsland.AnimatedVisual(animatedVisual.as<winrt::IAnimatedVisualFrameworkless>());
+                            
+                            // Resize bridge
+                            RECT rect;
+                            GetClientRect(hWnd, &rect);
+                            LayoutBridge(windowInfo, rect.right - rect.left, rect.bottom-rect.top);
                         });
                 });
 
@@ -233,27 +239,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
             if (windowInfo->Bridge)
             {
-                // Layout our bridge: we want to use all available height (minus a button and some padding),
-                // but respect the ratio that the LottieIsland wants to display at. This can be accessed through
-                // the "RequestedSize" property on the ContentSiteView.
-
-                int availableHeight = height - (k_padding * 3) - k_buttonHeight;
-                int availableWidth = width - (k_padding * 2);
-
-                // Check what size the lottie wants to be
-                winrt::float2 requestedSize = windowInfo->Bridge.SiteView().RequestedSize();
-
-                // Scale the width to be the ratio the lottie wants
-                int bridgeWidth = 0;
-                if (requestedSize.y > 0) // Guard against divide-by-zero
-                {
-                    bridgeWidth = static_cast<int>((requestedSize.x / requestedSize.y) * availableHeight);
-                }
-
-                // ... but don't overflow the width we have available
-                bridgeWidth = std::min(availableWidth, bridgeWidth);
-
-                windowInfo->Bridge.MoveAndResize({ k_padding, k_padding, bridgeWidth, availableHeight });
+                LayoutBridge(windowInfo, width, height);
             }
 
             LayoutButton(ButtonType::PlayButton, width, height, hWnd);
@@ -347,6 +333,32 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         break;
     }
     return (INT_PTR)FALSE;
+}
+
+void LayoutBridge(WindowInfo* windowInfo, int width, int height)
+{
+    // Layout our bridge: we want to use all available height (minus a button and some padding),
+    // but respect the ratio that the LottieIsland wants to display at. This can be accessed through
+    // the "RequestedSize" property on the ContentSiteView.
+
+    int availableHeight = height - (k_padding * 3) - k_buttonHeight;
+    int availableWidth = width - (k_padding * 2);
+
+
+    // Check what size the lottie wants to be
+    winrt::float2 requestedSize = windowInfo->Bridge.SiteView().RequestedSize();
+
+    // Scale the width to be the ratio the lottie wants
+    int bridgeWidth = 0;
+    if (requestedSize.y > 0) // Guard against divide-by-zero
+    {
+        bridgeWidth = static_cast<int>((requestedSize.x / requestedSize.y) * availableHeight);
+    }
+
+    // ... but don't overflow the width we have available
+    bridgeWidth = std::min(availableWidth, bridgeWidth);
+
+    windowInfo->Bridge.MoveAndResize({ k_padding, k_padding, bridgeWidth, availableHeight });
 }
 
 void LayoutButton(ButtonType type, int /*tlwWidth*/, int tlwHeight, HWND topLevelWindow)

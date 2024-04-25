@@ -8,18 +8,15 @@
          However, AnyCPU is not supported for C++ projects consuming
          a C# WinRT component via project references. So we build for 
          individual platforms as well. -->
-    <Platforms>x64;x86;ARM64</Platforms>
+    <Platforms>AnyCPU;x64;x86;ARM64</Platforms>
     <CsWinRTComponent>true</CsWinRTComponent>
-    <!-- <RootNamespace>CommunityToolkit.WinAppSDK.LottieWinRT</RootNamespace> -->
-    <AssemblyName>LottieWinRT</AssemblyName>
-    <Version>0.1.1-prerelease.1</Version>
+    <RootNamespace>CommunityToolkit.WinAppSDK.LottieWinRT</RootNamespace>
+    <AssemblyName>CommunityToolkit.WinAppSDK.LottieWinRT</AssemblyName>
     <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
     <CsWinRTWindowsMetadata>10.0.19041.0</CsWinRTWindowsMetadata>
     <!-- Uncomment the line below to generate a log.txt in the obj folder -->
     <CsWinRTEnableLogging>true</CsWinRTEnableLogging>
-    <!-- <CSWinRTIncludes>
-        CommunityToolkit.WinAppSDK.LottieIsland;
-    </CSWinRTIncludes> -->
+    <IsPackable>true</IsPackable>
     
     <!-- Needed to get around CsWinRT error for consuming a WinRT component -->
     <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>

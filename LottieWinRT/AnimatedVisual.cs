@@ -7,7 +7,7 @@ using Microsoft.UI;
 using Microsoft.UI.Composition;
 using MUXC = Microsoft.UI.Xaml.Controls;
 
-namespace LottieWinRT
+namespace CommunityToolkit.WinAppSDK.LottieWinRT
 {
     public sealed class AnimatedVisual : CommunityToolkit.WinAppSDK.LottieIsland.IAnimatedVisualFrameworkless
     {

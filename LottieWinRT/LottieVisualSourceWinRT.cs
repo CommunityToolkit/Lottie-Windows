@@ -8,7 +8,7 @@ using Microsoft.UI.Composition;
 using LottieIsland = CommunityToolkit.WinAppSDK.LottieIsland;
 using MUXC = Microsoft.UI.Xaml.Controls;
 
-namespace LottieWinRT
+namespace CommunityToolkit.WinAppSDK.LottieWinRT
 {
     public sealed class LottieVisualSourceWinRT
     {
