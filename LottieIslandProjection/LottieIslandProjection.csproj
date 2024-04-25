@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <ProjectName>LottieIslandProjection</ProjectName>
     <TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
     <PackageId>CommunityToolkit.WinAppSDK.LottieIsland</PackageId>
     <!-- Don't forget to update the version in the native project and the nuspec as well -->

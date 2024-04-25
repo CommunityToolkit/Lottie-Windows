@@ -45,4 +45,11 @@
     <CsWinRTAuthoringWinMDs Include="..\_build\Win32\$(Configuration)\LottieIsland\bin\CommunityToolkit.WinAppSDK.LottieIsland.winmd" />
   </ItemGroup>
 
+  <!-- <ItemGroup Condition="'$(Platform)' != 'x86'">
+    <CsWinRTAuthoringWinMDs Include="..\LottieIsland\bin\$(Platform)\$(Configuration)\CommunityToolkit.WinAppSDK.LottieIsland.winmd" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(Platform)' == 'x86'">
+    <CsWinRTAuthoringWinMDs Include="..\LottieIsland\bin\Win32\$(Configuration)\CommunityToolkit.WinAppSDK.LottieIsland.winmd" />
+  </ItemGroup> -->
+
 </Project>

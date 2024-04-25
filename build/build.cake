@@ -10,7 +10,7 @@ using System.Text.RegularExpressions;
 //////////////////////////////////////////////////////////////////////
 
 var target = Argument("target", "Default");
-var configuration = Argument("configuration", "Debug");
+var configuration = Argument("configuration", "Release");
 
 //////////////////////////////////////////////////////////////////////
 // VERSIONS OF TOOLS TO USE
@@ -64,45 +64,18 @@ void MSBuildSolution(
         return settings;
     }
 
-    // Build LottieIsland, since some Any CPU projects depend on it
-    // Build all platforms for native projects.
-    foreach (var platformTarget in new []
-    {
-        PlatformTarget.x64,
-        PlatformTarget.x86,
-        PlatformTarget.ARM64
-    })
-    {
-        var msBuildSettings = SetProperties(SettingsWithTarget(platformTarget).SetConfiguration(configuration));
-        msBuildSettings.PlatformTarget = platformTarget;
-        MSBuild($"{baseDir}/LottieIsland/LottieIsland.vcxproj", msBuildSettings);
-    }
-
     // Build one native and one MSIL version of each project.
     foreach (var platformTarget in new []
     {
         PlatformTarget.x64,
         PlatformTarget.x86,
+        PlatformTarget.ARM64
         PlatformTarget.MSIL,
     })
     {
         var msBuildSettings = SetProperties(SettingsWithTarget(platformTarget).SetConfiguration(configuration));
         msBuildSettings.PlatformTarget = platformTarget;
         MSBuild($"{baseDir}/Lottie-Windows.sln", msBuildSettings);
-    }
-
-    // Build all platforms for native projects.
-    foreach (var platformTarget in new []
-    {
-        PlatformTarget.x86,
-        PlatformTarget.x64,
-        PlatformTarget.ARM64
-    })
-    {
-        var msBuildSettings = SetProperties(SettingsWithTarget(platformTarget).SetConfiguration(configuration));
-        msBuildSettings.PlatformTarget = platformTarget;
-        MSBuild($"{baseDir}/LottieWinRT/LottieWinRT.csproj", msBuildSettings);
-        MSBuild($"{baseDir}/SimpleLottieIslandApp/SimpleLottieIslandApp.vcxproj", msBuildSettings);
     }
 }
 
