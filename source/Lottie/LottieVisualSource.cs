@@ -19,6 +19,7 @@ using static CommunityToolkit.WinUI.Lottie.LottieData.Serialization.LottieCompos
 #if WINAPPSDK
 using Microsoft.UI.Composition;
 #else
+using Microsoft.UI.Xaml.Controls;
 using Windows.UI.Composition;
 using Windows.UI.Xaml;
 #endif
@@ -32,7 +33,6 @@ using IDynamicAnimatedVisualSource = CommunityToolkit.WinUI.Lottie.LottieVisualS
 using IAnimatedVisual = Microsoft.UI.Xaml.Controls.IAnimatedVisual;
 using IAnimatedVisualSource = Microsoft.UI.Xaml.Controls.IAnimatedVisualSource;
 using IDynamicAnimatedVisualSource = Microsoft.UI.Xaml.Controls.IDynamicAnimatedVisualSource;
-using 
 #endif
 
 namespace CommunityToolkit.WinUI.Lottie

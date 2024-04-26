@@ -71,13 +71,7 @@ namespace CommunityToolkit.WinAppSDK.LottieWinRT
             out object? diagnostics)
         {
             diagnostics = null;
-            LottieIsland.IAnimatedVisualFrameworkless? visual = _lottieVisualSource?.TryCreateAnimatedVisual(compositor, out diagnostics);
-            if (visual == null)
-            {
-                return null;
-            }
-
-            return new AnimatedVisual(visual);
+            return _lottieVisualSource?.TryCreateAnimatedVisual(compositor, out diagnostics);
         }
     }
 }

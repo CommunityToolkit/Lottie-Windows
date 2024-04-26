@@ -12,7 +12,7 @@
     <RootNamespace>CommunityToolkit.WinAppSDK.LottieIsland</RootNamespace>
     <AssemblyName>CommunityToolkit.WinAppSDK.LottieIsland</AssemblyName>
     <!-- Don't forget to update the version in the projection project and the nuspec as well -->
-    <Version>0.2.6-prerelease</Version>
+    <Version>0.2.7-prerelease</Version>
     <DefaultLanguage>en-US</DefaultLanguage>
     <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
     <ApplicationType>Windows Store</ApplicationType>
