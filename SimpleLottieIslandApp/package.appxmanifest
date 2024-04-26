@@ -4,57 +4,57 @@
   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
   IgnorableNamespaces="uap rescap">
 
-	<Identity
-	  Name="ea703a93-e074-44b5-ac89-db71e4409e2d"
-	  Publisher="CN=Microsoft Corporation"
-	  Version="1.0.0.0" />
+    <Identity
+      Name="ea703a93-e074-44b5-ac89-db71e4409e2d"
+      Publisher="CN=Microsoft Corporation"
+      Version="1.0.0.0" />
 
-	<Properties>
-		<DisplayName>SimpleLottieIslandApp</DisplayName>
-		<PublisherDisplayName>Microsoft Corporation</PublisherDisplayName>
-		<Logo>Assets\logo.png</Logo>
-	</Properties>
+    <Properties>
+        <DisplayName>SimpleLottieIslandApp</DisplayName>
+        <PublisherDisplayName>Microsoft Corporation</PublisherDisplayName>
+        <Logo>Assets\logo.png</Logo>
+    </Properties>
 
-	<Dependencies>
-		<TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.17763.0" MaxVersionTested="10.0.19041.0" />
-		<TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.19041.0" />
-	</Dependencies>
+    <Dependencies>
+        <TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.17763.0" MaxVersionTested="10.0.19041.0" />
+        <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.19041.0" />
+    </Dependencies>
 
-	<Resources>
-		<Resource Language="x-generate"/>
-	</Resources>
+    <Resources>
+        <Resource Language="x-generate"/>
+    </Resources>
 
-	<Applications>
-		<Application Id="App"
-		  Executable="$targetnametoken$.exe"
-		  EntryPoint="$targetentrypoint$">
-			<uap:VisualElements
-			  DisplayName="CppApp Windows App SDK C++ WinUI Sample"
-			  Description="CppApp Windows App SDK C++ WinUI Sample"
-			  BackgroundColor="transparent"
-			  Square150x150Logo="Assets\Square150x150Logo.png" Square44x44Logo="Assets\Square44x44Logo.png">
-				<uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" />
-			</uap:VisualElements>
-		</Application>
-	</Applications>
+    <Applications>
+        <Application Id="App"
+          Executable="$targetnametoken$.exe"
+          EntryPoint="$targetentrypoint$">
+            <uap:VisualElements
+              DisplayName="CppApp Windows App SDK C++ WinUI Sample"
+              Description="CppApp Windows App SDK C++ WinUI Sample"
+              BackgroundColor="transparent"
+              Square150x150Logo="Assets\Square150x150Logo.png" Square44x44Logo="Assets\Square44x44Logo.png">
+                <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" />
+            </uap:VisualElements>
+        </Application>
+    </Applications>
 
-	<!--In order to host the C# component from C++, you must add the following Extension group and list the activatable classes-->
-	<Extensions>
-		<!--<Extension Category="windows.activatableClass.inProcessServer">
+    <!--In order to host the C# component from C++, you must add the following Extension group and list the activatable classes-->
+    <Extensions>
+        <!--<Extension Category="windows.activatableClass.inProcessServer">
             <InProcessServer>
                 <Path>CommunityToolkit.WinAppSDK.LottieIsland.dll</Path>
                 <ActivatableClass ActivatableClassId="CommunityToolkit.WinAppSDK.LottieContentIsland" ThreadingModel="both" />
             </InProcessServer>
-		</Extension>-->
-		<!--<Extension Category="windows.activatableClass.inProcessServer">
+        </Extension>-->
+        <!--<Extension Category="windows.activatableClass.inProcessServer">
             <InProcessServer>
                 <Path>WinRT.Host.dll</Path>
-				<ActivatableClass ActivatableClassId="LottieWinRT.LottieVisualSourceWinRT" ThreadingModel="both" />
+                <ActivatableClass ActivatableClassId="LottieWinRT.LottieVisualSourceWinRT" ThreadingModel="both" />
             </InProcessServer>
-		</Extension>-->
+        </Extension>-->
     </Extensions>
 
-	<Capabilities>
-		<rescap:Capability Name="runFullTrust" />
-	</Capabilities>
+    <Capabilities>
+        <rescap:Capability Name="runFullTrust" />
+    </Capabilities>
 </Package>
