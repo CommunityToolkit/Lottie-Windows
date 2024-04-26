@@ -19,6 +19,10 @@
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.5.240404000" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\LottieIslandProjection\LottieIslandProjection.csproj" />
+  </ItemGroup>
+
   <Import Project="..\Lottie-Windows.props" />
   <Import Project="..\..\source\Animatables\Animatables.projitems" Label="Shared" />
   <Import Project="..\..\source\DotLottie\DotLottie.projitems" Label="Shared" />

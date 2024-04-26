@@ -1,6 +1,7 @@
 ﻿namespace CommunityToolkit.WinAppSDK.LottieIsland
 {
     interface IAnimatedVisualFrameworkless
+        requires Windows.Foundation.IClosable
     {
         Windows.Foundation.TimeSpan Duration{ get; };
         Microsoft.UI.Composition.Visual RootVisual{ get; };

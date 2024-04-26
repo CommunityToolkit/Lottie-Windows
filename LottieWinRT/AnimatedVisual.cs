@@ -5,19 +5,18 @@
 using System.Numerics;
 using Microsoft.UI;
 using Microsoft.UI.Composition;
-using MUXC = Microsoft.UI.Xaml.Controls;
 
 namespace CommunityToolkit.WinAppSDK.LottieWinRT
 {
     public sealed class AnimatedVisual : CommunityToolkit.WinAppSDK.LottieIsland.IAnimatedVisualFrameworkless
     {
-        private MUXC.IAnimatedVisual? _animatedVisual;
+        private CommunityToolkit.WinAppSDK.LottieIsland.IAnimatedVisualFrameworkless? _animatedVisual;
 
         public AnimatedVisual()
         {
         }
 
-        internal AnimatedVisual(MUXC.IAnimatedVisual visual)
+        internal AnimatedVisual(CommunityToolkit.WinAppSDK.LottieIsland.IAnimatedVisualFrameworkless visual)
         {
             _animatedVisual = visual;
         }

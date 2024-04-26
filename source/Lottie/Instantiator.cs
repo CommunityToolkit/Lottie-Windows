@@ -20,7 +20,8 @@ using Mgc = Microsoft.Graphics.Canvas;
 using Mgce = Microsoft.Graphics.Canvas.Effects;
 #if WINAPPSDK
 using Wc = Microsoft.UI.Composition;
-using Wm = Microsoft.UI.Xaml.Media;
+
+//using Wm = Microsoft.UI.Xaml.Media;
 #else
 using Wc = Windows.UI.Composition;
 using Wm = Windows.UI.Xaml.Media;
@@ -1592,7 +1593,9 @@ namespace CommunityToolkit.WinUI.Lottie
             {
                 case Wmd.LoadedImageSurface.LoadedImageSurfaceType.FromStream:
                     var bytes = ((Wmd.LoadedImageSurfaceFromStream)obj).Bytes;
-                    result = Wm.LoadedImageSurface.StartLoadFromStream(bytes.AsBuffer().AsStream().AsRandomAccessStream());
+
+                    // TODO - load this image some other way
+                    // result = Wm.LoadedImageSurface.StartLoadFromStream(bytes.AsBuffer().AsStream().AsRandomAccessStream());
                     break;
                 case Wmd.LoadedImageSurface.LoadedImageSurfaceType.FromUri:
                     var uri = ((Wmd.LoadedImageSurfaceFromUri)obj).Uri;

@@ -18,7 +18,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)LottieVisualDiagnostics.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LottieVisualOptions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LottieVisualSource.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)LottieVisualSourceFrameworkless.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)StorageFileLoader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UriLoader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Uris.cs" />

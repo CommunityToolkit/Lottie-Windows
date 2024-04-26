@@ -14,7 +14,8 @@ using Windows.Storage;
 
 #if WINAPPSDK
 using Microsoft.UI.Composition;
-using Microsoft.UI.Xaml.Media;
+
+// using Microsoft.UI.Xaml.Media;
 #else
 using Windows.UI.Composition;
 using Windows.UI.Xaml.Media;
@@ -97,7 +98,10 @@ namespace CommunityToolkit.WinUI.Lottie
                 return null;
             }
 
-            return LoadedImageSurface.StartLoadFromStream(imageStream.AsRandomAccessStream());
+            // TODO - Load this image some other way
+            return null;
+
+            //return LoadedImageSurface.StartLoadFromStream(imageStream.AsRandomAccessStream());
         }
 
         public override void Dispose()

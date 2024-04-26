@@ -10,7 +10,6 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using CommunityToolkit.WinUI.Lottie;
-using Microsoft.UI.Xaml.Controls;
 using Windows.Foundation;
 using Windows.Foundation.Metadata;
 using Windows.Storage;
@@ -19,24 +18,41 @@ using static CommunityToolkit.WinUI.Lottie.LottieData.Serialization.LottieCompos
 
 #if WINAPPSDK
 using Microsoft.UI.Composition;
-using Microsoft.UI.Xaml;
 #else
 using Windows.UI.Composition;
 using Windows.UI.Xaml;
 #endif
 
+#if WINAPPSDK
+using IAnimatedVisual = CommunityToolkit.WinAppSDK.LottieIsland.IAnimatedVisualFrameworkless;
+using IAnimatedVisualSource = CommunityToolkit.WinUI.Lottie.LottieVisualSource;
+using IDynamicAnimatedVisualSource = CommunityToolkit.WinUI.Lottie.LottieVisualSource;
+#pragma warning disable SA1121 // Use built-in type alias
+#else
+using IAnimatedVisual = Microsoft.UI.Xaml.Controls.IAnimatedVisual;
+using IAnimatedVisualSource = Microsoft.UI.Xaml.Controls.IAnimatedVisualSource;
+using IDynamicAnimatedVisualSource = Microsoft.UI.Xaml.Controls.IDynamicAnimatedVisualSource;
+using 
+#endif
+
 namespace CommunityToolkit.WinUI.Lottie
 {
+#if WINAPPSDK
+    /// <summary>
+    /// A class for a Lottie composition. This allows
+    /// a Lottie to be specified as source of a <see cref="IAnimatedVisual"/>.
+    /// </summary>
+    public sealed class LottieVisualSource
+    {
+#else
     /// <summary>
     /// An <see cref="IAnimatedVisualSource"/> for a Lottie composition. This allows
     /// a Lottie to be specified as the source for a <see cref="AnimatedVisualPlayer"/>.
     /// </summary>
-#if FRAMEWORKLESS
-    public sealed class LottieVisualSource : IDynamicAnimatedVisualSource
-#else
     public sealed class LottieVisualSource : DependencyObject, IDynamicAnimatedVisualSource
-#endif
     {
+#endif
+
 #if WINAPPSDK
         HashSet<TypedEventHandler<IDynamicAnimatedVisualSource?, object?>> _compositionInvalidatedEventTokenTable = new HashSet<TypedEventHandler<IDynamicAnimatedVisualSource?, object?>>();
 #else
@@ -47,10 +63,9 @@ namespace CommunityToolkit.WinUI.Lottie
         Uri? _uriSource;
         AnimatedVisualFactory? _animatedVisualFactory;
         ImageAssetHandler? _imageAssetHandler;
-#if FRAMEWORKLESS
+#if WINAPPSDK
         LottieVisualOptions _options;
 #else
-
         /// <summary>
         /// Gets the options for the <see cref="LottieVisualSource"/>.
         /// </summary>
@@ -85,7 +100,7 @@ namespace CommunityToolkit.WinUI.Lottie
         {
         }
 
-#if FRAMEWORKLESS
+#if WINAPPSDK
         /// <summary>
         /// Gets or sets options for how the Lottie is loaded.
         /// </summary>
@@ -123,10 +138,10 @@ namespace CommunityToolkit.WinUI.Lottie
         }
 #endif
 
-            /// <summary>
-            /// Called by XAML to convert a string to an <see cref="IAnimatedVisualSource"/>.
-            /// </summary>
-            /// <returns>The <see cref="LottieVisualSource"/> for the given url.</returns>
+        /// <summary>
+        /// Called by XAML to convert a string to an <see cref="IAnimatedVisualSource"/>.
+        /// </summary>
+        /// <returns>The <see cref="LottieVisualSource"/> for the given url.</returns>
         public static LottieVisualSource? CreateFromString(string uri)
         {
             var uriUri = Uris.StringToUri(uri);
