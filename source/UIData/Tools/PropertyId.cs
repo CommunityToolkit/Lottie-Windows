@@ -39,5 +39,8 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.Tools
         TrimEnd = TransformMatrix << 1,
         TrimOffset = TrimEnd << 1,
         TrimStart = TrimOffset << 1,
+
+        // Any new value should also be added to UIData/Tools/Properties.cs
+        // This is needed to omit Enum.GetValues usage to be AOT compatible.
     }
 }

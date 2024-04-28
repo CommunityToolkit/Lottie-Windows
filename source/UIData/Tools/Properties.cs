@@ -13,18 +13,38 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.Tools
 {
     static class Properties
     {
-        static IReadOnlyDictionary<string, PropertyId>? s_propertyIdFromNameMap;
+        static IReadOnlyDictionary<string, PropertyId> s_propertyIdFromNameMap = new Dictionary<string, PropertyId>
+        {
+            { "BorderMode", PropertyId.BorderMode},
+            { "CenterPoint", PropertyId.CenterPoint},
+            { "Children", PropertyId.Children},
+            { "Clip", PropertyId.Clip},
+            { "Color", PropertyId.Color},
+            { "Comment", PropertyId.Comment},
+            { "IsVisible", PropertyId.IsVisible},
+            { "Offset", PropertyId.Offset},
+            { "Opacity", PropertyId.Opacity},
+            { "Path", PropertyId.Path},
+            { "Position", PropertyId.Position},
+            { "Progress", PropertyId.Progress},
+            { "Properties", PropertyId.Properties},
+            { "RotationAngleInDegrees", PropertyId.RotationAngleInDegrees},
+            { "RotationAxis", PropertyId.RotationAxis},
+            { "Scale", PropertyId.Scale},
+            { "Size", PropertyId.Size},
+            { "StrokeEndCap", PropertyId.StrokeEndCap},
+            { "StrokeDashCap", PropertyId.StrokeDashCap},
+            { "StrokeLineJoin", PropertyId.StrokeLineJoin},
+            { "StrokeMiterLimit", PropertyId.StrokeMiterLimit},
+            { "StrokeStartCap", PropertyId.StrokeStartCap},
+            { "TransformMatrix", PropertyId.TransformMatrix},
+            { "TrimEnd", PropertyId.TrimEnd},
+            { "TrimOffset", PropertyId.TrimOffset},
+            { "TrimStart", PropertyId.TrimStart},
+        };
 
         internal static PropertyId PropertyIdFromName(string value)
         {
-            if (s_propertyIdFromNameMap is null)
-            {
-                s_propertyIdFromNameMap =
-                    Enum.GetValues(typeof(PropertyId)).Cast<PropertyId>()
-                        .Where(p => p != PropertyId.None)
-                        .ToDictionary(p => Enum.GetName(typeof(PropertyId), p)!);
-            }
-
             return s_propertyIdFromNameMap.TryGetValue(value, out var result)
                 ? result
                 : PropertyId.None;
