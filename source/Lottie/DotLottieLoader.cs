@@ -15,7 +15,6 @@ using Windows.Storage;
 #if WINAPPSDK
 using Microsoft.UI.Composition;
 
-// using Microsoft.UI.Xaml.Media;
 #else
 using Windows.UI.Composition;
 using Windows.UI.Xaml.Media;

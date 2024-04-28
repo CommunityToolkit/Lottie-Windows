@@ -14,7 +14,6 @@ using Windows.Foundation;
 using Windows.Foundation.Metadata;
 using Windows.Storage;
 using Windows.Storage.Streams;
-using static CommunityToolkit.WinUI.Lottie.LottieData.Serialization.LottieCompositionReader;
 
 #if WINAPPSDK
 using Microsoft.UI.Composition;

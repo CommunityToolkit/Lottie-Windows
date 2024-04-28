@@ -21,7 +21,6 @@ using Mgce = Microsoft.Graphics.Canvas.Effects;
 #if WINAPPSDK
 using Wc = Microsoft.UI.Composition;
 
-//using Wm = Microsoft.UI.Xaml.Media;
 #else
 using Wc = Windows.UI.Composition;
 using Wm = Windows.UI.Xaml.Media;
