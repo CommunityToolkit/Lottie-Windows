@@ -11,25 +11,64 @@
     <Filter Include="Assets">
       <UniqueIdentifier>{8de2e0c6-cc70-4b56-a68f-dd3ec76ce5fc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Automation">
+      <UniqueIdentifier>{f244735f-9786-4673-9823-f1b890d98b19}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
+    <ClCompile Include="AutomationBase.cpp">
+      <Filter>Automation</Filter>
+    </ClCompile>
+    <ClCompile Include="AutomationElement.cpp">
+      <Filter>Automation</Filter>
+    </ClCompile>
+    <ClCompile Include="AutomationFragment.cpp">
+      <Filter>Automation</Filter>
+    </ClCompile>
+    <ClCompile Include="AutomationFragmentRoot.cpp">
+      <Filter>Automation</Filter>
+    </ClCompile>
+    <ClCompile Include="LottieIslandAutomationProvider.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
+    <ClInclude Include="AutomationBase.h">
+      <Filter>Automation</Filter>
+    </ClInclude>
+    <ClInclude Include="AutomationCallbackHandler.h">
+      <Filter>Automation</Filter>
+    </ClInclude>
+    <ClInclude Include="AutomationCallbackRevoker.h">
+      <Filter>Automation</Filter>
+    </ClInclude>
+    <ClInclude Include="AutomationElement.h">
+      <Filter>Automation</Filter>
+    </ClInclude>
+    <ClInclude Include="AutomationFragment.h">
+      <Filter>Automation</Filter>
+    </ClInclude>
+    <ClInclude Include="AutomationFragmentRoot.h">
+      <Filter>Automation</Filter>
+    </ClInclude>
+    <ClInclude Include="LottieIslandAutomationProvider.h" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="CommunityToolkit.WinAppSDK.LottieIsland.idl" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="LottieIsland.def" />
     <None Include="packages.config" />
+    <None Include="CommunityToolkit.WinAppSDK.LottieIsland.def" />
+    <None Include="Directory.Build.props" />
   </ItemGroup>
   <ItemGroup>
     <None Include="PropertySheet.props" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="readme.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natvis" />
   </ItemGroup>
 </Project>

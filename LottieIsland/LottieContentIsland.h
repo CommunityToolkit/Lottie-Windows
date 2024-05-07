@@ -2,6 +2,7 @@
 
 #include "LottieContentIsland.g.h"
 #include "winrt/CommunityToolkit.WinAppSDK.LottieIsland.h"
+#include "LottieIslandAutomationProvider.h"
 
 namespace winrt
 {
@@ -10,7 +11,10 @@ namespace winrt
 
 namespace winrt::CommunityToolkit::WinAppSDK::LottieIsland::implementation
 {
-    struct LottieContentIsland : LottieContentIslandT<LottieContentIsland>
+    struct LottieContentIsland : LottieContentIslandT<LottieContentIsland>,
+        AutomationHelpers::IAutomationFragmentCallbackHandler,
+        AutomationHelpers::IAutomationFragmentRootCallbackHandler,
+        AutomationHelpers::IAutomationInvokeCallbackHandler
     {
         using PointerEventHandler = Windows::Foundation::TypedEventHandler<winrt::LottieContentIsland, winrt::PointerEventArgs>;
 
@@ -59,10 +63,29 @@ namespace winrt::CommunityToolkit::WinAppSDK::LottieIsland::implementation
 
         void Stop();
 
+        // UI Automation callback implementation.
+        winrt::Windows::Graphics::RectInt32 GetBoundingRectangleInScreenSpaceForAutomation(
+            ::IUnknown const* const sender) const final override;
+
+        void HandleSetFocusForAutomation(
+            ::IUnknown const* const sender) final override;
+
+        winrt::com_ptr<::IRawElementProviderFragment> GetFragmentFromPointForAutomation(
+            double x,
+            double y,
+            ::IUnknown const* const sender) const final override;
+
+        winrt::com_ptr<::IRawElementProviderFragment> GetFragmentInFocusForAutomation(
+            ::IUnknown const* const sender) const final override;
+
+        void HandleInvokeForAutomation(
+            ::IUnknown const* const sender) final override;
+
     private:
         void StartAnimation(float fromProgress, float toProgress, bool loop);
         void StopAnimation();
 
+        void OnIslandAutomationProviderRequested(const winrt::ContentIsland& island, const winrt::ContentIslandAutomationProviderRequestedEventArgs& args);
         void OnIslandStateChanged(const winrt::ContentIsland& island, const winrt::ContentIslandStateChangedEventArgs& args);
 
         void Resize(const float2& size);
@@ -74,6 +97,12 @@ namespace winrt::CommunityToolkit::WinAppSDK::LottieIsland::implementation
         winrt::event<PointerEventHandler> m_pointerMovedEvent;
         winrt::event<PointerEventHandler> m_pointerPressedEvent;
         winrt::event<PointerEventHandler> m_pointerReleasedEvent;
+
+        // UI Automation.
+        winrt::com_ptr<LottieIslandInternal::LottieIslandAutomationProvider> m_automationProvider{ nullptr };
+        std::unique_ptr<AutomationHelpers::AutomationCallbackRevoker> m_fragmentCallbackRevoker{ nullptr };
+        std::unique_ptr<AutomationHelpers::AutomationCallbackRevoker> m_fragmentRootCallbackRevoker{ nullptr };
+        std::unique_ptr<AutomationHelpers::AutomationCallbackRevoker> m_invokeCallbackRevoker{ nullptr };
 
         winrt::Compositor m_compositor{ nullptr };
         winrt::ContainerVisual m_rootVisual{ nullptr };
