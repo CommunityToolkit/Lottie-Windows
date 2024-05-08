@@ -43,12 +43,6 @@ void AutomationFragment::AddChildToEnd(
 
     // Finally add the child.
     m_children.push_back(child);
-
-    // Raise the UIA structure changed event.
-    winrt::check_hresult(::UiaRaiseStructureChangedEvent(
-        GetStrong<AutomationFragment>().as<IRawElementProviderSimple>().get(),
-        StructureChangeType_ChildAdded,
-        child->RuntimeId(), child->RuntimeIdSize()));
 }
 
 void AutomationFragment::RemoveChild(
@@ -91,12 +85,6 @@ void AutomationFragment::RemoveChild(
 
     // Finally, remove the child.
     m_children.erase(iterator);
-
-    // Raise the UIA structure changed event.
-    winrt::check_hresult(::UiaRaiseStructureChangedEvent(
-        GetStrong<AutomationFragment>().as<IRawElementProviderSimple>().get(),
-        StructureChangeType_ChildRemoved,
-        child->RuntimeId(), child->RuntimeIdSize()));
 }
 
 void AutomationFragment::RemoveAllChildren()
@@ -113,12 +101,6 @@ void AutomationFragment::RemoveAllChildren()
 
     // Remove all the children.
     m_children.clear();
-
-    // Raise the UIA structure changed event.
-    winrt::check_hresult(::UiaRaiseStructureChangedEvent(
-        GetStrong<AutomationFragment>().as<IRawElementProviderSimple>().get(),
-        StructureChangeType_ChildrenBulkRemoved,
-        nullptr, 0));
 }
 
 HRESULT __stdcall AutomationFragment::Navigate(

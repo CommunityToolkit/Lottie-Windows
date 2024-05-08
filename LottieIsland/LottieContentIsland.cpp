@@ -15,6 +15,7 @@ namespace winrt::CommunityToolkit::WinAppSDK::LottieIsland::implementation
     {
         m_rootVisual = m_compositor.CreateContainerVisual();
         m_island = winrt::ContentIsland::Create(m_rootVisual);
+        m_island.AppData(get_strong().as<winrt::Windows::Foundation::IInspectable>());
 
         m_island.AutomationProviderRequested({ get_weak(), &LottieContentIsland::OnIslandAutomationProviderRequested });
         m_island.StateChanged({ get_weak(), &LottieContentIsland::OnIslandStateChanged });
