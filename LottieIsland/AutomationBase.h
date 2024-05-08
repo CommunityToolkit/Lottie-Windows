@@ -82,8 +82,6 @@ protected:
     {
         static_assert(std::is_base_of_v<IAutomationCallbackHandler, HandlerT>);
 
-        std::unique_lock lock{ m_mutex };
-
         auto iterator = std::find_if(
             m_handlers.cbegin(), m_handlers.cend(), [&type](auto const& handlerEntry)
             {

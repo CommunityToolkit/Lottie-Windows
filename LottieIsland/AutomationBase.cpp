@@ -24,8 +24,6 @@ void AutomationBase::AddHandler(
     AutomationCallbackHandlerType const& type,
     IAutomationCallbackHandler* const handler)
 {
-    std::unique_lock lock{ m_mutex };
-
     // Remove any existing handler of the same type.
     auto iterator = std::remove_if(
         m_handlers.begin(), m_handlers.end(), [type](auto const& handlerEntry)
