@@ -23,7 +23,6 @@ namespace CommunityToolkit.WinAppSDK.LottieWinRT
 
         private LottieVisualSourceWinRT(LottieVisualSource lottieVisualSource)
         {
-            Debug.WriteLine("Hello from C#!!!");
             _lottieVisualSource = lottieVisualSource;
             _lottieVisualSource.AnimatedVisualInvalidated += (LottieVisualSource? sender, object? o) =>
             {

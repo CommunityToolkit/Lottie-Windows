@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
     <OutputType>Library</OutputType>
-    
+    <IsPackable>true</IsPackable>
     <PackageId>CommunityToolkit.WinUI.Lottie.Controls</PackageId>
     <PackageTags>WinUI3 Toolkit Windows Animations Lottie XAML</PackageTags>
 
