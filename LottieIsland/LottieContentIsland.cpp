@@ -15,7 +15,9 @@ namespace winrt::CommunityToolkit::WinAppSDK::LottieIsland::implementation
     {
         m_rootVisual = m_compositor.CreateContainerVisual();
         m_island = winrt::ContentIsland::Create(m_rootVisual);
+        m_island.AppData(get_strong().as<winrt::Windows::Foundation::IInspectable>());
 
+        m_island.AutomationProviderRequested({ get_weak(), &LottieContentIsland::OnIslandAutomationProviderRequested });
         m_island.StateChanged({ get_weak(), &LottieContentIsland::OnIslandStateChanged });
 
         // Once it's not experimental, we should use InputPointerSource::GetForVisual on our root visual.
@@ -165,6 +167,48 @@ namespace winrt::CommunityToolkit::WinAppSDK::LottieIsland::implementation
         StopAnimation();
     }
 
+    winrt::Windows::Graphics::RectInt32 LottieContentIsland::GetBoundingRectangleInScreenSpaceForAutomation(
+        ::IUnknown const* const /*sender*/) const
+    {
+        // Convert our local bounds to screen space and return it to UI Automation.
+        auto coordinateConverter = m_island.CoordinateConverter();
+        auto actualSize = m_island.ActualSize();
+        winrt::Windows::Foundation::Rect islandLocalBounds{ 0, 0, actualSize.x, actualSize.y };
+        auto islandScreenBounds = coordinateConverter.ConvertLocalToScreen(islandLocalBounds);
+        return islandScreenBounds;
+    }
+
+    void LottieContentIsland::HandleSetFocusForAutomation(
+        ::IUnknown const* const /*sender*/)
+    {
+        // No-op.
+    }
+
+    winrt::com_ptr<::IRawElementProviderFragment> LottieContentIsland::GetFragmentFromPointForAutomation(
+        double /*x*/,
+        double /*y*/,
+        ::IUnknown const* const /*sender*/) const
+    {
+        // No child automation fragments.
+        return nullptr;
+    }
+
+    winrt::com_ptr<::IRawElementProviderFragment> LottieContentIsland::GetFragmentInFocusForAutomation(
+        ::IUnknown const* const /*sender*/) const
+    {
+        // No child automation fragments.
+        return nullptr;
+    }
+
+    void LottieContentIsland::HandleInvokeForAutomation(
+        ::IUnknown const* const /*sender*/)
+    {
+        if (nullptr != m_animatedVisual)
+        {
+            IsPlaying() ? StopAnimation() : StartAnimation(0.0f, 1.0f, false);
+        }
+    }
+
     void LottieContentIsland::StartAnimation(float fromProgress, float toProgress, bool loop)
     {
         if (m_animatedVisual == nullptr)
@@ -215,6 +259,30 @@ namespace winrt::CommunityToolkit::WinAppSDK::LottieIsland::implementation
         m_previousFromProgress = 0.0;
         m_animationController = nullptr;
         m_progressPropertySet = nullptr;
+    }
+
+    void LottieContentIsland::OnIslandAutomationProviderRequested(
+        const winrt::ContentIsland& island,
+        const winrt::ContentIslandAutomationProviderRequestedEventArgs& args)
+    {
+        if (nullptr == m_automationProvider)
+        {
+            // We need to create the automation provider.
+            m_automationProvider = winrt::make_self<LottieIslandInternal::LottieIslandAutomationProvider>();
+            m_automationProvider->Name(L"Lottie");
+
+            // Register ourselves as the callback for our automation provider.
+            m_fragmentCallbackRevoker = m_automationProvider->SetFragmentCallbackHandler(this);
+            m_fragmentRootCallbackRevoker = m_automationProvider->SetFragmentRootCallbackHandler(this);
+            m_invokeCallbackRevoker = m_automationProvider->SetInvokeCallbackHandler(this);
+
+            // Set up the host provider.
+            auto hostProviderAsIInspectable = island.GetAutomationHostProvider();
+            m_automationProvider->HostProvider(hostProviderAsIInspectable.try_as<::IRawElementProviderSimple>());
+        }
+
+        args.AutomationProvider(m_automationProvider.as<IInspectable>());
+        args.Handled(true);
     }
 
     void LottieContentIsland::OnIslandStateChanged(const winrt::ContentIsland& /*island*/, const winrt::ContentIslandStateChangedEventArgs& args)

@@ -36,7 +36,7 @@ struct WindowInfo
     winrt::DesktopChildSiteBridge Bridge{ nullptr };
     winrt::event_token TakeFocusRequestedToken{};
     HWND LastFocusedWindow{ NULL };
-    winrt::LottieContentIsland LottieIsland{ nullptr };
+    winrt::ContentIsland Island{ nullptr };
     bool isPaused = false;
 };
 
@@ -197,30 +197,38 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 windowInfo->Compositor,
                 winrt::GetWindowIdFromWindow(hWnd));
 
-            // Create the LottieIsland, which is a WinRT wrapper for hosting a Lottie animation in a ContentIsland
-            windowInfo->LottieIsland = winrt::LottieContentIsland::Create(windowInfo->Compositor);
+            // Create the LottieIsland, which is a WinRT wrapper for hosting 
+            // a Lottie animation in a ContentIsland
+            auto lottieIsland = winrt::LottieContentIsland::Create(windowInfo->Compositor);
+            windowInfo->Island = lottieIsland.Island();
 
             // Connect the ContentIsland to the DesktopChildSiteBridge
-            windowInfo->Bridge.Connect(windowInfo->LottieIsland.Island());
+            windowInfo->Bridge.Connect(windowInfo->Island);
             windowInfo->Bridge.Show();
 
-            winrt::LottieVisualSourceWinRT lottieVisualSource = winrt::LottieVisualSourceWinRT::CreateFromString(L"ms-appx:///LottieLogo1.json");
-            lottieVisualSource.AnimatedVisualInvalidated([hWnd, windowInfo, lottieVisualSource](const winrt::IInspectable&, auto&&)
+            winrt::LottieVisualSourceWinRT lottieVisualSource =
+                winrt::LottieVisualSourceWinRT::CreateFromString(L"ms-appx:///LottieLogo1.json");
+            lottieVisualSource.AnimatedVisualInvalidated(
+                [hWnd, lottieIsland, lottieVisualSource, windowInfo](auto&&, auto&&)
                 {
-                    windowInfo->Compositor.DispatcherQueue().TryEnqueue([hWnd, windowInfo, lottieVisualSource]()
+                    windowInfo->Compositor.DispatcherQueue().TryEnqueue(
+                        [hWnd, lottieIsland, lottieVisualSource, windowInfo]()
                         {
                             winrt::Windows::Foundation::IInspectable diagnostics;
-                            winrt::IAnimatedVisualFrameworkless animatedVisual = lottieVisualSource.TryCreateAnimatedVisual(windowInfo->Compositor, diagnostics);
-                            windowInfo->LottieIsland.AnimatedVisual(animatedVisual.as<winrt::IAnimatedVisualFrameworkless>());
+                            winrt::IAnimatedVisualFrameworkless animatedVisual = 
+                                lottieVisualSource.TryCreateAnimatedVisual(windowInfo->Compositor, diagnostics);
                             
+                            lottieIsland.AnimatedVisual(
+                                animatedVisual.as<winrt::IAnimatedVisualFrameworkless>());
+
                             // Resize bridge
                             RECT rect;
                             GetClientRect(hWnd, &rect);
-                            LayoutBridge(windowInfo, rect.right - rect.left, rect.bottom-rect.top);
+                            LayoutBridge(windowInfo, rect.right - rect.left, rect.bottom - rect.top);
                         });
                 });
 
-            windowInfo->LottieIsland.PointerPressed([=](auto&...) {
+            lottieIsland.PointerPressed([=](auto&...) {
                 // Clicking on the Lottie animation acts like clicking "Pause/Resume"
                 OnButtonClicked(ButtonType::PauseButton, windowInfo, hWnd);
                 });
@@ -303,6 +311,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
         break;
     case WM_DESTROY:
+        if (nullptr != windowInfo && nullptr != windowInfo->Island)
+        {
+            // Must close the ContentIsland so that it will release the reference to its AppData.
+            windowInfo->Island.Close();
+        }
         PostQuitMessage(0);
         break;
     case WM_NCDESTROY:
@@ -394,10 +407,14 @@ void CreateWin32Button(ButtonType type, const std::wstring_view& text, HWND pare
 void OnButtonClicked(ButtonType type, WindowInfo* windowInfo, HWND topLevelWindow)
 {
     winrt::Windows::Foundation::IAsyncAction asyncAction{ nullptr };
+    
+    // We can retrieve the Lottie-specific functionality from the LottieContentIsland via its AppData.
+    winrt::LottieContentIsland lottieIsland{ windowInfo->Island.AppData().as<winrt::LottieContentIsland>() };
+
     switch (type)
     {
-    case ButtonType::PlayButton:
-        asyncAction = windowInfo->LottieIsland.PlayAsync(0.0, 1.0, true);
+    case ButtonType::PlayButton:    
+        asyncAction = lottieIsland.PlayAsync(0.0, 1.0, true);
         asyncAction.Completed([](auto&&, auto&& asyncStatus)
             {
                 // Check if the async operation was successfully completed
@@ -417,26 +434,26 @@ void OnButtonClicked(ButtonType type, WindowInfo* windowInfo, HWND topLevelWindo
     case ButtonType::PauseButton:
         if (windowInfo->isPaused)
         {
-            windowInfo->LottieIsland.Resume();
+            lottieIsland.Resume();
         }
         else
         {
-            windowInfo->LottieIsland.Pause();
+            lottieIsland.Pause();
         }
         SetPauseState(windowInfo, !windowInfo->isPaused, topLevelWindow);
         break;
     case ButtonType::StopButton:
-        windowInfo->LottieIsland.Stop();
+        lottieIsland.Stop();
         SetPauseState(windowInfo, false, topLevelWindow);
         break;
     case ButtonType::ReverseButton:
-        if (windowInfo->LottieIsland.PlaybackRate() == 1.0)
+        if (lottieIsland.PlaybackRate() == 1.0)
         {
-            windowInfo->LottieIsland.PlaybackRate(-1.0);
+            lottieIsland.PlaybackRate(-1.0);
         }
         else
         {
-            windowInfo->LottieIsland.PlaybackRate(1.0);
+            lottieIsland.PlaybackRate(1.0);
         }
         break;
     default:
