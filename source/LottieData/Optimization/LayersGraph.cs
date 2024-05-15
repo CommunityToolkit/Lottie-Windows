@@ -66,7 +66,7 @@ namespace CommunityToolkit.WinUI.Lottie.LottieData.Optimization
 
                 foreach (var parent in Parents)
                 {
-                    if (parent.Equals(node) || parent.IsChildOf(node))
+                    if (parent.Equals(node) || parent.IsChildOf(node, visited))
                     {
                         return true;
                     }
