@@ -57,12 +57,12 @@ namespace CommunityToolkit.WinUI.Lottie.LottieData.Optimization
 
             private bool IsChildOf(GraphNode node, HashSet<GraphNode> visited)
             {
-                if (visited.Contains(node))
+                if (visited.Contains(this))
                 {
                     return false;
                 }
 
-                visited.Add(node);
+                visited.Add(this);
 
                 foreach (var parent in Parents)
                 {
