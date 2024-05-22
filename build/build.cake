@@ -67,7 +67,9 @@ void MSBuildSolution(
     // Build one native and one MSIL version of each project.
     foreach (var platformTarget in new []
     {
+        PlatformTarget.x64,
         PlatformTarget.x86,
+        PlatformTarget.ARM64,
         PlatformTarget.MSIL,
     })
     {

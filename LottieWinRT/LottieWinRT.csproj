@@ -1,0 +1,50 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
+	  <ImplicitUsings>true</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Platforms>x64;x86;ARM64</Platforms>
+    <CsWinRTComponent>true</CsWinRTComponent>
+    <RootNamespace>CommunityToolkit.WinAppSDK.LottieWinRT</RootNamespace>
+    <AssemblyName>CommunityToolkit.WinAppSDK.LottieWinRT</AssemblyName>
+    <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
+    <CsWinRTWindowsMetadata>10.0.19041.0</CsWinRTWindowsMetadata>
+    <!-- Uncomment the line below to generate a log.txt in the obj folder -->
+    <CsWinRTEnableLogging>true</CsWinRTEnableLogging>
+    <IsPackable>true</IsPackable>
+    <!-- Needed to get around CsWinRT error for consuming a WinRT component -->
+    <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.0.7" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.5.240428000" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.3233" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Lottie-Windows\Lottie-Windows-WinUI3\Lottie-Windows-WinUI3.csproj" PrivateAssets="All" />
+    <ProjectReference Include="..\LottieIslandProjection\LottieIslandProjection.csproj" PrivateAssets="All" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
+  </PropertyGroup>
+  <Target Name="CopyProjectReferencesToPackage" DependsOnTargets="ResolveReferences">
+    <ItemGroup>
+      <BuildOutputInPackage Include="@(ReferenceCopyLocalPaths-&gt;WithMetadataValue('ReferenceSourceTarget', 'ProjectReference'))" />
+    </ItemGroup>
+  </Target>
+
+  <ItemGroup Condition="'$(Platform)' != 'x86' and '$(Platform)' != 'Any CPU' and '$(Platform)' != 'AnyCPU'">
+    <CsWinRTAuthoringWinMDs Include="..\_build\$(Platform)\$(Configuration)\LottieIsland\bin\CommunityToolkit.WinAppSDK.LottieIsland.winmd" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(Platform)' == 'x86'">
+    <CsWinRTAuthoringWinMDs Include="..\_build\Win32\$(Configuration)\LottieIsland\bin\CommunityToolkit.WinAppSDK.LottieIsland.winmd" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(Platform)' == 'Any CPU' or '$(Platform)' == 'AnyCPU'">
+    <CsWinRTAuthoringWinMDs Include="..\_build\x64\$(Configuration)\LottieIsland\bin\CommunityToolkit.WinAppSDK.LottieIsland.winmd" />
+  </ItemGroup>
+
+</Project>

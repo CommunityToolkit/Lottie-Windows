@@ -10,12 +10,20 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using CommunityToolkit.WinUI.Lottie.UIData.Tools;
-using Microsoft.UI.Xaml.Controls;
 
 #if WINAPPSDK
 using Microsoft.UI.Composition;
 #else
 using Windows.UI.Composition;
+#endif
+
+#if WINAPPSDK
+using IAnimatedVisual = CommunityToolkit.WinAppSDK.LottieIsland.IAnimatedVisualFrameworkless;
+using IAnimatedVisualSource = object;
+#pragma warning disable SA1121 // Use built-in type alias
+#else
+using IAnimatedVisual = Microsoft.UI.Xaml.Controls.IAnimatedVisual;
+using IAnimatedVisualSource = Microsoft.UI.Xaml.Controls.IAnimatedVisualSource;
 #endif
 
 namespace CommunityToolkit.WinUI.Lottie

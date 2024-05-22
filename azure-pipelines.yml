@@ -53,6 +53,11 @@ steps:
 - powershell: .\build\Install-WindowsSdkISO.ps1 18362
   displayName: Insider SDK
 
+# Restore the solution
+- script: |
+    nuget restore Lottie-Windows.sln
+  displayName: Nuget Restore LottieIsland
+
 # Run the build.
 - powershell: .\build.ps1 --target=Package
   displayName: Build

@@ -7,12 +7,19 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
-using Microsoft.UI.Xaml.Controls;
 
 #if WINAPPSDK
 using Microsoft.UI.Composition;
 #else
 using Windows.UI.Composition;
+#endif
+
+#if WINAPPSDK
+using IAnimatedVisual = CommunityToolkit.WinAppSDK.LottieIsland.IAnimatedVisualFrameworkless;
+using IAnimatedVisualSource = object;
+#else
+using IAnimatedVisual = Microsoft.UI.Xaml.Controls.IAnimatedVisual;
+using IAnimatedVisualSource = Microsoft.UI.Xaml.Controls.IAnimatedVisualSource;
 #endif
 
 namespace CommunityToolkit.WinUI.Lottie

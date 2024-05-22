@@ -206,6 +206,9 @@ FakesAssemblies/
 # Visual Studio 6 workspace options file
 *.opt
 
+# Visual Studio editor config file
+.editorconfig
+
 # LightSwitch generated files
 GeneratedArtifacts/
 _Pvt_Extensions/
@@ -235,3 +238,5 @@ LottieGenOutput-*/
 
 # Visual Studio debugging configuration file.
 launchSettings.json
+
+Generated Files/

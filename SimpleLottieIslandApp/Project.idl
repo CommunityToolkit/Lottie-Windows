@@ -1,0 +1,15 @@
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+namespace SimpleLottieIslandApp
+{
+    /* IDL to generate a placeholder WinMD for the AppX project */
+
+    [default_interface]
+    runtimeclass Placeholder
+    {
+        Placeholder();
+        static Placeholder DoNothing();
+    }
+
+}

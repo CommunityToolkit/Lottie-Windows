@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <ProjectName>LottieIslandProjection</ProjectName>
+    <TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
+    <PackageId>CommunityToolkit.WinAppSDK.LottieIsland</PackageId>
+    <!-- Don't forget to update the version in the native project and the nuspec as well -->
+    <Version>0.2.7-prerelease</Version>
+    <!-- Set Platform to AnyCPU to allow consumption of the projection assembly from any architecture. -->
+    <Platform>Any CPU</Platform>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyName>CommunityToolkit.WinAppSDK.LottieIsland.Projection</AssemblyName>
+    <PackageOutputPath>$(MSBuildThisFileDirectory)..\bin\nupkg\</PackageOutputPath>
+    <IsPackable>True</IsPackable>
+    <NuspecFile>nuget\CommunityToolkit.WinAppSDK.LottieIsland.nuspec</NuspecFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <CsWinRTIncludes>CommunityToolkit.WinAppSDK.LottieIsland</CsWinRTIncludes>
+    <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
+    <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\LottieIsland\LottieIsland.vcxproj" />
+    <!-- <CSWinRTInputs Include="$(PkgMicrosoft_WinUI)\lib\uap10.0\*.winmd" /> -->
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.0.7" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.5.240428000" />
+  </ItemGroup>
+</Project>

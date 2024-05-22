@@ -1,0 +1,45 @@
+﻿namespace CommunityToolkit.WinAppSDK.LottieIsland
+{
+    interface IAnimatedVisualFrameworkless
+        requires Windows.Foundation.IClosable
+    {
+        Windows.Foundation.TimeSpan Duration{ get; };
+        Microsoft.UI.Composition.Visual RootVisual{ get; };
+        Windows.Foundation.Numerics.Vector2 Size{ get; };
+    };
+
+    runtimeclass LottieContentIsland
+    {
+        static LottieContentIsland Create(Microsoft.UI.Composition.Compositor compositor);
+
+        IAnimatedVisualFrameworkless AnimatedVisual;
+
+        Windows.Foundation.TimeSpan Duration{ get; };
+
+        Boolean IsAnimationLoaded{ get; };
+
+        Microsoft.UI.Content.ContentIsland Island{ get; };
+
+        Boolean IsPlaying{ get; };
+
+        Windows.Foundation.IAsyncAction PlayAsync(Single fromProgress, Single toProgress, Boolean looped);
+
+        Single PlaybackRate;
+
+        void Pause();
+
+        void Resume();
+
+        void Stop();
+
+        event Windows.Foundation.TypedEventHandler<LottieContentIsland, Microsoft.UI.Input.PointerEventArgs> PointerEntered;
+
+        event Windows.Foundation.TypedEventHandler<LottieContentIsland, Microsoft.UI.Input.PointerEventArgs> PointerExited;
+
+        event Windows.Foundation.TypedEventHandler<LottieContentIsland, Microsoft.UI.Input.PointerEventArgs> PointerMoved;
+
+        event Windows.Foundation.TypedEventHandler<LottieContentIsland, Microsoft.UI.Input.PointerEventArgs> PointerPressed;
+
+        event Windows.Foundation.TypedEventHandler<LottieContentIsland, Microsoft.UI.Input.PointerEventArgs> PointerReleased;
+    }
+}

@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
+    <OutputType>Library</OutputType>
+    <IsPackable>true</IsPackable>
+    <PackageId>CommunityToolkit.WinUI.Lottie.Controls</PackageId>
+    <PackageTags>WinUI3 Toolkit Windows Animations Lottie XAML</PackageTags>
+
+    <Nullable>enable</Nullable>
+    <Platforms>x64;x86;ARM64</Platforms>
+    <CsWinRTIncludes>Microsoft</CsWinRTIncludes>
+    <SignAssembly>True</SignAssembly>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Graphics.Win2D" Version="1.0.4" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.5.240428000" />
+    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.0.7" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Lottie-Windows\Lottie-Windows-WinUI3\Lottie-Windows-WinUI3.csproj" />
+  </ItemGroup>
+</Project>

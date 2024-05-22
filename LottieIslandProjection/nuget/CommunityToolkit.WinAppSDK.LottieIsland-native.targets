@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <lottieisland-Platform Condition="'$(Platform)' == 'Win32'">x86</lottieisland-Platform>
+    <lottieisland-Platform Condition="'$(Platform)' != 'Win32'">$(Platform)</lottieisland-Platform>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="$(MSBuildThisFileDirectory)..\..\lib\uap10.0\CommunityToolkit.WinAppSDK.LottieIsland.winmd">
+      <Implementation>CommunityToolkit.WinAppSDK.LottieIsland.dll</Implementation>
+    </Reference>
+    <ReferenceCopyLocalPaths Include="$(MSBuildThisFileDirectory)..\..\runtimes\win-$(lottieisland-Platform)\native\CommunityToolkit.WinAppSDK.LottieIsland.dll" />
+  </ItemGroup>
+
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>
+        $(MSBuildThisFileDirectory)..\..\Include;
+        $(MSBuildThisFileDirectory)..\..\Include\$(lottieisland-Platform);
+        %(AdditionalIncludeDirectories);</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+
+</Project>
