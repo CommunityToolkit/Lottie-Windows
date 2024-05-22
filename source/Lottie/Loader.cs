@@ -90,7 +90,7 @@ namespace CommunityToolkit.WinUI.Lottie
                             LottieCompositionReader.Options.IgnoreMatchNames,
                             out var readerIssues);
 
-                    if (lottieComposition is not null)
+                    if (lottieComposition is not null && options.HasFlag(LottieVisualOptions.Optimize))
                     {
                         lottieComposition = LottieMergeOptimizer.Optimize(lottieComposition);
                     }

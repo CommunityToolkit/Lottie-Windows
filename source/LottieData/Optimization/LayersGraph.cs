@@ -11,6 +11,18 @@ namespace CommunityToolkit.WinUI.Lottie.LottieData.Optimization
     /// <summary>
     /// Represents directed acyclic graph of layer groups.
     /// Node1 is child of Node2 iff they have time ranges that intersect and Node1 goes after Node2 in z-order.
+    ///
+    ///                         +Z
+    /// |---------------------------------------------------|
+    ///      |--Node1--|
+    ///             |---Node2---|                              Time -->
+    ///                                |----Node3----|
+    /// |---------------------------------------------------|
+    ///                         -Z
+    ///
+    /// In this example Node1 is a child of Node2, but not of Node3.
+    /// Nodes can have multiple parents. Optimizations can be made to graphs that don't overlap in
+    /// time, which is often the case when a single Lottie file contains multiple animations.
     /// </summary>
 #if PUBLIC_LottieData
     public
@@ -57,16 +69,16 @@ namespace CommunityToolkit.WinUI.Lottie.LottieData.Optimization
 
             private bool IsChildOf(GraphNode node, HashSet<GraphNode> visited)
             {
-                if (visited.Contains(node))
+                if (visited.Contains(this))
                 {
                     return false;
                 }
 
-                visited.Add(node);
+                visited.Add(this);
 
                 foreach (var parent in Parents)
                 {
-                    if (parent.Equals(node) || parent.IsChildOf(node))
+                    if (parent.Equals(node) || parent.IsChildOf(node, visited))
                     {
                         return true;
                     }
