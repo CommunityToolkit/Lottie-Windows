@@ -1,0 +1,19 @@
+{
+    "image-sequence-tests": [
+        { "name": "Gradient",           "threshold": 0.01, "avg-threshold": 0.005 },
+        { "name": "Shadow",             "threshold": 0.01, "avg-threshold": 0.01  },
+        { "name": "MoveMultiple",       "threshold": 0.01, "avg-threshold": 0.005 },
+        { "name": "BlurOverlap",        "threshold": 0.01, "avg-threshold": 0.005 },
+        { "name": "RectJump2",          "threshold": 0.01, "avg-threshold": 0.005 },
+        { "name": "RectJump",           "threshold": 0.04, "avg-threshold": 0.005 }
+    ],
+    "lottifiles-gif-tests": [
+        { "name" : "Smile",  "link": "https://lottiefiles.com/7194-smile",                            "threshold": 0.03, "avg-threshold": 0.01 },
+        { "name" : "Earth",  "link": "https://lottiefiles.com/102030-earth-love-earth-day",           "threshold": 0.20, "avg-threshold": 0.03 },
+        { "name" : "Banana", "link": "https://lottiefiles.com/106560-banana",                         "threshold": 0.06, "avg-threshold": 0.02 },
+        { "name" : "Logo",   "link": "https://lottiefiles.com/39206-lottie-logo",                     "threshold": 0.01, "avg-threshold": 0.01 },
+        { "name" : "Lolo",   "link": "https://lottiefiles.com/109272-lolo-new-branding",              "threshold": 0.08, "avg-threshold": 0.04 }
+    ],
+    "lottiegen-tests": [
+    ]
+}

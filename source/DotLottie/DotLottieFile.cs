@@ -18,6 +18,9 @@ namespace CommunityToolkit.WinUI.Lottie.DotLottie
     /// Provides access to the contents of a .lottie file.
     /// See https://dotlottie.io.
     /// </summary>
+#if PUBLIC_DotLottie
+    public
+#endif
     sealed class DotLottieFile : IDisposable
     {
         readonly Manifest _manifest;
