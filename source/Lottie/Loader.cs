@@ -34,8 +34,10 @@ namespace CommunityToolkit.WinUI.Lottie
     /// </summary>
     abstract class Loader : IDisposable
     {
-        // TODO: we do not support UAP above 14 in Lottie-Windows yet, only in LottieGen.
-        const uint c_maxContractVersion = 14u;
+        // TODO: we do not support versions above 14 in Lottie-Windows yet, only in LottieGen.
+        // Mostly this is because Lottie-Windows does not yet support custom AnimationControllers.
+        const uint c_maxUapContractVersion = 14u;
+        const uint c_maxWinAppSDKContractVersion = 14u;
 
         // Identifies the bound property names in SourceMetadata.
         static readonly Guid s_propertyBindingNamesKey = new Guid("A115C46A-254C-43E6-A3C7-9DE516C3C3C8");
@@ -154,8 +156,9 @@ namespace CommunityToolkit.WinUI.Lottie
                             GenerateColorBindings = makeColorsBindable,
 #if WINAPPSDK
                             // The WindowsAppSDK has access to the latest APIs, and should not use
-                            // fallback APIs based on which OS the app is running on.
-                            TargetUapVersion = c_maxContractVersion,
+                            // fallback APIs based on which OS the app is running on. In the future
+                            // Lottie might be able to target specific WinAppSDK versions.
+                            TargetUapVersion = c_maxWinAppSDKContractVersion,
 #else
                             TargetUapVersion = GetCurrentUapVersion(),
 #endif
@@ -240,7 +243,7 @@ namespace CommunityToolkit.WinUI.Lottie
                 versionToTest++;
             }
 
-            versionToTest = Math.Min(versionToTest, c_maxContractVersion);
+            versionToTest = Math.Min(versionToTest, c_maxUapContractVersion);
 
             // Query failed on versionToTest. Return the previous version.
             return versionToTest;
