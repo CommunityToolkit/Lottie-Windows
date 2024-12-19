@@ -217,6 +217,11 @@ namespace CommunityToolkit.WinUI.Lottie
         /// <returns>The highest UAP version supported by the current process.</returns>
         static uint GetCurrentUapVersion()
         {
+#if WINAPPSDK
+            // The WindowsAppSDK has access to all APIs up to version 14, and should not use fallback APIs
+            // based on which OS the app is running on.
+            return 14;
+#else
             // Start testing on version 2. We know that at least version 1 is supported because
             // we are running in UAP code.
             var versionToTest = 1u;
@@ -233,6 +238,7 @@ namespace CommunityToolkit.WinUI.Lottie
 
             // Query failed on versionToTest. Return the previous version.
             return versionToTest;
+#endif
         }
 
         // Specializes the Stopwatch to do just the one thing we need of it - get the time
