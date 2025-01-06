@@ -41,7 +41,7 @@ There are **two** options to integrate Lottie animations into your **WinUI 3** o
     ```
 **Option #2, using codegen (recommended)**
 1. Install codegen tool using `dotnet tool install lottiegen` in powershell
-2.  Run codegen tool `lottiegen -InputFile MyAnimation.json -Language cs -WinUIVersion 3`
+2.  Run codegen tool `lottiegen -InputFile MyAnimation.json -Language cs -WinUIVersion 3.0`
     - For UWP projects use `-WinUIVersion 2.X` depending on the version of `Microsoft.UI.Xaml`
     - Other language options: `cppwinrt` and `cppcx`
 3. Add generated source files to the project
