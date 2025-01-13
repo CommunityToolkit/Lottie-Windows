@@ -56,7 +56,7 @@ steps:
 
 # Install the Windows SDK. Version 18362 (Windows 1909 release).
 # This is needed to build the UWP code.
-- powershell: .\build\Install-WindowsSdkISO.ps1 18362
+- powershell: .\build\Install-WindowsSdkISO.ps1 22621
   displayName: Insider SDK
 
 # Run the build.
