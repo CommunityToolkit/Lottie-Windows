@@ -44,8 +44,8 @@ steps:
     packageType: 'sdk' # Options: runtime, sdk
     version: '7.0.x'
 
-# .NET Core SDK Installer.
-- task: UseDotNet8@2
+# .NET Core 8 SDK Installer.
+- task: UseDotNet@2
   inputs:
     packageType: 'sdk' # Options: runtime, sdk
     version: '8.0.x'
