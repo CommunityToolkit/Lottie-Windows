@@ -8,11 +8,11 @@ LottieGen requires [.NET Core 7.0 SDK](https://dotnet.microsoft.com/download/dot
 
 Local builds can be run directly. Just install [.NET Core 7.0](https://dotnet.microsoft.com/download/dotnet-core/7.0), build the LottieGen.sln solution and run the output.
 
-    f:\GitHub\Lottie-Windows\LottieGen\DotnetTool\bin\AnyCpu\Debug\net7.0\lottiegen.exe
+    f:\GitHub\Lottie-Windows\LottieGen\DotnetTool\bin\AnyCpu\Debug\net9.0\lottiegen.exe
 
 And of course you can copy LottieGen to a directory and run directly without installing it, for example:
 
-    copy f:\GitHub\Lottie-Windows\LottieGen\DotnetTool\bin\AnyCpu\Debug\net7.0\* d:\mybuildtools
+    copy f:\GitHub\Lottie-Windows\LottieGen\DotnetTool\bin\AnyCpu\Debug\net9.0\* d:\mybuildtools
 
 
 # Install as a .NET Core global tool
