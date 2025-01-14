@@ -30,7 +30,7 @@ namespace CommunityToolkit.WinUI.Lottie
     /// An <see cref="IAnimatedVisualSource"/> for a Lottie composition. This allows
     /// a Lottie to be specified as the source for a <see cref="AnimatedVisualPlayer"/>.
     /// </summary>
-    public sealed class LottieVisualSource : DependencyObject, IDynamicAnimatedVisualSource
+    public sealed partial class LottieVisualSource : DependencyObject, IDynamicAnimatedVisualSource
     {
 #if WINAPPSDK
         HashSet<TypedEventHandler<IDynamicAnimatedVisualSource?, object?>> _compositionInvalidatedEventTokenTable = new HashSet<TypedEventHandler<IDynamicAnimatedVisualSource?, object?>>();
