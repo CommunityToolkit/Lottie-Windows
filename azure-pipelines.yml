@@ -38,17 +38,17 @@ steps:
     custom: tool
     arguments: install --tool-path . nbgv
 
-# .NET Core SDK Installer.
+# .NET Core 9 SDK Installer.
 - task: UseDotNet@2
   inputs:
     packageType: 'sdk' # Options: runtime, sdk
-    version: '7.0.x'
+    version: '9.0.x'
 
 # Nerdbank.GitVersioning
 - script: nbgv cloud
   displayName: Set Version
 
-# Install the Windows SDK. Version 18362 (Windows 1909 release).
+# Install the Windows SDK.
 # This is needed to build the UWP code.
 - powershell: .\build\Install-WindowsSdkISO.ps1 18362
   displayName: Insider SDK
