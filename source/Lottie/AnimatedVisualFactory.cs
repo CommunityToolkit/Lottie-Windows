@@ -25,7 +25,7 @@ namespace CommunityToolkit.WinUI.Lottie
     /// translation of a composition and some metadata. This allows multiple instances of the translation
     /// to be instantiated without requiring repeated translations.
     /// </summary>
-    sealed class AnimatedVisualFactory
+    internal sealed partial class AnimatedVisualFactory
         : IAnimatedVisualSource
     {
         readonly Dictionary<Uri, ICompositionSurface?> _imageCache = new Dictionary<Uri, ICompositionSurface?>();

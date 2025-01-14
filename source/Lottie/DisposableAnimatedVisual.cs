@@ -17,7 +17,10 @@ using Windows.UI.Composition;
 
 namespace CommunityToolkit.WinUI.Lottie
 {
-    sealed class DisposableAnimatedVisual : IAnimatedVisual, IDisposable
+    /// <summary>
+    /// Type and any parent types should be marked partial for trimming and AOT compatibility if passed across the WinRT ABI.
+    /// </summary>
+    internal sealed partial class DisposableAnimatedVisual : IAnimatedVisual, IDisposable
     {
         internal DisposableAnimatedVisual(Visual rootVisual, IEnumerable<AnimationController> customAnimationControllers)
         {
