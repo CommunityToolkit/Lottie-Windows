@@ -12,6 +12,9 @@ namespace CommunityToolkit.WinUI.Lottie.DotLottie
     /// Describes an animation in a .lottie file. Animations
     /// are Lottie .json files.
     /// </summary>
+#if PUBLIC_DotLottie
+    public
+#endif
     sealed class DotLottieFileAnimation
     {
         readonly DotLottieFile _owner;

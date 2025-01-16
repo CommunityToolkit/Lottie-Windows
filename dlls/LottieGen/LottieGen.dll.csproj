@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <Configurations>Debug;Release</Configurations>
+    <LangVersion>latest</LangVersion>
+    <DefineConstants>PUBLIC_LottieGen</DefineConstants>
+  </PropertyGroup>
+
+  <Import Project="..\..\source\LottieGen\LottieGen.projitems" Label="Shared" />
+
+  <ItemGroup>
+    <PackageReference Include="System.Memory" Version="4.5.4" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="5.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DotLottie\DotLottie.dll.csproj" />
+    <ProjectReference Include="..\LottieData\LottieData.dll.csproj" />
+    <ProjectReference Include="..\LottieToWinComp\LottieToWinComp.dll.csproj" />
+    <ProjectReference Include="..\UIData\UIData.dll.csproj" />
+    <ProjectReference Include="..\UIDataCodeGen\UIDataCodeGen.dll.csproj" />
+    <ProjectReference Include="..\WinCompData\WinCompData.dll.csproj" />
+    <ProjectReference Include="..\YamlData\YamlData.dll.csproj" />
+    <ProjectReference Include="..\LottieReader\LottieReader.dll.csproj" />
+  </ItemGroup>
+</Project>

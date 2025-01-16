@@ -1,0 +1,9 @@
+﻿GetMessage
+TranslateMessage
+DispatchMessage
+MSG
+RECT
+SIZE
+POINT
+ID3D11Texture2D
+IDirect3DDxgiInterfaceAccess

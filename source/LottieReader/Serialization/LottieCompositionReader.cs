@@ -22,7 +22,7 @@ namespace CommunityToolkit.WinUI.Lottie.LottieData.Serialization
 {
     // See: https://github.com/airbnb/lottie-web/tree/master/docs/json for the (usually out-of-date) schema.
     // See: https://helpx.adobe.com/pdf/after_effects_reference.pdf for the After Effects semantics.
-#if PUBLIC
+#if PUBLIC_LottieReader
     public
 #endif
 #pragma warning disable SA1205 // Partial elements should declare access
