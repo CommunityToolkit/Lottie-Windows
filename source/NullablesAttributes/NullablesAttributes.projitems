@@ -6,6 +6,5 @@
     <SharedGUID>8c8964a7-a4f1-40a0-9a44-74371c9ec858</SharedGUID>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)NullablesAttributes.cs" />
   </ItemGroup>
 </Project>

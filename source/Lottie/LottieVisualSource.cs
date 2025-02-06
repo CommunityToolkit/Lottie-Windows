@@ -32,11 +32,7 @@ namespace CommunityToolkit.WinUI.Lottie
     /// </summary>
     public sealed partial class LottieVisualSource : DependencyObject, IDynamicAnimatedVisualSource
     {
-#if WINAPPSDK
         HashSet<TypedEventHandler<IDynamicAnimatedVisualSource?, object?>> _compositionInvalidatedEventTokenTable = new HashSet<TypedEventHandler<IDynamicAnimatedVisualSource?, object?>>();
-#else
-        EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource?, object?>>? _compositionInvalidatedEventTokenTable;
-#endif
 
         int _loadVersion;
         Uri? _uriSource;
@@ -160,24 +156,12 @@ namespace CommunityToolkit.WinUI.Lottie
         {
             add
             {
-#if WINAPPSDK
                 _compositionInvalidatedEventTokenTable.Add(value);
-#else
-                return EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource?, object?>>
-                   .GetOrCreateEventRegistrationTokenTable(ref _compositionInvalidatedEventTokenTable)
-                   .AddEventHandler(value);
-#endif
             }
 
             remove
             {
-#if WINAPPSDK
                 _compositionInvalidatedEventTokenTable.Remove(value);
-#else
-                EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource?, object?>>
-                   .GetOrCreateEventRegistrationTokenTable(ref _compositionInvalidatedEventTokenTable)
-                    .RemoveEventHandler(value);
-#endif
             }
         }
 
@@ -225,16 +209,10 @@ namespace CommunityToolkit.WinUI.Lottie
 
         void NotifyListenersThatCompositionChanged()
         {
-#if WINAPPSDK
             foreach (var v in _compositionInvalidatedEventTokenTable)
             {
                 v.Invoke(this, null);
             }
-#else
-            EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource?, object?>>
-                .GetOrCreateEventRegistrationTokenTable(ref _compositionInvalidatedEventTokenTable)
-                .InvocationList?.Invoke(this, null);
-#endif
         }
 
         // Called when the UriSource property is updated.
