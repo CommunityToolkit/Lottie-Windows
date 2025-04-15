@@ -33,7 +33,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.Tools
 
             foreach (var (_, obj) in objectGraph.CompositionObjectNodes)
             {
-                AnimatorCount += obj.Animators.Count;
+                AnimatorCount += obj.Animators.Count();
 
                 CompositionObjectCount++;
                 switch (obj.Type)

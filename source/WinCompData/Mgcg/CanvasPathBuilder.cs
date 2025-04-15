@@ -5,7 +5,9 @@
 #nullable enable
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using CommunityToolkit.WinUI.Lottie.WinCompData.Mgc;
 
@@ -16,7 +18,8 @@ namespace CommunityToolkit.WinUI.Lottie.WinCompData.Mgcg
 #endif
     sealed class CanvasPathBuilder : IDisposable
     {
-        readonly List<Command> _commands = new List<Command>();
+        readonly ArrayList _commands = new ArrayList();
+
         bool _isFilledRegionDeterminationSet;
 
         public CanvasPathBuilder(CanvasDevice? device)
@@ -59,7 +62,7 @@ namespace CommunityToolkit.WinUI.Lottie.WinCompData.Mgcg
 
         internal CanvasFilledRegionDetermination FilledRegionDetermination { get; private set; }
 
-        internal IEnumerable<Command> Commands => _commands;
+        internal IEnumerable<Command> Commands => _commands.Cast<Command>();
 
         /// <inheritdoc/>
         public void Dispose()

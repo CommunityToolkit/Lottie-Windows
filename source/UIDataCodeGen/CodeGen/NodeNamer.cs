@@ -168,7 +168,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
         {
             // Color brushes that are not animated get names describing their color.
             // Optimization ensures there will only be one brush for any one non-animated color.
-            if (obj.Animators.Count > 0)
+            if (obj.Animators.Count() > 0)
             {
                 // Brush is animated. Give it a name based on the colors in the animation.
                 var colorAnimation = obj.Animators.Where(a => a.AnimatedProperty == "Color").First().Animation;
@@ -192,7 +192,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
         {
             var offsetId = FloatAsId(obj.Offset);
 
-            if (obj.Animators.Count > 0)
+            if (obj.Animators.Count() > 0)
             {
                 var baseName = $"AnimatedGradientStop_{offsetId}";
 

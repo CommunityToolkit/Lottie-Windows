@@ -1138,7 +1138,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                             node.RequiresStorage = true;
                         }
                     }
-                    else if ((configuration.ImplementCreateAndDestroyMethods && node.Object is CompositionObject obj && obj.Animators.Count > 0) || (node.Object is AnimationController c && c.IsCustom))
+                    else if ((configuration.ImplementCreateAndDestroyMethods && node.Object is CompositionObject obj && obj.Animators.Count() > 0) || (node.Object is AnimationController c && c.IsCustom))
                     {
                         // If we are implementing IAnimatedVisual2 interface we need to store all the composition objects that have animators.
                         node.RequiresStorage = true;
@@ -1957,10 +1957,10 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
 
                         var controllerAnimators = controller.Animators;
 
-                        if (controllerAnimators.Count == 1)
+                        if (controllerAnimators.Count() == 1)
                         {
                             // The controller has only one property being animated.
-                            var controllerAnimator = controllerAnimators[0];
+                            var controllerAnimator = controllerAnimators.ElementAt(0);
                             if (controllerAnimator.AnimatedProperty == "Progress" &&
                                 controllerAnimator.Animation is ExpressionAnimation controllerExpressionAnimation &&
                                 controller.IsPaused)
@@ -2970,7 +2970,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                 var createPathText = path is null ? string.Empty : CallFactoryFromFor(node, path);
                 var createPathGeometryText = $"_c{Deref}CreatePathGeometry({createPathText})";
 
-                if (obj.Animators.Count == 0 &&
+                if (obj.Animators.Count() == 0 &&
                     obj.Properties.Names.Count == 0 &&
                     !obj.TrimEnd.HasValue &&
                     !obj.TrimOffset.HasValue &&
@@ -2996,7 +2996,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                                         ? $"_c{Deref}CreateColorBrush({Color(obj.Color.Value)})"
                                         : $"_c{Deref}CreateColorBrush()";
 
-                if (obj.Animators.Count > 0)
+                if (obj.Animators.Count() > 0)
                 {
                     WriteObjectFactoryStart(builder, node);
                     WriteCreateAssignment(builder, node, createCallText);
@@ -3013,7 +3013,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
 
             bool GenerateCompositionColorGradientStopFactory(CodeBuilder builder, CompositionColorGradientStop obj, ObjectData node)
             {
-                if (obj.Animators.Count > 0)
+                if (obj.Animators.Count() > 0)
                 {
                     WriteObjectFactoryStart(builder, node);
                     WriteCreateAssignment(builder, node, $"_c{Deref}CreateColorGradientStop({Float(obj.Offset)}, {Color(obj.Color)})");
@@ -3165,7 +3165,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
 
                 var isReachableFromSurfaceNode = node.IsReachableFrom(surfaceNode);
 
-                if (obj.Animators.Count == 0 &&
+                if (obj.Animators.Count() == 0 &&
                     obj.Properties.Names.Count == 0 &&
                     !isReachableFromSurfaceNode)
                 {

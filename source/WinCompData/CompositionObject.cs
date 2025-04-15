@@ -5,6 +5,7 @@
 #nullable enable
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -22,7 +23,7 @@ namespace CommunityToolkit.WinUI.Lottie.WinCompData
         static readonly Guid s_longDescriptionMetadataKey = new Guid("63514254-2B3E-4794-B01D-9F67D5946A7E");
         static readonly Guid s_nameMetadataKey = new Guid("6EB18A31-FA33-43B9-8EE1-57B489DC3404");
 
-        readonly List<Animator> _animators = new List<Animator>();
+        readonly ArrayList _animators = new ArrayList();
 
         // Null until the first metadata is set.
         SortedDictionary<Guid, object>? _metadata;
@@ -183,17 +184,21 @@ namespace CommunityToolkit.WinUI.Lottie.WinCompData
 
             for (var i = 0; i < _animators.Count; i++)
             {
-                var animatorPropertyName = _animators[i].AnimatedProperty;
-
-                if (animatorPropertyName == propertyName ||
-                    animatorPropertyName == rootPropertyName ||
-                    animatorPropertyName.StartsWith(subChannelPrefix))
+                var temp = _animators[i];
+                if (temp != null)
                 {
-                    _animators.RemoveAt(i);
+                    var animatorPropertyName = ((Animator)temp).AnimatedProperty;
 
-                    // Adjust the iteration variable to ensure we don't miss the
-                    // animator just after the one we just removed.
-                    i--;
+                    if (animatorPropertyName == propertyName ||
+                        animatorPropertyName == rootPropertyName ||
+                        animatorPropertyName.StartsWith(subChannelPrefix))
+                    {
+                        _animators.RemoveAt(i);
+
+                        // Adjust the iteration variable to ensure we don't miss the
+                        // animator just after the one we just removed.
+                        i--;
+                    }
                 }
             }
         }
@@ -201,10 +206,10 @@ namespace CommunityToolkit.WinUI.Lottie.WinCompData
         /// <summary>
         /// Gets the animators that are bound to this object.
         /// </summary>
-        public IReadOnlyList<Animator> Animators => _animators;
+        public IEnumerable<Animator> Animators => _animators.Cast<Animator>();
 
         public AnimationController? TryGetAnimationController(string target) =>
-            _animators.Where(a => a.AnimatedProperty == target).SingleOrDefault()?.Controller;
+            _animators.Cast<Animator>().Where(a => a.AnimatedProperty == target).SingleOrDefault()?.Controller;
 
         public abstract CompositionObjectType Type { get; }
 

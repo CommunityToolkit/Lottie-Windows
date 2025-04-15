@@ -146,7 +146,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.Tools
                     let obj = item.Object
                     where (_ignoreCommentProperties || obj.Comment is null)
                        && obj.Properties.Names.Count == 0
-                       && obj.Animators.Count == 0
+                       && obj.Animators.Count() == 0
                     select (item.Node, obj);
             }
 
@@ -474,19 +474,19 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.Tools
                                     // has the same properties and the same animations.
                                     var thispAnimators = thisPropertySet.Animators;
                                     var otherpAnimators = otherPropertySet.Animators;
-                                    if (thispAnimators.Count != otherpAnimators.Count)
+                                    if (thispAnimators.Count() != otherpAnimators.Count())
                                     {
                                         return false;
                                     }
 
-                                    if (thispAnimators.Count != 1)
+                                    if (thispAnimators.Count() != 1)
                                     {
                                         // For now we only handle a single animator.
                                         return false;
                                     }
 
-                                    var thisAnimator = thispAnimators[0];
-                                    var otherAnimator = otherpAnimators[0];
+                                    var thisAnimator = thispAnimators.ElementAt(0);
+                                    var otherAnimator = otherpAnimators.ElementAt(0);
                                     if (thisAnimator.AnimatedProperty != otherAnimator.AnimatedProperty)
                                     {
                                         return false;
@@ -566,7 +566,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.Tools
                 var grouping =
                     from item in items
                     let obj = item.obj
-                    where obj.Animators.Count == 0
+                    where obj.Animators.Count() == 0
                     group item.Node by CanonicalObject<ICompositionSurface>(obj.Surface) into grouped
                     select grouped;
 
@@ -657,15 +657,15 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.Tools
                     let obj = item.Object
                     where (_ignoreCommentProperties || obj.Comment is null)
                        && obj.Properties.Names.Count == 0
-                       && obj.Animators.Count == 1
-                    let animator = obj.Animators[0]
+                       && obj.Animators.Count() == 1
+                    let animator = obj.Animators.ElementAt(0)
                     where animator.AnimatedProperty == "Path"
                     select (Node: item.Node, Object: obj);
 
                 var grouping =
                     from item in items
                     let obj = item.Object
-                    let animation = CanonicalObject<PathKeyFrameAnimation>(obj.Animators[0].Animation)
+                    let animation = CanonicalObject<PathKeyFrameAnimation>(obj.Animators.ElementAt(0).Animation)
                     group item.Node by (
                         animation,
                         obj.TrimStart,

@@ -34,6 +34,8 @@ namespace CommunityToolkit.WinUI.Lottie
     {
 #if WINAPPSDK
         HashSet<TypedEventHandler<IDynamicAnimatedVisualSource?, object?>> _compositionInvalidatedEventTokenTable = new HashSet<TypedEventHandler<IDynamicAnimatedVisualSource?, object?>>();
+#elif UWPNET
+        HashSet<TypedEventHandler<IDynamicAnimatedVisualSource?, object?>> _compositionInvalidatedEventTokenTable = new HashSet<TypedEventHandler<IDynamicAnimatedVisualSource?, object?>>();
 #else
         EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource?, object?>>? _compositionInvalidatedEventTokenTable;
 #endif
@@ -162,6 +164,8 @@ namespace CommunityToolkit.WinUI.Lottie
             {
 #if WINAPPSDK
                 _compositionInvalidatedEventTokenTable.Add(value);
+#elif UWPNET
+                _compositionInvalidatedEventTokenTable.Add(value);
 #else
                 return EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource?, object?>>
                    .GetOrCreateEventRegistrationTokenTable(ref _compositionInvalidatedEventTokenTable)
@@ -172,6 +176,8 @@ namespace CommunityToolkit.WinUI.Lottie
             remove
             {
 #if WINAPPSDK
+                _compositionInvalidatedEventTokenTable.Remove(value);
+#elif UWPNET
                 _compositionInvalidatedEventTokenTable.Remove(value);
 #else
                 EventRegistrationTokenTable<TypedEventHandler<IDynamicAnimatedVisualSource?, object?>>
@@ -226,6 +232,11 @@ namespace CommunityToolkit.WinUI.Lottie
         void NotifyListenersThatCompositionChanged()
         {
 #if WINAPPSDK
+            foreach (var v in _compositionInvalidatedEventTokenTable)
+            {
+                v.Invoke(this, null);
+            }
+#elif UWPNET
             foreach (var v in _compositionInvalidatedEventTokenTable)
             {
                 v.Invoke(this, null);
