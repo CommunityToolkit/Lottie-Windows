@@ -23,7 +23,6 @@
   <PropertyGroup>
     <CsWinRTComponent>true</CsWinRTComponent>
     <CsWinRTGenerateProjection>false</CsWinRTGenerateProjection>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
 
 <ItemGroup>
