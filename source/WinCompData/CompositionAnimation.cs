@@ -15,6 +15,7 @@ namespace CommunityToolkit.WinUI.Lottie.WinCompData
 #endif
     abstract class CompositionAnimation : CompositionObject
     {
+        // this is a comment
         readonly SortedDictionary<string, CompositionObject> _referencedParameters =
             new SortedDictionary<string, CompositionObject>();
 
