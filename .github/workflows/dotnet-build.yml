@@ -19,7 +19,7 @@ on:
 env:
   BuildConfiguration: Lottie-Windows
   NET_VERSION: '9.0.x'
-  NUGET_VERSION: '6.5.0.'
+  NUGET_VERSION: '6.5.0'
 
 jobs:
   build_lottie:
