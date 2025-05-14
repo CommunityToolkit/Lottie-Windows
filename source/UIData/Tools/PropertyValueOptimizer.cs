@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using System.Text;
 using CommunityToolkit.WinUI.Lottie.WinCompData;
@@ -171,7 +173,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.Tools
             // Convert the properties to a transform matrix. This can reduce the
             // number of calls needed to initialize the object, and makes finding
             // and removing redundant containers easier.
-            if (obj.Animators.Count == 0)
+            if (obj.Animators.Count() == 0)
             {
                 // Get the values for the properties, and the defaults for the properties that are not set.
                 var centerPoint = obj.CenterPoint ?? Vector2.Zero;
@@ -394,7 +396,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.Tools
                 obj.RotationAngleInDegrees.HasValue && obj.RotationAngleInDegrees.Value != 0 &&
                 obj.RotationAxis.HasValue && obj.RotationAxis != Vector3.UnitZ;
 
-            if (obj.Animators.Count == 0 && !hasNonStandardRotation)
+            if (obj.Animators.Count() == 0 && !hasNonStandardRotation)
             {
                 // Get the values of the properties, and the defaults for properties that are not set.
                 var centerPoint = obj.CenterPoint ?? Vector3.Zero;

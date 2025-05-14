@@ -268,17 +268,17 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.Tools
             return AreAnimatorsEquivalent(a.Animators, b.Animators);
         }
 
-        static bool AreAnimatorsEquivalent(IReadOnlyList<CompositionObject.Animator> a, IReadOnlyList<CompositionObject.Animator> b)
+        static bool AreAnimatorsEquivalent(IEnumerable<CompositionObject.Animator> a, IEnumerable<CompositionObject.Animator> b)
         {
-            if (a.Count != b.Count)
+            if (a.Count() != b.Count())
             {
                 return false;
             }
 
-            for (var i = 0; i < a.Count; i++)
+            for (var i = 0; i < a.Count(); i++)
             {
-                var animatorA = a[i];
-                var animatorB = b[i];
+                var animatorA = a.ElementAt(i);
+                var animatorB = b.ElementAt(i);
 
                 if (animatorA.AnimatedProperty != animatorB.AnimatedProperty)
                 {
@@ -311,7 +311,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.Tools
                     (GetNonDefaultContainerVisualProperties(container) & (PropertyId.Clip | PropertyId.Size | PropertyId.Children))
                         == (PropertyId.Clip | PropertyId.Size | PropertyId.Children) &&
                     container.Clip?.Type == CompositionObjectType.InsetClip &&
-                    container.Animators.Count == 0 &&
+                    container.Animators.Count() == 0 &&
                     container.Properties.Names.Count == 0 &&
                     container.Children.Count == 1 &&
                     container.Children[0].Type == CompositionObjectType.ShapeVisual
@@ -447,7 +447,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.Tools
 
                 var containerProperties = GetNonDefaultShapeProperties(container);
 
-                if (container.Animators.Count != 0 || (containerProperties & ~PropertyId.TransformMatrix) != PropertyId.None)
+                if (container.Animators.Count() != 0 || (containerProperties & ~PropertyId.TransformMatrix) != PropertyId.None)
                 {
                     // Ignore this container if it has animators or anything other than the transform is set.
                     return false;
@@ -498,7 +498,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.Tools
                 var container = n.container;
                 var containerProperties = GetNonDefaultShapeProperties(container);
 
-                if (container.Animators.Count != 0 || containerProperties != PropertyId.None)
+                if (container.Animators.Count() != 0 || containerProperties != PropertyId.None)
                 {
                     return false;
                 }
@@ -757,7 +757,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.Tools
                     insetClip.Scale.HasValue &&
                     insetClip.LeftInset.HasValue && insetClip.RightInset.HasValue &&
                     insetClip.TopInset.HasValue && insetClip.BottomInset.HasValue &&
-                    insetClip.Animators.Count == 0 &&
+                    insetClip.Animators.Count() == 0 &&
                     parent.Size == shapeVisual.Size &&
                     !IsPropertyAnimated(parent, PropertyId.Size) &&
                     !IsPropertyAnimated(shapeVisual, PropertyId.Size))
@@ -1353,7 +1353,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.Tools
                     to.StartAnimation(anim.AnimatedProperty, anim.Animation, anim.Controller);
                 }
 
-                if (anim.Controller is not null && !anim.Controller.IsCustom && (anim.Controller.IsPaused || anim.Controller.Animators.Count > 0))
+                if (anim.Controller is not null && !anim.Controller.IsCustom && (anim.Controller.IsPaused || anim.Controller.Animators.Count() > 0))
                 {
                     var controller = to.TryGetAnimationController(anim.AnimatedProperty)!;
                     if (anim.Controller.IsPaused)
@@ -1425,7 +1425,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.Tools
                     to.StartAnimation(anim.AnimatedProperty, anim.Animation, anim.Controller);
                 }
 
-                if (anim.Controller is not null && !anim.Controller.IsCustom && (anim.Controller.IsPaused || anim.Controller.Animators.Count > 0))
+                if (anim.Controller is not null && !anim.Controller.IsCustom && (anim.Controller.IsPaused || anim.Controller.Animators.Count() > 0))
                 {
                     var controller = to.TryGetAnimationController(anim.AnimatedProperty)!;
                     if (anim.Controller.IsPaused)

@@ -59,15 +59,15 @@ steps:
   workingDirectory: .\build
 
 # Sign the result of the build.
-- task: PowerShell@2
-  displayName: Authenticode Sign Packages
-  inputs:
-    filePath: build/Sign-Package.ps1
-  env:
-    SignClientUser: $(SignClientUser)
-    SignClientSecret: $(SignClientSecret)
-    ArtifactDirectory: bin\nupkg
-  condition: and(succeeded(), not(eq(variables['build.reason'], 'PullRequest')), not(eq(variables['SignClientSecret'], '')), not(eq(variables['SignClientUser'], '')))
+# - task: PowerShell@2
+#   displayName: Authenticode Sign Packages
+#   inputs:
+#     filePath: build/Sign-Package.ps1
+#   env:
+#     SignClientUser: $(SignClientUser)
+#     SignClientSecret: $(SignClientSecret)
+#     ArtifactDirectory: bin\nupkg
+#   condition: and(succeeded(), not(eq(variables['build.reason'], 'PullRequest')), not(eq(variables['SignClientSecret'], '')), not(eq(variables['SignClientUser'], '')))
 
 # Publish the results of the build.
 - task: PublishBuildArtifacts@1

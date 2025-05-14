@@ -57,8 +57,8 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Tables
                 animatorCounts.referenceParameters,
                 animatorCounts.operations,
                 Row.Separator,
-                GetCompositionObjectCountRecord(compositionObjects, "Animated brushes", (o) => o is CompositionBrush b && b.Animators.Count > 0),
-                GetCompositionObjectCountRecord(compositionObjects, "Animated gradient stops", (o) => o is CompositionColorGradientStop s && s.Animators.Count > 0),
+                GetCompositionObjectCountRecord(compositionObjects, "Animated brushes", (o) => o is CompositionBrush b && b.Animators.Count() > 0),
+                GetCompositionObjectCountRecord(compositionObjects, "Animated gradient stops", (o) => o is CompositionColorGradientStop s && s.Animators.Count() > 0),
                 GetCompositionObjectCountRecord(compositionObjects, "ExpressionAnimations", (o) => o.Type == CompositionObjectType.ExpressionAnimation),
                 GetCompositionObjectCountRecord(compositionObjects, "PathKeyFrameAnimations", (o) => o.Type == CompositionObjectType.PathKeyFrameAnimation),
                 Row.Separator,
@@ -156,7 +156,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Tables
                 operations += expressionKeyFrames.Sum(e => e.Expression.OperationsCount);
 
                 // Key frame animations are the animations that are not expression animations.
-                keyFrames += animators.Count - expressionAnimations.Length;
+                keyFrames += animators.Count() - expressionAnimations.Length;
             }
 
             return (ColumnData.Create(expressions), ColumnData.Create(keyFrames), ColumnData.Create(referenceParameters), ColumnData.Create(operations));
