@@ -81,7 +81,7 @@ jobs:
       - name: Publish Packages
         uses: actions/upload-artifact@v4
         with:
-          name: Packages
+          name: packages
           path: .\bin\nupkg
 
   sign:
