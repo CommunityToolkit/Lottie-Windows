@@ -1,0 +1,165 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+      - dev/*
+      - rel/*
+    paths-ignore:
+      - README.md
+  pull_request:
+    branches:
+      - main
+      - dev/*
+      - rel/*
+    paths-ignore:
+      - README.md
+
+env:
+  BuildConfiguration: Lottie-Windows
+  NET_VERSION: '9.0.x'
+  NUGET_VERSION: '6.5.0'
+
+jobs:
+  build_lottie:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Set up a VS build environment.
+      - name: Setup Environment Variables
+        run: |
+          "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat" -no_logo
+        shell: cmd
+
+      # Install NuGet tools.  
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v2
+        with:
+          nuget-version: ${{ env.NUGET_VERSION }}
+
+      # Install Nerbank.GitVersioning.
+      - name: Install NBGV tool
+        run: dotnet tool install --tool-path . nbgv
+
+      # .NET Core 9 SDK Installer.
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.NET_VERSION }}
+
+      # Nerdbank.GitVersioning
+      - name: Set Version
+        run: nbgv cloud
+        
+      # Install the Windows SDK.
+      # This is needed to build the UWP code.
+      - name: Install Windows SDK
+        run: .\build\Install-WindowsSdkISO.ps1 18362
+        shell: pwsh
+
+      # Run the build.
+      - name: Build
+        run: .\build.ps1 --target=Package
+        shell: pwsh
+        working-directory: .\build
+
+      - name: Upload Package List
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuget-list
+          if-no-files-found: error
+          path: |
+            ${{ github.workspace }}/.github/workflows/SignClientFileList.txt
+
+      # Publish the results of the build.
+      - name: Publish Packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: packages
+          path: .\bin\nupkg
+
+  sign:
+    needs: [build_lottie]
+    runs-on: windows-latest
+    permissions:
+      id-token: write # Required for requesting the JWT
+
+    steps:
+      - name: Install .NET SDK v${{ env.NET_VERSION }}
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.NET_VERSION }}
+          dotnet-quality: 'ga'
+
+      - name: Download NuGet List
+        uses: actions/download-artifact@v4
+        with:
+          name: nuget-list
+          path: ./
+
+      - name: Download Package List
+        uses: actions/download-artifact@v4
+        with:
+          name: packages
+          path: ./packages
+
+      - name: Install Signing Tool
+        run: dotnet tool install --tool-path ./tools sign --version 0.9.1-beta.23356.1
+
+      - name: Sign Packages
+        run: >
+          ./tools/sign code azure-key-vault
+          **/*.nupkg
+          --base-directory "${{ github.workspace }}/packages"
+          --file-list "${{ github.workspace }}/SignClientFileList.txt"
+          --timestamp-url "http://timestamp.digicert.com"
+          --publisher-name ".NET Foundation"
+          --description "Windows Community Toolkit"
+          --description-url "https://developer.microsoft.com/en-us/windows/uwp-community-toolkit"
+          --azure-key-vault-url "${{ secrets.SIGN_KEY_VAULT_URL }}"
+          --azure-key-vault-client-id ${{ secrets.SIGN_CLIENT_ID }}
+          --azure-key-vault-client-secret "${{ secrets.SIGN_CLIENT_SECRET }}"
+          --azure-key-vault-tenant-id ${{ secrets.SIGN_TENANT_ID }}
+          --azure-key-vault-certificate "${{ secrets.SIGN_CERTIFICATE }}"
+          --verbosity Information
+
+      - name: Publish Packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: signed-packages
+          if-no-files-found: error
+          path: |
+            ${{ github.workspace }}/packages/**/*.nupkg
+
+  release:
+    if: ${{ startsWith(github.ref, 'refs/tags/') }}
+    needs: [sign]
+    environment: nuget-release-gate # This gates this job until manually approved
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.NET_VERSION }}
+          dotnet-quality: 'ga'
+
+      - name: Download signed packages for ${{ matrix.platform }}
+        uses: actions/download-artifact@v4
+        with:
+          name: signed-packages
+          path: ./packages
+
+      - name: Push to NuGet.org
+        run: >
+          dotnet nuget push
+          **/*.nupkg
+          --source https://api.nuget.org/v3/index.json
+          --api-key ${{ secrets.NUGET_PACKAGE_PUSH_TOKEN }}
+          --skip-duplicate
