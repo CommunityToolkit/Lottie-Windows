@@ -235,3 +235,6 @@ LottieGenOutput-*/
 
 # Visual Studio debugging configuration file.
 launchSettings.json
+
+# Nuget Package files.
+pack/
