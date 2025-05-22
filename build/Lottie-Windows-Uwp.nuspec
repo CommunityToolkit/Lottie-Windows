@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
-    <id>CommunityToolkit.UwpUnified.Lottie</id>
+    <id>CommunityToolkit.Uwp.Lottie</id>
     <version>0.0.0-SpecifyVersionOnCommandline</version>
     <authors>Microsoft.Toolkit</authors>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
