@@ -10,7 +10,9 @@
     <DisableRuntimeMarshalling>true</DisableRuntimeMarshalling>
     <PackageId>CommunityToolkit.Uwp.Lottie</PackageId>
     <PackageTags>UWP Toolkit Windows Animations Lottie XAML</PackageTags>
-    
+
+    <AssemblyName>CommunityToolkit.Uwp.Lottie</AssemblyName>
+
     <DefineConstants>UWPNET</DefineConstants>
     <!-- 
          Turn off debugging information for now. It is causing errors with winmd generation because
