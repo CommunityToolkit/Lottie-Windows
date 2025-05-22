@@ -8,6 +8,8 @@
     <DefaultLanguage>en-US</DefaultLanguage>
     <IsAotCompatible>true</IsAotCompatible>
     <DisableRuntimeMarshalling>true</DisableRuntimeMarshalling>
+
+    <AssemblyName>CommunityToolkit.Uwp.Lottie</AssemblyName>
     <PackageId>CommunityToolkit.Uwp.Lottie</PackageId>
     <PackageTags>UWP Toolkit Windows Animations Lottie XAML</PackageTags>
     
@@ -18,11 +20,6 @@
          task expects the name without the "compile." in it.
      -->
     <DebugType>none</DebugType>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <CsWinRTComponent>true</CsWinRTComponent>
-    <CsWinRTGenerateProjection>false</CsWinRTGenerateProjection>
   </PropertyGroup>
 
 <ItemGroup>

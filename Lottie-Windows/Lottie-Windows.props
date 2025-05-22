@@ -3,7 +3,6 @@
   <PropertyGroup Label="Configuration">
 
     <RootNamespace>CommunityToolkit.WinUI.Lottie</RootNamespace>
-    <AssemblyName>CommunityToolkit.WinUI.Lottie</AssemblyName>
 
     <!-- Nuget props-->
     <Description>This library provides the LottieVisualSource which is consumed by the Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer to render Lottie JSON files.</Description>

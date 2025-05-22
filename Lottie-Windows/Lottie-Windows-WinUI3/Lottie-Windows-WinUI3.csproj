@@ -5,6 +5,7 @@
     <IsAotCompatible>true</IsAotCompatible>
     <OutputType>Library</OutputType>
     
+    <AssemblyName>CommunityToolkit.WinUI.Lottie</AssemblyName>
     <PackageId>CommunityToolkit.WinUI.Lottie</PackageId>
     <PackageTags>WinUI3 Toolkit Windows Animations Lottie XAML</PackageTags>
 

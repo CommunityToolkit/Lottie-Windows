@@ -4,7 +4,7 @@
     <TargetFramework>uap10.0.16299</TargetFramework>
     <OutputType>winmdobj</OutputType>
 
-
+    <AssemblyName>CommunityToolkit.WinUI.Lottie</AssemblyName>
     <PackageId>CommunityToolkit.Uwp.Lottie</PackageId>
     <PackageTags>UWP Toolkit Windows Animations Lottie XAML</PackageTags>
     
