@@ -37,6 +37,6 @@
   </metadata>
 
   <files>
-    <file src="bin\pack\lib\**" target="lib" />
+    <file src="pack\lib\**" target="lib" />
   </files>
 </package>

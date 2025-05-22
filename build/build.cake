@@ -244,10 +244,10 @@ Task("Package")
     // Invoke the pack target to generate the code to be packed.
     MSBuildSolution("Pack", ("GenerateLibraryLayout", "true"), ("PackageOutputPath", nupkgDir));
 
-    var stage   = Directory("./pack");
+    var stage   = Directory($"{buildDir}/pack/lib");
 
-    var net9Dir = stage + Directory("lib") + Directory("net9.0-windows10.0.26100.0");
-    var uapDir  = stage + Directory("lib") + Directory("uap10.0.16299");
+    var net9Dir = stage + Directory("net9.0-windows10.0.26100.0");
+    var uapDir  = stage + Directory("uap10.0.16299");
 
     // clean & recreate
     CleanDirectory(stage);
@@ -256,7 +256,7 @@ Task("Package")
 
     // copy the Release builds
     CopyFiles($"{baseDir}/Lottie-Windows/Lottie-Windows-UwpNet/bin/{configuration}/net9.0-windows10.0.26100.0/*", net9Dir);
-    CopyFiles($"{baseDir}/Lottie-Windows/Lottie-Windows-Uwp/bin/{configuration}/uap10.0.16299/*",             uapDir);
+    CopyFiles($"{baseDir}/Lottie-Windows/Lottie-Windows-Uwp/bin/{configuration}/uap10.0.16299/*", uapDir);
 
     foreach (var nuspec in GetFiles("./*.nuspec"))
     {
