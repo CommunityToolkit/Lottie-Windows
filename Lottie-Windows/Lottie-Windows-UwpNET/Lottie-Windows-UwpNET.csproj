@@ -14,17 +14,11 @@
     <PackageTags>UWP Toolkit Windows Animations Lottie XAML</PackageTags>
     
     <DefineConstants>UWPNET</DefineConstants>
-    <!-- 
-         Turn off debugging information for now. It is causing errors with winmd generation because
-         the build system is creating CommunityToolkit.WinUI.Lottie.compile.pdb but the winmdexp
-         task expects the name without the "compile." in it.
-     -->
-    <DebugType>none</DebugType>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
 <ItemGroup>
     <PackageReference Include="Microsoft.UI.Xaml" Version="2.8.7" />
-    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.2.0" />
     <PackageReference Include="Win2D.uwp" Version="1.28.2" />
   </ItemGroup>
 
