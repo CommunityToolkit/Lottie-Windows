@@ -51,8 +51,6 @@
           target="lib\uap10.0.16299\" />
     <file src="pack\lib\uap10.0.16299\CommunityToolkit.WinUI.Lottie.xml"
           target="lib\uap10.0.16299\" />
-    <file src="pack\lib\uap10.0.16299\CommunityToolkit.WinUI.Lottie.pdb"
-          target="lib\uap10.0.16299\" />
           
   </files>
 </package>
