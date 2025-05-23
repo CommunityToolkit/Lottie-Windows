@@ -255,8 +255,8 @@ Task("Package")
     EnsureDirectoryExists(uapDir);
 
     // copy the Release builds
-    CopyFiles($"{baseDir}/Lottie-Windows/Lottie-Windows-UwpNet/bin/{configuration}/net9.0-windows10.0.26100.0/*", net9Dir);
-    CopyFiles($"{baseDir}/Lottie-Windows/Lottie-Windows-Uwp/bin/{configuration}/uap10.0.16299/*", uapDir);
+    CopyFiles($"{baseDir}/Lottie-Windows/Lottie-Windows-UwpNet/bin/AnyCPU/{configuration}/net9.0-windows10.0.26100.0/*", net9Dir);
+    CopyFiles($"{baseDir}/Lottie-Windows/Lottie-Windows-Uwp/bin/AnyCPU/{configuration}/uap10.0.16299/*", uapDir);
 
     foreach (var nuspec in GetFiles("./*.nuspec"))
     {

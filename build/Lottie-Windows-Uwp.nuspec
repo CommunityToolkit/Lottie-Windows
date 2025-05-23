@@ -37,23 +37,12 @@
   </metadata>
 
   <files>
-    <file src="pack\lib\net9.0-windows10.0.26100.0\CommunityToolkit.WinUI.Lottie.dll"
+    <file src="pack\lib\net9.0-windows10.0.26100.0\CommunityToolkit.Uwp.Lottie.dll"
       target="lib\net9.0-windows10.0.26100\" />
     <file src="pack\lib\net9.0-windows10.0.26100.0\CommunityToolkit.WinUI.Lottie.xml"
           target="lib\net9.0-windows10.0.26100\" />
-    <file src="pack\lib\net9.0-windows10.0.26100.0\CommunityToolkit.WinUI.Lottie.pri"
+    <file src="pack\lib\net9.0-windows10.0.26100.0\CommunityToolkit.Uwp.Lottie.pri"
           target="lib\net9.0-windows10.0.26100\" />
-    <file src="pack\lib\net9.0-windows10.0.26100.0\WinRT.Host.runtimeconfig.json"
-          target="lib\net9.0-windows10.0.26100\" />
-
-    <file src="pack\lib\net9.0-windows10.0.26100.0\CommunityToolkit.WinUI.Lottie.winmd"
-          target="lib\net9.0-windows10.0.26100.0\winmd\" />
-    <file src="pack\lib\net9.0-windows10.0.26100.0\CommunityToolkit.WinUI.Lottie.pri"
-          target="lib\net9.0-windows10.0.26100.0\winmd\" />
-    <file src="pack\lib\net9.0-windows10.0.26100.0\WinRT.Host.Shim.dll"
-          target="lib\net9.0-windows10.0.26100.0\" />
-    <file src="pack\lib\net9.0-windows10.0.26100.0\WinRT.Runtime.dll"
-          target="lib\net9.0-windows10.0.26100.0\" />
 
     <file src="pack\lib\uap10.0.16299\CommunityToolkit.WinUI.Lottie.winmd"
           target="lib\uap10.0.16299\" />
