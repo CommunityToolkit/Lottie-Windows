@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>CommunityToolkit.Uwp.Lottie</id>
+    <version>0.0.0-SpecifyVersionOnCommandline</version>
+    <authors>Microsoft.Toolkit</authors>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <licenseUrl>https://github.com/windows-toolkit/Lottie-Windows/blob/master/license.md</licenseUrl>
+    <projectUrl>https://github.com/windows-toolkit/Lottie-Windows</projectUrl>
+    <iconUrl>https://raw.githubusercontent.com/windows-toolkit/WindowsCommunityToolkit/master/build/nuget.png</iconUrl>
+    <description>This library provides the LottieVisualSource which is consumed by the Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer to render Lottie JSON files in runtime.</description>
+    <releaseNotes>Release https://github.com/windows-toolkit/Lottie-Windows/releases</releaseNotes>
+    <copyright>(c) .NET Foundation and Contributors.  All rights reserved.</copyright>
+    <tags>UWP Toolkit Windows Animations Lottie XAML</tags>
+    <dependencies>
+      <group targetFramework="net9.0-windows10.0.26100">
+        <dependency id="Microsoft.UI.Xaml" version="2.8.7" />
+        <dependency id="Microsoft.Windows.CsWinRT" version="2.2.0" />
+        <dependency id="Win2D.uwp" version="1.28.2" />
+      </group>
+      <group targetFramework="uap10.0.16299">
+        <dependency id="Microsoft.UI.Xaml" version="2.5.0" exclude="Build,Analyzers" />
+        <dependency id="Win2D.uwp" version="1.25.0" exclude="Build,Analyzers" />
+        <dependency id="System.Memory" version="4.5.5" exclude="Build,Analyzers" />
+        <dependency id="System.Numerics.Vectors" version="4.5.0" exclude="Build,Analyzers" />
+        <dependency id="System.Runtime.CompilerServices.Unsafe" version="6.0.0" exclude="Build,Analyzers" />
+        <dependency id="System.Text.Encodings.Web" version="9.0.0" exclude="Build,Analyzers" />
+        <dependency id="System.Text.Json" version="9.0.0" exclude="Build,Analyzers" />
+        <dependency id="System.ValueTuple" version="4.5.0" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+    <frameworkReferences>
+      <group targetFramework="net9.0-windows10.0.26100">
+        <frameworkReference name="Microsoft.Windows.SDK.NET.Ref.Xaml" />
+      </group>
+    </frameworkReferences>
+  </metadata>
+
+  <files>
+    <file src="pack\lib\net9.0-windows10.0.26100.0\CommunityToolkit.Uwp.Lottie.dll"
+      target="lib\net9.0-windows10.0.26100\" />
+    <file src="pack\lib\net9.0-windows10.0.26100.0\CommunityToolkit.WinUI.Lottie.xml"
+          target="lib\net9.0-windows10.0.26100\" />
+    <file src="pack\lib\net9.0-windows10.0.26100.0\CommunityToolkit.Uwp.Lottie.pri"
+          target="lib\net9.0-windows10.0.26100\" />
+
+    <file src="pack\lib\uap10.0.16299\CommunityToolkit.WinUI.Lottie.winmd"
+          target="lib\uap10.0.16299\" />
+    <file src="pack\lib\uap10.0.16299\CommunityToolkit.WinUI.Lottie.pri"
+          target="lib\uap10.0.16299\" />
+    <file src="pack\lib\uap10.0.16299\CommunityToolkit.WinUI.Lottie.xml"
+          target="lib\uap10.0.16299\" />
+  </files>
+</package>
