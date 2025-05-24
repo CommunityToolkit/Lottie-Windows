@@ -24,13 +24,13 @@ namespace LottieViewer
             {
                 return Normal;
             }
-            else if (item is Marker)
+            else if (item is MarkerWithDuration)
             {
-                return Marker;
+                return MarkerWithDuration;
             }
             else
             {
-                return MarkerWithDuration;
+                return Marker;
             }
         }
     }
