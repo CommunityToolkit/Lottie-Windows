@@ -33,7 +33,7 @@ There are **two** options to integrate Lottie animations into your **WinUI 3** o
     ```xml
         ...
         xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
-        xmlns:lottie="using:CommunityToolkit.Uwp.Lottie"
+        xmlns:lottie="using:CommunityToolkit.WinUI.Lottie"
         ...
         <muxc:AnimatedVisualPlayer>
             <lottie:LottieVisualSource UriSource="<asset path or web link to a json file>" />
