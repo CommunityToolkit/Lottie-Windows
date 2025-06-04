@@ -121,13 +121,20 @@ jobs:
           --timestamp-url "http://timestamp.digicert.com"
           --publisher-name ".NET Foundation"
           --description "Windows Community Toolkit"
-          --description-url "https://developer.microsoft.com/en-us/windows/uwp-community-toolkit"
+          --description-url "https://github.com/CommunityToolkit/Lottie-Windows"
           --azure-key-vault-url "${{ secrets.SIGN_KEY_VAULT_URL }}"
           --azure-key-vault-client-id ${{ secrets.SIGN_CLIENT_ID }}
           --azure-key-vault-client-secret "${{ secrets.SIGN_CLIENT_SECRET }}"
           --azure-key-vault-tenant-id ${{ secrets.SIGN_TENANT_ID }}
           --azure-key-vault-certificate "${{ secrets.SIGN_CERTIFICATE }}"
           --verbosity Information
+
+      - name: Push Signed Packages
+        run: |
+          dotnet nuget add source https://pkgs.dev.azure.com/dotnet/CommunityToolkit/_packaging/CommunityToolkit-MainLatest/nuget/v3/index.json `
+            --name MainLatest `
+            --username dummy --password ${{ secrets.DEVOPS_PACKAGE_PUSH_TOKEN }}
+          dotnet nuget push "**/*.nupkg" --api-key dummy --source MainLatest --skip-duplicate
 
       - name: Publish Packages
         uses: actions/upload-artifact@v4
@@ -138,7 +145,7 @@ jobs:
             ${{ github.workspace }}/packages/**/*.nupkg
 
   release:
-    if: ${{ startsWith(github.ref, 'refs/tags/') }}
+    if: ${{ startsWith(github.ref, 'refs/heads/rel/') }}
     needs: [sign]
     environment: nuget-release-gate # This gates this job until manually approved
     runs-on: ubuntu-latest
