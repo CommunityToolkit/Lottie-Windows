@@ -88,6 +88,7 @@ jobs:
 
   sign:
     needs: [build_lottie]
+    if: ${{ github.event_name == 'push' }}
     runs-on: windows-latest
     permissions:
       id-token: write # Required for requesting the JWT
