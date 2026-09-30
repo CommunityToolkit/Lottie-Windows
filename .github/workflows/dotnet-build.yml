@@ -31,12 +31,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Set up a VS build environment.
-      - name: Setup Environment Variables
-        run: |
-          "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat" -no_logo
-        shell: cmd
-
       # Install NuGet tools.  
       - name: Setup NuGet
         uses: NuGet/setup-nuget@v2
