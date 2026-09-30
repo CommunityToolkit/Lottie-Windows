@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using CommunityToolkit.WinUI.Lottie.CompDataFlatbuffer;
 using CommunityToolkit.WinUI.Lottie.LottieData;
 using CommunityToolkit.WinUI.Lottie.LottieData.Optimization;
 using CommunityToolkit.WinUI.Lottie.LottieData.Serialization;
@@ -199,6 +200,11 @@ namespace CommunityToolkit.WinUI.Lottie.LottieGen
                     case Language.Cppwinrt:
                         codeGenSucceeded &= TryGenerateCppwinrtCode(lottieComposition, _outputFolder);
                         _profiler.OnCodeGenFinished();
+                        break;
+
+                    case Language.Flatbuffer:
+                        codeGenSucceeded &= TryGenerateFlatbuffer(lottieComposition, $"{outputFileBase}.lcomp");
+                        _profiler.OnSerializationFinished();
                         break;
 
                     case Language.LottieYaml:
@@ -425,6 +431,38 @@ namespace CommunityToolkit.WinUI.Lottie.LottieGen
             return result;
         }
 
+        bool TryGenerateFlatbuffer(LottieComposition lottieComposition, string outputFilePath)
+        {
+            if (!TryEnsureTranslated(lottieComposition))
+            {
+                return false;
+            }
+
+            // NOTE: this only writes the latest version of a multi-version translation.
+            var translationResult = _translationResults[0];
+            var sourceMetadata = new SourceMetadata(translationResult.SourceMetadata);
+            var result = TryWriteBinaryFile(
+                outputFilePath,
+                CompositionSerializer.Serialize(
+                    translationResult.RootVisual!,
+                    checked((ushort)translationResult.MinimumRequiredUapVersion),
+                    sourceMetadata.LottieMetadata,
+                    sourceMetadata.PropertyBindings,
+                    (float)lottieComposition.Width,
+                    (float)lottieComposition.Height));
+
+            if (result)
+            {
+                using (_reporter.InfoStream.Lock())
+                {
+                    _reporter.WriteInfo($"Flatbuffer data for class {_className} written to:");
+                    _reporter.WriteInfo(InfoType.FilePath, $" {outputFilePath}");
+                }
+            }
+
+            return result;
+        }
+
         bool TryGenerateWincompDgml(
             LottieComposition lottieComposition,
             string outputFilePath)
@@ -603,6 +641,25 @@ namespace CommunityToolkit.WinUI.Lottie.LottieGen
                     writer(streamWriter);
                 }
 
+                return true;
+            }
+            catch (Exception e)
+            {
+                using (_reporter.ErrorStream.Lock())
+                {
+                    _reporter.WriteError($"Failed to write to {filePath}");
+                    _reporter.WriteError(e.Message);
+                }
+
+                return false;
+            }
+        }
+
+        bool TryWriteBinaryFile(string filePath, byte[] contents)
+        {
+            try
+            {
+                File.WriteAllBytes(filePath, contents);
                 return true;
             }
             catch (Exception e)

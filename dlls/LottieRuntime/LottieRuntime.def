@@ -1,0 +1,6 @@
+; Classic COM entry points must have undecorated names for CoCreateInstance's
+; loader (and for the test's GetProcAddress-based activation) to find them.
+LIBRARY LottieRuntime
+EXPORTS
+    DllGetClassObject   PRIVATE
+    DllCanUnloadNow     PRIVATE

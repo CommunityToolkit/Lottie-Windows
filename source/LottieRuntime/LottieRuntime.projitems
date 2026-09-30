@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>7c8b1d02-4e5f-4a76-9c3b-2f0d8e6a41b9</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>LottieRuntime</Import_RootNamespace>
+  </PropertyGroup>
+  <Import
+    Project="$(MSBuildThisFileDirectory)..\CompDataFlatbuffer\CompDataFlatbufferRuntime.projitems"
+    Condition="'$(CompDataFlatbufferRuntimeImported)' != 'true'"
+    Label="Shared" />
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)CompositionInterpreter.cs" />
+  </ItemGroup>
+</Project>

@@ -13,6 +13,12 @@ Lottie-Windows consists of 3 related products:
 
 This repo also contains source code for **[samples](/LottieViewer)**.
 
+It also contains **[LottieRuntime](/dlls/LottieRuntime)**, a native C++/WinRT interpreter that
+builds the composition tree at runtime from a serialized animation produced by
+`LottieGen -Language flatbuffer`. It keeps the animation as data, like the JSON path does, but
+without shipping a JSON parser or the translator. See
+[the format](/source/LottieFlatbuffer/README.md) for how the two relate.
+
 ## <a name="quickstart"></a> Quick start
 
 There are **two** options to integrate Lottie animations into your **WinUI 3** or **UWP** project.

@@ -15,6 +15,7 @@ namespace CommunityToolkit.WinUI.Lottie.LottieGen
         CSharp,
         Cx,
         Cppwinrt,
+        Flatbuffer,
         LottieYaml,
         WinCompDgml,
         Stats,

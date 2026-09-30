@@ -18,6 +18,7 @@
 
   <Import Project="..\Common.proj" />
   <Import Project="$(_SourceDir)Animatables\Animatables.projitems" Label="Shared" />
+  <Import Project="$(_SourceDir)CompDataFlatbuffer\CompDataFlatbuffer.projitems" Label="Shared" />
   <Import Project="$(_SourceDir)CompMetadata\CompMetadata.projitems" Label="Shared" />
   <Import Project="$(_SourceDir)DotLottie\DotLottie.projitems" Label="Shared" />
   <Import Project="$(_SourceDir)GenericData\GenericData.projitems" Label="Shared" />
@@ -33,4 +34,22 @@
   <Import Project="$(_SourceDir)WinUIXamlMediaData\WinUIXamlMediaData.projitems" Label="Shared" />
   <Import Project="$(_SourceDir)YamlData\YamlData.projitems" Label="Shared" />
   <Import Project="$(_SourceDir)UIDataCodeGen\UIDataCodeGen.projitems" Label="Shared" />
+  <ItemGroup>
+    <PackageReference Include="Google.FlatBuffers" Version="25.2.10" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\dlls\LottieRuntime\LottieRuntime.cpp" Pack="true" PackagePath="LottieRuntime\" />
+    <None Include="..\..\dlls\LottieRuntime\LottieRuntime.h" Pack="true" PackagePath="LottieRuntime\" />
+    <None Include="..\..\dlls\LottieRuntime\LottieRuntimeCom.cpp" Pack="true" PackagePath="LottieRuntime\" />
+    <None Include="..\..\dlls\LottieRuntime\LottieRuntimeCom.h" Pack="true" PackagePath="LottieRuntime\" />
+    <None Include="..\..\dlls\LottieRuntime\LottieRuntime.def" Pack="true" PackagePath="LottieRuntime\" />
+    <None Include="..\..\dlls\LottieRuntime\LottieRuntime.manifest" Pack="true" PackagePath="LottieRuntime\" />
+    <None Include="..\..\dlls\LottieRuntime\LottieRuntime.vcxproj" Pack="true" PackagePath="LottieRuntime\" />
+    <None Include="..\..\dlls\LottieRuntime\README.md" Pack="true" PackagePath="LottieRuntime\" />
+    <None Include="..\..\dlls\LottieRuntime\Generated\lottie_comp_generated.h" Pack="true" PackagePath="LottieRuntime\Generated\" />
+    <None Include="..\..\external\flatbuffers\include\**\*" Pack="true" PackagePath="LottieRuntime\flatbuffers\include\" />
+    <None Include="..\..\external\flatbuffers\LICENSE" Pack="true" PackagePath="LottieRuntime\flatbuffers\" />
+    <None Include="..\..\LICENSE.md" Pack="true" PackagePath="LottieRuntime\" />
+  </ItemGroup>
 </Project>

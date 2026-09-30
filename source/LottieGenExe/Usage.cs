@@ -24,7 +24,7 @@ Usage: {exeName} -InputFile LOTTIEFILE -Language LANG [Other options]
 OVERVIEW:
        Generates source code from Lottie files for playing in the AnimatedVisualPlayer.
        LOTTIEFILE is a Lottie .json file or .lottie file. LOTTIEFILE may contain wildcards.
-       LANG is one of cs, cppcx, cppwinrt, lottieyaml, dgml, or stats.
+       LANG is one of cs, cppcx, cppwinrt, flatbuffer, lottieyaml, dgml, or stats.
        -Language LANG may be specified multiple times.
 
        [Other options]

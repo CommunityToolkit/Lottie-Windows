@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
+  <!-- Private assembly identity for registration-free COM activation. -->
+  <assemblyIdentity
+      type="win32"
+      name="LottieRuntime"
+      version="1.0.0.0"
+      processorArchitecture="*" />
+  <file name="LottieRuntime.dll">
+    <comClass
+        clsid="{9F7B7089-F512-4BBC-81FE-4FF12B4DA159}"
+        threadingModel="Both" />
+  </file>
+</assembly>

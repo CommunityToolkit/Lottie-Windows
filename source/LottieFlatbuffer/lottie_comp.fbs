@@ -1,0 +1,529 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+//
+// Serialized form of a translated Lottie animation (a WinCompData object graph).
+//
+// Design notes
+// ------------
+// * The graph is stored as a set of flat node vectors - one per node category -
+//   and all references between nodes are indices into those vectors rather than
+//   FlatBuffers offsets. This lets an interpreter keep a single realization cache
+//   per category that is indexed identically to the serialized data, so
+//   reference-identity caching is an array lookup rather than a hash lookup.
+// * Each category is a single table with a "kind" discriminator rather than a
+//   union of per-kind tables. This keeps the interpreter to one switch per
+//   category and lets the shared property-application code be written once.
+// * Absent fields mean "property was never set", exactly matching the nullable
+//   properties of the WinCompData object model.
+//
+// Versioning rules
+// ----------------
+// Changes MUST be additive: new fields are appended to the end of a table, and
+// new enum values are appended to the end of an enum. SCHEMA_VERSION is bumped
+// for every additive change; readers reject buffers whose schema_version is
+// greater than the version they were built against.
+
+namespace CommunityToolkit.WinUI.Lottie.CompDataFlatbuffer.Schema;
+
+// ---------------------------------------------------------------------------
+// Value types.
+// ---------------------------------------------------------------------------
+
+struct Vec2 { x: float; y: float; }
+struct Vec3 { x: float; y: float; z: float; }
+struct Vec4 { x: float; y: float; z: float; w: float; }
+struct Mat3x2 { m11: float; m12: float; m21: float; m22: float; m31: float; m32: float; }
+struct Mat4x4 {
+  m11: float; m12: float; m13: float; m14: float;
+  m21: float; m22: float; m23: float; m24: float;
+  m31: float; m32: float; m33: float; m34: float;
+  m41: float; m42: float; m43: float; m44: float;
+}
+struct Color { a: ubyte; r: ubyte; g: ubyte; b: ubyte; }
+
+// ---------------------------------------------------------------------------
+// Enums. Values match the corresponding WinCompData enums.
+// ---------------------------------------------------------------------------
+
+// Identifies the node vector that an object reference points into.
+// An object reference is packed into a uint as (category << 28) | index.
+// The value 0xFFFFFFFF means "no reference".
+enum ObjectCategory : ubyte {
+  Visual = 0,
+  Shape = 1,
+  Geometry = 2,
+  Brush = 3,
+  Animation = 4,
+  Easing = 5,
+  PropertySet = 6,
+  Surface = 7,
+  Clip = 8,
+  Controller = 9,
+  Shadow = 10,
+  Effect = 11,
+  GradientStop = 12,
+  ViewBox = 13,
+}
+
+enum VisualKind : ubyte { Container = 0, Sprite = 1, Shape = 2, Layer = 3 }
+enum ShapeKind : ubyte { Container = 0, Sprite = 1 }
+enum GeometryKind : ubyte { Path = 0, Rectangle = 1, RoundedRectangle = 2, Ellipse = 3 }
+enum BrushKind : ubyte { Color = 0, LinearGradient = 1, RadialGradient = 2, Surface = 3, Mask = 4, Effect = 5 }
+enum ClipKind : ubyte { Inset = 0, Geometric = 1 }
+enum ShadowKind : ubyte { Drop = 0 }
+enum SurfaceKind : ubyte { VisualSurface = 0, LoadedImageFromUri = 1, LoadedImageFromStream = 2 }
+enum EffectKind : ubyte { Composite = 0, GaussianBlur = 1 }
+enum EasingKind : ubyte { Linear = 0, CubicBezier = 1, Step = 2 }
+
+enum AnimationKind : ubyte {
+  Scalar = 0,
+  Vector2 = 1,
+  Vector3 = 2,
+  Vector4 = 3,
+  Color = 4,
+  Boolean = 5,
+  Path = 6,
+  Expression = 7,
+}
+
+enum KeyFrameKind : ubyte { Value = 0, Expression = 1 }
+
+enum CanvasGeometryKind : ubyte {
+  Combination = 0,
+  Ellipse = 1,
+  Group = 2,
+  Path = 3,
+  RoundedRectangle = 4,
+  TransformedGeometry = 5,
+}
+
+// Opcodes of the flattened CanvasPathBuilder command stream. Each opcode
+// consumes a fixed number of floats from the operand vector.
+enum PathOp : ubyte {
+  BeginFigure = 0,    // 2 operands: x, y
+  EndFigure = 1,      // 1 operand: CanvasFigureLoop as a float
+  AddLine = 2,        // 2 operands: x, y
+  AddCubicBezier = 3, // 6 operands: cp1.x, cp1.y, cp2.x, cp2.y, end.x, end.y
+}
+
+// Mirrors WinCompData.MetaData.PropertySetValueType.
+enum PropertyValueType : ubyte {
+  None = 0,
+  Color = 1,
+  Scalar = 2,
+  Vector2 = 3,
+  Vector3 = 4,
+  Vector4 = 5,
+}
+
+// ---------------------------------------------------------------------------
+// Shared structures.
+// ---------------------------------------------------------------------------
+
+// An animation bound to a property of an object.
+table Animator {
+  property: uint;    // string index of the animated property name
+  animation: uint;   // index into LottieComposition.animations
+  controller: uint = 0xFFFFFFFF; // index into LottieComposition.controllers
+}
+
+// State common to every CompositionObject. Omitted when empty.
+table CompObj {
+  comment: uint = 0xFFFFFFFF;    // string index
+  animators: [Animator];
+
+  // The CompositionPropertySet of the object, if it has any values or
+  // animations. Index into LottieComposition.property_sets.
+  properties: uint = 0xFFFFFFFF;
+}
+
+// A named value in a CompositionPropertySet.
+table PropertyValue {
+  name: uint;                    // string index
+  type: PropertyValueType;
+  scalar: float;
+  vector: Vec4;
+  color: Color;
+}
+
+// A named reference parameter of a CompositionAnimation.
+table ReferenceParameter {
+  name: uint;                    // string index
+  target: uint;                  // packed object reference
+}
+
+// A named source of a CompositionEffectBrush.
+table SourceParameter {
+  name: uint;                    // string index
+  brush: uint;                   // index into LottieComposition.brushes
+}
+
+table KeyFrame {
+  progress: float;
+  easing: uint = 0xFFFFFFFF;     // index into LottieComposition.easings
+  kind: KeyFrameKind;
+  expression: uint = 0xFFFFFFFF; // string index, for expression key frames
+  scalar: float;                 // Scalar and Boolean values
+  vector: Vec4;                  // Vector2, Vector3 and Vector4 values
+  color: Color;
+  path: uint = 0xFFFFFFFF;       // index into LottieComposition.canvas_geometries
+}
+
+// ---------------------------------------------------------------------------
+// Node tables.
+// ---------------------------------------------------------------------------
+
+table Visual {
+  base: CompObj;
+  kind: VisualKind;
+
+  // Visual.
+  border_mode: ubyte = null;
+  center_point: Vec3;
+  clip: uint = 0xFFFFFFFF;
+  is_visible: bool = null;
+  offset: Vec3;
+  opacity: float = null;
+  rotation_angle_in_degrees: float = null;
+  rotation_axis: Vec3;
+  scale: Vec3;
+  size: Vec2;
+  transform_matrix: Mat4x4;
+
+  // ContainerVisual and LayerVisual.
+  children: [uint];
+
+  // ShapeVisual.
+  shapes: [uint];
+  view_box: uint = 0xFFFFFFFF;
+
+  // SpriteVisual.
+  brush: uint = 0xFFFFFFFF;
+
+  // SpriteVisual and LayerVisual.
+  shadow: uint = 0xFFFFFFFF;
+}
+
+table Shape {
+  base: CompObj;
+  kind: ShapeKind;
+
+  // CompositionShape.
+  center_point: Vec2;
+  offset: Vec2;
+  rotation_angle_in_degrees: float = null;
+  scale: Vec2;
+  transform_matrix: Mat3x2;
+
+  // CompositionContainerShape.
+  shapes: [uint];
+
+  // CompositionSpriteShape.
+  fill_brush: uint = 0xFFFFFFFF;
+  stroke_brush: uint = 0xFFFFFFFF;
+  geometry: uint = 0xFFFFFFFF;
+  is_stroke_non_scaling: bool = null;
+  stroke_dash_offset: float = null;
+  stroke_dash_array: [float];
+  stroke_dash_cap: ubyte = null;
+  stroke_start_cap: ubyte = null;
+  stroke_end_cap: ubyte = null;
+  stroke_line_join: ubyte = null;
+  stroke_miter_limit: float = null;
+  stroke_thickness: float = null;
+}
+
+table Geometry {
+  base: CompObj;
+  kind: GeometryKind;
+
+  // CompositionGeometry.
+  trim_start: float = null;
+  trim_end: float = null;
+  trim_offset: float = null;
+
+  // CompositionPathGeometry.
+  path: uint = 0xFFFFFFFF;       // index into canvas_geometries
+
+  // CompositionRectangleGeometry and CompositionRoundedRectangleGeometry.
+  offset: Vec2;
+  size: Vec2;
+
+  // CompositionRoundedRectangleGeometry.
+  corner_radius: Vec2;
+
+  // CompositionEllipseGeometry.
+  center: Vec2;
+  radius: Vec2;
+}
+
+table Brush {
+  base: CompObj;
+  kind: BrushKind;
+
+  // CompositionColorBrush.
+  color: Color;
+
+  // CompositionGradientBrush.
+  anchor_point: Vec2;
+  center_point: Vec2;
+  color_stops: [uint];
+  extend_mode: ubyte = null;
+  interpolation_space: ubyte = null;
+  mapping_mode: ubyte = null;
+  offset: Vec2;
+  rotation_angle_in_degrees: float = null;
+  scale: Vec2;
+  transform_matrix: Mat3x2;
+
+  // CompositionLinearGradientBrush.
+  start_point: Vec2;
+  end_point: Vec2;
+
+  // CompositionRadialGradientBrush.
+  ellipse_center: Vec2;
+  ellipse_radius: Vec2;
+  gradient_origin_offset: Vec2;
+
+  // CompositionSurfaceBrush.
+  surface: uint = 0xFFFFFFFF;
+
+  // CompositionMaskBrush.
+  source: uint = 0xFFFFFFFF;
+  mask: uint = 0xFFFFFFFF;
+
+  // CompositionEffectBrush.
+  effect: uint = 0xFFFFFFFF;
+  source_parameters: [SourceParameter];
+}
+
+table GradientStop {
+  base: CompObj;
+  color: Color;
+  offset: float;
+}
+
+table ViewBox {
+  base: CompObj;
+  size: Vec2;
+}
+
+table Clip {
+  base: CompObj;
+  kind: ClipKind;
+
+  // CompositionClip.
+  center_point: Vec2;
+  scale: Vec2;
+
+  // InsetClip.
+  left_inset: float = null;
+  right_inset: float = null;
+  top_inset: float = null;
+  bottom_inset: float = null;
+
+  // CompositionGeometricClip.
+  geometry: uint = 0xFFFFFFFF;
+}
+
+table Shadow {
+  base: CompObj;
+  kind: ShadowKind;
+
+  // DropShadow.
+  blur_radius: float = null;
+  color: Color;
+  mask: uint = 0xFFFFFFFF;
+  offset: Vec3;
+  opacity: float = null;
+  source_policy: ubyte = null;
+}
+
+table Surface {
+  base: CompObj;
+  kind: SurfaceKind;
+
+  // CompositionVisualSurface.
+  source_visual: uint = 0xFFFFFFFF;
+  source_size: Vec2;
+  source_offset: Vec2;
+
+  // LoadedImageSurfaceFromUri.
+  uri: uint = 0xFFFFFFFF;        // string index
+
+  // LoadedImageSurfaceFromStream.
+  bytes: [ubyte];
+}
+
+table Effect {
+  base: CompObj;
+  kind: EffectKind;
+
+  // Names (string indices) of the CompositionEffectSourceParameters.
+  sources: [uint];
+
+  // CompositeEffect.
+  mode: ubyte;                   // CanvasComposite
+
+  // GaussianBlurEffect.
+  blur_amount: float;
+}
+
+table Easing {
+  base: CompObj;
+  kind: EasingKind;
+
+  // CubicBezierEasingFunction.
+  control_point_1: Vec2;
+  control_point_2: Vec2;
+
+  // StepEasingFunction.
+  step_count: int = null;
+  initial_step: int = null;
+  final_step: int = null;
+  is_initial_step_single_frame: bool = null;
+  is_final_step_single_frame: bool = null;
+}
+
+table Animation {
+  base: CompObj;
+  kind: AnimationKind;
+  target: uint = 0xFFFFFFFF;     // string index
+  reference_parameters: [ReferenceParameter];
+
+  // ExpressionAnimation.
+  expression: uint = 0xFFFFFFFF; // string index
+
+  // KeyFrameAnimation.
+  duration_ticks: long;
+  key_frames: [KeyFrame];
+
+  // ColorKeyFrameAnimation.
+  interpolation_color_space: ubyte = null;
+}
+
+table PropertySet {
+  base: CompObj;
+
+  // The object that owns this property set, or 0xFFFFFFFF if the property set
+  // is standalone (created by Compositor.CreatePropertySet).
+  owner: uint = 0xFFFFFFFF;      // packed object reference
+  values: [PropertyValue];
+}
+
+table Controller {
+  base: CompObj;
+
+  // The object and property that this controller controls. Absent for a
+  // custom controller.
+  target_object: uint = 0xFFFFFFFF; // packed object reference
+  target_property: uint = 0xFFFFFFFF; // string index
+  is_paused: bool;
+  is_custom: bool;
+}
+
+// ---------------------------------------------------------------------------
+// Metadata.
+// ---------------------------------------------------------------------------
+
+table PropertyBinding {
+  name: uint;                    // string index of the binding name
+  display_name: uint;            // string index
+  actual_type: PropertyValueType;
+  exposed_type: PropertyValueType;
+  default_scalar: float;
+  default_vector: Vec4;
+  default_color: Color;
+}
+
+table Marker {
+  name: uint;                    // string index
+  progress: float;               // start of the marker, 0..1
+  duration_progress: float;      // duration of the marker, 0..1
+}
+
+table Metadata {
+  name: uint = 0xFFFFFFFF;       // string index of the composition name
+  width: float;
+  height: float;
+  duration_ticks: long;
+  frames_per_second: float;
+  property_bindings: [PropertyBinding];
+  markers: [Marker];
+
+  // The property set that holds the theming properties, or 0xFFFFFFFF.
+  theming_property_set: uint = 0xFFFFFFFF; // index into property_sets
+}
+
+// ---------------------------------------------------------------------------
+// Root.
+// ---------------------------------------------------------------------------
+
+table LottieComposition {
+  schema_version: ushort;
+  required_uap_version: ushort;
+  metadata: Metadata;
+
+  // Index into visuals of the root of the tree.
+  root_visual: uint = 0xFFFFFFFF;
+
+  strings: [string];
+  visuals: [Visual];
+  shapes: [Shape];
+  geometries: [Geometry];
+  canvas_geometries: [CanvasGeometry];
+  brushes: [Brush];
+  gradient_stops: [GradientStop];
+  view_boxes: [ViewBox];
+  clips: [Clip];
+  shadows: [Shadow];
+  surfaces: [Surface];
+  effects: [Effect];
+  easings: [Easing];
+  animations: [Animation];
+  property_sets: [PropertySet];
+  controllers: [Controller];
+
+  // Indices into controllers of the custom animation controllers, in the order
+  // that a host should expose them.
+  custom_controllers: [uint];
+}
+
+table CanvasGeometry {
+  kind: CanvasGeometryKind;
+
+  // Combination.
+  a: uint = 0xFFFFFFFF;
+  b: uint = 0xFFFFFFFF;
+  combine_mode: ubyte;
+
+  // Combination and TransformedGeometry.
+  matrix: Mat3x2;
+
+  // TransformedGeometry.
+  source: uint = 0xFFFFFFFF;
+
+  // Group.
+  geometries: [uint];
+
+  // Group and Path.
+  fill_rule: ubyte;              // CanvasFilledRegionDetermination
+
+  // Path.
+  ops: [ubyte];
+  operands: [float];
+
+  // Ellipse (x, y, radius_x, radius_y) and
+  // RoundedRectangle (x, y, w, h, radius_x, radius_y).
+  x: float;
+  y: float;
+  w: float;
+  h: float;
+  radius_x: float;
+  radius_y: float;
+}
+
+root_type LottieComposition;
+file_identifier "LCMP";
+file_extension "lcomp";

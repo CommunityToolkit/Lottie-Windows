@@ -25,3 +25,11 @@ But we don't actually use the DLLs in any of the other projects; instead, we mus
 ### Summary
 * Shared projects give us the equivalent of C++ static libs.
 * The dlls directory enforces modularity.
+
+## LottieRuntime
+
+`LottieRuntime` is the exception to everything above. It is a real C++ DLL that an
+application is meant to consume, rather than a modularity check, and it is not part
+of `Lottie-Windows.sln` because it needs the C++ toolset and the FlatBuffers headers.
+It reads the serialized form of a `WinCompData` graph and builds the composition
+tree at runtime. See [LottieRuntime/README.md](LottieRuntime/README.md).
