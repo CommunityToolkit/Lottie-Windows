@@ -64,9 +64,9 @@ jobs:
         run: .\build\Install-WindowsSdkISO.ps1 18362
         shell: pwsh
 
-      # Run the build.
+      # Run the build. Pushes to main and rel/* also build the full multi-arch sample app bundles.
       - name: Build
-        run: .\build.ps1 --target=Package
+        run: .\build.ps1 --target=Package ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/rel/')) && '--fullAppBuild=true' || '' }}
         shell: pwsh
         working-directory: .\build
 
