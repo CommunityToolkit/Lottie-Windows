@@ -23,7 +23,8 @@ env:
 
 jobs:
   build_lottie:
-    runs-on: windows-latest
+    # windows-latest ships VS 2026 only, which Cake 3.0 can't locate.
+    runs-on: windows-2022
 
     steps:
       - name: Checkout code
