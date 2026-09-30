@@ -11,6 +11,8 @@ using System.Text.RegularExpressions;
 
 var target = Argument("target", "Default");
 var configuration = Argument("configuration", "Release");
+// Builds the sample app bundles for every architecture. Slow; not needed for the NuGet packages.
+var fullAppBuild = Argument("fullAppBuild", false);
 
 //////////////////////////////////////////////////////////////////////
 // VERSIONS OF TOOLS TO USE
@@ -61,6 +63,10 @@ void MSBuildSolution(
         {
             settings = settings.WithProperty(property.Name, property.Value);
         }
+        if (!fullAppBuild)
+        {
+            settings = settings.WithProperty("AppxBundle", "Never");
+        }
         return settings;
     }
 
@@ -94,6 +100,7 @@ static bool IsExcludedDirectory(FilePath path)
 
     return
         segments.Contains("bin") ||
+        segments.Contains("external") ||
         segments.Contains("internal") ||
         segments.Contains("obj");
 }
