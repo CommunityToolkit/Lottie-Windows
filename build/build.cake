@@ -100,6 +100,7 @@ static bool IsExcludedDirectory(FilePath path)
 
     return
         segments.Contains("bin") ||
+        segments.Contains("external") ||
         segments.Contains("internal") ||
         segments.Contains("obj");
 }
