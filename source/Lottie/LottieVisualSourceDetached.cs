@@ -33,7 +33,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Lottie
     /// An <see cref="IAnimatedVisualSource"/> for a Lottie composition.
     /// Does not inherit DependencyObject so you can use it in console applications.
     /// </summary>
-    public sealed class LottieVisualSourceDetached : IAnimatedVisualSource
+    public sealed partial class LottieVisualSourceDetached : IAnimatedVisualSource
     {
         int _loadVersion;
         Uri? _uriSource;

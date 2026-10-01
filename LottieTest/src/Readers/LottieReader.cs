@@ -127,7 +127,7 @@ namespace LottieTest.Readers
         [ComVisible(true)]
         interface ICompositionDrawingSurfaceInterop2
         {
-            unsafe void BeginDraw([Optional] RECT* updateRect, global::System.Guid* iid, [MarshalAs(UnmanagedType.IUnknown)] out object updateObject, POINT* updateOffset);
+            unsafe void BeginDraw([Optional] RECT* updateRect, global::System.Guid* iid, [MarshalAs(UnmanagedType.IUnknown)] out object updateObject, System.Drawing.Point* updateOffset);
             void EndDraw();
             void Resize(SIZE sizePixels);
             unsafe void Scroll([Optional] RECT* scrollRect, [Optional] RECT* clipRect, int offsetX, int offsetY);

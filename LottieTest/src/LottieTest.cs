@@ -26,18 +26,24 @@ namespace LottieTest
 {
     internal class LottieTest
     {
-        static string TEST_FILES_FOLDER = @"D:\LottieDev\Lottie-Windows\LottieTest\Tests\";
+        static string TEST_FILES_FOLDER = string.Empty;
 
         static async Task Main(string[] args)
         {
-            Bootstrap.Initialize(0x00010000);
-            await RunTests();
+            var repositoryTestFolder = Path.Combine(Environment.CurrentDirectory, "LottieTest", "Tests");
+            var defaultTestFolder = Directory.Exists(repositoryTestFolder)
+                ? repositoryTestFolder
+                : Path.Combine(Environment.CurrentDirectory, "Tests");
+            TEST_FILES_FOLDER = Path.TrimEndingDirectorySeparator(Path.GetFullPath(args.FirstOrDefault() ?? defaultTestFolder)) + Path.DirectorySeparatorChar;
+
+            Bootstrap.Initialize(0x00010006);
+            Environment.ExitCode = await RunTests() ? 0 : 1;
             Bootstrap.Shutdown();
         }
 
         static async Task<bool> RunTests()
         {
-            var workDirectory = @"D:\LottieDev\Lottie-Windows\LottieTest\Tests\";
+            var workDirectory = TEST_FILES_FOLDER;
             var testPlanFile = await StorageFile.GetFileFromPathAsync($"{workDirectory}TestPlan.json");
             var testPlanJson = JsonNode.Parse(new StreamReader((await testPlanFile.OpenReadAsync()).AsStreamForRead()).ReadToEnd())!;
 
