@@ -373,6 +373,46 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
             Mgce.GaussianBlurEffect effect);
 
         /// <summary>
+        /// Gets the code that sets a property declared by a base class of the type of the
+        /// target, or null to set the property directly.
+        /// </summary>
+        /// <param name="declaringType">The name of the class that declares the property.</param>
+        /// <param name="valueType">The name of the type of the property.</param>
+        /// <param name="propertyName">The name of the property.</param>
+        /// <param name="target">The code for the object whose property is set.</param>
+        /// <param name="value">The code for the value.</param>
+        /// <returns>The code of the call, without a terminating semicolon, or null.</returns>
+        private protected virtual string? GetInheritedPropertySetterCall(string declaringType, string valueType, string propertyName, string target, string value) => null;
+
+        /// <summary>
+        /// Gets the code that adds a color stop to the ColorStops of a gradient brush, or null to
+        /// add it directly to the ColorStops collection.
+        /// </summary>
+        /// <param name="target">The code for the gradient brush.</param>
+        /// <param name="colorStop">The code for the color stop.</param>
+        /// <returns>The code of the call, without a terminating semicolon, or null.</returns>
+        private protected virtual string? GetAddColorStopCall(string target, string colorStop) => null;
+
+        /// <summary>
+        /// Gets the code that adds a shape to the Shapes of a ShapeVisual or a CompositionContainerShape,
+        /// or null to add it directly to the Shapes collection.
+        /// </summary>
+        /// <param name="targetType">The name of the type of the object that has the Shapes.</param>
+        /// <param name="target">The code for the object that has the Shapes.</param>
+        /// <param name="shape">The code for the shape.</param>
+        /// <returns>The code of the call, without a terminating semicolon, or null.</returns>
+        private protected virtual string? GetAddShapeCall(string targetType, string target, string shape) => null;
+
+        /// <summary>
+        /// Gets the code that inserts a visual at the top of the Children of a ContainerVisual,
+        /// or null to insert it directly into the Children collection.
+        /// </summary>
+        /// <param name="target">The code for the ContainerVisual.</param>
+        /// <param name="child">The code for the child visual.</param>
+        /// <returns>The code of the call, without a terminating semicolon, or null.</returns>
+        private protected virtual string? GetInsertChildAtTopCall(string target, string child) => null;
+
+        /// <summary>
         /// Writes code that inserts the given value key frames into the animation in the "result"
         /// variable from a table of data, which is more compact than a call per key frame.
         /// </summary>
@@ -1619,8 +1659,57 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                 }
             }
 
+            // Writes code that sets a property declared by a base class of the type of "result".
+            void WriteSetInheritedPropertyStatement<T>(CodeBuilder builder, string declaringType, string valueType, string propertyName, T? value, Func<T, string> formatter)
+                where T : struct
+            {
+                if (value.HasValue)
+                {
+                    switch (value.Value)
+                    {
+                        case Sn.Matrix3x2 matrix3x2:
+                            WriteMatrixComment(builder, matrix3x2);
+                            break;
+                        case Matrix4x4 matrix4x4:
+                            WriteMatrixComment(builder, matrix4x4);
+                            break;
+                    }
+
+                    WriteSetInheritedPropertyStatement(builder, declaringType, valueType, propertyName, formatter(value.Value));
+                }
+            }
+
+            // Writes code that sets a property declared by a base class of the type of "result".
+            void WriteSetInheritedPropertyStatement(CodeBuilder builder, string declaringType, string valueType, string propertyName, string value)
+            {
+                var call = _owner.GetInheritedPropertySetterCall(declaringType, valueType, propertyName, "result", value);
+                if (call is null)
+                {
+                    WriteSetPropertyStatement(builder, propertyName, value);
+                }
+                else
+                {
+                    builder.WriteLine($"{call};");
+                }
+            }
+
             void WritePopulateShapesCollection(CodeBuilder builder, IList<CompositionShape> shapes, ObjectData node)
             {
+                // Get the code for the shapes in order, because the first use of a shape may create it.
+                var shapeCalls = shapes.Select(shape => CallFactoryFromFor(node, shape)).ToArray();
+                var addShapeCalls = shapeCalls.Select(shape => _owner.GetAddShapeCall(node.TypeName, "result", shape)).ToArray();
+                if (addShapeCalls.Length > 0 && addShapeCalls.All(call => call is not null))
+                {
+                    // Add each shape with a call.
+                    for (var i = 0; i < shapes.Count; i++)
+                    {
+                        WriteShortDescriptionComment(builder, shapes[i]);
+                        builder.WriteLine($"{addShapeCalls[i]};");
+                    }
+
+                    return;
+                }
+
                 switch (shapes.Count)
                 {
                     case 0:
@@ -1632,7 +1721,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                             // A single item. We can add the shape in a single line.
                             var shape = shapes[0];
                             WriteShortDescriptionComment(builder, shape);
-                            builder.WriteLine($"{_s.PropertyGet("result", "Shapes")}{Deref}{IListAdd}({CallFactoryFromFor(node, shape)});");
+                            builder.WriteLine($"{_s.PropertyGet("result", "Shapes")}{Deref}{IListAdd}({shapeCalls[0]});");
                             break;
                         }
 
@@ -1640,10 +1729,10 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                         {
                             // Multiple items requires the use of a local.
                             builder.WriteLine($"{ConstVar} shapes = {_s.PropertyGet("result", "Shapes")};");
-                            foreach (var shape in shapes)
+                            for (var i = 0; i < shapes.Count; i++)
                             {
-                                WriteShortDescriptionComment(builder, shape);
-                                builder.WriteLine($"shapes{Deref}{IListAdd}({CallFactoryFromFor(node, shape)});");
+                                WriteShortDescriptionComment(builder, shapes[i]);
+                                builder.WriteLine($"shapes{Deref}{IListAdd}({shapeCalls[i]});");
                             }
 
                             break;
@@ -2369,10 +2458,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                 WriteMatrixComment(builder, transformMatrix);
                 WriteCreateAssignment(builder, node, $"CreateSpriteShape({CallFactoryFromFor(node, obj.Geometry)}, {Matrix3x2(transformMatrix)});");
                 InitializeCompositionObject(builder, obj, node);
-                WriteSetPropertyStatement(builder, nameof(obj.CenterPoint), obj.CenterPoint);
-                WriteSetPropertyStatement(builder, nameof(obj.Offset), obj.Offset);
-                WriteSetPropertyStatement(builder, nameof(obj.RotationAngleInDegrees), obj.RotationAngleInDegrees);
-                WriteSetPropertyStatement(builder, nameof(obj.Scale), obj.Scale);
+                WriteCompositionShapeProperties(builder, obj);
             }
 
             /// <summary>
@@ -2407,10 +2493,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                 builder.WriteLine($"{ConstVar} geometry = {CallFactoryFromFor(node, obj.Geometry)};");
                 WriteCreateAssignment(builder, node, $"CreateSpriteShape(geometry, {Matrix3x2(transformMatrix)}, {CallFactoryFromFor(node, obj.FillBrush)});");
                 InitializeCompositionObject(builder, obj, node);
-                WriteSetPropertyStatement(builder, nameof(obj.CenterPoint), obj.CenterPoint);
-                WriteSetPropertyStatement(builder, nameof(obj.Offset), obj.Offset);
-                WriteSetPropertyStatement(builder, nameof(obj.RotationAngleInDegrees), obj.RotationAngleInDegrees);
-                WriteSetPropertyStatement(builder, nameof(obj.Scale), obj.Scale);
+                WriteCompositionShapeProperties(builder, obj);
             }
 
             // Starts an ExpressionAnimation that uses the shared singleton ExpressionAnimation.
@@ -2556,70 +2639,115 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
             {
                 InitializeCompositionObject(builder, obj, node);
 
+                // These properties are declared by Visual, which is a base class of the type of the result.
+                const string visual = nameof(Visual);
+
                 if (obj.BorderMode.HasValue && obj.BorderMode != CompositionBorderMode.Inherit)
                 {
-                    WriteSetPropertyStatement(builder, nameof(obj.BorderMode), BorderMode(obj.BorderMode.Value));
+                    WriteSetInheritedPropertyStatement(builder, visual, nameof(CompositionBorderMode), nameof(obj.BorderMode), BorderMode(obj.BorderMode.Value));
                 }
 
-                WriteSetPropertyStatement(builder, nameof(obj.CenterPoint), obj.CenterPoint);
-                WriteSetPropertyStatement(builder, nameof(obj.Clip), obj.Clip, node);
-                WriteSetPropertyStatement(builder, nameof(obj.IsVisible), obj.IsVisible);
-                WriteSetPropertyStatement(builder, nameof(obj.Offset), obj.Offset);
-                WriteSetPropertyStatement(builder, nameof(obj.Opacity), obj.Opacity);
-                WriteSetPropertyStatement(builder, nameof(obj.RotationAngleInDegrees), obj.RotationAngleInDegrees);
-                WriteSetPropertyStatement(builder, nameof(obj.RotationAxis), obj.RotationAxis);
-                WriteSetPropertyStatement(builder, nameof(obj.Scale), obj.Scale);
-                WriteSetPropertyStatement(builder, nameof(obj.Size), obj.Size);
-                WriteSetPropertyStatement(builder, nameof(obj.TransformMatrix), obj.TransformMatrix);
+                WriteSetInheritedPropertyStatement(builder, visual, _s.TypeVector3, nameof(obj.CenterPoint), obj.CenterPoint, Vector3);
+                if (obj.Clip is not null)
+                {
+                    WriteSetInheritedPropertyStatement(builder, visual, nameof(CompositionClip), nameof(obj.Clip), CallFactoryFromFor(node, obj.Clip));
+                }
+
+                WriteSetInheritedPropertyStatement(builder, visual, "bool", nameof(obj.IsVisible), obj.IsVisible, Bool);
+                WriteSetInheritedPropertyStatement(builder, visual, _s.TypeVector3, nameof(obj.Offset), obj.Offset, Vector3);
+                WriteSetInheritedPropertyStatement(builder, visual, _s.TypeFloat32, nameof(obj.Opacity), obj.Opacity, Float);
+                WriteSetInheritedPropertyStatement(builder, visual, _s.TypeFloat32, nameof(obj.RotationAngleInDegrees), obj.RotationAngleInDegrees, Float);
+                WriteSetInheritedPropertyStatement(builder, visual, _s.TypeVector3, nameof(obj.RotationAxis), obj.RotationAxis, Vector3);
+                WriteSetInheritedPropertyStatement(builder, visual, _s.TypeVector3, nameof(obj.Scale), obj.Scale, Vector3);
+                WriteSetInheritedPropertyStatement(builder, visual, _s.TypeVector2, nameof(obj.Size), obj.Size, Vector2);
+                WriteSetInheritedPropertyStatement(builder, visual, nameof(Matrix4x4), nameof(obj.TransformMatrix), obj.TransformMatrix, Matrix4x4);
             }
 
             void InitializeCompositionClip(CodeBuilder builder, CompositionClip obj, ObjectData node)
             {
                 InitializeCompositionObject(builder, obj, node);
 
-                WriteSetPropertyStatement(builder, nameof(obj.CenterPoint), obj.CenterPoint);
-                WriteSetPropertyStatement(builder, nameof(obj.Scale), obj.Scale);
+                // These properties are declared by CompositionClip, which is a base class of the type of the result.
+                const string clip = nameof(CompositionClip);
+                WriteSetInheritedPropertyStatement(builder, clip, _s.TypeVector2, nameof(obj.CenterPoint), obj.CenterPoint, Vector2);
+                WriteSetInheritedPropertyStatement(builder, clip, _s.TypeVector2, nameof(obj.Scale), obj.Scale, Vector2);
             }
 
             void InitializeCompositionGradientBrush(CodeBuilder builder, CompositionGradientBrush obj, ObjectData node)
             {
                 InitializeCompositionObject(builder, obj, node);
 
-                WriteSetPropertyStatement(builder, nameof(obj.AnchorPoint), obj.AnchorPoint);
-                WriteSetPropertyStatement(builder, nameof(obj.CenterPoint), obj.CenterPoint);
+                // These properties are declared by CompositionGradientBrush, which is a base class of the type of the result.
+                const string gradientBrush = nameof(CompositionGradientBrush);
+                WriteSetInheritedPropertyStatement(builder, gradientBrush, _s.TypeVector2, nameof(obj.AnchorPoint), obj.AnchorPoint, Vector2);
+                WriteSetInheritedPropertyStatement(builder, gradientBrush, _s.TypeVector2, nameof(obj.CenterPoint), obj.CenterPoint, Vector2);
 
                 if (obj.ColorStops.Count > 0)
                 {
-                    builder.WriteLine($"{ConstVar} colorStops = {_s.PropertyGet("result", "ColorStops")};");
-                    foreach (var colorStop in obj.ColorStops)
+                    var colorStopCalls = obj.ColorStops.Select(colorStop => CallFactoryFromFor(node, colorStop)).ToArray();
+                    var addColorStopCalls = colorStopCalls.Select(colorStop => _owner.GetAddColorStopCall("result", colorStop)).ToArray();
+                    if (addColorStopCalls.All(call => call is not null))
                     {
-                        builder.WriteLine($"colorStops{Deref}{IListAdd}({CallFactoryFromFor(node, colorStop)});");
+                        foreach (var call in addColorStopCalls)
+                        {
+                            builder.WriteLine($"{call};");
+                        }
+                    }
+                    else
+                    {
+                        builder.WriteLine($"{ConstVar} colorStops = {_s.PropertyGet("result", "ColorStops")};");
+                        foreach (var colorStop in colorStopCalls)
+                        {
+                            builder.WriteLine($"colorStops{Deref}{IListAdd}({colorStop});");
+                        }
                     }
                 }
 
-                WriteSetPropertyStatement(builder, nameof(obj.ExtendMode), obj.ExtendMode, formatter: ExtendMode);
-                WriteSetPropertyStatement(builder, nameof(obj.InterpolationSpace), obj.InterpolationSpace, formatter: ColorSpace);
-                WriteSetPropertyStatement(builder, nameof(obj.MappingMode), obj.MappingMode, formatter: MappingMode);
-                WriteSetPropertyStatement(builder, nameof(obj.Offset), obj.Offset);
-                WriteSetPropertyStatement(builder, nameof(obj.RotationAngleInDegrees), obj.RotationAngleInDegrees);
-                WriteSetPropertyStatement(builder, nameof(obj.Scale), obj.Scale);
-                WriteSetPropertyStatement(builder, nameof(obj.TransformMatrix), obj.TransformMatrix);
+                WriteSetInheritedPropertyStatement(builder, gradientBrush, nameof(CompositionGradientExtendMode), nameof(obj.ExtendMode), obj.ExtendMode, ExtendMode);
+                WriteSetInheritedPropertyStatement(builder, gradientBrush, nameof(CompositionColorSpace), nameof(obj.InterpolationSpace), obj.InterpolationSpace, ColorSpace);
+                WriteSetInheritedPropertyStatement(builder, gradientBrush, nameof(CompositionMappingMode), nameof(obj.MappingMode), obj.MappingMode, MappingMode);
+                WriteSetInheritedPropertyStatement(builder, gradientBrush, _s.TypeVector2, nameof(obj.Offset), obj.Offset, Vector2);
+                WriteSetInheritedPropertyStatement(builder, gradientBrush, _s.TypeFloat32, nameof(obj.RotationAngleInDegrees), obj.RotationAngleInDegrees, Float);
+                WriteSetInheritedPropertyStatement(builder, gradientBrush, _s.TypeVector2, nameof(obj.Scale), obj.Scale, Vector2);
+                WriteSetInheritedPropertyStatement(builder, gradientBrush, _s.TypeMatrix3x2, nameof(obj.TransformMatrix), obj.TransformMatrix, Matrix3x2);
             }
 
             void InitializeCompositionShape(CodeBuilder builder, CompositionShape obj, ObjectData node)
             {
                 InitializeCompositionObject(builder, obj, node);
+                WriteCompositionShapeProperties(builder, obj);
+                WriteSetInheritedPropertyStatement(builder, nameof(CompositionShape), _s.TypeMatrix3x2, nameof(obj.TransformMatrix), obj.TransformMatrix, Matrix3x2);
+            }
 
-                WriteSetPropertyStatement(builder, nameof(obj.CenterPoint), obj.CenterPoint);
-                WriteSetPropertyStatement(builder, nameof(obj.Offset), obj.Offset);
-                WriteSetPropertyStatement(builder, nameof(obj.RotationAngleInDegrees), obj.RotationAngleInDegrees);
-                WriteSetPropertyStatement(builder, nameof(obj.Scale), obj.Scale);
-                WriteSetPropertyStatement(builder, nameof(obj.TransformMatrix), obj.TransformMatrix);
+            // Writes the properties of a CompositionShape, except its TransformMatrix.
+            void WriteCompositionShapeProperties(CodeBuilder builder, CompositionShape obj)
+            {
+                // These properties are declared by CompositionShape, which is a base class of the type of the result.
+                const string shape = nameof(CompositionShape);
+                WriteSetInheritedPropertyStatement(builder, shape, _s.TypeVector2, nameof(obj.CenterPoint), obj.CenterPoint, Vector2);
+                WriteSetInheritedPropertyStatement(builder, shape, _s.TypeVector2, nameof(obj.Offset), obj.Offset, Vector2);
+                WriteSetInheritedPropertyStatement(builder, shape, _s.TypeFloat32, nameof(obj.RotationAngleInDegrees), obj.RotationAngleInDegrees, Float);
+                WriteSetInheritedPropertyStatement(builder, shape, _s.TypeVector2, nameof(obj.Scale), obj.Scale, Vector2);
             }
 
             void InitializeContainerVisual(CodeBuilder builder, ContainerVisual obj, ObjectData node)
             {
                 InitializeVisual(builder, obj, node);
+
+                // Get the code for the children in order, because the first use of a child may create it.
+                var childCalls = obj.Children.Select(child => CallFactoryFromFor(node, child)).ToArray();
+                var insertChildCalls = childCalls.Select(child => _owner.GetInsertChildAtTopCall("result", child)).ToArray();
+                if (insertChildCalls.Length > 0 && insertChildCalls.All(call => call is not null))
+                {
+                    // Insert each child with a call.
+                    for (var i = 0; i < obj.Children.Count; i++)
+                    {
+                        WriteShortDescriptionComment(builder, obj.Children[i]);
+                        builder.WriteLine($"{insertChildCalls[i]};");
+                    }
+
+                    return;
+                }
 
                 switch (obj.Children.Count)
                 {
@@ -2632,7 +2760,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                             // A single child. We can add the child in a single line.
                             var child = obj.Children[0];
                             WriteShortDescriptionComment(builder, child);
-                            builder.WriteLine($"{_s.PropertyGet("result", "Children")}{Deref}InsertAtTop({CallFactoryFromFor(node, child)});");
+                            builder.WriteLine($"{_s.PropertyGet("result", "Children")}{Deref}InsertAtTop({childCalls[0]});");
                             break;
                         }
 
@@ -2640,10 +2768,10 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                         {
                             // Multiple children requires the use of a local.
                             builder.WriteLine($"{ConstVar} children = {_s.PropertyGet("result", nameof(obj.Children))};");
-                            foreach (var child in obj.Children)
+                            for (var i = 0; i < obj.Children.Count; i++)
                             {
-                                WriteShortDescriptionComment(builder, child);
-                                builder.WriteLine($"children{Deref}InsertAtTop({CallFactoryFromFor(node, child)});");
+                                WriteShortDescriptionComment(builder, obj.Children[i]);
+                                builder.WriteLine($"children{Deref}InsertAtTop({childCalls[i]});");
                             }
 
                             break;
@@ -2655,9 +2783,11 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
             {
                 InitializeCompositionObject(builder, obj, node);
 
-                WriteSetPropertyStatement(builder, nameof(obj.TrimEnd), obj.TrimEnd);
-                WriteSetPropertyStatement(builder, nameof(obj.TrimOffset), obj.TrimOffset);
-                WriteSetPropertyStatement(builder, nameof(obj.TrimStart), obj.TrimStart);
+                // These properties are declared by CompositionGeometry, which is a base class of the type of the result.
+                const string geometry = nameof(CompositionGeometry);
+                WriteSetInheritedPropertyStatement(builder, geometry, _s.TypeFloat32, nameof(obj.TrimEnd), obj.TrimEnd, Float);
+                WriteSetInheritedPropertyStatement(builder, geometry, _s.TypeFloat32, nameof(obj.TrimOffset), obj.TrimOffset, Float);
+                WriteSetInheritedPropertyStatement(builder, geometry, _s.TypeFloat32, nameof(obj.TrimStart), obj.TrimStart, Float);
             }
 
             void InitializeCompositionAnimation(CodeBuilder builder, CompositionAnimation obj, ObjectData node)
@@ -2689,7 +2819,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                 WriteCreateAssignment(builder, node, $"_c{Deref}Create{animation.Type}()");
 
                 Debug.Assert(animation.Duration.Ticks > 0, "Invariant");
-                WriteSetPropertyStatement(builder, nameof(animation.Duration), TimeSpan(animation.Duration));
+                WriteSetInheritedPropertyStatement(builder, "KeyFrameAnimation", "TimeSpan", nameof(animation.Duration), TimeSpan(animation.Duration));
 
                 InitializeCompositionAnimation(builder, animation, node);
             }

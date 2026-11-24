@@ -30,12 +30,28 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
         // The name of the static helpers that insert key frames from key frame data.
         const string InsertKeyFramesHelperName = "InsertKeyFrames";
 
+        // Prevents inlining of the helpers that exist to keep code out of their callers.
+        const string NoInliningAttribute = "[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]";
+
         readonly Stringifier _s;
         readonly string _winUiNamespace;
         readonly bool _disableOptimization;
 
         // The types of the animations for which an InsertKeyFrames helper is needed.
         readonly SortedSet<CompositionObjectType> _insertKeyFramesHelpersNeeded = new SortedSet<CompositionObjectType>();
+
+        // The setters needed for properties declared by base classes, as declaring type, value type and property name.
+        readonly HashSet<(string DeclaringType, string ValueType, string PropertyName)> _inheritedPropertySettersNeeded =
+            new HashSet<(string DeclaringType, string ValueType, string PropertyName)>();
+
+        // The types of the objects for which an AddShape helper is needed.
+        readonly SortedSet<string> _addShapeHelperTargetTypesNeeded = new SortedSet<string>(StringComparer.Ordinal);
+
+        // True if any gradient brush factory calls the AddColorStop helper.
+        bool _isAddColorStopHelperNeeded;
+
+        // True if any container visual factory calls the InsertChildAtTop helper.
+        bool _isInsertChildAtTopHelperNeeded;
 
         // True if any path geometry factory calls the CreatePathFromData helper.
         bool _isCreatePathFromDataHelperNeeded;
@@ -855,6 +871,36 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
                 WriteInsertKeyFramesHelper(builder, animationType);
             }
 
+            foreach (var (declaringType, valueType, propertyName) in _inheritedPropertySettersNeeded
+                .OrderBy(s => s.PropertyName, StringComparer.Ordinal)
+                .ThenBy(s => s.DeclaringType, StringComparer.Ordinal))
+            {
+                builder.WriteLine();
+                builder.WriteLine(NoInliningAttribute);
+                builder.WriteLine($"static void Set{propertyName}({declaringType} target, {valueType} value) => target.{propertyName} = value;");
+            }
+
+            if (_isAddColorStopHelperNeeded)
+            {
+                builder.WriteLine();
+                builder.WriteLine(NoInliningAttribute);
+                builder.WriteLine("static void AddColorStop(CompositionGradientBrush target, CompositionColorGradientStop value) => target.ColorStops.Add(value);");
+            }
+
+            foreach (var targetType in _addShapeHelperTargetTypesNeeded)
+            {
+                builder.WriteLine();
+                builder.WriteLine(NoInliningAttribute);
+                builder.WriteLine($"static void AddShape({targetType} target, CompositionShape value) => target.Shapes.Add(value);");
+            }
+
+            if (_isInsertChildAtTopHelperNeeded)
+            {
+                builder.WriteLine();
+                builder.WriteLine(NoInliningAttribute);
+                builder.WriteLine("static void InsertChildAtTop(ContainerVisual target, Visual value) => target.Children.InsertAtTop(value);");
+            }
+
             // Close the scope for the IAnimatedVisualSource class.
             builder.CloseScope();
 
@@ -900,6 +946,39 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
             builder.WriteLine($"new CanvasGeometry[] {{ {string.Join(", ", obj.Geometries.Select(g => CallFactoryFor(g))) } }},");
             builder.WriteLine($"{_s.FilledRegionDetermination(obj.FilledRegionDetermination)});");
             builder.UnIndent();
+        }
+
+        /// <inheritdoc/>
+        private protected override string? GetInheritedPropertySetterCall(string declaringType, string valueType, string propertyName, string target, string value)
+        {
+            // Setting a property declared by a base class through the WinRT projection requires getting
+            // the interface of the base class, which is a lot of code when inlined in every factory, as
+            // it is with Native AOT. A setter that is never inlined keeps that code in one place.
+            _inheritedPropertySettersNeeded.Add((declaringType, valueType, propertyName));
+            return $"Set{propertyName}({target}, {value})";
+        }
+
+        /// <inheritdoc/>
+        private protected override string? GetAddColorStopCall(string target, string colorStop)
+        {
+            // ColorStops is declared by CompositionGradientBrush, a base class of the gradient brushes.
+            _isAddColorStopHelperNeeded = true;
+            return $"AddColorStop({target}, {colorStop})";
+        }
+
+        /// <inheritdoc/>
+        private protected override string? GetAddShapeCall(string targetType, string target, string shape)
+        {
+            _addShapeHelperTargetTypesNeeded.Add(targetType);
+            return $"AddShape({target}, {shape})";
+        }
+
+        /// <inheritdoc/>
+        private protected override string? GetInsertChildAtTopCall(string target, string child)
+        {
+            // Children is declared by ContainerVisual, a base class of ShapeVisual and SpriteVisual.
+            _isInsertChildAtTopHelperNeeded = true;
+            return $"InsertChildAtTop({target}, {child})";
         }
 
         /// <inheritdoc/>
