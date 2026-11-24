@@ -980,6 +980,11 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
         }
 
         /// <inheritdoc/>
+        // The helpers that create objects set properties declared by base classes, which takes a lot of
+        // code when inlined into every factory, as it is with Native AOT.
+        private protected override string? HelperMethodAttribute => NoInliningAttribute;
+
+        /// <inheritdoc/>
         private protected override string? GetInheritedPropertySetterCall(string declaringType, string valueType, string propertyName, string target, string value)
         {
             // Setting a property declared by a base class through the WinRT projection requires getting

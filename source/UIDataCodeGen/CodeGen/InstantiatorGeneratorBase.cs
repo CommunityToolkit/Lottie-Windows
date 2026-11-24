@@ -413,6 +413,12 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
         private protected virtual string? GetInsertChildAtTopCall(string target, string child) => null;
 
         /// <summary>
+        /// Gets the attribute to write before the small helper methods that the factories call to
+        /// create objects, or null for no attribute.
+        /// </summary>
+        private protected virtual string? HelperMethodAttribute => null;
+
+        /// <summary>
         /// Writes code that inserts the given value key frames into the animation in the "result"
         /// variable from a table of data, which is more compact than a call per key frame.
         /// </summary>
@@ -2304,6 +2310,15 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                 }
             }
 
+            void WriteHelperMethodAttribute(CodeBuilder builder)
+            {
+                var attribute = _owner.HelperMethodAttribute;
+                if (attribute is not null)
+                {
+                    builder.WriteLine(attribute);
+                }
+            }
+
             // Helper method that starts an animation and binds its AnimationController.Progress to an expression.
             void EnsureStartProgressBoundAnimationWritten(CodeBuilder builder)
             {
@@ -2416,6 +2431,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                             ? string.Empty
                             : $", initialEasingFunction";
 
+                    WriteHelperMethodAttribute(b);
                     b.WriteLine($"{ReferenceTypeName(animationType.ToString())} {methodName}(float initialProgress, {valueType} initialValue{easingParameter})");
                     b.OpenScope();
                     b.WriteLine($"{ConstVar} result = _c{Deref}{methodName}();");
@@ -2445,6 +2461,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                 var b = builder.GetSubBuilder("CreateSpriteShape");
                 if (b.IsEmpty)
                 {
+                    WriteHelperMethodAttribute(b);
                     b.WriteLine($"{ReferenceTypeName("CompositionSpriteShape")} CreateSpriteShape({ReferenceTypeName("CompositionGeometry")} geometry, {_s.TypeMatrix3x2} transformMatrix)");
                     b.OpenScope();
                     b.WriteLine($"{ConstVar} result = _c{Deref}CreateSpriteShape(geometry);");
@@ -2474,6 +2491,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                 var b = builder.GetSubBuilder("CreateSpriteShapeWithFillBrush");
                 if (b.IsEmpty)
                 {
+                    WriteHelperMethodAttribute(b);
                     b.WriteLine($"{ReferenceTypeName("CompositionSpriteShape")} CreateSpriteShape({ReferenceTypeName("CompositionGeometry")} geometry, {_s.TypeMatrix3x2} transformMatrix, {ReferenceTypeName("CompositionBrush")} fillBrush)");
                     b.OpenScope();
                     b.WriteLine($"{ConstVar} result = _c{Deref}CreateSpriteShape(geometry);");

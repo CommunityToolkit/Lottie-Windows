@@ -148,22 +148,101 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Tests
         }
 
         [TestMethod]
-        public void NothingIsExtractedFromClassesWithAttributes()
+        public void AttributesMoveWithTheirMember()
         {
             const string attributedMethod = @"
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    ShapeVisual CreateShapeVisual()
+    {
+        return _c.CreateShapeVisual();
+    }";
+
+            var (baseClass, classes) = Extract(
+                Class("Icon_UAPv11", RootField, Root, ShapeVisual(48), attributedMethod),
+                Class("Icon_UAPv8", RootField, Root, ShapeVisual(48), attributedMethod));
+
+            var header = baseClass.ToList().IndexOf("    internal ShapeVisual CreateShapeVisual()");
+            Assert.IsTrue(header > 0, "CreateShapeVisual was not moved to the base class.");
+            Assert.AreEqual("    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]", baseClass[header - 1]);
+            Assert.IsFalse(classes.Any(c => c.Any(l => l.Contains("MethodImpl"))));
+        }
+
+        [TestMethod]
+        public void AttributesOfOverriddenMethodsStayWithTheOverride()
+        {
+            const string attribute = "    [System.Diagnostics.DebuggerHidden]";
+
+            var (baseClass, classes) = Extract(
+                Class("Icon_UAPv11", RootField, Root, attribute + ShapeVisual(48)),
+                Class("Icon_UAPv8", RootField, Root, attribute + ShapeVisual(24)));
+
+            // The abstract declaration has no attribute, and each override keeps its attribute.
+            var declaration = baseClass.ToList().IndexOf("    internal abstract ShapeVisual ShapeVisual_0();");
+            Assert.IsTrue(declaration > 0, "ShapeVisual_0 was not declared abstract.");
+            Assert.AreNotEqual(attribute, baseClass[declaration - 1]);
+            foreach (var c in classes)
+            {
+                var header = c.ToList().IndexOf("    internal override ShapeVisual ShapeVisual_0()");
+                Assert.IsTrue(header > 0, "ShapeVisual_0 was not overridden.");
+                Assert.AreEqual(attribute, c[header - 1]);
+            }
+        }
+
+        [TestMethod]
+        public void AttributesAreNotMistakenForTheBodyOfTheirMethod()
+        {
+            const string attribute = "    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]";
+            const string createSpriteShape = attribute + @"
+    CompositionSpriteShape CreateSpriteShape(CompositionGeometry geometry)
+    {
+        return _c.CreateSpriteShape(geometry);
+    }";
+            const string createSpriteShapeWithBrush = attribute + @"
+    CompositionSpriteShape CreateSpriteShape(CompositionGeometry geometry, CompositionBrush brush)
+    {
+        var result = _c.CreateSpriteShape(geometry);
+        result.FillBrush = brush;
+        return result;
+    }";
+
+            // The overload that exists in every class is shared. Reading its header as code would make
+            // it call itself, and so the overload that exists only in one class, which cannot be shared.
+            var (baseClass, _) = Extract(
+                Class("Icon_UAPv11", createSpriteShape, createSpriteShapeWithBrush),
+                Class("Icon_UAPv8", createSpriteShape));
+
+            CollectionAssert.Contains(baseClass.ToArray(), "    internal CompositionSpriteShape CreateSpriteShape(CompositionGeometry geometry)");
+        }
+
+        [TestMethod]
+        public void NothingIsExtractedFromClassesWithUnexpectedAttributes()
+        {
+            // An attribute followed by a comment, and an attribute split over several lines.
+            const string commentAfterAttribute = @"
     [System.Diagnostics.DebuggerHidden]
+    // A comment.
+    ShapeVisual ShapeVisual_1()
+    {
+        return _c.CreateShapeVisual();
+    }";
+            const string multiLineAttribute = @"
+    [System.Diagnostics.DebuggerDisplay(
+        ""Shape"")]
     ShapeVisual ShapeVisual_1()
     {
         return _c.CreateShapeVisual();
     }";
 
-            Assert.IsNull(CSharpSharedCodeExtractor.Extract(
-                "Icon_AnimatedVisualBase",
-                new[]
-                {
-                    Class("Icon_UAPv11", RootField, Root, ShapeVisual(48), attributedMethod),
-                    Class("Icon_UAPv8", RootField, Root, ShapeVisual(48), attributedMethod),
-                }));
+            foreach (var method in new[] { commentAfterAttribute, multiLineAttribute })
+            {
+                Assert.IsNull(CSharpSharedCodeExtractor.Extract(
+                    "Icon_AnimatedVisualBase",
+                    new[]
+                    {
+                        Class("Icon_UAPv11", RootField, Root, ShapeVisual(48), method),
+                        Class("Icon_UAPv8", RootField, Root, ShapeVisual(48), method),
+                    }));
+            }
         }
 
         // An AnimatedVisual class laid out as the C# generator writes it, with the given members.

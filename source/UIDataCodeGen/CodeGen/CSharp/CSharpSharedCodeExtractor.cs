@@ -161,16 +161,16 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
             return (baseClass, rewrittenClasses);
         }
 
-        // Returns the lines of the member with the given modifier added to its first code line.
+        // Returns the lines of the member with the given modifier added to its first header line.
         static IEnumerable<string> WithModifier(Member member, string modifier)
         {
-            foreach (var line in member.CommentLines)
+            foreach (var line in member.CommentLines.Concat(member.AttributeLines))
             {
                 yield return line;
             }
 
             var firstCodeLine = true;
-            foreach (var line in member.CodeLines.Where(l => !IsComment(l) || !firstCodeLine))
+            foreach (var line in member.CodeLines.Skip(member.CommentLines.Count + member.AttributeLines.Count))
             {
                 yield return firstCodeLine ? $"{MemberIndent}{modifier}{line.Substring(MemberIndent.Length)}" : line;
                 firstCodeLine = false;
@@ -254,6 +254,11 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
 
         static bool IsComment(string line) => line.TrimStart().StartsWith("//", StringComparison.Ordinal);
 
+        static bool IsAttribute(string line)
+            => IsMemberStart(line) &&
+               line[MemberIndent.Length] == '[' &&
+               line.EndsWith("]", StringComparison.Ordinal);
+
         static bool IsMemberStart(string line)
             => line.StartsWith(MemberIndent, StringComparison.Ordinal) &&
                line.Length > MemberIndent.Length &&
@@ -299,14 +304,24 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
                         continue;
                     }
 
-                    // Attributes are not expected, and would need to stay with their member.
+                    // Attributes are expected only right before the member they apply to.
+                    var attributeStart = i;
+                    while (IsAttribute(line))
+                    {
+                        line = lines[++i];
+                        if (i >= end || !IsMemberStart(line) || IsComment(line))
+                        {
+                            return null;
+                        }
+                    }
+
                     if (!IsMemberStart(line) || line[MemberIndent.Length] == '[')
                     {
                         return null;
                     }
 
                     // Find the start of the comments that precede the member.
-                    var codeStart = i;
+                    var codeStart = attributeStart;
                     while (codeStart > segmentStart && IsComment(lines[codeStart - 1]))
                     {
                         codeStart--;
@@ -343,6 +358,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
                     members.Add(new Member(
                         leadingLines: lines.Skip(segmentStart).Take(codeStart - segmentStart).ToArray(),
                         codeLines: lines.Skip(codeStart).Take(last - codeStart + 1).ToArray(),
+                        attributeLineCount: i - attributeStart,
                         headerLineCount: headerLineCount));
 
                     i = last + 1;
@@ -375,13 +391,14 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
         // A member of a class: a field, a method, a constructor, or an expression bodied member.
         sealed class Member
         {
-            internal Member(IReadOnlyList<string> leadingLines, IReadOnlyList<string> codeLines, int headerLineCount)
+            internal Member(IReadOnlyList<string> leadingLines, IReadOnlyList<string> codeLines, int attributeLineCount, int headerLineCount)
             {
                 LeadingLines = leadingLines;
                 CodeLines = codeLines;
                 CommentLines = codeLines.TakeWhile(IsComment).ToArray();
                 var code = codeLines.Skip(CommentLines.Count).ToArray();
-                HeaderLines = code.Take(headerLineCount).ToArray();
+                AttributeLines = code.Take(attributeLineCount).ToArray();
+                HeaderLines = code.Skip(attributeLineCount).Take(headerLineCount).ToArray();
                 var codeWithoutComments = code.Where(l => !IsComment(l)).ToArray();
                 Key = string.Join("\n", codeWithoutComments);
 
@@ -415,7 +432,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
                 if (MethodName is not null)
                 {
                     Signature = string.Join("\n", HeaderLines);
-                    var text = s_stringLiteral.Replace(string.Join("\n", codeWithoutComments.Skip(headerLineCount)), "\"\"");
+                    var text = s_stringLiteral.Replace(string.Join("\n", codeWithoutComments.Skip(attributeLineCount + headerLineCount)), "\"\"");
                     Identifiers = new HashSet<string>(s_identifier.Matches(text).Select(m => m.Value));
                     Calls = new HashSet<string>(s_call.Matches(text).Select(m => m.Groups[1].Value));
                 }
@@ -428,6 +445,9 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
             internal IReadOnlyList<string> CodeLines { get; }
 
             internal IReadOnlyList<string> CommentLines { get; }
+
+            // The attributes that precede the header of the member.
+            internal IReadOnlyList<string> AttributeLines { get; }
 
             internal IReadOnlyList<string> HeaderLines { get; }
 
