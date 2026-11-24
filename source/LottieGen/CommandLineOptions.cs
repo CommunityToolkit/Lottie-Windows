@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 
@@ -14,12 +15,12 @@ namespace CommunityToolkit.WinUI.Lottie.LottieGen
         readonly List<string> _additionalInterfaces = new List<string>();
         readonly List<string> _languageStrings = new List<string>();
         Version? _winUIVersion;
-        uint? _csWinRTVersion;
+        Version? _cSharpVersion;
 
         internal IReadOnlyList<string> AdditionalInterfaces => _additionalInterfaces;
 
-        // The major version of CsWinRT that C# code is generated for. Defaults to 2.
-        internal uint CsWinRTVersion => _csWinRTVersion ?? 2;
+        // The version of the C# language that generated C# code may use. Defaults to 7.3.
+        internal Version CSharpVersion => _cSharpVersion ?? new Version(7, 3);
 
         internal bool DisableCodeGenOptimizer { get; private set; }
 
@@ -88,9 +89,9 @@ namespace CommunityToolkit.WinUI.Lottie.LottieGen
                 }
             }
 
-            if (_csWinRTVersion.HasValue)
+            if (_cSharpVersion is not null)
             {
-                sb.Append($" -{nameof(CsWinRTVersion)} {CsWinRTVersion}");
+                sb.Append($" -{nameof(CSharpVersion)} {(CSharpVersion.Minor == 0 ? CSharpVersion.Major.ToString() : CSharpVersion.ToString(2))}");
             }
 
             if (DisableCodeGenOptimizer)
@@ -189,7 +190,7 @@ namespace CommunityToolkit.WinUI.Lottie.LottieGen
 
             // Normal keywords.
             AdditionalInterface,
-            CsWinRTVersion,
+            CSharpVersion,
             DisableCodeGenOptimizer,
             DisableLottieMergeOptimizer,
             DisableTranslationOptimizer,
@@ -261,7 +262,7 @@ namespace CommunityToolkit.WinUI.Lottie.LottieGen
             // Define the keywords accepted on the command line.
             var tokenizer = new CommandlineTokenizer<Keyword>(ambiguousValue: Keyword.Ambiguous)
                 .AddPrefixedKeyword(Keyword.AdditionalInterface)
-                .AddPrefixedKeyword(Keyword.CsWinRTVersion)
+                .AddPrefixedKeyword(Keyword.CSharpVersion)
                 .AddPrefixedKeyword(Keyword.DisableCodeGenOptimizer)
                 .AddPrefixedKeyword(Keyword.DisableLottieMergeOptimizer)
                 .AddPrefixedKeyword(Keyword.DisableTranslationOptimizer)
@@ -336,7 +337,7 @@ namespace CommunityToolkit.WinUI.Lottie.LottieGen
 
                             // The following keywords require a parameter as the next token.
                             case Keyword.AdditionalInterface:
-                            case Keyword.CsWinRTVersion:
+                            case Keyword.CSharpVersion:
                             case Keyword.InputFile:
                             case Keyword.Interface:
                             case Keyword.Language:
@@ -359,21 +360,25 @@ namespace CommunityToolkit.WinUI.Lottie.LottieGen
                         _additionalInterfaces.Add(arg);
                         previousKeyword = Keyword.None;
                         break;
-                    case Keyword.CsWinRTVersion:
-                        if (_csWinRTVersion is not null)
+                    case Keyword.CSharpVersion:
+                        if (_cSharpVersion is not null)
                         {
-                            ErrorDescription = ArgumentSpecifiedMoreThanOnce("CsWinRT version");
+                            ErrorDescription = ArgumentSpecifiedMoreThanOnce("C# version");
                             return;
                         }
 
                         {
-                            if (!uint.TryParse(arg, out var version) || version < 2 || version > 3)
+                            // Accepts a major version such as 12, or a major and minor version such as 7.3.
+                            Version? version = int.TryParse(arg, NumberStyles.None, CultureInfo.InvariantCulture, out var major)
+                                ? new Version(major, 0)
+                                : Version.TryParse(arg, out var parsed) && parsed.Build < 0 ? parsed : null;
+                            if (version is null || version < new Version(7, 3))
                             {
-                                ErrorDescription = "CsWinRT version must be 2 or 3.";
+                                ErrorDescription = "C# version must be 7.3 or later, for example 7.3 or 12.";
                                 return;
                             }
 
-                            _csWinRTVersion = version;
+                            _cSharpVersion = version;
                         }
 
                         previousKeyword = Keyword.None;

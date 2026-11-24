@@ -37,8 +37,8 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
         readonly string _winUiNamespace;
         readonly bool _disableOptimization;
 
-        // True if the code is generated for CsWinRT 3.0, which requires .NET 10 and C# 14 or later.
-        readonly bool _isCsWinRT3;
+        // True if the code may use collection expressions and spans, which requires C# 12 or later.
+        readonly bool _useCollectionExpressions;
 
         // The types of the animations for which an InsertKeyFrames helper is needed.
         readonly SortedSet<CompositionObjectType> _insertKeyFramesHelpersNeeded = new SortedSet<CompositionObjectType>();
@@ -79,7 +79,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
         {
             _s = stringifier;
             _disableOptimization = configuration.DisableOptimization;
-            _isCsWinRT3 = configuration.CsWinRTVersion >= 3;
+            _useCollectionExpressions = configuration.CSharpVersion >= new Version(12, 0);
 
             if (AnimatedVisualSourceInfo.WinUIVersion.Major >= 3)
             {
@@ -113,20 +113,19 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
 
         static string FieldAssignment(string fieldName) => fieldName is not null ? $"{fieldName} = " : string.Empty;
 
-
         // The end of a collection started by WriteCollectionStart.
-        string CollectionEnd => _isCsWinRT3 ? "]" : "}";
+        string CollectionEnd => _useCollectionExpressions ? "]" : "}";
 
-        // The type of a parameter taking a read-only collection. With CsWinRT 3.0, spans are used
-        // so that callers can pass collection expressions, which are not allocated: constant
-        // primitive data comes from the data section of the assembly, and references are kept
-        // in a buffer on the stack.
-        string ReadOnlyCollectionType(string elementType) => _isCsWinRT3 ? $"ReadOnlySpan<{elementType}>" : $"{elementType}[]";
+        // The type of a parameter taking a read-only collection. With C# 12 or later, spans are used
+        // so that callers can pass collection expressions, which are not allocated on .NET 8 or later:
+        // constant primitive data comes from the data section of the assembly, and references are
+        // kept in a buffer on the stack.
+        string ReadOnlyCollectionType(string elementType) => _useCollectionExpressions ? $"ReadOnlySpan<{elementType}>" : $"{elementType}[]";
 
         // Writes the start of a collection with one element per line, ended by CollectionEnd.
         void WriteCollectionStart(CodeBuilder builder, string elementType)
         {
-            if (_isCsWinRT3)
+            if (_useCollectionExpressions)
             {
                 builder.WriteLine("[");
                 builder.Indent();
@@ -975,7 +974,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
             builder.Indent();
             builder.WriteLine($"null,");
             var geometries = string.Join(", ", obj.Geometries.Select(g => CallFactoryFor(g)));
-            builder.WriteLine(_isCsWinRT3 ? $"[{geometries}]," : $"new CanvasGeometry[] {{ {geometries} }},");
+            builder.WriteLine(_useCollectionExpressions ? $"[{geometries}]," : $"new CanvasGeometry[] {{ {geometries} }},");
             builder.WriteLine($"{_s.FilledRegionDetermination(obj.FilledRegionDetermination)});");
             builder.UnIndent();
         }

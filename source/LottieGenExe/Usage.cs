@@ -33,11 +33,12 @@ OVERVIEW:
          -AdditionalInterface
                        Specifies an additional interface that the generated code
                        will claim to implement. May be specified multiple times.
-         -CsWinRTVersion
-                       C# only. The major version of CsWinRT to generate code for:
-                       2 (the default) or 3. Code generated for CsWinRT 3.0 requires
-                       .NET 10 and C# 14 or later, and passes spans instead of
-                       allocating arrays. Generate code for each CsWinRT version used.
+         -CSharpVersion
+                       C# only. The version of the C# language that the generated
+                       code may use, such as 7.3 (the default) or 12. With 12 or
+                       later, collection expressions and spans are used to avoid
+                       allocating arrays, which assumes .NET 8 or later. The code
+                       works with both CsWinRT 2.x and 3.0.
          -DisableTranslationOptimizer
                        Disables optimization of the translation from Lottie to
                        Windows code. Mainly used to detect bugs in the optimizer.

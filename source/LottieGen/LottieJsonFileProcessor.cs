@@ -680,7 +680,7 @@ namespace CommunityToolkit.WinUI.Lottie.LottieGen
                 Public = _options.Public,
                 Width = lottieComposition.Width,
                 WinUIVersion = _options.WinUIVersion,
-                CsWinRTVersion = _options.CsWinRTVersion,
+                CSharpVersion = _options.CSharpVersion,
             };
 
             return result;
