@@ -373,6 +373,63 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
             Mgce.GaussianBlurEffect effect);
 
         /// <summary>
+        /// Writes code that inserts the given value key frames into the animation in the "result"
+        /// variable from a table of data, which is more compact than a call per key frame.
+        /// </summary>
+        /// <param name="builder">A <see cref="CodeBuilder"/> used to create the code.</param>
+        /// <param name="animationType">The type of the animation.</param>
+        /// <param name="keyFrames">The key frames, in the order they must be inserted.</param>
+        /// <returns><see langword="true"/> if the code was written, or <see langword="false"/> if
+        /// the language does not support it, in which case nothing was written.</returns>
+        private protected virtual bool TryWriteInsertKeyFramesFromData(
+            CodeBuilder builder,
+            CompositionObjectType animationType,
+            IReadOnlyList<KeyFrameData> keyFrames) => false;
+
+        /// <summary>
+        /// Describes a value key frame for <see cref="TryWriteInsertKeyFramesFromData"/>.
+        /// </summary>
+        private protected sealed class KeyFrameData
+        {
+            internal KeyFrameData(float progress, IReadOnlyList<float> value, object? easing, string? easingCode, string comment)
+            {
+                Progress = progress;
+                Value = value;
+                Easing = easing;
+                EasingCode = easingCode;
+                Comment = comment;
+            }
+
+            /// <summary>
+            /// The progress of the key frame.
+            /// </summary>
+            internal float Progress { get; }
+
+            /// <summary>
+            /// The components of the value of the key frame.
+            /// </summary>
+            internal IReadOnlyList<float> Value { get; }
+
+            /// <summary>
+            /// The easing function of the key frame. Key frames with the same easing function
+            /// use the same object.
+            /// </summary>
+            internal object? Easing { get; }
+
+            /// <summary>
+            /// The code that gets the easing function, or null if the type of animation has no easing.
+            /// The code of the first key frame using an easing function may create it, so it must
+            /// be evaluated before the code of the other key frames that use the same easing function.
+            /// </summary>
+            internal string? EasingCode { get; }
+
+            /// <summary>
+            /// A description of the key frame.
+            /// </summary>
+            internal string Comment { get; }
+        }
+
+        /// <summary>
         /// Writes code that initializes a theme property value in the theme property set.
         /// </summary>
         private protected void WriteThemePropertyInitialization(
@@ -1596,7 +1653,79 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
 
             void WriteFrameNumberComment(CodeBuilder builder, double progress)
             {
-                builder.WriteComment($"Frame {_owner._sourceMetadata.ProgressToFrameNumber(progress):0.##}.");
+                builder.WriteComment(FrameNumberComment(progress));
+            }
+
+            string FrameNumberComment(double progress) => $"Frame {_owner._sourceMetadata.ProgressToFrameNumber(progress):0.##}.";
+
+            // Writes the code that inserts the given key frames into the animation in the "result" variable.
+            void WriteInsertKeyFrames<TValue, TExpression>(
+                CodeBuilder builder,
+                ObjectData node,
+                KeyFrameAnimation<TValue, TExpression> animation,
+                IEnumerable<KeyFrameAnimation_.KeyFrame> keyFrames,
+                Func<TValue, string> valueCode,
+                Func<TValue, float[]> valueData,
+                Func<TValue, string?>? valueComment = null)
+                where TExpression : Expr.Expression_<TExpression>
+            {
+                var animationType = animation.Type;
+
+                // BooleanKeyFrameAnimations do not support easing functions.
+                var hasEasing = animationType != CompositionObjectType.BooleanKeyFrameAnimation;
+                var frames = keyFrames.ToArray();
+
+                // Get the code for the easing functions in order, because the first use of an
+                // easing function may create it.
+                var easingCodes = frames.Select(kf => hasEasing ? CallFactoryFromFor(node, kf.Easing) : null).ToArray();
+
+                // Key frames that all have values may be written as data.
+                if (frames.Length > 1 && frames.All(kf => kf.Type == KeyFrameType.Value))
+                {
+                    var data = frames.Select((kf, i) =>
+                    {
+                        var value = ((KeyFrameAnimation<TValue, TExpression>.ValueKeyFrame)kf).Value;
+                        var description = valueComment?.Invoke(value);
+                        return new KeyFrameData(
+                            kf.Progress,
+                            valueData(value),
+                            kf.Easing,
+                            easingCodes[i],
+                            string.IsNullOrWhiteSpace(description) ? FrameNumberComment(kf.Progress) : $"{FrameNumberComment(kf.Progress)} {description}");
+                    }).ToArray();
+
+                    if (_owner.TryWriteInsertKeyFramesFromData(builder, animationType, data))
+                    {
+                        return;
+                    }
+                }
+
+                for (var i = 0; i < frames.Length; i++)
+                {
+                    var kf = frames[i];
+                    WriteFrameNumberComment(builder, kf.Progress);
+
+                    switch (kf.Type)
+                    {
+                        case KeyFrameType.Expression:
+                            var expressionKeyFrame = (KeyFrameAnimation<TValue, TExpression>.ExpressionKeyFrame)kf;
+                            builder.WriteLine($"result{Deref}InsertExpressionKeyFrame({Float(kf.Progress)}, {String(expressionKeyFrame.Expression)}, {easingCodes[i] ?? _s.Null});");
+                            break;
+                        case KeyFrameType.Value:
+                            var valueKeyFrame = (KeyFrameAnimation<TValue, TExpression>.ValueKeyFrame)kf;
+                            if (valueComment is not null)
+                            {
+                                builder.WriteComment(valueComment(valueKeyFrame.Value));
+                            }
+
+                            builder.WriteLine(hasEasing
+                                ? $"result{Deref}InsertKeyFrame({Float(kf.Progress)}, {valueCode(valueKeyFrame.Value)}, {easingCodes[i]});"
+                                : $"result{Deref}InsertKeyFrame({Float(kf.Progress)}, {valueCode(valueKeyFrame.Value)});");
+                            break;
+                        default:
+                            throw new InvalidOperationException();
+                    }
+                }
             }
 
             internal void WriteAnimatedVisualCode(CodeBuilder builder)
@@ -2612,24 +2741,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                     WriteCreateAndAssignKeyFrameAnimation(builder, obj, node);
                 }
 
-                foreach (var kf in keyFrames)
-                {
-                    WriteFrameNumberComment(builder, kf.Progress);
-
-                    switch (kf.Type)
-                    {
-                        case KeyFrameType.Expression:
-                            var expressionKeyFrame = (KeyFrameAnimation<bool, Expr.Boolean>.ExpressionKeyFrame)kf;
-                            builder.WriteLine($"result{Deref}InsertExpressionKeyFrame({Float(kf.Progress)}, {String(expressionKeyFrame.Expression)}, {_s.Null});");
-                            break;
-                        case KeyFrameType.Value:
-                            var valueKeyFrame = (KeyFrameAnimation<bool, Expr.Boolean>.ValueKeyFrame)kf;
-                            builder.WriteLine($"result{Deref}InsertKeyFrame({Float(kf.Progress)}, {Bool(valueKeyFrame.Value)});");
-                            break;
-                        default:
-                            throw new InvalidOperationException();
-                    }
-                }
+                WriteInsertKeyFrames(builder, node, obj, keyFrames, Bool, v => new[] { v ? 1F : 0F });
 
                 WriteCompositionObjectFactoryEnd(builder, obj, node);
                 return true;
@@ -2667,25 +2779,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                     }
                 }
 
-                foreach (var kf in keyFrames)
-                {
-                    WriteFrameNumberComment(builder, kf.Progress);
-
-                    switch (kf.Type)
-                    {
-                        case KeyFrameType.Expression:
-                            var expressionKeyFrame = (KeyFrameAnimation<Wui.Color, Expr.Color>.ExpressionKeyFrame)kf;
-                            builder.WriteLine($"result{Deref}InsertExpressionKeyFrame({Float(kf.Progress)}, {String(expressionKeyFrame.Expression)}, {CallFactoryFromFor(node, kf.Easing)});");
-                            break;
-                        case KeyFrameType.Value:
-                            var valueKeyFrame = (KeyFrameAnimation<Wui.Color, Expr.Color>.ValueKeyFrame)kf;
-                            builder.WriteComment(valueKeyFrame.Value.Name);
-                            builder.WriteLine($"result{Deref}InsertKeyFrame({Float(kf.Progress)}, {Color(valueKeyFrame.Value)}, {CallFactoryFromFor(node, kf.Easing)});");
-                            break;
-                        default:
-                            throw new InvalidOperationException();
-                    }
-                }
+                WriteInsertKeyFrames(builder, node, obj, keyFrames, Color, v => new float[] { v.A, v.R, v.G, v.B }, v => v.Name);
 
                 WriteCompositionObjectFactoryEnd(builder, obj, node);
                 return true;
@@ -2717,24 +2811,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                     WriteCreateAndAssignKeyFrameAnimation(builder, obj, node);
                 }
 
-                foreach (var kf in keyFrames)
-                {
-                    WriteFrameNumberComment(builder, kf.Progress);
-
-                    switch (kf.Type)
-                    {
-                        case KeyFrameType.Expression:
-                            var expressionKeyFrame = (KeyFrameAnimation<Vector2, Expr.Vector2>.ExpressionKeyFrame)kf;
-                            builder.WriteLine($"result{Deref}InsertExpressionKeyFrame({Float(kf.Progress)}, {String(expressionKeyFrame.Expression)}, {CallFactoryFromFor(node, kf.Easing)});");
-                            break;
-                        case KeyFrameType.Value:
-                            var valueKeyFrame = (KeyFrameAnimation<Vector2, Expr.Vector2>.ValueKeyFrame)kf;
-                            builder.WriteLine($"result{Deref}InsertKeyFrame({Float(kf.Progress)}, {Vector2(valueKeyFrame.Value)}, {CallFactoryFromFor(node, kf.Easing)});");
-                            break;
-                        default:
-                            throw new InvalidOperationException();
-                    }
-                }
+                WriteInsertKeyFrames(builder, node, obj, keyFrames, Vector2, v => new[] { v.X, v.Y });
 
                 WriteCompositionObjectFactoryEnd(builder, obj, node);
                 return true;
@@ -2765,24 +2842,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                     WriteCreateAndAssignKeyFrameAnimation(builder, obj, node);
                 }
 
-                foreach (var kf in keyFrames)
-                {
-                    WriteFrameNumberComment(builder, kf.Progress);
-
-                    switch (kf.Type)
-                    {
-                        case KeyFrameType.Expression:
-                            var expressionKeyFrame = (KeyFrameAnimation<Vector3, Expr.Vector3>.ExpressionKeyFrame)kf;
-                            builder.WriteLine($"result{Deref}InsertExpressionKeyFrame({Float(kf.Progress)}, {String(expressionKeyFrame.Expression)}, {CallFactoryFromFor(node, kf.Easing)});");
-                            break;
-                        case KeyFrameType.Value:
-                            var valueKeyFrame = (KeyFrameAnimation<Vector3, Expr.Vector3>.ValueKeyFrame)kf;
-                            builder.WriteLine($"result{Deref}InsertKeyFrame({Float(kf.Progress)}, {Vector3(valueKeyFrame.Value)}, {CallFactoryFromFor(node, kf.Easing)});");
-                            break;
-                        default:
-                            throw new InvalidOperationException();
-                    }
-                }
+                WriteInsertKeyFrames(builder, node, obj, keyFrames, Vector3, v => new[] { v.X, v.Y, v.Z });
 
                 WriteCompositionObjectFactoryEnd(builder, obj, node);
                 return true;
@@ -2813,24 +2873,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                     WriteCreateAndAssignKeyFrameAnimation(builder, obj, node);
                 }
 
-                foreach (var kf in keyFrames)
-                {
-                    WriteFrameNumberComment(builder, kf.Progress);
-
-                    switch (kf.Type)
-                    {
-                        case KeyFrameType.Expression:
-                            var expressionKeyFrame = (KeyFrameAnimation<Sn.Vector4, Expr.Vector4>.ExpressionKeyFrame)kf;
-                            builder.WriteLine($"result{Deref}InsertExpressionKeyFrame({Float(kf.Progress)}, {String(expressionKeyFrame.Expression)}, {CallFactoryFromFor(node, kf.Easing)});");
-                            break;
-                        case KeyFrameType.Value:
-                            var valueKeyFrame = (KeyFrameAnimation<Sn.Vector4, Expr.Vector4>.ValueKeyFrame)kf;
-                            builder.WriteLine($"result{Deref}InsertKeyFrame({Float(kf.Progress)}, {Vector4(valueKeyFrame.Value)}, {CallFactoryFromFor(node, kf.Easing)});");
-                            break;
-                        default:
-                            throw new InvalidOperationException();
-                    }
-                }
+                WriteInsertKeyFrames(builder, node, obj, keyFrames, Vector4, v => new[] { v.X, v.Y, v.Z, v.W });
 
                 WriteCompositionObjectFactoryEnd(builder, obj, node);
                 return true;
@@ -2914,24 +2957,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                     WriteCreateAndAssignKeyFrameAnimation(builder, obj, node);
                 }
 
-                foreach (var kf in keyFrames)
-                {
-                    WriteFrameNumberComment(builder, kf.Progress);
-
-                    switch (kf.Type)
-                    {
-                        case KeyFrameType.Expression:
-                            var expressionKeyFrame = (KeyFrameAnimation<float, Expr.Scalar>.ExpressionKeyFrame)kf;
-                            builder.WriteLine($"result{Deref}InsertExpressionKeyFrame({Float(kf.Progress)}, {String(expressionKeyFrame.Expression)}, {CallFactoryFromFor(node, kf.Easing)});");
-                            break;
-                        case KeyFrameType.Value:
-                            var valueKeyFrame = (KeyFrameAnimation<float, Expr.Scalar>.ValueKeyFrame)kf;
-                            builder.WriteLine($"result{Deref}InsertKeyFrame({Float(kf.Progress)}, {Float(valueKeyFrame.Value)}, {CallFactoryFromFor(node, kf.Easing)});");
-                            break;
-                        default:
-                            throw new InvalidOperationException();
-                    }
-                }
+                WriteInsertKeyFrames(builder, node, obj, keyFrames, Float, v => new[] { v });
 
                 WriteCompositionObjectFactoryEnd(builder, obj, node);
                 return true;
