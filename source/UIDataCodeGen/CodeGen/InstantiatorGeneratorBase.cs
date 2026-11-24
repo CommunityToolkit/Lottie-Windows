@@ -555,8 +555,33 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
             WriteLoadedImageSurfaceArrays(builder);
 
             // Write each AnimatedVisual class.
-            var firstAnimatedVisualWritten = false;
+            var animatedVisualClasses = new List<(IAnimatedVisualInfo, CodeBuilder)>();
             foreach (var animatedVisualGenerator in _animatedVisualGenerators)
+            {
+                var animatedVisualBuilder = new CodeBuilder();
+                animatedVisualGenerator.WriteAnimatedVisualCode(animatedVisualBuilder);
+                animatedVisualClasses.Add((animatedVisualGenerator, animatedVisualBuilder));
+            }
+
+            WriteAnimatedVisualClasses(builder, animatedVisualClasses);
+
+            // Write the end of the file.
+            WriteImplementationFileEnd(builder);
+
+            return builder.ToString();
+        }
+
+        /// <summary>
+        /// Writes the AnimatedVisual classes. Override to post-process the code of the classes.
+        /// </summary>
+        /// <param name="builder">A <see cref="CodeBuilder"/> used to create the code.</param>
+        /// <param name="classes">The AnimatedVisual classes and their code.</param>
+        private protected virtual void WriteAnimatedVisualClasses(
+            CodeBuilder builder,
+            IReadOnlyList<(IAnimatedVisualInfo Info, CodeBuilder Code)> classes)
+        {
+            var firstAnimatedVisualWritten = false;
+            foreach (var (_, code) in classes)
             {
                 if (firstAnimatedVisualWritten)
                 {
@@ -564,17 +589,9 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                     builder.WriteLine();
                 }
 
-                var animatedVisualBuilder = new CodeBuilder();
-                animatedVisualGenerator.WriteAnimatedVisualCode(animatedVisualBuilder);
-                builder.WriteCodeBuilder(animatedVisualBuilder);
-
+                builder.WriteCodeBuilder(code);
                 firstAnimatedVisualWritten = true;
             }
-
-            // Write the end of the file.
-            WriteImplementationFileEnd(builder);
-
-            return builder.ToString();
         }
 
         /// <summary>

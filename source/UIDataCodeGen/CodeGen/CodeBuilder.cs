@@ -128,6 +128,23 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
         }
 
         /// <summary>
+        /// Writes lines that are already indented with spaces, keeping their indentation
+        /// relative to the current indentation.
+        /// </summary>
+        internal void WritePreindentedLines(IEnumerable<string> lines)
+        {
+            foreach (var line in lines)
+            {
+                var spaceCount = line.Length - line.TrimStart(' ').Length;
+                _lines.Add(new CodeLine
+                {
+                    Contents = line.Substring(spaceCount - (spaceCount % IndentSize)),
+                    IndentCount = _indentCount + (spaceCount / IndentSize),
+                });
+            }
+        }
+
+        /// <summary>
         /// Writes the contents of the given <see cref="CodeBuilder"/> and retains
         /// it for later access using the given key.
         /// </summary>

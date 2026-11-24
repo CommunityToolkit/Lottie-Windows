@@ -30,6 +30,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
 
         readonly Stringifier _s;
         readonly string _winUiNamespace;
+        readonly bool _disableOptimization;
 
         // True if any path geometry factory calls the CreatePathFromData helper.
         bool _isCreatePathFromDataHelperNeeded;
@@ -54,6 +55,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
                   stringifier: stringifier)
         {
             _s = stringifier;
+            _disableOptimization = configuration.DisableOptimization;
 
             if (AnimatedVisualSourceInfo.WinUIVersion.Major >= 3)
             {
@@ -803,6 +805,35 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
 
             // Close the scope for the instantiator class.
             builder.CloseScope();
+        }
+
+        /// <inheritdoc/>
+        private protected override void WriteAnimatedVisualClasses(
+            CodeBuilder builder,
+            IReadOnlyList<(IAnimatedVisualInfo Info, CodeBuilder Code)> classes)
+        {
+            if (!_disableOptimization && classes.Count > 1)
+            {
+                // Move the code that is identical in all of the AnimatedVisual classes into a base class.
+                var extracted = CSharpSharedCodeExtractor.Extract(
+                    $"{SourceInfo.ClassName}_AnimatedVisualBase",
+                    classes.Select(c => (IReadOnlyList<string>)c.Code.ToLines(0).ToArray()).ToArray());
+
+                if (extracted is not null)
+                {
+                    builder.WriteComment("Code that is shared by the AnimatedVisual classes.");
+                    builder.WritePreindentedLines(extracted.Value.BaseClass);
+                    foreach (var c in extracted.Value.Classes)
+                    {
+                        builder.WriteLine();
+                        builder.WritePreindentedLines(c);
+                    }
+
+                    return;
+                }
+            }
+
+            base.WriteAnimatedVisualClasses(builder, classes);
         }
 
         /// <inheritdoc/>
