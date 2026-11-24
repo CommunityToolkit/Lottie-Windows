@@ -413,8 +413,8 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
         private protected virtual string? GetInsertChildAtTopCall(string target, string child) => null;
 
         /// <summary>
-        /// Gets the attribute to write before the small helper methods that the factories call to
-        /// create objects, or null for no attribute.
+        /// Gets the attribute to write before the helper methods that the factories call, or null
+        /// for no attribute.
         /// </summary>
         private protected virtual string? HelperMethodAttribute => null;
 
@@ -2498,6 +2498,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                 var b = builder.GetSubBuilder("StartProgressBoundAnimation");
                 if (b.IsEmpty)
                 {
+                    WriteHelperMethodAttribute(b);
                     b.WriteLine("static void StartProgressBoundAnimation(");
                     b.Indent();
                     b.WriteLine($"{ReferenceTypeName("CompositionObject")} target,");
@@ -2522,6 +2523,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                 if (b.IsEmpty)
                 {
                     // 1 reference parameter version.
+                    WriteHelperMethodAttribute(b);
                     b.WriteLine("void BindProperty(");
                     b.Indent();
                     b.WriteLine($"{ReferenceTypeName("CompositionObject")} target,");
@@ -2548,6 +2550,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                 if (b.IsEmpty)
                 {
                     // 2 reference parameter version.
+                    WriteHelperMethodAttribute(b);
                     b.WriteLine($"void BindProperty2(");
                     b.Indent();
                     b.WriteLine($"{ReferenceTypeName("CompositionObject")} target,");
