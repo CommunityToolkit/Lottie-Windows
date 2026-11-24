@@ -46,6 +46,8 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
         static readonly Regex s_call = new Regex(@"(?<![\w.])(?<!new )([A-Za-z_]\w*)\s*\(", RegexOptions.Compiled);
         static readonly Regex s_field = new Regex(@"^(?<modifiers>(?:(?:const|readonly|static) )*)(?<type>[\w.<>\[\], ]+?) (?<name>\w+)(?<initializer> = .*)?;$", RegexOptions.Compiled);
         static readonly Regex s_method = new Regex(@"^(?<static>static )?(?<returnType>[\w.<>\[\]]+) (?<name>\w+)\(", RegexOptions.Compiled);
+        static readonly Regex s_declaredName = new Regex(@"(\w+)\s*(?:\(|=>|=|;)", RegexOptions.Compiled);
+        static readonly Regex s_classDeclaration = new Regex(@"^(?:\w+ )*class \w+$", RegexOptions.Compiled);
 
         /// <summary>
         /// Extracts the code shared by all of the given AnimatedVisual classes into a base class.
@@ -187,6 +189,15 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
                 .ToDictionary(g => g.Key, g => g.Select(m => m.Signature!).Distinct().ToArray());
             var allFieldNames = new HashSet<string>(fieldsByClass.SelectMany(d => d.Keys));
 
+            // The names of all the members of the classes. Shared code must not use a member that is
+            // neither a field nor a method recognized above (for example a property), because it cannot
+            // be checked to be the same in every class.
+            var unrecognizedMemberNames = new HashSet<string>(classes
+                .SelectMany(c => c.Members)
+                .Select(m => m.DeclaredName)
+                .Where(name => name is not null && !allFieldNames.Contains(name) && !signaturesByName.ContainsKey(name))
+                .Select(name => name!));
+
             // Start with the methods that have identical code in every class.
             var shared = new HashSet<string>(
                 methodsByClass[0].Values
@@ -222,7 +233,8 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
                 {
                     var method = methodsByClass[0][signature];
                     var usedFields = method.Identifiers.Where(allFieldNames.Contains);
-                    if (!usedFields.All(IsShareableField) ||
+                    if (method.Identifiers.Any(unrecognizedMemberNames.Contains) ||
+                        !usedFields.All(IsShareableField) ||
                         !Callees(method).All(callee => shared.Contains(callee) || IsOverridable(callee)))
                     {
                         shared.Remove(signature);
@@ -268,7 +280,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
             internal static ClassText? Parse(IReadOnlyList<string> lines)
             {
                 var openBrace = IndexOf(lines, "{", 0);
-                if (openBrace < 1 || lines[lines.Count - 1] != "}")
+                if (openBrace < 1 || lines[lines.Count - 1] != "}" || !s_classDeclaration.IsMatch(lines[0]))
                 {
                     return null;
                 }
@@ -287,7 +299,8 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
                         continue;
                     }
 
-                    if (!IsMemberStart(line))
+                    // Attributes are not expected, and would need to stay with their member.
+                    if (!IsMemberStart(line) || line[MemberIndent.Length] == '[')
                     {
                         return null;
                     }
@@ -317,6 +330,14 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
                         }
 
                         headerLineCount = bodyStart - i;
+
+                        // The header must be a method signature, possibly split over several lines. Anything else,
+                        // for example a multi-line expression bodied member, is not expected.
+                        if (line.Contains("=>") ||
+                            lines.Skip(i + 1).Take(headerLineCount - 1).Any(l => IsMemberStart(l) || l.Contains("=>") || l.EndsWith(";", StringComparison.Ordinal)))
+                        {
+                            return null;
+                        }
                     }
 
                     members.Add(new Member(
@@ -365,6 +386,8 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
                 Key = string.Join("\n", codeWithoutComments);
 
                 var header = HeaderLines[0].Substring(MemberIndent.Length);
+                var declaredName = s_declaredName.Match(header);
+                DeclaredName = declaredName.Success ? declaredName.Groups[1].Value : null;
                 if (header.EndsWith(";", StringComparison.Ordinal) && !header.Contains("=>") && !header.Contains("("))
                 {
                     var match = s_field.Match(header);
@@ -416,6 +439,9 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
             internal string Declaration { get; } = string.Empty;
 
             internal bool IsReadonly { get; }
+
+            // The name of the member, whatever its kind, if it could be found.
+            internal string? DeclaredName { get; }
 
             internal string? MethodName { get; }
 

@@ -126,6 +126,46 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.Tests
                 new[] { Class("Icon", RootField, Root, ShapeVisual(48)) }));
         }
 
+        [TestMethod]
+        public void MethodsUsingMembersThatAreNotRecognizedAreNotShared()
+        {
+            const string sizeProperty = "    Vector2 VisualSize => new Vector2(48F, 48F);";
+            const string shapeVisual = @"
+    ShapeVisual ShapeVisual_0()
+    {
+        var result = _c.CreateShapeVisual();
+        result.Size = VisualSize;
+        return result;
+    }";
+
+            // ShapeVisual_0 is identical in both classes, but uses a property, which is not shared.
+            var (baseClass, classes) = Extract(
+                Class("Icon_UAPv11", RootField, Root, sizeProperty, shapeVisual),
+                Class("Icon_UAPv8", RootField, Root, sizeProperty, shapeVisual));
+
+            CollectionAssert.Contains(baseClass.ToArray(), "    internal abstract ShapeVisual ShapeVisual_0();");
+            Assert.IsTrue(classes.All(c => c.Contains("    internal override ShapeVisual ShapeVisual_0()")));
+        }
+
+        [TestMethod]
+        public void NothingIsExtractedFromClassesWithAttributes()
+        {
+            const string attributedMethod = @"
+    [System.Diagnostics.DebuggerHidden]
+    ShapeVisual ShapeVisual_1()
+    {
+        return _c.CreateShapeVisual();
+    }";
+
+            Assert.IsNull(CSharpSharedCodeExtractor.Extract(
+                "Icon_AnimatedVisualBase",
+                new[]
+                {
+                    Class("Icon_UAPv11", RootField, Root, ShapeVisual(48), attributedMethod),
+                    Class("Icon_UAPv8", RootField, Root, ShapeVisual(48), attributedMethod),
+                }));
+        }
+
         // An AnimatedVisual class laid out as the C# generator writes it, with the given members.
         static string[] Class(string name, params string[] members)
         {
