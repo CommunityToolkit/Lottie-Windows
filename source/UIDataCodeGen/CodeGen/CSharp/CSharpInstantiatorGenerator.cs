@@ -37,6 +37,9 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
         readonly string _winUiNamespace;
         readonly bool _disableOptimization;
 
+        // True if the code is generated for CsWinRT 3.0, which requires .NET 10 and C# 14 or later.
+        readonly bool _isCsWinRT3;
+
         // The types of the animations for which an InsertKeyFrames helper is needed.
         readonly SortedSet<CompositionObjectType> _insertKeyFramesHelpersNeeded = new SortedSet<CompositionObjectType>();
 
@@ -76,6 +79,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
         {
             _s = stringifier;
             _disableOptimization = configuration.DisableOptimization;
+            _isCsWinRT3 = configuration.CsWinRTVersion >= 3;
 
             if (AnimatedVisualSourceInfo.WinUIVersion.Major >= 3)
             {
@@ -108,6 +112,31 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
         }
 
         static string FieldAssignment(string fieldName) => fieldName is not null ? $"{fieldName} = " : string.Empty;
+
+
+        // The end of a collection started by WriteCollectionStart.
+        string CollectionEnd => _isCsWinRT3 ? "]" : "}";
+
+        // The type of a parameter taking a read-only collection. With CsWinRT 3.0, spans are used
+        // so that callers can pass collection expressions, which are not allocated: constant
+        // primitive data comes from the data section of the assembly, and references are kept
+        // in a buffer on the stack.
+        string ReadOnlyCollectionType(string elementType) => _isCsWinRT3 ? $"ReadOnlySpan<{elementType}>" : $"{elementType}[]";
+
+        // Writes the start of a collection with one element per line, ended by CollectionEnd.
+        void WriteCollectionStart(CodeBuilder builder, string elementType)
+        {
+            if (_isCsWinRT3)
+            {
+                builder.WriteLine("[");
+                builder.Indent();
+            }
+            else
+            {
+                builder.WriteLine($"new {elementType}[]");
+                builder.OpenScope();
+            }
+        }
 
         /// <inheritdoc/>
         // Called by the base class to write the start of the file (i.e. everything up to the body of the Instantiator class).
@@ -300,7 +329,8 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
         {
             var visibility = SourceInfo.Public ? "public " : string.Empty;
 
-            builder.WriteLine($"{visibility}sealed class {SourceInfo.ClassName}");
+            // Classes implementing WinRT interfaces must be partial for AOT support with CsWinRT 2.x (CsWinRT1028).
+            builder.WriteLine($"{visibility}sealed partial class {SourceInfo.ClassName}");
 
             builder.Indent();
             if (SourceInfo.GenerateDependencyObject)
@@ -725,7 +755,8 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
         protected override void WriteAnimatedVisualStart(CodeBuilder builder, IAnimatedVisualInfo info)
         {
             // Start the instantiator class.
-            builder.WriteLine($"sealed class {info.ClassName}");
+            // Classes implementing WinRT interfaces must be partial for AOT support with CsWinRT 2.x (CsWinRT1028).
+            builder.WriteLine($"sealed partial class {info.ClassName}");
             builder.Indent();
             builder.WriteLine($": {Interface_IAnimatedVisual.GetQualifiedName(_s)}");
 
@@ -943,7 +974,8 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
             builder.WriteLine($"var result = {FieldAssignment(fieldName)}CanvasGeometry.CreateGroup(");
             builder.Indent();
             builder.WriteLine($"null,");
-            builder.WriteLine($"new CanvasGeometry[] {{ {string.Join(", ", obj.Geometries.Select(g => CallFactoryFor(g))) } }},");
+            var geometries = string.Join(", ", obj.Geometries.Select(g => CallFactoryFor(g)));
+            builder.WriteLine(_isCsWinRT3 ? $"[{geometries}]," : $"new CanvasGeometry[] {{ {geometries} }},");
             builder.WriteLine($"{_s.FilledRegionDetermination(obj.FilledRegionDetermination)});");
             builder.UnIndent();
         }
@@ -1023,8 +1055,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
             builder.WriteLine($"{InsertKeyFramesHelperName}(");
             builder.Indent();
             builder.WriteLine("result,");
-            builder.WriteLine("new float[]");
-            builder.OpenScope();
+            WriteCollectionStart(builder, "float");
             foreach (var keyFrame in keyFrames)
             {
                 var values = new[] { keyFrame.Progress }.Concat(keyFrame.Value);
@@ -1039,9 +1070,8 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
             builder.UnIndent();
             if (hasEasing)
             {
-                builder.WriteLine("},");
-                builder.WriteLine("new CompositionEasingFunction[]");
-                builder.OpenScope();
+                builder.WriteLine($"{CollectionEnd},");
+                WriteCollectionStart(builder, "CompositionEasingFunction");
                 foreach (var easing in easings)
                 {
                     builder.WriteLine($"{easing.EasingCode},");
@@ -1050,7 +1080,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
                 builder.UnIndent();
             }
 
-            builder.WriteLine("});");
+            builder.WriteLine($"{CollectionEnd});");
             builder.UnIndent();
             return true;
         }
@@ -1074,7 +1104,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
             if (animationType == CompositionObjectType.BooleanKeyFrameAnimation)
             {
                 builder.WriteComment("Inserts key frames from data. Each key frame is its progress followed by its value (1 for true, 0 for false).");
-                builder.WriteLine($"static void {InsertKeyFramesHelperName}({animationType} animation, float[] data)");
+                builder.WriteLine($"static void {InsertKeyFramesHelperName}({animationType} animation, {ReadOnlyCollectionType("float")} data)");
                 builder.OpenScope();
                 builder.WriteLine($"for (var i = 0; i < data.Length; i += {1 + valueComponentCount})");
                 builder.OpenScope();
@@ -1083,7 +1113,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
             else
             {
                 builder.WriteComment("Inserts key frames from data. Each key frame is its progress, followed by the components of its value, followed by the index of its easing function.");
-                builder.WriteLine($"static void {InsertKeyFramesHelperName}({animationType} animation, float[] data, CompositionEasingFunction[] easingFunctions)");
+                builder.WriteLine($"static void {InsertKeyFramesHelperName}({animationType} animation, {ReadOnlyCollectionType("float")} data, {ReadOnlyCollectionType("CompositionEasingFunction")} easingFunctions)");
                 builder.OpenScope();
                 builder.WriteLine($"for (var i = 0; i < data.Length; i += {2 + valueComponentCount})");
                 builder.OpenScope();
@@ -1103,15 +1133,14 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
             builder.WriteLine($"var result = {FieldAssignment(fieldName)}{CreatePathFromDataHelperName}(");
             builder.Indent();
             builder.WriteLine($"{_s.FilledRegionDetermination(obj.FilledRegionDetermination)},");
-            builder.WriteLine("new float[]");
-            builder.OpenScope();
+            WriteCollectionStart(builder, "float");
             foreach (var command in obj.Commands)
             {
                 builder.WriteLine(string.Join(", ", EncodePathCommand(command).Select(_s.Float)) + ",");
             }
 
             builder.UnIndent();
-            builder.WriteLine("});");
+            builder.WriteLine($"{CollectionEnd});");
             builder.UnIndent();
         }
 
@@ -1157,7 +1186,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
                 $"{(int)PathCommand.AddLine} = AddLine(point), {(int)PathCommand.AddCubicBezier} = AddCubicBezier(controlPoint1, " +
                 $"controlPoint2, endPoint), {(int)PathCommand.EndFigureOpen} = EndFigure(Open), " +
                 $"{(int)PathCommand.EndFigureClosed} = EndFigure(Closed).");
-            builder.WriteLine($"static CanvasGeometry {CreatePathFromDataHelperName}(CanvasFilledRegionDetermination filledRegionDetermination, float[] data)");
+            builder.WriteLine($"static CanvasGeometry {CreatePathFromDataHelperName}(CanvasFilledRegionDetermination filledRegionDetermination, {ReadOnlyCollectionType("float")} data)");
             builder.OpenScope();
             builder.WriteLine("using (var builder = new CanvasPathBuilder(null))");
             builder.OpenScope();

@@ -114,6 +114,12 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
         /// </summary>
         public Version WinUIVersion { get; set; }
 
+        /// <summary>
+        /// Gets or sets the major version of CsWinRT that C# code is generated for. Code generated
+        /// for CsWinRT 3.0 requires .NET 10 and C# 14 or later, and is not intended for CsWinRT 2.x.
+        /// </summary>
+        public uint CsWinRTVersion { get; set; } = 2;
+
         public bool ImplementCreateAndDestroyMethods => WinUIVersion >= Version.Parse("2.8");
     }
 }

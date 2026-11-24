@@ -14,8 +14,12 @@ namespace CommunityToolkit.WinUI.Lottie.LottieGen
         readonly List<string> _additionalInterfaces = new List<string>();
         readonly List<string> _languageStrings = new List<string>();
         Version? _winUIVersion;
+        uint? _csWinRTVersion;
 
         internal IReadOnlyList<string> AdditionalInterfaces => _additionalInterfaces;
+
+        // The major version of CsWinRT that C# code is generated for. Defaults to 2.
+        internal uint CsWinRTVersion => _csWinRTVersion ?? 2;
 
         internal bool DisableCodeGenOptimizer { get; private set; }
 
@@ -82,6 +86,11 @@ namespace CommunityToolkit.WinUI.Lottie.LottieGen
                 {
                     sb.Append($" -{nameof(Keyword.AdditionalInterface)} {additionalInterface}");
                 }
+            }
+
+            if (_csWinRTVersion.HasValue)
+            {
+                sb.Append($" -{nameof(CsWinRTVersion)} {CsWinRTVersion}");
             }
 
             if (DisableCodeGenOptimizer)
@@ -180,6 +189,7 @@ namespace CommunityToolkit.WinUI.Lottie.LottieGen
 
             // Normal keywords.
             AdditionalInterface,
+            CsWinRTVersion,
             DisableCodeGenOptimizer,
             DisableLottieMergeOptimizer,
             DisableTranslationOptimizer,
@@ -251,6 +261,7 @@ namespace CommunityToolkit.WinUI.Lottie.LottieGen
             // Define the keywords accepted on the command line.
             var tokenizer = new CommandlineTokenizer<Keyword>(ambiguousValue: Keyword.Ambiguous)
                 .AddPrefixedKeyword(Keyword.AdditionalInterface)
+                .AddPrefixedKeyword(Keyword.CsWinRTVersion)
                 .AddPrefixedKeyword(Keyword.DisableCodeGenOptimizer)
                 .AddPrefixedKeyword(Keyword.DisableLottieMergeOptimizer)
                 .AddPrefixedKeyword(Keyword.DisableTranslationOptimizer)
@@ -325,6 +336,7 @@ namespace CommunityToolkit.WinUI.Lottie.LottieGen
 
                             // The following keywords require a parameter as the next token.
                             case Keyword.AdditionalInterface:
+                            case Keyword.CsWinRTVersion:
                             case Keyword.InputFile:
                             case Keyword.Interface:
                             case Keyword.Language:
@@ -345,6 +357,25 @@ namespace CommunityToolkit.WinUI.Lottie.LottieGen
 
                     case Keyword.AdditionalInterface:
                         _additionalInterfaces.Add(arg);
+                        previousKeyword = Keyword.None;
+                        break;
+                    case Keyword.CsWinRTVersion:
+                        if (_csWinRTVersion is not null)
+                        {
+                            ErrorDescription = ArgumentSpecifiedMoreThanOnce("CsWinRT version");
+                            return;
+                        }
+
+                        {
+                            if (!uint.TryParse(arg, out var version) || version < 2 || version > 3)
+                            {
+                                ErrorDescription = "CsWinRT version must be 2 or 3.";
+                                return;
+                            }
+
+                            _csWinRTVersion = version;
+                        }
+
                         previousKeyword = Keyword.None;
                         break;
                     case Keyword.InputFile:
