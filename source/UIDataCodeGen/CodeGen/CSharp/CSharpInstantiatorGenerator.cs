@@ -985,6 +985,9 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
         private protected override string? HelperMethodAttribute => NoInliningAttribute;
 
         /// <inheritdoc/>
+        private protected override bool IsBindTrimHelperSupported => true;
+
+        /// <inheritdoc/>
         private protected override string? GetInheritedPropertySetterCall(string declaringType, string valueType, string propertyName, string target, string value)
         {
             // Setting a property declared by a base class through the WinRT projection requires getting

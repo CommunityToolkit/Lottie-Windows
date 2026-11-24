@@ -419,6 +419,13 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
         private protected virtual string? HelperMethodAttribute => null;
 
         /// <summary>
+        /// Gets a value indicating whether the language supports the BindTrim helper, which
+        /// initializes the TStart and TEnd values of a geometry, starts their animations, and binds
+        /// the trim of the geometry to them.
+        /// </summary>
+        private protected virtual bool IsBindTrimHelperSupported => false;
+
+        /// <summary>
         /// Writes code that inserts the given value key frames into the animation in the "result"
         /// variable from a table of data, which is more compact than a call per key frame.
         /// </summary>
@@ -1852,6 +1859,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                 builder.WriteSubBuilder("StartProgressBoundAnimation");
                 builder.WriteSubBuilder("BindProperty");
                 builder.WriteSubBuilder("BindProperty2");
+                builder.WriteSubBuilder("BindTrim");
                 builder.WriteSubBuilder("CreateBooleanKeyFrameAnimation");
                 builder.WriteSubBuilder("CreateColorKeyFrameAnimation");
                 builder.WriteSubBuilder("CreatePathKeyFrameAnimation");
@@ -2160,10 +2168,21 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
 
             void StartAnimations(CodeBuilder builder, CompositionObject obj, ObjectData node, string localName, ref bool controllerVariableAdded)
             {
+                var animators = obj.Animators.ToArray();
+                TryGetTrimBinding(obj, out var trimBindingIndex);
+
                 // Start the animations for properties on the object.
-                foreach (var animator in obj.Animators)
+                for (var i = 0; i < animators.Length; i++)
                 {
-                    StartAnimation(builder, obj, node, localName, ref controllerVariableAdded, animator);
+                    if (i == trimBindingIndex)
+                    {
+                        // This animator and the next 3 are started by a helper.
+                        WriteBindTrimCall(builder, obj, node, localName, animators[i], animators[i + 2]);
+                        i += 3;
+                        continue;
+                    }
+
+                    StartAnimation(builder, obj, node, localName, ref controllerVariableAdded, animators[i]);
                 }
 
                 // Start the animations for the properties on the property set on the object.
@@ -2316,6 +2335,157 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                 if (attribute is not null)
                 {
                     builder.WriteLine(attribute);
+                }
+            }
+
+            // Finds the animators of a geometry that are started by the BindTrim helper, which is the
+            // way the translator animates trims: TStart and TEnd values in the property set of the
+            // geometry, with progress bound animations, and TrimStart and TrimEnd bound to their
+            // minimum and maximum, as 4 consecutive animators. The helper also initializes the property
+            // set, so the property set must have only these values. This has no side effects, so that
+            // it gives the same result when the property set is initialized and when the animations
+            // are started.
+            bool TryGetTrimBinding(CompositionObject obj, out int index)
+            {
+                index = -1;
+
+                // With IAnimatedVisual2, the progress bound animations are started by a different method.
+                if (!_owner.IsBindTrimHelperSupported ||
+                    _configuration.ImplementCreateAndDestroyMethods ||
+                    obj is not CompositionGeometry)
+                {
+                    return false;
+                }
+
+                var names = obj.Properties.Names;
+                if (!names.Keys.SequenceEqual(new[] { "TEnd", "TStart" }, StringComparer.Ordinal) ||
+                    names.Values.Any(type => type != PropertySetValueType.Scalar))
+                {
+                    return false;
+                }
+
+                var animators = obj.Animators.ToArray();
+                for (var i = 0; i + 4 <= animators.Length; i++)
+                {
+                    if (!IsProgressBoundAnimator(animators[i], "TStart", out var tStartProgress) ||
+                        !IsTrimBindingAnimator(obj, animators[i + 1], "TrimStart", "Min(my.TStart,my.TEnd)") ||
+                        !IsProgressBoundAnimator(animators[i + 2], "TEnd", out var tEndProgress) ||
+                        !IsTrimBindingAnimator(obj, animators[i + 3], "TrimEnd", "Max(my.TStart,my.TEnd)") ||
+                        tStartProgress != tEndProgress)
+                    {
+                        continue;
+                    }
+
+                    // No other animation may reference the property set, because it would be referenced
+                    // through the local that holds it, which is not written.
+                    if (animators.Take(i).Concat(animators.Skip(i + 4)).Concat(obj.Properties.Animators)
+                        .Any(a => a.Animation.ReferenceParameters.Any(p => p.Value == obj.Properties)))
+                    {
+                        return false;
+                    }
+
+                    index = i;
+                    return true;
+                }
+
+                return false;
+            }
+
+            // True if the animator starts a key frame animation with StartProgressBoundAnimation.
+            bool IsProgressBoundAnimator(CompositionObject.Animator animator, string animatedProperty, out ExpressionAnimation? progressExpression)
+            {
+                progressExpression = null;
+                if (animator.AnimatedProperty != animatedProperty ||
+                    animator.Animation is not KeyFrameAnimation_ ||
+                    animator.Controller is not { IsPaused: true } controller)
+                {
+                    return false;
+                }
+
+                var controllerAnimators = controller.Animators.ToArray();
+                if (controllerAnimators.Length != 1 ||
+                    controllerAnimators[0].AnimatedProperty != "Progress" ||
+                    controllerAnimators[0].Animation is not ExpressionAnimation expression ||
+                    !NodeFor(expression).NeedsAFactory)
+                {
+                    return false;
+                }
+
+                progressExpression = expression;
+                return true;
+            }
+
+            // True if the animator binds a property of the object with BindProperty to the given
+            // expression of the object.
+            bool IsTrimBindingAnimator(CompositionObject obj, CompositionObject.Animator animator, string animatedProperty, string expression)
+                => animator.AnimatedProperty == animatedProperty &&
+                   animator.Controller is null &&
+                   animator.Animation is ExpressionAnimation animation &&
+                   !NodeFor(animation).RequiresStorage &&
+                   string.IsNullOrWhiteSpace(animation.Target) &&
+                   animation.ReferenceParameters.Count == 1 &&
+                   animation.ReferenceParameters.First().Key == "my" &&
+                   animation.ReferenceParameters.First().Value == obj &&
+                   animation.Expression.ToText() == expression;
+
+            void WriteBindTrimCall(
+                CodeBuilder builder,
+                CompositionObject obj,
+                ObjectData node,
+                string localName,
+                CompositionObject.Animator tStart,
+                CompositionObject.Animator tEnd)
+            {
+                EnsureStartProgressBoundAnimationWritten(_rootCodeBuilder ?? builder);
+                EnsureBindPropertyWritten(_rootCodeBuilder ?? builder);
+                EnsureBindTrimWritten(_rootCodeBuilder ?? builder);
+
+                // The factories are called in the same order as when the animators are started one by one.
+                var progressExpressionNode = NodeFor(tStart.Controller!.Animators.Single().Animation);
+                var tStartAnimation = CallFactoryFromFor(node, NodeFor(tStart.Animation));
+                var progressExpression = CallFactoryFromFor(NodeFor(tStart.Controller), progressExpressionNode);
+                var tEndAnimation = CallFactoryFromFor(node, NodeFor(tEnd.Animation));
+
+                // The progress expression is the same object for TStart and TEnd, so it is passed once.
+                var tEndProgressExpression = CallFactoryFromFor(NodeFor(tEnd.Controller!), progressExpressionNode);
+                Debug.Assert(
+                    tEndProgressExpression == progressExpression || tEndProgressExpression == progressExpressionNode.FieldName,
+                    "The progress expression of TEnd would be created by a different call");
+
+                var properties = obj.Properties;
+                builder.WriteLine(
+                    $"BindTrim({localName}, " +
+                    $"{_owner.PropertySetValueInitializer(properties, "TEnd", PropertySetValueType.Scalar)}, " +
+                    $"{_owner.PropertySetValueInitializer(properties, "TStart", PropertySetValueType.Scalar)}, " +
+                    $"{tStartAnimation}, {progressExpression}, {tEndAnimation});");
+            }
+
+            void EnsureBindTrimWritten(CodeBuilder builder)
+            {
+                // Write the method that does what the animators found by TryGetTrimBinding do.
+                var b = builder.GetSubBuilder("BindTrim");
+                if (b.IsEmpty)
+                {
+                    WriteHelperMethodAttribute(b);
+                    b.WriteLine("void BindTrim(");
+                    b.Indent();
+                    b.WriteLine($"{ReferenceTypeName("CompositionGeometry")} target,");
+                    b.WriteLine($"{_s.TypeFloat32} tEnd,");
+                    b.WriteLine($"{_s.TypeFloat32} tStart,");
+                    b.WriteLine($"{ReferenceTypeName("CompositionAnimation")} tStartAnimation,");
+                    b.WriteLine($"{ReferenceTypeName("ExpressionAnimation")} progressExpression,");
+                    b.WriteLine($"{ReferenceTypeName("CompositionAnimation")} tEndAnimation)");
+                    b.UnIndent();
+                    b.OpenScope();
+                    b.WriteLine($"{ConstVar} propertySet = {_s.PropertyGet("target", "Properties")};");
+                    b.WriteLine($"propertySet{Deref}InsertScalar({String("TEnd")}, tEnd);");
+                    b.WriteLine($"propertySet{Deref}InsertScalar({String("TStart")}, tStart);");
+                    b.WriteLine($"StartProgressBoundAnimation(target, {String("TStart")}, tStartAnimation, progressExpression);");
+                    b.WriteLine($"BindProperty(target, {String("TrimStart")}, {String("Min(my.TStart,my.TEnd)")}, {String("my")}, target);");
+                    b.WriteLine($"StartProgressBoundAnimation(target, {String("TEnd")}, tEndAnimation, progressExpression);");
+                    b.WriteLine($"BindProperty(target, {String("TrimEnd")}, {String("Max(my.TStart,my.TEnd)")}, {String("my")}, target);");
+                    b.CloseScope();
+                    b.WriteLine();
                 }
             }
 
@@ -2637,7 +2807,8 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
 
                 var propertySet = obj.Properties;
 
-                if (propertySet.Names.Count > 0)
+                // When the trim of a geometry is bound by the BindTrim helper, the helper initializes the property set.
+                if (propertySet.Names.Count > 0 && !TryGetTrimBinding(obj, out _))
                 {
                     builder.WriteLine($"{ConstVar} propertySet = {_s.PropertyGet(localName, "Properties")};");
                     _owner.WritePropertySetInitialization(builder, propertySet, "propertySet");
