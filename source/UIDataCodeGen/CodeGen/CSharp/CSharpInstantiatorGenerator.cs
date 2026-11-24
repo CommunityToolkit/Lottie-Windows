@@ -24,8 +24,26 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
 #endif
     sealed class CSharpInstantiatorGenerator : InstantiatorGeneratorBase
     {
+        // The name of the static helper that creates a CanvasGeometry path from path data.
+        const string CreatePathFromDataHelperName = "CreatePathFromData";
+
+
         readonly Stringifier _s;
         readonly string _winUiNamespace;
+
+        // True if any path geometry factory calls the CreatePathFromData helper.
+        bool _isCreatePathFromDataHelperNeeded;
+
+
+        // The codes of the commands in the path data passed to the CreatePathFromData helper.
+        enum PathCommand
+        {
+            BeginFigure = 0,
+            AddLine = 1,
+            AddCubicBezier = 2,
+            EndFigureOpen = 3,
+            EndFigureClosed = 4,
+        }
 
         CSharpInstantiatorGenerator(
             CodegenConfiguration configuration,
@@ -791,6 +809,13 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
         // Called by the base class to write the end of the file (i.e. everything after the body of the AnimatedVisual class).
         protected override void WriteImplementationFileEnd(CodeBuilder builder)
         {
+            // Helpers shared by all of the AnimatedVisual classes.
+            if (_isCreatePathFromDataHelperNeeded)
+            {
+                WriteCreatePathFromDataHelper(builder);
+            }
+
+
             // Close the scope for the IAnimatedVisualSource class.
             builder.CloseScope();
 
@@ -841,37 +866,116 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
         /// <inheritdoc/>
         protected override void WriteCanvasGeometryPathFactory(CodeBuilder builder, CanvasGeometry.Path obj, string typeName, string fieldName)
         {
-            builder.WriteLine($"{typeName} result;");
-            builder.WriteLine($"using (var builder = new CanvasPathBuilder(null))");
+            // The path is encoded as data and replayed by a shared helper. This is much smaller than
+            // a CanvasPathBuilder call per command, both in source and in compiled code.
+            _isCreatePathFromDataHelperNeeded = true;
+            builder.WriteLine($"var result = {FieldAssignment(fieldName)}{CreatePathFromDataHelperName}(");
+            builder.Indent();
+            builder.WriteLine($"{_s.FilledRegionDetermination(obj.FilledRegionDetermination)},");
+            builder.WriteLine("new float[]");
             builder.OpenScope();
-            if (obj.FilledRegionDetermination != CanvasFilledRegionDetermination.Alternate)
-            {
-                builder.WriteLine($"builder.SetFilledRegionDetermination({_s.FilledRegionDetermination(obj.FilledRegionDetermination)});");
-            }
-
             foreach (var command in obj.Commands)
             {
-                switch (command.Type)
-                {
-                    case CanvasPathBuilder.CommandType.BeginFigure:
-                        builder.WriteLine($"builder.BeginFigure({_s.Vector2(((CanvasPathBuilder.Command.BeginFigure)command).StartPoint)});");
-                        break;
-                    case CanvasPathBuilder.CommandType.EndFigure:
-                        builder.WriteLine($"builder.EndFigure({_s.CanvasFigureLoop(((CanvasPathBuilder.Command.EndFigure)command).FigureLoop)});");
-                        break;
-                    case CanvasPathBuilder.CommandType.AddLine:
-                        builder.WriteLine($"builder.AddLine({_s.Vector2(((CanvasPathBuilder.Command.AddLine)command).EndPoint)});");
-                        break;
-                    case CanvasPathBuilder.CommandType.AddCubicBezier:
-                        var cb = (CanvasPathBuilder.Command.AddCubicBezier)command;
-                        builder.WriteLine($"builder.AddCubicBezier({_s.Vector2(cb.ControlPoint1)}, {_s.Vector2(cb.ControlPoint2)}, {_s.Vector2(cb.EndPoint)});");
-                        break;
-                    default:
-                        throw new InvalidOperationException();
-                }
+                builder.WriteLine(string.Join(", ", EncodePathCommand(command).Select(_s.Float)) + ",");
             }
 
-            builder.WriteLine($"result = {FieldAssignment(fieldName)}CanvasGeometry.CreatePath(builder);");
+            builder.UnIndent();
+            builder.WriteLine("});");
+            builder.UnIndent();
+        }
+
+        // Encodes a path command as its PathCommand code followed by its points.
+        static IEnumerable<float> EncodePathCommand(CanvasPathBuilder.Command command)
+        {
+            switch (command.Type)
+            {
+                case CanvasPathBuilder.CommandType.BeginFigure:
+                    var startPoint = ((CanvasPathBuilder.Command.BeginFigure)command).StartPoint;
+                    return new[] { (float)PathCommand.BeginFigure, startPoint.X, startPoint.Y };
+                case CanvasPathBuilder.CommandType.EndFigure:
+                    return new[]
+                    {
+                        (float)(((CanvasPathBuilder.Command.EndFigure)command).FigureLoop == CanvasFigureLoop.Closed
+                            ? PathCommand.EndFigureClosed
+                            : PathCommand.EndFigureOpen),
+                    };
+                case CanvasPathBuilder.CommandType.AddLine:
+                    var endPoint = ((CanvasPathBuilder.Command.AddLine)command).EndPoint;
+                    return new[] { (float)PathCommand.AddLine, endPoint.X, endPoint.Y };
+                case CanvasPathBuilder.CommandType.AddCubicBezier:
+                    var cb = (CanvasPathBuilder.Command.AddCubicBezier)command;
+                    return new[]
+                    {
+                        (float)PathCommand.AddCubicBezier,
+                        cb.ControlPoint1.X, cb.ControlPoint1.Y,
+                        cb.ControlPoint2.X, cb.ControlPoint2.Y,
+                        cb.EndPoint.X, cb.EndPoint.Y,
+                    };
+                default:
+                    throw new InvalidOperationException();
+            }
+        }
+
+        // Writes the helper that replays the path data written by WriteCanvasGeometryPathFactory.
+        void WriteCreatePathFromDataHelper(CodeBuilder builder)
+        {
+            builder.WriteLine();
+            builder.WriteComment(
+                $"Creates a CanvasGeometry path from path data. The data is a sequence of commands, each one being a code " +
+                $"followed by the coordinates of its points: {(int)PathCommand.BeginFigure} = BeginFigure(point), " +
+                $"{(int)PathCommand.AddLine} = AddLine(point), {(int)PathCommand.AddCubicBezier} = AddCubicBezier(controlPoint1, " +
+                $"controlPoint2, endPoint), {(int)PathCommand.EndFigureOpen} = EndFigure(Open), " +
+                $"{(int)PathCommand.EndFigureClosed} = EndFigure(Closed).");
+            builder.WriteLine($"static CanvasGeometry {CreatePathFromDataHelperName}(CanvasFilledRegionDetermination filledRegionDetermination, float[] data)");
+            builder.OpenScope();
+            builder.WriteLine("using (var builder = new CanvasPathBuilder(null))");
+            builder.OpenScope();
+            builder.WriteLine($"if (filledRegionDetermination != {_s.FilledRegionDetermination(CanvasFilledRegionDetermination.Alternate)})");
+            builder.OpenScope();
+            builder.WriteLine("builder.SetFilledRegionDetermination(filledRegionDetermination);");
+            builder.CloseScope();
+            builder.WriteLine();
+            builder.WriteLine("for (var i = 0; i < data.Length;)");
+            builder.OpenScope();
+            builder.WriteLine("switch ((int)data[i++])");
+            builder.OpenScope();
+            builder.WriteLine($"case {(int)PathCommand.BeginFigure}:");
+            builder.Indent();
+            builder.WriteLine("builder.BeginFigure(new Vector2(data[i], data[i + 1]));");
+            builder.WriteLine("i += 2;");
+            builder.WriteLine("break;");
+            builder.UnIndent();
+            builder.WriteLine($"case {(int)PathCommand.AddLine}:");
+            builder.Indent();
+            builder.WriteLine("builder.AddLine(new Vector2(data[i], data[i + 1]));");
+            builder.WriteLine("i += 2;");
+            builder.WriteLine("break;");
+            builder.UnIndent();
+            builder.WriteLine($"case {(int)PathCommand.AddCubicBezier}:");
+            builder.Indent();
+            builder.WriteLine("builder.AddCubicBezier(new Vector2(data[i], data[i + 1]), new Vector2(data[i + 2], data[i + 3]), new Vector2(data[i + 4], data[i + 5]));");
+            builder.WriteLine("i += 6;");
+            builder.WriteLine("break;");
+            builder.UnIndent();
+            builder.WriteLine($"case {(int)PathCommand.EndFigureOpen}:");
+            builder.Indent();
+            builder.WriteLine($"builder.EndFigure({_s.CanvasFigureLoop(CanvasFigureLoop.Open)});");
+            builder.WriteLine("break;");
+            builder.UnIndent();
+            builder.WriteLine($"case {(int)PathCommand.EndFigureClosed}:");
+            builder.Indent();
+            builder.WriteLine($"builder.EndFigure({_s.CanvasFigureLoop(CanvasFigureLoop.Closed)});");
+            builder.WriteLine("break;");
+            builder.UnIndent();
+            builder.WriteLine("default:");
+            builder.Indent();
+            builder.WriteLine("throw new ArgumentException(\"Invalid path data\", nameof(data));");
+            builder.UnIndent();
+            builder.CloseScope();
+            builder.CloseScope();
+            builder.WriteLine();
+            builder.WriteLine("return CanvasGeometry.CreatePath(builder);");
+            builder.CloseScope();
             builder.CloseScope();
         }
 
