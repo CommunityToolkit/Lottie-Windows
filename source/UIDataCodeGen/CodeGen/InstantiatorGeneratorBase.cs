@@ -373,6 +373,116 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
             Mgce.GaussianBlurEffect effect);
 
         /// <summary>
+        /// Gets the code that sets a property declared by a base class of the type of the
+        /// target, or null to set the property directly.
+        /// </summary>
+        /// <param name="declaringType">The name of the class that declares the property.</param>
+        /// <param name="valueType">The name of the type of the property.</param>
+        /// <param name="propertyName">The name of the property.</param>
+        /// <param name="target">The code for the object whose property is set.</param>
+        /// <param name="value">The code for the value.</param>
+        /// <returns>The code of the call, without a terminating semicolon, or null.</returns>
+        private protected virtual string? GetInheritedPropertySetterCall(string declaringType, string valueType, string propertyName, string target, string value) => null;
+
+        /// <summary>
+        /// Gets the code that adds a color stop to the ColorStops of a gradient brush, or null to
+        /// add it directly to the ColorStops collection.
+        /// </summary>
+        /// <param name="target">The code for the gradient brush.</param>
+        /// <param name="colorStop">The code for the color stop.</param>
+        /// <returns>The code of the call, without a terminating semicolon, or null.</returns>
+        private protected virtual string? GetAddColorStopCall(string target, string colorStop) => null;
+
+        /// <summary>
+        /// Gets the code that adds a shape to the Shapes of a ShapeVisual or a CompositionContainerShape,
+        /// or null to add it directly to the Shapes collection.
+        /// </summary>
+        /// <param name="targetType">The name of the type of the object that has the Shapes.</param>
+        /// <param name="target">The code for the object that has the Shapes.</param>
+        /// <param name="shape">The code for the shape.</param>
+        /// <returns>The code of the call, without a terminating semicolon, or null.</returns>
+        private protected virtual string? GetAddShapeCall(string targetType, string target, string shape) => null;
+
+        /// <summary>
+        /// Gets the code that inserts a visual at the top of the Children of a ContainerVisual,
+        /// or null to insert it directly into the Children collection.
+        /// </summary>
+        /// <param name="target">The code for the ContainerVisual.</param>
+        /// <param name="child">The code for the child visual.</param>
+        /// <returns>The code of the call, without a terminating semicolon, or null.</returns>
+        private protected virtual string? GetInsertChildAtTopCall(string target, string child) => null;
+
+        /// <summary>
+        /// Gets the attribute to write before the helper methods that the factories call, or null
+        /// for no attribute.
+        /// </summary>
+        private protected virtual string? HelperMethodAttribute => null;
+
+        /// <summary>
+        /// Gets a value indicating whether the language supports the BindTrim helper, which
+        /// initializes the TStart and TEnd values of a geometry, starts their animations, and binds
+        /// the trim of the geometry to them.
+        /// </summary>
+        private protected virtual bool IsBindTrimHelperSupported => false;
+
+        /// <summary>
+        /// Writes code that inserts the given value key frames into the animation in the "result"
+        /// variable from a table of data, which is more compact than a call per key frame.
+        /// </summary>
+        /// <param name="builder">A <see cref="CodeBuilder"/> used to create the code.</param>
+        /// <param name="animationType">The type of the animation.</param>
+        /// <param name="keyFrames">The key frames, in the order they must be inserted.</param>
+        /// <returns><see langword="true"/> if the code was written, or <see langword="false"/> if
+        /// the language does not support it, in which case nothing was written.</returns>
+        private protected virtual bool TryWriteInsertKeyFramesFromData(
+            CodeBuilder builder,
+            CompositionObjectType animationType,
+            IReadOnlyList<KeyFrameData> keyFrames) => false;
+
+        /// <summary>
+        /// Describes a value key frame for <see cref="TryWriteInsertKeyFramesFromData"/>.
+        /// </summary>
+        private protected sealed class KeyFrameData
+        {
+            internal KeyFrameData(float progress, IReadOnlyList<float> value, object? easing, string? easingCode, string comment)
+            {
+                Progress = progress;
+                Value = value;
+                Easing = easing;
+                EasingCode = easingCode;
+                Comment = comment;
+            }
+
+            /// <summary>
+            /// The progress of the key frame.
+            /// </summary>
+            internal float Progress { get; }
+
+            /// <summary>
+            /// The components of the value of the key frame.
+            /// </summary>
+            internal IReadOnlyList<float> Value { get; }
+
+            /// <summary>
+            /// The easing function of the key frame. Key frames with the same easing function
+            /// use the same object.
+            /// </summary>
+            internal object? Easing { get; }
+
+            /// <summary>
+            /// The code that gets the easing function, or null if the type of animation has no easing.
+            /// The code of the first key frame using an easing function may create it, so it must
+            /// be evaluated before the code of the other key frames that use the same easing function.
+            /// </summary>
+            internal string? EasingCode { get; }
+
+            /// <summary>
+            /// A description of the key frame.
+            /// </summary>
+            internal string Comment { get; }
+        }
+
+        /// <summary>
         /// Writes code that initializes a theme property value in the theme property set.
         /// </summary>
         private protected void WriteThemePropertyInitialization(
@@ -554,9 +664,29 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
             // Write the LoadedImageSurface byte arrays into the outer (IAnimatedVisualSource) class.
             WriteLoadedImageSurfaceArrays(builder);
 
-            // Write each AnimatedVisual class.
+            // Generate each AnimatedVisual class.
+            var animatedVisualClasses = _animatedVisualGenerators.Select(g => g.GenerateClass()).ToArray();
+
+            WriteAnimatedVisualClasses(builder, animatedVisualClasses);
+
+            // Write the end of the file.
+            WriteImplementationFileEnd(builder);
+
+            return builder.ToString();
+        }
+
+        /// <summary>
+        /// Writes the AnimatedVisual classes. Override to change how the classes are written, for
+        /// example to share code between them.
+        /// </summary>
+        /// <param name="builder">A <see cref="CodeBuilder"/> used to create the code.</param>
+        /// <param name="classes">The AnimatedVisual classes.</param>
+        private protected virtual void WriteAnimatedVisualClasses(
+            CodeBuilder builder,
+            IReadOnlyList<AnimatedVisualClass> classes)
+        {
             var firstAnimatedVisualWritten = false;
-            foreach (var animatedVisualGenerator in _animatedVisualGenerators)
+            foreach (var c in classes)
             {
                 if (firstAnimatedVisualWritten)
                 {
@@ -564,17 +694,76 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                     builder.WriteLine();
                 }
 
-                var animatedVisualBuilder = new CodeBuilder();
-                animatedVisualGenerator.WriteAnimatedVisualCode(animatedVisualBuilder);
-                builder.WriteCodeBuilder(animatedVisualBuilder);
+                c.WriteStart(builder);
+                foreach (var field in c.Members.Fields)
+                {
+                    builder.WriteLine(field.Declaration);
+                }
 
+                foreach (var method in c.Members.Methods)
+                {
+                    builder.WriteLine();
+                    method.Write(builder);
+                }
+
+                builder.WriteLine();
+                c.WriteEnd(builder);
                 firstAnimatedVisualWritten = true;
             }
+        }
 
-            // Write the end of the file.
-            WriteImplementationFileEnd(builder);
+        /// <summary>
+        /// An AnimatedVisual class that has been generated, and that is ready to be written.
+        /// </summary>
+        private protected sealed class AnimatedVisualClass
+        {
+            readonly InstantiatorGeneratorBase _owner;
+            readonly CodeBuilder _createAnimations;
+            readonly CodeBuilder _destroyAnimations;
 
-            return builder.ToString();
+            internal AnimatedVisualClass(
+                InstantiatorGeneratorBase owner,
+                IAnimatedVisualInfo info,
+                AnimatedVisualClassMembers members,
+                CodeBuilder createAnimations,
+                CodeBuilder destroyAnimations)
+            {
+                _owner = owner;
+                Info = info;
+                Members = members;
+                _createAnimations = createAnimations;
+                _destroyAnimations = destroyAnimations;
+            }
+
+            /// <summary>
+            /// Gets the description of the class.
+            /// </summary>
+            internal IAnimatedVisualInfo Info { get; }
+
+            /// <summary>
+            /// Gets the fields and methods of the class, in the order that they are written.
+            /// </summary>
+            internal AnimatedVisualClassMembers Members { get; }
+
+            /// <summary>
+            /// Writes the start of the class, up to and including its opening brace.
+            /// </summary>
+            internal void WriteStart(CodeBuilder builder)
+            {
+                _owner._currentAnimatedVisualGenerator = (AnimatedVisualGenerator)Info;
+                _owner.WriteAnimatedVisualStart(builder, Info);
+                _owner._currentAnimatedVisualGenerator = null;
+            }
+
+            /// <summary>
+            /// Writes what is after the fields and methods of the class, including its closing brace.
+            /// </summary>
+            internal void WriteEnd(CodeBuilder builder)
+            {
+                _owner._currentAnimatedVisualGenerator = (AnimatedVisualGenerator)Info;
+                _owner.WriteAnimatedVisualEnd(builder, Info, _createAnimations, _destroyAnimations);
+                _owner._currentAnimatedVisualGenerator = null;
+            }
         }
 
         /// <summary>
@@ -623,6 +812,9 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
 
         void WriteDefaultInitializedField(CodeBuilder builder, string typeName, string fieldName)
             => WriteInitializedField(builder, typeName, fieldName, _s.DefaultInitialize);
+
+        string FieldDeclaration(string typeName, string fieldName)
+            => $"{typeName} {fieldName}{_s.DefaultInitialize};";
 
         // Returns true iff the given sequence has exactly one item in it.
         // This is equivalent to Count() == 1, but doesn't require the whole
@@ -1026,7 +1218,14 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
             // The subset of the object graph for which factories will be generated.
             readonly ObjectData[] _nodes;
 
-            private CodeBuilder? _rootCodeBuilder = null;
+            // The helper methods that the factories call, by key. They are added when first needed.
+            readonly Dictionary<string, AnimatedVisualMethod> _helperMethods = new Dictionary<string, AnimatedVisualMethod>();
+
+            // The factory method that is being written, if any.
+            AnimatedVisualMethod? _currentMethod;
+
+            // What the code that is being generated uses, which is recorded in the method that is being written.
+            AnimatedVisualMemberUses? _currentUses;
 
             bool controllerCreatedInCreateAnimationsMethod = false;
 
@@ -1249,7 +1448,17 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
 
             string StrokeLineJoin(CompositionStrokeLineJoin value) => _s.StrokeLineJoin(value);
 
-            string TimeSpan(TimeSpan value) => value == _owner._compositionDuration ? _s.TimeSpan(DurationTicksFieldName) : _s.TimeSpan(value);
+            string TimeSpan(TimeSpan value)
+            {
+                if (value != _owner._compositionDuration)
+                {
+                    return _s.TimeSpan(value);
+                }
+
+                // The duration of the composition is in a field.
+                _currentUses?.UseField(DurationTicksFieldName);
+                return _s.TimeSpan(DurationTicksFieldName);
+            }
 
             /// <summary>
             /// Returns the code to call the factory for the given object.
@@ -1261,27 +1470,79 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
             // Returns the code to call the factory for the given node from the given node.
             string CallFactoryFromFor(ObjectData callerNode, ObjectData calleeNode)
             {
-                if (callerNode.CallFactoryFromForCache.TryGetValue(calleeNode, out string? result))
+                if (callerNode.CallFactoryFromForCache.TryGetValue(calleeNode, out var cached))
                 {
-                    // Return the factory from the cache.
-                    return result;
+                    // Return the factory from the cache. The code that uses it uses what it uses.
+                    _currentUses?.Add(cached.Uses);
+                    return cached.Code;
                 }
 
-                // Get the factory call code.
-                result = CallFactoryFromFor_UnCached(callerNode, calleeNode);
+                // Get the factory call code, and what it uses, which is recorded again when the code is
+                // used from the cache.
+                var outerUses = _currentUses;
+                var uses = new AnimatedVisualMemberUses();
+                _currentUses = uses;
+                var result = CallFactoryFromFor_UnCached(callerNode, calleeNode);
+                _currentUses = outerUses;
+                outerUses?.Add(uses);
 
                 // Save the factory call code in the cache on the caller for next time.
                 if (calleeNode.RequiresStorage && !_owner._disableFieldOptimization)
                 {
                     // The node has storage for its result. Next time just return the field.
-                    callerNode.CallFactoryFromForCache.Add(calleeNode, calleeNode.FieldName!);
+                    var fieldUses = new AnimatedVisualMemberUses();
+                    fieldUses.UseField(calleeNode.FieldName!);
+                    callerNode.CallFactoryFromForCache.Add(calleeNode, (calleeNode.FieldName!, fieldUses));
                 }
                 else
                 {
-                    callerNode.CallFactoryFromForCache.Add(calleeNode, result);
+                    callerNode.CallFactoryFromForCache.Add(calleeNode, (result, uses));
                 }
 
                 return result;
+            }
+
+            // Returns the name of the field of the node, and records that the code being generated uses it.
+            string UseField(ObjectData node)
+            {
+                _currentUses?.UseField(node.FieldName!);
+                return node.FieldName!;
+            }
+
+            // Returns the code that refers to the object whose animations are started, and records that the code
+            // being generated uses what it uses.
+            string Use(LocalReference local)
+            {
+                if (local.Field is not null)
+                {
+                    UseField(local.Field);
+                }
+
+                return local.Code;
+            }
+
+            // Returns the name of the field that holds the singleton ExpressionAnimation, and records that the code
+            // being generated uses it.
+            string UseSingletonExpressionAnimation()
+            {
+                _currentUses?.UseField(SingletonExpressionAnimationName);
+                return SingletonExpressionAnimationName;
+            }
+
+            // Records the uses of the code that is generated while the returned scope is alive in the given
+            // uses, which are those of the method that the code is written into.
+            UsesScope RecordUsesIn(AnimatedVisualMemberUses? uses) => new UsesScope(this, uses);
+
+            // Returns the code that gets the value of the node, and records that the code being generated uses
+            // what it uses. If the node is not inlined, that is the factory method of the node.
+            string UseFactoryCall(ObjectData node)
+            {
+                if (!node.Inlined)
+                {
+                    _currentUses?.UseMethod(node.Name!);
+                }
+
+                return node.FactoryCall();
             }
 
             // Returns the code to call the factory for the given node from the given node.
@@ -1293,7 +1554,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                 if (calleeNode == _rootNode)
                 {
                     Debug.Assert(calleeNode.RequiresStorage, "Root node is not stored in a field");
-                    return calleeNode.FieldName!;
+                    return UseField(calleeNode);
                 }
 
                 if (calleeNode.Object is CompositionPropertySet propertySet)
@@ -1312,7 +1573,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                     // When field optimization is disabled, always return a call to the factory.
                     // If the factory has been called already, it will return the value from
                     // its storage.
-                    return calleeNode.FactoryCall();
+                    return UseFactoryCall(calleeNode);
                 }
 
                 // Find the vertex from caller to callee.
@@ -1344,11 +1605,11 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                 {
                     // The object was created by another caller. Just access the field.
                     Debug.Assert(calleeNode.RequiresStorage, "Expecting to access a field containing a previously cached value, but the callee has no field");
-                    return calleeNode.FieldName!;
+                    return UseField(calleeNode);
                 }
                 else if (calleeNode.RequiresStorage && _factoriesAlreadyCalled.Contains((callerNode, calleeNode)))
                 {
-                    return calleeNode.FieldName!;
+                    return UseField(calleeNode);
                 }
                 else
                 {
@@ -1363,7 +1624,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                         throw new InvalidOperationException();
                     }
 
-                    return calleeNode.FactoryCall();
+                    return UseFactoryCall(calleeNode);
                 }
             }
 
@@ -1381,7 +1642,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
             {
                 WriteObjectFactoryStart(builder, node);
                 var canvasGeometry = _objectGraph[(CanvasGeometry)obj.Source];
-                WriteCreateAssignment(builder, node, $"{New("CompositionPath")}({_s.CanvasGeometryFactoryCall(canvasGeometry.FactoryCall())})");
+                WriteCreateAssignment(builder, node, $"{New("CompositionPath")}({_s.CanvasGeometryFactoryCall(UseFactoryCall(canvasGeometry))})");
                 WriteObjectFactoryEnd(builder);
                 return true;
             }
@@ -1390,10 +1651,12 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
             {
                 // Save the node as the current node while the factory is being written.
                 _currentObjectFactoryNode = node;
-                builder.WriteComment(node.LongComment);
 
-                // Write the signature of the method.
-                builder.WriteLine($"{_owner._s.ReferenceTypeName(node.TypeName)} {node.Name}({(parameters is null ? string.Empty : string.Join(", ", parameters))})");
+                // The comment and the signature belong to the method, and the code of its body goes into the builder.
+                var method = _currentMethod!;
+                Debug.Assert(ReferenceEquals(builder, method.Body), "The factory must be written to the body of the current method");
+                method.Comment.WriteComment(node.LongComment);
+                method.Header.WriteLine($"{_owner._s.ReferenceTypeName(node.TypeName)} {node.Name}({(parameters is null ? string.Empty : string.Join(", ", parameters))})");
                 builder.OpenScope();
             }
 
@@ -1401,12 +1664,11 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
             {
                 builder.WriteLine("return result;");
                 builder.CloseScope();
-                builder.WriteLine();
                 _currentObjectFactoryNode = null;
             }
 
             /// <summary>
-            /// Combines the calls to <see cref="StartAnimations(CodeBuilder, CompositionObject, ObjectData, string)"/>
+            /// Combines the calls to <see cref="StartAnimations(CodeBuilder, CompositionObject, ObjectData, LocalReference)"/>
             /// with <see cref="WriteObjectFactoryEnd(CodeBuilder)"/>.
             /// </summary>
             void WriteCompositionObjectFactoryEnd(CodeBuilder builder, CompositionObject obj, ObjectData node)
@@ -1415,7 +1677,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                 {
                     // Use FieldName as the reference name in case if we are implementing IAnimatedVisual2.
                     // We can't use local name "result" since animations will be started from different place.
-                    StartAnimations(builder, obj, node, node.FieldName ?? string.Empty, ref controllerCreatedInCreateAnimationsMethod);
+                    StartAnimations(builder, obj, node, new LocalReference(node.FieldName ?? string.Empty, node.FieldName is null ? null : node), ref controllerCreatedInCreateAnimationsMethod);
                 }
                 else
                 {
@@ -1431,19 +1693,20 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                 WriteObjectFactoryStart(builder, node);
                 if (node.RequiresStorage)
                 {
+                    var fieldName = UseField(node);
                     if (_owner._disableFieldOptimization)
                     {
                         // Create the object unless it has already been created.
-                        builder.WriteLine($"return ({node.FieldName} == {Null})");
+                        builder.WriteLine($"return ({fieldName} == {Null})");
                         builder.Indent();
-                        builder.WriteLine($"? {node.FieldName} = {createCallText}");
-                        builder.WriteLine($": {node.FieldName};");
+                        builder.WriteLine($"? {fieldName} = {createCallText}");
+                        builder.WriteLine($": {fieldName};");
                         builder.UnIndent();
                     }
                     else
                     {
                         // If field optimization is enabled, the method will only get called once.
-                        builder.WriteLine($"return {node.FieldName} = {createCallText};");
+                        builder.WriteLine($"return {fieldName} = {createCallText};");
                     }
                 }
                 else
@@ -1453,7 +1716,6 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                 }
 
                 builder.CloseScope();
-                builder.WriteLine();
                 _currentObjectFactoryNode = null;
             }
 
@@ -1461,13 +1723,14 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
             {
                 if (node.RequiresStorage)
                 {
+                    var fieldName = UseField(node);
                     if (_owner._disableFieldOptimization)
                     {
                         // If the field has already been assigned, return its value.
-                        builder.WriteLine($"if ({node.FieldName} != {Null}) {{ return {node.FieldName}; }}");
+                        builder.WriteLine($"if ({fieldName} != {Null}) {{ return {fieldName}; }}");
                     }
 
-                    builder.WriteLine($"{ConstVar} result = {node.FieldName} = {createCallText};");
+                    builder.WriteLine($"{ConstVar} result = {fieldName} = {createCallText};");
                 }
                 else
                 {
@@ -1545,8 +1808,57 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                 }
             }
 
+            // Writes code that sets a property declared by a base class of the type of "result".
+            void WriteSetInheritedPropertyStatement<T>(CodeBuilder builder, string declaringType, string valueType, string propertyName, T? value, Func<T, string> formatter)
+                where T : struct
+            {
+                if (value.HasValue)
+                {
+                    switch (value.Value)
+                    {
+                        case Sn.Matrix3x2 matrix3x2:
+                            WriteMatrixComment(builder, matrix3x2);
+                            break;
+                        case Matrix4x4 matrix4x4:
+                            WriteMatrixComment(builder, matrix4x4);
+                            break;
+                    }
+
+                    WriteSetInheritedPropertyStatement(builder, declaringType, valueType, propertyName, formatter(value.Value));
+                }
+            }
+
+            // Writes code that sets a property declared by a base class of the type of "result".
+            void WriteSetInheritedPropertyStatement(CodeBuilder builder, string declaringType, string valueType, string propertyName, string value)
+            {
+                var call = _owner.GetInheritedPropertySetterCall(declaringType, valueType, propertyName, "result", value);
+                if (call is null)
+                {
+                    WriteSetPropertyStatement(builder, propertyName, value);
+                }
+                else
+                {
+                    builder.WriteLine($"{call};");
+                }
+            }
+
             void WritePopulateShapesCollection(CodeBuilder builder, IList<CompositionShape> shapes, ObjectData node)
             {
+                // Get the code for the shapes in order, because the first use of a shape may create it.
+                var shapeCalls = shapes.Select(shape => CallFactoryFromFor(node, shape)).ToArray();
+                var addShapeCalls = shapeCalls.Select(shape => _owner.GetAddShapeCall(node.TypeName, "result", shape)).ToArray();
+                if (addShapeCalls.Length > 0 && addShapeCalls.All(call => call is not null))
+                {
+                    // Add each shape with a call.
+                    for (var i = 0; i < shapes.Count; i++)
+                    {
+                        WriteShortDescriptionComment(builder, shapes[i]);
+                        builder.WriteLine($"{addShapeCalls[i]};");
+                    }
+
+                    return;
+                }
+
                 switch (shapes.Count)
                 {
                     case 0:
@@ -1558,7 +1870,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                             // A single item. We can add the shape in a single line.
                             var shape = shapes[0];
                             WriteShortDescriptionComment(builder, shape);
-                            builder.WriteLine($"{_s.PropertyGet("result", "Shapes")}{Deref}{IListAdd}({CallFactoryFromFor(node, shape)});");
+                            builder.WriteLine($"{_s.PropertyGet("result", "Shapes")}{Deref}{IListAdd}({shapeCalls[0]});");
                             break;
                         }
 
@@ -1566,10 +1878,10 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                         {
                             // Multiple items requires the use of a local.
                             builder.WriteLine($"{ConstVar} shapes = {_s.PropertyGet("result", "Shapes")};");
-                            foreach (var shape in shapes)
+                            for (var i = 0; i < shapes.Count; i++)
                             {
-                                WriteShortDescriptionComment(builder, shape);
-                                builder.WriteLine($"shapes{Deref}{IListAdd}({CallFactoryFromFor(node, shape)});");
+                                WriteShortDescriptionComment(builder, shapes[i]);
+                                builder.WriteLine($"shapes{Deref}{IListAdd}({shapeCalls[i]});");
                             }
 
                             break;
@@ -1579,47 +1891,104 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
 
             void WriteFrameNumberComment(CodeBuilder builder, double progress)
             {
-                builder.WriteComment($"Frame {_owner._sourceMetadata.ProgressToFrameNumber(progress):0.##}.");
+                builder.WriteComment(FrameNumberComment(progress));
             }
 
-            internal void WriteAnimatedVisualCode(CodeBuilder builder)
+            string FrameNumberComment(double progress) => $"Frame {_owner._sourceMetadata.ProgressToFrameNumber(progress):0.##}.";
+
+            // Writes the code that inserts the given key frames into the animation in the "result" variable.
+            void WriteInsertKeyFrames<TValue, TExpression>(
+                CodeBuilder builder,
+                ObjectData node,
+                KeyFrameAnimation<TValue, TExpression> animation,
+                IEnumerable<KeyFrameAnimation_.KeyFrame> keyFrames,
+                Func<TValue, string> valueCode,
+                Func<TValue, float[]> valueData,
+                Func<TValue, string?>? valueComment = null)
+                where TExpression : Expr.Expression_<TExpression>
             {
-                _owner._currentAnimatedVisualGenerator = this;
+                var animationType = animation.Type;
 
-                // Write the body of the AnimatedVisual class.
-                _owner.WriteAnimatedVisualStart(builder, this);
+                // BooleanKeyFrameAnimations do not support easing functions.
+                var hasEasing = animationType != CompositionObjectType.BooleanKeyFrameAnimation;
+                var frames = keyFrames.ToArray();
 
-                _rootCodeBuilder = builder;
+                // Get the code for the easing functions in order, because the first use of an
+                // easing function may create it.
+                var easingCodes = frames.Select(kf => hasEasing ? CallFactoryFromFor(node, kf.Easing) : null).ToArray();
 
-                // Write fields for constant values.
-                builder.WriteLine(ConstExprField(_s.TypeInt64, DurationTicksFieldName, $"{_s.Int64(_owner._compositionDuration.Ticks)}"));
-
-                // Write fields for each object that needs storage (i.e. objects that are referenced more than once).
-                // Write read-only fields first.
-                _owner.WriteDefaultInitializedField(builder, Readonly(_s.ReferenceTypeName("Compositor")), "_c");
-                _owner.WriteDefaultInitializedField(builder, Readonly(_s.ReferenceTypeName("ExpressionAnimation")), SingletonExpressionAnimationName);
-
-                if (_owner._isThemed)
+                // Key frames that all have values may be written as data.
+                if (frames.Length > 1 && frames.All(kf => kf.Type == KeyFrameType.Value))
                 {
-                    _owner.WriteDefaultInitializedField(builder, Readonly(_s.ReferenceTypeName("CompositionPropertySet")), ThemePropertiesFieldName);
+                    var data = frames.Select((kf, i) =>
+                    {
+                        var value = ((KeyFrameAnimation<TValue, TExpression>.ValueKeyFrame)kf).Value;
+                        var description = valueComment?.Invoke(value);
+                        return new KeyFrameData(
+                            kf.Progress,
+                            valueData(value),
+                            kf.Easing,
+                            easingCodes[i],
+                            string.IsNullOrWhiteSpace(description) ? FrameNumberComment(kf.Progress) : $"{FrameNumberComment(kf.Progress)} {description}");
+                    }).ToArray();
+
+                    if (_owner.TryWriteInsertKeyFramesFromData(builder, animationType, data))
+                    {
+                        return;
+                    }
                 }
 
-                WriteFields(builder);
+                for (var i = 0; i < frames.Length; i++)
+                {
+                    var kf = frames[i];
+                    WriteFrameNumberComment(builder, kf.Progress);
 
-                builder.WriteLine();
+                    switch (kf.Type)
+                    {
+                        case KeyFrameType.Expression:
+                            var expressionKeyFrame = (KeyFrameAnimation<TValue, TExpression>.ExpressionKeyFrame)kf;
+                            builder.WriteLine($"result{Deref}InsertExpressionKeyFrame({Float(kf.Progress)}, {String(expressionKeyFrame.Expression)}, {easingCodes[i] ?? _s.Null});");
+                            break;
+                        case KeyFrameType.Value:
+                            var valueKeyFrame = (KeyFrameAnimation<TValue, TExpression>.ValueKeyFrame)kf;
+                            if (valueComment is not null)
+                            {
+                                builder.WriteComment(valueComment(valueKeyFrame.Value));
+                            }
 
-                builder.WriteSubBuilder("StartProgressBoundAnimation");
-                builder.WriteSubBuilder("BindProperty");
-                builder.WriteSubBuilder("BindProperty2");
-                builder.WriteSubBuilder("CreateBooleanKeyFrameAnimation");
-                builder.WriteSubBuilder("CreateColorKeyFrameAnimation");
-                builder.WriteSubBuilder("CreatePathKeyFrameAnimation");
-                builder.WriteSubBuilder("CreateScalarKeyFrameAnimation");
-                builder.WriteSubBuilder("CreateVector2KeyFrameAnimation");
-                builder.WriteSubBuilder("CreateVector3KeyFrameAnimation");
-                builder.WriteSubBuilder("CreateVector4KeyFrameAnimation");
-                builder.WriteSubBuilder("CreateSpriteShape");
-                builder.WriteSubBuilder("CreateSpriteShapeWithFillBrush");
+                            builder.WriteLine(hasEasing
+                                ? $"result{Deref}InsertKeyFrame({Float(kf.Progress)}, {valueCode(valueKeyFrame.Value)}, {easingCodes[i]});"
+                                : $"result{Deref}InsertKeyFrame({Float(kf.Progress)}, {valueCode(valueKeyFrame.Value)});");
+                            break;
+                        default:
+                            throw new InvalidOperationException();
+                    }
+                }
+            }
+
+            // The names under which helper methods are kept, in the order that they are written. The
+            // methods are only written if the code of an object needs them.
+            static readonly string[] s_helperMethodKeys =
+            {
+                "StartProgressBoundAnimation",
+                "BindProperty",
+                "BindProperty2",
+                "BindTrim",
+                "CreateBooleanKeyFrameAnimation",
+                "CreateColorKeyFrameAnimation",
+                "CreatePathKeyFrameAnimation",
+                "CreateScalarKeyFrameAnimation",
+                "CreateVector2KeyFrameAnimation",
+                "CreateVector3KeyFrameAnimation",
+                "CreateVector4KeyFrameAnimation",
+                "CreateSpriteShape",
+                "CreateSpriteShapeWithFillBrush",
+            };
+
+            // Generates the fields and methods of the class, which are written by the AnimatedVisualClass.
+            internal AnimatedVisualClass GenerateClass()
+            {
+                _owner._currentAnimatedVisualGenerator = this;
 
                 if (_configuration.ImplementCreateAndDestroyMethods)
                 {
@@ -1627,35 +1996,122 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                     _destroyAnimationsCodeBuilder = new CodeBuilder();
                 }
 
-                // Write factory methods for each node.
+                var fields = GenerateFields();
+
+                // Generate a factory method for each node.
+                var factoryMethods = new List<AnimatedVisualMethod>();
                 foreach (var node in _nodes)
                 {
                     // Only generate a factory method if the node is not inlined into the caller.
                     if (!node.Inlined)
                     {
-                        WriteFactoryForNode(builder, node);
+                        var method = GenerateFactoryMethodForNode(node);
+                        if (method is not null)
+                        {
+                            factoryMethods.Add(method);
+                        }
                     }
                 }
 
-                // Write the end of the AnimatedVisual class.
-                _owner.WriteAnimatedVisualEnd(builder, this, _createAnimationsCodeBuilder, _destroyAnimationsCodeBuilder);
+                // The helper methods are written before the factory methods.
+                var methods = s_helperMethodKeys
+                    .Where(_helperMethods.ContainsKey)
+                    .Select(key => _helperMethods[key])
+                    .Concat(factoryMethods)
+                    .ToArray();
 
                 _owner._currentAnimatedVisualGenerator = null;
+
+                return new AnimatedVisualClass(
+                    _owner,
+                    this,
+                    new AnimatedVisualClassMembers(fields, methods),
+                    _createAnimationsCodeBuilder,
+                    _destroyAnimationsCodeBuilder);
             }
 
-            void WriteFields(CodeBuilder builder)
+            // Gets the helper method with the given key, which is empty if it has not been written. The code
+            // that is being generated uses the method.
+            AnimatedVisualMethod HelperMethod(string key, string name)
             {
+                Debug.Assert(Array.IndexOf(s_helperMethodKeys, key) >= 0, "The helper method would not be written");
+                _currentUses?.UseMethod(name);
+                if (!_helperMethods.TryGetValue(key, out var method))
+                {
+                    method = new AnimatedVisualMethod(name);
+                    _helperMethods.Add(key, method);
+                }
+
+                return method;
+            }
+
+            IReadOnlyList<AnimatedVisualField> GenerateFields()
+            {
+                var fields = new List<AnimatedVisualField>();
+
+                // Fields for constant values.
+                fields.Add(new AnimatedVisualField(
+                    DurationTicksFieldName,
+                    ConstExprField(_s.TypeInt64, DurationTicksFieldName, $"{_s.Int64(_owner._compositionDuration.Ticks)}")));
+
+                // Fields for each object that needs storage (i.e. objects that are referenced more than once).
+                // Read-only fields come first. The fields that the constructor assigns are read-only.
+                fields.Add(CompositorField());
+                fields.Add(ConstructorAssignedField(_s.ReferenceTypeName("ExpressionAnimation"), SingletonExpressionAnimationName));
+
+                if (_owner._isThemed)
+                {
+                    fields.Add(ConstructorAssignedField(_s.ReferenceTypeName("CompositionPropertySet"), ThemePropertiesFieldName));
+                }
+
                 foreach (var node in OrderByTypeThenName(_nodes.Where(n => n.RequiresReadonlyStorage)))
                 {
                     // Generate a field for the read-only storage.
-                    _owner.WriteDefaultInitializedField(builder, Readonly(_s.ReferenceTypeName(node.TypeName)), node.FieldName!);
+                    var typeName = _s.ReferenceTypeName(node.TypeName);
+                    fields.Add(new AnimatedVisualField(
+                        node.FieldName!,
+                        _owner.FieldDeclaration(Readonly(typeName), node.FieldName!),
+                        _owner.FieldDeclaration(typeName, node.FieldName!)));
                 }
 
                 foreach (var node in OrderByTypeThenName(_nodes.Where(n => n.RequiresStorage && !n.RequiresReadonlyStorage)))
                 {
                     // Generate a field for the non-read-only storage.
-                    _owner.WriteDefaultInitializedField(builder, _s.ReferenceTypeName(node.TypeName), node.FieldName!);
+                    fields.Add(new AnimatedVisualField(
+                        node.FieldName!,
+                        _owner.FieldDeclaration(_s.ReferenceTypeName(node.TypeName), node.FieldName!)));
                 }
+
+                return fields;
+            }
+
+            // A field that the constructor of the class assigns, and so cannot be read-only in a base class.
+            AnimatedVisualField ConstructorAssignedField(string typeName, string fieldName)
+                => new AnimatedVisualField(
+                    fieldName,
+                    _owner.FieldDeclaration(Readonly(typeName), fieldName),
+                    _owner.FieldDeclaration(typeName, fieldName),
+                    isAssignedByConstructor: true);
+
+            // The Compositor that every class has, which any of its methods can use without recording it.
+            AnimatedVisualField CompositorField()
+                => new AnimatedVisualField(
+                    "_c",
+                    _owner.FieldDeclaration(Readonly(_s.ReferenceTypeName("Compositor")), "_c"),
+                    _owner.FieldDeclaration(_s.ReferenceTypeName("Compositor"), "_c"),
+                    isAssignedByConstructor: true,
+                    isCommon: true);
+
+            // Generates the factory method for the given node, or returns null if the node has no factory.
+            AnimatedVisualMethod? GenerateFactoryMethodForNode(ObjectData node)
+            {
+                var method = new AnimatedVisualMethod(node.Name!);
+                _currentMethod = method;
+                _currentUses = method.Uses;
+                WriteFactoryForNode(method.Body, node);
+                _currentUses = null;
+                _currentMethod = null;
+                return method.IsEmpty ? null : method;
             }
 
             // Generates a factory method for the given node. The code is written into the given CodeBuilder.
@@ -1687,7 +2143,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
             {
                 WriteObjectFactoryStart(builder, node);
                 var typeName = _s.ReferenceTypeName(node.TypeName);
-                var fieldName = node.FieldName!;
+                var fieldName = node.RequiresStorage ? UseField(node) : node.FieldName!;
 
                 switch (obj.Type)
                 {
@@ -1909,20 +2365,31 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
             }
 
             void StartAnimationsOnResult(CodeBuilder builder, CompositionObject obj, ObjectData node)
-                => StartAnimations(builder, obj, node, "result");
+                => StartAnimations(builder, obj, node, LocalReference.Result);
 
-            void StartAnimations(CodeBuilder builder, CompositionObject obj, ObjectData node, string localName)
+            void StartAnimations(CodeBuilder builder, CompositionObject obj, ObjectData node, LocalReference localName)
             {
                 var controllerVariableAdded = false;
                 StartAnimations(builder, obj, node, localName, ref controllerVariableAdded);
             }
 
-            void StartAnimations(CodeBuilder builder, CompositionObject obj, ObjectData node, string localName, ref bool controllerVariableAdded)
+            void StartAnimations(CodeBuilder builder, CompositionObject obj, ObjectData node, LocalReference localName, ref bool controllerVariableAdded)
             {
+                var animators = obj.Animators.ToArray();
+                TryGetTrimBinding(obj, out var trimBindingIndex);
+
                 // Start the animations for properties on the object.
-                foreach (var animator in obj.Animators)
+                for (var i = 0; i < animators.Length; i++)
                 {
-                    StartAnimation(builder, obj, node, localName, ref controllerVariableAdded, animator);
+                    if (i == trimBindingIndex)
+                    {
+                        // This animator and the next 3 are started by a helper.
+                        WriteBindTrimCall(builder, obj, node, localName, animators[i], animators[i + 2]);
+                        i += 3;
+                        continue;
+                    }
+
+                    StartAnimation(builder, obj, node, localName, ref controllerVariableAdded, animators[i]);
                 }
 
                 // Start the animations for the properties on the property set on the object.
@@ -1930,11 +2397,11 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                 if (obj.Type != CompositionObjectType.CompositionPropertySet)
                 {
                     // Start the animations for properties on the property set.
-                    StartAnimations(builder, obj.Properties, NodeFor(obj.Properties), _s.PropertyGet(localName, "Properties"), ref controllerVariableAdded);
+                    StartAnimations(builder, obj.Properties, NodeFor(obj.Properties), localName.Properties(_s), ref controllerVariableAdded);
                 }
             }
 
-            void StartAnimation(CodeBuilder builder, CompositionObject obj, ObjectData node, string localName, ref bool controllerVariableAdded, CompositionObject.Animator animator)
+            void StartAnimation(CodeBuilder builder, CompositionObject obj, ObjectData node, LocalReference localName, ref bool controllerVariableAdded, CompositionObject.Animator animator)
             {
                 // ExpressionAnimations are treated specially - a singleton
                 // ExpressionAnimation is reset before each use, unless the animation
@@ -1947,99 +2414,109 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                 }
                 else
                 {
-                    // KeyFrameAnimation or a shared ExpressionAnimation
-                    var animationFactoryCall = CallFactoryFromFor(node, animationNode);
+                    // If we are implementing IAnimatedVisual2, the code is written into the CreateAnimations and
+                    // DestroyAnimations methods, so the method of the object does not use what the code uses.
+                    using var uses = RecordUsesIn(_configuration.ImplementCreateAndDestroyMethods ? null : _currentUses);
+                    StartAnimationWithFactory(builder, node, localName, ref controllerVariableAdded, animator, animationNode);
+                }
+            }
 
-                    if (animator.Controller is not null)
+            // Starts a KeyFrameAnimation or a shared ExpressionAnimation. With IAnimatedVisual2, the code is
+            // written into the CreateAnimations and DestroyAnimations methods, which is why it is not
+            // recorded as used by the method of the object, and why it can use the code of the local name.
+            void StartAnimationWithFactory(CodeBuilder builder, ObjectData node, LocalReference localName, ref bool controllerVariableAdded, CompositionObject.Animator animator, ObjectData animationNode)
+            {
+                var animationFactoryCall = CallFactoryFromFor(node, animationNode);
+
+                if (animator.Controller is not null)
+                {
+                    // The animation has a controller.
+                    var controller = animator.Controller;
+
+                    var controllerAnimators = controller.Animators;
+
+                    if (controllerAnimators.Count() == 1)
                     {
-                        // The animation has a controller.
-                        var controller = animator.Controller;
-
-                        var controllerAnimators = controller.Animators;
-
-                        if (controllerAnimators.Count() == 1)
+                        // The controller has only one property being animated.
+                        var controllerAnimator = controllerAnimators.ElementAt(0);
+                        if (controllerAnimator.AnimatedProperty == "Progress" &&
+                            controllerAnimator.Animation is ExpressionAnimation controllerExpressionAnimation &&
+                            controller.IsPaused)
                         {
-                            // The controller has only one property being animated.
-                            var controllerAnimator = controllerAnimators.ElementAt(0);
-                            if (controllerAnimator.AnimatedProperty == "Progress" &&
-                                controllerAnimator.Animation is ExpressionAnimation controllerExpressionAnimation &&
-                                controller.IsPaused)
+                            // The controller has only its Progress property animated, and it's animated by
+                            // an expression animation.
+                            var controllerExpressionAnimationNode = NodeFor(controllerExpressionAnimation);
+
+                            if (controllerExpressionAnimationNode.NeedsAFactory)
                             {
-                                // The controller has only its Progress property animated, and it's animated by
-                                // an expression animation.
-                                var controllerExpressionAnimationNode = NodeFor(controllerExpressionAnimation);
+                                EnsureStartProgressBoundAnimationWritten();
 
-                                if (controllerExpressionAnimationNode.NeedsAFactory)
+                                // Special-case for a paused controller that has only its Progress property animated by
+                                // an ExpressionAnimation that has a factory. Generate a call to a helper that will do the work.
+                                // Note that this is the common case for Lottie.
+                                if (_configuration.ImplementCreateAndDestroyMethods)
                                 {
-                                    EnsureStartProgressBoundAnimationWritten(_rootCodeBuilder ?? builder);
+                                    // If we are implementing IAnimatedVisual2 we should create these animation not in the tree initialization code,
+                                    // but inside CreateAnimations method.
+                                    _createAnimationsCodeBuilder
+                                        .WriteLine(
+                                        $"StartProgressBoundAnimation({localName.Code}, " +
+                                        $"{String(animator.AnimatedProperty)}, " +
+                                        $"{animationFactoryCall}, " +
+                                        $"{CallFactoryFromFor(NodeFor(animator.Controller), controllerExpressionAnimationNode)});");
 
-                                    // Special-case for a paused controller that has only its Progress property animated by
-                                    // an ExpressionAnimation that has a factory. Generate a call to a helper that will do the work.
-                                    // Note that this is the common case for Lottie.
-                                    if (_configuration.ImplementCreateAndDestroyMethods)
-                                    {
-                                        // If we are implementing IAnimatedVisual2 we should create these animation not in the tree initialization code,
-                                        // but inside CreateAnimations method.
-                                        _createAnimationsCodeBuilder
-                                            .WriteLine(
-                                            $"StartProgressBoundAnimation({localName}, " +
-                                            $"{String(animator.AnimatedProperty)}, " +
-                                            $"{animationFactoryCall}, " +
-                                            $"{CallFactoryFromFor(NodeFor(animator.Controller), controllerExpressionAnimationNode)});");
-
-                                        // If we are implementing IAnimatedVisual2 we should also write a destruction call.
-                                        _destroyAnimationsCodeBuilder
-                                            .WriteLine($"{localName}{Deref}StopAnimation({String(animator.AnimatedProperty)});");
-                                    }
-                                    else
-                                    {
-                                        builder.WriteLine(
-                                            $"StartProgressBoundAnimation({localName}, " +
-                                            $"{String(animator.AnimatedProperty)}, " +
-                                            $"{animationFactoryCall}, " +
-                                            $"{CallFactoryFromFor(NodeFor(animator.Controller), controllerExpressionAnimationNode)});");
-                                    }
-
-                                    return;
+                                    // If we are implementing IAnimatedVisual2 we should also write a destruction call.
+                                    _destroyAnimationsCodeBuilder
+                                        .WriteLine($"{localName.Code}{Deref}StopAnimation({String(animator.AnimatedProperty)});");
                                 }
+                                else
+                                {
+                                    builder.WriteLine(
+                                        $"StartProgressBoundAnimation({localName.Code}, " +
+                                        $"{String(animator.AnimatedProperty)}, " +
+                                        $"{animationFactoryCall}, " +
+                                        $"{CallFactoryFromFor(NodeFor(animator.Controller), controllerExpressionAnimationNode)});");
+                                }
+
+                                return;
                             }
                         }
                     }
+                }
 
-                    if (_configuration.ImplementCreateAndDestroyMethods)
+                if (_configuration.ImplementCreateAndDestroyMethods)
+                {
+                    if (animator.Controller is not null && animator.Controller.IsCustom)
                     {
-                        if (animator.Controller is not null && animator.Controller.IsCustom)
-                        {
-                            _createAnimationsCodeBuilder
-                                .WriteLine($"{localName}{Deref}StartAnimation({String(animator.AnimatedProperty)}, {animationFactoryCall}, {CallFactoryFromFor(node, NodeFor(animator.Controller))});");
-                        }
-                        else
-                        {
-                            _createAnimationsCodeBuilder
-                                .WriteLine($"{localName}{Deref}StartAnimation({String(animator.AnimatedProperty)}, {animationFactoryCall});");
-                            ConfigureAnimationController(_createAnimationsCodeBuilder, localName, ref controllerVariableAdded, animator);
-                        }
-
-                        // If we are implementing IAnimatedVisual2 we should also write a destruction call.
-                        _destroyAnimationsCodeBuilder
-                            .WriteLine($"{localName}{Deref}StopAnimation({String(animator.AnimatedProperty)});");
+                        _createAnimationsCodeBuilder
+                            .WriteLine($"{localName.Code}{Deref}StartAnimation({String(animator.AnimatedProperty)}, {animationFactoryCall}, {CallFactoryFromFor(node, NodeFor(animator.Controller))});");
                     }
                     else
                     {
-                        if (animator.Controller is not null && animator.Controller.IsCustom)
-                        {
-                            builder.WriteLine($"{localName}{Deref}StartAnimation({String(animator.AnimatedProperty)}, {animationFactoryCall}, {CallFactoryFromFor(node, NodeFor(animator.Controller))});");
-                        }
-                        else
-                        {
-                            builder.WriteLine($"{localName}{Deref}StartAnimation({String(animator.AnimatedProperty)}, {animationFactoryCall});");
-                            ConfigureAnimationController(builder, localName, ref controllerVariableAdded, animator);
-                        }
+                        _createAnimationsCodeBuilder
+                            .WriteLine($"{localName.Code}{Deref}StartAnimation({String(animator.AnimatedProperty)}, {animationFactoryCall});");
+                        ConfigureAnimationController(_createAnimationsCodeBuilder, localName, ref controllerVariableAdded, animator);
+                    }
+
+                    // If we are implementing IAnimatedVisual2 we should also write a destruction call.
+                    _destroyAnimationsCodeBuilder
+                        .WriteLine($"{localName.Code}{Deref}StopAnimation({String(animator.AnimatedProperty)});");
+                }
+                else
+                {
+                    if (animator.Controller is not null && animator.Controller.IsCustom)
+                    {
+                        builder.WriteLine($"{localName.Code}{Deref}StartAnimation({String(animator.AnimatedProperty)}, {animationFactoryCall}, {CallFactoryFromFor(node, NodeFor(animator.Controller))});");
+                    }
+                    else
+                    {
+                        builder.WriteLine($"{localName.Code}{Deref}StartAnimation({String(animator.AnimatedProperty)}, {animationFactoryCall});");
+                        ConfigureAnimationController(builder, localName, ref controllerVariableAdded, animator);
                     }
                 }
             }
 
-            void ConfigureAnimationController(CodeBuilder builder, string localName, ref bool controllerVariableAdded, CompositionObject.Animator animator)
+            void ConfigureAnimationController(CodeBuilder builder, LocalReference localName, ref bool controllerVariableAdded, CompositionObject.Animator animator)
             {
                 // If the animation has a controller, get the controller, optionally pause it, and recurse to start the animations
                 // on the controller.
@@ -2050,13 +2527,13 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                     if (!controllerVariableAdded)
                     {
                         // Declare and initialize the controller variable.
-                        builder.WriteLine($"{Var} controller = {localName}{Deref}TryGetAnimationController({String(animator.AnimatedProperty)});");
+                        builder.WriteLine($"{Var} controller = {Use(localName)}{Deref}TryGetAnimationController({String(animator.AnimatedProperty)});");
                         controllerVariableAdded = true;
                     }
                     else
                     {
                         // Initialize the controller variable.
-                        builder.WriteLine($"controller = {localName}{Deref}TryGetAnimationController({String(animator.AnimatedProperty)});");
+                        builder.WriteLine($"controller = {Use(localName)}{Deref}TryGetAnimationController({String(animator.AnimatedProperty)});");
                     }
 
                     if (controller.IsPaused)
@@ -2065,79 +2542,248 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                     }
 
                     // Recurse to start animations on the controller.
-                    StartAnimations(builder, controller, NodeFor(controller), "controller");
+                    StartAnimations(builder, controller, NodeFor(controller), LocalReference.Controller);
+                }
+            }
+
+            // Finds the animators of a geometry that are started by the BindTrim helper, which is the
+            // way the translator animates trims: TStart and TEnd values in the property set of the
+            // geometry, with progress bound animations, and TrimStart and TrimEnd bound to their
+            // minimum and maximum, as 4 consecutive animators. The helper also initializes the property
+            // set, so the property set must have only these values. This has no side effects, so that
+            // it gives the same result when the property set is initialized and when the animations
+            // are started.
+            bool TryGetTrimBinding(CompositionObject obj, out int index)
+            {
+                index = -1;
+
+                // With IAnimatedVisual2, the progress bound animations are started by a different method.
+                if (!_owner.IsBindTrimHelperSupported ||
+                    _configuration.ImplementCreateAndDestroyMethods ||
+                    obj is not CompositionGeometry)
+                {
+                    return false;
+                }
+
+                var names = obj.Properties.Names;
+                if (!names.Keys.SequenceEqual(new[] { "TEnd", "TStart" }, StringComparer.Ordinal) ||
+                    names.Values.Any(type => type != PropertySetValueType.Scalar))
+                {
+                    return false;
+                }
+
+                var animators = obj.Animators.ToArray();
+                for (var i = 0; i + 4 <= animators.Length; i++)
+                {
+                    if (!IsProgressBoundAnimator(animators[i], "TStart", out var tStartProgress) ||
+                        !IsTrimBindingAnimator(obj, animators[i + 1], "TrimStart", "Min(my.TStart,my.TEnd)") ||
+                        !IsProgressBoundAnimator(animators[i + 2], "TEnd", out var tEndProgress) ||
+                        !IsTrimBindingAnimator(obj, animators[i + 3], "TrimEnd", "Max(my.TStart,my.TEnd)") ||
+                        tStartProgress != tEndProgress)
+                    {
+                        continue;
+                    }
+
+                    // No other animation may reference the property set, because it would be referenced
+                    // through the local that holds it, which is not written.
+                    if (animators.Take(i).Concat(animators.Skip(i + 4)).Concat(obj.Properties.Animators)
+                        .Any(a => a.Animation.ReferenceParameters.Any(p => p.Value == obj.Properties)))
+                    {
+                        return false;
+                    }
+
+                    index = i;
+                    return true;
+                }
+
+                return false;
+            }
+
+            // True if the animator starts a key frame animation with StartProgressBoundAnimation.
+            bool IsProgressBoundAnimator(CompositionObject.Animator animator, string animatedProperty, out ExpressionAnimation? progressExpression)
+            {
+                progressExpression = null;
+                if (animator.AnimatedProperty != animatedProperty ||
+                    animator.Animation is not KeyFrameAnimation_ ||
+                    animator.Controller is not { IsPaused: true } controller)
+                {
+                    return false;
+                }
+
+                var controllerAnimators = controller.Animators.ToArray();
+                if (controllerAnimators.Length != 1 ||
+                    controllerAnimators[0].AnimatedProperty != "Progress" ||
+                    controllerAnimators[0].Animation is not ExpressionAnimation expression ||
+                    !NodeFor(expression).NeedsAFactory)
+                {
+                    return false;
+                }
+
+                progressExpression = expression;
+                return true;
+            }
+
+            // True if the animator binds a property of the object with BindProperty to the given
+            // expression of the object.
+            bool IsTrimBindingAnimator(CompositionObject obj, CompositionObject.Animator animator, string animatedProperty, string expression)
+                => animator.AnimatedProperty == animatedProperty &&
+                   animator.Controller is null &&
+                   animator.Animation is ExpressionAnimation animation &&
+                   !NodeFor(animation).RequiresStorage &&
+                   string.IsNullOrWhiteSpace(animation.Target) &&
+                   animation.ReferenceParameters.Count == 1 &&
+                   animation.ReferenceParameters.First().Key == "my" &&
+                   animation.ReferenceParameters.First().Value == obj &&
+                   animation.Expression.ToText() == expression;
+
+            void WriteBindTrimCall(
+                CodeBuilder builder,
+                CompositionObject obj,
+                ObjectData node,
+                LocalReference localName,
+                CompositionObject.Animator tStart,
+                CompositionObject.Animator tEnd)
+            {
+                EnsureStartProgressBoundAnimationWritten();
+                EnsureBindPropertyWritten();
+                EnsureBindTrimWritten();
+
+                // The factories are called in the same order as when the animators are started one by one.
+                var progressExpressionNode = NodeFor(tStart.Controller!.Animators.Single().Animation);
+                var tStartAnimation = CallFactoryFromFor(node, NodeFor(tStart.Animation));
+                var progressExpression = CallFactoryFromFor(NodeFor(tStart.Controller), progressExpressionNode);
+                var tEndAnimation = CallFactoryFromFor(node, NodeFor(tEnd.Animation));
+
+                // The progress expression is the same object for TStart and TEnd, so it is passed once.
+                var tEndProgressExpression = CallFactoryFromFor(NodeFor(tEnd.Controller!), progressExpressionNode);
+                Debug.Assert(
+                    tEndProgressExpression == progressExpression || tEndProgressExpression == progressExpressionNode.FieldName,
+                    "The progress expression of TEnd would be created by a different call");
+
+                var properties = obj.Properties;
+                builder.WriteLine(
+                    $"BindTrim({Use(localName)}, " +
+                    $"{_owner.PropertySetValueInitializer(properties, "TEnd", PropertySetValueType.Scalar)}, " +
+                    $"{_owner.PropertySetValueInitializer(properties, "TStart", PropertySetValueType.Scalar)}, " +
+                    $"{tStartAnimation}, {progressExpression}, {tEndAnimation});");
+            }
+
+            void EnsureBindTrimWritten()
+            {
+                // Write the method that does what the animators found by TryGetTrimBinding do.
+                var method = HelperMethod("BindTrim", "BindTrim");
+                if (method.IsEmpty)
+                {
+                    method.Attribute = _owner.HelperMethodAttribute;
+                    using var uses = RecordUsesIn(method.Uses);
+
+                    // The helper calls these helpers.
+                    EnsureStartProgressBoundAnimationWritten();
+                    EnsureBindPropertyWritten();
+                    var h = method.Header;
+                    h.WriteLine("void BindTrim(");
+                    h.Indent();
+                    h.WriteLine($"{ReferenceTypeName("CompositionGeometry")} target,");
+                    h.WriteLine($"{_s.TypeFloat32} tEnd,");
+                    h.WriteLine($"{_s.TypeFloat32} tStart,");
+                    h.WriteLine($"{ReferenceTypeName("CompositionAnimation")} tStartAnimation,");
+                    h.WriteLine($"{ReferenceTypeName("ExpressionAnimation")} progressExpression,");
+                    h.WriteLine($"{ReferenceTypeName("CompositionAnimation")} tEndAnimation)");
+                    h.UnIndent();
+                    var b = method.Body;
+                    b.OpenScope();
+                    b.WriteLine($"{ConstVar} propertySet = {_s.PropertyGet("target", "Properties")};");
+                    b.WriteLine($"propertySet{Deref}InsertScalar({String("TEnd")}, tEnd);");
+                    b.WriteLine($"propertySet{Deref}InsertScalar({String("TStart")}, tStart);");
+                    b.WriteLine($"StartProgressBoundAnimation(target, {String("TStart")}, tStartAnimation, progressExpression);");
+                    b.WriteLine($"BindProperty(target, {String("TrimStart")}, {String("Min(my.TStart,my.TEnd)")}, {String("my")}, target);");
+                    b.WriteLine($"StartProgressBoundAnimation(target, {String("TEnd")}, tEndAnimation, progressExpression);");
+                    b.WriteLine($"BindProperty(target, {String("TrimEnd")}, {String("Max(my.TStart,my.TEnd)")}, {String("my")}, target);");
+                    b.CloseScope();
                 }
             }
 
             // Helper method that starts an animation and binds its AnimationController.Progress to an expression.
-            void EnsureStartProgressBoundAnimationWritten(CodeBuilder builder)
+            void EnsureStartProgressBoundAnimationWritten()
             {
                 // Write a static method that starts an animation, then binds the Progress property of its
                 // AnimationController for that animation to an expression. This is used to start animations
                 // that have their progress bound to the progress of another property.
-                var b = builder.GetSubBuilder("StartProgressBoundAnimation");
-                if (b.IsEmpty)
+                var method = HelperMethod("StartProgressBoundAnimation", "StartProgressBoundAnimation");
+                if (method.IsEmpty)
                 {
-                    b.WriteLine("static void StartProgressBoundAnimation(");
-                    b.Indent();
-                    b.WriteLine($"{ReferenceTypeName("CompositionObject")} target,");
-                    b.WriteLine($"{_s.TypeString} animatedPropertyName,");
-                    b.WriteLine($"{ReferenceTypeName("CompositionAnimation")} animation,");
-                    b.WriteLine($"{ReferenceTypeName("ExpressionAnimation")} controllerProgressExpression)");
-                    b.UnIndent();
+                    method.Attribute = _owner.HelperMethodAttribute;
+                    using var uses = RecordUsesIn(method.Uses);
+                    method.IsStatic = true;
+                    var h = method.Header;
+                    h.WriteLine("static void StartProgressBoundAnimation(");
+                    h.Indent();
+                    h.WriteLine($"{ReferenceTypeName("CompositionObject")} target,");
+                    h.WriteLine($"{_s.TypeString} animatedPropertyName,");
+                    h.WriteLine($"{ReferenceTypeName("CompositionAnimation")} animation,");
+                    h.WriteLine($"{ReferenceTypeName("ExpressionAnimation")} controllerProgressExpression)");
+                    h.UnIndent();
+                    var b = method.Body;
                     b.OpenScope();
                     b.WriteLine($"target{Deref}StartAnimation(animatedPropertyName, animation);");
                     b.WriteLine($"{ConstVar} controller = target{Deref}TryGetAnimationController(animatedPropertyName);");
                     b.WriteLine($"controller{Deref}Pause();");
                     b.WriteLine($"controller{Deref}StartAnimation({String("Progress")}, controllerProgressExpression);");
                     b.CloseScope();
-                    b.WriteLine();
                 }
             }
 
-            void EnsureBindPropertyWritten(CodeBuilder builder)
+            void EnsureBindPropertyWritten()
             {
                 // Write the method that binds an expression to an object using the singleton ExpressionAnimation object.
-                var b = builder.GetSubBuilder("BindProperty");
-                if (b.IsEmpty)
+                var method = HelperMethod("BindProperty", "BindProperty");
+                if (method.IsEmpty)
                 {
                     // 1 reference parameter version.
-                    b.WriteLine("void BindProperty(");
-                    b.Indent();
-                    b.WriteLine($"{ReferenceTypeName("CompositionObject")} target,");
-                    b.WriteLine($"{_s.TypeString} animatedPropertyName,");
-                    b.WriteLine($"{_s.TypeString} expression,");
-                    b.WriteLine($"{_s.TypeString} referenceParameterName,");
-                    b.WriteLine($"{ReferenceTypeName("CompositionObject")} referencedObject)");
-                    b.UnIndent();
+                    method.Attribute = _owner.HelperMethodAttribute;
+                    using var uses = RecordUsesIn(method.Uses);
+                    UseSingletonExpressionAnimation();
+                    var h = method.Header;
+                    h.WriteLine("void BindProperty(");
+                    h.Indent();
+                    h.WriteLine($"{ReferenceTypeName("CompositionObject")} target,");
+                    h.WriteLine($"{_s.TypeString} animatedPropertyName,");
+                    h.WriteLine($"{_s.TypeString} expression,");
+                    h.WriteLine($"{_s.TypeString} referenceParameterName,");
+                    h.WriteLine($"{ReferenceTypeName("CompositionObject")} referencedObject)");
+                    h.UnIndent();
+                    var b = method.Body;
                     b.OpenScope();
                     b.WriteLine($"{SingletonExpressionAnimationName}{Deref}ClearAllParameters();");
                     WriteSetPropertyStatement(b, "Expression", "expression", SingletonExpressionAnimationName);
                     b.WriteLine($"{SingletonExpressionAnimationName}{Deref}SetReferenceParameter(referenceParameterName, referencedObject);");
                     b.WriteLine($"target{Deref}StartAnimation(animatedPropertyName, {SingletonExpressionAnimationName});");
                     b.CloseScope();
-                    b.WriteLine();
                 }
             }
 
-            void EnsureBindProperty2Written(CodeBuilder builder)
+            void EnsureBindProperty2Written()
             {
                 // Write the method that binds an expression to an object using the singleton ExpressionAnimation object.
-                var b = builder.GetSubBuilder("BindProperty2");
-
-                if (b.IsEmpty)
+                var method = HelperMethod("BindProperty2", "BindProperty2");
+                if (method.IsEmpty)
                 {
                     // 2 reference parameter version.
-                    b.WriteLine($"void BindProperty2(");
-                    b.Indent();
-                    b.WriteLine($"{ReferenceTypeName("CompositionObject")} target,");
-                    b.WriteLine($"{_s.TypeString} animatedPropertyName,");
-                    b.WriteLine($"{_s.TypeString} expression,");
-                    b.WriteLine($"{_s.TypeString} referenceParameterName0,");
-                    b.WriteLine($"{ReferenceTypeName("CompositionObject")} referencedObject0,");
-                    b.WriteLine($"{_s.TypeString} referenceParameterName1,");
-                    b.WriteLine($"{ReferenceTypeName("CompositionObject")} referencedObject1)");
-                    b.UnIndent();
+                    method.Attribute = _owner.HelperMethodAttribute;
+                    using var uses = RecordUsesIn(method.Uses);
+                    UseSingletonExpressionAnimation();
+                    var h = method.Header;
+                    h.WriteLine("void BindProperty2(");
+                    h.Indent();
+                    h.WriteLine($"{ReferenceTypeName("CompositionObject")} target,");
+                    h.WriteLine($"{_s.TypeString} animatedPropertyName,");
+                    h.WriteLine($"{_s.TypeString} expression,");
+                    h.WriteLine($"{_s.TypeString} referenceParameterName0,");
+                    h.WriteLine($"{ReferenceTypeName("CompositionObject")} referencedObject0,");
+                    h.WriteLine($"{_s.TypeString} referenceParameterName1,");
+                    h.WriteLine($"{ReferenceTypeName("CompositionObject")} referencedObject1)");
+                    h.UnIndent();
+                    var b = method.Body;
                     b.OpenScope();
                     b.WriteLine($"{SingletonExpressionAnimationName}{Deref}ClearAllParameters();");
                     WriteSetPropertyStatement(b, "Expression", "expression", SingletonExpressionAnimationName);
@@ -2145,11 +2791,10 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                     b.WriteLine($"{SingletonExpressionAnimationName}{Deref}SetReferenceParameter(referenceParameterName1, referencedObject1);");
                     b.WriteLine($"target{Deref}StartAnimation(animatedPropertyName, {SingletonExpressionAnimationName});");
                     b.CloseScope();
-                    b.WriteLine();
                 }
             }
 
-            void EnsureKeyFrameAnimationHelperWritten(CodeBuilder builder, CompositionObjectType animationType)
+            void EnsureKeyFrameAnimationHelperWritten(CompositionObjectType animationType)
             {
                 var methodName = $"Create{animationType}";
 
@@ -2167,8 +2812,8 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
 
                 // Write the method that creates a KeyFrameAnimation with duration set to the duration of
                 // the composition.
-                var b = builder.GetSubBuilder(methodName);
-                if (b.IsEmpty)
+                var method = HelperMethod(methodName, methodName);
+                if (method.IsEmpty)
                 {
                     // BooleanKeyFrameAnimations never take an easing function.
                     var easingParameter =
@@ -2181,7 +2826,10 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                             ? string.Empty
                             : $", initialEasingFunction";
 
-                    b.WriteLine($"{ReferenceTypeName(animationType.ToString())} {methodName}(float initialProgress, {valueType} initialValue{easingParameter})");
+                    method.Attribute = _owner.HelperMethodAttribute;
+                    using var uses = RecordUsesIn(method.Uses);
+                    method.Header.WriteLine($"{ReferenceTypeName(animationType.ToString())} {methodName}(float initialProgress, {valueType} initialValue{easingParameter})");
+                    var b = method.Body;
                     b.OpenScope();
                     b.WriteLine($"{ConstVar} result = _c{Deref}{methodName}();");
                     WriteSetPropertyStatement(b, "Duration", TimeSpan(_owner._compositionDuration));
@@ -2193,7 +2841,6 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                     b.WriteLine($"result{Deref}InsertKeyFrame(initialProgress, initialValue{easingArgument});");
                     b.WriteLine("return result;");
                     b.CloseScope();
-                    b.WriteLine();
                 }
             }
 
@@ -2207,26 +2854,25 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                 ObjectData node,
                 Matrix3x2 transformMatrix)
             {
-                var b = builder.GetSubBuilder("CreateSpriteShape");
-                if (b.IsEmpty)
+                var method = HelperMethod("CreateSpriteShape", "CreateSpriteShape");
+                if (method.IsEmpty)
                 {
-                    b.WriteLine($"{ReferenceTypeName("CompositionSpriteShape")} CreateSpriteShape({ReferenceTypeName("CompositionGeometry")} geometry, {_s.TypeMatrix3x2} transformMatrix)");
+                    method.Attribute = _owner.HelperMethodAttribute;
+                    using var uses = RecordUsesIn(method.Uses);
+                    method.Header.WriteLine($"{ReferenceTypeName("CompositionSpriteShape")} CreateSpriteShape({ReferenceTypeName("CompositionGeometry")} geometry, {_s.TypeMatrix3x2} transformMatrix)");
+                    var b = method.Body;
                     b.OpenScope();
                     b.WriteLine($"{ConstVar} result = _c{Deref}CreateSpriteShape(geometry);");
                     WriteSetPropertyStatement(b, "TransformMatrix", "transformMatrix");
                     b.WriteLine("return result;");
                     b.CloseScope();
-                    b.WriteLine();
                 }
 
                 // Call the helper and initialize the remaining CompositionShape properties.
                 WriteMatrixComment(builder, transformMatrix);
                 WriteCreateAssignment(builder, node, $"CreateSpriteShape({CallFactoryFromFor(node, obj.Geometry)}, {Matrix3x2(transformMatrix)});");
                 InitializeCompositionObject(builder, obj, node);
-                WriteSetPropertyStatement(builder, nameof(obj.CenterPoint), obj.CenterPoint);
-                WriteSetPropertyStatement(builder, nameof(obj.Offset), obj.Offset);
-                WriteSetPropertyStatement(builder, nameof(obj.RotationAngleInDegrees), obj.RotationAngleInDegrees);
-                WriteSetPropertyStatement(builder, nameof(obj.Scale), obj.Scale);
+                WriteCompositionShapeProperties(builder, obj);
             }
 
             /// <summary>
@@ -2239,17 +2885,20 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                 ObjectData node,
                 Matrix3x2 transformMatrix)
             {
-                var b = builder.GetSubBuilder("CreateSpriteShapeWithFillBrush");
-                if (b.IsEmpty)
+                // This is an overload of CreateSpriteShape, so its key is not the same as its name.
+                var method = HelperMethod("CreateSpriteShapeWithFillBrush", "CreateSpriteShape");
+                if (method.IsEmpty)
                 {
-                    b.WriteLine($"{ReferenceTypeName("CompositionSpriteShape")} CreateSpriteShape({ReferenceTypeName("CompositionGeometry")} geometry, {_s.TypeMatrix3x2} transformMatrix, {ReferenceTypeName("CompositionBrush")} fillBrush)");
+                    method.Attribute = _owner.HelperMethodAttribute;
+                    using var uses = RecordUsesIn(method.Uses);
+                    method.Header.WriteLine($"{ReferenceTypeName("CompositionSpriteShape")} CreateSpriteShape({ReferenceTypeName("CompositionGeometry")} geometry, {_s.TypeMatrix3x2} transformMatrix, {ReferenceTypeName("CompositionBrush")} fillBrush)");
+                    var b = method.Body;
                     b.OpenScope();
                     b.WriteLine($"{ConstVar} result = _c{Deref}CreateSpriteShape(geometry);");
                     WriteSetPropertyStatement(b, "TransformMatrix", "transformMatrix");
                     WriteSetPropertyStatement(b, "FillBrush", "fillBrush");
                     b.WriteLine("return result;");
                     b.CloseScope();
-                    b.WriteLine();
                 }
 
                 // Call the helper and initialize the remaining CompositionShape properties.
@@ -2261,10 +2910,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                 builder.WriteLine($"{ConstVar} geometry = {CallFactoryFromFor(node, obj.Geometry)};");
                 WriteCreateAssignment(builder, node, $"CreateSpriteShape(geometry, {Matrix3x2(transformMatrix)}, {CallFactoryFromFor(node, obj.FillBrush)});");
                 InitializeCompositionObject(builder, obj, node);
-                WriteSetPropertyStatement(builder, nameof(obj.CenterPoint), obj.CenterPoint);
-                WriteSetPropertyStatement(builder, nameof(obj.Offset), obj.Offset);
-                WriteSetPropertyStatement(builder, nameof(obj.RotationAngleInDegrees), obj.RotationAngleInDegrees);
-                WriteSetPropertyStatement(builder, nameof(obj.Scale), obj.Scale);
+                WriteCompositionShapeProperties(builder, obj);
             }
 
             // Starts an ExpressionAnimation that uses the shared singleton ExpressionAnimation.
@@ -2274,25 +2920,27 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
             void StartSingletonExpressionAnimation(
                     CodeBuilder builder,
                     CompositionObject obj,
-                    string localName,
+                    LocalReference localName,
                     CompositionObject.Animator animator,
                     ObjectData animationNode,
                     ExpressionAnimation animation)
             {
                 Debug.Assert(animator.Animation == animation, "Precondition");
 
+                // All of the code that this writes is in the method of the object.
+                var local = Use(localName);
                 var referenceParameters = animator.Animation.ReferenceParameters.ToArray();
                 if (referenceParameters.Length == 1 &&
                     string.IsNullOrWhiteSpace(animation.Target))
                 {
-                    EnsureBindPropertyWritten(_rootCodeBuilder ?? builder);
+                    EnsureBindPropertyWritten();
 
                     var rp0 = referenceParameters[0];
                     var rp0Name = GetReferenceParameterName(obj, localName, animationNode, rp0);
 
                     // Special-case where there is exactly one reference parameter. Call a helper.
                     builder.WriteLine(
-                        $"BindProperty({localName}, " + // target
+                        $"BindProperty({local}, " + // target
                         $"{String(animator.AnimatedProperty)}, " + // property on target
                         $"{String(animation.Expression.ToText())}, " + // expression
                         $"{String(rp0.Key)}, " + // reference property name
@@ -2301,7 +2949,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                 else if (referenceParameters.Length == 2 &&
                     string.IsNullOrWhiteSpace(animation.Target))
                 {
-                    EnsureBindProperty2Written(_rootCodeBuilder ?? builder);
+                    EnsureBindProperty2Written();
 
                     var rp0 = referenceParameters[0];
                     var rp0Name = GetReferenceParameterName(obj, localName, animationNode, rp0);
@@ -2311,7 +2959,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
 
                     // Special-case where there are exactly two reference parameters. Call a helper.
                     builder.WriteLine(
-                        $"BindProperty2({localName}, " + // target
+                        $"BindProperty2({local}, " + // target
                         $"{String(animator.AnimatedProperty)}, " + // property on target
                         $"{String(animation.Expression.ToText())}, " + // expression
                         $"{String(rp0.Key)}, " + // reference property name
@@ -2321,8 +2969,9 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                 }
                 else
                 {
-                    builder.WriteLine($"{SingletonExpressionAnimationName}{Deref}ClearAllParameters();");
-                    builder.WriteLine($"{_s.PropertySet(SingletonExpressionAnimationName, "Expression", String(animation.Expression))};");
+                    var singleton = UseSingletonExpressionAnimation();
+                    builder.WriteLine($"{singleton}{Deref}ClearAllParameters();");
+                    builder.WriteLine($"{_s.PropertySet(singleton, "Expression", String(animation.Expression))};");
 
                     // If there is a Target set it. Note however that the Target isn't used for anything
                     // interesting in this scenario, and there is no way to reset the Target to an
@@ -2330,29 +2979,29 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                     // the Target will not be set and it doesn't matter if it was set previously.
                     if (!string.IsNullOrWhiteSpace(animation.Target))
                     {
-                        builder.WriteLine($"{SingletonExpressionAnimationName}{Deref}Target = {String(animation.Target)};");
+                        builder.WriteLine($"{singleton}{Deref}Target = {String(animation.Target)};");
                     }
 
                     foreach (var rp in animation.ReferenceParameters)
                     {
                         var referenceParameterName = GetReferenceParameterName(obj, localName, animationNode, rp);
 
-                        builder.WriteLine($"{SingletonExpressionAnimationName}{Deref}SetReferenceParameter({String(rp.Key)}, {referenceParameterName});");
+                        builder.WriteLine($"{singleton}{Deref}SetReferenceParameter({String(rp.Key)}, {referenceParameterName});");
                     }
 
-                    builder.WriteLine($"{localName}{Deref}StartAnimation({String(animator.AnimatedProperty)}, {SingletonExpressionAnimationName});");
+                    builder.WriteLine($"{local}{Deref}StartAnimation({String(animator.AnimatedProperty)}, {singleton});");
                 }
             }
 
             string GetReferenceParameterName(
                 CompositionObject obj,
-                string localName,
+                LocalReference localName,
                 ObjectData animationNode,
                 KeyValuePair<string, CompositionObject> referenceParameter)
             {
                 if (referenceParameter.Value == obj)
                 {
-                    return localName;
+                    return Use(localName);
                 }
 
                 if (referenceParameter.Value.Type == CompositionObjectType.CompositionPropertySet)
@@ -2371,6 +3020,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                         // * only used for themes.
                         // * placed in a field by the constructor of the IAnimatedVisual.
                         Debug.Assert(_owner._isThemed, "Precondition");
+                        _currentUses?.UseField(ThemePropertiesFieldName);
                         return ThemePropertiesFieldName;
                     }
 
@@ -2390,7 +3040,8 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
 
                 var propertySet = obj.Properties;
 
-                if (propertySet.Names.Count > 0)
+                // When the trim of a geometry is bound by the BindTrim helper, the helper initializes the property set.
+                if (propertySet.Names.Count > 0 && !TryGetTrimBinding(obj, out _))
                 {
                     builder.WriteLine($"{ConstVar} propertySet = {_s.PropertyGet(localName, "Properties")};");
                     _owner.WritePropertySetInitialization(builder, propertySet, "propertySet");
@@ -2410,70 +3061,115 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
             {
                 InitializeCompositionObject(builder, obj, node);
 
+                // These properties are declared by Visual, which is a base class of the type of the result.
+                const string visual = nameof(Visual);
+
                 if (obj.BorderMode.HasValue && obj.BorderMode != CompositionBorderMode.Inherit)
                 {
-                    WriteSetPropertyStatement(builder, nameof(obj.BorderMode), BorderMode(obj.BorderMode.Value));
+                    WriteSetInheritedPropertyStatement(builder, visual, nameof(CompositionBorderMode), nameof(obj.BorderMode), BorderMode(obj.BorderMode.Value));
                 }
 
-                WriteSetPropertyStatement(builder, nameof(obj.CenterPoint), obj.CenterPoint);
-                WriteSetPropertyStatement(builder, nameof(obj.Clip), obj.Clip, node);
-                WriteSetPropertyStatement(builder, nameof(obj.IsVisible), obj.IsVisible);
-                WriteSetPropertyStatement(builder, nameof(obj.Offset), obj.Offset);
-                WriteSetPropertyStatement(builder, nameof(obj.Opacity), obj.Opacity);
-                WriteSetPropertyStatement(builder, nameof(obj.RotationAngleInDegrees), obj.RotationAngleInDegrees);
-                WriteSetPropertyStatement(builder, nameof(obj.RotationAxis), obj.RotationAxis);
-                WriteSetPropertyStatement(builder, nameof(obj.Scale), obj.Scale);
-                WriteSetPropertyStatement(builder, nameof(obj.Size), obj.Size);
-                WriteSetPropertyStatement(builder, nameof(obj.TransformMatrix), obj.TransformMatrix);
+                WriteSetInheritedPropertyStatement(builder, visual, _s.TypeVector3, nameof(obj.CenterPoint), obj.CenterPoint, Vector3);
+                if (obj.Clip is not null)
+                {
+                    WriteSetInheritedPropertyStatement(builder, visual, nameof(CompositionClip), nameof(obj.Clip), CallFactoryFromFor(node, obj.Clip));
+                }
+
+                WriteSetInheritedPropertyStatement(builder, visual, "bool", nameof(obj.IsVisible), obj.IsVisible, Bool);
+                WriteSetInheritedPropertyStatement(builder, visual, _s.TypeVector3, nameof(obj.Offset), obj.Offset, Vector3);
+                WriteSetInheritedPropertyStatement(builder, visual, _s.TypeFloat32, nameof(obj.Opacity), obj.Opacity, Float);
+                WriteSetInheritedPropertyStatement(builder, visual, _s.TypeFloat32, nameof(obj.RotationAngleInDegrees), obj.RotationAngleInDegrees, Float);
+                WriteSetInheritedPropertyStatement(builder, visual, _s.TypeVector3, nameof(obj.RotationAxis), obj.RotationAxis, Vector3);
+                WriteSetInheritedPropertyStatement(builder, visual, _s.TypeVector3, nameof(obj.Scale), obj.Scale, Vector3);
+                WriteSetInheritedPropertyStatement(builder, visual, _s.TypeVector2, nameof(obj.Size), obj.Size, Vector2);
+                WriteSetInheritedPropertyStatement(builder, visual, nameof(Matrix4x4), nameof(obj.TransformMatrix), obj.TransformMatrix, Matrix4x4);
             }
 
             void InitializeCompositionClip(CodeBuilder builder, CompositionClip obj, ObjectData node)
             {
                 InitializeCompositionObject(builder, obj, node);
 
-                WriteSetPropertyStatement(builder, nameof(obj.CenterPoint), obj.CenterPoint);
-                WriteSetPropertyStatement(builder, nameof(obj.Scale), obj.Scale);
+                // These properties are declared by CompositionClip, which is a base class of the type of the result.
+                const string clip = nameof(CompositionClip);
+                WriteSetInheritedPropertyStatement(builder, clip, _s.TypeVector2, nameof(obj.CenterPoint), obj.CenterPoint, Vector2);
+                WriteSetInheritedPropertyStatement(builder, clip, _s.TypeVector2, nameof(obj.Scale), obj.Scale, Vector2);
             }
 
             void InitializeCompositionGradientBrush(CodeBuilder builder, CompositionGradientBrush obj, ObjectData node)
             {
                 InitializeCompositionObject(builder, obj, node);
 
-                WriteSetPropertyStatement(builder, nameof(obj.AnchorPoint), obj.AnchorPoint);
-                WriteSetPropertyStatement(builder, nameof(obj.CenterPoint), obj.CenterPoint);
+                // These properties are declared by CompositionGradientBrush, which is a base class of the type of the result.
+                const string gradientBrush = nameof(CompositionGradientBrush);
+                WriteSetInheritedPropertyStatement(builder, gradientBrush, _s.TypeVector2, nameof(obj.AnchorPoint), obj.AnchorPoint, Vector2);
+                WriteSetInheritedPropertyStatement(builder, gradientBrush, _s.TypeVector2, nameof(obj.CenterPoint), obj.CenterPoint, Vector2);
 
                 if (obj.ColorStops.Count > 0)
                 {
-                    builder.WriteLine($"{ConstVar} colorStops = {_s.PropertyGet("result", "ColorStops")};");
-                    foreach (var colorStop in obj.ColorStops)
+                    var colorStopCalls = obj.ColorStops.Select(colorStop => CallFactoryFromFor(node, colorStop)).ToArray();
+                    var addColorStopCalls = colorStopCalls.Select(colorStop => _owner.GetAddColorStopCall("result", colorStop)).ToArray();
+                    if (addColorStopCalls.All(call => call is not null))
                     {
-                        builder.WriteLine($"colorStops{Deref}{IListAdd}({CallFactoryFromFor(node, colorStop)});");
+                        foreach (var call in addColorStopCalls)
+                        {
+                            builder.WriteLine($"{call};");
+                        }
+                    }
+                    else
+                    {
+                        builder.WriteLine($"{ConstVar} colorStops = {_s.PropertyGet("result", "ColorStops")};");
+                        foreach (var colorStop in colorStopCalls)
+                        {
+                            builder.WriteLine($"colorStops{Deref}{IListAdd}({colorStop});");
+                        }
                     }
                 }
 
-                WriteSetPropertyStatement(builder, nameof(obj.ExtendMode), obj.ExtendMode, formatter: ExtendMode);
-                WriteSetPropertyStatement(builder, nameof(obj.InterpolationSpace), obj.InterpolationSpace, formatter: ColorSpace);
-                WriteSetPropertyStatement(builder, nameof(obj.MappingMode), obj.MappingMode, formatter: MappingMode);
-                WriteSetPropertyStatement(builder, nameof(obj.Offset), obj.Offset);
-                WriteSetPropertyStatement(builder, nameof(obj.RotationAngleInDegrees), obj.RotationAngleInDegrees);
-                WriteSetPropertyStatement(builder, nameof(obj.Scale), obj.Scale);
-                WriteSetPropertyStatement(builder, nameof(obj.TransformMatrix), obj.TransformMatrix);
+                WriteSetInheritedPropertyStatement(builder, gradientBrush, nameof(CompositionGradientExtendMode), nameof(obj.ExtendMode), obj.ExtendMode, ExtendMode);
+                WriteSetInheritedPropertyStatement(builder, gradientBrush, nameof(CompositionColorSpace), nameof(obj.InterpolationSpace), obj.InterpolationSpace, ColorSpace);
+                WriteSetInheritedPropertyStatement(builder, gradientBrush, nameof(CompositionMappingMode), nameof(obj.MappingMode), obj.MappingMode, MappingMode);
+                WriteSetInheritedPropertyStatement(builder, gradientBrush, _s.TypeVector2, nameof(obj.Offset), obj.Offset, Vector2);
+                WriteSetInheritedPropertyStatement(builder, gradientBrush, _s.TypeFloat32, nameof(obj.RotationAngleInDegrees), obj.RotationAngleInDegrees, Float);
+                WriteSetInheritedPropertyStatement(builder, gradientBrush, _s.TypeVector2, nameof(obj.Scale), obj.Scale, Vector2);
+                WriteSetInheritedPropertyStatement(builder, gradientBrush, _s.TypeMatrix3x2, nameof(obj.TransformMatrix), obj.TransformMatrix, Matrix3x2);
             }
 
             void InitializeCompositionShape(CodeBuilder builder, CompositionShape obj, ObjectData node)
             {
                 InitializeCompositionObject(builder, obj, node);
+                WriteCompositionShapeProperties(builder, obj);
+                WriteSetInheritedPropertyStatement(builder, nameof(CompositionShape), _s.TypeMatrix3x2, nameof(obj.TransformMatrix), obj.TransformMatrix, Matrix3x2);
+            }
 
-                WriteSetPropertyStatement(builder, nameof(obj.CenterPoint), obj.CenterPoint);
-                WriteSetPropertyStatement(builder, nameof(obj.Offset), obj.Offset);
-                WriteSetPropertyStatement(builder, nameof(obj.RotationAngleInDegrees), obj.RotationAngleInDegrees);
-                WriteSetPropertyStatement(builder, nameof(obj.Scale), obj.Scale);
-                WriteSetPropertyStatement(builder, nameof(obj.TransformMatrix), obj.TransformMatrix);
+            // Writes the properties of a CompositionShape, except its TransformMatrix.
+            void WriteCompositionShapeProperties(CodeBuilder builder, CompositionShape obj)
+            {
+                // These properties are declared by CompositionShape, which is a base class of the type of the result.
+                const string shape = nameof(CompositionShape);
+                WriteSetInheritedPropertyStatement(builder, shape, _s.TypeVector2, nameof(obj.CenterPoint), obj.CenterPoint, Vector2);
+                WriteSetInheritedPropertyStatement(builder, shape, _s.TypeVector2, nameof(obj.Offset), obj.Offset, Vector2);
+                WriteSetInheritedPropertyStatement(builder, shape, _s.TypeFloat32, nameof(obj.RotationAngleInDegrees), obj.RotationAngleInDegrees, Float);
+                WriteSetInheritedPropertyStatement(builder, shape, _s.TypeVector2, nameof(obj.Scale), obj.Scale, Vector2);
             }
 
             void InitializeContainerVisual(CodeBuilder builder, ContainerVisual obj, ObjectData node)
             {
                 InitializeVisual(builder, obj, node);
+
+                // Get the code for the children in order, because the first use of a child may create it.
+                var childCalls = obj.Children.Select(child => CallFactoryFromFor(node, child)).ToArray();
+                var insertChildCalls = childCalls.Select(child => _owner.GetInsertChildAtTopCall("result", child)).ToArray();
+                if (insertChildCalls.Length > 0 && insertChildCalls.All(call => call is not null))
+                {
+                    // Insert each child with a call.
+                    for (var i = 0; i < obj.Children.Count; i++)
+                    {
+                        WriteShortDescriptionComment(builder, obj.Children[i]);
+                        builder.WriteLine($"{insertChildCalls[i]};");
+                    }
+
+                    return;
+                }
 
                 switch (obj.Children.Count)
                 {
@@ -2486,7 +3182,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                             // A single child. We can add the child in a single line.
                             var child = obj.Children[0];
                             WriteShortDescriptionComment(builder, child);
-                            builder.WriteLine($"{_s.PropertyGet("result", "Children")}{Deref}InsertAtTop({CallFactoryFromFor(node, child)});");
+                            builder.WriteLine($"{_s.PropertyGet("result", "Children")}{Deref}InsertAtTop({childCalls[0]});");
                             break;
                         }
 
@@ -2494,10 +3190,10 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                         {
                             // Multiple children requires the use of a local.
                             builder.WriteLine($"{ConstVar} children = {_s.PropertyGet("result", nameof(obj.Children))};");
-                            foreach (var child in obj.Children)
+                            for (var i = 0; i < obj.Children.Count; i++)
                             {
-                                WriteShortDescriptionComment(builder, child);
-                                builder.WriteLine($"children{Deref}InsertAtTop({CallFactoryFromFor(node, child)});");
+                                WriteShortDescriptionComment(builder, obj.Children[i]);
+                                builder.WriteLine($"children{Deref}InsertAtTop({childCalls[i]});");
                             }
 
                             break;
@@ -2509,9 +3205,11 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
             {
                 InitializeCompositionObject(builder, obj, node);
 
-                WriteSetPropertyStatement(builder, nameof(obj.TrimEnd), obj.TrimEnd);
-                WriteSetPropertyStatement(builder, nameof(obj.TrimOffset), obj.TrimOffset);
-                WriteSetPropertyStatement(builder, nameof(obj.TrimStart), obj.TrimStart);
+                // These properties are declared by CompositionGeometry, which is a base class of the type of the result.
+                const string geometry = nameof(CompositionGeometry);
+                WriteSetInheritedPropertyStatement(builder, geometry, _s.TypeFloat32, nameof(obj.TrimEnd), obj.TrimEnd, Float);
+                WriteSetInheritedPropertyStatement(builder, geometry, _s.TypeFloat32, nameof(obj.TrimOffset), obj.TrimOffset, Float);
+                WriteSetInheritedPropertyStatement(builder, geometry, _s.TypeFloat32, nameof(obj.TrimStart), obj.TrimStart, Float);
             }
 
             void InitializeCompositionAnimation(CodeBuilder builder, CompositionAnimation obj, ObjectData node)
@@ -2543,7 +3241,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                 WriteCreateAssignment(builder, node, $"_c{Deref}Create{animation.Type}()");
 
                 Debug.Assert(animation.Duration.Ticks > 0, "Invariant");
-                WriteSetPropertyStatement(builder, nameof(animation.Duration), TimeSpan(animation.Duration));
+                WriteSetInheritedPropertyStatement(builder, "KeyFrameAnimation", "TimeSpan", nameof(animation.Duration), TimeSpan(animation.Duration));
 
                 InitializeCompositionAnimation(builder, animation, node);
             }
@@ -2580,7 +3278,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                 if (obj.Duration == _owner._compositionDuration &&
                     firstKeyFrame.Type == KeyFrameType.Value)
                 {
-                    EnsureKeyFrameAnimationHelperWritten(builder, obj.Type);
+                    EnsureKeyFrameAnimationHelperWritten(obj.Type);
 
                     // Call the helper to create the animation. This will also set the duration and
                     // take the first key frame.
@@ -2595,24 +3293,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                     WriteCreateAndAssignKeyFrameAnimation(builder, obj, node);
                 }
 
-                foreach (var kf in keyFrames)
-                {
-                    WriteFrameNumberComment(builder, kf.Progress);
-
-                    switch (kf.Type)
-                    {
-                        case KeyFrameType.Expression:
-                            var expressionKeyFrame = (KeyFrameAnimation<bool, Expr.Boolean>.ExpressionKeyFrame)kf;
-                            builder.WriteLine($"result{Deref}InsertExpressionKeyFrame({Float(kf.Progress)}, {String(expressionKeyFrame.Expression)}, {_s.Null});");
-                            break;
-                        case KeyFrameType.Value:
-                            var valueKeyFrame = (KeyFrameAnimation<bool, Expr.Boolean>.ValueKeyFrame)kf;
-                            builder.WriteLine($"result{Deref}InsertKeyFrame({Float(kf.Progress)}, {Bool(valueKeyFrame.Value)});");
-                            break;
-                        default:
-                            throw new InvalidOperationException();
-                    }
-                }
+                WriteInsertKeyFrames(builder, node, obj, keyFrames, Bool, v => new[] { v ? 1F : 0F });
 
                 WriteCompositionObjectFactoryEnd(builder, obj, node);
                 return true;
@@ -2630,7 +3311,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                     firstKeyFrame.Type == KeyFrameType.Value &&
                     obj.InterpolationColorSpace == CompositionColorSpace.Rgb)
                 {
-                    EnsureKeyFrameAnimationHelperWritten(builder, obj.Type);
+                    EnsureKeyFrameAnimationHelperWritten(obj.Type);
 
                     // Call the helper to create the animation. This will also set the duration and
                     // take the first key frame.
@@ -2650,25 +3331,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                     }
                 }
 
-                foreach (var kf in keyFrames)
-                {
-                    WriteFrameNumberComment(builder, kf.Progress);
-
-                    switch (kf.Type)
-                    {
-                        case KeyFrameType.Expression:
-                            var expressionKeyFrame = (KeyFrameAnimation<Wui.Color, Expr.Color>.ExpressionKeyFrame)kf;
-                            builder.WriteLine($"result{Deref}InsertExpressionKeyFrame({Float(kf.Progress)}, {String(expressionKeyFrame.Expression)}, {CallFactoryFromFor(node, kf.Easing)});");
-                            break;
-                        case KeyFrameType.Value:
-                            var valueKeyFrame = (KeyFrameAnimation<Wui.Color, Expr.Color>.ValueKeyFrame)kf;
-                            builder.WriteComment(valueKeyFrame.Value.Name);
-                            builder.WriteLine($"result{Deref}InsertKeyFrame({Float(kf.Progress)}, {Color(valueKeyFrame.Value)}, {CallFactoryFromFor(node, kf.Easing)});");
-                            break;
-                        default:
-                            throw new InvalidOperationException();
-                    }
-                }
+                WriteInsertKeyFrames(builder, node, obj, keyFrames, Color, v => new float[] { v.A, v.R, v.G, v.B }, v => v.Name);
 
                 WriteCompositionObjectFactoryEnd(builder, obj, node);
                 return true;
@@ -2685,7 +3348,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                 if (obj.Duration == _owner._compositionDuration &&
                     firstKeyFrame.Type == KeyFrameType.Value)
                 {
-                    EnsureKeyFrameAnimationHelperWritten(builder, obj.Type);
+                    EnsureKeyFrameAnimationHelperWritten(obj.Type);
 
                     // Call the helper to create the animation. This will also set the duration and
                     // take the first key frame.
@@ -2700,24 +3363,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                     WriteCreateAndAssignKeyFrameAnimation(builder, obj, node);
                 }
 
-                foreach (var kf in keyFrames)
-                {
-                    WriteFrameNumberComment(builder, kf.Progress);
-
-                    switch (kf.Type)
-                    {
-                        case KeyFrameType.Expression:
-                            var expressionKeyFrame = (KeyFrameAnimation<Vector2, Expr.Vector2>.ExpressionKeyFrame)kf;
-                            builder.WriteLine($"result{Deref}InsertExpressionKeyFrame({Float(kf.Progress)}, {String(expressionKeyFrame.Expression)}, {CallFactoryFromFor(node, kf.Easing)});");
-                            break;
-                        case KeyFrameType.Value:
-                            var valueKeyFrame = (KeyFrameAnimation<Vector2, Expr.Vector2>.ValueKeyFrame)kf;
-                            builder.WriteLine($"result{Deref}InsertKeyFrame({Float(kf.Progress)}, {Vector2(valueKeyFrame.Value)}, {CallFactoryFromFor(node, kf.Easing)});");
-                            break;
-                        default:
-                            throw new InvalidOperationException();
-                    }
-                }
+                WriteInsertKeyFrames(builder, node, obj, keyFrames, Vector2, v => new[] { v.X, v.Y });
 
                 WriteCompositionObjectFactoryEnd(builder, obj, node);
                 return true;
@@ -2733,7 +3379,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                 if (obj.Duration == _owner._compositionDuration &&
                     firstKeyFrame.Type == KeyFrameType.Value)
                 {
-                    EnsureKeyFrameAnimationHelperWritten(builder, obj.Type);
+                    EnsureKeyFrameAnimationHelperWritten(obj.Type);
 
                     // Call the helper to create the animation. This will also set the duration and
                     // take the first key frame.
@@ -2748,24 +3394,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                     WriteCreateAndAssignKeyFrameAnimation(builder, obj, node);
                 }
 
-                foreach (var kf in keyFrames)
-                {
-                    WriteFrameNumberComment(builder, kf.Progress);
-
-                    switch (kf.Type)
-                    {
-                        case KeyFrameType.Expression:
-                            var expressionKeyFrame = (KeyFrameAnimation<Vector3, Expr.Vector3>.ExpressionKeyFrame)kf;
-                            builder.WriteLine($"result{Deref}InsertExpressionKeyFrame({Float(kf.Progress)}, {String(expressionKeyFrame.Expression)}, {CallFactoryFromFor(node, kf.Easing)});");
-                            break;
-                        case KeyFrameType.Value:
-                            var valueKeyFrame = (KeyFrameAnimation<Vector3, Expr.Vector3>.ValueKeyFrame)kf;
-                            builder.WriteLine($"result{Deref}InsertKeyFrame({Float(kf.Progress)}, {Vector3(valueKeyFrame.Value)}, {CallFactoryFromFor(node, kf.Easing)});");
-                            break;
-                        default:
-                            throw new InvalidOperationException();
-                    }
-                }
+                WriteInsertKeyFrames(builder, node, obj, keyFrames, Vector3, v => new[] { v.X, v.Y, v.Z });
 
                 WriteCompositionObjectFactoryEnd(builder, obj, node);
                 return true;
@@ -2781,7 +3410,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                 if (obj.Duration == _owner._compositionDuration &&
                     firstKeyFrame.Type == KeyFrameType.Value)
                 {
-                    EnsureKeyFrameAnimationHelperWritten(builder, obj.Type);
+                    EnsureKeyFrameAnimationHelperWritten(obj.Type);
 
                     // Call the helper to create the animation. This will also set the duration and
                     // take the first key frame.
@@ -2796,24 +3425,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                     WriteCreateAndAssignKeyFrameAnimation(builder, obj, node);
                 }
 
-                foreach (var kf in keyFrames)
-                {
-                    WriteFrameNumberComment(builder, kf.Progress);
-
-                    switch (kf.Type)
-                    {
-                        case KeyFrameType.Expression:
-                            var expressionKeyFrame = (KeyFrameAnimation<Sn.Vector4, Expr.Vector4>.ExpressionKeyFrame)kf;
-                            builder.WriteLine($"result{Deref}InsertExpressionKeyFrame({Float(kf.Progress)}, {String(expressionKeyFrame.Expression)}, {CallFactoryFromFor(node, kf.Easing)});");
-                            break;
-                        case KeyFrameType.Value:
-                            var valueKeyFrame = (KeyFrameAnimation<Sn.Vector4, Expr.Vector4>.ValueKeyFrame)kf;
-                            builder.WriteLine($"result{Deref}InsertKeyFrame({Float(kf.Progress)}, {Vector4(valueKeyFrame.Value)}, {CallFactoryFromFor(node, kf.Easing)});");
-                            break;
-                        default:
-                            throw new InvalidOperationException();
-                    }
-                }
+                WriteInsertKeyFrames(builder, node, obj, keyFrames, Vector4, v => new[] { v.X, v.Y, v.Z, v.W });
 
                 WriteCompositionObjectFactoryEnd(builder, obj, node);
                 return true;
@@ -2846,7 +3458,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                 // If the duration is equal to the duration of the composition, use a helper.
                 if (obj.Duration == _owner._compositionDuration)
                 {
-                    EnsureKeyFrameAnimationHelperWritten(builder, obj.Type);
+                    EnsureKeyFrameAnimationHelperWritten(obj.Type);
 
                     // Call the helper to create the animation. This will also set the duration and
                     // take the first key frame.
@@ -2882,7 +3494,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                 if (obj.Duration == _owner._compositionDuration &&
                     firstKeyFrame.Type == KeyFrameType.Value)
                 {
-                    EnsureKeyFrameAnimationHelperWritten(builder, obj.Type);
+                    EnsureKeyFrameAnimationHelperWritten(obj.Type);
 
                     // Call the helper to create the animation. This will also set the duration and
                     // take the first key frame.
@@ -2897,24 +3509,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                     WriteCreateAndAssignKeyFrameAnimation(builder, obj, node);
                 }
 
-                foreach (var kf in keyFrames)
-                {
-                    WriteFrameNumberComment(builder, kf.Progress);
-
-                    switch (kf.Type)
-                    {
-                        case KeyFrameType.Expression:
-                            var expressionKeyFrame = (KeyFrameAnimation<float, Expr.Scalar>.ExpressionKeyFrame)kf;
-                            builder.WriteLine($"result{Deref}InsertExpressionKeyFrame({Float(kf.Progress)}, {String(expressionKeyFrame.Expression)}, {CallFactoryFromFor(node, kf.Easing)});");
-                            break;
-                        case KeyFrameType.Value:
-                            var valueKeyFrame = (KeyFrameAnimation<float, Expr.Scalar>.ValueKeyFrame)kf;
-                            builder.WriteLine($"result{Deref}InsertKeyFrame({Float(kf.Progress)}, {Float(valueKeyFrame.Value)}, {CallFactoryFromFor(node, kf.Easing)});");
-                            break;
-                        default:
-                            throw new InvalidOperationException();
-                    }
-                }
+                WriteInsertKeyFrames(builder, node, obj, keyFrames, Float, v => new[] { v });
 
                 WriteCompositionObjectFactoryEnd(builder, obj, node);
                 return true;
@@ -3158,7 +3753,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                 var surfaceInitializationText = obj.Surface switch
                 {
                     CompositionObject compositionObject => CallFactoryFromFor(node, compositionObject),
-                    Wmd.LoadedImageSurface _ => surfaceNode!.FieldName!,
+                    Wmd.LoadedImageSurface _ => UseField(surfaceNode!),
                     null => string.Empty,
                     _ => throw new InvalidOperationException(),
                 };
@@ -3282,6 +3877,22 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
 
             static void WriteShortDescriptionComment(CodeBuilder builder, IDescribable obj) =>
                 builder.WriteComment(obj.ShortDescription);
+
+            // Records the uses of the code that is generated into the given uses until it is disposed.
+            readonly struct UsesScope : IDisposable
+            {
+                readonly AnimatedVisualGenerator _generator;
+                readonly AnimatedVisualMemberUses? _outerUses;
+
+                internal UsesScope(AnimatedVisualGenerator generator, AnimatedVisualMemberUses? uses)
+                {
+                    _generator = generator;
+                    _outerUses = generator._currentUses;
+                    generator._currentUses = uses;
+                }
+
+                public void Dispose() => _generator._currentUses = _outerUses;
+            }
         }
 
         // Aggregates ObjectData nodes that are shared between different IAnimatedVisual instances,
@@ -3312,20 +3923,45 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
             internal IReadOnlyList<ObjectData> All => _items;
         }
 
+        // The code that refers to the object whose animations are started. This is its local variable, or its
+        // field if the animations are started by a method other than the one that creates the object, as is
+        // the case when IAnimatedVisual2 is implemented. The field is recorded as used where the code is written.
+        sealed class LocalReference
+        {
+            internal LocalReference(string code, ObjectData? field = null)
+            {
+                Code = code;
+                Field = field;
+            }
+
+            internal static LocalReference Result { get; } = new LocalReference("result");
+
+            internal static LocalReference Controller { get; } = new LocalReference("controller");
+
+            internal string Code { get; }
+
+            // The node whose field the code refers to, or null if the code does not refer to a field.
+            internal ObjectData? Field { get; }
+
+            // Gets the reference to the Properties of the object.
+            internal LocalReference Properties(Stringifier s) => new LocalReference(s.PropertyGet(Code, "Properties"), Field);
+        }
+
         // A node in the object graph, annotated with extra stuff to assist in code generation.
         sealed class ObjectData : Graph.Node<ObjectData>
         {
             Func<string>? _overriddenFactoryCall;
-            Dictionary<ObjectData, string>? _callFactoryFromForCache;
+            Dictionary<ObjectData, (string Code, AnimatedVisualMemberUses Uses)>? _callFactoryFromForCache;
 
-            public Dictionary<ObjectData, string> CallFactoryFromForCache
+            // The code that calls the factories of other nodes from this node, with what the code uses.
+            public Dictionary<ObjectData, (string Code, AnimatedVisualMemberUses Uses)> CallFactoryFromForCache
             {
                 get
                 {
                     // Lazy initialization because not all nodes need the cache.
                     if (_callFactoryFromForCache is null)
                     {
-                        _callFactoryFromForCache = new Dictionary<ObjectData, string>();
+                        _callFactoryFromForCache = new Dictionary<ObjectData, (string Code, AnimatedVisualMemberUses Uses)>();
                     }
 
                     return _callFactoryFromForCache;

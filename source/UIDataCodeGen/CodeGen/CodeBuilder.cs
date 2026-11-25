@@ -42,6 +42,12 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
             _lines.Add(new CodeLine { Contents = line, IndentCount = _indentCount });
         }
 
+        // Writes a line that is a comment, which can be told from code without looking at its text.
+        void WriteCommentLine(string line)
+        {
+            _lines.Add(new CodeLine { Contents = line, IndentCount = _indentCount, IsComment = true });
+        }
+
         // Writes a line, or multiple lines if the line would be too long as a single line.
         // Typically used for writing method calls and signature.
         internal void WriteBreakableLine(string prefix, string[] breakableParts, string postfix)
@@ -98,7 +104,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
             }
         }
 
-        internal void WritePreformattedCommentLine(string line) => WriteLine($"// {line}");
+        internal void WritePreformattedCommentLine(string line) => WriteCommentLine($"// {line}");
 
         internal void WritePreformattedCommentLines(IEnumerable<string> lines)
         {
@@ -112,19 +118,36 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
         {
             if (!string.IsNullOrWhiteSpace(comment))
             {
-                WriteLine($"/// <summary>");
+                WriteCommentLine($"/// <summary>");
                 foreach (var line in BreakUpLine(comment))
                 {
-                    WriteLine($"/// {line}");
+                    WriteCommentLine($"/// {line}");
                 }
 
-                WriteLine($"/// </summary>");
+                WriteCommentLine($"/// </summary>");
             }
         }
 
         internal void WriteCodeBuilder(CodeBuilder builder)
         {
             _lines.Add(new CodeLine { Contents = builder, IndentCount = _indentCount });
+        }
+
+        /// <summary>
+        /// Writes lines that are already indented with spaces, keeping their indentation
+        /// relative to the current indentation.
+        /// </summary>
+        internal void WritePreindentedLines(IEnumerable<string> lines)
+        {
+            foreach (var line in lines)
+            {
+                var spaceCount = line.Length - line.TrimStart(' ').Length;
+                _lines.Add(new CodeLine
+                {
+                    Contents = line.Substring(spaceCount - (spaceCount % IndentSize)),
+                    IndentCount = _indentCount + (spaceCount / IndentSize),
+                });
+            }
         }
 
         /// <summary>
@@ -191,7 +214,7 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
             return sb.ToString();
         }
 
-        internal IEnumerable<string> ToLines(int indentCount)
+        internal IEnumerable<string> ToLines(int indentCount, bool includeComments = true)
         {
             var indentString = string.Empty;
 
@@ -200,10 +223,14 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
                 if (line.Contents is CodeBuilder builder)
                 {
                     // A nested code builder. Yield each line from it with the appropriate indent.
-                    foreach (var subLineText in builder.ToLines(line.IndentCount + indentCount))
+                    foreach (var subLineText in builder.ToLines(line.IndentCount + indentCount, includeComments))
                     {
                         yield return subLineText;
                     }
+                }
+                else if (line.IsComment && !includeComments)
+                {
+                    continue;
                 }
                 else
                 {
@@ -446,6 +473,9 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
             // A string or a CodeBuilder.
             internal object Contents;
             internal int IndentCount;
+
+            // True if the line is a comment.
+            internal bool IsComment;
 
             internal int LineCount => Contents is CodeBuilder nestedCodeBuilder ? nestedCodeBuilder.LineCount : 1;
 

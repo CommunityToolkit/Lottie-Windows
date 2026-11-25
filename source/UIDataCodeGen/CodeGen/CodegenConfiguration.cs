@@ -114,6 +114,13 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen
         /// </summary>
         public Version WinUIVersion { get; set; }
 
+        /// <summary>
+        /// Gets or sets the version of the C# language that generated C# code may use. With 12 or
+        /// later, collection expressions and spans are used to avoid allocating arrays, which
+        /// assumes .NET 8 or later.
+        /// </summary>
+        public Version CSharpVersion { get; set; } = new Version(7, 3);
+
         public bool ImplementCreateAndDestroyMethods => WinUIVersion >= Version.Parse("2.8");
     }
 }

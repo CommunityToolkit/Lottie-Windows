@@ -24,8 +24,53 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
 #endif
     sealed class CSharpInstantiatorGenerator : InstantiatorGeneratorBase
     {
+        // The name of the static helper that creates a CanvasGeometry path from path data.
+        const string CreatePathFromDataHelperName = "CreatePathFromData";
+
+        // The name of the static helpers that insert key frames from key frame data.
+        const string InsertKeyFramesHelperName = "InsertKeyFrames";
+
+        // Prevents inlining of the helpers that exist to keep code out of their callers.
+        const string NoInliningAttribute = "[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]";
+
         readonly Stringifier _s;
         readonly string _winUiNamespace;
+        readonly bool _disableOptimization;
+
+        // True if the code may use collection expressions and spans, which requires C# 12 or later.
+        readonly bool _useCollectionExpressions;
+
+        // The types of the animations for which an InsertKeyFrames helper is needed.
+        readonly SortedSet<CompositionObjectType> _insertKeyFramesHelpersNeeded = new SortedSet<CompositionObjectType>();
+
+        // The setters needed for properties declared by base classes, as declaring type, value type and property name.
+        readonly HashSet<(string DeclaringType, string ValueType, string PropertyName)> _inheritedPropertySettersNeeded =
+            new HashSet<(string DeclaringType, string ValueType, string PropertyName)>();
+
+        // The types of the objects for which an AddShape helper is needed.
+        readonly SortedSet<string> _addShapeHelperTargetTypesNeeded = new SortedSet<string>(StringComparer.Ordinal);
+
+        // True if any gradient brush factory calls the AddColorStop helper.
+        bool _isAddColorStopHelperNeeded;
+
+        // True if any container visual factory calls the InsertChildAtTop helper.
+        bool _isInsertChildAtTopHelperNeeded;
+
+        // True if any path geometry factory calls the CreatePathFromData helper.
+        bool _isCreatePathFromDataHelperNeeded;
+
+        // The name of the base class that the AnimatedVisual classes derive from while they are written, or null.
+        string? _animatedVisualBaseClassName;
+
+        // The codes of the commands in the path data passed to the CreatePathFromData helper.
+        enum PathCommand
+        {
+            BeginFigure = 0,
+            AddLine = 1,
+            AddCubicBezier = 2,
+            EndFigureOpen = 3,
+            EndFigureClosed = 4,
+        }
 
         CSharpInstantiatorGenerator(
             CodegenConfiguration configuration,
@@ -36,6 +81,8 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
                   stringifier: stringifier)
         {
             _s = stringifier;
+            _disableOptimization = configuration.DisableOptimization;
+            _useCollectionExpressions = configuration.CSharpVersion >= new Version(12, 0);
 
             if (AnimatedVisualSourceInfo.WinUIVersion.Major >= 3)
             {
@@ -68,6 +115,30 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
         }
 
         static string FieldAssignment(string fieldName) => fieldName is not null ? $"{fieldName} = " : string.Empty;
+
+        // The end of a collection started by WriteCollectionStart.
+        string CollectionEnd => _useCollectionExpressions ? "]" : "}";
+
+        // The type of a parameter taking a read-only collection. With C# 12 or later, spans are used
+        // so that callers can pass collection expressions, which are not allocated on .NET 8 or later:
+        // constant primitive data comes from the data section of the assembly, and references are
+        // kept in a buffer on the stack.
+        string ReadOnlyCollectionType(string elementType) => _useCollectionExpressions ? $"ReadOnlySpan<{elementType}>" : $"{elementType}[]";
+
+        // Writes the start of a collection with one element per line, ended by CollectionEnd.
+        void WriteCollectionStart(CodeBuilder builder, string elementType)
+        {
+            if (_useCollectionExpressions)
+            {
+                builder.WriteLine("[");
+                builder.Indent();
+            }
+            else
+            {
+                builder.WriteLine($"new {elementType}[]");
+                builder.OpenScope();
+            }
+        }
 
         /// <inheritdoc/>
         // Called by the base class to write the start of the file (i.e. everything up to the body of the Instantiator class).
@@ -260,7 +331,8 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
         {
             var visibility = SourceInfo.Public ? "public " : string.Empty;
 
-            builder.WriteLine($"{visibility}sealed class {SourceInfo.ClassName}");
+            // Classes implementing WinRT interfaces must be partial for AOT support with CsWinRT 2.x (CsWinRT1028).
+            builder.WriteLine($"{visibility}sealed partial class {SourceInfo.ClassName}");
 
             builder.Indent();
             if (SourceInfo.GenerateDependencyObject)
@@ -685,9 +757,19 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
         protected override void WriteAnimatedVisualStart(CodeBuilder builder, IAnimatedVisualInfo info)
         {
             // Start the instantiator class.
-            builder.WriteLine($"sealed class {info.ClassName}");
+            // Classes implementing WinRT interfaces must be partial for AOT support with CsWinRT 2.x (CsWinRT1028).
+            builder.WriteLine($"sealed partial class {info.ClassName}");
             builder.Indent();
-            builder.WriteLine($": {Interface_IAnimatedVisual.GetQualifiedName(_s)}");
+
+            // The base class, if any, comes before the interfaces.
+            var separator = ":";
+            if (_animatedVisualBaseClassName is not null)
+            {
+                builder.WriteLine($": {_animatedVisualBaseClassName}");
+                separator = ",";
+            }
+
+            builder.WriteLine($"{separator} {Interface_IAnimatedVisual.GetQualifiedName(_s)}");
 
             if (info.ImplementCreateAndDestroyMethods)
             {
@@ -788,9 +870,114 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
         }
 
         /// <inheritdoc/>
+        private protected override void WriteAnimatedVisualClasses(
+            CodeBuilder builder,
+            IReadOnlyList<AnimatedVisualClass> classes)
+        {
+            // Move the code that is identical in all of the AnimatedVisual classes into a base class.
+            var shared = _disableOptimization
+                ? null
+                : SharedAnimatedVisualMembers.Find(classes.Select(c => c.Members).ToArray());
+            if (shared is null)
+            {
+                base.WriteAnimatedVisualClasses(builder, classes);
+                return;
+            }
+
+            var baseClassName = $"{SourceInfo.ClassName}_AnimatedVisualBase";
+            builder.WriteComment("Code that is shared by the AnimatedVisual classes.");
+            builder.WriteLine($"abstract class {baseClassName}");
+            builder.OpenScope();
+
+            // The constructors of the classes assign some of the fields, so those fields cannot be read-only here.
+            foreach (var field in shared.Fields)
+            {
+                builder.WriteLine($"internal {(field.IsAssignedByConstructor ? field.MutableDeclaration : field.Declaration)}");
+            }
+
+            foreach (var method in shared.Methods)
+            {
+                builder.WriteLine();
+                method.Write(builder, "internal ");
+            }
+
+            foreach (var method in shared.AbstractMethods)
+            {
+                builder.WriteLine();
+                method.WriteAbstractDeclaration(builder);
+            }
+
+            builder.CloseScope();
+
+            _animatedVisualBaseClassName = baseClassName;
+            foreach (var c in classes)
+            {
+                builder.WriteLine();
+                c.WriteStart(builder);
+
+                foreach (var field in c.Members.Fields.Where(f => !shared.IsInBaseClass(f)))
+                {
+                    builder.WriteLine(field.Declaration);
+                }
+
+                foreach (var method in c.Members.Methods.Where(m => !shared.IsInBaseClass(m)))
+                {
+                    builder.WriteLine();
+                    method.Write(builder, shared.IsOverride(method) ? "internal override " : null);
+                }
+
+                builder.WriteLine();
+                c.WriteEnd(builder);
+            }
+
+            _animatedVisualBaseClassName = null;
+        }
+
+        /// <inheritdoc/>
         // Called by the base class to write the end of the file (i.e. everything after the body of the AnimatedVisual class).
         protected override void WriteImplementationFileEnd(CodeBuilder builder)
         {
+            // Helpers shared by all of the AnimatedVisual classes.
+            if (_isCreatePathFromDataHelperNeeded)
+            {
+                WriteCreatePathFromDataHelper(builder);
+            }
+
+            foreach (var animationType in _insertKeyFramesHelpersNeeded)
+            {
+                WriteInsertKeyFramesHelper(builder, animationType);
+            }
+
+            foreach (var (declaringType, valueType, propertyName) in _inheritedPropertySettersNeeded
+                .OrderBy(s => s.PropertyName, StringComparer.Ordinal)
+                .ThenBy(s => s.DeclaringType, StringComparer.Ordinal))
+            {
+                builder.WriteLine();
+                builder.WriteLine(NoInliningAttribute);
+                builder.WriteLine($"static void Set{propertyName}({declaringType} target, {valueType} value) => target.{propertyName} = value;");
+            }
+
+            if (_isAddColorStopHelperNeeded)
+            {
+                builder.WriteLine();
+                builder.WriteLine(NoInliningAttribute);
+                builder.WriteLine("static void AddColorStop(CompositionGradientBrush target, CompositionColorGradientStop value) => target.ColorStops.Add(value);");
+            }
+
+            foreach (var targetType in _addShapeHelperTargetTypesNeeded)
+            {
+                builder.WriteLine();
+                builder.WriteLine(NoInliningAttribute);
+                builder.WriteLine($"static void AddShape({targetType} target, CompositionShape value) => target.Shapes.Add(value);");
+            }
+
+            if (_isInsertChildAtTopHelperNeeded)
+            {
+                builder.WriteLine();
+                builder.WriteLine(NoInliningAttribute);
+                builder.WriteLine("static void InsertChildAtTop(ContainerVisual target, Visual value) => target.Children.InsertAtTop(value);");
+            }
+
             // Close the scope for the IAnimatedVisualSource class.
             builder.CloseScope();
 
@@ -833,45 +1020,276 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
             builder.WriteLine($"var result = {FieldAssignment(fieldName)}CanvasGeometry.CreateGroup(");
             builder.Indent();
             builder.WriteLine($"null,");
-            builder.WriteLine($"new CanvasGeometry[] {{ {string.Join(", ", obj.Geometries.Select(g => CallFactoryFor(g))) } }},");
+            var geometries = string.Join(", ", obj.Geometries.Select(g => CallFactoryFor(g)));
+            builder.WriteLine(_useCollectionExpressions ? $"[{geometries}]," : $"new CanvasGeometry[] {{ {geometries} }},");
             builder.WriteLine($"{_s.FilledRegionDetermination(obj.FilledRegionDetermination)});");
             builder.UnIndent();
         }
 
         /// <inheritdoc/>
+        // The helpers that create objects set properties declared by base classes, which takes a lot of
+        // code when inlined into every factory, as it is with Native AOT.
+        private protected override string? HelperMethodAttribute => NoInliningAttribute;
+
+        /// <inheritdoc/>
+        private protected override bool IsBindTrimHelperSupported => true;
+
+        /// <inheritdoc/>
+        private protected override string? GetInheritedPropertySetterCall(string declaringType, string valueType, string propertyName, string target, string value)
+        {
+            // Setting a property declared by a base class through the WinRT projection requires getting
+            // the interface of the base class, which is a lot of code when inlined in every factory, as
+            // it is with Native AOT. A setter that is never inlined keeps that code in one place.
+            _inheritedPropertySettersNeeded.Add((declaringType, valueType, propertyName));
+            return $"Set{propertyName}({target}, {value})";
+        }
+
+        /// <inheritdoc/>
+        private protected override string? GetAddColorStopCall(string target, string colorStop)
+        {
+            // ColorStops is declared by CompositionGradientBrush, a base class of the gradient brushes.
+            _isAddColorStopHelperNeeded = true;
+            return $"AddColorStop({target}, {colorStop})";
+        }
+
+        /// <inheritdoc/>
+        private protected override string? GetAddShapeCall(string targetType, string target, string shape)
+        {
+            _addShapeHelperTargetTypesNeeded.Add(targetType);
+            return $"AddShape({target}, {shape})";
+        }
+
+        /// <inheritdoc/>
+        private protected override string? GetInsertChildAtTopCall(string target, string child)
+        {
+            // Children is declared by ContainerVisual, a base class of ShapeVisual and SpriteVisual.
+            _isInsertChildAtTopHelperNeeded = true;
+            return $"InsertChildAtTop({target}, {child})";
+        }
+
+        /// <inheritdoc/>
+        private protected override bool TryWriteInsertKeyFramesFromData(
+            CodeBuilder builder,
+            CompositionObjectType animationType,
+            IReadOnlyList<KeyFrameData> keyFrames)
+        {
+            // A table is smaller than a call per key frame only if there are enough key frames. The
+            // minimums were measured on the native code generated by Native AOT for x64.
+            var minimumKeyFrameCount = animationType switch
+            {
+                CompositionObjectType.BooleanKeyFrameAnimation => 2,
+                CompositionObjectType.Vector3KeyFrameAnimation => 2,
+                CompositionObjectType.Vector4KeyFrameAnimation => 2,
+                CompositionObjectType.ColorKeyFrameAnimation => 3,
+                _ => 4,
+            };
+
+            if (keyFrames.Count < minimumKeyFrameCount)
+            {
+                return false;
+            }
+
+            _insertKeyFramesHelpersNeeded.Add(animationType);
+            var hasEasing = animationType != CompositionObjectType.BooleanKeyFrameAnimation;
+
+            // The distinct easing functions, in the order of their first use. Key frames refer to them by index.
+            var easings = new List<KeyFrameData>();
+            int EasingIndex(KeyFrameData keyFrame)
+            {
+                var index = easings.FindIndex(e => ReferenceEquals(e.Easing, keyFrame.Easing));
+                if (index < 0)
+                {
+                    easings.Add(keyFrame);
+                    index = easings.Count - 1;
+                }
+
+                return index;
+            }
+
+            builder.WriteLine($"{InsertKeyFramesHelperName}(");
+            builder.Indent();
+            builder.WriteLine("result,");
+            WriteCollectionStart(builder, "float");
+            foreach (var keyFrame in keyFrames)
+            {
+                var values = new[] { keyFrame.Progress }.Concat(keyFrame.Value);
+                if (hasEasing)
+                {
+                    values = values.Append(EasingIndex(keyFrame));
+                }
+
+                builder.WriteLine($"{string.Join(", ", values.Select(_s.Float))}, // {keyFrame.Comment}");
+            }
+
+            builder.UnIndent();
+            if (hasEasing)
+            {
+                builder.WriteLine($"{CollectionEnd},");
+                WriteCollectionStart(builder, "CompositionEasingFunction");
+                foreach (var easing in easings)
+                {
+                    builder.WriteLine($"{easing.EasingCode},");
+                }
+
+                builder.UnIndent();
+            }
+
+            builder.WriteLine($"{CollectionEnd});");
+            builder.UnIndent();
+            return true;
+        }
+
+        // Writes the helper that inserts the key frames written by TryWriteInsertKeyFramesFromData.
+        void WriteInsertKeyFramesHelper(CodeBuilder builder, CompositionObjectType animationType)
+        {
+            // The code that gets the value of the key frame from the data at index i + 1.
+            var (valueComponentCount, value) = animationType switch
+            {
+                CompositionObjectType.BooleanKeyFrameAnimation => (1, "data[i + 1] != 0"),
+                CompositionObjectType.ColorKeyFrameAnimation => (4, "Color.FromArgb((byte)data[i + 1], (byte)data[i + 2], (byte)data[i + 3], (byte)data[i + 4])"),
+                CompositionObjectType.ScalarKeyFrameAnimation => (1, "data[i + 1]"),
+                CompositionObjectType.Vector2KeyFrameAnimation => (2, "new Vector2(data[i + 1], data[i + 2])"),
+                CompositionObjectType.Vector3KeyFrameAnimation => (3, "new Vector3(data[i + 1], data[i + 2], data[i + 3])"),
+                CompositionObjectType.Vector4KeyFrameAnimation => (4, "new Vector4(data[i + 1], data[i + 2], data[i + 3], data[i + 4])"),
+                _ => throw new InvalidOperationException(),
+            };
+
+            builder.WriteLine();
+            if (animationType == CompositionObjectType.BooleanKeyFrameAnimation)
+            {
+                builder.WriteComment("Inserts key frames from data. Each key frame is its progress followed by its value (1 for true, 0 for false).");
+                builder.WriteLine($"static void {InsertKeyFramesHelperName}({animationType} animation, {ReadOnlyCollectionType("float")} data)");
+                builder.OpenScope();
+                builder.WriteLine($"for (var i = 0; i < data.Length; i += {1 + valueComponentCount})");
+                builder.OpenScope();
+                builder.WriteLine($"animation.InsertKeyFrame(data[i], {value});");
+            }
+            else
+            {
+                builder.WriteComment("Inserts key frames from data. Each key frame is its progress, followed by the components of its value, followed by the index of its easing function.");
+                builder.WriteLine($"static void {InsertKeyFramesHelperName}({animationType} animation, {ReadOnlyCollectionType("float")} data, {ReadOnlyCollectionType("CompositionEasingFunction")} easingFunctions)");
+                builder.OpenScope();
+                builder.WriteLine($"for (var i = 0; i < data.Length; i += {2 + valueComponentCount})");
+                builder.OpenScope();
+                builder.WriteLine($"animation.InsertKeyFrame(data[i], {value}, easingFunctions[(int)data[i + {1 + valueComponentCount}]]);");
+            }
+
+            builder.CloseScope();
+            builder.CloseScope();
+        }
+
+        /// <inheritdoc/>
         protected override void WriteCanvasGeometryPathFactory(CodeBuilder builder, CanvasGeometry.Path obj, string typeName, string fieldName)
         {
-            builder.WriteLine($"{typeName} result;");
-            builder.WriteLine($"using (var builder = new CanvasPathBuilder(null))");
-            builder.OpenScope();
-            if (obj.FilledRegionDetermination != CanvasFilledRegionDetermination.Alternate)
-            {
-                builder.WriteLine($"builder.SetFilledRegionDetermination({_s.FilledRegionDetermination(obj.FilledRegionDetermination)});");
-            }
-
+            // The path is encoded as data and replayed by a shared helper. This is much smaller than
+            // a CanvasPathBuilder call per command, both in source and in compiled code.
+            _isCreatePathFromDataHelperNeeded = true;
+            builder.WriteLine($"var result = {FieldAssignment(fieldName)}{CreatePathFromDataHelperName}(");
+            builder.Indent();
+            builder.WriteLine($"{_s.FilledRegionDetermination(obj.FilledRegionDetermination)},");
+            WriteCollectionStart(builder, "float");
             foreach (var command in obj.Commands)
             {
-                switch (command.Type)
-                {
-                    case CanvasPathBuilder.CommandType.BeginFigure:
-                        builder.WriteLine($"builder.BeginFigure({_s.Vector2(((CanvasPathBuilder.Command.BeginFigure)command).StartPoint)});");
-                        break;
-                    case CanvasPathBuilder.CommandType.EndFigure:
-                        builder.WriteLine($"builder.EndFigure({_s.CanvasFigureLoop(((CanvasPathBuilder.Command.EndFigure)command).FigureLoop)});");
-                        break;
-                    case CanvasPathBuilder.CommandType.AddLine:
-                        builder.WriteLine($"builder.AddLine({_s.Vector2(((CanvasPathBuilder.Command.AddLine)command).EndPoint)});");
-                        break;
-                    case CanvasPathBuilder.CommandType.AddCubicBezier:
-                        var cb = (CanvasPathBuilder.Command.AddCubicBezier)command;
-                        builder.WriteLine($"builder.AddCubicBezier({_s.Vector2(cb.ControlPoint1)}, {_s.Vector2(cb.ControlPoint2)}, {_s.Vector2(cb.EndPoint)});");
-                        break;
-                    default:
-                        throw new InvalidOperationException();
-                }
+                builder.WriteLine(string.Join(", ", EncodePathCommand(command).Select(_s.Float)) + ",");
             }
 
-            builder.WriteLine($"result = {FieldAssignment(fieldName)}CanvasGeometry.CreatePath(builder);");
+            builder.UnIndent();
+            builder.WriteLine($"{CollectionEnd});");
+            builder.UnIndent();
+        }
+
+        // Encodes a path command as its PathCommand code followed by its points.
+        static IEnumerable<float> EncodePathCommand(CanvasPathBuilder.Command command)
+        {
+            switch (command.Type)
+            {
+                case CanvasPathBuilder.CommandType.BeginFigure:
+                    var startPoint = ((CanvasPathBuilder.Command.BeginFigure)command).StartPoint;
+                    return new[] { (float)PathCommand.BeginFigure, startPoint.X, startPoint.Y };
+                case CanvasPathBuilder.CommandType.EndFigure:
+                    return new[]
+                    {
+                        (float)(((CanvasPathBuilder.Command.EndFigure)command).FigureLoop == CanvasFigureLoop.Closed
+                            ? PathCommand.EndFigureClosed
+                            : PathCommand.EndFigureOpen),
+                    };
+                case CanvasPathBuilder.CommandType.AddLine:
+                    var endPoint = ((CanvasPathBuilder.Command.AddLine)command).EndPoint;
+                    return new[] { (float)PathCommand.AddLine, endPoint.X, endPoint.Y };
+                case CanvasPathBuilder.CommandType.AddCubicBezier:
+                    var cb = (CanvasPathBuilder.Command.AddCubicBezier)command;
+                    return new[]
+                    {
+                        (float)PathCommand.AddCubicBezier,
+                        cb.ControlPoint1.X, cb.ControlPoint1.Y,
+                        cb.ControlPoint2.X, cb.ControlPoint2.Y,
+                        cb.EndPoint.X, cb.EndPoint.Y,
+                    };
+                default:
+                    throw new InvalidOperationException();
+            }
+        }
+
+        // Writes the helper that replays the path data written by WriteCanvasGeometryPathFactory.
+        void WriteCreatePathFromDataHelper(CodeBuilder builder)
+        {
+            builder.WriteLine();
+            builder.WriteComment(
+                $"Creates a CanvasGeometry path from path data. The data is a sequence of commands, each one being a code " +
+                $"followed by the coordinates of its points: {(int)PathCommand.BeginFigure} = BeginFigure(point), " +
+                $"{(int)PathCommand.AddLine} = AddLine(point), {(int)PathCommand.AddCubicBezier} = AddCubicBezier(controlPoint1, " +
+                $"controlPoint2, endPoint), {(int)PathCommand.EndFigureOpen} = EndFigure(Open), " +
+                $"{(int)PathCommand.EndFigureClosed} = EndFigure(Closed).");
+            builder.WriteLine($"static CanvasGeometry {CreatePathFromDataHelperName}(CanvasFilledRegionDetermination filledRegionDetermination, {ReadOnlyCollectionType("float")} data)");
+            builder.OpenScope();
+            builder.WriteLine("using (var builder = new CanvasPathBuilder(null))");
+            builder.OpenScope();
+            builder.WriteLine($"if (filledRegionDetermination != {_s.FilledRegionDetermination(CanvasFilledRegionDetermination.Alternate)})");
+            builder.OpenScope();
+            builder.WriteLine("builder.SetFilledRegionDetermination(filledRegionDetermination);");
+            builder.CloseScope();
+            builder.WriteLine();
+            builder.WriteLine("for (var i = 0; i < data.Length;)");
+            builder.OpenScope();
+            builder.WriteLine("switch ((int)data[i++])");
+            builder.OpenScope();
+            builder.WriteLine($"case {(int)PathCommand.BeginFigure}:");
+            builder.Indent();
+            builder.WriteLine("builder.BeginFigure(new Vector2(data[i], data[i + 1]));");
+            builder.WriteLine("i += 2;");
+            builder.WriteLine("break;");
+            builder.UnIndent();
+            builder.WriteLine($"case {(int)PathCommand.AddLine}:");
+            builder.Indent();
+            builder.WriteLine("builder.AddLine(new Vector2(data[i], data[i + 1]));");
+            builder.WriteLine("i += 2;");
+            builder.WriteLine("break;");
+            builder.UnIndent();
+            builder.WriteLine($"case {(int)PathCommand.AddCubicBezier}:");
+            builder.Indent();
+            builder.WriteLine("builder.AddCubicBezier(new Vector2(data[i], data[i + 1]), new Vector2(data[i + 2], data[i + 3]), new Vector2(data[i + 4], data[i + 5]));");
+            builder.WriteLine("i += 6;");
+            builder.WriteLine("break;");
+            builder.UnIndent();
+            builder.WriteLine($"case {(int)PathCommand.EndFigureOpen}:");
+            builder.Indent();
+            builder.WriteLine($"builder.EndFigure({_s.CanvasFigureLoop(CanvasFigureLoop.Open)});");
+            builder.WriteLine("break;");
+            builder.UnIndent();
+            builder.WriteLine($"case {(int)PathCommand.EndFigureClosed}:");
+            builder.Indent();
+            builder.WriteLine($"builder.EndFigure({_s.CanvasFigureLoop(CanvasFigureLoop.Closed)});");
+            builder.WriteLine("break;");
+            builder.UnIndent();
+            builder.WriteLine("default:");
+            builder.Indent();
+            builder.WriteLine("throw new ArgumentException(\"Invalid path data\", nameof(data));");
+            builder.UnIndent();
+            builder.CloseScope();
+            builder.CloseScope();
+            builder.WriteLine();
+            builder.WriteLine("return CanvasGeometry.CreatePath(builder);");
+            builder.CloseScope();
             builder.CloseScope();
         }
 
