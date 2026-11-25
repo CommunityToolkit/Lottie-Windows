@@ -59,6 +59,9 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
         // True if any path geometry factory calls the CreatePathFromData helper.
         bool _isCreatePathFromDataHelperNeeded;
 
+        // The name of the base class that the AnimatedVisual classes derive from while they are written, or null.
+        string? _animatedVisualBaseClassName;
+
         // The codes of the commands in the path data passed to the CreatePathFromData helper.
         enum PathCommand
         {
@@ -757,7 +760,16 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
             // Classes implementing WinRT interfaces must be partial for AOT support with CsWinRT 2.x (CsWinRT1028).
             builder.WriteLine($"sealed partial class {info.ClassName}");
             builder.Indent();
-            builder.WriteLine($": {Interface_IAnimatedVisual.GetQualifiedName(_s)}");
+
+            // The base class, if any, comes before the interfaces.
+            var separator = ":";
+            if (_animatedVisualBaseClassName is not null)
+            {
+                builder.WriteLine($": {_animatedVisualBaseClassName}");
+                separator = ",";
+            }
+
+            builder.WriteLine($"{separator} {Interface_IAnimatedVisual.GetQualifiedName(_s)}");
 
             if (info.ImplementCreateAndDestroyMethods)
             {
@@ -860,30 +872,65 @@ namespace CommunityToolkit.WinUI.Lottie.UIData.CodeGen.CSharp
         /// <inheritdoc/>
         private protected override void WriteAnimatedVisualClasses(
             CodeBuilder builder,
-            IReadOnlyList<(IAnimatedVisualInfo Info, CodeBuilder Code)> classes)
+            IReadOnlyList<AnimatedVisualClass> classes)
         {
-            if (!_disableOptimization && classes.Count > 1)
+            // Move the code that is identical in all of the AnimatedVisual classes into a base class.
+            var shared = _disableOptimization
+                ? null
+                : SharedAnimatedVisualMembers.Find(classes.Select(c => c.Members).ToArray());
+            if (shared is null)
             {
-                // Move the code that is identical in all of the AnimatedVisual classes into a base class.
-                var extracted = CSharpSharedCodeExtractor.Extract(
-                    $"{SourceInfo.ClassName}_AnimatedVisualBase",
-                    classes.Select(c => (IReadOnlyList<string>)c.Code.ToLines(0).ToArray()).ToArray());
-
-                if (extracted is not null)
-                {
-                    builder.WriteComment("Code that is shared by the AnimatedVisual classes.");
-                    builder.WritePreindentedLines(extracted.Value.BaseClass);
-                    foreach (var c in extracted.Value.Classes)
-                    {
-                        builder.WriteLine();
-                        builder.WritePreindentedLines(c);
-                    }
-
-                    return;
-                }
+                base.WriteAnimatedVisualClasses(builder, classes);
+                return;
             }
 
-            base.WriteAnimatedVisualClasses(builder, classes);
+            var baseClassName = $"{SourceInfo.ClassName}_AnimatedVisualBase";
+            builder.WriteComment("Code that is shared by the AnimatedVisual classes.");
+            builder.WriteLine($"abstract class {baseClassName}");
+            builder.OpenScope();
+
+            // The constructors of the classes assign some of the fields, so those fields cannot be read-only here.
+            foreach (var field in shared.Fields)
+            {
+                builder.WriteLine($"internal {(field.IsAssignedByConstructor ? field.MutableDeclaration : field.Declaration)}");
+            }
+
+            foreach (var method in shared.Methods)
+            {
+                builder.WriteLine();
+                method.Write(builder, "internal ");
+            }
+
+            foreach (var method in shared.AbstractMethods)
+            {
+                builder.WriteLine();
+                method.WriteAbstractDeclaration(builder);
+            }
+
+            builder.CloseScope();
+
+            _animatedVisualBaseClassName = baseClassName;
+            foreach (var c in classes)
+            {
+                builder.WriteLine();
+                c.WriteStart(builder);
+
+                foreach (var field in c.Members.Fields.Where(f => !shared.IsInBaseClass(f)))
+                {
+                    builder.WriteLine(field.Declaration);
+                }
+
+                foreach (var method in c.Members.Methods.Where(m => !shared.IsInBaseClass(m)))
+                {
+                    builder.WriteLine();
+                    method.Write(builder, shared.IsOverride(method) ? "internal override " : null);
+                }
+
+                builder.WriteLine();
+                c.WriteEnd(builder);
+            }
+
+            _animatedVisualBaseClassName = null;
         }
 
         /// <inheritdoc/>

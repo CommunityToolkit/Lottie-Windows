@@ -14,7 +14,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\source\UIDataCodeGen\CodeGen\CSharp\CSharpSharedCodeExtractor.cs" Link="Sources\CSharpSharedCodeExtractor.cs" />
+    <Compile Include="..\..\source\UIDataCodeGen\CodeGen\AnimatedVisualClassMembers.cs" Link="Sources\AnimatedVisualClassMembers.cs" />
+    <Compile Include="..\..\source\UIDataCodeGen\CodeGen\AnimatedVisualField.cs" Link="Sources\AnimatedVisualField.cs" />
+    <Compile Include="..\..\source\UIDataCodeGen\CodeGen\AnimatedVisualMemberUses.cs" Link="Sources\AnimatedVisualMemberUses.cs" />
+    <Compile Include="..\..\source\UIDataCodeGen\CodeGen\AnimatedVisualMethod.cs" Link="Sources\AnimatedVisualMethod.cs" />
+    <Compile Include="..\..\source\UIDataCodeGen\CodeGen\CodeBuilder.cs" Link="Sources\CodeBuilder.cs" />
+    <Compile Include="..\..\source\UIDataCodeGen\CodeGen\CSharp\SharedAnimatedVisualMembers.cs" Link="Sources\SharedAnimatedVisualMembers.cs" />
   </ItemGroup>
 
   <ItemGroup>
