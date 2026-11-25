@@ -37,7 +37,7 @@ namespace CommunityToolkit::WinUI2::Lottie
     // How serialized markers become IAnimatedVisualSource2::Markers. Each policy matches a
     // LottieGen version's generated code. Frames are recovered from the marker progress
     // and the first nonzero frame is nudged by 0.05 frames, as LottieGen does.
-    enum class MarkerNames : uint8_t
+    enum class MarkerPolicy : uint8_t
     {
         // A marker whose frame lies outside the animation is dropped; the first marker
         // of a name wins.
@@ -51,7 +51,7 @@ namespace CommunityToolkit::WinUI2::Lottie
 
     struct AnimatedVisualSourceOptions
     {
-        MarkerNames Markers = MarkerNames::FirstWins;
+        MarkerPolicy Markers = MarkerPolicy::FirstWins;
 
         // Whether a marker on the final frame is kept.
         bool IncludeFinalFrameMarkers = true;

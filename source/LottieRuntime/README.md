@@ -221,7 +221,7 @@ version's generated code:
 
 | Option | Default | Effect |
 |---|---|---|
-| `Markers` | `FirstWins` | `FirstWins` keeps the first marker of each name; `Unique` sanitizes names and suffixes duplicates with `_<n>`. |
+| `Markers` | `MarkerPolicy::FirstWins` | `FirstWins` keeps the first marker of each name; `Unique` sanitizes names and suffixes duplicates with `_<n>`. |
 | `IncludeFinalFrameMarkers` | `true` | Whether a marker on the final frame is kept. |
 | `ReportLoadErrors` | `false` | Return null and report the message through `diagnostics` instead of throwing. |
 | `AsynchronousImageLoading` | `false` | Return null until every image has loaded, then raise `AnimatedVisualInvalidated`. |

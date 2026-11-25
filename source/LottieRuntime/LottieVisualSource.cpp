@@ -175,7 +175,7 @@ namespace CommunityToolkit::WinUI2::Lottie
                         (void)StringAt(binding->name());
                     }
                 }
-                m_markers = m_options.Markers == MarkerNames::Unique ? UniqueMarkers() : FirstWinsMarkers();
+                m_markers = m_options.Markers == MarkerPolicy::Unique ? UniqueMarkers() : FirstWinsMarkers();
             }
 
             ~AnimatedVisualSource()
@@ -464,7 +464,9 @@ namespace CommunityToolkit::WinUI2::Lottie
                             {
                                 name += L' ';
                             }
-                            else if (ch >= 32 && (ch < 127 || ch > 159))
+                            // Match LottieGen: discard C0 (U+0000-001F), DEL and C1
+                            // (U+007F-009F) controls, with tabs converted to spaces above.
+                            else if (ch >= 0x20 && (ch < 0x7F || ch > 0x9F))
                             {
                                 name += ch;
                             }

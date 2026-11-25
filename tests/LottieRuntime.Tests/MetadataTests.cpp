@@ -35,6 +35,7 @@ namespace
         bool ReferenceTheme = true;
         bool ReferenceOwnerProperties = false;
         bool Image = false;
+        bool VisualSurface = false;
         uint32_t Theme = 0;
         uint32_t ThemeOwner = NullIndex;
         uint32_t Name = 0;
@@ -76,11 +77,12 @@ namespace
         auto const pngBytes = builder.CreateVector(png, std::size(png));
         auto const image = Fb::CreateSurface(
             builder, 0, Fb::SurfaceKind::LoadedImageFromStream, NullIndex, nullptr, nullptr, NullIndex, pngBytes);
-        auto const visualSurface = Fb::CreateSurface(builder);
+        auto const visualSurface = Fb::CreateSurface(
+            builder, 0, Fb::SurfaceKind::VisualSurface, options.VisualSurface ? 1u : NullIndex);
         auto const surfaces = builder.CreateVector(std::vector{ visualSurface, image, image });
         Fb::BrushBuilder brushBuilder(builder);
         brushBuilder.add_kind(Fb::BrushKind::Surface);
-        brushBuilder.add_surface(1);
+        brushBuilder.add_surface(options.VisualSurface ? 0u : 1u);
         auto const brush = brushBuilder.Finish();
         auto const brushes = builder.CreateVector(std::vector{ brush });
 
@@ -103,13 +105,20 @@ namespace
         auto const animator = Fb::CreateAnimator(builder, 2, 0);
         auto const animators = builder.CreateVector(std::vector{ animator });
         auto const childBase = Fb::CreateCompObj(builder, NullIndex, animators);
-        auto const child = Fb::CreateVisual(builder, childBase);
+        Fb::VisualBuilder childBuilder(builder);
+        childBuilder.add_base(childBase);
+        if (options.VisualSurface)
+        {
+            childBuilder.add_kind(Fb::VisualKind::Sprite);
+            childBuilder.add_brush(0);
+        }
+        auto const child = childBuilder.Finish();
         auto const children = builder.CreateVector(std::vector<uint32_t>{ 1 });
         auto const visualBase = Fb::CreateCompObj(
             builder, NullIndex, options.ReferenceTheme && !options.ReferenceOwnerProperties ? animators : 0, 1);
         Fb::VisualBuilder visualBuilder(builder);
         visualBuilder.add_base(visualBase);
-        if (options.Image)
+        if (options.Image || options.VisualSurface)
         {
             visualBuilder.add_kind(Fb::VisualKind::Sprite);
             visualBuilder.add_brush(0);
@@ -241,6 +250,13 @@ namespace
         loaded.ThemeProperties.InsertScalar(L"Opacity", 0.25f);
 
         Options options;
+        options.VisualSurface = true;
+        auto surfaceComposition = Runtime::LoadCompositionWithMetadata(compositor, Buffer(options));
+        auto surfaceBrush = surfaceComposition.Root.as<SpriteVisual>().Brush().as<CompositionSurfaceBrush>();
+        auto sourceVisual = surfaceBrush.Surface().as<CompositionVisualSurface>().SourceVisual().as<SpriteVisual>();
+        Require(sourceVisual.Brush() == surfaceBrush);
+
+        options = {};
         options.Image = true;
         bytes = Buffer(options);
         loaded = Runtime::LoadCompositionWithMetadata(compositor, bytes);

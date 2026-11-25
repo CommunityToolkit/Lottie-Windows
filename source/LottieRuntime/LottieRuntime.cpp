@@ -962,11 +962,13 @@ namespace
             // The concrete type is known only here. Everything below this point,
             // including the recursive walk into the children, uses the base type.
             ContainerVisual container{ nullptr };
+            Visual const& visual = m_visuals[index];
 
             switch (source->kind())
             {
             case Fb::VisualKind::Container:
                 container = m_compositor.CreateContainerVisual();
+                m_visuals[index] = container;
                 break;
             case Fb::VisualKind::Sprite:
             {
@@ -1026,13 +1028,8 @@ namespace
                 ThrowMalformed();
             }
 
-            // Any case that resolves referenced objects must populate m_visuals
-            // first. The assignment below only precedes the child walk.
-            // Cached before the children are walked, so that a cycle terminates.
-            m_visuals[index] = container;
-
-            ApplyVisualProperties(container, source);
-            InitializeProperties(container, source->base());
+            ApplyVisualProperties(visual, source);
+            InitializeProperties(visual, source->base());
 
             if (auto const* children = source->children(); children != nullptr)
             {
@@ -1045,9 +1042,9 @@ namespace
                 }
             }
 
-            StartAnimations(container, source->base());
+            StartAnimations(visual, source->base());
 
-            return container;
+            return visual;
         }
 
         // Takes a Visual rather than any of the four concrete kinds, because every
@@ -1164,10 +1161,6 @@ namespace
             default:
                 ThrowMalformed();
             }
-
-            // Any case that resolves referenced objects must populate m_shapes
-            // first. The assignment below cannot terminate recursive graphs.
-            m_shapes[index] = result;
 
             ApplyShapeProperties(result, source);
             Initialize(result, source->base());
@@ -1296,13 +1289,20 @@ namespace
             case Fb::GeometryKind::Path:
             {
                 auto path = source->path();
-                result = m_compositor.CreatePathGeometry(
-                    path == NullIndex ? nullptr : GetPath(path));
+                auto geometry = m_compositor.CreatePathGeometry();
+                m_geometries[index] = geometry;
+                if (path != NullIndex)
+                {
+                    geometry.Path(GetPath(path));
+                }
+
+                result = geometry;
                 break;
             }
             case Fb::GeometryKind::Rectangle:
             {
                 auto rectangle = m_compositor.CreateRectangleGeometry();
+                m_geometries[index] = rectangle;
                 if (auto const* value = source->offset())
                 {
                     rectangle.Offset(ToFloat2(value));
@@ -1319,6 +1319,7 @@ namespace
             case Fb::GeometryKind::RoundedRectangle:
             {
                 auto rounded = m_compositor.CreateRoundedRectangleGeometry();
+                m_geometries[index] = rounded;
                 if (auto const* value = source->offset())
                 {
                     rounded.Offset(ToFloat2(value));
@@ -1340,6 +1341,7 @@ namespace
             case Fb::GeometryKind::Ellipse:
             {
                 auto ellipse = m_compositor.CreateEllipseGeometry();
+                m_geometries[index] = ellipse;
                 if (auto const* value = source->center())
                 {
                     ellipse.Center(ToFloat2(value));
@@ -1356,8 +1358,6 @@ namespace
             default:
                 ThrowMalformed();
             }
-
-            m_geometries[index] = result;
 
             if (auto value = source->trim_start())
             {
@@ -1638,6 +1638,7 @@ namespace
             {
             case Fb::BrushKind::Color:
                 result = m_compositor.CreateColorBrush(ToColor(source->color()));
+                m_brushes[index] = result;
                 break;
             case Fb::BrushKind::LinearGradient:
             {
@@ -1683,8 +1684,13 @@ namespace
                 break;
             }
             case Fb::BrushKind::Surface:
-                result = m_compositor.CreateSurfaceBrush(GetSurface(Required(source->surface())));
+            {
+                auto brush = m_compositor.CreateSurfaceBrush();
+                m_brushes[index] = brush;
+                brush.Surface(GetSurface(Required(source->surface())));
+                result = brush;
                 break;
+            }
             case Fb::BrushKind::Mask:
             {
                 auto brush = m_compositor.CreateMaskBrush();
@@ -1718,10 +1724,6 @@ namespace
             default:
                 ThrowMalformed();
             }
-
-            // Any case that resolves referenced objects must populate m_brushes
-            // first. The assignment below cannot terminate recursive graphs.
-            m_brushes[index] = result;
 
             Initialize(result, source->base());
 
@@ -1825,6 +1827,7 @@ namespace
             case Fb::ClipKind::Inset:
             {
                 auto clip = m_compositor.CreateInsetClip();
+                m_clips[index] = clip;
 
                 if (auto value = source->left_inset())
                 {
@@ -1860,10 +1863,6 @@ namespace
             default:
                 ThrowMalformed();
             }
-
-            // Any case that resolves referenced objects must populate m_clips
-            // first. The assignment below cannot terminate recursive graphs.
-            m_clips[index] = result;
 
             if (auto const* value = source->center_point())
             {

@@ -94,6 +94,49 @@ namespace
         return found;
     }
 
+    void TestMarkerPolicies()
+    {
+        flatbuffers::FlatBufferBuilder builder;
+        auto names = builder.CreateVector(std::vector{
+            builder.CreateString("Duplicate"),
+            builder.CreateString("A\tB\x1F ~\x7F\xC2\x80\xC2\x9F\xC2\xA0"),
+            builder.CreateString("Overlapping"),
+        });
+        auto markers = builder.CreateVector(std::vector{
+            Fb::CreateMarker(builder, 0, 0.25f),
+            Fb::CreateMarker(builder, 0, 0.5f),
+            Fb::CreateMarker(builder, 1, 0.75f),
+            Fb::CreateMarker(builder, 2, -0.25f, 0.5f),
+        });
+        auto metadata = Fb::CreateMetadata(builder, 0, 64, 32, 10000000, 60, 0, markers);
+        auto visual = Fb::CreateVisual(builder);
+        auto visuals = builder.CreateVector(std::vector{ visual });
+        Fb::LottieCompositionBuilder composition(builder);
+        composition.add_schema_version(1);
+        composition.add_root_visual(0);
+        composition.add_strings(names);
+        composition.add_visuals(visuals);
+        composition.add_metadata(metadata);
+        Fb::FinishLottieCompositionBuffer(builder, composition.Finish());
+        std::span<std::byte const> bytes{
+            reinterpret_cast<std::byte const*>(builder.GetBufferPointer()), builder.GetSize() };
+
+        Runtime::AnimatedVisualSourceOptions options;
+        options.Markers = Runtime::MarkerPolicy::FirstWins;
+        auto first = Runtime::CreateAnimatedVisualSource(bytes, options).Markers();
+        Require(first.Size() == 2 && first.HasKey(L"Duplicate"), "Wrong first-wins markers.");
+        Require(first.Lookup(L"Duplicate") < 0.3, "Duplicate replaced the first marker.");
+        Require(!first.HasKey(L"Overlapping"), "First-wins retained an out-of-range marker.");
+
+        options.Markers = Runtime::MarkerPolicy::Unique;
+        auto unique = Runtime::CreateAnimatedVisualSource(bytes, options).Markers();
+        Require(unique.Size() == 4 && unique.HasKey(L"Duplicate_0") && unique.HasKey(L"Duplicate_1"),
+            "Duplicate markers were not renamed.");
+        Require(unique.HasKey(L"A B ~\u00A0"), "Marker control-character filtering changed.");
+        Require(unique.HasKey(L"Overlapping") && unique.Lookup(L"Overlapping") == 0,
+            "Unique policy dropped an overlapping marker.");
+    }
+
     void Test(Compositor const& compositor, wchar_t const* path)
     {
         auto bytes = Read(path);
@@ -236,6 +279,7 @@ int wmain(int argc, wchar_t** argv)
         {
             winrt::Windows::UI::Xaml::Controls::Grid host;
             auto compositor = winrt::Windows::UI::Xaml::Hosting::ElementCompositionPreview::GetElementVisual(host).Compositor();
+            TestMarkerPolicies();
 
             try
             {

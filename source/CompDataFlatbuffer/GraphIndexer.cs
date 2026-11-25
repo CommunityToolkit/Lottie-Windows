@@ -33,21 +33,21 @@ namespace CommunityToolkit.WinUI.Lottie.CompDataFlatbuffer
     {
         // Nodes are keyed by reference so that distinct but equal objects stay distinct,
         // matching the reference-identity caching that Instantiator performs at runtime.
-        readonly Dictionary<object, int> _visuals = new Dictionary<object, int>(ReferenceComparer.Instance);
-        readonly Dictionary<object, int> _shapes = new Dictionary<object, int>(ReferenceComparer.Instance);
-        readonly Dictionary<object, int> _geometries = new Dictionary<object, int>(ReferenceComparer.Instance);
-        readonly Dictionary<object, int> _canvasGeometries = new Dictionary<object, int>(ReferenceComparer.Instance);
-        readonly Dictionary<object, int> _brushes = new Dictionary<object, int>(ReferenceComparer.Instance);
-        readonly Dictionary<object, int> _gradientStops = new Dictionary<object, int>(ReferenceComparer.Instance);
-        readonly Dictionary<object, int> _viewBoxes = new Dictionary<object, int>(ReferenceComparer.Instance);
-        readonly Dictionary<object, int> _clips = new Dictionary<object, int>(ReferenceComparer.Instance);
-        readonly Dictionary<object, int> _shadows = new Dictionary<object, int>(ReferenceComparer.Instance);
-        readonly Dictionary<object, int> _surfaces = new Dictionary<object, int>(ReferenceComparer.Instance);
-        readonly Dictionary<object, int> _effects = new Dictionary<object, int>(ReferenceComparer.Instance);
-        readonly Dictionary<object, int> _easings = new Dictionary<object, int>(ReferenceComparer.Instance);
-        readonly Dictionary<object, int> _animations = new Dictionary<object, int>(ReferenceComparer.Instance);
-        readonly Dictionary<object, int> _propertySets = new Dictionary<object, int>(ReferenceComparer.Instance);
-        readonly Dictionary<object, int> _controllers = new Dictionary<object, int>(ReferenceComparer.Instance);
+        readonly Dictionary<Visual, int> _visuals = new Dictionary<Visual, int>(ReferenceComparer.Instance);
+        readonly Dictionary<CompositionShape, int> _shapes = new Dictionary<CompositionShape, int>(ReferenceComparer.Instance);
+        readonly Dictionary<CompositionGeometry, int> _geometries = new Dictionary<CompositionGeometry, int>(ReferenceComparer.Instance);
+        readonly Dictionary<CanvasGeometry, int> _canvasGeometries = new Dictionary<CanvasGeometry, int>(ReferenceComparer.Instance);
+        readonly Dictionary<CompositionBrush, int> _brushes = new Dictionary<CompositionBrush, int>(ReferenceComparer.Instance);
+        readonly Dictionary<CompositionColorGradientStop, int> _gradientStops = new Dictionary<CompositionColorGradientStop, int>(ReferenceComparer.Instance);
+        readonly Dictionary<CompositionViewBox, int> _viewBoxes = new Dictionary<CompositionViewBox, int>(ReferenceComparer.Instance);
+        readonly Dictionary<CompositionClip, int> _clips = new Dictionary<CompositionClip, int>(ReferenceComparer.Instance);
+        readonly Dictionary<CompositionShadow, int> _shadows = new Dictionary<CompositionShadow, int>(ReferenceComparer.Instance);
+        readonly Dictionary<ICompositionSurface, int> _surfaces = new Dictionary<ICompositionSurface, int>(ReferenceComparer.Instance);
+        readonly Dictionary<GraphicsEffectBase, int> _effects = new Dictionary<GraphicsEffectBase, int>(ReferenceComparer.Instance);
+        readonly Dictionary<CompositionEasingFunction, int> _easings = new Dictionary<CompositionEasingFunction, int>(ReferenceComparer.Instance);
+        readonly Dictionary<CompositionAnimation, int> _animations = new Dictionary<CompositionAnimation, int>(ReferenceComparer.Instance);
+        readonly Dictionary<CompositionPropertySet, int> _propertySets = new Dictionary<CompositionPropertySet, int>(ReferenceComparer.Instance);
+        readonly Dictionary<AnimationController, int> _controllers = new Dictionary<AnimationController, int>(ReferenceComparer.Instance);
 
         readonly Dictionary<string, int> _strings = new Dictionary<string, int>(StringComparer.Ordinal);
 
@@ -140,35 +140,35 @@ namespace CommunityToolkit.WinUI.Lottie.CompDataFlatbuffer
         /// </summary>
         internal void FreezeStrings() => _stringsAreFrozen = true;
 
-        internal uint GetVisual(Visual? value) => Index(_visuals, value);
+        internal uint GetVisual(Visual? value) => Index(_visuals, VisualList, value);
 
-        internal uint GetShape(CompositionShape? value) => Index(_shapes, value);
+        internal uint GetShape(CompositionShape? value) => Index(_shapes, ShapeList, value);
 
-        internal uint GetGeometry(CompositionGeometry? value) => Index(_geometries, value);
+        internal uint GetGeometry(CompositionGeometry? value) => Index(_geometries, GeometryList, value);
 
-        internal uint GetCanvasGeometry(CanvasGeometry? value) => Index(_canvasGeometries, value);
+        internal uint GetCanvasGeometry(CanvasGeometry? value) => Index(_canvasGeometries, CanvasGeometryList, value);
 
-        internal uint GetBrush(CompositionBrush? value) => Index(_brushes, value);
+        internal uint GetBrush(CompositionBrush? value) => Index(_brushes, BrushList, value);
 
-        internal uint GetGradientStop(CompositionColorGradientStop? value) => Index(_gradientStops, value);
+        internal uint GetGradientStop(CompositionColorGradientStop? value) => Index(_gradientStops, GradientStopList, value);
 
-        internal uint GetViewBox(CompositionViewBox? value) => Index(_viewBoxes, value);
+        internal uint GetViewBox(CompositionViewBox? value) => Index(_viewBoxes, ViewBoxList, value);
 
-        internal uint GetClip(CompositionClip? value) => Index(_clips, value);
+        internal uint GetClip(CompositionClip? value) => Index(_clips, ClipList, value);
 
-        internal uint GetShadow(CompositionShadow? value) => Index(_shadows, value);
+        internal uint GetShadow(CompositionShadow? value) => Index(_shadows, ShadowList, value);
 
-        internal uint GetSurface(ICompositionSurface? value) => Index(_surfaces, value);
+        internal uint GetSurface(ICompositionSurface? value) => Index(_surfaces, SurfaceList, value);
 
-        internal uint GetEffect(GraphicsEffectBase? value) => Index(_effects, value);
+        internal uint GetEffect(GraphicsEffectBase? value) => Index(_effects, EffectList, value);
 
-        internal uint GetEasing(CompositionEasingFunction? value) => Index(_easings, value);
+        internal uint GetEasing(CompositionEasingFunction? value) => Index(_easings, EasingList, value);
 
-        internal uint GetAnimation(CompositionAnimation? value) => Index(_animations, value);
+        internal uint GetAnimation(CompositionAnimation? value) => Index(_animations, AnimationList, value);
 
-        internal uint GetPropertySet(CompositionPropertySet? value) => Index(_propertySets, value);
+        internal uint GetPropertySet(CompositionPropertySet? value) => Index(_propertySets, PropertySetList, value);
 
-        internal uint GetController(AnimationController? value) => Index(_controllers, value);
+        internal uint GetController(AnimationController? value) => Index(_controllers, ControllerList, value);
 
         /// <summary>
         /// Returns the index of an already-discovered object as a packed object reference.
@@ -208,7 +208,7 @@ namespace CommunityToolkit.WinUI.Lottie.CompDataFlatbuffer
         // Returns the plain index of a node, adding it to the graph if it has not been
         // seen before. The node is registered before its children are walked so that
         // cycles terminate.
-        uint Index<T>(Dictionary<object, int> map, T? value)
+        uint Index<T>(Dictionary<T, int> map, List<T> list, T? value)
             where T : class
         {
             if (value is null)
@@ -223,73 +223,84 @@ namespace CommunityToolkit.WinUI.Lottie.CompDataFlatbuffer
 
             var index = map.Count;
             map.Add(value, index);
+            list.Add(value);
             Add(value);
             return (uint)index;
         }
 
-        // Appends a newly discovered node to its category list and walks its children.
+        // Dispatches once to the most specific walker; each walker visits its base state.
         void Add(object value)
         {
             switch (value)
             {
+                case ShapeVisual shapeVisual:
+                    WalkShapeVisual(shapeVisual);
+                    break;
+                case SpriteVisual spriteVisual:
+                    WalkSpriteVisual(spriteVisual);
+                    break;
+                case LayerVisual layerVisual:
+                    WalkLayerVisual(layerVisual);
+                    break;
+                case ContainerVisual containerVisual:
+                    WalkContainerVisual(containerVisual);
+                    break;
                 case Visual visual:
-                    VisualList.Add(visual);
                     WalkVisual(visual);
                     break;
-                case CompositionShape shape:
-                    ShapeList.Add(shape);
-                    WalkShape(shape);
+                case CompositionContainerShape containerShape:
+                    WalkContainerShape(containerShape);
                     break;
-                case CompositionGeometry geometry:
-                    GeometryList.Add(geometry);
-                    WalkGeometry(geometry);
+                case CompositionSpriteShape spriteShape:
+                    WalkSpriteShape(spriteShape);
+                    break;
+                case CompositionPathGeometry pathGeometry:
+                    WalkPathGeometry(pathGeometry);
                     break;
                 case CanvasGeometry canvasGeometry:
-                    CanvasGeometryList.Add(canvasGeometry);
                     WalkCanvasGeometry(canvasGeometry);
                     break;
-                case CompositionBrush brush:
-                    BrushList.Add(brush);
-                    WalkBrush(brush);
+                case CompositionGradientBrush gradientBrush:
+                    WalkGradientBrush(gradientBrush);
                     break;
-                case CompositionColorGradientStop stop:
-                    GradientStopList.Add(stop);
-                    WalkCompositionObject(stop);
+                case CompositionSurfaceBrush surfaceBrush:
+                    WalkSurfaceBrush(surfaceBrush);
                     break;
-                case CompositionViewBox viewBox:
-                    ViewBoxList.Add(viewBox);
-                    WalkCompositionObject(viewBox);
+                case CompositionMaskBrush maskBrush:
+                    WalkMaskBrush(maskBrush);
                     break;
-                case CompositionClip clip:
-                    ClipList.Add(clip);
-                    WalkClip(clip);
+                case CompositionEffectBrush effectBrush:
+                    WalkEffectBrush(effectBrush);
                     break;
-                case CompositionShadow shadow:
-                    ShadowList.Add(shadow);
-                    WalkShadow(shadow);
+                case CompositionGeometricClip geometricClip:
+                    WalkGeometricClip(geometricClip);
                     break;
-                case ICompositionSurface surface:
-                    SurfaceList.Add(surface);
-                    WalkSurface(surface);
+                case DropShadow dropShadow:
+                    WalkDropShadow(dropShadow);
                     break;
-                case GraphicsEffectBase effect:
-                    EffectList.Add(effect);
+                case CompositionVisualSurface visualSurface:
+                    WalkVisualSurface(visualSurface);
                     break;
-                case CompositionEasingFunction easing:
-                    EasingList.Add(easing);
-                    WalkCompositionObject(easing);
+                case LoadedImageSurfaceFromUri fromUri:
+                    GetString(fromUri.Uri.ToString());
                     break;
-                case CompositionAnimation animation:
-                    AnimationList.Add(animation);
-                    WalkAnimation(animation);
+                case LoadedImageSurface _:
+                case GraphicsEffectBase _:
+                    break;
+                case ExpressionAnimation expressionAnimation:
+                    WalkExpressionAnimation(expressionAnimation);
+                    break;
+                case KeyFrameAnimation_ keyFrameAnimation:
+                    WalkKeyFrameAnimation(keyFrameAnimation);
                     break;
                 case CompositionPropertySet propertySet:
-                    PropertySetList.Add(propertySet);
                     WalkPropertySet(propertySet);
                     break;
                 case AnimationController controller:
-                    ControllerList.Add(controller);
                     WalkController(controller);
+                    break;
+                case CompositionObject compositionObject:
+                    WalkCompositionObject(compositionObject);
                     break;
                 default:
                     throw new InvalidOperationException($"Unexpected node {value.GetType().Name}.");
@@ -337,63 +348,64 @@ namespace CommunityToolkit.WinUI.Lottie.CompDataFlatbuffer
         {
             WalkCompositionObject(value);
             GetClip(value.Clip);
+        }
 
-            switch (value)
+        void WalkContainerVisual(ContainerVisual value)
+        {
+            WalkVisual(value);
+            foreach (var child in value.Children)
             {
-                case ShapeVisual shapeVisual:
-                    foreach (var shape in shapeVisual.Shapes)
-                    {
-                        GetShape(shape);
-                    }
-
-                    GetViewBox(shapeVisual.ViewBox);
-                    break;
-                case SpriteVisual spriteVisual:
-                    GetBrush(spriteVisual.Brush);
-                    GetShadow(spriteVisual.Shadow);
-                    break;
-                case LayerVisual layerVisual:
-                    GetShadow(layerVisual.Shadow);
-                    break;
-            }
-
-            if (value is ContainerVisual container)
-            {
-                foreach (var child in container.Children)
-                {
-                    GetVisual(child);
-                }
+                GetVisual(child);
             }
         }
 
-        void WalkShape(CompositionShape value)
+        void WalkShapeVisual(ShapeVisual value)
+        {
+            WalkContainerVisual(value);
+            foreach (var shape in value.Shapes)
+            {
+                GetShape(shape);
+            }
+
+            GetViewBox(value.ViewBox);
+        }
+
+        void WalkSpriteVisual(SpriteVisual value)
+        {
+            WalkContainerVisual(value);
+            GetBrush(value.Brush);
+            GetShadow(value.Shadow);
+        }
+
+        void WalkLayerVisual(LayerVisual value)
+        {
+            WalkContainerVisual(value);
+            GetShadow(value.Shadow);
+        }
+
+        void WalkContainerShape(CompositionContainerShape value)
         {
             WalkCompositionObject(value);
-
-            switch (value)
+            foreach (var shape in value.Shapes)
             {
-                case CompositionContainerShape containerShape:
-                    foreach (var shape in containerShape.Shapes)
-                    {
-                        GetShape(shape);
-                    }
-
-                    break;
-                case CompositionSpriteShape spriteShape:
-                    GetBrush(spriteShape.FillBrush);
-                    GetBrush(spriteShape.StrokeBrush);
-                    GetGeometry(spriteShape.Geometry);
-                    break;
+                GetShape(shape);
             }
         }
 
-        void WalkGeometry(CompositionGeometry value)
+        void WalkSpriteShape(CompositionSpriteShape value)
         {
             WalkCompositionObject(value);
+            GetBrush(value.FillBrush);
+            GetBrush(value.StrokeBrush);
+            GetGeometry(value.Geometry);
+        }
 
-            if (value is CompositionPathGeometry pathGeometry && pathGeometry.Path is not null)
+        void WalkPathGeometry(CompositionPathGeometry value)
+        {
+            WalkCompositionObject(value);
+            if (value.Path is not null)
             {
-                GetCanvasGeometry((CanvasGeometry)pathGeometry.Path.Source);
+                GetCanvasGeometry((CanvasGeometry)value.Path.Source);
             }
         }
 
@@ -418,71 +430,56 @@ namespace CommunityToolkit.WinUI.Lottie.CompDataFlatbuffer
             }
         }
 
-        void WalkBrush(CompositionBrush value)
+        void WalkGradientBrush(CompositionGradientBrush value)
         {
             WalkCompositionObject(value);
-
-            switch (value)
+            foreach (var stop in value.ColorStops)
             {
-                case CompositionGradientBrush gradientBrush:
-                    foreach (var stop in gradientBrush.ColorStops)
-                    {
-                        GetGradientStop(stop);
-                    }
-
-                    break;
-                case CompositionSurfaceBrush surfaceBrush:
-                    GetSurface(surfaceBrush.Surface);
-                    break;
-                case CompositionMaskBrush maskBrush:
-                    GetBrush(maskBrush.Source);
-                    GetBrush(maskBrush.Mask);
-                    break;
-                case CompositionEffectBrush effectBrush:
-                    var effect = effectBrush.GetEffectFactory().Effect;
-                    GetEffect(effect);
-                    foreach (var source in effect.Sources)
-                    {
-                        GetString(source.Name);
-                        GetBrush(effectBrush.GetSourceParameter(source.Name));
-                    }
-
-                    break;
+                GetGradientStop(stop);
             }
         }
 
-        void WalkClip(CompositionClip value)
+        void WalkSurfaceBrush(CompositionSurfaceBrush value)
         {
             WalkCompositionObject(value);
+            GetSurface(value.Surface);
+        }
 
-            if (value is CompositionGeometricClip geometricClip)
+        void WalkMaskBrush(CompositionMaskBrush value)
+        {
+            WalkCompositionObject(value);
+            GetBrush(value.Source);
+            GetBrush(value.Mask);
+        }
+
+        void WalkEffectBrush(CompositionEffectBrush value)
+        {
+            WalkCompositionObject(value);
+            var effect = value.GetEffectFactory().Effect;
+            GetEffect(effect);
+            foreach (var source in effect.Sources)
             {
-                GetGeometry(geometricClip.Geometry);
+                GetString(source.Name);
+                GetBrush(value.GetSourceParameter(source.Name));
             }
         }
 
-        void WalkShadow(CompositionShadow value)
+        void WalkGeometricClip(CompositionGeometricClip value)
         {
             WalkCompositionObject(value);
-
-            if (value is DropShadow dropShadow)
-            {
-                GetBrush(dropShadow.Mask);
-            }
+            GetGeometry(value.Geometry);
         }
 
-        void WalkSurface(ICompositionSurface value)
+        void WalkDropShadow(DropShadow value)
         {
-            switch (value)
-            {
-                case CompositionVisualSurface visualSurface:
-                    WalkCompositionObject(visualSurface);
-                    GetVisual(visualSurface.SourceVisual);
-                    break;
-                case LoadedImageSurfaceFromUri fromUri:
-                    GetString(fromUri.Uri.ToString());
-                    break;
-            }
+            WalkCompositionObject(value);
+            GetBrush(value.Mask);
+        }
+
+        void WalkVisualSurface(CompositionVisualSurface value)
+        {
+            WalkCompositionObject(value);
+            GetVisual(value.SourceVisual);
         }
 
         void WalkAnimation(CompositionAnimation value)
@@ -495,42 +492,36 @@ namespace CommunityToolkit.WinUI.Lottie.CompDataFlatbuffer
                 GetString(parameter.Key);
                 GetObjectReference(parameter.Value);
             }
+        }
 
-            switch (value)
+        void WalkExpressionAnimation(ExpressionAnimation value)
+        {
+            WalkAnimation(value);
+            GetString(value.Expression.ToText());
+        }
+
+        void WalkKeyFrameAnimation(KeyFrameAnimation_ value)
+        {
+            WalkAnimation(value);
+            foreach (var keyFrame in value.KeyFrames)
             {
-                case ExpressionAnimation expressionAnimation:
-                    GetString(expressionAnimation.Expression.ToText());
-                    break;
-                case KeyFrameAnimation_ keyFrameAnimation:
-                    foreach (var keyFrame in keyFrameAnimation.KeyFrames)
-                    {
-                        GetEasing(keyFrame.Easing);
+                GetEasing(keyFrame.Easing);
 
-                        switch (keyFrame)
-                        {
-                            case KeyFrameAnimation_.ExpressionKeyFrame expressionKeyFrame:
-                                GetString(expressionKeyFrame.Expression.ToText());
-                                break;
-                            case KeyFrameAnimation<CompositionPath, WinCompData.Expressions.Void>.ValueKeyFrame pathKeyFrame:
-                                GetCanvasGeometry((CanvasGeometry)pathKeyFrame.Value.Source);
-                                break;
-                        }
-                    }
-
-                    break;
+                switch (keyFrame)
+                {
+                    case KeyFrameAnimation_.ExpressionKeyFrame expressionKeyFrame:
+                        GetString(expressionKeyFrame.Expression.ToText());
+                        break;
+                    case KeyFrameAnimation<CompositionPath, WinCompData.Expressions.Void>.ValueKeyFrame pathKeyFrame:
+                        GetCanvasGeometry((CanvasGeometry)pathKeyFrame.Value.Source);
+                        break;
+                }
             }
         }
 
         void WalkPropertySet(CompositionPropertySet value)
         {
-            GetString(value.Comment);
-
-            foreach (var animator in value.Animators)
-            {
-                GetString(animator.AnimatedProperty);
-                GetAnimation(animator.Animation);
-                GetController(animator.Controller);
-            }
+            WalkCompositionObject(value);
 
             foreach (var name in value.Names)
             {
