@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using CommunityToolkit.WinUI.Lottie.CompDataFlatbuffer;
 using CommunityToolkit.WinUI.Lottie.LottieData;
 using CommunityToolkit.WinUI.Lottie.LottieData.Optimization;
 using CommunityToolkit.WinUI.Lottie.LottieData.Serialization;
@@ -199,6 +200,11 @@ namespace CommunityToolkit.WinUI.Lottie.LottieGen
                     case Language.Cppwinrt:
                         codeGenSucceeded &= TryGenerateCppwinrtCode(lottieComposition, _outputFolder);
                         _profiler.OnCodeGenFinished();
+                        break;
+
+                    case Language.Flatbuffer:
+                        codeGenSucceeded &= TryGenerateFlatbuffer(lottieComposition, $"{outputFileBase}.lcomp");
+                        _profiler.OnSerializationFinished();
                         break;
 
                     case Language.LottieYaml:
@@ -425,6 +431,75 @@ namespace CommunityToolkit.WinUI.Lottie.LottieGen
             return result;
         }
 
+        bool TryGenerateFlatbuffer(LottieComposition lottieComposition, string outputFilePath)
+        {
+            if (!TryEnsureTranslated(lottieComposition))
+            {
+                return false;
+            }
+
+            var result = true;
+            var maximumUapVersion = _options.TargetUapVersion ?? uint.MaxValue;
+
+            for (var i = 0; i < _translationResults.Count; i++)
+            {
+                var translationResult = _translationResults[i];
+                var sourceMetadata = new SourceMetadata(translationResult.SourceMetadata);
+                var minimumUapVersion = translationResult.MinimumRequiredUapVersion;
+                var maximumVariantUapVersion = i == 0
+                    ? maximumUapVersion
+                    : _translationResults[i - 1].MinimumRequiredUapVersion - 1;
+                var variantPath = _translationResults.Count == 1
+                    ? outputFilePath
+                    : GetFlatbufferVariantPath(
+                        outputFilePath,
+                        minimumUapVersion,
+                        maximumVariantUapVersion);
+
+                if (!TryWriteBinaryFile(
+                    variantPath,
+                    CompositionSerializer.Serialize(
+                        translationResult.RootVisual!,
+                        checked((ushort)minimumUapVersion),
+                        sourceMetadata.LottieMetadata,
+                        sourceMetadata.PropertyBindings,
+                        (float)lottieComposition.Width,
+                        (float)lottieComposition.Height)))
+                {
+                    result = false;
+                    continue;
+                }
+
+                using (_reporter.InfoStream.Lock())
+                {
+                    _reporter.WriteInfo(
+                        $"Flatbuffer data for class {_className}, UAP versions " +
+                        (maximumVariantUapVersion == uint.MaxValue
+                            ? $"{minimumUapVersion} and later"
+                            : $"{minimumUapVersion} through {maximumVariantUapVersion}") +
+                        ", written to:");
+                    _reporter.WriteInfo(InfoType.FilePath, $" {variantPath}");
+                }
+            }
+
+            return result;
+        }
+
+        static string GetFlatbufferVariantPath(
+            string outputFilePath,
+            uint minimumUapVersion,
+            uint maximumUapVersion)
+        {
+            var directory = System.IO.Path.GetDirectoryName(outputFilePath);
+            var fileName = System.IO.Path.GetFileNameWithoutExtension(outputFilePath);
+            var extension = System.IO.Path.GetExtension(outputFilePath);
+            var range = maximumUapVersion == uint.MaxValue
+                ? $"uap{minimumUapVersion}-plus"
+                : $"uap{minimumUapVersion}-{maximumUapVersion}";
+
+            return System.IO.Path.Combine(directory ?? string.Empty, $"{fileName}.{range}{extension}");
+        }
+
         bool TryGenerateWincompDgml(
             LottieComposition lottieComposition,
             string outputFilePath)
@@ -603,6 +678,25 @@ namespace CommunityToolkit.WinUI.Lottie.LottieGen
                     writer(streamWriter);
                 }
 
+                return true;
+            }
+            catch (Exception e)
+            {
+                using (_reporter.ErrorStream.Lock())
+                {
+                    _reporter.WriteError($"Failed to write to {filePath}");
+                    _reporter.WriteError(e.Message);
+                }
+
+                return false;
+            }
+        }
+
+        bool TryWriteBinaryFile(string filePath, byte[] contents)
+        {
+            try
+            {
+                File.WriteAllBytes(filePath, contents);
                 return true;
             }
             catch (Exception e)
@@ -804,7 +898,15 @@ namespace CommunityToolkit.WinUI.Lottie.LottieGen
             var translationResult = LottieToMultiVersionWinCompTranslator.TryTranslateLottieComposition(
                 lottieComposition: lottieComposition,
                 configuration: configuration,
-                minimumUapVersion: _options.WinUIVersion.Major >= 3 ? uint.MaxValue : _minimumUapVersion);
+                minimumUapVersion:
+                    _options.WinUIVersion.Major < 3 ||
+                    !_options.Languages.Any(
+                        language =>
+                            language == Language.CSharp ||
+                            language == Language.Cx ||
+                            language == Language.Cppwinrt)
+                        ? _minimumUapVersion
+                        : uint.MaxValue);
 
             _translationResults = translationResult.TranslationResults;
             _translationIssues = translationResult.Issues;

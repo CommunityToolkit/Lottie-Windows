@@ -238,3 +238,7 @@ launchSettings.json
 
 # Nuget Package files.
 pack/
+
+# Native dependencies restored by MSBuild.
+/.vcpkg/
+/vcpkg_installed/

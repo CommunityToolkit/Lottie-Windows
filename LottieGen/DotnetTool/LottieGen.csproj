@@ -9,7 +9,9 @@
     <IsPackable>true</IsPackable>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>LottieGen</ToolCommandName>
+    <FlatBuffersVcpkgTriplet Condition="'$(FlatBuffersVcpkgTriplet)' == ''">x64-windows</FlatBuffersVcpkgTriplet>
   </PropertyGroup>
+  <Import Project="..\..\build\FlatBuffers.targets" />
 
   <PropertyGroup>
     <_SourceDir>..\..\source\</_SourceDir>
@@ -18,6 +20,7 @@
 
   <Import Project="..\Common.proj" />
   <Import Project="$(_SourceDir)Animatables\Animatables.projitems" Label="Shared" />
+  <Import Project="$(_SourceDir)CompDataFlatbuffer\CompDataFlatbuffer.projitems" Label="Shared" />
   <Import Project="$(_SourceDir)CompMetadata\CompMetadata.projitems" Label="Shared" />
   <Import Project="$(_SourceDir)DotLottie\DotLottie.projitems" Label="Shared" />
   <Import Project="$(_SourceDir)GenericData\GenericData.projitems" Label="Shared" />
@@ -33,4 +36,32 @@
   <Import Project="$(_SourceDir)WinUIXamlMediaData\WinUIXamlMediaData.projitems" Label="Shared" />
   <Import Project="$(_SourceDir)YamlData\YamlData.projitems" Label="Shared" />
   <Import Project="$(_SourceDir)UIDataCodeGen\UIDataCodeGen.projitems" Label="Shared" />
+  <ItemGroup>
+    <PackageReference Include="Google.FlatBuffers" Version="25.2.10" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\source\LottieRuntime\LottieRuntime.h" Pack="true" PackagePath="inc\lottiecomp\" />
+    <None Include="..\..\source\LottieRuntime\LottieVisualSource.h" Pack="true" PackagePath="inc\lottiecomp\" />
+    <None Include="..\..\source\LottieRuntime\LottieRuntime.cpp" Pack="true" PackagePath="LottieRuntime\" />
+    <None Include="..\..\source\LottieRuntime\LottieVisualSource.cpp" Pack="true" PackagePath="LottieRuntime\" />
+    <None Include="..\..\source\LottieRuntime\README.md" Pack="true" PackagePath="LottieRuntime\" />
+    <None Include="..\..\source\LottieRuntime\Generated\lottie_comp_generated.h" Pack="true" PackagePath="inc\lottiecomp\Generated\" />
+    <None Include="..\..\source\LottieFlatbuffer\lottie_comp.fbs" Pack="true" PackagePath="LottieRuntime\" />
+    <None Include="..\..\LICENSE.md" Pack="true" PackagePath="LottieRuntime\" />
+  </ItemGroup>
+
+  <Target Name="CollectLottieRuntimePackageContent" BeforeTargets="_GetPackageFiles"
+          DependsOnTargets="RestoreFlatBuffers">
+    <Error Condition="!Exists('$(FlatBuffersVcpkgInstalledDir)\$(FlatBuffersVcpkgTriplet)\share\flatbuffers\copyright')"
+           Text="The restored FlatBuffers license is required to package LottieGen." />
+    <Copy SourceFiles="$(FlatBuffersVcpkgInstalledDir)\$(FlatBuffersVcpkgTriplet)\share\flatbuffers\copyright"
+          DestinationFiles="$(IntermediateOutputPath)flatbuffers.LICENSE.txt" />
+    <ItemGroup>
+      <None Include="$(FlatBuffersIncludeDirectory)\flatbuffers\**\*"
+            Pack="true" PackagePath="inc\lottiecomp\flatbuffers\%(RecursiveDir)" />
+      <None Include="$(IntermediateOutputPath)flatbuffers.LICENSE.txt"
+            Pack="true" PackagePath="LottieRuntime\" />
+    </ItemGroup>
+  </Target>
 </Project>

@@ -101,6 +101,8 @@ static bool IsExcludedDirectory(FilePath path)
     return
         segments.Contains("bin") ||
         segments.Contains("external") ||
+        segments.Contains(".vcpkg") ||
+        segments.Contains("vcpkg_installed") ||
         segments.Contains("internal") ||
         segments.Contains("obj");
 }

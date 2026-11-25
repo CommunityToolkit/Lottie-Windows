@@ -35,6 +35,7 @@
 
   <Import Project="..\Common.proj" />
   <Import Project="$(_SourceDir)Animatables\Animatables.projitems" Label="Shared" />
+  <Import Project="$(_SourceDir)CompDataFlatbuffer\CompDataFlatbuffer.projitems" Label="Shared" />
   <Import Project="$(_SourceDir)CompMetadata\CompMetadata.projitems" Label="Shared" />
   <Import Project="$(_SourceDir)DotLottie\DotLottie.projitems" Label="Shared" />
   <Import Project="$(_SourceDir)GenericData\GenericData.projitems" Label="Shared" />
@@ -50,4 +51,7 @@
   <Import Project="$(_SourceDir)WinUIXamlMediaData\WinUIXamlMediaData.projitems" Label="Shared" />
   <Import Project="$(_SourceDir)YamlData\YamlData.projitems" Label="Shared" />
   <Import Project="$(_SourceDir)UIDataCodeGen\UIDataCodeGen.projitems" Label="Shared" />
+  <ItemGroup>
+    <PackageReference Include="Google.FlatBuffers" Version="25.2.10" />
+  </ItemGroup>
 </Project>

@@ -1,0 +1,27 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <_FlatBuffersRepoRoot>$(MSBuildThisFileDirectory)..\</_FlatBuffersRepoRoot>
+    <_RestoreFlatBuffers Condition="'$(FlatBuffersIncludeDirectory)' == ''">true</_RestoreFlatBuffers>
+    <FlatBuffersVcpkgRoot Condition="'$(FlatBuffersVcpkgRoot)' == '' and '$(VcpkgRoot)' != ''">$(VcpkgRoot)</FlatBuffersVcpkgRoot>
+    <FlatBuffersVcpkgRoot Condition="'$(FlatBuffersVcpkgRoot)' == '' and '$(VCPKG_ROOT)' != ''">$(VCPKG_ROOT)</FlatBuffersVcpkgRoot>
+    <FlatBuffersVcpkgRoot Condition="'$(FlatBuffersVcpkgRoot)' == '' and Exists('$(VSInstallRoot)\VC\vcpkg\vcpkg.exe')">$(VSInstallRoot)\VC\vcpkg</FlatBuffersVcpkgRoot>
+    <FlatBuffersVcpkgRoot Condition="'$(FlatBuffersVcpkgRoot)' == ''">$(_FlatBuffersRepoRoot).vcpkg</FlatBuffersVcpkgRoot>
+    <FlatBuffersVcpkgInstalledDir Condition="'$(FlatBuffersVcpkgInstalledDir)' == ''">$(_FlatBuffersRepoRoot)vcpkg_installed</FlatBuffersVcpkgInstalledDir>
+    <FlatBuffersVcpkgTriplet Condition="'$(FlatBuffersVcpkgTriplet)' == '' and '$(Platform)' == 'x64'">x64-windows</FlatBuffersVcpkgTriplet>
+    <FlatBuffersVcpkgTriplet Condition="'$(FlatBuffersVcpkgTriplet)' == '' and '$(Platform)' == 'ARM64'">arm64-windows</FlatBuffersVcpkgTriplet>
+    <FlatBuffersVcpkgHostTriplet Condition="'$(FlatBuffersVcpkgHostTriplet)' == '' and ('$(PROCESSOR_ARCHITECTURE)' == 'ARM64' or '$(PROCESSOR_ARCHITEW6432)' == 'ARM64')">arm64-windows</FlatBuffersVcpkgHostTriplet>
+    <FlatBuffersVcpkgHostTriplet Condition="'$(FlatBuffersVcpkgHostTriplet)' == ''">x64-windows</FlatBuffersVcpkgHostTriplet>
+    <FlatBuffersIncludeDirectory Condition="'$(_RestoreFlatBuffers)' == 'true'">$(FlatBuffersVcpkgInstalledDir)\$(FlatBuffersVcpkgTriplet)\include</FlatBuffersIncludeDirectory>
+  </PropertyGroup>
+
+  <!-- Invoke vcpkg explicitly so a first-build bootstrap works without evaluation-time imports. -->
+  <Target Name="RestoreFlatBuffers" BeforeTargets="$(FlatBuffersRestoreBeforeTargets)"
+          Condition="'$(DesignTimeBuild)' != 'true'">
+    <Error Condition="'$(_RestoreFlatBuffers)' == 'true' and '$(FlatBuffersVcpkgTriplet)' == ''"
+           Text="Set FlatBuffersVcpkgTriplet for platform '$(Platform)'. Supported defaults are x64 and ARM64." />
+    <Exec Condition="'$(_RestoreFlatBuffers)' == 'true'"
+          Command="powershell.exe -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)RestoreFlatBuffers.ps1&quot; -VcpkgRoot &quot;$(FlatBuffersVcpkgRoot)\.&quot; -InstalledDir &quot;$(FlatBuffersVcpkgInstalledDir)\.&quot; -Triplet &quot;$(FlatBuffersVcpkgTriplet)&quot; -HostTriplet &quot;$(FlatBuffersVcpkgHostTriplet)&quot;" />
+    <Error Condition="!Exists('$(FlatBuffersIncludeDirectory)\flatbuffers\flatbuffers.h')"
+           Text="FlatBuffers headers were not found at '$(FlatBuffersIncludeDirectory)'. Restore vcpkg dependencies or set FlatBuffersIncludeDirectory to the include directory for FlatBuffers 25.2.10." />
+  </Target>
+</Project>

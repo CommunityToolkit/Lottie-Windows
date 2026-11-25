@@ -214,6 +214,7 @@ namespace CommunityToolkit.WinUI.Lottie.LottieGen
                     .AddKeyword(Language.Cx)
                     .AddKeyword(Language.Cppwinrt)
                     .AddKeyword(Language.Cppwinrt, "winrtcpp")
+                    .AddKeyword(Language.Flatbuffer)
                     .AddKeyword(Language.LottieYaml)
                     .AddKeyword(Language.WinCompDgml, "dgml")
                     .AddKeyword(Language.Stats);

@@ -42,7 +42,7 @@ namespace LottieGen.Task
         public string? InputFile { get; set; }
 
         /// <summary>
-        /// cs, cppcx, or cppwinrt.
+        /// cs, cppcx, cppwinrt, or flatbuffer.
         /// </summary>
         [Required]
         public string? Language { get; set; }
@@ -190,6 +190,13 @@ namespace LottieGen.Task
                         }
 
                         break;
+
+                    case Lang.Flatbuffer:
+                        // The number of .lcomp variants depends on the UAP versions
+                        // required by the animation, so use the paths LottieGen reported.
+                        OutputFiles = _outputFiles.ConvertAll(f => (ITaskItem)new TaskItem(f)).ToArray();
+                        break;
+
                     default:
                         throw new InvalidOperationException();
                 }
@@ -341,6 +348,7 @@ namespace LottieGen.Task
                 case Lang.Cppwinrt:
                 case Lang.CSharp:
                 case Lang.Cx:
+                case Lang.Flatbuffer:
                     break;
 
                 default:
@@ -379,7 +387,8 @@ namespace LottieGen.Task
                 singleLine.StartsWith("C# code for class ") ||
                 singleLine.StartsWith("Cppwinrt header for class ") ||
                 singleLine.StartsWith("Cppwinrt source for class ") ||
-                singleLine.StartsWith("Cppwinrt IDL for class ");
+                singleLine.StartsWith("Cppwinrt IDL for class ") ||
+                singleLine.StartsWith("Flatbuffer data for class ");
         }
 
         Lang GetNormalizedLanguage()
@@ -397,6 +406,9 @@ namespace LottieGen.Task
                 case "cx":
                     return Lang.Cx;
 
+                case "flatbuffer":
+                    return Lang.Flatbuffer;
+
                 default:
                     return Lang.Unknown;
             }
@@ -408,6 +420,7 @@ namespace LottieGen.Task
             CSharp,
             Cx,
             Cppwinrt,
+            Flatbuffer,
         }
     }
 }

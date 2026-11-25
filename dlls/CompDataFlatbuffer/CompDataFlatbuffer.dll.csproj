@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Configurations>Debug;Release</Configurations>
+    <LangVersion>latest</LangVersion>
+    <DefineConstants>PUBLIC_CompDataFlatbuffer</DefineConstants>
+  </PropertyGroup>
+
+  <Import Project="..\..\source\CompDataFlatbuffer\CompDataFlatbuffer.projitems" Label="Shared" />
+
+  <ItemGroup>
+    <!-- The version here must match the version of flatc used by
+         build/RegenerateFlatbuffers.ps1 to produce the checked in generated code. -->
+    <PackageReference Include="Google.FlatBuffers" Version="25.2.10" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CompMetadata\CompMetadata.dll.csproj" />
+    <ProjectReference Include="..\LottieMetadata\LottieMetadata.dll.csproj" />
+    <ProjectReference Include="..\WinCompData\WinCompData.dll.csproj" />
+    <ProjectReference Include="..\WinUIXamlMediaData\WinUIXamlMediaData.dll.csproj" />
+  </ItemGroup>
+
+</Project>

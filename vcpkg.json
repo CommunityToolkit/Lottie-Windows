@@ -1,0 +1,14 @@
+{
+  "name": "lottie-runtime",
+  "version-string": "1.0.0",
+  "builtin-baseline": "a2f9862da6d88040a8537fb9b8cb24deaa9a196b",
+  "dependencies": [
+    "flatbuffers"
+  ],
+  "overrides": [
+    {
+      "name": "flatbuffers",
+      "version": "25.2.10"
+    }
+  ]
+}

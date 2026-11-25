@@ -161,20 +161,22 @@ namespace CommunityToolkit.WinUI.Lottie.LottieGen
 
             if (string.IsNullOrEmpty(directoryPath))
             {
-                directoryPath = @".\";
+                directoryPath = $".{Path.DirectorySeparatorChar}";
             }
 
-            if (directoryPath.EndsWith(":"))
+            if (directoryPath.Length == 2 && directoryPath[1] == ':' && char.IsLetter(directoryPath[0]))
             {
                 // The directory path is just a drive letter with no directory.
                 // Ensure it is treated as the current directory on the drive.
-                directoryPath += @".\";
+                // A name that merely ends in ':' is not a drive letter, and on a
+                // platform where that is a legal directory name it must be left alone.
+                directoryPath += $".{Path.DirectorySeparatorChar}";
             }
 
-            // Ensure that we always have a trailing backslash. Callers expect this.
-            if (!directoryPath.EndsWith(@"\"))
+            // Ensure that we always have a trailing directory separator. Callers expect this.
+            if (!directoryPath.EndsWith(Path.DirectorySeparatorChar.ToString()))
             {
-                directoryPath += @"\";
+                directoryPath += Path.DirectorySeparatorChar;
             }
 
             return (Path.GetFullPath(directoryPath), pattern);
