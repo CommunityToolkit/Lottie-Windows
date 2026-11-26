@@ -7,6 +7,9 @@ namespace CommunityToolkit.WinUI.Lottie.LottieToWinComp
     /// <summary>
     /// Describes a configuration of the <see cref="LottieToWinCompTranslator"/>.
     /// </summary>
+#if PUBLIC_LottieToWinComp
+    public
+#endif
     struct TranslatorConfiguration
     {
 #pragma warning disable 0649

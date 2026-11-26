@@ -10,6 +10,9 @@ using System.Text;
 
 namespace CommunityToolkit.WinUI.Lottie.LottieGen
 {
+#if PUBLIC_LottieGen
+    public
+#endif
     sealed class CommandLineOptions
     {
         readonly List<string> _additionalInterfaces = new List<string>();
@@ -213,7 +216,7 @@ namespace CommunityToolkit.WinUI.Lottie.LottieGen
         }
 
         // Returns the parsed command line. If ErrorDescription is non-null, then the parse failed.
-        internal static CommandLineOptions ParseCommandLine(string[] args)
+        public static CommandLineOptions ParseCommandLine(string[] args)
         {
             var result = new CommandLineOptions();
             result.ParseCommandLineStrings(args);

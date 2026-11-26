@@ -11,7 +11,7 @@ namespace CommunityToolkit.WinUI.Lottie.LottieToWinComp
     /// The <see cref="Description"/> gives more detail about the particular
     /// instance of the issue.
     /// </summary>
-#if PUBLIC
+#if PUBLIC_LottieToWinComp
     public
 #endif
     struct TranslationIssue

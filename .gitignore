@@ -238,3 +238,7 @@ launchSettings.json
 
 # Nuget Package files.
 pack/
+
+# Tests
+**/FramesAll
+**/!Results

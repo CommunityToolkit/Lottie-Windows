@@ -8,6 +8,9 @@ using System;
 
 namespace CommunityToolkit.WinUI.Lottie.DotLottie
 {
+#if PUBLIC_DotLottie
+    public
+#endif
     sealed class InvalidLottieFileException : Exception
     {
     }

@@ -9,7 +9,7 @@ using CommunityToolkit.WinUI.Lottie.LottieData;
 
 namespace CommunityToolkit.WinUI.Lottie.LottieToWinComp
 {
-#if PUBLIC
+#if PUBLIC_LottieToWinComp
     public
 #endif
     sealed class LottieToMultiVersionWinCompTranslator

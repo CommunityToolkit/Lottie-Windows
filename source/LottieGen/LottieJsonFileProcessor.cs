@@ -24,6 +24,9 @@ namespace CommunityToolkit.WinUI.Lottie.LottieGen
     /// <summary>
     /// Processes a single Lottie .json file to produce various generated outputs.
     /// </summary>
+#if PUBLIC_LottieGen
+    public
+#endif
     sealed class LottieJsonFileProcessor
     {
         readonly CommandLineOptions _options;
@@ -49,7 +52,7 @@ namespace CommunityToolkit.WinUI.Lottie.LottieGen
         IReadOnlyList<(TranslationIssue issue, UapVersionRange versionRange)> _translationIssues
             = Array.Empty<(TranslationIssue, UapVersionRange)>();
 
-        LottieJsonFileProcessor(
+        public LottieJsonFileProcessor(
             CommandLineOptions options,
             Reporter reporter,
             string sourceFilePath,
@@ -84,7 +87,7 @@ namespace CommunityToolkit.WinUI.Lottie.LottieGen
         /// <param name="outputFolder">Where the output should be written.</param>
         /// <param name="timestamp">A timestamp used to indicate when the processing took place.</param>
         /// <returns><c>true</c> if the processing succeeded.</returns>
-        internal static bool ProcessLottieJsonFile(
+        public static bool ProcessLottieJsonFile(
             CommandLineOptions options,
             Reporter reporter,
             string sourceFilePath,

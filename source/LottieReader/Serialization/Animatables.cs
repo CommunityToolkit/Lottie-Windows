@@ -680,7 +680,15 @@ namespace CommunityToolkit.WinUI.Lottie.LottieData.Serialization
                             var cp1s = cp1Json.Value.AsVector2Array();
                             var cp2s = cp2Json.Value.AsVector2Array();
                             var cubicBeziers = cp1s.Zip(cp2s, (cp1, cp2) => new CubicBezier(cp1, cp2));
-                            easing = new CubicBezierEasing(cubicBeziers);
+
+                            if (cubicBeziers.All(x => x.IsLinear))
+                            {
+                                easing = LinearEasing.Instance;
+                            }
+                            else
+                            {
+                                easing = new CubicBezierEasing(cubicBeziers);
+                            }
                         }
                         else
                         {
